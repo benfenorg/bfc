@@ -540,7 +540,7 @@ title: Module `bridge::limiter`
     <a href="../bridge/limiter.md#bridge_limiter_add_external_in_limit">add_external_in_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_btc_testnet">chain_ids::btc_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>()),
-        10001,
+        10001*1_000_000_000,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_in_limit">add_external_in_limit</a>(
         external_limiter,

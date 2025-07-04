@@ -5,7 +5,8 @@ use anyhow::Error;
 use tracing::{info, warn};
 
 use sui_bridge::events::{
-    EmergencyOpEvent, MoveBlocklistValidatorEvent, MoveNewTokenEvent, MoveTokenDepositedEvent,
+    EmergencyOpEvent, MoveBlocklistValidatorEvent, MoveNewTokenEvent,
+    MoveTokenDepositedEvent,MoveTokenDepositedEventV2,
     MoveTokenRegistrationEvent, MoveTokenTransferApproved, MoveTokenTransferClaimed,
     UpdateRouteLimitEvent, UpdateTokenPriceEvent,
 };
@@ -108,6 +109,31 @@ fn process_sui_event(
                         recipient_address: move_event.target_address.clone(),
                         token_id: move_event.token_type,
                         amount: move_event.amount_sui_adjusted,
+                        is_finalized: true,
+                    }),
+                }))
+            }
+            "TokenDepositedEventV2" => {
+                info!("Observed Sui Deposit  {:?}", ev);
+                // todo: metrics.total_sui_token_deposited.inc();
+                let move_event: MoveTokenDepositedEventV2 = bcs::from_bytes(&ev.contents)?;
+                Some(ProcessedTxnData::TokenTransfer(TokenTransfer {
+                    chain_id: move_event.source_chain,
+                    nonce: move_event.seq_num,
+                    block_height: checkpoint,
+                    timestamp_ms,
+                    txn_hash: tx.transaction.digest().inner().to_vec(),
+                    txn_sender: ev.sender.to_vec(),
+                    status: TokenTransferStatus::Deposited,
+                    gas_usage: tx.effects.gas_cost_summary().net_gas_usage(),
+                    data_source: BridgeDataSource::Sui,
+                    is_finalized: true,
+                    data: Some(TokenTransferData {
+                        destination_chain: move_event.target_chain,
+                        sender_address: move_event.sender_address.clone(),
+                        recipient_address: move_event.target_address.clone(),
+                        token_id: move_event.token_type,
+                        amount: move_event.amount_after_fee,
                         is_finalized: true,
                     }),
                 }))

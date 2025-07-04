@@ -16,12 +16,16 @@ module bridge::tokenlist {
     const TOKEN_ID_BNB: u64 = 6;
     const TOKEN_ID_OP: u64 = 7;
     const TOKEN_ID_POL: u64 = 8;
+    const TOKEN_ID_DOGE: u64 = 9;
+    const TOKEN_ID_LTC: u64 = 10;
+    const TOKEN_ID_APTOS: u64 = 11;
 
 
     const KEY: vector<u8> = b"bridge_token_list";
 
     const EChainIDAndTokenIDNotExist: u64=0;
     const EBridgeTokenListRegistryAlreadyExists: u64=1;
+    const EBridgeCenterTokenLisAlreadyExists: u64=2;
 
     /// Metadata for a bridged token.
     public struct TokenInfo has store, copy, drop {
@@ -280,6 +284,59 @@ module bridge::tokenlist {
         add_token_from_benfen(parent_id, chain_ids::avax_mainnet() as u64, TOKEN_ID_ETH, ctx);
         add_token_from_benfen(parent_id, chain_ids::avax_testnet() as u64, TOKEN_ID_ETH, ctx);
         add_token_from_benfen(parent_id, chain_ids::avax_custom() as u64, TOKEN_ID_ETH, ctx);
+    }
+
+    public(package) fun add_center_token_list(parent_id: &mut UID,ctx: &mut TxContext){
+        let self=borrow_mut(parent_id);
+        if (!self.is_supported_to_benfen_internal(chain_ids::tron_mainnet() as u64, TOKEN_ID_USDT)){
+            add_token_to_benfen(parent_id, chain_ids::tron_mainnet() as u64, TOKEN_ID_USDT, ctx);
+            add_token_to_benfen(parent_id, chain_ids::tron_testnet() as u64, TOKEN_ID_USDT, ctx);
+
+            add_token_to_benfen(parent_id, chain_ids::solana_mainnet() as u64, TOKEN_ID_USDT, ctx);
+            add_token_to_benfen(parent_id, chain_ids::solana_testnet() as u64, TOKEN_ID_USDT, ctx);
+            add_token_to_benfen(parent_id, chain_ids::solana_mainnet() as u64, TOKEN_ID_USDC, ctx);
+            add_token_to_benfen(parent_id, chain_ids::solana_testnet() as u64, TOKEN_ID_USDC, ctx);
+
+            add_token_to_benfen(parent_id, chain_ids::doge_mainnet() as u64, TOKEN_ID_DOGE, ctx);
+            add_token_to_benfen(parent_id, chain_ids::doge_testnet() as u64, TOKEN_ID_DOGE, ctx);
+            add_token_to_benfen(parent_id, chain_ids::ltc_mainnet() as u64, TOKEN_ID_LTC, ctx);
+            add_token_to_benfen(parent_id, chain_ids::ltc_testnet() as u64, TOKEN_ID_LTC, ctx);
+
+            add_token_to_benfen(parent_id, chain_ids::sui_official_mainnet() as u64, TOKEN_ID_USDC, ctx);
+            add_token_to_benfen(parent_id, chain_ids::sui_official_testnet() as u64, TOKEN_ID_USDC, ctx);
+            add_token_to_benfen(parent_id, chain_ids::sui_official_mainnet() as u64, TOKEN_ID_USDT, ctx);
+            add_token_to_benfen(parent_id, chain_ids::sui_official_testnet() as u64, TOKEN_ID_USDT, ctx);
+            add_token_to_benfen(parent_id, chain_ids::aptos_mainnet() as u64, TOKEN_ID_USDC, ctx);
+            add_token_to_benfen(parent_id, chain_ids::aptos_testnet() as u64, TOKEN_ID_USDC, ctx);
+            add_token_to_benfen(parent_id, chain_ids::aptos_mainnet() as u64, TOKEN_ID_USDT, ctx);
+            add_token_to_benfen(parent_id, chain_ids::aptos_testnet() as u64, TOKEN_ID_USDT, ctx);
+
+
+            add_token_from_benfen(parent_id, chain_ids::tron_mainnet() as u64, TOKEN_ID_USDT, ctx);
+            add_token_from_benfen(parent_id, chain_ids::tron_testnet() as u64, TOKEN_ID_USDT, ctx);
+
+            add_token_from_benfen(parent_id, chain_ids::solana_mainnet() as u64, TOKEN_ID_USDT, ctx);
+            add_token_from_benfen(parent_id, chain_ids::solana_testnet() as u64, TOKEN_ID_USDT, ctx);
+            add_token_from_benfen(parent_id, chain_ids::solana_mainnet() as u64, TOKEN_ID_USDC, ctx);
+            add_token_from_benfen(parent_id, chain_ids::solana_testnet() as u64, TOKEN_ID_USDC, ctx);
+
+
+            add_token_from_benfen(parent_id, chain_ids::doge_mainnet() as u64, TOKEN_ID_DOGE, ctx);
+            add_token_from_benfen(parent_id, chain_ids::doge_testnet() as u64, TOKEN_ID_DOGE, ctx);
+            add_token_from_benfen(parent_id, chain_ids::ltc_mainnet() as u64, TOKEN_ID_LTC, ctx);
+            add_token_from_benfen(parent_id, chain_ids::ltc_testnet() as u64, TOKEN_ID_LTC, ctx);
+
+            add_token_from_benfen(parent_id, chain_ids::sui_official_mainnet() as u64, TOKEN_ID_USDC, ctx);
+            add_token_from_benfen(parent_id, chain_ids::sui_official_testnet() as u64, TOKEN_ID_USDC, ctx);
+            add_token_from_benfen(parent_id, chain_ids::sui_official_mainnet() as u64, TOKEN_ID_USDT, ctx);
+            add_token_from_benfen(parent_id, chain_ids::sui_official_testnet() as u64, TOKEN_ID_USDT, ctx);
+            add_token_from_benfen(parent_id, chain_ids::aptos_mainnet() as u64, TOKEN_ID_USDC, ctx);
+            add_token_from_benfen(parent_id, chain_ids::aptos_testnet() as u64, TOKEN_ID_USDC, ctx);
+            add_token_from_benfen(parent_id, chain_ids::aptos_mainnet() as u64, TOKEN_ID_USDT, ctx);
+            add_token_from_benfen(parent_id, chain_ids::aptos_testnet() as u64, TOKEN_ID_USDT, ctx);
+        }else{
+            abort EBridgeCenterTokenLisAlreadyExists
+        }
     }
 
     public(package) fun borrow(parent_id: &UID): &BridgeTokenList{

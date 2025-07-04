@@ -205,7 +205,7 @@ module bridge::limiter {
         add_external_in_limit(
             external_limiter,
             &chain_ids::get_route(chain_ids::btc_testnet(), chain_ids::sui_testnet()),
-            10001,
+            10001*1_000_000_000,
         );
         add_external_in_limit(
             external_limiter,

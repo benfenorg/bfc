@@ -122,6 +122,7 @@ where
 
         match event {
             SuiBridgeEvent::SuiToEthTokenBridgeV1(_) => (),
+            SuiBridgeEvent::SuiToEthTokenBridgeV2(_) => (),
             SuiBridgeEvent::TokenSendBackEvent(_) => (),
             SuiBridgeEvent::TokenSendBackEventV2(_) => (),
             SuiBridgeEvent::ExternalDepositStartBridgeV1(_) => (),
@@ -273,6 +274,9 @@ where
                 }
                 EthBridgeLimiterEvents::LimitUpdatedFilter(_) => {
                     bump_eth_counter!("limit_updated");
+                }
+                EthBridgeLimiterEvents::SingleTransferLimitUpdateFilter(_) => {
+                    bump_eth_counter!("single_transfer_limit_updated");
                 }
                 // This event is deprecated but we keep it for ABI compatibility
                 // TODO: We can safely update abi and remove it once the testnet bridge contract is upgraded

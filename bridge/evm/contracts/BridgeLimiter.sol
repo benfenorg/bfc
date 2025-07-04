@@ -197,4 +197,24 @@ contract BridgeLimiter is IBridgeLimiter, CommitteeUpgradeable, OwnableUpgradeab
         emit LimitUpdatedV2(message.nonce, sourceChainID, newLimit);
     }
 
+    function updateSingleTransferLimitWithSignatures(
+        bytes[] memory signatures,
+        BridgeUtils.Message memory message
+    )
+        external
+        nonReentrant
+        verifyMessageAndSignatures(message, signatures, BridgeUtils.UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT)
+    {
+        // decode the update limit payload
+        (uint8 sourceChainID, uint64 newLimit) =
+            BridgeUtils.decodeUpdateSingleTransferLimitPayload(message.payload);
+        require(
+            committee.config().isChainSupported(sourceChainID),
+            "BridgeLimiter: Source chain not supported"
+        );
+        maxUSDLimit = uint256(newLimit);
+
+        emit SingleTransferLimitUpdate(message.nonce, sourceChainID, uint256(newLimit));
+    }
+
 }

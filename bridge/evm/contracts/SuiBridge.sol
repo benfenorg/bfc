@@ -217,6 +217,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
 
         if (chainid == 30 || chainid == 31 || chainid == 32){
             // Adjust the amount
+            require(limiter.calculateAmountInUSD(BridgeUtils.BNB, amount) < limiter.getUsdMaxLimit(), "SuiBridge: USD Exceed Limit");
             uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
                 IERC20Metadata(config.tokenAddressOf(BridgeUtils.BNB)).decimals(),
                 config.tokenSuiDecimalOf(BridgeUtils.BNB),
@@ -234,6 +235,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         }else if (chainid == 39 || chainid == 40 || chainid == 41){
             //POL
              // Adjust the amount
+             require(limiter.calculateAmountInUSD(BridgeUtils.POL, amount) < limiter.getUsdMaxLimit(), "SuiBridge: USD Exceed Limit");
              uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
                 IERC20Metadata(config.tokenAddressOf(BridgeUtils.POL)).decimals(),
                 config.tokenSuiDecimalOf(BridgeUtils.POL),
@@ -252,6 +254,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         }else if (chainid == 45 || chainid == 46 || chainid == 47){
               //AVAX
               // Adjust the amount
+             require(limiter.calculateAmountInUSD(BridgeUtils.AVAX, amount) < limiter.getUsdMaxLimit(), "SuiBridge: USD Exceed Limit");
              uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
                 IERC20Metadata(config.tokenAddressOf(BridgeUtils.AVAX)).decimals(),
                 config.tokenSuiDecimalOf(BridgeUtils.AVAX),
@@ -270,6 +273,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         }
         else{
              // Adjust the amount
+             require(limiter.calculateAmountInUSD(BridgeUtils.ETH, amount) < limiter.getUsdMaxLimit(), "SuiBridge: USD Exceed Limit");
              uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
                 IERC20Metadata(config.tokenAddressOf(BridgeUtils.ETH)).decimals(),
                 config.tokenSuiDecimalOf(BridgeUtils.ETH),
