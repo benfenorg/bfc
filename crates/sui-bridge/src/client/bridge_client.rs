@@ -124,6 +124,13 @@ impl BridgeClient {
                 let new_usd_limit = a.new_usd_limit.to_string();
                 format!("sign/update_limit/{chain_id}/{nonce}/{sending_chain_id}/{new_usd_limit}")
             }
+            BridgeAction::SingleTransferLimitUpdateAction(a) =>{
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let sending_chain_id = (a.sending_chain_id as u8).to_string();
+                let new_usd_limit = a.new_usd_limit.to_string();
+                format!("sign/update_single_transfer_limit/{chain_id}/{nonce}/{sending_chain_id}/{new_usd_limit}")
+            }
             BridgeAction::AssetPriceUpdateAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();
@@ -203,6 +210,68 @@ impl BridgeClient {
 
                 format!(
                     "sign/remove_external_coin_target/{chain_id}/{nonce}/{coin_type}/{target_address}"
+                )
+            }
+
+            BridgeAction::AddTokenOnTokenListAction(a)=>{
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let from_chain_id=(a.from_chain_id as u8).to_string();
+                let to_chain_id=(a.to_chain_id as u8).to_string();
+                let token_id=a.token_id.to_string();
+
+                format!(
+                    "sign/add_token_on_token_list/{chain_id}/{nonce}/{from_chain_id}/{to_chain_id}/{token_id}"
+                )
+            }
+
+            BridgeAction::RemoveTokenOnTokenListAction(a)=>{
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let from_chain_id=(a.from_chain_id as u8).to_string();
+                let to_chain_id=(a.to_chain_id as u8).to_string();
+                let token_id=a.token_id.to_string();
+
+                format!(
+                    "sign/remove_token_on_token_list/{chain_id}/{nonce}/{from_chain_id}/{to_chain_id}/{token_id}"
+                )
+            }
+            BridgeAction::UpdateBridgeFeeOnCrossOutAction(a)=>{
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let to_chain_id=(a.to_chain_id as u8).to_string();
+                let token_id=a.token_id.to_string();
+                let mode=a.mode.to_string();
+                let amount=a.amount.to_string();
+
+
+                format!(
+                    "sign/set_bridge_fee_on_cross_out/{chain_id}/{nonce}/{to_chain_id}/{token_id}/{mode}/{amount}"
+                )
+            }
+
+            BridgeAction::UpdateBridgeFeeOnCrossInAction(a)=>{
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let from_chain_id=(a.from_chain_id as u8).to_string();
+                let token_id=a.token_id.to_string();
+                let mode=a.mode.to_string();
+                let amount=a.amount.to_string();
+
+                format!(
+                    "sign/set_bridge_fee_on_cross_in/{chain_id}/{nonce}/{from_chain_id}/{token_id}/{mode}/{amount}"
+                )
+            }
+
+            BridgeAction::WithdrawBridgeFeeAction(a)=>{
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let addr=a.addr;
+                let coin_type=a.coin_type.clone();
+                let amount=a.amount.to_string();
+
+                format!(
+                    "sign/withdraw_bridge_fee/{chain_id}/{nonce}/{addr}/{coin_type}/{amount}"
                 )
             }
             BridgeAction::AddTokensOnSuiAction(a) => {

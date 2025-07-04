@@ -28,6 +28,8 @@ pub mod sui_syncer;
 pub mod sui_transaction_builder;
 pub mod types;
 pub mod utils;
+pub mod tron_query;
+pub mod solana_query;
 
 pub mod fast_path; // Add this line
 

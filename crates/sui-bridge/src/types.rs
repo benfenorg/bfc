@@ -35,6 +35,12 @@ use sui_types::bridge::{
     APPROVAL_THRESHOLD_EXTERNAL_COIN_ADMIN,
     APPROVAL_THRESHOLD_EXTERNAL_COIN_WITNESS,
     APPROVAL_THRESHOLD_EXTERNAL_COIN_TARGET,
+    APPROVAL_THRESHOLD_ADD_TOKEN_ON_TOKEN_LIST,
+    APPROVAL_THRESHOLD_REMOVE_TOKEN_ON_TOKEN_LIST,
+    APPROVAL_THRESHOLD_SINGLE_TRANSFER_LIMIT_UPDATE,
+    APPROVAL_THRESHOLD_SET_CROSS_OUT_BRIDGE_FEE,
+    APPROVAL_THRESHOLD_SET_CROSS_IN_BRIDGE_FEE,
+    APPROVAL_THRESHOLD_WITHDRAW_BRIDGE_FEE,
 };
 use sui_types::committee::CommitteeTrait;
 use sui_types::committee::StakeUnit;
@@ -221,6 +227,12 @@ pub enum BridgeActionType {
     RemoveExternalCoinWitness = 14,
     AddExternalCoinTarget = 15,
     RemoveExternalCoinTarget = 16,
+    AddTokenOnTokenList = 17,
+    RemoveTokenOnTokenList = 18,
+    SingleTransferLimitUpdate = 19,
+    SetCrossOutBridgeFee = 20,
+    SetCrossInBridgeFee = 21,
+    WithdrawBridgeFee = 22,
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -365,6 +377,19 @@ pub struct LimitUpdateAction {
     pub new_usd_limit: u64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct SingleTransferLimitUpdateAction {
+    pub nonce: u64,
+    // The chain id that will receive this signed action. It's also the destination chain id
+    // for the limit update. For example, if chain_id is EthMainnet and sending_chain_id is SuiMainnet,
+    // it means we want to update the limit for the SuiMainnet to EthMainnet route.
+    pub chain_id: BridgeChainId,
+    // The sending chain id for the limit update.
+    pub sending_chain_id: BridgeChainId,
+    // 4 decimal places, namely 1 USD = 10000
+    pub new_usd_limit: u64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct AssetPriceUpdateAction {
     pub nonce: u64,
     pub chain_id: BridgeChainId,
@@ -420,6 +445,49 @@ pub struct RemoveExternalCoinWitnessAction {
     pub coin_type: String,
     pub witness_address: EthAddress,
 }
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct AddTokenOnTokenListAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub from_chain_id: BridgeChainId,
+    pub to_chain_id: BridgeChainId,
+    pub token_id: u64,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct RemoveTokenOnTokenListAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub from_chain_id: BridgeChainId,
+    pub to_chain_id: BridgeChainId,
+    pub token_id: u64,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct UpdateBridgeFeeOnCrossOutAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub to_chain_id: BridgeChainId,
+    pub token_id: u64,
+    pub mode :u64,
+    pub amount: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct UpdateBridgeFeeOnCrossInAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub from_chain_id: BridgeChainId,
+    pub token_id: u64,
+    pub mode :u64,
+    pub amount: u64,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct WithdrawBridgeFeeAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub addr: SuiAddress,
+    pub coin_type: String,
+    pub amount: u64,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct EvmContractUpgradeAction {
@@ -467,6 +535,7 @@ pub enum BridgeAction {
     FastPathLimitUpdateAction(FastPathLimitUpdateAction),
     EmergencyAction(EmergencyAction),
     LimitUpdateAction(LimitUpdateAction),
+    SingleTransferLimitUpdateAction(SingleTransferLimitUpdateAction),
     AssetPriceUpdateAction(AssetPriceUpdateAction),
     EvmContractUpgradeAction(EvmContractUpgradeAction),
     AddExternalCoinAdminAction(AddExternalCoinAdminAction),
@@ -475,6 +544,11 @@ pub enum BridgeAction {
     RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction),
     AddExternalCoinTargetAction(AddExternalCoinTargetAction),
     RemoveExternalCoinTargetAction(RemoveExternalCoinTargetAction),
+    AddTokenOnTokenListAction(AddTokenOnTokenListAction),
+    RemoveTokenOnTokenListAction(RemoveTokenOnTokenListAction),
+    UpdateBridgeFeeOnCrossOutAction(UpdateBridgeFeeOnCrossOutAction),
+    UpdateBridgeFeeOnCrossInAction(UpdateBridgeFeeOnCrossInAction),
+    WithdrawBridgeFeeAction(WithdrawBridgeFeeAction),
     AddTokensOnSuiAction(AddTokensOnSuiAction),
     AddTokensOnEvmAction(AddTokensOnEvmAction),
 }
@@ -504,6 +578,7 @@ impl BridgeAction {
             BridgeAction::BlocklistCommitteeAction(a) => a.chain_id,
             BridgeAction::EmergencyAction(a) => a.chain_id,
             BridgeAction::LimitUpdateAction(a) => a.chain_id,
+            BridgeAction::SingleTransferLimitUpdateAction(a)=>a.chain_id,
             BridgeAction::AssetPriceUpdateAction(a) => a.chain_id,
             BridgeAction::EvmContractUpgradeAction(a) => a.chain_id,
             BridgeAction::AddExternalCoinAdminAction(a) => a.chain_id,
@@ -512,6 +587,11 @@ impl BridgeAction {
             BridgeAction::RemoveExternalCoinWitnessAction(a) => a.chain_id,
             BridgeAction::AddExternalCoinTargetAction(a) => a.chain_id,
             BridgeAction::RemoveExternalCoinTargetAction(a) => a.chain_id,
+            BridgeAction::AddTokenOnTokenListAction(a) => a.chain_id,
+            BridgeAction::RemoveTokenOnTokenListAction(a) => a.chain_id,
+            BridgeAction::UpdateBridgeFeeOnCrossOutAction(a) => a.chain_id,
+            BridgeAction::UpdateBridgeFeeOnCrossInAction(a) => a.chain_id,
+            BridgeAction::WithdrawBridgeFeeAction(a) => a.chain_id,
             BridgeAction::AddTokensOnSuiAction(a) => a.chain_id,
             BridgeAction::AddTokensOnEvmAction(a) => a.chain_id,
             BridgeAction::RefundAdminAction(a) => a.chain_id,
@@ -525,6 +605,7 @@ impl BridgeAction {
             BridgeActionType::UpdateCommitteeBlocklist => true,
             BridgeActionType::EmergencyButton => true,
             BridgeActionType::LimitUpdate => true,
+            BridgeActionType::SingleTransferLimitUpdate => true,
             BridgeActionType::AssetPriceUpdate => true,
             BridgeActionType::EvmContractUpgrade => true,
             BridgeActionType::AddExternalCoinAdmin => true,
@@ -533,6 +614,11 @@ impl BridgeAction {
             BridgeActionType::RemoveExternalCoinWitness => true,
             BridgeActionType::AddExternalCoinTarget => true,
             BridgeActionType::RemoveExternalCoinTarget => true,
+            BridgeActionType::AddTokenOnTokenList=>true,
+            BridgeActionType::RemoveTokenOnTokenList=>true,
+            BridgeActionType::SetCrossOutBridgeFee => true,
+            BridgeActionType::SetCrossInBridgeFee => true,
+            BridgeActionType::WithdrawBridgeFee => true,
             BridgeActionType::AddTokensOnSui => true,
             BridgeActionType::AddTokensOnEvm => true,
             BridgeActionType::RefundAdmin => true,
@@ -550,6 +636,7 @@ impl BridgeAction {
             BridgeAction::BlocklistCommitteeAction(_) => BridgeActionType::UpdateCommitteeBlocklist,
             BridgeAction::EmergencyAction(_) => BridgeActionType::EmergencyButton,
             BridgeAction::LimitUpdateAction(_) => BridgeActionType::LimitUpdate,
+            BridgeAction::SingleTransferLimitUpdateAction(_) => BridgeActionType::SingleTransferLimitUpdate,
             BridgeAction::AssetPriceUpdateAction(_) => BridgeActionType::AssetPriceUpdate,
             BridgeAction::EvmContractUpgradeAction(_) => BridgeActionType::EvmContractUpgrade,
             BridgeAction::AddExternalCoinAdminAction(_) => BridgeActionType::AddExternalCoinAdmin,
@@ -558,6 +645,11 @@ impl BridgeAction {
             BridgeAction::RemoveExternalCoinWitnessAction(_) => BridgeActionType::RemoveExternalCoinWitness,
             BridgeAction::AddExternalCoinTargetAction(_) => BridgeActionType::AddExternalCoinTarget,
             BridgeAction::RemoveExternalCoinTargetAction(_) => BridgeActionType::RemoveExternalCoinTarget,
+            BridgeAction::AddTokenOnTokenListAction(_) => BridgeActionType::AddTokenOnTokenList,
+            BridgeAction::RemoveTokenOnTokenListAction(_) => BridgeActionType::RemoveTokenOnTokenList,
+            BridgeAction::UpdateBridgeFeeOnCrossOutAction(_) => BridgeActionType::SetCrossOutBridgeFee,
+            BridgeAction::UpdateBridgeFeeOnCrossInAction(_) => BridgeActionType::SetCrossInBridgeFee,
+            BridgeAction::WithdrawBridgeFeeAction(_) => BridgeActionType::WithdrawBridgeFee,
             BridgeAction::AddTokensOnSuiAction(_) => BridgeActionType::AddTokensOnSui,
             BridgeAction::AddTokensOnEvmAction(_) => BridgeActionType::AddTokensOnEvm,
             BridgeAction::RefundAdminAction(_) => BridgeActionType::RefundAdmin,
@@ -575,6 +667,7 @@ impl BridgeAction {
             BridgeAction::BlocklistCommitteeAction(a) => a.nonce,
             BridgeAction::EmergencyAction(a) => a.nonce,
             BridgeAction::LimitUpdateAction(a) => a.nonce,
+            BridgeAction::SingleTransferLimitUpdateAction(a) =>a.nonce,
             BridgeAction::AssetPriceUpdateAction(a) => a.nonce,
             BridgeAction::EvmContractUpgradeAction(a) => a.nonce,
             BridgeAction::AddExternalCoinAdminAction(a) => a.nonce,
@@ -583,6 +676,11 @@ impl BridgeAction {
             BridgeAction::RemoveExternalCoinWitnessAction(a) => a.nonce,
             BridgeAction::AddExternalCoinTargetAction(a) => a.nonce,
             BridgeAction::RemoveExternalCoinTargetAction(a) => a.nonce,
+            BridgeAction::AddTokenOnTokenListAction(a)=>a.nonce,
+            BridgeAction::RemoveTokenOnTokenListAction(a)=>a.nonce,
+            BridgeAction::UpdateBridgeFeeOnCrossOutAction(a) => a.nonce,
+            BridgeAction::UpdateBridgeFeeOnCrossInAction(a) => a.nonce,
+            BridgeAction::WithdrawBridgeFeeAction(a) => a.nonce,
             BridgeAction::AddTokensOnSuiAction(a) => a.nonce,
             BridgeAction::AddTokensOnEvmAction(a) => a.nonce,
             BridgeAction::RefundAdminAction(a) => a.nonce,
@@ -602,6 +700,7 @@ impl BridgeAction {
                 EmergencyActionType::Unpause => APPROVAL_THRESHOLD_EMERGENCY_UNPAUSE,
             },
             BridgeAction::LimitUpdateAction(_) => APPROVAL_THRESHOLD_LIMIT_UPDATE,
+            BridgeAction::SingleTransferLimitUpdateAction(_) => APPROVAL_THRESHOLD_SINGLE_TRANSFER_LIMIT_UPDATE,
             BridgeAction::AssetPriceUpdateAction(_) => APPROVAL_THRESHOLD_ASSET_PRICE_UPDATE,
             BridgeAction::EvmContractUpgradeAction(_) => APPROVAL_THRESHOLD_EVM_CONTRACT_UPGRADE,
             BridgeAction::AddExternalCoinAdminAction(_) => APPROVAL_THRESHOLD_EXTERNAL_COIN_ADMIN,
@@ -610,6 +709,11 @@ impl BridgeAction {
             BridgeAction::RemoveExternalCoinWitnessAction(_) => APPROVAL_THRESHOLD_EXTERNAL_COIN_WITNESS,
             BridgeAction::AddExternalCoinTargetAction(_) => APPROVAL_THRESHOLD_EXTERNAL_COIN_TARGET,
             BridgeAction::RemoveExternalCoinTargetAction(_) => APPROVAL_THRESHOLD_EXTERNAL_COIN_TARGET,
+            BridgeAction::AddTokenOnTokenListAction(_)=> APPROVAL_THRESHOLD_ADD_TOKEN_ON_TOKEN_LIST,
+            BridgeAction::RemoveTokenOnTokenListAction(_)=> APPROVAL_THRESHOLD_REMOVE_TOKEN_ON_TOKEN_LIST,
+            BridgeAction::UpdateBridgeFeeOnCrossOutAction(_) => APPROVAL_THRESHOLD_SET_CROSS_OUT_BRIDGE_FEE,
+            BridgeAction::UpdateBridgeFeeOnCrossInAction(_) => APPROVAL_THRESHOLD_SET_CROSS_IN_BRIDGE_FEE,
+            BridgeAction::WithdrawBridgeFeeAction(_) => APPROVAL_THRESHOLD_WITHDRAW_BRIDGE_FEE,
             BridgeAction::AddTokensOnSuiAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI,
             BridgeAction::AddTokensOnEvmAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM,
             BridgeAction::RefundAdminAction(_) => APPROVAL_THRESHOLD_REFUND_ADMIN,

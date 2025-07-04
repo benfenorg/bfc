@@ -3253,6 +3253,10 @@ impl ProtocolConfig {
                     cfg.gas_budget_based_txn_cost_absolute_cap_commit_count = Some(50);
                     cfg.allowed_txn_cost_overage_burst_per_object_in_commit = Some(370_000_000);
                 }
+
+                73 => {
+
+                }
                 // Use this template when making changes:
                 //
                 //     // modify an existing constant.

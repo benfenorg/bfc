@@ -27,6 +27,11 @@ title: Module `bridge::message`
 -  [Struct `ParsedTokenTransferMessage`](#bridge_message_ParsedTokenTransferMessage)
 -  [Struct `ParsedTokenTransferMessageV2`](#bridge_message_ParsedTokenTransferMessageV2)
 -  [Struct `ParsedTokenTransferInMessage`](#bridge_message_ParsedTokenTransferInMessage)
+-  [Struct `AddTokenOnTokenList`](#bridge_message_AddTokenOnTokenList)
+-  [Struct `RemoveTokenOnTokenList`](#bridge_message_RemoveTokenOnTokenList)
+-  [Struct `SetCrossOutBridgeFee`](#bridge_message_SetCrossOutBridgeFee)
+-  [Struct `SetCrossInBridgeFee`](#bridge_message_SetCrossInBridgeFee)
+-  [Struct `WithdrawBridgeFee`](#bridge_message_WithdrawBridgeFee)
 -  [Constants](#@Constants_0)
 -  [Function `chain_id`](#bridge_message_chain_id)
 -  [Function `token_id`](#bridge_message_token_id)
@@ -39,6 +44,11 @@ title: Module `bridge::message`
 -  [Function `extract_remove_witness_poyload`](#bridge_message_extract_remove_witness_poyload)
 -  [Function `extract_add_external_target_address_poyload`](#bridge_message_extract_add_external_target_address_poyload)
 -  [Function `extract_remove_external_target_address_poyload`](#bridge_message_extract_remove_external_target_address_poyload)
+-  [Function `extract_add_token_on_token_list_poyload`](#bridge_message_extract_add_token_on_token_list_poyload)
+-  [Function `extract_remove_token_on_token_list_poyload`](#bridge_message_extract_remove_token_on_token_list_poyload)
+-  [Function `extract_set_cross_out_bridge_fee_poyload`](#bridge_message_extract_set_cross_out_bridge_fee_poyload)
+-  [Function `extract_set_cross_in_bridge_fee_poyload`](#bridge_message_extract_set_cross_in_bridge_fee_poyload)
+-  [Function `extract_withdraw_bridge_fee`](#bridge_message_extract_withdraw_bridge_fee)
 -  [Function `extract_emergency_op_payload`](#bridge_message_extract_emergency_op_payload)
 -  [Function `extract_blocklist_payload`](#bridge_message_extract_blocklist_payload)
 -  [Function `extract_refund_admin_payload`](#bridge_message_extract_refund_admin_payload)
@@ -65,6 +75,11 @@ title: Module `bridge::message`
 -  [Function `create_add_external_coin_target_message`](#bridge_message_create_add_external_coin_target_message)
 -  [Function `create_remove_external_coin_target_message`](#bridge_message_create_remove_external_coin_target_message)
 -  [Function `create_remove_external_coin_admin_message`](#bridge_message_create_remove_external_coin_admin_message)
+-  [Function `create_add_token_on_token_list`](#bridge_message_create_add_token_on_token_list)
+-  [Function `create_remove_token_on_token_list`](#bridge_message_create_remove_token_on_token_list)
+-  [Function `create_set_cross_in_bridge_fee`](#bridge_message_create_set_cross_in_bridge_fee)
+-  [Function `create_set_cross_out_bridge_fee`](#bridge_message_create_set_cross_out_bridge_fee)
+-  [Function `create_withdraw_fee_cap`](#bridge_message_create_withdraw_fee_cap)
 -  [Function `create_add_tokens_on_sui_message`](#bridge_message_create_add_tokens_on_sui_message)
 -  [Function `create_key`](#bridge_message_create_key)
 -  [Function `key`](#bridge_message_key)
@@ -120,6 +135,15 @@ title: Module `bridge::message`
 -  [Function `add_external_coin_admin_payload_admin_address`](#bridge_message_add_external_coin_admin_payload_admin_address)
 -  [Function `remove_external_coin_admin_payload_coin_type`](#bridge_message_remove_external_coin_admin_payload_coin_type)
 -  [Function `remove_external_coin_admin_payload_admin_address`](#bridge_message_remove_external_coin_admin_payload_admin_address)
+-  [Function `set_cross_in_bridge_fee_poyload`](#bridge_message_set_cross_in_bridge_fee_poyload)
+-  [Function `set_cross_out_bridge_fee_poyload`](#bridge_message_set_cross_out_bridge_fee_poyload)
+-  [Function `withdraw_bridge_fee_polyload`](#bridge_message_withdraw_bridge_fee_polyload)
+-  [Function `add_token_on_token_list_payload_from_chain_id`](#bridge_message_add_token_on_token_list_payload_from_chain_id)
+-  [Function `add_token_on_token_list_payload_to_chain_id`](#bridge_message_add_token_on_token_list_payload_to_chain_id)
+-  [Function `add_token_on_token_list_payload_token_id`](#bridge_message_add_token_on_token_list_payload_token_id)
+-  [Function `remove_token_on_token_list_payload_from_chain_id`](#bridge_message_remove_token_on_token_list_payload_from_chain_id)
+-  [Function `remove_token_on_token_list_payload_to_chain_id`](#bridge_message_remove_token_on_token_list_payload_to_chain_id)
+-  [Function `remove_token_on_token_list_payload_token_id`](#bridge_message_remove_token_on_token_list_payload_token_id)
 -  [Function `is_native`](#bridge_message_is_native)
 -  [Function `token_ids`](#bridge_message_token_ids)
 -  [Function `token_type_names`](#bridge_message_token_type_names)
@@ -1036,6 +1060,196 @@ title: Module `bridge::message`
 
 </details>
 
+<a name="bridge_message_AddTokenOnTokenList"></a>
+
+## Struct `AddTokenOnTokenList`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/message.md#bridge_message_AddTokenOnTokenList">AddTokenOnTokenList</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>from_chain_id: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>to_chain_id: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code><a href="../bridge/message.md#bridge_message_token_id">token_id</a>: u64</code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
+<a name="bridge_message_RemoveTokenOnTokenList"></a>
+
+## Struct `RemoveTokenOnTokenList`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/message.md#bridge_message_RemoveTokenOnTokenList">RemoveTokenOnTokenList</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>from_chain_id: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>to_chain_id: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code><a href="../bridge/message.md#bridge_message_token_id">token_id</a>: u64</code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
+<a name="bridge_message_SetCrossOutBridgeFee"></a>
+
+## Struct `SetCrossOutBridgeFee`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/message.md#bridge_message_SetCrossOutBridgeFee">SetCrossOutBridgeFee</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code><a href="../bridge/message.md#bridge_message_chain_id">chain_id</a>: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code><a href="../bridge/message.md#bridge_message_token_id">token_id</a>: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>mode: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code><a href="../bridge/message.md#bridge_message_amount">amount</a>: u64</code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
+<a name="bridge_message_SetCrossInBridgeFee"></a>
+
+## Struct `SetCrossInBridgeFee`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/message.md#bridge_message_SetCrossInBridgeFee">SetCrossInBridgeFee</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code><a href="../bridge/message.md#bridge_message_chain_id">chain_id</a>: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code><a href="../bridge/message.md#bridge_message_token_id">token_id</a>: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>mode: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code><a href="../bridge/message.md#bridge_message_amount">amount</a>: u64</code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
+<a name="bridge_message_WithdrawBridgeFee"></a>
+
+## Struct `WithdrawBridgeFee`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/message.md#bridge_message_WithdrawBridgeFee">WithdrawBridgeFee</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>recipient: <b>address</b></code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>coin_type: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a></code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code><a href="../bridge/message.md#bridge_message_amount">amount</a>: u64</code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
 <a name="@Constants_0"></a>
 
 ## Constants
@@ -1537,6 +1751,170 @@ title: Module `bridge::message`
     <a href="../bridge/message.md#bridge_message_RemoveExternalCoinTarget">RemoveExternalCoinTarget</a> {
         coin_type,
         target_address
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_extract_add_token_on_token_list_poyload"></a>
+
+## Function `extract_add_token_on_token_list_poyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_add_token_on_token_list_poyload">extract_add_token_on_token_list_poyload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_AddTokenOnTokenList">bridge::message::AddTokenOnTokenList</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_add_token_on_token_list_poyload">extract_add_token_on_token_list_poyload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_AddTokenOnTokenList">AddTokenOnTokenList</a>{
+       <b>let</b> <b>mut</b> bcs = bcs::new(<a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_payload">payload</a>);
+       <b>let</b> from_chain_id=bcs.peel_u8();
+       <b>let</b> to_chain_id=bcs.peel_u8();
+       <b>let</b> <a href="../bridge/message.md#bridge_message_token_id">token_id</a>=<a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+       <a href="../bridge/message.md#bridge_message_AddTokenOnTokenList">AddTokenOnTokenList</a>{
+        from_chain_id,
+        to_chain_id,
+        <a href="../bridge/message.md#bridge_message_token_id">token_id</a>
+       }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_extract_remove_token_on_token_list_poyload"></a>
+
+## Function `extract_remove_token_on_token_list_poyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_remove_token_on_token_list_poyload">extract_remove_token_on_token_list_poyload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_RemoveTokenOnTokenList">bridge::message::RemoveTokenOnTokenList</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_remove_token_on_token_list_poyload">extract_remove_token_on_token_list_poyload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_RemoveTokenOnTokenList">RemoveTokenOnTokenList</a>{
+       <b>let</b> <b>mut</b> bcs = bcs::new(<a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_payload">payload</a>);
+       <b>let</b> from_chain_id=bcs.peel_u8();
+       <b>let</b> to_chain_id=bcs.peel_u8();
+       <b>let</b> <a href="../bridge/message.md#bridge_message_token_id">token_id</a>=<a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+       <a href="../bridge/message.md#bridge_message_RemoveTokenOnTokenList">RemoveTokenOnTokenList</a>{
+        from_chain_id,
+        to_chain_id,
+        <a href="../bridge/message.md#bridge_message_token_id">token_id</a>
+       }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_extract_set_cross_out_bridge_fee_poyload"></a>
+
+## Function `extract_set_cross_out_bridge_fee_poyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_set_cross_out_bridge_fee_poyload">extract_set_cross_out_bridge_fee_poyload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_SetCrossOutBridgeFee">bridge::message::SetCrossOutBridgeFee</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_set_cross_out_bridge_fee_poyload">extract_set_cross_out_bridge_fee_poyload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_SetCrossOutBridgeFee">SetCrossOutBridgeFee</a>{
+       <b>let</b> <b>mut</b> bcs = bcs::new(<a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_payload">payload</a>);
+       <b>let</b> <a href="../bridge/message.md#bridge_message_chain_id">chain_id</a>=bcs.peel_u8();
+       <b>let</b> <a href="../bridge/message.md#bridge_message_token_id">token_id</a>=<a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+       <b>let</b> mode=<a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+       <b>let</b> <a href="../bridge/message.md#bridge_message_amount">amount</a>=<a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+       <a href="../bridge/message.md#bridge_message_SetCrossOutBridgeFee">SetCrossOutBridgeFee</a>{
+        <a href="../bridge/message.md#bridge_message_chain_id">chain_id</a>,
+        <a href="../bridge/message.md#bridge_message_token_id">token_id</a>,
+        mode,
+        <a href="../bridge/message.md#bridge_message_amount">amount</a>
+       }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_extract_set_cross_in_bridge_fee_poyload"></a>
+
+## Function `extract_set_cross_in_bridge_fee_poyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_set_cross_in_bridge_fee_poyload">extract_set_cross_in_bridge_fee_poyload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_SetCrossInBridgeFee">bridge::message::SetCrossInBridgeFee</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_set_cross_in_bridge_fee_poyload">extract_set_cross_in_bridge_fee_poyload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_SetCrossInBridgeFee">SetCrossInBridgeFee</a>{
+       <b>let</b> <b>mut</b> bcs = bcs::new(<a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_payload">payload</a>);
+       <b>let</b> <a href="../bridge/message.md#bridge_message_chain_id">chain_id</a>=bcs.peel_u8();
+       <b>let</b> <a href="../bridge/message.md#bridge_message_token_id">token_id</a>=<a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+       <b>let</b> mode=<a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+       <b>let</b> <a href="../bridge/message.md#bridge_message_amount">amount</a>=<a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+       <a href="../bridge/message.md#bridge_message_SetCrossInBridgeFee">SetCrossInBridgeFee</a>{
+        <a href="../bridge/message.md#bridge_message_chain_id">chain_id</a>,
+        <a href="../bridge/message.md#bridge_message_token_id">token_id</a>,
+        mode,
+        <a href="../bridge/message.md#bridge_message_amount">amount</a>
+       }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_extract_withdraw_bridge_fee"></a>
+
+## Function `extract_withdraw_bridge_fee`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_withdraw_bridge_fee">extract_withdraw_bridge_fee</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_WithdrawBridgeFee">bridge::message::WithdrawBridgeFee</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_withdraw_bridge_fee">extract_withdraw_bridge_fee</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>) :<a href="../bridge/message.md#bridge_message_WithdrawBridgeFee">WithdrawBridgeFee</a>{
+    <b>let</b> <b>mut</b> bcs = bcs::new(<a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_payload">payload</a>);
+    <b>let</b> recipient=bcs.peel_address();
+    <b>let</b> coin_type = ascii::string(bcs.peel_vec_u8());
+    <b>let</b> <a href="../bridge/message.md#bridge_message_amount">amount</a>=<a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+    <a href="../bridge/message.md#bridge_message_WithdrawBridgeFee">WithdrawBridgeFee</a>{
+        recipient,
+        coin_type,
+        <a href="../bridge/message.md#bridge_message_amount">amount</a>,
     }
 }
 </code></pre>
@@ -2621,6 +2999,211 @@ Update asset price message
         <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>,
         <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>,
         <a href="../bridge/message.md#bridge_message_payload">payload</a>,
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_create_add_token_on_token_list"></a>
+
+## Function `create_add_token_on_token_list`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_add_token_on_token_list">create_add_token_on_token_list</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8, <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64, from_chain: u8, target_chain: u8, <a href="../bridge/message.md#bridge_message_token_id">token_id</a>: u64): <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_add_token_on_token_list">create_add_token_on_token_list</a>(
+    <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8,
+    <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64,
+    from_chain: u8,
+    target_chain: u8,
+    <a href="../bridge/message.md#bridge_message_token_id">token_id</a>: u64
+): <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>{
+    <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>);
+    <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(from_chain);
+    <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(target_chain);
+    <b>let</b> <b>mut</b> <a href="../bridge/message.md#bridge_message_payload">payload</a> = <a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&from_chain));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&target_chain)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&<a href="../bridge/message.md#bridge_message_token_id">token_id</a>)));
+    <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a> {
+        <a href="../bridge/message.md#bridge_message_message_type">message_type</a>: <a href="../bridge/message_types.md#bridge_message_types_add_token_on_token_list">message_types::add_token_on_token_list</a>(),
+        <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>,
+        <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>,
+        <a href="../bridge/message.md#bridge_message_payload">payload</a>,
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_create_remove_token_on_token_list"></a>
+
+## Function `create_remove_token_on_token_list`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_remove_token_on_token_list">create_remove_token_on_token_list</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8, <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64, from_chain: u8, target_chain: u8, <a href="../bridge/message.md#bridge_message_token_id">token_id</a>: u64): <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_remove_token_on_token_list">create_remove_token_on_token_list</a>(
+    <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8,
+    <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64,
+    from_chain: u8,
+    target_chain: u8,
+    <a href="../bridge/message.md#bridge_message_token_id">token_id</a>: u64
+): <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>{
+    <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>);
+    <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(from_chain);
+    <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(target_chain);
+    <b>let</b> <b>mut</b> <a href="../bridge/message.md#bridge_message_payload">payload</a> = <a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&from_chain));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&target_chain)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&<a href="../bridge/message.md#bridge_message_token_id">token_id</a>)));
+    <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a> {
+        <a href="../bridge/message.md#bridge_message_message_type">message_type</a>: <a href="../bridge/message_types.md#bridge_message_types_remove_token_on_token_list">message_types::remove_token_on_token_list</a>(),
+        <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>,
+        <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>,
+        <a href="../bridge/message.md#bridge_message_payload">payload</a>,
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_create_set_cross_in_bridge_fee"></a>
+
+## Function `create_set_cross_in_bridge_fee`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_set_cross_in_bridge_fee">create_set_cross_in_bridge_fee</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8, <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64, from_chain: u8, <a href="../bridge/message.md#bridge_message_token_id">token_id</a>: u64, mode: u64, <a href="../bridge/message.md#bridge_message_amount">amount</a>: u64): <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b>  <a href="../bridge/message.md#bridge_message_create_set_cross_in_bridge_fee">create_set_cross_in_bridge_fee</a>(
+    <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8,
+    <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64,
+    from_chain: u8,
+    <a href="../bridge/message.md#bridge_message_token_id">token_id</a>: u64,
+    mode: u64,
+    <a href="../bridge/message.md#bridge_message_amount">amount</a>: u64,
+): <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>{
+    <b>let</b> <b>mut</b> <a href="../bridge/message.md#bridge_message_payload">payload</a> = <a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&from_chain));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&<a href="../bridge/message.md#bridge_message_token_id">token_id</a>)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&mode)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&<a href="../bridge/message.md#bridge_message_amount">amount</a>)));
+    <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>{
+        <a href="../bridge/message.md#bridge_message_message_type">message_type</a>: <a href="../bridge/message_types.md#bridge_message_types_set_cross_in_bridge_fee">message_types::set_cross_in_bridge_fee</a>(),
+        <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>,
+        <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>,
+        <a href="../bridge/message.md#bridge_message_payload">payload</a>
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_create_set_cross_out_bridge_fee"></a>
+
+## Function `create_set_cross_out_bridge_fee`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_set_cross_out_bridge_fee">create_set_cross_out_bridge_fee</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8, <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64, to_chain: u8, <a href="../bridge/message.md#bridge_message_token_id">token_id</a>: u64, mode: u64, <a href="../bridge/message.md#bridge_message_amount">amount</a>: u64): <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b>  <a href="../bridge/message.md#bridge_message_create_set_cross_out_bridge_fee">create_set_cross_out_bridge_fee</a>(
+    <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8,
+    <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64,
+    to_chain: u8,
+    <a href="../bridge/message.md#bridge_message_token_id">token_id</a>: u64,
+    mode: u64,
+    <a href="../bridge/message.md#bridge_message_amount">amount</a>: u64,
+): <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>{
+    <b>let</b> <b>mut</b> <a href="../bridge/message.md#bridge_message_payload">payload</a> = <a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&to_chain));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&<a href="../bridge/message.md#bridge_message_token_id">token_id</a>)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&mode)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&<a href="../bridge/message.md#bridge_message_amount">amount</a>)));
+    <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>{
+        <a href="../bridge/message.md#bridge_message_message_type">message_type</a>: <a href="../bridge/message_types.md#bridge_message_types_set_cross_out_bridge_fee">message_types::set_cross_out_bridge_fee</a>(),
+        <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>,
+        <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>,
+        <a href="../bridge/message.md#bridge_message_payload">payload</a>
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_create_withdraw_fee_cap"></a>
+
+## Function `create_withdraw_fee_cap`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_withdraw_fee_cap">create_withdraw_fee_cap</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8, <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64, addr: <b>address</b>, coin_type: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, <a href="../bridge/message.md#bridge_message_amount">amount</a>: u64): <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_withdraw_fee_cap">create_withdraw_fee_cap</a>(
+    <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8,
+    <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64,
+    addr: <b>address</b>,
+    coin_type: String,
+    <a href="../bridge/message.md#bridge_message_amount">amount</a>: u64
+): <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>{
+    <b>let</b> <b>mut</b> <a href="../bridge/message.md#bridge_message_payload">payload</a> =bcs::to_bytes(&addr);
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(bcs::to_bytes(&coin_type));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&<a href="../bridge/message.md#bridge_message_amount">amount</a>)));
+    <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>{
+        <a href="../bridge/message.md#bridge_message_message_type">message_type</a>: <a href="../bridge/message_types.md#bridge_message_types_withdraw_bridge_fee">message_types::withdraw_bridge_fee</a>(),
+        <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>,
+        <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>,
+        <a href="../bridge/message.md#bridge_message_payload">payload</a>
     }
 }
 </code></pre>
@@ -3976,6 +4559,222 @@ Update Sui token message
 
 </details>
 
+<a name="bridge_message_set_cross_in_bridge_fee_poyload"></a>
+
+## Function `set_cross_in_bridge_fee_poyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_set_cross_in_bridge_fee_poyload">set_cross_in_bridge_fee_poyload</a>(self: &<a href="../bridge/message.md#bridge_message_SetCrossInBridgeFee">bridge::message::SetCrossInBridgeFee</a>): (u8, u64, u64, u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b>  <a href="../bridge/message.md#bridge_message_set_cross_in_bridge_fee_poyload">set_cross_in_bridge_fee_poyload</a>(self: &<a href="../bridge/message.md#bridge_message_SetCrossInBridgeFee">SetCrossInBridgeFee</a>):(u8,u64,u64,u64){
+    (self.<a href="../bridge/message.md#bridge_message_chain_id">chain_id</a>,self.<a href="../bridge/message.md#bridge_message_token_id">token_id</a>,self.mode,self.<a href="../bridge/message.md#bridge_message_amount">amount</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_set_cross_out_bridge_fee_poyload"></a>
+
+## Function `set_cross_out_bridge_fee_poyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_set_cross_out_bridge_fee_poyload">set_cross_out_bridge_fee_poyload</a>(self: &<a href="../bridge/message.md#bridge_message_SetCrossOutBridgeFee">bridge::message::SetCrossOutBridgeFee</a>): (u8, u64, u64, u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b>  <a href="../bridge/message.md#bridge_message_set_cross_out_bridge_fee_poyload">set_cross_out_bridge_fee_poyload</a>(self: &<a href="../bridge/message.md#bridge_message_SetCrossOutBridgeFee">SetCrossOutBridgeFee</a>):(u8,u64,u64,u64){
+    (self.<a href="../bridge/message.md#bridge_message_chain_id">chain_id</a>,self.<a href="../bridge/message.md#bridge_message_token_id">token_id</a>,self.mode,self.<a href="../bridge/message.md#bridge_message_amount">amount</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_withdraw_bridge_fee_polyload"></a>
+
+## Function `withdraw_bridge_fee_polyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_withdraw_bridge_fee_polyload">withdraw_bridge_fee_polyload</a>(self: &<a href="../bridge/message.md#bridge_message_WithdrawBridgeFee">bridge::message::WithdrawBridgeFee</a>): (<b>address</b>, <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_withdraw_bridge_fee_polyload">withdraw_bridge_fee_polyload</a>(self: &<a href="../bridge/message.md#bridge_message_WithdrawBridgeFee">WithdrawBridgeFee</a>):(<b>address</b>,String,u64){
+    (self.recipient,self.coin_type,self.<a href="../bridge/message.md#bridge_message_amount">amount</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_add_token_on_token_list_payload_from_chain_id"></a>
+
+## Function `add_token_on_token_list_payload_from_chain_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_add_token_on_token_list_payload_from_chain_id">add_token_on_token_list_payload_from_chain_id</a>(self: &<a href="../bridge/message.md#bridge_message_AddTokenOnTokenList">bridge::message::AddTokenOnTokenList</a>): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_add_token_on_token_list_payload_from_chain_id">add_token_on_token_list_payload_from_chain_id</a>(self: &<a href="../bridge/message.md#bridge_message_AddTokenOnTokenList">AddTokenOnTokenList</a>): u8 {
+    self.from_chain_id
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_add_token_on_token_list_payload_to_chain_id"></a>
+
+## Function `add_token_on_token_list_payload_to_chain_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_add_token_on_token_list_payload_to_chain_id">add_token_on_token_list_payload_to_chain_id</a>(self: &<a href="../bridge/message.md#bridge_message_AddTokenOnTokenList">bridge::message::AddTokenOnTokenList</a>): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_add_token_on_token_list_payload_to_chain_id">add_token_on_token_list_payload_to_chain_id</a>(self: &<a href="../bridge/message.md#bridge_message_AddTokenOnTokenList">AddTokenOnTokenList</a>): u8 {
+    self.to_chain_id
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_add_token_on_token_list_payload_token_id"></a>
+
+## Function `add_token_on_token_list_payload_token_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_add_token_on_token_list_payload_token_id">add_token_on_token_list_payload_token_id</a>(self: &<a href="../bridge/message.md#bridge_message_AddTokenOnTokenList">bridge::message::AddTokenOnTokenList</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_add_token_on_token_list_payload_token_id">add_token_on_token_list_payload_token_id</a>(self: &<a href="../bridge/message.md#bridge_message_AddTokenOnTokenList">AddTokenOnTokenList</a>): u64 {
+    self.<a href="../bridge/message.md#bridge_message_token_id">token_id</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_remove_token_on_token_list_payload_from_chain_id"></a>
+
+## Function `remove_token_on_token_list_payload_from_chain_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_remove_token_on_token_list_payload_from_chain_id">remove_token_on_token_list_payload_from_chain_id</a>(self: &<a href="../bridge/message.md#bridge_message_RemoveTokenOnTokenList">bridge::message::RemoveTokenOnTokenList</a>): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_remove_token_on_token_list_payload_from_chain_id">remove_token_on_token_list_payload_from_chain_id</a>(self: &<a href="../bridge/message.md#bridge_message_RemoveTokenOnTokenList">RemoveTokenOnTokenList</a>): u8 {
+   self.from_chain_id
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_remove_token_on_token_list_payload_to_chain_id"></a>
+
+## Function `remove_token_on_token_list_payload_to_chain_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_remove_token_on_token_list_payload_to_chain_id">remove_token_on_token_list_payload_to_chain_id</a>(self: &<a href="../bridge/message.md#bridge_message_RemoveTokenOnTokenList">bridge::message::RemoveTokenOnTokenList</a>): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_remove_token_on_token_list_payload_to_chain_id">remove_token_on_token_list_payload_to_chain_id</a>(self: &<a href="../bridge/message.md#bridge_message_RemoveTokenOnTokenList">RemoveTokenOnTokenList</a>): u8 {
+    self.to_chain_id
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_remove_token_on_token_list_payload_token_id"></a>
+
+## Function `remove_token_on_token_list_payload_token_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_remove_token_on_token_list_payload_token_id">remove_token_on_token_list_payload_token_id</a>(self: &<a href="../bridge/message.md#bridge_message_RemoveTokenOnTokenList">bridge::message::RemoveTokenOnTokenList</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_remove_token_on_token_list_payload_token_id">remove_token_on_token_list_payload_token_id</a>(self: &<a href="../bridge/message.md#bridge_message_RemoveTokenOnTokenList">RemoveTokenOnTokenList</a>): u64 {
+    self.<a href="../bridge/message.md#bridge_message_token_id">token_id</a>
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="bridge_message_is_native"></a>
 
 ## Function `is_native`
@@ -4171,7 +4970,18 @@ Return the required signature threshold for the message, values are voting power
         5001
     }<b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_remove_external_coin_target">message_types::remove_external_coin_target</a>()) {
         5001
-    } <b>else</b> {
+    } <b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_add_token_on_token_list">message_types::add_token_on_token_list</a>()) {
+        5001
+    }<b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_remove_token_on_token_list">message_types::remove_token_on_token_list</a>()) {
+        5001
+    }<b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_set_cross_in_bridge_fee">message_types::set_cross_in_bridge_fee</a>()) {
+        5001
+    }<b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_set_cross_out_bridge_fee">message_types::set_cross_out_bridge_fee</a>()) {
+        5001
+    }<b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_withdraw_bridge_fee">message_types::withdraw_bridge_fee</a>()) {
+        5001
+    }
+    <b>else</b> {
         <b>abort</b> <a href="../bridge/message.md#bridge_message_EInvalidMessageType">EInvalidMessageType</a>
     }
 }
