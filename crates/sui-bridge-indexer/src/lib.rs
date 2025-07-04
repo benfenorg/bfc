@@ -183,6 +183,7 @@ pub(crate) enum GovernanceActionType {
     UpgradeEVMContract,
     AddSuiTokens,
     AddEVMTokens,
+    UpdateSingleTransferLimit,
 }
 
 #[derive(Clone)]

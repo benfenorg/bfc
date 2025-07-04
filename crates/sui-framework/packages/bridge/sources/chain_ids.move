@@ -39,6 +39,23 @@ module bridge::chain_ids {
     const AvaxTestnet: u8 = 46;
     const AvaxCustom: u8 = 47;
 
+    const TronMainnet: u8 = 48;
+    const TronTestnet: u8 = 49;
+
+    const SolanaMainnet: u8 = 50;
+    const SolanaTestnet: u8 = 51;
+
+    const LTCMainnet: u8 = 52;
+    const LTCTestnet: u8 = 53;
+
+    const DogeMainnet: u8 = 54;
+    const DogeTestnet: u8 = 55;
+
+    const SuiOfficialMainnet: u8 = 56;
+    const SuiOfficialTestnet: u8 = 57;
+
+    const AptosMainnet: u8 = 58;
+    const AptosTestnet: u8 = 59;
 
 
     const EInvalidBridgeRoute: u64 = 0;
@@ -92,6 +109,24 @@ module bridge::chain_ids {
     public fun avax_testnet(): u8 { AvaxTestnet }
     public fun avax_custom(): u8 { AvaxCustom }
 
+    public fun tron_mainnet(): u8 { TronMainnet }
+    public fun tron_testnet(): u8 { TronTestnet }
+
+    public fun solana_mainnet(): u8 { SolanaMainnet }
+    public fun solana_testnet(): u8 { SolanaTestnet }
+
+    public fun ltc_mainnet(): u8 { LTCMainnet }
+    public fun ltc_testnet(): u8 { LTCTestnet }
+
+    public fun doge_mainnet(): u8 { DogeMainnet }
+    public fun doge_testnet(): u8 { DogeTestnet }
+
+    public fun sui_official_mainnet(): u8 { SuiOfficialMainnet }
+    public fun sui_official_testnet(): u8 { SuiOfficialTestnet }
+
+    public fun aptos_mainnet(): u8 { AptosMainnet }
+    public fun aptos_testnet(): u8 { AptosTestnet }
+
     public use fun route_source as BridgeRoute.source;
     public fun route_source(route: &BridgeRoute): &u8 {
         &route.source
@@ -129,7 +164,19 @@ module bridge::chain_ids {
             id == PolCustom ||
             id == AvaxMainnet ||
             id == AvaxTestnet ||
-            id == AvaxCustom,
+            id == AvaxCustom ||
+            id == TronMainnet ||
+            id == TronTestnet ||
+            id == SolanaMainnet ||
+            id == SolanaTestnet ||
+            id == LTCMainnet ||
+            id == LTCTestnet ||
+            id == DogeMainnet ||
+            id == DogeTestnet ||
+            id == SuiOfficialMainnet ||
+            id == SuiOfficialTestnet ||
+            id == AptosMainnet ||
+            id == AptosTestnet,
 
             EInvalidBridgeRoute
         )
@@ -144,6 +191,55 @@ module bridge::chain_ids {
             BridgeRoute { source: BtcTestnet, destination: SuiTestnet },
             BridgeRoute { source: SuiCustom, destination: BtcTestnet },
             BridgeRoute { source: BtcTestnet, destination: SuiCustom },
+
+            // tron
+            BridgeRoute { source: SuiMainnet, destination: TronMainnet },
+            BridgeRoute { source: TronMainnet, destination: SuiMainnet },
+            BridgeRoute { source: SuiTestnet, destination: TronTestnet },
+            BridgeRoute { source: TronTestnet, destination: SuiTestnet },
+            BridgeRoute { source: SuiCustom, destination: TronTestnet },
+            BridgeRoute { source: TronTestnet, destination: SuiCustom },
+
+            // solana
+            BridgeRoute { source: SuiMainnet, destination: SolanaMainnet },
+            BridgeRoute { source: SolanaMainnet, destination: SuiMainnet },
+            BridgeRoute { source: SuiTestnet, destination: SolanaTestnet },
+            BridgeRoute { source: SolanaTestnet, destination: SuiTestnet },
+            BridgeRoute { source: SuiCustom, destination: SolanaTestnet },
+            BridgeRoute { source: SolanaTestnet, destination: SuiCustom },
+
+            // ltc
+            BridgeRoute { source: SuiMainnet, destination: LTCMainnet },
+            BridgeRoute { source: LTCMainnet, destination: SuiMainnet },
+            BridgeRoute { source: SuiTestnet, destination: LTCTestnet },
+            BridgeRoute { source: LTCTestnet, destination: SuiTestnet },
+            BridgeRoute { source: SuiCustom, destination: LTCTestnet },
+            BridgeRoute { source: LTCTestnet, destination: SuiCustom },
+
+            // doge
+            BridgeRoute { source: SuiMainnet, destination: DogeMainnet },
+            BridgeRoute { source: DogeMainnet, destination: SuiMainnet },
+            BridgeRoute { source: SuiTestnet, destination: DogeTestnet },
+            BridgeRoute { source: DogeTestnet, destination: SuiTestnet },
+            BridgeRoute { source: SuiCustom, destination: DogeTestnet },
+            BridgeRoute { source: DogeTestnet, destination: SuiCustom },
+
+            // sui official
+            BridgeRoute { source: SuiMainnet, destination: SuiOfficialMainnet },
+            BridgeRoute { source: SuiOfficialMainnet, destination: SuiMainnet },
+            BridgeRoute { source: SuiTestnet, destination: SuiOfficialTestnet },
+            BridgeRoute { source: SuiOfficialTestnet, destination: SuiTestnet },
+            BridgeRoute { source: SuiCustom, destination: SuiOfficialTestnet },
+            BridgeRoute { source: SuiOfficialTestnet, destination: SuiCustom },
+
+            // aptos
+            BridgeRoute { source: SuiMainnet, destination: AptosMainnet },
+            BridgeRoute { source: AptosMainnet, destination: SuiMainnet },
+            BridgeRoute { source: SuiTestnet, destination: AptosTestnet },
+            BridgeRoute { source: AptosTestnet, destination: SuiTestnet },
+            BridgeRoute { source: SuiCustom, destination: AptosTestnet },
+            BridgeRoute { source: AptosTestnet, destination: SuiCustom },
+
 
             BridgeRoute { source: SuiMainnet, destination: EthMainnet },
             BridgeRoute { source: EthMainnet, destination: SuiMainnet },
@@ -275,6 +371,20 @@ module bridge::chain_ids {
         assert_valid_chain_id(AvaxMainnet);
         assert_valid_chain_id(AvaxTestnet);
         assert_valid_chain_id(AvaxCustom);
+
+        assert_valid_chain_id(TronMainnet);
+        assert_valid_chain_id(TronTestnet);
+        assert_valid_chain_id(SolanaMainnet);
+        assert_valid_chain_id(SolanaTestnet);
+        assert_valid_chain_id(LTCMainnet);
+        assert_valid_chain_id(LTCTestnet);
+        assert_valid_chain_id(DogeMainnet);
+        assert_valid_chain_id(DogeTestnet);
+
+        assert_valid_chain_id(SuiOfficialMainnet);
+        assert_valid_chain_id(SuiOfficialTestnet);
+        assert_valid_chain_id(AptosMainnet);
+        assert_valid_chain_id(AptosTestnet);
     }
 
     #[test]
@@ -366,6 +476,36 @@ module bridge::chain_ids {
             BridgeRoute { source: SuiTestnet, destination: PolCustom },
             BridgeRoute { source: SuiCustom, destination: PolTestnet },
             BridgeRoute { source: SuiCustom, destination: PolCustom },
+
+            // SuiOfficial
+            BridgeRoute { source: SuiMainnet, destination: SuiOfficialMainnet },
+            BridgeRoute { source: SuiOfficialMainnet, destination: SuiMainnet },
+            BridgeRoute { source: SuiTestnet, destination: SuiOfficialTestnet },
+            BridgeRoute { source: SuiOfficialTestnet, destination: SuiTestnet },
+            BridgeRoute { source: SuiCustom, destination: SuiOfficialTestnet },
+            BridgeRoute { source: SuiOfficialTestnet, destination: SuiCustom },
+
+            // aptos
+            BridgeRoute { source: SuiMainnet, destination: AptosMainnet },
+            BridgeRoute { source: AptosMainnet, destination: SuiMainnet },
+            BridgeRoute { source: SuiTestnet, destination: AptosTestnet },
+            BridgeRoute { source: AptosTestnet, destination: SuiTestnet },
+            BridgeRoute { source: SuiCustom, destination: AptosTestnet },
+            BridgeRoute { source: AptosTestnet, destination: SuiCustom },
+
+            BridgeRoute { source: SuiMainnet, destination: TronMainnet },
+            BridgeRoute { source: TronMainnet, destination: SuiMainnet },
+            BridgeRoute { source: SuiTestnet, destination: TronTestnet },
+            BridgeRoute { source: TronTestnet, destination: SuiTestnet },
+            BridgeRoute { source: SuiCustom, destination: TronTestnet },
+            BridgeRoute { source: TronTestnet, destination: SuiCustom },
+
+            BridgeRoute { source: SuiMainnet, destination: SolanaMainnet },
+            BridgeRoute { source: SolanaMainnet, destination: SuiMainnet },
+            BridgeRoute { source: SuiTestnet, destination: SolanaTestnet },
+            BridgeRoute { source: SolanaTestnet, destination: SuiTestnet },
+            BridgeRoute { source: SuiCustom, destination: SolanaTestnet },
+            BridgeRoute { source: SolanaTestnet, destination: SuiCustom },
         ];
         let mut size = valid_routes.length();
         while (size > 0) {

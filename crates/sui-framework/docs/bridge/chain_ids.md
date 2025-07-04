@@ -32,6 +32,18 @@ title: Module `bridge::chain_ids`
 -  [Function `avax_mainnet`](#bridge_chain_ids_avax_mainnet)
 -  [Function `avax_testnet`](#bridge_chain_ids_avax_testnet)
 -  [Function `avax_custom`](#bridge_chain_ids_avax_custom)
+-  [Function `tron_mainnet`](#bridge_chain_ids_tron_mainnet)
+-  [Function `tron_testnet`](#bridge_chain_ids_tron_testnet)
+-  [Function `solana_mainnet`](#bridge_chain_ids_solana_mainnet)
+-  [Function `solana_testnet`](#bridge_chain_ids_solana_testnet)
+-  [Function `ltc_mainnet`](#bridge_chain_ids_ltc_mainnet)
+-  [Function `ltc_testnet`](#bridge_chain_ids_ltc_testnet)
+-  [Function `doge_mainnet`](#bridge_chain_ids_doge_mainnet)
+-  [Function `doge_testnet`](#bridge_chain_ids_doge_testnet)
+-  [Function `sui_official_mainnet`](#bridge_chain_ids_sui_official_mainnet)
+-  [Function `sui_official_testnet`](#bridge_chain_ids_sui_official_testnet)
+-  [Function `aptos_mainnet`](#bridge_chain_ids_aptos_mainnet)
+-  [Function `aptos_testnet`](#bridge_chain_ids_aptos_testnet)
 -  [Function `route_source`](#bridge_chain_ids_route_source)
 -  [Function `route_destination`](#bridge_chain_ids_route_destination)
 -  [Function `assert_valid_chain_id`](#bridge_chain_ids_assert_valid_chain_id)
@@ -79,6 +91,24 @@ title: Module `bridge::chain_ids`
 <a name="@Constants_0"></a>
 
 ## Constants
+
+
+<a name="bridge_chain_ids_AptosMainnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_AptosMainnet">AptosMainnet</a>: u8 = 58;
+</code></pre>
+
+
+
+<a name="bridge_chain_ids_AptosTestnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_AptosTestnet">AptosTestnet</a>: u8 = 59;
+</code></pre>
+
 
 
 <a name="bridge_chain_ids_ArbCustom"></a>
@@ -207,6 +237,24 @@ title: Module `bridge::chain_ids`
 
 
 
+<a name="bridge_chain_ids_DogeMainnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_DogeMainnet">DogeMainnet</a>: u8 = 54;
+</code></pre>
+
+
+
+<a name="bridge_chain_ids_DogeTestnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_DogeTestnet">DogeTestnet</a>: u8 = 55;
+</code></pre>
+
+
+
 <a name="bridge_chain_ids_EInvalidBridgeRoute"></a>
 
 
@@ -239,6 +287,24 @@ title: Module `bridge::chain_ids`
 
 
 <pre><code><b>const</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_EthSepolia">EthSepolia</a>: u8 = 11;
+</code></pre>
+
+
+
+<a name="bridge_chain_ids_LTCMainnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_LTCMainnet">LTCMainnet</a>: u8 = 52;
+</code></pre>
+
+
+
+<a name="bridge_chain_ids_LTCTestnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_LTCTestnet">LTCTestnet</a>: u8 = 53;
 </code></pre>
 
 
@@ -297,6 +363,24 @@ title: Module `bridge::chain_ids`
 
 
 
+<a name="bridge_chain_ids_SolanaMainnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_SolanaMainnet">SolanaMainnet</a>: u8 = 50;
+</code></pre>
+
+
+
+<a name="bridge_chain_ids_SolanaTestnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_SolanaTestnet">SolanaTestnet</a>: u8 = 51;
+</code></pre>
+
+
+
 <a name="bridge_chain_ids_SuiCustom"></a>
 
 
@@ -315,11 +399,47 @@ title: Module `bridge::chain_ids`
 
 
 
+<a name="bridge_chain_ids_SuiOfficialMainnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiOfficialMainnet">SuiOfficialMainnet</a>: u8 = 56;
+</code></pre>
+
+
+
+<a name="bridge_chain_ids_SuiOfficialTestnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiOfficialTestnet">SuiOfficialTestnet</a>: u8 = 57;
+</code></pre>
+
+
+
 <a name="bridge_chain_ids_SuiTestnet"></a>
 
 
 
 <pre><code><b>const</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiTestnet">SuiTestnet</a>: u8 = 1;
+</code></pre>
+
+
+
+<a name="bridge_chain_ids_TronMainnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_TronMainnet">TronMainnet</a>: u8 = 48;
+</code></pre>
+
+
+
+<a name="bridge_chain_ids_TronTestnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_TronTestnet">TronTestnet</a>: u8 = 49;
 </code></pre>
 
 
@@ -896,6 +1016,270 @@ title: Module `bridge::chain_ids`
 
 </details>
 
+<a name="bridge_chain_ids_tron_mainnet"></a>
+
+## Function `tron_mainnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_mainnet">tron_mainnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_mainnet">tron_mainnet</a>(): u8 { <a href="../bridge/chain_ids.md#bridge_chain_ids_TronMainnet">TronMainnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_chain_ids_tron_testnet"></a>
+
+## Function `tron_testnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_testnet">tron_testnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_testnet">tron_testnet</a>(): u8 { <a href="../bridge/chain_ids.md#bridge_chain_ids_TronTestnet">TronTestnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_chain_ids_solana_mainnet"></a>
+
+## Function `solana_mainnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">solana_mainnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">solana_mainnet</a>(): u8 { <a href="../bridge/chain_ids.md#bridge_chain_ids_SolanaMainnet">SolanaMainnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_chain_ids_solana_testnet"></a>
+
+## Function `solana_testnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">solana_testnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">solana_testnet</a>(): u8 { <a href="../bridge/chain_ids.md#bridge_chain_ids_SolanaTestnet">SolanaTestnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_chain_ids_ltc_mainnet"></a>
+
+## Function `ltc_mainnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_ltc_mainnet">ltc_mainnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_ltc_mainnet">ltc_mainnet</a>(): u8 { <a href="../bridge/chain_ids.md#bridge_chain_ids_LTCMainnet">LTCMainnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_chain_ids_ltc_testnet"></a>
+
+## Function `ltc_testnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_ltc_testnet">ltc_testnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_ltc_testnet">ltc_testnet</a>(): u8 { <a href="../bridge/chain_ids.md#bridge_chain_ids_LTCTestnet">LTCTestnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_chain_ids_doge_mainnet"></a>
+
+## Function `doge_mainnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_doge_mainnet">doge_mainnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_doge_mainnet">doge_mainnet</a>(): u8 { <a href="../bridge/chain_ids.md#bridge_chain_ids_DogeMainnet">DogeMainnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_chain_ids_doge_testnet"></a>
+
+## Function `doge_testnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_doge_testnet">doge_testnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_doge_testnet">doge_testnet</a>(): u8 { <a href="../bridge/chain_ids.md#bridge_chain_ids_DogeTestnet">DogeTestnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_chain_ids_sui_official_mainnet"></a>
+
+## Function `sui_official_mainnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_mainnet">sui_official_mainnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_mainnet">sui_official_mainnet</a>(): u8 { <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiOfficialMainnet">SuiOfficialMainnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_chain_ids_sui_official_testnet"></a>
+
+## Function `sui_official_testnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_testnet">sui_official_testnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_testnet">sui_official_testnet</a>(): u8 { <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiOfficialTestnet">SuiOfficialTestnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_chain_ids_aptos_mainnet"></a>
+
+## Function `aptos_mainnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_mainnet">aptos_mainnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_mainnet">aptos_mainnet</a>(): u8 { <a href="../bridge/chain_ids.md#bridge_chain_ids_AptosMainnet">AptosMainnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_chain_ids_aptos_testnet"></a>
+
+## Function `aptos_testnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_testnet">aptos_testnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_testnet">aptos_testnet</a>(): u8 { <a href="../bridge/chain_ids.md#bridge_chain_ids_AptosTestnet">AptosTestnet</a> }
+</code></pre>
+
+
+
+</details>
+
 <a name="bridge_chain_ids_route_source"></a>
 
 ## Function `route_source`
@@ -986,7 +1370,19 @@ title: Module `bridge::chain_ids`
         id == <a href="../bridge/chain_ids.md#bridge_chain_ids_PolCustom">PolCustom</a> ||
         id == <a href="../bridge/chain_ids.md#bridge_chain_ids_AvaxMainnet">AvaxMainnet</a> ||
         id == <a href="../bridge/chain_ids.md#bridge_chain_ids_AvaxTestnet">AvaxTestnet</a> ||
-        id == <a href="../bridge/chain_ids.md#bridge_chain_ids_AvaxCustom">AvaxCustom</a>,
+        id == <a href="../bridge/chain_ids.md#bridge_chain_ids_AvaxCustom">AvaxCustom</a> ||
+        id == <a href="../bridge/chain_ids.md#bridge_chain_ids_TronMainnet">TronMainnet</a> ||
+        id == <a href="../bridge/chain_ids.md#bridge_chain_ids_TronTestnet">TronTestnet</a> ||
+        id == <a href="../bridge/chain_ids.md#bridge_chain_ids_SolanaMainnet">SolanaMainnet</a> ||
+        id == <a href="../bridge/chain_ids.md#bridge_chain_ids_SolanaTestnet">SolanaTestnet</a> ||
+        id == <a href="../bridge/chain_ids.md#bridge_chain_ids_LTCMainnet">LTCMainnet</a> ||
+        id == <a href="../bridge/chain_ids.md#bridge_chain_ids_LTCTestnet">LTCTestnet</a> ||
+        id == <a href="../bridge/chain_ids.md#bridge_chain_ids_DogeMainnet">DogeMainnet</a> ||
+        id == <a href="../bridge/chain_ids.md#bridge_chain_ids_DogeTestnet">DogeTestnet</a> ||
+        id == <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiOfficialMainnet">SuiOfficialMainnet</a> ||
+        id == <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiOfficialTestnet">SuiOfficialTestnet</a> ||
+        id == <a href="../bridge/chain_ids.md#bridge_chain_ids_AptosMainnet">AptosMainnet</a> ||
+        id == <a href="../bridge/chain_ids.md#bridge_chain_ids_AptosTestnet">AptosTestnet</a>,
         <a href="../bridge/chain_ids.md#bridge_chain_ids_EInvalidBridgeRoute">EInvalidBridgeRoute</a>
     )
 }
@@ -1019,6 +1415,48 @@ title: Module `bridge::chain_ids`
         <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_BtcTestnet">BtcTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiTestnet">SuiTestnet</a> },
         <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_BtcTestnet">BtcTestnet</a> },
         <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_BtcTestnet">BtcTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiCustom">SuiCustom</a> },
+        // tron
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiMainnet">SuiMainnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_TronMainnet">TronMainnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_TronMainnet">TronMainnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiMainnet">SuiMainnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_TronTestnet">TronTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_TronTestnet">TronTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_TronTestnet">TronTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_TronTestnet">TronTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiCustom">SuiCustom</a> },
+        // solana
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiMainnet">SuiMainnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SolanaMainnet">SolanaMainnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SolanaMainnet">SolanaMainnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiMainnet">SuiMainnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SolanaTestnet">SolanaTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SolanaTestnet">SolanaTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SolanaTestnet">SolanaTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SolanaTestnet">SolanaTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiCustom">SuiCustom</a> },
+        // ltc
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiMainnet">SuiMainnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_LTCMainnet">LTCMainnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_LTCMainnet">LTCMainnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiMainnet">SuiMainnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_LTCTestnet">LTCTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_LTCTestnet">LTCTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_LTCTestnet">LTCTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_LTCTestnet">LTCTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiCustom">SuiCustom</a> },
+        // doge
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiMainnet">SuiMainnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_DogeMainnet">DogeMainnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_DogeMainnet">DogeMainnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiMainnet">SuiMainnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_DogeTestnet">DogeTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_DogeTestnet">DogeTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_DogeTestnet">DogeTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_DogeTestnet">DogeTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiCustom">SuiCustom</a> },
+        // sui official
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiMainnet">SuiMainnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiOfficialMainnet">SuiOfficialMainnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiOfficialMainnet">SuiOfficialMainnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiMainnet">SuiMainnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiOfficialTestnet">SuiOfficialTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiOfficialTestnet">SuiOfficialTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiOfficialTestnet">SuiOfficialTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiOfficialTestnet">SuiOfficialTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiCustom">SuiCustom</a> },
+        // aptos
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiMainnet">SuiMainnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_AptosMainnet">AptosMainnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_AptosMainnet">AptosMainnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiMainnet">SuiMainnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_AptosTestnet">AptosTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_AptosTestnet">AptosTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_AptosTestnet">AptosTestnet</a> },
+        <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_AptosTestnet">AptosTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiCustom">SuiCustom</a> },
         <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiMainnet">SuiMainnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_EthMainnet">EthMainnet</a> },
         <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_EthMainnet">EthMainnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiMainnet">SuiMainnet</a> },
         <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="../bridge/chain_ids.md#bridge_chain_ids_EthSepolia">EthSepolia</a> },

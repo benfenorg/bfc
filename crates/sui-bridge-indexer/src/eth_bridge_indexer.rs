@@ -698,6 +698,23 @@ impl DataMapper<RawEthData, ProcessedTxnData> for EthDataMapper {
                         data: serde_json::to_value(bridge_event)?,
                     }));
                 }
+                EthBridgeLimiterEvents::SingleTransferLimitUpdateFilter(f) =>{
+                    info!(
+                        "Observed Eth BridgeLimiter Update at block: {}, tx_hash: {}",
+                        log.block_number(),
+                        log.tx_hash
+                    );
+                    processed_txn_data.push(ProcessedTxnData::GovernanceAction(GovernanceAction {
+                        nonce: Some(f.nonce),
+                        data_source: BridgeDataSource::Eth,
+                        tx_digest: txn_hash.clone(),
+                        sender: txn_sender.clone(),
+                        timestamp_ms,
+                        action: GovernanceActionType::UpdateSingleTransferLimit,
+                        data: serde_json::to_value(bridge_event)?,
+                    }));
+
+                }
                 EthBridgeLimiterEvents::ContractUpgradedFilter(f) => {
                     info!(
                         "Observed Eth BridgeLimiter Upgrade at block: {}, tx_hash: {}",

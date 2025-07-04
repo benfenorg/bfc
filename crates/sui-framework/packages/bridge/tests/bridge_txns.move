@@ -251,7 +251,8 @@ fun test_blocklist() {
     env.register_committee();
     env.init_committee(sender);
     env.setup_treasury(sender);
-    env.init_external_limiter(sender);
+   // env.init_external_limiter(sender);
+    env.add_tokenlist(sender);
 
     let source_chain = chain_ids::eth_custom();
     let sui_address = @0xABCDEF;

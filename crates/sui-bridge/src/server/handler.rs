@@ -13,6 +13,8 @@ use crate::fast_path::{FastPathConfig, FastPathSelector};
 use crate::metrics::BridgeMetrics;
 use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::{BridgeAction, BridgeActionType, EthToSuiBridgeAction, SignedBridgeAction};
+use crate::tron_query::check_tron_txn;
+use crate::solana_query::check_solana_txn;
 use async_trait::async_trait;
 use axum::Json;
 use ethers::providers::JsonRpcClient;
@@ -131,6 +133,10 @@ where
         let bridge_chain_id = BridgeChainId::try_from(chain_id)?;
         let fast_path_selector = FastPathSelector::try_from_primitive(fast_path_selector).unwrap();
         match bridge_chain_id {
+            BridgeChainId::TronMainnet | BridgeChainId::TronTestnet |
+            BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet |
+            BridgeChainId::LTCMainnet | BridgeChainId::LTCTestnet |
+            BridgeChainId::DogeMainnet | BridgeChainId::DogeTestnet |
             BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom |
             BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet => {
                 unreachable!()
@@ -208,7 +214,7 @@ where
         if let BridgeAction::ExternalDepositStartBridgeAction(ref external_action) = action_rs {
             let tx_hash = &external_action.sui_bridge_event.tx_hash;
             let amount = external_action.sui_bridge_event.amount;
-            let btc_chain_id = external_action.sui_bridge_event.source_chain;
+            let chain_id = external_action.sui_bridge_event.source_chain;
 
             // check target address in whitelist
             let summary = self.sui_client.get_bridge_summary().await;
@@ -221,15 +227,43 @@ where
             }
             info!("whitelist: {:#?}", &whitelist);
 
-            // check btc txn
-            let ok =
-                check_btc_txn(btc_chain_id, tx_hash, whitelist, amount).await;
-            if ok {
-                return Ok(action_rs);
+
+            match chain_id {
+                BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet => {
+                    // check btc txn
+                    let ok = check_btc_txn(chain_id, tx_hash, whitelist, amount).await;
+                    if ok {
+                        return Ok(action_rs);
+                    }
+                }
+                BridgeChainId::TronMainnet | BridgeChainId::TronTestnet => {
+                    // check tron txn: only support TRC20
+                    // readme: amount is benfen amount, not tron amount, so we need to convert it
+                    let tron_amount = amount / 1_000;
+                    let ok = check_tron_txn(chain_id, tx_hash, whitelist, tron_amount, false).await;
+                    if ok {
+                        return Ok(action_rs);
+                    }
+                }
+                BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet => {
+                    // check solana txn: only support USDC/USDT
+
+                    // readme: amount is benfen amount, not solana amount, so we need to convert it
+                    let sol_amount = amount / 1_000;
+                    let ok = check_solana_txn(chain_id, tx_hash, whitelist, sol_amount, false).await;
+                    if ok {
+                        return Ok(action_rs);
+                    }
+                }
+                _ => {
+                    return Err(BridgeError::Generic(
+                        format!("Unsupported External Coin chain ID({})", chain_id)
+                    ));
+                }
             }
 
             return Err(BridgeError::Generic(
-                format!("BTC txn({:#?}) is not valid", tx_hash)
+                format!("External Coin txn({:#?}) is not valid for chain {}", tx_hash, chain_id)
             ));
         }
 
@@ -264,6 +298,10 @@ where
             let event_idx = send_back_action.sui_bridge_event.event_idx;
 
             let result = match send_back_action.sui_bridge_event.eth_chain_id {
+                BridgeChainId::TronMainnet | BridgeChainId::TronTestnet |
+                BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet |
+                BridgeChainId::LTCMainnet | BridgeChainId::LTCTestnet |
+                BridgeChainId::DogeMainnet | BridgeChainId::DogeTestnet |
                 BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom |
                 BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet => {
                     unreachable!()
@@ -710,6 +748,7 @@ mod tests {
         events::{
             init_all_struct_tags, ExternalDepositStartBridgeV1, MoveExternalDepositStartEvent,
             MoveTokenDepositedEvent, SuiToEthTokenBridgeV1,
+            MoveTokenDepositedEventV2,SuiToEthTokenBridgeV2
         },
         sui_mock_client::SuiMockClient,
         test_utils::{
@@ -860,6 +899,140 @@ mod tests {
             signed_2
         );
     }
+    #[tokio::test]
+    async fn test_sui_signer_with_cache_v2() {
+        let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
+        let signer = Arc::new(kp);
+        let sui_client_mock = SuiMockClient::default();
+        let sui_verifier = SuiActionVerifier {
+            sui_client: Arc::new(SuiClient::new_for_testing(sui_client_mock.clone())),
+        };
+        let metrics = Arc::new(BridgeMetrics::new_for_testing());
+        let mut sui_signer_with_cache = SignerWithCache::new(signer.clone(), sui_verifier, metrics);
+
+        // Test `get_cache_entry` creates a new entry if not exist
+        let sui_tx_digest = TransactionDigest::random();
+        let sui_event_idx = 42;
+        assert!(sui_signer_with_cache
+            .get_testing_only((0, sui_tx_digest, sui_event_idx))
+            .await
+            .is_none());
+        let entry = sui_signer_with_cache
+            .get_cache_entry((0, sui_tx_digest, sui_event_idx))
+            .await;
+        let entry_ = sui_signer_with_cache
+            .get_testing_only((0, sui_tx_digest, sui_event_idx))
+            .await;
+        assert!(entry_.unwrap().lock().await.is_none());
+
+        let action = get_test_sui_to_eth_bridge_action(
+            Some(sui_tx_digest),
+            Some(sui_event_idx),
+            None,
+            None,
+            None,
+            None,
+            None,
+        );
+        let sig = BridgeAuthoritySignInfo::new(&action, &signer);
+        let signed_action = SignedBridgeAction::new_from_data_and_sig(action.clone(), sig);
+        entry.lock().await.replace(Ok(signed_action));
+        let entry_ = sui_signer_with_cache
+            .get_testing_only((0, sui_tx_digest, sui_event_idx))
+            .await;
+        assert!(entry_.unwrap().lock().await.is_some());
+
+        // Test `sign` caches Err result
+        let sui_tx_digest = TransactionDigest::random();
+        let sui_event_idx = 0;
+
+        // Mock an non-cacheable error such as rpc error
+        sui_client_mock.add_events_by_tx_digest_error(sui_tx_digest);
+        sui_signer_with_cache
+            .sign((0, sui_tx_digest, sui_event_idx))
+            .await
+            .unwrap_err();
+        let entry_ = sui_signer_with_cache
+            .get_testing_only((0, sui_tx_digest, sui_event_idx))
+            .await;
+        assert!(entry_.unwrap().lock().await.is_none());
+
+        // Mock a cacheable error such as no bridge events in tx position (empty event list)
+        sui_client_mock.add_events_by_tx_digest(sui_tx_digest, vec![]);
+        assert!(matches!(
+            sui_signer_with_cache
+                .sign((0,sui_tx_digest, sui_event_idx))
+                .await,
+            Err(BridgeError::NoBridgeEventsInTxPosition)
+        ));
+        let entry_ = sui_signer_with_cache
+            .get_testing_only((0, sui_tx_digest, sui_event_idx))
+            .await;
+        assert_eq!(
+            entry_.unwrap().lock().await.clone().unwrap().unwrap_err(),
+            BridgeError::NoBridgeEventsInTxPosition,
+        );
+
+        // TODO: test BridgeEventInUnrecognizedSuiPackage, SuiBridgeEvent::try_from_sui_event
+        // and BridgeEventNotActionable to be cached
+
+        // Test `sign` caches Ok result
+        let emitted_event_1 = MoveTokenDepositedEventV2 {
+            seq_num: 1,
+            source_chain: BridgeChainId::SuiCustom as u8,
+            sender_address: SuiAddress::random_for_testing_only().to_vec(),
+            target_chain: BridgeChainId::EthCustom as u8,
+            target_address: EthAddress::random().as_bytes().to_vec(),
+            token_type: TOKEN_ID_USDC,
+            amount_before_fee: 0,
+            amount_after_fee: 12345,
+        };
+
+        init_all_struct_tags();
+
+        let mut sui_event_1 = SuiEvent::random_for_testing();
+        sui_event_1.type_ = SuiToEthTokenBridgeV2.get().unwrap().clone();
+        sui_event_1.bcs = BcsEvent::new(bcs::to_bytes(&emitted_event_1).unwrap());
+        let sui_tx_digest = sui_event_1.id.tx_digest;
+
+        let mut sui_event_2 = SuiEvent::random_for_testing();
+        sui_event_2.type_ = SuiToEthTokenBridgeV2.get().unwrap().clone();
+        sui_event_2.bcs = BcsEvent::new(bcs::to_bytes(&emitted_event_1).unwrap());
+        let sui_event_idx_2 = 1;
+        sui_client_mock.add_events_by_tx_digest(sui_tx_digest, vec![sui_event_2.clone()]);
+
+        sui_client_mock.add_events_by_tx_digest(
+            sui_tx_digest,
+            vec![sui_event_1.clone(), sui_event_2.clone()],
+        );
+        let signed_1 = sui_signer_with_cache
+            .sign((0, sui_tx_digest, sui_event_idx))
+            .await
+            .unwrap();
+        let signed_2 = sui_signer_with_cache
+            .sign((0, sui_tx_digest, sui_event_idx_2))
+            .await
+            .unwrap();
+
+        // Because the result is cached now, the verifier should not be called again.
+        // Even though we remove the `add_events_by_tx_digest` mock, we will still get the same result.
+        sui_client_mock.add_events_by_tx_digest(sui_tx_digest, vec![]);
+        assert_eq!(
+            sui_signer_with_cache
+                .sign((0, sui_tx_digest, sui_event_idx))
+                .await
+                .unwrap(),
+            signed_1
+        );
+        assert_eq!(
+            sui_signer_with_cache
+                .sign((0, sui_tx_digest, sui_event_idx_2))
+                .await
+                .unwrap(),
+            signed_2
+        );
+    }
+
 
     #[tokio::test]
     async fn test_external_coin_signer_with_cache() {

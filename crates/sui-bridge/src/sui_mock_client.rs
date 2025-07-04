@@ -307,6 +307,17 @@ impl SuiClientInner for SuiMockClient {
         Ok(1000)
     }
 
+    async fn get_cross_out_fee_amount(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _chain_id: u64,
+        _amount: u64,
+        _token_type:u64,
+        _ca_token_type_map:HashMap<u64,TypeTag>
+    ) -> Result<u64, BridgeError> {
+        Ok(1000)
+    }
+
     async fn get_external_token_transfer_action_onchain_status(
         &self,
         _bridge_object_arg: ObjectArg,

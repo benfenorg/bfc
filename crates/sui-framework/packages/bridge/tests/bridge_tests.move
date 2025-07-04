@@ -36,7 +36,10 @@ use bridge::bridge_env::{
     init_committee,
     register_committee,
     unfreeze_bridge,
-    test_token_id
+    test_token_id,
+    chain_id,
+    token_type,
+    sign_message_with
 };
 use bridge::btc::BTC;
 use bridge::chain_ids;
@@ -57,6 +60,15 @@ use std::ascii;
 use sui::ecdsa_k1;
 use sui::hash;
 use std::unit_test::assert_eq;
+use bfc_system::bfc_system::BfcSystemState;
+use bfc_system::bfc_system;
+use bfc_system::bfc_system_tests::public_setup;
+use bfc_system::busd::BUSD;
+use bridge::busd;
+
+
+use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
+use bridge::bridge_env::get_usdc;
 
 // common error start code for unexpected errors in tests (assertions).
 // If more than one assert in a test needs to use an unexpected error code,
@@ -64,6 +76,9 @@ use std::unit_test::assert_eq;
 const UNEXPECTED_ERROR: u64 = 10293847;
 // use on tests that fail to save cleanup
 const TEST_DONE: u64 = 74839201;
+
+const MINT_BUSD_RIGHT_KEY: vector<u8> = b"MINT-BUSD-right_key";
+
 
 #[test]
 fun test_bridge_create() {
@@ -151,7 +166,11 @@ fun test_register_foreign_token_non_zero_supply() {
     let addr = @0x0;
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
-    let (upgrade_cap, mut treasury_cap, metadata) = create_test_token(env
+    let
+    (upgrade_cap, mut
+    treasury_cap,
+    metadata) =
+    create_test_token(env
         .scenario()
         .ctx());
     let _coin = treasury_cap.mint(1, env.scenario().ctx());
@@ -296,7 +315,7 @@ fun test_btc_bridge_v2() {
         source_address,
         target_address,
         ascii::string(b"ddd"),
-        100,
+        100_000_000,
     );
 
     env.destroy_env();
@@ -310,30 +329,30 @@ fun test_btc_bridge_add_remove_external_coin_admin() {
     let type_name = type_name::get<BTC>();
     let coin_type = type_name.into_string();
 
-    env.add_external_coin_admin( coin_type, @0xABCD1.to_ascii_string());
-    env.add_external_coin_admin( coin_type, @0xABCD2.to_ascii_string());
-    env.add_external_coin_admin( coin_type, @0xABCD3.to_ascii_string());
-    env.add_external_coin_admin( coin_type, @0xABCD4.to_ascii_string());
+    env.add_external_coin_admin(coin_type, @0xABCD1.to_ascii_string());
+    env.add_external_coin_admin(coin_type, @0xABCD2.to_ascii_string());
+    env.add_external_coin_admin(coin_type, @0xABCD3.to_ascii_string());
+    env.add_external_coin_admin(coin_type, @0xABCD4.to_ascii_string());
 
-    env.remove_external_coin_admin( coin_type, @0xABCD1.to_ascii_string());
-    env.remove_external_coin_admin( coin_type, @0xABCD2.to_ascii_string());
-    env.remove_external_coin_admin( coin_type, @0xABCD3.to_ascii_string());
-    env.remove_external_coin_admin( coin_type, @0xABCD4.to_ascii_string());
+    env.remove_external_coin_admin(coin_type, @0xABCD1.to_ascii_string());
+    env.remove_external_coin_admin(coin_type, @0xABCD2.to_ascii_string());
+    env.remove_external_coin_admin(coin_type, @0xABCD3.to_ascii_string());
+    env.remove_external_coin_admin(coin_type, @0xABCD4.to_ascii_string());
 
-    env.remove_external_coin_admin( coin_type, @0xABCD5.to_ascii_string());
+    env.remove_external_coin_admin(coin_type, @0xABCD5.to_ascii_string());
 
 
     env.destroy_env();
 }
 
-fun mock_bitcoin_message():(vector<u8>,vector<u8>,vector<u8>,vector<u8>,vector<u8>,u64){
+fun mock_bitcoin_message(): (vector<u8>, vector<u8>, vector<u8>, vector<u8>, vector<u8>, u64) {
     let witness = x"17CcfCeD39fF9e7818DF026fB2df9b8ca2f6424f";
-    let private_key=x"4f0adab8fe9f36875f6b7f28d9679c37ab2c96224e50224b5bda5add5b1ee7bb";
+    let private_key = x"4f0adab8fe9f36875f6b7f28d9679c37ab2c96224e50224b5bda5add5b1ee7bb";
     let source_address = b"tb1pxafm6dv7rj8x8st44n64f58nuy5r9vaplvfgdy747gdeug7xcvuqx98ude";
-    let tx_hash= b"ff8305c804598c3afadb63611b4af1cd0e60fc9adef6f82b991789982b9bd712";
+    let tx_hash = b"ff8305c804598c3afadb63611b4af1cd0e60fc9adef6f82b991789982b9bd712";
     let target_address = x"0255c0bd6eea8ea62db08f2d7d209858115c6e555e306ccb9e8b443f6e1f7729";
-    let amount=10000;
-    (witness,private_key,source_address,tx_hash,target_address,amount)
+    let amount = 1*100_000_000;
+    (witness, private_key, source_address, tx_hash, target_address, amount)
 }
 
 #[test]
@@ -343,24 +362,30 @@ fun test_btc_bridge_deposit_without_multi_signature() {
     env.create_bridge_default();
 
     let sender = @0xABCD;
-    let (witness,private_key,source_address,tx_hash,target_address,amount)=mock_bitcoin_message();
+    let (witness, private_key, source_address, tx_hash, target_address, amount) = mock_bitcoin_message();
     let type_name = type_name::get<BTC>();
     let coin_type = type_name.into_string();
-    let bitcoin_message=message::create_bitcoin_message(chain_ids::btc_testnet(), source_address, target_address, amount, tx_hash, *type_name.into_string().as_bytes());
-    let msg=hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
-    let signatures= ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
+    let bitcoin_message = message::create_bitcoin_message(
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+        *type_name.into_string().as_bytes()
+    );
+    let msg = hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
+    let signatures = ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
     env.add_external_coin_witness(coin_type, witness);
-    env.add_external_coin_admin( coin_type, sender.to_ascii_string());
+    env.add_external_coin_admin(coin_type, sender.to_ascii_string());
     env.deposit_and_withdraw_external_coin<BTC>(
         sender,
         chain_ids::btc_testnet(),
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string()
-
     );
 
     env.destroy_env();
@@ -369,22 +394,29 @@ fun test_btc_bridge_deposit_without_multi_signature() {
 #[test]
 #[expected_failure(abort_code = bridge::bridge::EUnpassedMultiSignature)]
 fun test_btc_bridge_deposit_with_insufficient_multi_signature() {
-      let mut env = create_env(chain_ids::sui_testnet());
+    let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
 
     let sender1 = @0xA;
     let sender2 = @0xB;
     let sender3 = @0xC;
-    let (witness,private_key,source_address,tx_hash,target_address,amount)=mock_bitcoin_message();
+    let (witness, private_key, source_address, tx_hash, target_address, amount) = mock_bitcoin_message();
     let type_name = type_name::get<BTC>();
     let coin_type = type_name.into_string();
-    let bitcoin_message=message::create_bitcoin_message(chain_ids::btc_testnet(), source_address, target_address, amount, tx_hash, *type_name.into_string().as_bytes());
-    let msg=hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
-    let signatures= ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
+    let bitcoin_message = message::create_bitcoin_message(
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+        *type_name.into_string().as_bytes()
+    );
+    let msg = hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
+    let signatures = ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
     env.add_external_coin_witness(coin_type, witness);
-    env.add_external_coin_admin( coin_type, sender1.to_ascii_string());
-    env.add_external_coin_admin( coin_type, sender2.to_ascii_string());
-    env.add_external_coin_admin( coin_type, sender3.to_ascii_string());
+    env.add_external_coin_admin(coin_type, sender1.to_ascii_string());
+    env.add_external_coin_admin(coin_type, sender2.to_ascii_string());
+    env.add_external_coin_admin(coin_type, sender3.to_ascii_string());
 
 
     env.pre_deposit_external_coin_for_testing<BTC>(
@@ -392,7 +424,7 @@ fun test_btc_bridge_deposit_with_insufficient_multi_signature() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-         10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -402,7 +434,7 @@ fun test_btc_bridge_deposit_with_insufficient_multi_signature() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -412,7 +444,7 @@ fun test_btc_bridge_deposit_with_insufficient_multi_signature() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -423,7 +455,7 @@ fun test_btc_bridge_deposit_with_insufficient_multi_signature() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -432,24 +464,39 @@ fun test_btc_bridge_deposit_with_insufficient_multi_signature() {
 }
 
 #[test]
-fun test_verify_bitcoin_signatures(){
+fun test_verify_bitcoin_signatures() {
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
     let sender2 = @0xB;
-    let (witness,private_key,source_address,tx_hash,target_address,amount)=mock_bitcoin_message();
+    let (witness, private_key, source_address, tx_hash, target_address, amount) = mock_bitcoin_message();
     let type_name = type_name::get<BTC>();
     let coin_type = type_name.into_string();
-    let bitcoin_message=message::create_bitcoin_message(chain_ids::btc_testnet(), source_address, target_address, amount, tx_hash, *type_name.into_string().as_bytes());
-    let msg=hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
-    let signatures= ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
+    let bitcoin_message = message::create_bitcoin_message(
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+        *type_name.into_string().as_bytes()
+    );
+    let msg = hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
+    let signatures = ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
     env.add_external_coin_witness(coin_type, witness);
-    let suc=env.verify_bitcoin_signatures<BTC>(sender2, chain_ids::btc_testnet(), source_address, target_address, 10000, tx_hash.to_ascii_string(), signatures);
+    let suc = env.verify_bitcoin_signatures<BTC>(
+        sender2,
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        1*100_000_000,
+        tx_hash.to_ascii_string(),
+        signatures
+    );
     assert!(suc);
     env.destroy_env();
 }
 
 #[test]
-fun test_remove_witness(){
+fun test_remove_witness() {
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
     let sender1 = x"17CcfCeD39fF9e7818DF026fB2df9b8ca2f6424f";
@@ -461,7 +508,7 @@ fun test_remove_witness(){
 }
 
 #[test]
-fun test_add_target_address(){
+fun test_add_target_address() {
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
     let addr = b"n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3";
@@ -469,11 +516,10 @@ fun test_add_target_address(){
     let coin_type = type_name.into_string();
     env.add_external_coin_target(coin_type, addr.to_ascii_string());
     env.destroy_env();
-
 }
 
 #[test]
-fun test_remove_target_address(){
+fun test_remove_target_address() {
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
     let addr = b"n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3";
@@ -485,19 +531,34 @@ fun test_remove_target_address(){
 }
 
 #[test]
-fun test_remove_witness_verify_bitcoin_signatures(){
+fun test_remove_witness_verify_bitcoin_signatures() {
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
-    let (witness,private_key,source_address,tx_hash,target_address,amount)=mock_bitcoin_message();
+    let (witness, private_key, source_address, tx_hash, target_address, amount) = mock_bitcoin_message();
     let type_name = type_name::get<BTC>();
     let coin_type = type_name.into_string();
     env.add_external_coin_witness(coin_type, witness);
     env.remove_external_coin_witness(coin_type, witness);
     let sender2 = @0xB;
-    let bitcoin_message=message::create_bitcoin_message(1, source_address, target_address, amount, tx_hash, *type_name.into_string().as_bytes());
-    let msg=hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
-    let signatures= ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
-    let suc=env.verify_bitcoin_signatures<BTC>(sender2, 1, source_address, target_address, 10000, tx_hash.to_ascii_string(), signatures);
+    let bitcoin_message = message::create_bitcoin_message(
+        1,
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+        *type_name.into_string().as_bytes()
+    );
+    let msg = hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
+    let signatures = ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
+    let suc = env.verify_bitcoin_signatures<BTC>(
+        sender2,
+        1,
+        source_address,
+        target_address,
+        1*100_000_000,
+        tx_hash.to_ascii_string(),
+        signatures
+    );
     assert!(!suc); //judge
     env.destroy_env();
 }
@@ -511,16 +572,23 @@ fun test_btc_bridge_deposit_with_sufficient_multi_signature() {
     let sender1 = @0xA;
     let sender2 = @0xB;
     let sender3 = @0xC;
-    let (witness,private_key,source_address,tx_hash,target_address,amount)=mock_bitcoin_message();
+    let (witness, private_key, source_address, tx_hash, target_address, amount) = mock_bitcoin_message();
     let type_name = type_name::get<BTC>();
     let coin_type = type_name.into_string();
-    let bitcoin_message=message::create_bitcoin_message(chain_ids::btc_testnet(), source_address, target_address, amount, tx_hash, *type_name.into_string().as_bytes());
-    let msg=hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
-    let signatures= ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
+    let bitcoin_message = message::create_bitcoin_message(
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+        *type_name.into_string().as_bytes()
+    );
+    let msg = hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
+    let signatures = ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
     env.add_external_coin_witness(coin_type, witness);
-    env.add_external_coin_admin( coin_type, sender1.to_ascii_string());
-    env.add_external_coin_admin( coin_type, sender2.to_ascii_string());
-    env.add_external_coin_admin( coin_type, sender3.to_ascii_string());
+    env.add_external_coin_admin(coin_type, sender1.to_ascii_string());
+    env.add_external_coin_admin(coin_type, sender2.to_ascii_string());
+    env.add_external_coin_admin(coin_type, sender3.to_ascii_string());
 
 
     env.pre_deposit_external_coin_for_testing<BTC>(
@@ -528,7 +596,7 @@ fun test_btc_bridge_deposit_with_sufficient_multi_signature() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-         10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -538,7 +606,7 @@ fun test_btc_bridge_deposit_with_sufficient_multi_signature() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -549,7 +617,7 @@ fun test_btc_bridge_deposit_with_sufficient_multi_signature() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -558,43 +626,50 @@ fun test_btc_bridge_deposit_with_sufficient_multi_signature() {
 }
 
 #[test]
-fun test_get_external_token_transfer_action_not_found_status(){
+fun test_get_external_token_transfer_action_not_found_status() {
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
-    let source_addr=b"tb1pxafm6dv7rj8x8st44n64f58nuy5r9vaplvfgdy747gdeug7xcvuqx98ude";
-    let target_addr=@0x1234;
-    let sender=@0x87;
+    let source_addr = b"tb1pxafm6dv7rj8x8st44n64f58nuy5r9vaplvfgdy747gdeug7xcvuqx98ude";
+    let target_addr = @0x1234;
+    let sender = @0x87;
     assert!(env.env_get_external_token_transfer_action_status(
         chain_ids::btc_testnet(),
         source_addr,
         target_addr.to_bytes(),
-        10000,
+        1*100_000_000,
         ascii::string(b""),
         sender,
-    )==transfer_status_not_found(),0);
+    ) == transfer_status_not_found(), 0);
     env.destroy_env();
 }
 
 #[test]
-fun test_get_external_token_transfer_action_claimed_status(){
-     let mut env = create_env(chain_ids::sui_testnet());
+fun test_get_external_token_transfer_action_claimed_status() {
+    let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
     let sender = @0xABCD;
-   let (witness,private_key,source_address,tx_hash,target_address,amount)=mock_bitcoin_message();
+    let (witness, private_key, source_address, tx_hash, target_address, amount) = mock_bitcoin_message();
     let type_name = type_name::get<BTC>();
     let coin_type = type_name.into_string();
-    let bitcoin_message=message::create_bitcoin_message(chain_ids::btc_testnet(), source_address, target_address, amount, tx_hash, *type_name.into_string().as_bytes());
-    let msg=hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
-    let signatures= ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
+    let bitcoin_message = message::create_bitcoin_message(
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+        *type_name.into_string().as_bytes()
+    );
+    let msg = hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
+    let signatures = ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
     env.add_external_coin_witness(coin_type, witness);
-    env.add_external_coin_admin( coin_type, sender.to_ascii_string());
+    env.add_external_coin_admin(coin_type, sender.to_ascii_string());
 
     env.pre_deposit_external_coin_for_testing<BTC>(
         sender,
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -605,19 +680,19 @@ fun test_get_external_token_transfer_action_claimed_status(){
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
 
-     assert!(env.env_get_external_token_transfer_action_status(
+    assert!(env.env_get_external_token_transfer_action_status(
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         sender,
-    )==transfer_status_claimed(),0);
+    ) == transfer_status_claimed(), 0);
 
 
     env.destroy_env();
@@ -629,21 +704,28 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc() {
     env.create_bridge_default();
 
     let sender = @0xABCD;
-    let (witness,private_key,source_address,tx_hash,target_address,amount)=mock_bitcoin_message();
+    let (witness, private_key, source_address, tx_hash, target_address, amount) = mock_bitcoin_message();
     let type_name = type_name::get<BTC>();
     let coin_type = type_name.into_string();
-    let bitcoin_message=message::create_bitcoin_message(chain_ids::btc_testnet(), source_address, target_address, amount, tx_hash, *type_name.into_string().as_bytes());
-    let msg=hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
-    let signatures= ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
+    let bitcoin_message = message::create_bitcoin_message(
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+        *type_name.into_string().as_bytes()
+    );
+    let msg = hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
+    let signatures = ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
     env.add_external_coin_witness(coin_type, witness);
-    env.add_external_coin_admin( coin_type, sender.to_ascii_string());
+    env.add_external_coin_admin(coin_type, sender.to_ascii_string());
 
     env.pre_deposit_external_coin_for_testing<BTC>(
         sender,
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -653,7 +735,7 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -668,21 +750,28 @@ fun test_btc_bridge_recall_deposit_and_withdraw_external_btc() {
     env.create_bridge_default();
 
     let sender = @0xABCD;
-    let (witness,private_key,source_address,tx_hash,target_address,amount)=mock_bitcoin_message();
+    let (witness, private_key, source_address, tx_hash, target_address, amount) = mock_bitcoin_message();
     let type_name = type_name::get<BTC>();
     let coin_type = type_name.into_string();
-    let bitcoin_message=message::create_bitcoin_message(chain_ids::btc_testnet(), source_address, target_address, amount, tx_hash, *type_name.into_string().as_bytes());
-    let msg=hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
-    let signatures= ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
+    let bitcoin_message = message::create_bitcoin_message(
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+        *type_name.into_string().as_bytes()
+    );
+    let msg = hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
+    let signatures = ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
     env.add_external_coin_witness(coin_type, witness);
-    env.add_external_coin_admin( coin_type, sender.to_ascii_string());
+    env.add_external_coin_admin(coin_type, sender.to_ascii_string());
 
     env.pre_deposit_external_coin_for_testing<BTC>(
         sender,
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -692,10 +781,9 @@ fun test_btc_bridge_recall_deposit_and_withdraw_external_btc() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
-
     );
 
     env.deposit_and_withdraw_external_coin<BTC>(
@@ -704,7 +792,7 @@ fun test_btc_bridge_recall_deposit_and_withdraw_external_btc() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -719,21 +807,28 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc_after_remove_admin_cap() {
     env.create_bridge_default();
 
     let sender = @0xABCD;
-    let (witness,private_key,source_address,tx_hash,target_address,amount)=mock_bitcoin_message();
+    let (witness, private_key, source_address, tx_hash, target_address, amount) = mock_bitcoin_message();
     let type_name = type_name::get<BTC>();
     let coin_type = type_name.into_string();
-    let bitcoin_message=message::create_bitcoin_message(chain_ids::btc_testnet(), source_address, target_address, amount, tx_hash, *type_name.into_string().as_bytes());
-    let msg=hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
-    let signatures= ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
+    let bitcoin_message = message::create_bitcoin_message(
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+        *type_name.into_string().as_bytes()
+    );
+    let msg = hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
+    let signatures = ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
     env.add_external_coin_witness(coin_type, witness);
-    env.add_external_coin_admin( coin_type, sender.to_ascii_string());
+    env.add_external_coin_admin(coin_type, sender.to_ascii_string());
 
     env.pre_deposit_external_coin_for_testing<BTC>(
         sender,
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -744,12 +839,12 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc_after_remove_admin_cap() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
 
-    env.remove_external_coin_admin( coin_type, sender.to_ascii_string());
+    env.remove_external_coin_admin(coin_type, sender.to_ascii_string());
 
     env.deposit_and_withdraw_external_coin<BTC>(
         sender,
@@ -757,7 +852,7 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc_after_remove_admin_cap() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -772,21 +867,28 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc_after_remove_witness_admin
     env.create_bridge_default();
 
     let sender = @0xABCD;
-    let (witness,private_key,source_address,tx_hash,target_address,amount)=mock_bitcoin_message();
+    let (witness, private_key, source_address, tx_hash, target_address, amount) = mock_bitcoin_message();
     let type_name = type_name::get<BTC>();
     let coin_type = type_name.into_string();
-    let bitcoin_message=message::create_bitcoin_message(chain_ids::btc_testnet(), source_address, target_address, amount, tx_hash, *type_name.into_string().as_bytes());
-    let msg=hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
-    let signatures= ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
+    let bitcoin_message = message::create_bitcoin_message(
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+        *type_name.into_string().as_bytes()
+    );
+    let msg = hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
+    let signatures = ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
     env.add_external_coin_witness(coin_type, witness);
-    env.add_external_coin_admin( coin_type, sender.to_ascii_string());
+    env.add_external_coin_admin(coin_type, sender.to_ascii_string());
 
     env.pre_deposit_external_coin_for_testing<BTC>(
         sender,
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -797,7 +899,7 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc_after_remove_witness_admin
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -809,7 +911,7 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc_after_remove_witness_admin
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -822,12 +924,19 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc_after_remove_witness_admin
 fun test_btc_bridge_deposit_and_withdraw_external_btc_without_admin_cap() {
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
-    let (witness,private_key,source_address,tx_hash,target_address,amount)=mock_bitcoin_message();
+    let (witness, private_key, source_address, tx_hash, target_address, amount) = mock_bitcoin_message();
     let type_name = type_name::get<BTC>();
     let coin_type = type_name.into_string();
-    let bitcoin_message=message::create_bitcoin_message(chain_ids::btc_testnet(), source_address, target_address, amount, tx_hash, *type_name.into_string().as_bytes());
-    let msg=hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
-    let signatures= ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
+    let bitcoin_message = message::create_bitcoin_message(
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+        *type_name.into_string().as_bytes()
+    );
+    let msg = hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
+    let signatures = ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
     env.add_external_coin_witness(coin_type, witness);
 
     let sender = @0xABCD;
@@ -837,7 +946,7 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc_without_admin_cap() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -851,23 +960,30 @@ fun test_btc_bridge_deposit_external_btc_without_admin_cap() {
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
 
-    let (witness,private_key,source_address,tx_hash,target_address,amount)=mock_bitcoin_message();
+    let (witness, private_key, source_address, tx_hash, target_address, amount) = mock_bitcoin_message();
     let type_name = type_name::get<BTC>();
     let coin_type = type_name.into_string();
-    let bitcoin_message=message::create_bitcoin_message(chain_ids::btc_testnet(), source_address, target_address, amount, tx_hash, *type_name.into_string().as_bytes());
-    let msg=hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
-    let signatures= ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
+    let bitcoin_message = message::create_bitcoin_message(
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+        *type_name.into_string().as_bytes()
+    );
+    let msg = hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
+    let signatures = ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
     env.add_external_coin_witness(coin_type, witness);
 
     let sender = @0xABCD;
     let mut bridge_wrap = env.bridge(sender);
     let bridge = bridge_wrap.bridge_ref_mut();
     deposit_external_coin_for_testing<BTC>(
-         bridge,
+        bridge,
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
         env.ctx(),
@@ -882,7 +998,7 @@ fun test_btc_bridge_withdraw_external_btc() {
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
 
-    let btc: Coin<BTC> = env.get_btc(10);
+    let btc: Coin<BTC> = env.get_btc(1*100_000_000);
     let target_address = x"0000000000000000000000000000000000000000000000000000000000000001";
 
     let sender = @0xABCD;
@@ -1013,7 +1129,7 @@ fun test_get_seq_num_and_increment() {
         inner.test_get_current_seq_num_and_increment(
             message_types::committee_blocklist(),
         ) ==
-        0,
+            0,
     );
     assert!(
         inner.sequence_nums()[&message_types::committee_blocklist()] == 1,
@@ -1022,7 +1138,7 @@ fun test_get_seq_num_and_increment() {
         inner.test_get_current_seq_num_and_increment(
             message_types::committee_blocklist(),
         ) ==
-        1,
+            1,
     );
     // other message type nonce does not change
     assert!(
@@ -1039,25 +1155,25 @@ fun test_get_seq_num_and_increment() {
     );
     assert!(
         inner.test_get_current_seq_num_and_increment(message_types::token()) ==
-        0,
+            0,
     );
     assert!(
         inner.test_get_current_seq_num_and_increment(
             message_types::emergency_op(),
         ) ==
-        0,
+            0,
     );
     assert!(
         inner.test_get_current_seq_num_and_increment(
             message_types::update_bridge_limit(),
         ) ==
-        0,
+            0,
     );
     assert!(
         inner.test_get_current_seq_num_and_increment(
             message_types::update_asset_price(),
         ) ==
-        0,
+            0,
     );
 
     destroy(bridge);
@@ -1082,7 +1198,7 @@ fun test_update_limit() {
                     chain_ids::sui_mainnet(),
                 ),
             ) !=
-        1,
+            1,
     );
     bridge.return_bridge();
 
@@ -1106,7 +1222,7 @@ fun test_update_limit() {
                     chain_ids::sui_mainnet(),
                 ),
             ) ==
-        1,
+            1,
     );
     // other routes are not impacted
     assert!(
@@ -1118,7 +1234,7 @@ fun test_update_limit() {
                     chain_ids::sui_testnet(),
                 ),
             ) !=
-        1,
+            1,
     );
     bridge.return_bridge();
 
@@ -1280,11 +1396,11 @@ fun test_get_token_transfer_action_data() {
         );
     assert!(
         bridge.test_get_token_transfer_action_status(chain_id, 10) ==
-        transfer_status_pending(),
+            transfer_status_pending(),
     );
     assert!(
         bridge.test_get_token_transfer_action_signatures(chain_id, 10) ==
-        option::none(),
+            option::none(),
     );
 
     // Test when ready for claim
@@ -1315,11 +1431,11 @@ fun test_get_token_transfer_action_data() {
         );
     assert!(
         bridge.test_get_token_transfer_action_status(chain_id, 11) ==
-        transfer_status_approved(),
+            transfer_status_approved(),
     );
     assert!(
         bridge.test_get_token_transfer_action_signatures(chain_id, 11) ==
-        option::some(vector[]),
+            option::some(vector[]),
     );
     assert!(
         bridge.test_get_parsed_token_transfer_message_v2(chain_id, 11) ==
@@ -1356,11 +1472,11 @@ fun test_get_token_transfer_action_data() {
         );
     assert!(
         bridge.test_get_token_transfer_action_status(chain_id, 12) ==
-        transfer_status_claimed(),
+            transfer_status_claimed(),
     );
     assert!(
         bridge.test_get_token_transfer_action_signatures(chain_id, 12) ==
-        option::some(vector[b"1234"]),
+            option::some(vector[b"1234"]),
     );
     assert!(
         bridge.test_get_parsed_token_transfer_message_v2(chain_id, 12) ==
@@ -1372,11 +1488,11 @@ fun test_get_token_transfer_action_data() {
     // Test when message not found
     assert!(
         bridge.test_get_token_transfer_action_status(chain_id, 13) ==
-        transfer_status_not_found(),
+            transfer_status_not_found(),
     );
     assert!(
         bridge.test_get_token_transfer_action_signatures(chain_id, 13) ==
-        option::none(),
+            option::none(),
     );
     assert!(
         bridge.test_get_parsed_token_transfer_message_v2(chain_id, 13) ==
@@ -1416,9 +1532,9 @@ fun change_url() {
 
 #[test]
 #[
-    expected_failure(
-        abort_code = bridge::committee::ESenderIsNotInBridgeCommittee,
-    ),
+expected_failure(
+    abort_code = bridge::committee::ESenderIsNotInBridgeCommittee,
+),
 ]
 fun change_url_bad_sender() {
     let chain_id = chain_ids::sui_testnet();
@@ -1432,12 +1548,12 @@ fun change_url_bad_sender() {
 }
 
 #[test]
-fun read_router_limit(){
+fun read_router_limit() {
     let chain_id = chain_ids::sui_testnet();
     let mut env = create_env(chain_id);
     env.create_bridge_default();
     let bridge = env.bridge(@0x0);
-    let limits=bridge.bridge_ref().test_load_limiter();
+    let limits = bridge.bridge_ref().test_load_limiter();
     let bsc_route = chain_ids::get_route(chain_ids::bsc_mainnet(), chain_ids::sui_mainnet());
     let op_route = chain_ids::get_route(chain_ids::op_mainnet(), chain_ids::sui_mainnet());
     let base_route = chain_ids::get_route(chain_ids::base_mainnet(), chain_ids::sui_mainnet());
@@ -1450,33 +1566,384 @@ fun read_router_limit(){
 
 #[test]
 #[
-    expected_failure(
-        abort_code = bridge::tokenlist::EBridgeTokenListRegistryAlreadyExists,
-    ),
+expected_failure(
+    abort_code = bridge::tokenlist::EBridgeTokenListRegistryAlreadyExists,
+),
 ]
-fun test_twice_call_migrate(){
+fun test_twice_call_init_token_list() {
     let chain_id = chain_ids::sui_testnet();
     let mut env = create_env(chain_id);
     env.create_bridge_default();
     let mut bridge = env.bridge(@0x0);
-    let bridge_inner=bridge.bridge_ref_mut();
-    bridge_inner.migrate(env.scenario().ctx());
+    let bridge_inner = bridge.bridge_ref_mut();
+    bridge_inner.init_token_list(env.scenario().ctx());
     bridge.return_bridge();
     env.destroy_env();
 }
 
 
 #[test]
-fun test_get_available_claim_amount_for_router_limit(){
-   let chain_id = chain_ids::sui_mainnet();
+#[
+expected_failure(
+    abort_code = bridge::bridge_fee::EBridgeFeeRegistryAlreadyExists,
+)]
+fun test_twice_call_migrate(){
+    let chain_id = chain_ids::sui_testnet();
     let mut env = create_env(chain_id);
     env.create_bridge_default();
     let mut bridge = env.bridge(@0x0);
-    let bridge_inner=bridge.bridge_ref_mut();
+    let bridge_inner = bridge.bridge_ref_mut();
+    bridge_inner.migrate(env.scenario().ctx());
+    //bridge_inner.migrate(env.scenario().ctx());
+    bridge.return_bridge();
+    env.destroy_env();
+}
+
+#[test]
+fun test_add_token_on_benfen(){
+    let chain_id = chain_ids::sui_testnet();
+    let target_id=chain_ids::aptos_testnet();
+    let token_id=11; //aptos coin
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.add_token_on_token_list(chain_id,target_id, token_id);
+    env.destroy_env();
+}
+
+#[test]
+fun test_add_token_from_benfen(){
+    let chain_id = chain_ids::sui_testnet();
+    let source_chain=chain_ids::aptos_testnet();
+    let token_id=11; //aptos coin
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.add_token_on_token_list(source_chain,chain_id, token_id);
+    env.destroy_env();
+}
+
+#[test]
+fun test_set_cross_in_bridge_fee_with_fixed(){
+    let chain_id = chain_ids::sui_testnet();
+    let source_chain=chain_ids::aptos_testnet();
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.set_cross_in_bridge_fee<BTC>(source_chain,0,100,1_000_000_000);
+    env.destroy_env();
+}
+
+
+#[test]
+fun test_set_cross_in_bridge_fee_with_percentage(){
+    let chain_id = chain_ids::sui_testnet();
+    let source_chain=chain_ids::aptos_testnet();
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.set_cross_in_bridge_fee<BTC>(source_chain,1,500,1_000_000_000);
+    env.destroy_env();
+}
+
+
+
+#[test]
+fun test_set_cross_out_bridge_fee_with_fixed(){
+    let chain_id = chain_ids::sui_testnet();
+    let to_chain=chain_ids::aptos_testnet();
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.set_cross_out_bridge_fee<BTC>(to_chain,0,80000,1_000_000_000);
+    env.destroy_env();
+}
+
+
+#[test]
+fun test_set_cross_out_bridge_fee_with_percentage(){
+    let chain_id = chain_ids::sui_testnet();
+    let to_chain=chain_ids::aptos_testnet();
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.set_cross_out_bridge_fee<BTC>(to_chain,1,800,1_000_000_000);
+    env.destroy_env();
+}
+
+
+#[test]
+fun test_get_withdraw_fee_cap(){
+    let chain_id = chain_ids::sui_testnet();
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+
+    env.withdraw_bridge_fee_cap<BTC>(10000);
+    env.destroy_env();
+
+}
+
+#[test]
+fun test_remove_token_on_benfen(){
+    let chain_id = chain_ids::sui_testnet();
+    let target_id=chain_ids::aptos_testnet();
+    let token_id=11; //aptos coin
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.add_token_on_token_list(chain_id,target_id, token_id);
+    env.remove_token_on_token_list(chain_id, target_id, token_id);
+    env.destroy_env();
+}
+
+#[test]
+fun test_remove_token_from_benfen(){
+    let chain_id = chain_ids::sui_testnet();
+    let source_chain=chain_ids::aptos_testnet();
+    let token_id=11; //aptos coin
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.add_token_on_token_list(source_chain,chain_id, token_id);
+    env.remove_token_on_token_list(source_chain, chain_id, token_id);
+    env.destroy_env();
+}
+
+
+// #[test]
+// #[
+// expected_failure(
+//     abort_code = bridge::tokenlist::EBridgeCenterTokenLisAlreadyExists,
+// )]
+// fun test_twice_call_add_center_token_list(){
+//     let chain_id = chain_ids::sui_testnet();
+//     let mut env = create_env(chain_id);
+//     env.create_bridge_default();
+//     let mut bridge = env.bridge(@0x0);
+//     let bridge_inner = bridge.bridge_ref_mut();
+//     bridge_inner.migrate(env.scenario().ctx());
+//     //bridge_inner.migrate(env.scenario().ctx());
+//     bridge.return_bridge();
+//     env.destroy_env();
+// }
+
+#[test]
+fun test_get_available_claim_amount_for_router_limit() {
+    let chain_id = chain_ids::sui_mainnet();
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    let mut bridge = env.bridge(@0x0);
+    let bridge_inner = bridge.bridge_ref_mut();
 
     bridge_inner.get_available_claim_amount<USDC>(chain_ids::bsc_mainnet());
     bridge_inner.get_available_claim_amount<USDC>(chain_ids::op_mainnet());
     bridge_inner.get_available_claim_amount<USDC>(chain_ids::base_mainnet());
+
+    bridge.return_bridge();
+    env.destroy_env();
+}
+
+#[test]
+fun test_external_busd_approval_and_claimed_external_busd_coin() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+
+    let chain_id_val = chain_id(&mut env);
+    let token_type_val = token_type<USDC>(&mut env);
+    let source_chain = chain_ids::bsc_mainnet();
+    let source_address = vector[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+    let target_address = address::to_bytes(@0x123);
+    let tx_hash = ascii::string(b"abc123");
+    let amount = 1000u64;
+    // 构造 message
+    let message = bridge::message::create_token_bridge_message(
+        source_chain,
+        0,
+        source_address,
+        chain_id_val,
+        target_address,
+        token_type_val,
+        amount,
+        *tx_hash.as_bytes(),
+        0u8,
+    );
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+    let mut bridge = env.bridge(@0x0);
+    let ctx = env.ctx();
+
+    let mut scenario = public_setup(1_000_000_000_000_000_000, b"MINT-BUSD-right_key");
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+    // 调用 approval_and_claimed_external_busd_coin
+    bridge.bridge_ref_mut().approval_and_claimed_external_busd_coin<busd::BUSD>(
+        message,
+        signatures,
+        &mut bfc_system_state,
+        &cap,
+        ctx,
+    );
+    let deposited = sui::event::events_by_type<bridge::bridge::ExternalDepositedEventV2>();
+    assert!(deposited.length() == 1);
+    {
+        let (
+            tx_hash,
+            token_type,
+            source_chain,
+            target_chain,
+            source_address,
+            target_address,
+            amount_before_fee,
+            amount_after_fee,
+        ) = deposited[0].unwrap_external_deposited_event_v2();
+        assert!(
+            tx_hash == tx_hash &&
+                token_type == token_type &&
+                source_chain == source_chain &&
+                target_chain == chain_ids::sui_custom() &&
+                source_address == source_address &&
+                target_address == target_address &&
+                amount == amount_before_fee,
+        );
+    };
+
+    scenario.next_tx(@0x0);
+    let token = scenario.take_from_address<Coin<BUSD>>(address::from_bytes(target_address));
+    assert!(token.balance().value() == amount);
+
+    sui::test_scenario::return_to_address(address::from_bytes(target_address), token);
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+    bridge.return_bridge();
+    env.destroy_env();
+}
+
+#[test]
+fun test_external_busd_withdraw_external_busd_coin_tron_test() {
+    test_external_busd_withdraw_external_busd_coin(4u64,  chain_ids::tron_testnet(),chain_ids::sui_custom());
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EInvalidBridgeRoute)]
+fun test_external_busd_withdraw_external_busd_coin_tron_main() {
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::tron_mainnet(),chain_ids::sui_custom())
+}
+
+#[test]
+fun test_external_busd_withdraw_external_busd_coin_sol_test() {
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::solana_testnet(),chain_ids::sui_custom())
+}
+
+#[test]
+fun test_external_busd_withdraw_external_busd_coin_sui_testnet_tron_test() {
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::tron_testnet(),chain_ids::sui_testnet());
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EInvalidBridgeRoute)]
+fun test_external_busd_withdraw_external_busd_coin_sui_testnet_tron_main() {
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::tron_mainnet(),chain_ids::sui_testnet())
+}
+
+#[test]
+fun test_external_busd_withdraw_external_busd_coin_sui_testnet_sol_test() {
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::solana_testnet(),chain_ids::sui_testnet())
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EInvalidBridgeRoute)]
+fun test_external_busd_withdraw_external_busd_coin_sui_testnet_sol_main() {
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::solana_mainnet(),chain_ids::sui_testnet())
+}
+
+#[test]
+fun test_external_busd_withdraw_external_busd_coin_sui_mainnet_tron_main() {
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::tron_mainnet(),chain_ids::sui_mainnet());
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EInvalidBridgeRoute)]
+fun test_external_busd_withdraw_external_busd_coin_sui_mainnet_tron_test() {
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::tron_testnet(),chain_ids::sui_mainnet())
+}
+
+#[test]
+fun test_external_busd_withdraw_external_busd_coin_sui_mainnet_sol_mainnet() {
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::solana_mainnet(),chain_ids::sui_mainnet())
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EInvalidBridgeRoute)]
+fun test_external_busd_withdraw_external_busd_coin_sui_mainnet_sol_test() {
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::solana_testnet(),chain_ids::sui_mainnet())
+}
+
+#[test]
+fun test_external_busd_withdraw_external_busd_coin_sui_mainnet_sol_mainnet_except_id() {
+    test_external_busd_withdraw_external_busd_coin(3u64, chain_ids::solana_mainnet(),chain_ids::sui_mainnet())
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EInvalidChainIDAndTokenIDExpect)]
+fun test_external_busd_withdraw_external_busd_coin_sui_mainnet_sol_mainnet_unexcept_id() {
+    test_external_busd_withdraw_external_busd_coin(1u64,chain_ids::solana_mainnet(), chain_ids::sui_mainnet())
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EOnlySupportBusd)]
+fun test_external_busd_other_coin_withdraw_external_busd_coin() {
+    let source_address = vector[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+
+    let amount = 1000u64;
+    let coin = get_usdc(&mut env, amount);
+
+    let mut bridge = env.bridge(@0x0);
+    let ctx = env.ctx();
+    let scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+
+
+    bridge.bridge_ref_mut().withdraw_external_busd_coin<USDC>(
+        chain_ids::tron_testnet(),
+        source_address,
+        coin,
+        4u64,
+        &mut bfc_system_state,
+        ctx,
+    );
+    let withdraw = sui::event::events_by_type<bridge::bridge::ExternalWithdrawEvent>();
+    assert!(withdraw.length() == 1);
+
+
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::end(scenario);
+    bridge.return_bridge();
+    env.destroy_env();
+}
+
+fun test_external_busd_withdraw_external_busd_coin(token_id_expect: u64, target_chain: u8, source_chain: u8) {
+    let source_address = vector[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+
+    let mut env = create_env(source_chain);
+    env.create_bridge_default();
+
+    let amount = 100*1_000_000_000u64;
+
+    let mut bridge = env.bridge(@0x0);
+    let ctx = env.ctx();
+    let scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+    let coin = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount, &cap, ctx);
+
+    bridge.bridge_ref_mut().withdraw_external_busd_coin<BUSD>(
+        target_chain,
+        source_address,
+        coin,
+        token_id_expect,
+        &mut bfc_system_state,
+        ctx,
+    );
+    let withdraw = sui::event::events_by_type<bridge::bridge::ExternalWithdrawEventV2>();
+    assert!(withdraw.length() == 1);
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
 
     bridge.return_bridge();
     env.destroy_env();
