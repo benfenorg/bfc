@@ -385,10 +385,14 @@ module bridge::bridge {
 
     public fun update_external_out_limit(
         bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
+        cap: &BfcSystemModifyCap,
         target_chain: u8,
         limit: u64,
+        ctx: &mut TxContext,
     ) {
         let (inner,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
         let route = chain_ids::get_route(inner.chain_id, target_chain);
         limiter::update_external_out_limit(
             parent_id,
@@ -1493,7 +1497,9 @@ module bridge::bridge {
         let fee_coin=token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(parent_id, fee_coin);
         let amount_after_fee=amount-fee;
-
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        let amount_in_usd = inner.treasury.calculate_amount_in_usd<T>(amount_after_fee);
+        assert!(amount_in_usd < limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
         inner.treasury.burn(token);
 
         // emit event
