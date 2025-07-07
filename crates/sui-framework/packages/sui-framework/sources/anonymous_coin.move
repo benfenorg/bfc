@@ -20,7 +20,6 @@ module sui::anonymous_coin {
     public use fun sui::anonymous_pay::join_vec as Anonymous_Coin.join_vec;
 
     // Allows calling `.split_and_transfer(amount, recipient, ctx)` on `coin`
-
     public use fun sui::anonymous_pay::split_and_transfer as Anonymous_Coin.split_and_transfer;
 
     // Allows calling `.divide_and_keep(n, ctx)` on `coin`
@@ -175,8 +174,8 @@ module sui::anonymous_coin {
 
     // === Balance <-> Coin accessors and type morphing ===
 
-    public entry fun get_anonymous_value<T>(self: &Anonymous_Coin<T>, signatures: vector<u8>, id: address, publickey: vector<u8>): u64 {
-        self.balance.get_anonymous_value(signatures, id, publickey)
+    public entry fun get_anonymous_value<T>(self: &Anonymous_Coin<T>, signatures: vector<u8>, publickey: vector<u8>): u64 {
+        self.balance.get_anonymous_value(signatures, object::uid_to_address(&self.id), publickey)
     }
 
     /// Public getter for the coin's value
