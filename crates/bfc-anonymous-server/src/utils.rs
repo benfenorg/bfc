@@ -12,6 +12,7 @@ pub async fn get_object_owneraddress(object_id: String) ->  Result<String, Box<d
     let path = get_sui_config_directory().join("bfc_anonymous_config.yaml");
     let config = AnonymousPrivateKeyConfig::from_yaml_file(&path).unwrap_or(AnonymousPrivateKeyConfig::default());
     let fullnode_rpc = config.fullnode_rpc_path.unwrap_or("https://devrpc4.openblock.vip".to_string());
+
     let client = reqwest::Client::new();
     let response = client
         .post(fullnode_rpc)
@@ -37,7 +38,6 @@ pub async fn get_object_owneraddress(object_id: String) ->  Result<String, Box<d
     let result = response.text().await?;
 
     let object_id = parse_response(&result.clone());
-
     match object_id {
         Some(val) => return Ok(val),
         None => return Err(anyhow!("object owner not exit").into())

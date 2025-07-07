@@ -1,6 +1,8 @@
 use reqwest;
 use serde_json::{json, Value};
 use std::error::Error;
+use sui_types::base_types::SuiAddress;
+use std::str::FromStr;
 
 #[derive(Debug)]
 pub(crate) struct TestResult {
@@ -146,6 +148,34 @@ impl AnonymousClient {
         }
     }
 
+    pub async fn test_restore_value(&self,
+                                    value1: u64,
+                                    value2: u64,
+                                    signature: Vec<u8>,
+                                    objectid : String, publickey: Vec<u8>) -> TestResult {
+        let params = json!({
+            "value1": value1,
+            "value2": value2,
+            "signature": signature,
+            "objectid": objectid,
+            "publickey": publickey,
+        });
+
+        match self.send_rpc_request("bfcx_getAnonymousRestoreValue", params, 4).await {
+            Ok(response) => TestResult {
+                method: "bfcx_getAnonymousRestoreValue".to_string(),
+                success: true,
+                response: Some(response),
+                error: None,
+            },
+            Err(e) => TestResult {
+                method: "bfcx_getAnonymousRestoreValue".to_string(),
+                success: false,
+                response: None,
+                error: Some(e.to_string()),
+            },
+        }
+    }
 
     pub async fn test_split(&self, value:u64) -> TestResult {
         let params = json!({
@@ -229,6 +259,19 @@ mod tests {
         let minus_result = client.test_minus(10, 5, 2, 1).await.response.unwrap();
         let multiply_result = client.test_multiply(3, 4, 1,  2).await.response.unwrap();
         let compare_result = client.test_compare(5, 10, 3, 5).await.response.unwrap();
+
+        let signature = "13c6801f5e1cb5e5d127829a05bd782d63d3556605c7c4453e33b82d7e10125bad9c493c747e89c8d5403e4efaab89fac7b5fc3700f43243897b1f9fcd21d700";
+        let publickey = "8496d3d932986b43bb64b5d5c7548d5c97a73aebf4301447f3746680b2114ae1";
+
+        let object_id = SuiAddress::from_str(
+            "0x505ccdc4f485950744e587c9a26396600ecb047fab43c2c9c0c756eff4c14749",
+        ).unwrap().to_string();
+
+        let signature_bytes = hex_to_bytes(signature);
+        let publickey_bytes = hex_to_bytes(publickey);
+
+
+        let restore_result = client.test_restore_value(1, 3, signature_bytes, object_id, publickey_bytes).await.response.unwrap();
         let split_result = client.test_split(10).await.response.unwrap();
 
         //todo:split and restore.
@@ -260,13 +303,17 @@ mod tests {
         let result1 = split_result["result"]["result1"].as_u64().unwrap();
         let result2 = split_result["result"]["result2"].as_u64().unwrap();
         info!("Split Result Values: result1 = {}, result2 = {}", result1, result2);
-
-
-
-
         Ok(())
 
     }
+
+    fn hex_to_bytes(hex: &str) -> Vec<u8> {
+        (0..hex.len())
+            .step_by(2)
+            .map(|i| u8::from_str_radix(&hex[i..i+2], 16).unwrap())
+            .collect()
+    }
+
 
 
 

@@ -20,12 +20,6 @@ use crate::utils::get_object_owneraddress;
 use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 use crate::utils::public_key_bytes_to_sui_address;
 
-#[cfg(not(msim))]
-const CHECK_OWNER_ADDRESS: bool = true;
-
-#[cfg(msim)]
-const CHECK_OWNER_ADDRESS: bool = false;
-
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
@@ -422,9 +416,7 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                     let signature = restore_value_params.signature;
                     let objectid = restore_value_params.objectid;
                     let mut pass_verify_signature = verify_signature(&restore_value_params.publickey, &*signature, objectid.as_bytes()).is_ok();
-
-                    if pass_verify_signature == true && CHECK_OWNER_ADDRESS{
-
+                    if pass_verify_signature == true {
                         match get_object_owneraddress(objectid.clone()).await {
                             Ok(owner_address_value) => {
                                 let sui_address_from_send = public_key_bytes_to_sui_address(restore_value_params.publickey.clone());
