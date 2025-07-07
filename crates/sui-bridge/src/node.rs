@@ -814,7 +814,7 @@ mod tests {
                 EthConfig {
                     eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
                     eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
-                    eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
+                    eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
                     eth_contracts_start_block_fallback: Some(0),
                     eth_contracts_start_block_override: None,
                     latest_fast_path_threshold: None,
@@ -931,7 +931,7 @@ mod tests {
                 EthConfig {
                     eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
                     eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
-                    eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
+                    eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
                     eth_contracts_start_block_fallback: Some(0),
                     eth_contracts_start_block_override: Some(0),
                     latest_fast_path_threshold: None,
