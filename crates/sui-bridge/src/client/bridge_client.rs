@@ -656,9 +656,10 @@ mod tests {
         assert_eq!(
             BridgeClient::bridge_action_to_path(&action),
             format!(
-                "sign/bridge_tx/eth/sui/{}/{}",
+                "sign/bridge_tx/eth/sui/{}/{}/{}",
                 Hex::encode(eth_tx_hash.0),
-                eth_event_index
+                eth_event_index,
+                FastPathSelector::Finalized as u8
             )
         );
 

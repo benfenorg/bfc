@@ -3254,9 +3254,6 @@ impl ProtocolConfig {
                     cfg.allowed_txn_cost_overage_burst_per_object_in_commit = Some(370_000_000);
                 }
 
-                73 => {
-
-                }
                 // Use this template when making changes:
                 //
                 //     // modify an existing constant.
