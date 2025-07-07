@@ -479,6 +479,36 @@ title: Module `bridge::limiter`
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_mainnet">chain_ids::avax_mainnet</a>()),
         100_000,
     );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_mainnet">chain_ids::tron_mainnet</a>()),
+        100_000,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>()),
+        100_000,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_ltc_mainnet">chain_ids::ltc_mainnet</a>()),
+        100_000,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_doge_mainnet">chain_ids::doge_mainnet</a>()),
+        100_000,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_mainnet">chain_ids::sui_official_mainnet</a>()),
+        100_000,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_mainnet">chain_ids::aptos_mainnet</a>()),
+        100_000,
+    );
     // Testnet and custom chains
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
@@ -555,6 +585,36 @@ title: Module `bridge::limiter`
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_custom">chain_ids::avax_custom</a>()),
         100,
     );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_testnet">chain_ids::tron_testnet</a>()),
+        100,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>()),
+        100,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_ltc_testnet">chain_ids::ltc_testnet</a>()),
+        100,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_doge_testnet">chain_ids::doge_testnet</a>()),
+        100,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_testnet">chain_ids::sui_official_testnet</a>()),
+        100,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_testnet">chain_ids::aptos_testnet</a>()),
+        100,
+    );
     //custom chains
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
@@ -629,6 +689,36 @@ title: Module `bridge::limiter`
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_custom">chain_ids::avax_custom</a>()),
+        100,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_testnet">chain_ids::tron_testnet</a>()),
+        100,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>()),
+        100,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_ltc_testnet">chain_ids::ltc_testnet</a>()),
+        100,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_doge_testnet">chain_ids::doge_testnet</a>()),
+        100,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_testnet">chain_ids::sui_official_testnet</a>()),
+        100,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
+        external_limiter,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_testnet">chain_ids::aptos_testnet</a>()),
         100,
     );
 }
