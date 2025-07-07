@@ -936,7 +936,7 @@ module bridge::bridge_env {
         scenario.next_tx(@0x0);
         let mut bridge = scenario.take_shared<Bridge>();
 
-        let message = message::create_token_bridge_message_v2(
+        let message = message::create_token_bridge_in_message(
             source_chain,
             bridge.get_seq_num_inc_for(message_types::token()),
             source_address,
@@ -946,6 +946,7 @@ module bridge::bridge_env {
             amount,
             hex::decode(b""),
             0u16, // event_idx
+            2u8,
         );
         test_scenario::return_shared(bridge);
         message
@@ -1025,7 +1026,7 @@ module bridge::bridge_env {
 
         // sign message
         let seq_num = bridge.get_seq_num_inc_for(message_types::token());
-        let message = message::create_token_bridge_message_v2(
+        let message = message::create_token_bridge_in_message(
             source_chain,
             seq_num,
             source_address,
@@ -1035,11 +1036,12 @@ module bridge::bridge_env {
             amount,
             hex::decode(b""),
             0u16, // event_idx
+            2u8,
         );
         let signatures = env.sign_message(message);
 
         // run approval
-        bridge.approve_token_transfer_v2(message, signatures);
+        bridge.approve_token_transfer_in(message, signatures);
 
         // verify approval events
         let approved_events = event::events_by_type<TokenTransferApproved>();
@@ -1216,6 +1218,42 @@ module bridge::bridge_env {
 
         // run approval
         bridge.approve_token_transfer_v2(message, signatures);
+
+        // verify approval events
+        let approved = event::events_by_type<TokenTransferApproved>();
+        let already_approved = event::events_by_type<
+            TokenTransferAlreadyApproved,
+        >();
+        assert!(approved.length() == 1 || already_approved.length() == 1);
+        let (key, approve_status) = if (approved.length() == 1) {
+            (approved[0].transfer_approve_key(), APPROVED)
+        } else {
+            (
+                already_approved[0].transfer_already_approved_key(),
+                ALREADY_APPROVED,
+            )
+        };
+        assert!(msg_key == key);
+
+        // tear down
+        test_scenario::return_shared(bridge);
+        approve_status
+    }
+
+    public fun approve_token_transfer_in(
+        env: &mut BridgeEnv,
+        message: BridgeMessage,
+        signatures: vector<vector<u8>>,
+    ): u8 {
+        let msg_key = message.key();
+
+        // set up
+        let scenario = &mut env.scenario;
+        scenario.next_tx(@0x0);
+        let mut bridge = scenario.take_shared<Bridge>();
+
+        // run approval
+        bridge.approve_token_transfer_in(message, signatures);
 
         // verify approval events
         let approved = event::events_by_type<TokenTransferApproved>();
