@@ -111,285 +111,285 @@ module bridge::limiter {
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::btc_mainnet()),
-            1,
+            100_000 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::eth_mainnet()),
-            100_000,
+            100_000 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::bsc_mainnet()),
-            100_000,
+            100_000 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::base_mainnet()),
-            100_000,
+            100_000 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::op_mainnet()),
-            100_000,
+            100_000 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::arb_mainnet()),
-            100_000,
+            100_000 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::pol_mainnet()),
-            100_000,
+            100_000 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::avax_mainnet()),
-            100_000,
+            100_000 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::tron_mainnet()),
-            100_000,
+            100_000 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::solana_mainnet()),
-            100_000,
+            100_000 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::ltc_mainnet()),
-            100_000,
+            100_000 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::doge_mainnet()),
-            100_000,
+            100_000 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::sui_official_mainnet()),
-            100_000,
+            100_000 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::aptos_mainnet()),
-            100_000,
+            100_000 * USD_VALUE_MULTIPLIER,
         );
 
         // Testnet and custom chains
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::eth_sepolia()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::eth_custom()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::btc_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::bsc_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::bsc_custom()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::base_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::base_custom()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::op_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::op_custom()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::arb_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::arb_custom()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::pol_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::pol_custom()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::avax_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::avax_custom()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::tron_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::solana_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::ltc_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::doge_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::sui_official_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::aptos_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         //custom chains
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::eth_sepolia()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::eth_custom()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::btc_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::bsc_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::bsc_custom()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::base_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::base_custom()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::op_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::op_custom()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::arb_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::arb_custom()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::pol_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::pol_custom()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::avax_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::avax_custom()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::tron_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::solana_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::ltc_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::doge_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::sui_official_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::aptos_testnet()),
-            100,
+            100 * USD_VALUE_MULTIPLIER,
         );
     }
 
