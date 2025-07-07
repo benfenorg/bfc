@@ -1928,7 +1928,7 @@ title: Module `bridge::bridge`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_external_out_limit">update_external_out_limit</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, target_chain: u8, limit: u64)
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_external_out_limit">update_external_out_limit</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, bfc_system_state: &<a href="../bfc_system/bfc_system.md#bfc_system_bfc_system_BfcSystemState">bfc_system::bfc_system::BfcSystemState</a>, cap: &<a href="../bfc_system/bfc_system_state_inner.md#bfc_system_bfc_system_state_inner_BfcSystemModifyCap">bfc_system::bfc_system_state_inner::BfcSystemModifyCap</a>, target_chain: u8, limit: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1939,10 +1939,14 @@ title: Module `bridge::bridge`
 
 <pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_external_out_limit">update_external_out_limit</a>(
     <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &BfcSystemState,
+    cap: &BfcSystemModifyCap,
     target_chain: u8,
     limit: u64,
+    ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>assert</b>!(bfc_system_state.verify_capability(cap, ctx), <a href="../bridge/bridge.md#bridge_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>);
     <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(inner.chain_id, target_chain);
     <a href="../bridge/limiter.md#bridge_limiter_update_external_out_limit">limiter::update_external_out_limit</a>(
         parent_id,
@@ -3453,6 +3457,9 @@ title: Module `bridge::bridge`
     <b>let</b> fee_coin=token.split&lt;T&gt;(fee, ctx);
     <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
     <b>let</b> amount_after_fee=amount-fee;
+    <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(inner.chain_id, target_chain);
+    <b>let</b> amount_in_usd = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.calculate_amount_in_usd&lt;T&gt;(amount_after_fee);
+    <b>assert</b>!(amount_in_usd &lt; <a href="../bridge/limiter.md#bridge_limiter_get_external_out_limit">limiter::get_external_out_limit</a>(parent_id, &route), <a href="../bridge/bridge.md#bridge_bridge_ETransferLimit">ETransferLimit</a>);
     inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.burn(token);
     // emit event
     emit(

@@ -442,284 +442,284 @@ title: Module `bridge::limiter`
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_btc_mainnet">chain_ids::btc_mainnet</a>()),
-        1,
+        100_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>()),
-        100_000,
+        100_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>()),
-        100_000,
+        100_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_base_mainnet">chain_ids::base_mainnet</a>()),
-        100_000,
+        100_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_op_mainnet">chain_ids::op_mainnet</a>()),
-        100_000,
+        100_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_arb_mainnet">chain_ids::arb_mainnet</a>()),
-        100_000,
+        100_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_pol_mainnet">chain_ids::pol_mainnet</a>()),
-        100_000,
+        100_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_mainnet">chain_ids::avax_mainnet</a>()),
-        100_000,
+        100_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_mainnet">chain_ids::tron_mainnet</a>()),
-        100_000,
+        100_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>()),
-        100_000,
+        100_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_ltc_mainnet">chain_ids::ltc_mainnet</a>()),
-        100_000,
+        100_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_doge_mainnet">chain_ids::doge_mainnet</a>()),
-        100_000,
+        100_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_mainnet">chain_ids::sui_official_mainnet</a>()),
-        100_000,
+        100_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_mainnet">chain_ids::aptos_mainnet</a>()),
-        100_000,
+        100_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     // Testnet and custom chains
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_custom">chain_ids::eth_custom</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_btc_testnet">chain_ids::btc_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_bsc_custom">chain_ids::bsc_custom</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_base_testnet">chain_ids::base_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_base_custom">chain_ids::base_custom</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_op_testnet">chain_ids::op_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_op_custom">chain_ids::op_custom</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_arb_testnet">chain_ids::arb_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_arb_custom">chain_ids::arb_custom</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_pol_testnet">chain_ids::pol_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_pol_custom">chain_ids::pol_custom</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_testnet">chain_ids::avax_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_custom">chain_ids::avax_custom</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_testnet">chain_ids::tron_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_ltc_testnet">chain_ids::ltc_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_doge_testnet">chain_ids::doge_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_testnet">chain_ids::sui_official_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_testnet">chain_ids::aptos_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     //custom chains
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_custom">chain_ids::eth_custom</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_btc_testnet">chain_ids::btc_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_bsc_custom">chain_ids::bsc_custom</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_base_testnet">chain_ids::base_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_base_custom">chain_ids::base_custom</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_op_testnet">chain_ids::op_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_op_custom">chain_ids::op_custom</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_arb_testnet">chain_ids::arb_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_arb_custom">chain_ids::arb_custom</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_pol_testnet">chain_ids::pol_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_pol_custom">chain_ids::pol_custom</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_testnet">chain_ids::avax_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_custom">chain_ids::avax_custom</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_testnet">chain_ids::tron_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_ltc_testnet">chain_ids::ltc_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_doge_testnet">chain_ids::doge_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_testnet">chain_ids::sui_official_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
     <a href="../bridge/limiter.md#bridge_limiter_add_external_out_limit">add_external_out_limit</a>(
         external_limiter,
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>( <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_testnet">chain_ids::aptos_testnet</a>()),
-        100,
+        100 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
     );
 }
 </code></pre>
