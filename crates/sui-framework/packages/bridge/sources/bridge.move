@@ -1735,9 +1735,9 @@ module bridge::bridge {
         assert!(record.verified_signatures.is_some(), EUnauthorisedClaim);
 
         // extract token message
-        let token_payload = record.message.extract_token_bridge_payload_v2();
+        let token_payload = record.message.extract_token_bridge_in_payload();
         // get owner address
-        let owner = address::from_bytes(token_payload.token_target_address_v2());
+        let owner = address::from_bytes(token_payload.token_target_address_in());
 
         // If already claimed, exit early
         if (record.claimed) {
@@ -1745,7 +1745,7 @@ module bridge::bridge {
             return (option::none(), owner)
         };
 
-        let target_chain = token_payload.token_target_chain_v2();
+        let target_chain = token_payload.token_target_chain_in();
         // ensure target chain matches bridge.chain_id
         assert!(target_chain == inner.chain_id, EUnexpectedChainID);
 
@@ -1756,12 +1756,12 @@ module bridge::bridge {
         let route = chain_ids::get_route(source_chain, target_chain);
         // check token type
         assert!(
-            treasury::token_id<T>(&inner.treasury) == token_payload.token_type_v2(),
+            treasury::token_id<T>(&inner.treasury) == token_payload.token_type_in(),
             EUnexpectedTokenType,
         );
 
-        let amount = token_payload.token_amount_v2();
-        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_payload.token_type_v2(),amount);
+        let amount = token_payload.token_amount_in();
+        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_payload.token_type_in(),amount);
         assert!(amount>fee,EInputAmountLteBridgeFee);
 
         // Make sure transfer is within limit.

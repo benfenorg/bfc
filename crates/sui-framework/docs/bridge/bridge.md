@@ -3920,15 +3920,15 @@ title: Module `bridge::bridge`
     // Ensure it's signed
     <b>assert</b>!(record.verified_signatures.is_some(), <a href="../bridge/bridge.md#bridge_bridge_EUnauthorisedClaim">EUnauthorisedClaim</a>);
     // extract token <a href="../bridge/message.md#bridge_message">message</a>
-    <b>let</b> token_payload = record.<a href="../bridge/message.md#bridge_message">message</a>.extract_token_bridge_payload_v2();
+    <b>let</b> token_payload = record.<a href="../bridge/message.md#bridge_message">message</a>.extract_token_bridge_in_payload();
     // get owner <b>address</b>
-    <b>let</b> owner = address::from_bytes(token_payload.token_target_address_v2());
+    <b>let</b> owner = address::from_bytes(token_payload.token_target_address_in());
     // If already claimed, exit early
     <b>if</b> (record.claimed) {
         emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferAlreadyClaimed">TokenTransferAlreadyClaimed</a> { message_key: key });
         <b>return</b> (option::none(), owner)
     };
-    <b>let</b> target_chain = token_payload.token_target_chain_v2();
+    <b>let</b> target_chain = token_payload.token_target_chain_in();
     // ensure target chain matches <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.chain_id
     <b>assert</b>!(target_chain == inner.chain_id, <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedChainID">EUnexpectedChainID</a>);
     // TODO: why do we check validity of the route here? what <b>if</b> inconsistency?
@@ -3938,11 +3938,11 @@ title: Module `bridge::bridge`
     <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(source_chain, target_chain);
     // check token type
     <b>assert</b>!(
-        <a href="../bridge/treasury.md#bridge_treasury_token_id">treasury::token_id</a>&lt;T&gt;(&inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>) == token_payload.token_type_v2(),
+        <a href="../bridge/treasury.md#bridge_treasury_token_id">treasury::token_id</a>&lt;T&gt;(&inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>) == token_payload.token_type_in(),
         <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedTokenType">EUnexpectedTokenType</a>,
     );
-    <b>let</b> amount = token_payload.token_amount_v2();
-    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id,source_chain <b>as</b> u64,token_payload.token_type_v2(),amount);
+    <b>let</b> amount = token_payload.token_amount_in();
+    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id,source_chain <b>as</b> u64,token_payload.token_type_in(),amount);
     <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
     // Make sure transfer is within limit.
     <b>if</b> (!inner

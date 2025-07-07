@@ -3,6 +3,7 @@
 
 use fastcrypto::traits::ToFromBytes;
 use move_core_types::ident_str;
+use tracing::info;
 use std::{collections::HashMap, str::FromStr};
 use sui_types::bridge::{
     BRIDGE_ADD_CENTER_TOKENLIST_FUNCTION_NAME, BRIDGE_ADD_TOKENLIST_FUNCTION_NAME,
@@ -556,7 +557,7 @@ fn build_token_bridge_approve_transaction(
     }
 
     let pt = builder.finish();
-
+    info!("bbking pt: {:?}", pt);
     Ok(TransactionData::new_programmable(
         client_address,
         vec![*gas_object_ref],
