@@ -1576,7 +1576,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_discard_smaller_amount_gas() {
-        telemetry_subscribers::init_for_testing();
+        //telemetry_subscribers::init_for_testing();
         let test_cluster = TestClusterBuilder::new().build().await;
         let address = test_cluster.get_address_0();
         let mut context = test_cluster.wallet;
