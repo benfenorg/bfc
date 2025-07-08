@@ -5,10 +5,12 @@ module bridge::message {
     use std::ascii::{Self, String};
     use sui::bcs::{Self, BCS};
 
+
     use bridge::chain_ids;
     use bridge::message_types;
 
     const CURRENT_MESSAGE_VERSION: u8 = 1;
+    const CURRENT_MESSAGE_VERSION_V2: u8 = 2;
     const ECDSA_ADDRESS_LENGTH: u64 = 20;
 
     const ETrailingBytes: u64 = 0;
@@ -57,6 +59,23 @@ module bridge::message {
         tx_hash: vector<u8>,
     }
 
+    public struct FastPathLimitPayload has drop{
+        chain_id: u8,
+        token_id: u64,
+        amount: u64,
+    }
+
+    public fun chain_id(self: &FastPathLimitPayload): u8 {
+        self.chain_id
+    }
+
+    public fun token_id(self: &FastPathLimitPayload): u64 {
+        self.token_id
+    }
+
+    public fun amount(self: &FastPathLimitPayload): u64 {
+        self.amount
+    }
     public struct TokenTransferPayload has drop {
         sender_address: vector<u8>,
         target_chain: u8,
@@ -65,6 +84,27 @@ module bridge::message {
         amount: u64,
         tx_hash: vector<u8>,
         event_idx: u8,
+    }
+
+    public struct TokenTransferPayloadV2 has drop {
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+    }
+
+    public struct TokenTransferInPayload has drop {
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+        fast_path_selector: u8,
     }
 
     public struct EmergencyOp has drop {
@@ -141,6 +181,54 @@ module bridge::message {
         payload: vector<u8>,
         parsed_payload: TokenTransferPayload,
     }
+    public struct ParsedTokenTransferMessageV2 has drop {
+        message_version: u8,
+        seq_num: u64,
+        source_chain: u8,
+        payload: vector<u8>,
+        parsed_payload: TokenTransferPayloadV2,
+    }
+
+    public struct ParsedTokenTransferInMessage has drop {
+        message_version: u8,
+        seq_num: u64,
+        source_chain: u8,
+        payload: vector<u8>,
+        parsed_payload: TokenTransferInPayload,
+    }
+
+    public struct  AddTokenOnTokenList has drop {
+        from_chain_id :u8,
+        to_chain_id: u8,
+        token_id: u64,
+    }
+
+    public struct  RemoveTokenOnTokenList has drop {
+        from_chain_id :u8,
+        to_chain_id: u8,
+        token_id: u64,
+    }
+
+    public struct SetCrossOutBridgeFee has drop {
+        chain_id: u8,
+        token_id: u64,
+        mode: u64,
+        amount: u64
+    }
+
+    public struct SetCrossInBridgeFee has drop {
+        chain_id: u8,
+        token_id: u64,
+        mode: u64,
+        amount: u64
+    }
+
+    public struct WithdrawBridgeFee has drop{
+        recipient :address,
+        coin_type: String,
+        amount: u64
+    }
+
 
     //////////////////////////////////////////////////////
     // Public functions
@@ -170,6 +258,73 @@ module bridge::message {
             amount,
             tx_hash,
             event_idx
+        }
+    }
+
+    public fun extract_fast_path_limit_payload(message: &BridgeMessage): FastPathLimitPayload {
+        let mut bcs = bcs::new(message.payload);
+        let chain_id = bcs.peel_u8();
+        let token_id = peel_u64_be(&mut bcs);
+        let amount = peel_u64_be(&mut bcs);
+        chain_ids::assert_valid_chain_id(chain_id);
+        assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
+
+        FastPathLimitPayload {
+            chain_id,
+            token_id,
+            amount,
+        }
+    }
+
+    // Note: `bcs::peel_vec_u8` *happens* to work here because
+    // `sender_address` and `target_address` are no longer than 255 bytes.
+    // Therefore their length can be represented by a single byte.
+    // See `create_token_bridge_message` for the actual encoding rule.
+    public fun extract_token_bridge_payload_v2(message: &BridgeMessage): TokenTransferPayloadV2 {
+        let mut bcs = bcs::new(message.payload);
+        let sender_address = bcs.peel_vec_u8();
+        let target_chain = bcs.peel_u8();
+        let target_address = bcs.peel_vec_u8();
+        let token_type = peel_u64_be(&mut bcs);
+        let amount = peel_u64_be(&mut bcs);
+        let tx_hash = bcs.peel_vec_u8();
+        let event_idx = bcs.peel_u16();
+        chain_ids::assert_valid_chain_id(target_chain);
+        assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
+
+        TokenTransferPayloadV2 {
+            sender_address,
+            target_chain,
+            target_address,
+            token_type,
+            amount,
+            tx_hash,
+            event_idx,
+        }
+    }
+
+    public fun extract_token_bridge_in_payload(message: &BridgeMessage): TokenTransferInPayload {
+        let mut bcs = bcs::new(message.payload);
+        let sender_address = bcs.peel_vec_u8();
+        let target_chain = bcs.peel_u8();
+        let target_address = bcs.peel_vec_u8();
+        let token_type = peel_u64_be(&mut bcs);
+        let amount = peel_u64_be(&mut bcs);
+        let tx_hash = bcs.peel_vec_u8();
+        let event_idx = bcs.peel_u16();
+        let fast_path_selector = bcs.peel_u8();
+        chain_ids::assert_valid_chain_id(target_chain);
+        assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
+
+        TokenTransferInPayload {
+            sender_address,
+            target_chain,
+            target_address,
+            token_type,
+            amount,
+            tx_hash,
+            event_idx,
+            fast_path_selector
         }
     }
 
@@ -238,6 +393,77 @@ module bridge::message {
         RemoveExternalCoinTarget {
             coin_type,
             target_address
+        }
+    }
+
+
+    public fun extract_add_token_on_token_list_poyload(message: &BridgeMessage): AddTokenOnTokenList{
+           let mut bcs = bcs::new(message.payload);
+           let from_chain_id=bcs.peel_u8();
+           let to_chain_id=bcs.peel_u8();
+           let token_id=peel_u64_be(&mut bcs);
+
+           AddTokenOnTokenList{
+            from_chain_id,
+            to_chain_id,
+            token_id
+           }
+    }
+
+    public fun extract_remove_token_on_token_list_poyload(message: &BridgeMessage): RemoveTokenOnTokenList{
+           let mut bcs = bcs::new(message.payload);
+           let from_chain_id=bcs.peel_u8();
+           let to_chain_id=bcs.peel_u8();
+           let token_id=peel_u64_be(&mut bcs);
+
+           RemoveTokenOnTokenList{
+            from_chain_id,
+            to_chain_id,
+            token_id
+           }
+    }
+    //SetCrossOutBridgeFee
+    public fun extract_set_cross_out_bridge_fee_poyload(message: &BridgeMessage): SetCrossOutBridgeFee{
+           let mut bcs = bcs::new(message.payload);
+           let chain_id=bcs.peel_u8();
+           let token_id=peel_u64_be(&mut bcs);
+           let mode=peel_u64_be(&mut bcs);
+           let amount=peel_u64_be(&mut bcs);
+
+
+           SetCrossOutBridgeFee{
+            chain_id,
+            token_id,
+            mode,
+            amount
+           }
+    }
+
+    public fun extract_set_cross_in_bridge_fee_poyload(message: &BridgeMessage): SetCrossInBridgeFee{
+           let mut bcs = bcs::new(message.payload);
+           let chain_id=bcs.peel_u8();
+           let token_id=peel_u64_be(&mut bcs);
+           let mode=peel_u64_be(&mut bcs);
+           let amount=peel_u64_be(&mut bcs);
+
+           SetCrossInBridgeFee{
+            chain_id,
+            token_id,
+            mode,
+            amount
+           }
+    }
+
+    public fun extract_withdraw_bridge_fee(message: &BridgeMessage) :WithdrawBridgeFee{
+        let mut bcs = bcs::new(message.payload);
+        let recipient=bcs.peel_address();
+        let coin_type = ascii::string(bcs.peel_vec_u8());
+        let amount=peel_u64_be(&mut bcs);
+
+        WithdrawBridgeFee{
+            recipient,
+            coin_type,
+            amount,
         }
     }
 
@@ -478,6 +704,91 @@ module bridge::message {
         }
     }
 
+    //bridge to benfen message
+    public fun create_token_bridge_in_message(
+        source_chain: u8,
+        seq_num: u64,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+        fast_path_selector: u8,
+    ): BridgeMessage {
+        chain_ids::assert_valid_chain_id(source_chain);
+        chain_ids::assert_valid_chain_id(target_chain);
+
+        let mut payload = vector[];
+
+        // sender address should be less than 255 bytes so can fit into u8
+        payload.push_back((vector::length(&sender_address) as u8));
+        payload.append(sender_address);
+        payload.push_back(target_chain);
+        // target address should be less than 255 bytes so can fit into u8
+        payload.push_back((vector::length(&target_address) as u8));
+        payload.append(target_address);
+        // bcs serialzies u64 as 8 bytes
+        payload.append(reverse_bytes(bcs::to_bytes(&token_type)));
+        payload.append(reverse_bytes(bcs::to_bytes(&amount)));
+
+        // btc address len is different from eth address len, so we can't assert palyload length
+        // assert!(vector::length(&payload) == 71, EInvalidPayloadLength);
+        payload.push_back((vector::length(&tx_hash) as u8));
+        payload.append(tx_hash);
+        payload.append(reverse_bytes(bcs::to_bytes(&event_idx)));
+        payload.push_back(fast_path_selector);
+        BridgeMessage {
+            message_type: message_types::token(),
+            message_version: CURRENT_MESSAGE_VERSION_V2,
+            seq_num,
+            source_chain,
+            payload,
+        }
+    }
+
+    public fun create_token_bridge_message_v2(
+        source_chain: u8,
+        seq_num: u64,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+    ): BridgeMessage {
+        chain_ids::assert_valid_chain_id(source_chain);
+        chain_ids::assert_valid_chain_id(target_chain);
+
+        let mut payload = vector[];
+
+        // sender address should be less than 255 bytes so can fit into u8
+        payload.push_back((vector::length(&sender_address) as u8));
+        payload.append(sender_address);
+        payload.push_back(target_chain);
+        // target address should be less than 255 bytes so can fit into u8
+        payload.push_back((vector::length(&target_address) as u8));
+        payload.append(target_address);
+        // bcs serialzies u64 as 8 bytes
+        payload.append(reverse_bytes(bcs::to_bytes(&token_type)));
+        payload.append(reverse_bytes(bcs::to_bytes(&amount)));
+
+        // btc address len is different from eth address len, so we can't assert palyload length
+        // assert!(vector::length(&payload) == 71, EInvalidPayloadLength);
+        payload.push_back((vector::length(&tx_hash) as u8));
+        payload.append(tx_hash);
+        payload.append(reverse_bytes(bcs::to_bytes(&event_idx)));
+        BridgeMessage {
+            message_type: message_types::token(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload,
+        }
+    }
+
     /// Emergency Op Message Format:
     /// [message_type: u8]
     /// [version:u8]
@@ -561,6 +872,33 @@ module bridge::message {
             message_version: CURRENT_MESSAGE_VERSION,
             seq_num,
             source_chain,
+            payload,
+        }
+    }
+
+    /// Blocklist Message Format:
+    /// [message_type: u8]
+    /// [version:u8]
+    /// [nonce:u64]
+    /// [chain_id: u8]
+    /// [token_id: u64]
+    /// [amount: u64]
+    public fun create_fast_path_limit_message(
+        seq_num: u64,
+        chain_id: u8,
+        token_id: u64,
+        amount: u64,
+    ): BridgeMessage {
+        chain_ids::assert_valid_chain_id(chain_id);
+        let mut payload = bcs::to_bytes(&chain_id);
+        payload.append(bcs::to_bytes(&token_id));
+        payload.append(bcs::to_bytes(&amount));
+
+        BridgeMessage {
+            message_type: message_types::update_bridge_limit_fast_path(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain: chain_id,
             payload,
         }
     }
@@ -739,6 +1077,117 @@ module bridge::message {
         }
     }
 
+
+    public fun create_add_token_on_token_list(
+        source_chain: u8,
+        seq_num: u64,
+        from_chain: u8,
+        target_chain: u8,
+        token_id: u64
+    ): BridgeMessage{
+        chain_ids::assert_valid_chain_id(source_chain);
+        chain_ids::assert_valid_chain_id(from_chain);
+        chain_ids::assert_valid_chain_id(target_chain);
+        let mut payload = reverse_bytes(bcs::to_bytes(&from_chain));
+        payload.append(reverse_bytes(bcs::to_bytes(&target_chain)));
+        payload.append(reverse_bytes(bcs::to_bytes(&token_id)));
+
+        BridgeMessage {
+            message_type: message_types::add_token_on_token_list(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload,
+        }
+    }
+
+
+    public fun create_remove_token_on_token_list(
+        source_chain: u8,
+        seq_num: u64,
+        from_chain: u8,
+        target_chain: u8,
+        token_id: u64
+    ): BridgeMessage{
+        chain_ids::assert_valid_chain_id(source_chain);
+        chain_ids::assert_valid_chain_id(from_chain);
+        chain_ids::assert_valid_chain_id(target_chain);
+        let mut payload = reverse_bytes(bcs::to_bytes(&from_chain));
+        payload.append(reverse_bytes(bcs::to_bytes(&target_chain)));
+        payload.append(reverse_bytes(bcs::to_bytes(&token_id)));
+        BridgeMessage {
+            message_type: message_types::remove_token_on_token_list(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload,
+        }
+
+    }
+
+    public fun  create_set_cross_in_bridge_fee(
+        source_chain: u8,
+        seq_num: u64,
+        from_chain: u8,
+        token_id: u64,
+        mode: u64,
+        amount: u64,
+    ): BridgeMessage{
+        let mut payload = reverse_bytes(bcs::to_bytes(&from_chain));
+        payload.append(reverse_bytes(bcs::to_bytes(&token_id)));
+        payload.append(reverse_bytes(bcs::to_bytes(&mode)));
+        payload.append(reverse_bytes(bcs::to_bytes(&amount)));
+        BridgeMessage{
+            message_type: message_types::set_cross_in_bridge_fee(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload
+        }
+    }
+
+
+    public fun  create_set_cross_out_bridge_fee(
+        source_chain: u8,
+        seq_num: u64,
+        to_chain: u8,
+        token_id: u64,
+        mode: u64,
+        amount: u64,
+    ): BridgeMessage{
+        let mut payload = reverse_bytes(bcs::to_bytes(&to_chain));
+        payload.append(reverse_bytes(bcs::to_bytes(&token_id)));
+        payload.append(reverse_bytes(bcs::to_bytes(&mode)));
+        payload.append(reverse_bytes(bcs::to_bytes(&amount)));
+        BridgeMessage{
+            message_type: message_types::set_cross_out_bridge_fee(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload
+        }
+    }
+
+    public fun create_withdraw_fee_cap(
+        source_chain: u8,
+        seq_num: u64,
+        addr: address,
+        coin_type: String,
+        amount: u64
+    ): BridgeMessage{
+        let mut payload =bcs::to_bytes(&addr);
+        payload.append(bcs::to_bytes(&coin_type));
+        payload.append(reverse_bytes(bcs::to_bytes(&amount)));
+
+        BridgeMessage{
+            message_type: message_types::withdraw_bridge_fee(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload
+        }
+    }
+
     /// Update Sui token message
     /// [message_type:u8]
     /// [version:u8]
@@ -830,6 +1279,66 @@ module bridge::message {
     public fun token_event_idx(self: &TokenTransferPayload): u8 {
         self.event_idx
     }
+
+    public fun token_sender_address_v2(self: &TokenTransferPayloadV2): vector<u8> {
+        self.sender_address
+    }
+
+    public fun token_target_chain_v2(self: &TokenTransferPayloadV2): u8 {
+        self.target_chain
+    }
+
+    public fun token_target_address_v2(self: &TokenTransferPayloadV2): vector<u8> {
+        self.target_address
+    }
+
+    public fun token_type_v2(self: &TokenTransferPayloadV2): u64 {
+        self.token_type
+    }
+
+    public fun token_amount_v2(self: &TokenTransferPayloadV2): u64 {
+        self.amount
+    }
+
+    public fun token_tx_hash_v2(self: &TokenTransferPayloadV2): vector<u8> {
+        self.tx_hash
+    }
+
+    public fun token_event_idx_v2(self: &TokenTransferPayloadV2): u16 {
+        self.event_idx
+    }
+
+    public fun token_sender_address_in(self: &TokenTransferInPayload): vector<u8> {
+        self.sender_address
+    }
+    public fun token_target_chain_in(self: &TokenTransferInPayload): u8 {
+        self.target_chain
+    }
+
+    public fun token_target_address_in(self: &TokenTransferInPayload): vector<u8> {
+        self.target_address
+    }
+
+    public fun token_type_in(self: &TokenTransferInPayload): u64 {
+        self.token_type
+    }
+
+    public fun token_amount_in(self: &TokenTransferInPayload): u64 {
+        self.amount
+    }
+
+    public fun token_tx_hash_in(self: &TokenTransferInPayload): vector<u8> {
+        self.tx_hash
+    }
+
+    public fun token_event_idx_in(self: &TokenTransferInPayload): u16 {
+        self.event_idx
+    }
+
+    public fun token_fast_path_selector_in(self: &TokenTransferInPayload): u8 {
+        self.fast_path_selector
+    }
+
 
     // EmergencyOpPayload getters
     public fun emergency_op_type(self: &EmergencyOp): u8 {
@@ -929,6 +1438,42 @@ module bridge::message {
         self.admin_address
     }
 
+    public fun  set_cross_in_bridge_fee_poyload(self: &SetCrossInBridgeFee):(u8,u64,u64,u64){
+        (self.chain_id,self.token_id,self.mode,self.amount)
+    }
+
+    public fun  set_cross_out_bridge_fee_poyload(self: &SetCrossOutBridgeFee):(u8,u64,u64,u64){
+        (self.chain_id,self.token_id,self.mode,self.amount)
+    }
+
+    public fun withdraw_bridge_fee_polyload(self: &WithdrawBridgeFee):(address,String,u64){
+        (self.recipient,self.coin_type,self.amount)
+    }
+
+    public fun add_token_on_token_list_payload_from_chain_id(self: &AddTokenOnTokenList): u8 {
+        self.from_chain_id
+    }
+
+    public fun add_token_on_token_list_payload_to_chain_id(self: &AddTokenOnTokenList): u8 {
+        self.to_chain_id
+    }
+
+    public fun add_token_on_token_list_payload_token_id(self: &AddTokenOnTokenList): u64 {
+        self.token_id
+    }
+
+    public fun remove_token_on_token_list_payload_from_chain_id(self: &RemoveTokenOnTokenList): u8 {
+       self.from_chain_id
+    }
+
+    public fun remove_token_on_token_list_payload_to_chain_id(self: &RemoveTokenOnTokenList): u8 {
+        self.to_chain_id
+    }
+
+    public fun remove_token_on_token_list_payload_token_id(self: &RemoveTokenOnTokenList): u64 {
+        self.token_id
+    }
+
     public fun is_native(self: &AddTokenOnSui): bool {
         self.native_token
     }
@@ -990,7 +1535,18 @@ module bridge::message {
             5001
         }else if (message_type == message_types::remove_external_coin_target()) {
             5001
-        } else {
+        } else if (message_type == message_types::add_token_on_token_list()) {
+            5001
+        }else if (message_type == message_types::remove_token_on_token_list()) {
+            5001
+        }else if (message_type == message_types::set_cross_in_bridge_fee()) {
+            5001
+        }else if (message_type == message_types::set_cross_out_bridge_fee()) {
+            5001
+        }else if (message_type == message_types::withdraw_bridge_fee()) {
+            5001
+        }
+        else {
             abort EInvalidMessageType
         }
     }
@@ -1010,6 +1566,33 @@ module bridge::message {
         }
     }
 
+    public fun to_parsed_token_transfer_message_v2(
+        message: &BridgeMessage,
+    ): ParsedTokenTransferMessageV2 {
+        assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
+        let payload = message.extract_token_bridge_payload_v2();
+        ParsedTokenTransferMessageV2 {
+            message_version: message.message_version(),
+            seq_num: message.seq_num(),
+            source_chain: message.source_chain(),
+            payload: message.payload(),
+            parsed_payload: payload,
+        }
+    }
+
+    public fun to_parsed_token_transfer_in_message(
+        message: &BridgeMessage,
+    ): ParsedTokenTransferInMessage {
+        assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
+        let payload = message.extract_token_bridge_in_payload();
+        ParsedTokenTransferInMessage {
+            message_version: message.message_version(),
+            seq_num: message.seq_num(),
+            source_chain: message.source_chain(),
+            payload: message.payload(),
+            parsed_payload: payload,
+        }
+    }
     //////////////////////////////////////////////////////
     // Internal functions
     //
@@ -1066,6 +1649,26 @@ module bridge::message {
         event_idx: u8,
     ): TokenTransferPayload {
         TokenTransferPayload {
+            sender_address,
+            target_chain,
+            target_address,
+            token_type,
+            amount,
+            tx_hash,
+            event_idx,
+        }
+    }
+    #[test_only]
+    public(package) fun make_payload_v2(
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+    ): TokenTransferPayloadV2 {
+        TokenTransferPayloadV2 {
             sender_address,
             target_chain,
             target_address,

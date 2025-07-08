@@ -44,7 +44,7 @@ use bridge::bridge_env::{
 use bridge::btc::BTC;
 use bridge::chain_ids;
 use bridge::eth::ETH;
-use bridge::message::{Self, to_parsed_token_transfer_message};
+use bridge::message::{Self, to_parsed_token_transfer_message_v2};
 use bridge::message_types;
 use bridge::test_token::{TEST_TOKEN, create_bridge_token as create_test_token};
 use bridge::usdc::USDC;
@@ -64,6 +64,9 @@ use bfc_system::bfc_system::BfcSystemState;
 use bfc_system::bfc_system;
 use bfc_system::bfc_system_tests::public_setup;
 use bfc_system::busd::BUSD;
+use bridge::busd;
+
+
 use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
 use bridge::bridge_env::get_usdc;
 
@@ -312,7 +315,7 @@ fun test_btc_bridge_v2() {
         source_address,
         target_address,
         ascii::string(b"ddd"),
-        100,
+        100_000_000,
     );
 
     env.destroy_env();
@@ -348,7 +351,7 @@ fun mock_bitcoin_message(): (vector<u8>, vector<u8>, vector<u8>, vector<u8>, vec
     let source_address = b"tb1pxafm6dv7rj8x8st44n64f58nuy5r9vaplvfgdy747gdeug7xcvuqx98ude";
     let tx_hash = b"ff8305c804598c3afadb63611b4af1cd0e60fc9adef6f82b991789982b9bd712";
     let target_address = x"0255c0bd6eea8ea62db08f2d7d209858115c6e555e306ccb9e8b443f6e1f7729";
-    let amount = 10000;
+    let amount = 1*100_000_000;
     (witness, private_key, source_address, tx_hash, target_address, amount)
 }
 
@@ -380,7 +383,7 @@ fun test_btc_bridge_deposit_without_multi_signature() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string()
     );
@@ -421,7 +424,7 @@ fun test_btc_bridge_deposit_with_insufficient_multi_signature() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -431,7 +434,7 @@ fun test_btc_bridge_deposit_with_insufficient_multi_signature() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -441,7 +444,7 @@ fun test_btc_bridge_deposit_with_insufficient_multi_signature() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -452,7 +455,7 @@ fun test_btc_bridge_deposit_with_insufficient_multi_signature() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -484,7 +487,7 @@ fun test_verify_bitcoin_signatures() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures
     );
@@ -552,7 +555,7 @@ fun test_remove_witness_verify_bitcoin_signatures() {
         1,
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures
     );
@@ -593,7 +596,7 @@ fun test_btc_bridge_deposit_with_sufficient_multi_signature() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -603,7 +606,7 @@ fun test_btc_bridge_deposit_with_sufficient_multi_signature() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -614,7 +617,7 @@ fun test_btc_bridge_deposit_with_sufficient_multi_signature() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -633,7 +636,7 @@ fun test_get_external_token_transfer_action_not_found_status() {
         chain_ids::btc_testnet(),
         source_addr,
         target_addr.to_bytes(),
-        10000,
+        1*100_000_000,
         ascii::string(b""),
         sender,
     ) == transfer_status_not_found(), 0);
@@ -666,7 +669,7 @@ fun test_get_external_token_transfer_action_claimed_status() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -677,7 +680,7 @@ fun test_get_external_token_transfer_action_claimed_status() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -686,7 +689,7 @@ fun test_get_external_token_transfer_action_claimed_status() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         sender,
     ) == transfer_status_claimed(), 0);
@@ -722,7 +725,7 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -732,7 +735,7 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -768,7 +771,7 @@ fun test_btc_bridge_recall_deposit_and_withdraw_external_btc() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -778,7 +781,7 @@ fun test_btc_bridge_recall_deposit_and_withdraw_external_btc() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -789,7 +792,7 @@ fun test_btc_bridge_recall_deposit_and_withdraw_external_btc() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -825,7 +828,7 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc_after_remove_admin_cap() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -836,7 +839,7 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc_after_remove_admin_cap() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -849,7 +852,7 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc_after_remove_admin_cap() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -885,7 +888,7 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc_after_remove_witness_admin
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
     );
@@ -896,7 +899,7 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc_after_remove_witness_admin
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -908,7 +911,7 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc_after_remove_witness_admin
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -943,7 +946,7 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc_without_admin_cap() {
         chain_ids::sui_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         signatures,
         tx_hash.to_ascii_string(),
     );
@@ -980,7 +983,7 @@ fun test_btc_bridge_deposit_external_btc_without_admin_cap() {
         chain_ids::btc_testnet(),
         source_address,
         target_address,
-        10000,
+        1*100_000_000,
         tx_hash.to_ascii_string(),
         signatures,
         env.ctx(),
@@ -995,7 +998,7 @@ fun test_btc_bridge_withdraw_external_btc() {
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
 
-    let btc: Coin<BTC> = env.get_btc(10);
+    let btc: Coin<BTC> = env.get_btc(1*100_000_000);
     let target_address = x"0000000000000000000000000000000000000000000000000000000000000001";
 
     let sender = @0xABCD;
@@ -1369,7 +1372,7 @@ fun test_get_token_transfer_action_data() {
     let coin = coin::mint_for_testing<ETH>(12345, ctx);
 
     // Test when pending
-    let message = message::create_token_bridge_message(
+    let message = message::create_token_bridge_message_v2(
         chain_ids::sui_testnet(), // source chain
         10, // seq_num
         address::to_bytes(ctx.sender()), // sender address
@@ -1380,7 +1383,7 @@ fun test_get_token_transfer_action_data() {
         1u64, // token_type
         coin.balance().value(),
         hex::decode(b""), // tx_hash
-        0u8, // event_idx
+        0u16, // event_idx
     );
 
     let key = message.key();
@@ -1401,7 +1404,7 @@ fun test_get_token_transfer_action_data() {
     );
 
     // Test when ready for claim
-    let message = message::create_token_bridge_message(
+    let message = message::create_token_bridge_message_v2(
         chain_ids::sui_testnet(), // source chain
         11, // seq_num
         address::to_bytes(ctx.sender()), // sender address
@@ -1412,7 +1415,7 @@ fun test_get_token_transfer_action_data() {
         1u64, // token_type
         balance::value(coin::balance(&coin)),
         hex::decode(b""), // tx_hash
-        0u8, // event_idx
+        0u16, // event_idx
     );
     let key = message.key();
     bridge
@@ -1435,14 +1438,14 @@ fun test_get_token_transfer_action_data() {
             option::some(vector[]),
     );
     assert!(
-        bridge.test_get_parsed_token_transfer_message(chain_id, 11) ==
-            option::some(
-                to_parsed_token_transfer_message(&message),
-            ),
+        bridge.test_get_parsed_token_transfer_message_v2(chain_id, 11) ==
+        option::some(
+            to_parsed_token_transfer_message_v2(&message),
+        ),
     );
 
     // Test when already claimed
-    let message = message::create_token_bridge_message(
+    let message = message::create_token_bridge_message_v2(
         chain_ids::sui_testnet(), // source chain
         12, // seq_num
         address::to_bytes(ctx.sender()), // sender address
@@ -1453,7 +1456,7 @@ fun test_get_token_transfer_action_data() {
         1u64, // token_type
         balance::value(coin::balance(&coin)),
         hex::decode(b""), // tx_hash
-        0u8, // event_idx
+        0u16, // event_idx
     );
     let key = message.key();
     bridge
@@ -1476,10 +1479,10 @@ fun test_get_token_transfer_action_data() {
             option::some(vector[b"1234"]),
     );
     assert!(
-        bridge.test_get_parsed_token_transfer_message(chain_id, 12) ==
-            option::some(
-                to_parsed_token_transfer_message(&message),
-            ),
+        bridge.test_get_parsed_token_transfer_message_v2(chain_id, 12) ==
+        option::some(
+            to_parsed_token_transfer_message_v2(&message),
+        ),
     );
 
     // Test when message not found
@@ -1492,8 +1495,8 @@ fun test_get_token_transfer_action_data() {
             option::none(),
     );
     assert!(
-        bridge.test_get_parsed_token_transfer_message(chain_id, 13) ==
-            option::none(),
+        bridge.test_get_parsed_token_transfer_message_v2(chain_id, 13) ==
+        option::none(),
     );
 
     destroy(bridge);
@@ -1578,12 +1581,13 @@ fun test_twice_call_init_token_list() {
     env.destroy_env();
 }
 
+
 #[test]
 #[
 expected_failure(
-    abort_code = bridge::tokenlist::EBridgeCenterTokenLisAlreadyExists,
+    abort_code = bridge::bridge_fee::EBridgeFeeRegistryAlreadyExists,
 )]
-fun test_twice_call_add_center_token_list(){
+fun test_twice_call_migrate(){
     let chain_id = chain_ids::sui_testnet();
     let mut env = create_env(chain_id);
     env.create_bridge_default();
@@ -1594,6 +1598,126 @@ fun test_twice_call_add_center_token_list(){
     bridge.return_bridge();
     env.destroy_env();
 }
+
+#[test]
+fun test_add_token_on_benfen(){
+    let chain_id = chain_ids::sui_testnet();
+    let target_id=chain_ids::aptos_testnet();
+    let token_id=11; //aptos coin
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.add_token_on_token_list(chain_id,target_id, token_id);
+    env.destroy_env();
+}
+
+#[test]
+fun test_add_token_from_benfen(){
+    let chain_id = chain_ids::sui_testnet();
+    let source_chain=chain_ids::aptos_testnet();
+    let token_id=11; //aptos coin
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.add_token_on_token_list(source_chain,chain_id, token_id);
+    env.destroy_env();
+}
+
+#[test]
+fun test_set_cross_in_bridge_fee_with_fixed(){
+    let chain_id = chain_ids::sui_testnet();
+    let source_chain=chain_ids::aptos_testnet();
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.set_cross_in_bridge_fee<BTC>(source_chain,0,100,1_000_000_000);
+    env.destroy_env();
+}
+
+
+#[test]
+fun test_set_cross_in_bridge_fee_with_percentage(){
+    let chain_id = chain_ids::sui_testnet();
+    let source_chain=chain_ids::aptos_testnet();
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.set_cross_in_bridge_fee<BTC>(source_chain,1,500,1_000_000_000);
+    env.destroy_env();
+}
+
+
+
+#[test]
+fun test_set_cross_out_bridge_fee_with_fixed(){
+    let chain_id = chain_ids::sui_testnet();
+    let to_chain=chain_ids::aptos_testnet();
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.set_cross_out_bridge_fee<BTC>(to_chain,0,80000,1_000_000_000);
+    env.destroy_env();
+}
+
+
+#[test]
+fun test_set_cross_out_bridge_fee_with_percentage(){
+    let chain_id = chain_ids::sui_testnet();
+    let to_chain=chain_ids::aptos_testnet();
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.set_cross_out_bridge_fee<BTC>(to_chain,1,800,1_000_000_000);
+    env.destroy_env();
+}
+
+
+#[test]
+fun test_get_withdraw_fee_cap(){
+    let chain_id = chain_ids::sui_testnet();
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+
+    env.withdraw_bridge_fee_cap<BTC>(10000);
+    env.destroy_env();
+
+}
+
+#[test]
+fun test_remove_token_on_benfen(){
+    let chain_id = chain_ids::sui_testnet();
+    let target_id=chain_ids::aptos_testnet();
+    let token_id=11; //aptos coin
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.add_token_on_token_list(chain_id,target_id, token_id);
+    env.remove_token_on_token_list(chain_id, target_id, token_id);
+    env.destroy_env();
+}
+
+#[test]
+fun test_remove_token_from_benfen(){
+    let chain_id = chain_ids::sui_testnet();
+    let source_chain=chain_ids::aptos_testnet();
+    let token_id=11; //aptos coin
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.add_token_on_token_list(source_chain,chain_id, token_id);
+    env.remove_token_on_token_list(source_chain, chain_id, token_id);
+    env.destroy_env();
+}
+
+
+// #[test]
+// #[
+// expected_failure(
+//     abort_code = bridge::tokenlist::EBridgeCenterTokenLisAlreadyExists,
+// )]
+// fun test_twice_call_add_center_token_list(){
+//     let chain_id = chain_ids::sui_testnet();
+//     let mut env = create_env(chain_id);
+//     env.create_bridge_default();
+//     let mut bridge = env.bridge(@0x0);
+//     let bridge_inner = bridge.bridge_ref_mut();
+//     bridge_inner.migrate(env.scenario().ctx());
+//     //bridge_inner.migrate(env.scenario().ctx());
+//     bridge.return_bridge();
+//     env.destroy_env();
+// }
 
 #[test]
 fun test_get_available_claim_amount_for_router_limit() {
@@ -1643,33 +1767,34 @@ fun test_external_busd_approval_and_claimed_external_busd_coin() {
     let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
     let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
     // 调用 approval_and_claimed_external_busd_coin
-    bridge.bridge_ref_mut().approval_and_claimed_external_busd_coin<BUSD>(
+    bridge.bridge_ref_mut().approval_and_claimed_external_busd_coin<busd::BUSD>(
         message,
         signatures,
         &mut bfc_system_state,
         &cap,
         ctx,
     );
-    let deposited = sui::event::events_by_type<bridge::bridge::ExternalDepositedEvent>();
+    let deposited = sui::event::events_by_type<bridge::bridge::ExternalDepositedEventV2>();
     assert!(deposited.length() == 1);
     {
         let (
             tx_hash,
-            coin_type,
+            token_type,
             source_chain,
             target_chain,
             source_address,
             target_address,
-            amount,
-        ) = deposited[0].unwrap_external_deposited_event();
+            amount_before_fee,
+            _,
+        ) = deposited[0].unwrap_external_deposited_event_v2();
         assert!(
             tx_hash == tx_hash &&
-                coin_type == type_name::get<BUSD>().into_string() &&
+                token_type == token_type &&
                 source_chain == source_chain &&
                 target_chain == chain_ids::sui_custom() &&
                 source_address == source_address &&
                 target_address == target_address &&
-                amount == amount,
+                amount == amount_before_fee,
         );
     };
 
@@ -1797,7 +1922,7 @@ fun test_external_busd_withdraw_external_busd_coin(token_id_expect: u64, target_
     let mut env = create_env(source_chain);
     env.create_bridge_default();
 
-    let amount = 1000u64;
+    let amount = 100*1_000_000_000u64;
 
     let mut bridge = env.bridge(@0x0);
     let ctx = env.ctx();
@@ -1814,7 +1939,7 @@ fun test_external_busd_withdraw_external_busd_coin(token_id_expect: u64, target_
         &mut bfc_system_state,
         ctx,
     );
-    let withdraw = sui::event::events_by_type<bridge::bridge::ExternalWithdrawEvent>();
+    let withdraw = sui::event::events_by_type<bridge::bridge::ExternalWithdrawEventV2>();
     assert!(withdraw.length() == 1);
     sui::test_scenario::return_shared(bfc_system_state);
     sui::test_scenario::return_to_sender(&scenario, cap);

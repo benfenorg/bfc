@@ -20,6 +20,7 @@ use fastcrypto::{
 };
 use fastcrypto::{hash::Keccak256, traits::KeyPair};
 use serde::{Deserialize, Serialize};
+use tracing::info;
 use std::fmt::Debug;
 use std::fmt::{Display, Formatter};
 use sui_types::{base_types::ConciseableName, message_envelope::VerifiedEnvelope};
@@ -160,6 +161,7 @@ pub fn verify_signed_bridge_action(
     committee: &BridgeCommittee,
 ) -> BridgeResult<VerifiedSignedBridgeAction> {
     if signed_action.data() != expected_action {
+        info!("bbking expected_action: {:?}, signed_action: {:?}", expected_action, signed_action.data());
         return Err(BridgeError::MismatchedAction);
     }
 
@@ -284,7 +286,7 @@ mod tests {
         // println!("bbking sig2: {:?}", Hex::encode(sig2.signature.as_bytes()));
 
         let public_key_bytes =
-            Hex::decode("0261cc4c8d2468030b026e7e67ece1e9d8715f05a230b53409e69a9cb1d9655245")
+            Hex::decode("02b51258e9ed64283746451b6bc6d735d39f8d13a755344e94b9b1128941a11aa2")
                 .unwrap();
         let pubkey1 = BridgeAuthorityPublicKey::from_bytes(&public_key_bytes).unwrap();
         let authority1 = BridgeAuthority {
@@ -296,7 +298,7 @@ mod tests {
         };
 
         let public_key_bytes =
-            Hex::decode("02ba377744428df140fc170e9a4c5479b7be7d7c5af40ebbd3cbae2afecd542279")
+            Hex::decode("030b0d82e4cfa544289496e8726861875c14942519c1c25e7f69eae23ae6f524c1")
                 .unwrap();
         let pubkey2 = BridgeAuthorityPublicKey::from_bytes(&public_key_bytes).unwrap();
         let authority2 = BridgeAuthority {
@@ -361,14 +363,16 @@ mod tests {
         let sig = BridgeAuthoritySignInfo {
             authority_pub_key: pubkey1,
             signature: BridgeAuthorityRecoverableSignature::from_bytes(
-                &Hex::decode("e388a0b99552d5ed9328a7eaf3d8ca9530a0611efa2b44fb1c7f2f874a0a9777277e4b8072a63af2070187f56987532bda44e330446e8b86ad4d9b025962462a01").unwrap(),
+                &Hex::decode("7d11253bc000a9826117b44691c30884c9480cabf21084b9e79461ee25f6fb682645d9ab7fd39489a5f0d5bcfddc1227a312bacdd813a294a227563c1dae2aa700").unwrap(),
             ).unwrap(),
         };
+        // crate::crypto::BridgeAuthoritySignInfo::new(&action, &sig.authority_pub_key.).signature
+            
         sig.verify(&action, &committee).unwrap();
         let sig = BridgeAuthoritySignInfo {
             authority_pub_key: pubkey2.clone(),
             signature: BridgeAuthorityRecoverableSignature::from_bytes(
-                &Hex::decode("2c08b87b4238e63bc03fbe0718ce3406e8e7903d5cd87015b51ab953fc2c95386583c0db4266abce6f9ab95b2c7880cda117aa7d1aa81145dc8db4b1a55685e800").unwrap(),
+                &Hex::decode("c6b2c8900d3c144a62453a0d0e479ea4f0b9bedc92e2e666d875ba16d33601721c1d0ec33c10cd31902e34563b04b27c74c5f2cb59cabbd7ad428aaf9a3ad91c01").unwrap(),
             ).unwrap(),
         };
         sig.verify(&action, &committee).unwrap();

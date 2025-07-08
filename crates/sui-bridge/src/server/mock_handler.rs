@@ -90,6 +90,7 @@ impl BridgeRequestHandlerTrait for BridgeRequestMockHandler {
         _chain_id: u8,
         _tx_hash_hex: String,
         _event_idx: u16,
+        _fast_path_selector: u8,
     ) -> Result<Json<SignedBridgeAction>, BridgeError> {
         unimplemented!()
     }

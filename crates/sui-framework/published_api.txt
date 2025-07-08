@@ -5668,6 +5668,9 @@ update_asset_price
 add_tokens_on_sui
 	public fun
 	0xb::message_types
+update_bridge_limit_fast_path
+	public fun
+	0xb::message_types
 add_external_coin_admin
 	public fun
 	0xb::message_types
@@ -5687,6 +5690,21 @@ add_external_coin_target
 	public fun
 	0xb::message_types
 remove_external_coin_target
+	public fun
+	0xb::message_types
+add_token_on_token_list
+	public fun
+	0xb::message_types
+remove_token_on_token_list
+	public fun
+	0xb::message_types
+set_cross_out_bridge_fee
+	public fun
+	0xb::message_types
+set_cross_in_bridge_fee
+	public fun
+	0xb::message_types
+withdraw_bridge_fee
 	public fun
 	0xb::message_types
 BridgeRoute
@@ -5836,7 +5854,16 @@ BridgeMessageKey
 RefundMessageKey
 	public struct
 	0xb::message
+FastPathLimitPayload
+	public struct
+	0xb::message
 TokenTransferPayload
+	public struct
+	0xb::message
+TokenTransferPayloadV2
+	public struct
+	0xb::message
+TokenTransferInPayload
 	public struct
 	0xb::message
 EmergencyOp
@@ -5878,7 +5905,46 @@ AddTokenOnSui
 ParsedTokenTransferMessage
 	public struct
 	0xb::message
+ParsedTokenTransferMessageV2
+	public struct
+	0xb::message
+ParsedTokenTransferInMessage
+	public struct
+	0xb::message
+AddTokenOnTokenList
+	public struct
+	0xb::message
+RemoveTokenOnTokenList
+	public struct
+	0xb::message
+SetCrossOutBridgeFee
+	public struct
+	0xb::message
+SetCrossInBridgeFee
+	public struct
+	0xb::message
+WithdrawBridgeFee
+	public struct
+	0xb::message
+chain_id
+	public fun
+	0xb::message
+token_id
+	public fun
+	0xb::message
+amount
+	public fun
+	0xb::message
 extract_token_bridge_payload
+	public fun
+	0xb::message
+extract_fast_path_limit_payload
+	public fun
+	0xb::message
+extract_token_bridge_payload_v2
+	public fun
+	0xb::message
+extract_token_bridge_in_payload
 	public fun
 	0xb::message
 extract_add_witness_poyload
@@ -5891,6 +5957,21 @@ extract_add_external_target_address_poyload
 	public fun
 	0xb::message
 extract_remove_external_target_address_poyload
+	public fun
+	0xb::message
+extract_add_token_on_token_list_poyload
+	public fun
+	0xb::message
+extract_remove_token_on_token_list_poyload
+	public fun
+	0xb::message
+extract_set_cross_out_bridge_fee_poyload
+	public fun
+	0xb::message
+extract_set_cross_in_bridge_fee_poyload
+	public fun
+	0xb::message
+extract_withdraw_bridge_fee
 	public fun
 	0xb::message
 extract_emergency_op_payload
@@ -5929,6 +6010,12 @@ create_bitcoin_message
 create_token_bridge_message
 	public fun
 	0xb::message
+create_token_bridge_in_message
+	public fun
+	0xb::message
+create_token_bridge_message_v2
+	public fun
+	0xb::message
 create_emergency_op_message
 	public fun
 	0xb::message
@@ -5936,6 +6023,9 @@ create_blocklist_message
 	public fun
 	0xb::message
 create_refund_admin_message
+	public fun
+	0xb::message
+create_fast_path_limit_message
 	public fun
 	0xb::message
 create_update_bridge_limit_message
@@ -5960,6 +6050,21 @@ create_remove_external_coin_target_message
 	public fun
 	0xb::message
 create_remove_external_coin_admin_message
+	public fun
+	0xb::message
+create_add_token_on_token_list
+	public fun
+	0xb::message
+create_remove_token_on_token_list
+	public fun
+	0xb::message
+create_set_cross_in_bridge_fee
+	public fun
+	0xb::message
+create_set_cross_out_bridge_fee
+	public fun
+	0xb::message
+create_withdraw_fee_cap
 	public fun
 	0xb::message
 create_add_tokens_on_sui_message
@@ -6008,6 +6113,51 @@ token_tx_hash
 	public fun
 	0xb::message
 token_event_idx
+	public fun
+	0xb::message
+token_sender_address_v2
+	public fun
+	0xb::message
+token_target_chain_v2
+	public fun
+	0xb::message
+token_target_address_v2
+	public fun
+	0xb::message
+token_type_v2
+	public fun
+	0xb::message
+token_amount_v2
+	public fun
+	0xb::message
+token_tx_hash_v2
+	public fun
+	0xb::message
+token_event_idx_v2
+	public fun
+	0xb::message
+token_sender_address_in
+	public fun
+	0xb::message
+token_target_chain_in
+	public fun
+	0xb::message
+token_target_address_in
+	public fun
+	0xb::message
+token_type_in
+	public fun
+	0xb::message
+token_amount_in
+	public fun
+	0xb::message
+token_tx_hash_in
+	public fun
+	0xb::message
+token_event_idx_in
+	public fun
+	0xb::message
+token_fast_path_selector_in
 	public fun
 	0xb::message
 emergency_op_type
@@ -6082,6 +6232,33 @@ remove_external_coin_admin_payload_coin_type
 remove_external_coin_admin_payload_admin_address
 	public fun
 	0xb::message
+set_cross_in_bridge_fee_poyload
+	public fun
+	0xb::message
+set_cross_out_bridge_fee_poyload
+	public fun
+	0xb::message
+withdraw_bridge_fee_polyload
+	public fun
+	0xb::message
+add_token_on_token_list_payload_from_chain_id
+	public fun
+	0xb::message
+add_token_on_token_list_payload_to_chain_id
+	public fun
+	0xb::message
+add_token_on_token_list_payload_token_id
+	public fun
+	0xb::message
+remove_token_on_token_list_payload_from_chain_id
+	public fun
+	0xb::message
+remove_token_on_token_list_payload_to_chain_id
+	public fun
+	0xb::message
+remove_token_on_token_list_payload_token_id
+	public fun
+	0xb::message
 is_native
 	public fun
 	0xb::message
@@ -6104,6 +6281,12 @@ required_voting_power
 	public fun
 	0xb::message
 to_parsed_token_transfer_message
+	public fun
+	0xb::message
+to_parsed_token_transfer_message_v2
+	public fun
+	0xb::message
+to_parsed_token_transfer_in_message
 	public fun
 	0xb::message
 reverse_bytes
@@ -6205,6 +6388,9 @@ burn
 mint
 	public(package) fun
 	0xb::treasury
+calculate_amount_in_usd
+	public(package) fun
+	0xb::treasury
 update_asset_notional_price
 	public(package) fun
 	0xb::treasury
@@ -6304,7 +6490,82 @@ get_op_token_id
 get_pol_token_id
 	public fun
 	0xb::tokenlist
+UserLimitRecord
+	public struct
+	0xb::limiter_fast_path
+UserLimiter
+	public struct
+	0xb::limiter_fast_path
+LimitConfigKey
+	public struct
+	0xb::limiter_fast_path
+UserLimiterKey
+	public struct
+	0xb::limiter_fast_path
+UserLimitUsedEvent
+	public struct
+	0xb::limiter_fast_path
+UserLimitInfo
+	public struct
+	0xb::limiter_fast_path
+borrow
+	public(package) fun
+	0xb::limiter_fast_path
+borrow_mut
+	public(package) fun
+	0xb::limiter_fast_path
+registry
+	public(package) fun
+	0xb::limiter_fast_path
+initial_limiter_fast_path
+	public(package) fun
+	0xb::limiter_fast_path
+add_limiter
+	public(package) fun
+	0xb::limiter_fast_path
+new
+	public fun
+	0xb::limiter_fast_path
+check_and_record_user_limit
+	public fun
+	0xb::limiter_fast_path
+get_user_limit_info
+	public fun
+	0xb::limiter_fast_path
+get_user_remaining_limit
+	public fun
+	0xb::limiter_fast_path
+set_default_limit
+	public fun
+	0xb::limiter_fast_path
+get_default_limit
+	public fun
+	0xb::limiter_fast_path
+set_default_time_window
+	public fun
+	0xb::limiter_fast_path
+get_default_time_window
+	public fun
+	0xb::limiter_fast_path
+set_enabled
+	public fun
+	0xb::limiter_fast_path
+get_enabled
+	public fun
+	0xb::limiter_fast_path
+get_user_count
+	public fun
+	0xb::limiter_fast_path
+current_hour_since_epoch
+	fun
+	0xb::limiter_fast_path
+adjust_user_limit_records
+	fun
+	0xb::limiter_fast_path
 TransferLimiter
+	public struct
+	0xb::limiter
+ExternalLimiter
 	public struct
 	0xb::limiter
 TransferRecord
@@ -6323,6 +6584,24 @@ set_mint_busd_max_limit
 	public(package) fun
 	0xb::limiter
 new
+	public(package) fun
+	0xb::limiter
+new_external_limits
+	public(package) fun
+	0xb::limiter
+initial_external_limits
+	public(package) fun
+	0xb::limiter
+get_external_limiter
+	public(package) fun
+	0xb::limiter
+update_external_out_limit
+	public(package) fun
+	0xb::limiter
+add_external_out_limit
+	public(package) fun
+	0xb::limiter
+get_external_out_limit
 	public(package) fun
 	0xb::limiter
 get_available_claim_amount
@@ -6388,6 +6667,93 @@ update_node_url
 check_uniqueness_bridge_keys
 	fun
 	0xb::committee
+WithdrawBridgeFeeCap
+	public struct
+	0xb::bridge_fee
+BridgeFee
+	public struct
+	0xb::bridge_fee
+FeeInfo
+	public struct
+	0xb::bridge_fee
+new_bridge_fee_registry
+	public(package) fun
+	0xb::bridge_fee
+new
+	public(package) fun
+	0xb::bridge_fee
+empty
+	fun
+	0xb::bridge_fee
+initial_bridge_fee
+	fun
+	0xb::bridge_fee
+borrow
+	public(package) fun
+	0xb::bridge_fee
+borrow_mut
+	public(package) fun
+	0xb::bridge_fee
+set_fee_in_cross_in
+	public(package) fun
+	0xb::bridge_fee
+set_fee_in_cross_out
+	public(package) fun
+	0xb::bridge_fee
+get_cross_out_amount_after_fee
+	public fun
+	0xb::bridge_fee
+get_cross_in_amount_after_fee
+	public fun
+	0xb::bridge_fee
+calculate_cross_out_fee_amount
+	public fun
+	0xb::bridge_fee
+calculate_cross_in_fee_amount
+	public fun
+	0xb::bridge_fee
+deposit_fee
+	public fun
+	0xb::bridge_fee
+withdraw_fee
+	public(package) fun
+	0xb::bridge_fee
+create_withdraw_fee_cap
+	public(package) fun
+	0xb::bridge_fee
+get_withdraw_cap_coin_type
+	public fun
+	0xb::bridge_fee
+get_withdraw_cap_amount
+	public fun
+	0xb::bridge_fee
+get_unclaimed_bridge_fee
+	public fun
+	0xb::bridge_fee
+is_asset_supported
+	public fun
+	0xb::bridge_fee
+is_token_id_supported_in_cross_out_internal
+	fun
+	0xb::bridge_fee
+is_token_id_supported_in_cross_in_internal
+	fun
+	0xb::bridge_fee
+get_fee_info_from_benfen
+	fun
+	0xb::bridge_fee
+get_fee_info_to_benfen
+	fun
+	0xb::bridge_fee
+default_fee_info
+	fun
+	0xb::bridge_fee
+new_fee_info
+	fun
+	0xb::bridge_fee
+calculate_fee
+	fun
+	0xb::bridge_fee
 Bridge
 	public struct
 	0xb::bridge
@@ -6397,7 +6763,13 @@ BridgeInner
 TokenDepositedEvent
 	public struct
 	0xb::bridge
+TokenDepositedEventV2
+	public struct
+	0xb::bridge
 TokenSendBackEvent
+	public struct
+	0xb::bridge
+TokenSendBackEventV2
 	public struct
 	0xb::bridge
 EmergencyOpEvent
@@ -6436,7 +6808,13 @@ ExternalDepositStartEvent
 ExternalDepositedEvent
 	public struct
 	0xb::bridge
+ExternalDepositedEventV2
+	public struct
+	0xb::bridge
 ExternalWithdrawEvent
+	public struct
+	0xb::bridge
+ExternalWithdrawEventV2
 	public struct
 	0xb::bridge
 ExternalBridgeMessageKey
@@ -6457,6 +6835,9 @@ migrate
 init_token_list
 	public fun
 	0xb::bridge
+update_external_out_limit
+	public fun
+	0xb::bridge
 committee_registration
 	public fun
 	0xb::bridge
@@ -6475,10 +6856,19 @@ send_busd
 send_back_token
 	public fun
 	0xb::bridge
+send_back_token_v2
+	public fun
+	0xb::bridge
 is_refund_admin
 	fun
 	0xb::bridge
 approve_token_transfer
+	public fun
+	0xb::bridge
+approve_token_transfer_v2
+	public fun
+	0xb::bridge
+approve_token_transfer_in
 	public fun
 	0xb::bridge
 get_max_mint_busd_amount
@@ -6494,6 +6884,9 @@ claim_and_transfer_token
 	public fun
 	0xb::bridge
 claim_and_transfer_busd
+	public fun
+	0xb::bridge
+execute_system_message_with_ctx
 	public fun
 	0xb::bridge
 execute_system_message
@@ -6520,6 +6913,15 @@ withdraw_external_busd_coin
 withdraw_external_coin
 	public fun
 	0xb::bridge
+get_unclaimed_bridge_fee
+	public fun
+	0xb::bridge
+get_cross_out_fee_amount
+	public fun
+	0xb::bridge
+get_cross_in_fee_amount
+	public fun
+	0xb::bridge
 get_token_transfer_action_status
 	fun
 	0xb::bridge
@@ -6544,7 +6946,13 @@ load_inner_mut
 load_inner_mut_and_uid
 	fun
 	0xb::bridge
+load_inner_and_uid
+	fun
+	0xb::bridge
 claim_token_internal
+	fun
+	0xb::bridge
+check_fast_path_limit
 	fun
 	0xb::bridge
 claim_stable_token_internal
@@ -6586,6 +6994,21 @@ execute_add_external_coin_witness
 execute_remove_external_coin_witness
 	fun
 	0xb::bridge
+execute_set_cross_in
+	fun
+	0xb::bridge
+execute_set_cross_out
+	fun
+	0xb::bridge
+execute_withdraw_bridge_fee
+	fun
+	0xb::bridge
+execute_add_token_on_token_list
+	fun
+	0xb::bridge
+execute_remove_token_on_token_list
+	fun
+	0xb::bridge
 execute_add_tokens_on_sui
 	fun
 	0xb::bridge
@@ -6593,6 +7016,9 @@ get_current_seq_num_and_increment
 	fun
 	0xb::bridge
 get_parsed_token_transfer_message
+	fun
+	0xb::bridge
+get_parsed_token_transfer_message_v2
 	fun
 	0xb::bridge
 to_bytes

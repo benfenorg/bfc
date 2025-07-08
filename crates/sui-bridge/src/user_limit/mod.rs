@@ -269,6 +269,7 @@ mod tests {
     use crate::fast_path::FastPathSelector;
 
     #[tokio::test]
+    #[ignore] // Ignored because it requires a running PostgreSQL instance
     async fn test_user_limit() {
         let user_limit_handle = UserLimitHandle::new("postgres://user_limit:limit@localhost:5432/user_limit".to_string()).await;
 
@@ -292,6 +293,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore] // Ignored because it requires a running PostgreSQL instance
     async fn test_load_limit_config() {
         let user_limit_handle = UserLimitHandle::new("postgres://user_limit:limit@localhost:5432/user_limit".to_string()).await;
 
@@ -309,6 +311,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore] // Ignored because it requires a running PostgreSQL instance
     async fn test_limit_by_cached() {
         let user_limit_handle = UserLimitHandle::new("postgres://user_limit:limit@localhost:5432/user_limit".to_string()).await;
 
@@ -345,6 +348,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore] // Ignored because it requires a running PostgreSQL instance
     async fn test_limit_record_duplicate() {
         let user_limit_handle = UserLimitHandle::new("postgres://user_limit:limit@localhost:5432/user_limit".to_string()).await;
 

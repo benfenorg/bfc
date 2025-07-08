@@ -4,17 +4,21 @@
 use crate::encoding::{
     BridgeMessageEncoding, ADD_TOKENS_ON_EVM_MESSAGE_VERSION, ASSET_PRICE_UPDATE_MESSAGE_VERSION,
     EVM_CONTRACT_UPGRADE_MESSAGE_VERSION, LIMIT_UPDATE_MESSAGE_VERSION,
+    SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION,
 };
 use crate::encoding::{
     COMMITTEE_BLOCKLIST_MESSAGE_VERSION, EMERGENCY_BUTTON_MESSAGE_VERSION,
     TOKEN_TRANSFER_MESSAGE_VERSION,
 };
 use crate::error::{BridgeError, BridgeResult};
-use crate::types::ParsedTokenTransferMessage;
+use crate::fast_path::FastPathSelector;
 use crate::types::{
     AddTokensOnEvmAction, AssetPriceUpdateAction, BlocklistCommitteeAction, BridgeAction,
     BridgeActionType, EmergencyAction, EthLog, EthToSuiBridgeAction, EvmContractUpgradeAction,
     LimitUpdateAction, SuiToEthBridgeAction,
+};
+use crate::types::{
+    ParsedTokenTransferMessage, ParsedTokenTransferMessageV2, SingleTransferLimitUpdateAction,
 };
 use ethers::types::Log;
 use ethers::{
@@ -113,7 +117,7 @@ impl EthBridgeEvent {
                                     )));
                                 }
                                 bridge_event.set_tx_hash(eth_tx_hash.as_bytes().to_vec());
-                                bridge_event.set_event_idx(eth_event_index as u8);
+                                bridge_event.set_event_idx(eth_event_index);
                                 bridge_event
                             }
                             // This only happens when solidity code does not align with rust code.
@@ -149,6 +153,7 @@ impl EthBridgeEvent {
             },
             EthBridgeEvent::EthBridgeLimiterEvents(event) => match event {
                 EthBridgeLimiterEvents::LimitUpdatedFilter(_event) => None,
+                EthBridgeLimiterEvents::SingleTransferLimitUpdateFilter(_event) => None,
                 EthBridgeLimiterEvents::InitializedFilter(_event) => None,
                 EthBridgeLimiterEvents::UpgradedFilter(_event) => None,
                 EthBridgeLimiterEvents::HourlyTransferAmountUpdatedFilter(_event) => None,
@@ -185,7 +190,8 @@ pub struct EthToSuiTokenBridgeV1 {
     pub token_id: u64,
     pub sui_adjusted_amount: u64,
     pub tx_hash: Vec<u8>,
-    pub event_idx: u8,
+    pub event_idx: u16,
+    pub fast_path_selector: FastPathSelector,
 }
 
 impl EthToSuiTokenBridgeV1 {
@@ -193,8 +199,12 @@ impl EthToSuiTokenBridgeV1 {
         self.tx_hash = tx_hash;
     }
 
-    pub fn set_event_idx(&mut self, event_idx: u8) {
+    pub fn set_event_idx(&mut self, event_idx: u16) {
         self.event_idx = event_idx;
+    }
+
+    pub fn set_fast_path_selector(&mut self, fast_path_selector: FastPathSelector) {
+        self.fast_path_selector = fast_path_selector;
     }
 }
 
@@ -211,6 +221,7 @@ impl TryFrom<&TokensDepositedFilter> for EthToSuiTokenBridgeV1 {
             sui_adjusted_amount: event.sui_adjusted_amount,
             tx_hash: vec![],
             event_idx: 0,
+            fast_path_selector: FastPathSelector::Finalized,
         })
     }
 }
@@ -219,7 +230,8 @@ impl TryFrom<&EthToSuiTokenBridgeV1> for EthToSuiTokenBridgeV1 {
     type Error = BridgeError;
     fn try_from(msg: &EthToSuiTokenBridgeV1) -> BridgeResult<Self> {
         //only eth chain need to adjust
-        let need_adjust = (msg.token_id == TOKEN_ID_USDC || msg.token_id == TOKEN_ID_USDT) && msg.eth_chain_id.is_eth_chain();
+        let need_adjust = (msg.token_id == TOKEN_ID_USDC || msg.token_id == TOKEN_ID_USDT)
+            && msg.eth_chain_id.is_eth_chain();
         Ok(Self {
             nonce: msg.nonce,
             sui_chain_id: msg.sui_chain_id,
@@ -232,12 +244,15 @@ impl TryFrom<&EthToSuiTokenBridgeV1> for EthToSuiTokenBridgeV1 {
                 msg.token_id
             },
             sui_adjusted_amount: if need_adjust {
-                msg.sui_adjusted_amount.checked_mul(1000).unwrap_or(msg.sui_adjusted_amount)
+                msg.sui_adjusted_amount
+                    .checked_mul(1000)
+                    .unwrap_or(msg.sui_adjusted_amount)
             } else {
                 msg.sui_adjusted_amount
             },
             tx_hash: msg.tx_hash.clone(),
             event_idx: msg.event_idx,
+            fast_path_selector: msg.fast_path_selector,
         })
     }
 }
@@ -259,6 +274,18 @@ impl From<SuiToEthBridgeAction> for eth_sui_bridge::Message {
 
 impl From<ParsedTokenTransferMessage> for eth_sui_bridge::Message {
     fn from(parsed_message: ParsedTokenTransferMessage) -> Self {
+        eth_sui_bridge::Message {
+            message_type: BridgeActionType::TokenTransfer as u8,
+            version: parsed_message.message_version,
+            nonce: parsed_message.seq_num,
+            chain_id: parsed_message.source_chain as u8,
+            payload: parsed_message.payload.into(),
+        }
+    }
+}
+
+impl From<ParsedTokenTransferMessageV2> for eth_sui_bridge::Message {
+    fn from(parsed_message: ParsedTokenTransferMessageV2) -> Self {
         eth_sui_bridge::Message {
             message_type: BridgeActionType::TokenTransfer as u8,
             version: parsed_message.message_version,
@@ -298,6 +325,18 @@ impl From<LimitUpdateAction> for eth_bridge_limiter::Message {
         eth_bridge_limiter::Message {
             message_type: BridgeActionType::LimitUpdate as u8,
             version: LIMIT_UPDATE_MESSAGE_VERSION,
+            nonce: action.nonce,
+            chain_id: action.chain_id as u8,
+            payload: action.as_payload_bytes().into(),
+        }
+    }
+}
+
+impl From<SingleTransferLimitUpdateAction> for eth_bridge_limiter::Message {
+    fn from(action: SingleTransferLimitUpdateAction) -> Self {
+        eth_bridge_limiter::Message {
+            message_type: BridgeActionType::SingleTransferLimitUpdate as u8,
+            version: SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION,
             nonce: action.nonce,
             chain_id: action.chain_id as u8,
             payload: action.as_payload_bytes().into(),
@@ -471,7 +510,9 @@ mod tests {
                 version: ASSET_PRICE_UPDATE_MESSAGE_VERSION,
                 nonce: 2,
                 chain_id: BridgeChainId::EthSepolia as u8,
-                payload: Hex::decode("00000000000000020000000004c4b400").unwrap().into(),
+                payload: Hex::decode("00000000000000020000000004c4b400")
+                    .unwrap()
+                    .into(),
             }
         );
         Ok(())

@@ -13539,6 +13539,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "sui-bridge-price-updater"
+version = "1.24.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "reqwest 0.12.9",
+ "serde_json",
+ "sui-bridge",
+ "sui-types",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "sui-cluster-test"
 version = "1.24.0"
 dependencies = [
@@ -15675,7 +15689,7 @@ dependencies = [
 [[package]]
 name = "sui-sdk-types"
 version = "0.0.1"
-source = "git+https://github.com/hellokittyboy-code/bfc-rust-sdk.git?rev=e00b66d51721d3100d00e8a52061254e2d91910a#e00b66d51721d3100d00e8a52061254e2d91910a"
+source = "git+https://github.com/hellokittyboy-code/bfc-rust-sdk.git?rev=4ea7a6917b7e5e3bcca46ad0cc5d66ad6167d442#4ea7a6917b7e5e3bcca46ad0cc5d66ad6167d442"
 dependencies = [
  "base64ct",
  "bcs",
@@ -16146,7 +16160,7 @@ dependencies = [
 [[package]]
 name = "sui-transaction-builder"
 version = "0.1.0"
-source = "git+https://github.com/hellokittyboy-code/bfc-rust-sdk.git?rev=e00b66d51721d3100d00e8a52061254e2d91910a#e00b66d51721d3100d00e8a52061254e2d91910a"
+source = "git+https://github.com/hellokittyboy-code/bfc-rust-sdk.git?rev=4ea7a6917b7e5e3bcca46ad0cc5d66ad6167d442#4ea7a6917b7e5e3bcca46ad0cc5d66ad6167d442"
 dependencies = [
  "base64ct",
  "bcs",

@@ -160,7 +160,7 @@ fun test_bridge_and_claim() {
     );
     let signatures = env.sign_message_with(message, vector[0, 2]);
     let transfer_id = message.seq_num();
-    assert!(env.approve_token_transfer(message, signatures) == approved());
+    assert!(env.approve_token_transfer_in(message, signatures) == approved());
     assert!(
         env.claim_and_transfer_token<ETH>(source_chain, transfer_id) ==
         claimed(),
@@ -176,12 +176,12 @@ fun test_bridge_and_claim() {
     );
     let signatures = env.sign_message_with(message, vector[0, 2]);
     let transfer_id = message.seq_num();
-    assert!(env.approve_token_transfer(message, signatures) == approved());
+    assert!(env.approve_token_transfer_in(message, signatures) == approved());
     assert!(
-        env.approve_token_transfer(message, signatures) == already_approved(),
+        env.approve_token_transfer_in(message, signatures) == already_approved(),
     );
     assert!(
-        env.approve_token_transfer(message, signatures) == already_approved(),
+        env.approve_token_transfer_in(message, signatures) == already_approved(),
     );
     let token = env.claim_token<ETH>(sui_address, source_chain, transfer_id);
     let send_token_id = env.send_token<ETH>(
@@ -214,14 +214,14 @@ fun test_bridge_and_claim() {
     );
     let transfer_id = message.seq_num();
     let signatures = env.sign_message_with(message, vector[0, 2]);
-    assert!(env.approve_token_transfer(message, signatures) == approved());
+    assert!(env.approve_token_transfer_in(message, signatures) == approved());
     let signatures = env.sign_message_with(message, vector[0, 1]);
     assert!(
-        env.approve_token_transfer(message, signatures) == already_approved(),
+        env.approve_token_transfer_in(message, signatures) == already_approved(),
     );
     let signatures = env.sign_message_with(message, vector[1, 2]);
     assert!(
-        env.approve_token_transfer(message, signatures) == already_approved(),
+        env.approve_token_transfer_in(message, signatures) == already_approved(),
     );
     let token = env.claim_token<ETH>(sui_address, source_chain, transfer_id);
     env.send_token<ETH>(
@@ -251,6 +251,8 @@ fun test_blocklist() {
     env.register_committee();
     env.init_committee(sender);
     env.setup_treasury(sender);
+   // env.init_external_limiter(sender);
+    env.add_tokenlist(sender);
 
     let source_chain = chain_ids::eth_custom();
     let sui_address = @0xABCDEF;
@@ -266,7 +268,7 @@ fun test_blocklist() {
     );
     let signatures = env.sign_message_with(message, vector[0, 2]);
     let transfer_id = message.seq_num();
-    assert!(env.approve_token_transfer(message, signatures) == approved());
+    assert!(env.approve_token_transfer_in(message, signatures) == approved());
     assert!(
         env.claim_and_transfer_token<ETH>(source_chain, transfer_id) ==
         claimed(),
@@ -287,9 +289,9 @@ fun test_blocklist() {
         amount,
     );
     let signatures = env.sign_message_with(message, vector[1, 2]);
-    assert!(env.approve_token_transfer(message, signatures) == approved());
+    assert!(env.approve_token_transfer_in(message, signatures) == approved());
     assert!(
-        env.approve_token_transfer(message, signatures) == already_approved(),
+        env.approve_token_transfer_in(message, signatures) == already_approved(),
     );
 
     // signing with blocked node fails

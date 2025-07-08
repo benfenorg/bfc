@@ -10,6 +10,7 @@ module bridge::message_types {
     const UPDATE_ASSET_PRICE: u8 = 4;
     const ADD_TOKENS_ON_SUI: u8 = 6;
     const REFUND_ADMIN_OPERATE: u8 = 8;
+    const UPDATE_BRIDGE_LIMIT_FAST_PATH: u8 = 9;
 
     // for external coins
     const ADD_EXTERNAL_COIN_ADMIN: u8 = 11;
@@ -18,6 +19,13 @@ module bridge::message_types {
     const REMOVE_EXTERNAL_COIN_WITNESS: u8 =14;
     const ADD_EXTERNAL_COIN_TARGET: u8 =15;
     const REMOVE_EXTERNAL_COIN_TARGET: u8 =16;
+    const ADD_TOKEN_ON_TOKEN_LIST: u8 =17;
+    const REMOVE_TOKEN_ON_TOKEN_LIST: u8 =18;
+
+    const SET_CROSS_OUT_BRIDGE_FEE: u8=20;
+    const SET_CROSS_IN_BRIDGE_FEE: u8=21;
+
+    const WITHDRAW_BRIDGE_FEE: u8=22;
 
     public fun token(): u8 { TOKEN }
 
@@ -31,6 +39,7 @@ module bridge::message_types {
 
     public fun add_tokens_on_sui(): u8 { ADD_TOKENS_ON_SUI }
 
+    public fun update_bridge_limit_fast_path(): u8 { UPDATE_BRIDGE_LIMIT_FAST_PATH }
 
     // for external coins
     public fun add_external_coin_admin(): u8 { ADD_EXTERNAL_COIN_ADMIN }
@@ -49,4 +58,25 @@ module bridge::message_types {
     public fun remove_external_coin_target(): u8{
         REMOVE_EXTERNAL_COIN_TARGET
     }
+
+    public fun add_token_on_token_list(): u8{
+        ADD_TOKEN_ON_TOKEN_LIST
+    }
+
+    public fun remove_token_on_token_list(): u8{
+        REMOVE_TOKEN_ON_TOKEN_LIST
+    }
+
+    public fun set_cross_out_bridge_fee(): u8{
+        SET_CROSS_OUT_BRIDGE_FEE
+    }
+
+    public fun set_cross_in_bridge_fee(): u8{
+        SET_CROSS_IN_BRIDGE_FEE
+    }
+
+    public fun withdraw_bridge_fee(): u8{
+        WITHDRAW_BRIDGE_FEE
+    }
+
 }

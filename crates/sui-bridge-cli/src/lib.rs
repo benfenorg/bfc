@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use shared_crypto::intent::Intent;
 use shared_crypto::intent::IntentMessage;
+use sui_bridge::types::FastPathLimitUpdateAction;
 use sui_bridge::types::RefundAdminAction;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -30,6 +31,10 @@ use sui_bridge::types::{
     LimitUpdateAction, AddExternalCoinAdminAction, RemoveExternalCoinAdminAction,
     AddExternalCoinWitnessAction,RemoveExternalCoinWitnessAction,
     AddExternalCoinTargetAction,RemoveExternalCoinTargetAction,
+    AddTokenOnTokenListAction,RemoveTokenOnTokenListAction,
+    SingleTransferLimitUpdateAction,UpdateBridgeFeeOnCrossOutAction,
+    UpdateBridgeFeeOnCrossInAction, WithdrawBridgeFeeAction,
+
 };
 use sui_bridge::utils::{get_eth_signer_client, EthSigner};
 use sui_config::Config;
@@ -163,8 +168,28 @@ pub enum GovernanceClientCommands {
         #[clap(name = "sui-address", long)]
         sui_address: String,
     },
+    #[clap(name = "update-fast-path-limit")]
+    UpdateFastPathLimit {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "chain-id", long)]
+        chain_id: u8,
+        #[clap(name = "token-id", long)]
+        token_id: u64,
+        #[clap(name = "amount", long)]
+        amount: u64,
+    },
     #[clap(name = "update-limit")]
     UpdateLimit {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "sending-chain", long)]
+        sending_chain: u8,
+        #[clap(name = "new-usd-limit", long)]
+        new_usd_limit: u64,
+    },
+    #[clap(name = "update-single-transfer-limit")]
+    UpdateSingleTransferLimit {
         #[clap(name = "nonce", long)]
         nonce: u64,
         #[clap(name = "sending-chain", long)]
@@ -234,6 +259,65 @@ pub enum GovernanceClientCommands {
         coin_type: String,
         #[clap(name = "target-address", long)]
         target_address: String,
+    },
+    #[clap(name = "add-token-on-token-list")]
+    AddTokenOnTokenList {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "from-chain-id", long)]
+        from_chain_id: u8,
+        #[clap(name = "to-chain-id", long)]
+        to_chain_id: u8,
+        #[clap(name = "token-id", long)]
+        token_id: u64,
+    },
+    #[clap(name = "remove-token-on-token-list")]
+    RemoveTokenOnTokenList {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "from-chain-id", long)]
+        from_chain_id: u8,
+        #[clap(name = "to-chain-id", long)]
+        to_chain_id: u8,
+        #[clap(name = "token-id", long)]
+        token_id: u64,
+    },
+    #[clap(name = "set-bridge-fee-on-cross-out")]
+    SetBridgeFeeOnCrossOut {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "to-chain-id", long)]
+        to_chain_id: u8,
+        #[clap(name = "token-id", long)]
+        token_id: u64,
+        #[clap(name = "mode", long)]
+        mode: u64,
+        #[clap(name = "amount", long)]
+        amount: u64,
+    },
+    #[clap(name = "set-bridge-fee-on-cross-in")]
+    SetBridgeFeeOnCrossIn {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "from-chain-id", long)]
+        from_chain_id: u8,
+        #[clap(name = "token-id", long)]
+        token_id: u64,
+        #[clap(name = "mode", long)]
+        mode: u64,
+        #[clap(name = "amount", long)]
+        amount: u64,
+    },
+    #[clap(name = "withdraw-bridge-fee")]
+    WithdrawBridgeFee {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "recipient", long)]
+        recipient: SuiAddress,
+        #[clap(name = "coin-type", long)]
+        coin_type: String,
+        #[clap(name = "amount", long)]
+        amount: u64,
     },
     #[clap(name = "add-tokens-on-sui")]
     AddTokensOnSui {
@@ -309,6 +393,20 @@ pub fn make_action(
             op_type: *op_type,
             sui_address: sui_address.clone(),
         }),
+        GovernanceClientCommands::UpdateFastPathLimit {
+            nonce,
+            chain_id,
+            token_id,
+            amount,
+        } => {
+            let chain_id = BridgeChainId::try_from(*chain_id).expect("Invalid chain id");
+            BridgeAction::FastPathLimitUpdateAction(FastPathLimitUpdateAction {
+                nonce: *nonce,
+                chain_id,
+                token_id: *token_id,
+                amount: *amount,
+            })
+        }
         GovernanceClientCommands::UpdateLimit {
             nonce,
             sending_chain,
@@ -322,6 +420,21 @@ pub fn make_action(
                 sending_chain_id,
                 new_usd_limit: *new_usd_limit,
             })
+        }
+        GovernanceClientCommands::UpdateSingleTransferLimit {
+            nonce,
+            sending_chain,
+            new_usd_limit,
+        }=>{
+            let sending_chain_id =
+            BridgeChainId::try_from(*sending_chain).expect("Invalid sending chain id");
+            BridgeAction::SingleTransferLimitUpdateAction(SingleTransferLimitUpdateAction {
+                nonce: *nonce,
+                chain_id,
+                sending_chain_id,
+                new_usd_limit: *new_usd_limit,
+            })
+
         }
         GovernanceClientCommands::UpdateAssetPrice {
             nonce,
@@ -397,6 +510,89 @@ pub fn make_action(
             coin_type: coin_type.clone(),
             target_address: target_address.clone(),
         }),
+        GovernanceClientCommands::AddTokenOnTokenList {
+            nonce,
+            from_chain_id,
+            to_chain_id,
+            token_id
+        } => {
+            let from_chain_id = BridgeChainId::try_from(*from_chain_id).expect("Invalid chain id");
+            let to_chain_id = BridgeChainId::try_from(*to_chain_id).expect("Invalid chain id");
+            BridgeAction::AddTokenOnTokenListAction(AddTokenOnTokenListAction {
+                nonce: *nonce,
+                chain_id,
+                from_chain_id: from_chain_id,
+                to_chain_id:  to_chain_id,
+                token_id: *token_id,
+            })
+        },
+        GovernanceClientCommands::RemoveTokenOnTokenList {
+            nonce,
+            from_chain_id,
+            to_chain_id,
+            token_id
+        } => {
+            let from_chain_id = BridgeChainId::try_from(*from_chain_id).expect("Invalid chain id");
+            let to_chain_id = BridgeChainId::try_from(*to_chain_id).expect("Invalid chain id");
+            BridgeAction::RemoveTokenOnTokenListAction(RemoveTokenOnTokenListAction {
+                nonce: *nonce,
+                chain_id,
+                from_chain_id: from_chain_id,
+                to_chain_id:  to_chain_id,
+                token_id: *token_id,
+            })
+
+        },
+        GovernanceClientCommands::SetBridgeFeeOnCrossOut {
+            nonce,
+            to_chain_id,
+            token_id,
+            mode,
+            amount
+        } =>{
+            let to_chain_id = BridgeChainId::try_from(*to_chain_id).expect("Invalid chain id");
+            BridgeAction::UpdateBridgeFeeOnCrossOutAction(UpdateBridgeFeeOnCrossOutAction {
+                nonce: *nonce,
+                chain_id,
+                to_chain_id,
+                token_id: *token_id,
+                mode: *mode,
+                amount: *amount,
+            })
+        },
+        GovernanceClientCommands::SetBridgeFeeOnCrossIn {
+            nonce,
+            from_chain_id,
+            token_id,
+            mode,
+            amount
+        } =>{
+            let from_chain_id = BridgeChainId::try_from(*from_chain_id).expect("Invalid chain id");
+            BridgeAction::UpdateBridgeFeeOnCrossInAction(UpdateBridgeFeeOnCrossInAction {
+                nonce: *nonce,
+                chain_id,
+                from_chain_id,
+                token_id: *token_id,
+                mode: *mode,
+                amount: *amount,
+            })
+        },
+
+        GovernanceClientCommands::WithdrawBridgeFee {
+            nonce,
+            recipient,
+            coin_type,
+            amount
+        } =>{
+            BridgeAction::WithdrawBridgeFeeAction(WithdrawBridgeFeeAction {
+                nonce: *nonce,
+                chain_id,
+                addr: *recipient,
+                coin_type: coin_type.clone(),
+                amount: *amount,
+            })
+        },
+
         GovernanceClientCommands::AddTokensOnSui {
             nonce,
             token_ids,
@@ -509,17 +705,24 @@ pub fn select_contract_address(
             config.eth_bridge_committee_proxy_address
         }
         GovernanceClientCommands::UpdateLimit { .. } => config.eth_bridge_limiter_proxy_address,
+        GovernanceClientCommands::UpdateSingleTransferLimit { .. } => config.eth_bridge_limiter_proxy_address,
         GovernanceClientCommands::UpdateAssetPrice { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::UpgradeEVMContract { proxy_address, .. } => *proxy_address,
         GovernanceClientCommands::AddExternalCoinAdmin {.. } => unreachable!(),
         GovernanceClientCommands::RemoveExternalCoinAdmin {.. } => unreachable!(),
         GovernanceClientCommands::AddExternalCoinWitness {.. } => unreachable!(),
         GovernanceClientCommands::RemoveExternalCoinWitness {.. } => unreachable!(),
+        GovernanceClientCommands::AddTokenOnTokenList { .. } => unreachable!(),
+        GovernanceClientCommands::RemoveTokenOnTokenList { .. } => unreachable!(),
+        GovernanceClientCommands::SetBridgeFeeOnCrossIn { .. }=> unreachable!(),
+        GovernanceClientCommands::SetBridgeFeeOnCrossOut { .. }=> unreachable!(),
+        GovernanceClientCommands::WithdrawBridgeFee { .. }=> unreachable!(),
         GovernanceClientCommands::AddExternalCoinTarget {.. } => unreachable!(),
         GovernanceClientCommands::RemoveExternalCoinTarget {.. } => unreachable!(),
         GovernanceClientCommands::AddTokensOnSui { .. } => unreachable!(),
         GovernanceClientCommands::AddTokensOnEvm { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::UpdateRefundAdmin { .. } => config.eth_bridge_config_proxy_address,
+        GovernanceClientCommands::UpdateFastPathLimit { .. } => config.eth_bridge_config_proxy_address,
     }
 }
 

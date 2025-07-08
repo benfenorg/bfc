@@ -71,9 +71,16 @@ pub const APPROVAL_THRESHOLD_EVM_CONTRACT_UPGRADE: u64 = 5001;
 pub const APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI: u64 = 5001;
 pub const APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM: u64 = 5001;
 pub const APPROVAL_THRESHOLD_REFUND_ADMIN: u64 = 5001;
+pub const APPROVAL_THRESHOLD_FAST_PATH_LIMIT_UPDATE: u64 = 5001;
 pub const APPROVAL_THRESHOLD_EXTERNAL_COIN_ADMIN: u64 = 5001;
 pub const APPROVAL_THRESHOLD_EXTERNAL_COIN_WITNESS: u64 = 5001;
 pub const APPROVAL_THRESHOLD_EXTERNAL_COIN_TARGET: u64 = 5001;
+pub const APPROVAL_THRESHOLD_ADD_TOKEN_ON_TOKEN_LIST: u64 = 5001;
+pub const APPROVAL_THRESHOLD_REMOVE_TOKEN_ON_TOKEN_LIST: u64 = 5001;
+pub const APPROVAL_THRESHOLD_SINGLE_TRANSFER_LIMIT_UPDATE: u64=5001;
+pub const APPROVAL_THRESHOLD_SET_CROSS_OUT_BRIDGE_FEE: u64 = 5001;
+pub const APPROVAL_THRESHOLD_SET_CROSS_IN_BRIDGE_FEE: u64 = 5001;
+pub const APPROVAL_THRESHOLD_WITHDRAW_BRIDGE_FEE: u64=5001;
 
 // const for initial token ids for convenience
 pub const TOKEN_ID_SUI: u64 = 0;
@@ -724,6 +731,18 @@ pub struct MoveTypeTokenTransferPayload {
     pub event_idx: u8,
 }
 
+/// Rust version of the Move message::TokenTransferPayloadV2 type.
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct MoveTypeTokenTransferPayloadV2 {
+    pub sender_address: Vec<u8>,
+    pub target_chain: u8,
+    pub target_address: Vec<u8>,
+    pub token_type: u64,
+    pub amount: u64,
+    pub tx_hash: Vec<u8>,
+    pub event_idx: u16,
+}
+
 /// Rust version of the Move message::ParsedTokenTransferMessage type.
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct MoveTypeParsedTokenTransferMessage {
@@ -732,4 +751,14 @@ pub struct MoveTypeParsedTokenTransferMessage {
     pub source_chain: u8,
     pub payload: Vec<u8>,
     pub parsed_payload: MoveTypeTokenTransferPayload,
+}
+
+/// Rust version of the Move message::ParsedTokenTransferMessageV2 type.
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct MoveTypeParsedTokenTransferMessageV2 {
+    pub message_version: u8,
+    pub seq_num: u64,
+    pub source_chain: u8,
+    pub payload: Vec<u8>,
+    pub parsed_payload: MoveTypeTokenTransferPayloadV2,
 }

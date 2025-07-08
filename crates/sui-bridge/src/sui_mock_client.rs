@@ -13,9 +13,7 @@ use sui_json_rpc_types::{ SuiTransactionBlockResponse};
 use sui_json_rpc_types::{EventFilter, EventPage, SuiEvent};
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::base_types::ObjectRef;
-use sui_types::bridge::{
-    BridgeCommitteeSummary, BridgeSummary, BridgeTokenMetadata, BridgeTreasurySummary, MoveTypeParsedTokenTransferMessage
-};
+use sui_types::bridge::{BridgeCommitteeSummary, BridgeSummary, BridgeTokenMetadata, BridgeTreasurySummary, MoveTypeParsedTokenTransferMessageV2};
 use sui_types::digests::TransactionDigest;
 use sui_types::event::EventID;
 use sui_types::gas_coin::GasCoin;
@@ -309,6 +307,17 @@ impl SuiClientInner for SuiMockClient {
         Ok(1000)
     }
 
+    async fn get_cross_out_fee_amount(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _chain_id: u64,
+        _amount: u64,
+        _token_type:u64,
+        _ca_token_type_map:HashMap<u64,TypeTag>
+    ) -> Result<u64, BridgeError> {
+        Ok(1000)
+    }
+
     async fn get_external_token_transfer_action_onchain_status(
         &self,
         _bridge_object_arg: ObjectArg,
@@ -343,7 +352,7 @@ impl SuiClientInner for SuiMockClient {
         _bridge_object_arg: ObjectArg,
         _source_chain_id: u8,
         _seq_number: u64,
-    ) -> Result<Option<MoveTypeParsedTokenTransferMessage>, BridgeError> {
+    ) -> Result<Option<MoveTypeParsedTokenTransferMessageV2>, BridgeError> {
         unimplemented!()
     }
 

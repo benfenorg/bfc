@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::abi::EthBridgeConfig;
 use crate::abi::{EthBridgeCommittee, EthBridgeEvent, EthERC20, EthSuiBridge, EthSuiBridgeEvents};
+use crate::abi::{EthBridgeConfig, EthBridgeLimiter};
 use crate::config::default_ed25519_key_pair;
 use crate::crypto::BridgeAuthorityKeyPair;
 use crate::crypto::BridgeAuthorityPublicKeyBytes;
@@ -11,8 +11,12 @@ use crate::e2e_tests::auth;
 use crate::events::*;
 use crate::metrics::BridgeMetrics;
 use crate::server::BridgeNodePublicMetadata;
-use crate::sui_transaction_builder::{build_add_tokenlist_transaction, build_add_tokens_on_sui_transaction,build_add_center_tokenlist_transaction};
+use crate::sui_client::SuiClientInner;
 use crate::sui_transaction_builder::build_committee_register_transaction;
+use crate::sui_transaction_builder::{
+    build_add_tokenlist_transaction, build_add_tokens_on_sui_transaction,
+    build_add_center_tokenlist_transaction,
+};
 use crate::types::BridgeCommitteeValiditySignInfo;
 use crate::types::CertifiedBridgeAction;
 use crate::types::VerifiedCertifiedBridgeAction;
@@ -51,11 +55,11 @@ use sui_json_rpc_types::TransactionFilter;
 use sui_sdk::wallet_context::WalletContext;
 use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::{ObjectID, ObjectRef};
-use sui_types::bridge::{get_bridge_obj_initial_shared_version, TOKEN_ID_BNB, TOKEN_ID_BUSD};
 use sui_types::bridge::BridgeChainId;
 use sui_types::bridge::BridgeSummary;
 use sui_types::bridge::BridgeTrait;
 use sui_types::bridge::{get_bridge, BRIDGE_MODULE_NAME};
+use sui_types::bridge::{get_bridge_obj_initial_shared_version, TOKEN_ID_BNB, TOKEN_ID_BUSD};
 use sui_types::bridge::{TOKEN_ID_BTC, TOKEN_ID_ETH, TOKEN_ID_USDC, TOKEN_ID_USDT};
 use sui_types::committee::TOTAL_VOTING_POWER;
 use sui_types::crypto::get_key_pair;
@@ -77,6 +81,7 @@ use crate::sui_client::SuiBridgeClient;
 use crate::BRIDGE_ENABLE_PROTOCOL_VERSION;
 use anyhow::anyhow;
 use ethers::prelude::*;
+use ethers::types::U256;
 use move_core_types::ident_str;
 use std::process::Child;
 use sui_config::local_ip_utils::get_available_port;
@@ -125,6 +130,9 @@ pub struct BridgeTestClusterBuilder {
     approved_governance_actions: Option<Vec<Vec<BridgeAction>>>,
     eth_chain_id: BridgeChainId,
     sui_chain_id: BridgeChainId,
+    enable_fast_path_latest: bool,
+    enable_fast_path_safe: bool,
+    enable_fast_path_finalized: bool,
 }
 
 impl Default for BridgeTestClusterBuilder {
@@ -142,6 +150,9 @@ impl BridgeTestClusterBuilder {
             approved_governance_actions: None,
             eth_chain_id: BridgeChainId::EthCustom,
             sui_chain_id: BridgeChainId::SuiCustom,
+            enable_fast_path_latest: false,
+            enable_fast_path_safe: false,
+            enable_fast_path_finalized: true,
         }
     }
 
@@ -179,6 +190,21 @@ impl BridgeTestClusterBuilder {
         self
     }
 
+    pub fn with_enable_fast_path_latest(mut self, enable_fast_path_latest: bool) -> Self {
+        self.enable_fast_path_latest = enable_fast_path_latest;
+        self
+    }
+
+    pub fn with_enable_fast_path_safe(mut self, enable_fast_path_safe: bool) -> Self {
+        self.enable_fast_path_safe = enable_fast_path_safe;
+        self
+    }
+
+    pub fn with_enable_fast_path_finalized(mut self, enable_fast_path_finalized: bool) -> Self {
+        self.enable_fast_path_finalized = enable_fast_path_finalized;
+        self
+    }
+
     pub async fn build_eth_env(self) {
         init_all_struct_tags();
         std::env::set_var("__TEST_ONLY_CONSENSUS_USE_LONG_MIN_ROUND_DELAY", "1");
@@ -204,12 +230,12 @@ impl BridgeTestClusterBuilder {
             bridge_keys.push(kp.copy());
             bridge_keys_copy.push(kp.copy());
             bridge_keys_copy2.push(kp);
-
         }
-        let start_cluster_task = tokio::task::spawn(Self::start_test_cluster(bridge_keys,self.eth_chain_id));
-        let start_eth_env_task = tokio::task::spawn(Self::start_eth_env(bridge_keys_copy,self.eth_chain_id));
-        let (start_cluster_res, start_eth_env_res)
-            = join!(start_cluster_task, start_eth_env_task);
+        let start_cluster_task =
+            tokio::task::spawn(Self::start_test_cluster(bridge_keys, self.eth_chain_id));
+        let start_eth_env_task =
+            tokio::task::spawn(Self::start_eth_env(bridge_keys_copy, self.eth_chain_id));
+        let (start_cluster_res, start_eth_env_res) = join!(start_cluster_task, start_eth_env_task);
         let test_cluster = start_cluster_res.unwrap();
         let eth_environment = start_eth_env_res.unwrap();
         let mut bridge_node_handles = None;
@@ -219,8 +245,15 @@ impl BridgeTestClusterBuilder {
                 .clone()
                 .unwrap_or(vec![vec![]; self.num_validators]);
             bridge_node_handles = Some(
-                start_bridge_cluster(&test_cluster, &eth_environment, approved_governace_actions)
-                    .await,
+                start_bridge_cluster(
+                    &test_cluster,
+                    &eth_environment,
+                    approved_governace_actions,
+                    self.enable_fast_path_latest,
+                    self.enable_fast_path_safe,
+                    self.enable_fast_path_finalized,
+                )
+                .await,
             );
         }
         let bridge_client =
@@ -248,7 +281,10 @@ impl BridgeTestClusterBuilder {
         }
     }
 
-    async fn start_test_cluster(bridge_keys: Vec<BridgeAuthorityKeyPair>, eth_chain_id: BridgeChainId) -> TestClusterWrapper {
+    async fn start_test_cluster(
+        bridge_keys: Vec<BridgeAuthorityKeyPair>,
+        eth_chain_id: BridgeChainId,
+    ) -> TestClusterWrapper {
         let test_cluster = TestClusterWrapperBuilder::new()
             .with_bridge_authority_keys(bridge_keys)
             .with_deploy_tokens(true)
@@ -262,20 +298,30 @@ impl BridgeTestClusterBuilder {
         test_cluster
     }
 
-    async fn start_eth_env(bridge_keys: Vec<BridgeAuthorityKeyPair>, eth_chain_id: BridgeChainId) -> EthBridgeEnvironment {
+    async fn start_eth_env(
+        bridge_keys: Vec<BridgeAuthorityKeyPair>,
+        eth_chain_id: BridgeChainId,
+    ) -> EthBridgeEnvironment {
         let anvil_port = get_available_port("127.0.0.1");
         let anvil_url = format!("http://127.0.0.1:{anvil_port}");
-        let mut eth_environment = EthBridgeEnvironment::new_with_chain_id(&anvil_url, anvil_port, eth_chain_id as u64)
-            .await
-            .unwrap();
+        let mut eth_environment =
+            EthBridgeEnvironment::new_with_chain_id(&anvil_url, anvil_port, eth_chain_id as u64)
+                .await
+                .unwrap();
         // Give anvil a bit of time to start
         tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
         let (eth_signer, eth_pk_hex) = eth_environment
             .get_signer(TEST_PK)
             .await
             .unwrap_or_else(|e| panic!("Failed to get eth signer from anvil at {anvil_url}: {e}"));
-        let deployed_contracts =
-            deploy_sol_contract(&anvil_url, eth_signer, bridge_keys, eth_pk_hex, eth_chain_id).await;
+        let deployed_contracts = deploy_sol_contract(
+            &anvil_url,
+            eth_signer,
+            bridge_keys,
+            eth_pk_hex,
+            eth_chain_id,
+        )
+        .await;
         info!("Deployed contracts: {:?}", deployed_contracts);
         eth_environment.contracts = Some(deployed_contracts);
         eth_environment
@@ -389,7 +435,12 @@ impl BridgeTestCluster {
         self.approved_governance_actions_for_next_start = Some(approved_governance_actions);
     }
 
-    pub async fn start_bridge_cluster(&mut self) {
+    pub async fn start_bridge_cluster(
+        &mut self,
+        enable_fast_path_latest: bool,
+        enable_fast_path_safe: bool,
+        enable_fast_path_finalized: bool,
+    ) {
         assert!(self.bridge_node_handles.is_none());
         let approved_governace_actions = self
             .approved_governance_actions_for_next_start
@@ -400,6 +451,9 @@ impl BridgeTestCluster {
                 &self.test_cluster,
                 &self.eth_environment,
                 approved_governace_actions,
+                enable_fast_path_latest,
+                enable_fast_path_safe,
+                enable_fast_path_finalized,
             )
             .await,
         );
@@ -614,13 +668,13 @@ pub(crate) async fn deploy_sol_contract(
         .arg("clean")
         .status()
         .expect("Failed to execute `forge clean`");
-    let chain_id_anvil = if eth_chain_id.is_eth_chain(){
+    let chain_id_anvil = if eth_chain_id.is_eth_chain() {
         "31337"
-    }else {
+    } else {
         "31339"
     };
     info!("chain_id_anvil: {:?}", chain_id_anvil);
-    let mut child=Command::new("forge")
+    let mut child = Command::new("forge")
         .current_dir(sol_path)
         .arg("script")
         .arg("script/deploy_bridge.s.sol")
@@ -748,7 +802,8 @@ impl EthBridgeEnvironment {
     async fn new_with_chain_id(
         anvil_url: &str,
         anvil_port: u16,
-        chain_id: u64) -> anyhow::Result<EthBridgeEnvironment> {
+        chain_id: u64,
+    ) -> anyhow::Result<EthBridgeEnvironment> {
         // Start eth node with anvil
         let eth_environment_process = std::process::Command::new("anvil")
             .arg("--port")
@@ -792,12 +847,30 @@ impl EthBridgeEnvironment {
         EthBridgeConfig::new(self.contracts().bridge_config, provider.clone())
     }
 
+    pub fn get_bridge_limit(
+        &self,
+    ) -> EthBridgeLimiter<ethers::prelude::Provider<ethers::providers::Http>> {
+        let provider = Arc::new(
+            ethers::prelude::Provider::<ethers::providers::Http>::try_from(&self.rpc_url)
+                .unwrap()
+                .interval(std::time::Duration::from_millis(2000)),
+        );
+        EthBridgeLimiter::new(self.contracts().bridge_limiter, provider.clone())
+    }
+
     pub async fn get_supported_token(&self, token_id: u64) -> (EthAddress, u8, u64) {
         let config = self.get_bridge_config();
         let token_address = config.token_address_of(token_id).call().await.unwrap();
         let token_sui_decimal = config.token_sui_decimal_of(token_id).call().await.unwrap();
         let token_price = config.token_price_of(token_id).call().await.unwrap();
         (token_address, token_sui_decimal, token_price)
+    }
+
+    pub async fn get_single_transfer_limit(&self) -> u64 {
+        let limit = self.get_bridge_limit();
+        //getUsdMaxLimit
+        let amount: U256 = limit.get_usd_max_limit().call().await.unwrap();
+        amount.as_u64()
     }
 }
 
@@ -811,6 +884,9 @@ pub(crate) async fn start_bridge_cluster(
     test_cluster: &TestClusterWrapper,
     eth_environment: &EthBridgeEnvironment,
     approved_governance_actions: Vec<Vec<BridgeAction>>,
+    enable_fast_path_latest: bool,
+    enable_fast_path_safe: bool,
+    enable_fast_path_finalized: bool,
 ) -> Vec<JoinHandle<()>> {
     let bridge_authority_keys = test_cluster
         .bridge_authority_keys
@@ -859,24 +935,24 @@ pub(crate) async fn start_bridge_cluster(
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
-                latest_fast_path_threshold: None,
-                safe_fast_path_threshold: None,
-                enable_fast_path_latest: false,
-                enable_fast_path_safe: false,
+                latest_fast_path_threshold: Some(50000000000),
+                safe_fast_path_threshold: Some(100000000000),
+                enable_fast_path_latest,
+                enable_fast_path_safe,
+                enable_fast_path_finalized,
             },
-            evm: vec![
-                EthConfig {
-                    eth_rpc_url: eth_environment.rpc_url.clone(),
-                    eth_bridge_proxy_address: eth_bridge_contract_address.clone(),
-                    eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
-                    eth_contracts_start_block_fallback: Some(0),
-                    eth_contracts_start_block_override: None,
-                    latest_fast_path_threshold: None,
-                    safe_fast_path_threshold: None,
-                    enable_fast_path_latest: false,
-                    enable_fast_path_safe: false,
-                },
-            ],
+            evm: vec![EthConfig {
+                eth_rpc_url: eth_environment.rpc_url.clone(),
+                eth_bridge_proxy_address: eth_bridge_contract_address.clone(),
+                eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
+                eth_contracts_start_block_fallback: Some(0),
+                eth_contracts_start_block_override: None,
+                latest_fast_path_threshold: Some(50000000000),
+                safe_fast_path_threshold: Some(100000000000),
+                enable_fast_path_latest,
+                enable_fast_path_safe,
+                enable_fast_path_finalized,
+            }],
             sui: SuiConfig {
                 sui_rpc_url: test_cluster.inner.fullnode_handle.rpc_url.clone(),
                 sui_bridge_chain_id: BridgeChainId::SuiCustom as u8,
@@ -899,7 +975,14 @@ pub(crate) async fn start_bridge_cluster(
             let sui_key_pair = client_config.key;
             info!("add admin cap for {:?}", sui_address);
             //set up auth key
-            auth::auth_setup_imut(&test_cluster.inner.rpc_client(), sui_address, &sui_key_pair, "MINT-BUSD-BRIDGE-KEY").await.unwrap();
+            auth::auth_setup_imut(
+                &test_cluster.inner.rpc_client(),
+                sui_address,
+                &sui_key_pair,
+                "MINT-BUSD-BRIDGE-KEY",
+            )
+            .await
+            .unwrap();
             sleep(Duration::from_secs(10)).await;
         }
         // Spawn bridge node in memory
@@ -1116,15 +1199,15 @@ impl TestClusterWrapperBuilder {
             bridge_arg,
             ref_gas_price,
         )
-            .unwrap();
-
+        .unwrap();
         let response = test_cluster.sign_and_execute_transaction(&tx).await;
         assert_eq!(
             response.effects.unwrap().status(),
             &SuiExecutionStatus::Success
         );
         info!("add tokenlist took {:?} secs", timer.elapsed().as_secs());
-
+        //briege fee、limiter fast path、external_limits (migrate)
+        let sender_address = test_cluster.get_address_0();
         let timer = Instant::now();
         let tx = build_add_center_tokenlist_transaction(
             sender_address,
@@ -1137,14 +1220,16 @@ impl TestClusterWrapperBuilder {
             bridge_arg,
             ref_gas_price,
         )
-            .unwrap();
-
+        .unwrap();
         let response = test_cluster.sign_and_execute_transaction(&tx).await;
         assert_eq!(
             response.effects.unwrap().status(),
             &SuiExecutionStatus::Success
         );
-        info!("add  center tokenlist took {:?} secs", timer.elapsed().as_secs());
+        info!(
+            "migrate took {:?} secs",
+            timer.elapsed().as_secs()
+        );
         if self.deploy_tokens {
             let token_paths = vec![
                 Path::new("../../bridge/move/tokens/btc").into(),
@@ -1155,8 +1240,22 @@ impl TestClusterWrapperBuilder {
                 Path::new("../../bridge/move/tokens/bnb").into(),
             ];
             let timer = Instant::now();
-            let token_ids = vec![TOKEN_ID_BTC, TOKEN_ID_ETH, TOKEN_ID_USDC, TOKEN_ID_USDT,TOKEN_ID_BUSD,TOKEN_ID_BNB];
-            let token_prices = vec![500_000_000u64, 30_000_000u64, 1_000u64, 1_000u64,100_000_000u64,100_000_000u64];
+            let token_ids = vec![
+                TOKEN_ID_BTC,
+                TOKEN_ID_ETH,
+                TOKEN_ID_USDC,
+                TOKEN_ID_USDT,
+                TOKEN_ID_BUSD,
+                TOKEN_ID_BNB,
+            ];
+            let token_prices = vec![
+                500_000_000u64,
+                30_000_000u64,
+                1_000u64,
+                1_000u64,
+                100_000_000u64,
+                100_000_000u64,
+            ];
             let action = publish_and_register_coins_return_add_coins_on_sui_action(
                 test_cluster.wallet(),
                 bridge_arg,
@@ -1376,7 +1475,10 @@ pub async fn initiate_bridge_eth_to_sui(
     let sui_address = bridge_test_cluster.sui_user_address();
     let sui_chain_id = bridge_test_cluster.sui_chain_id();
     let eth_chain_id = bridge_test_cluster.eth_chain_id();
-    info!("Sui address eth_chain_id: {:?} {:?}, {:?}", sui_address, eth_chain_id, eth_signer);
+    info!(
+        "Sui address eth_chain_id: {:?} {:?}, {:?}",
+        sui_address, eth_chain_id, eth_signer
+    );
     let token_id = if eth_chain_id.is_eth_chain() {
         TOKEN_ID_ETH
     } else {
@@ -1425,21 +1527,21 @@ pub async fn initiate_bridge_eth_to_sui(
             nonce,
             BridgeActionStatus::Approved,
         )
-            .await
-            .tap_ok(|_| {
-                info!("Eth to Sui bridge transfer refunded");
-            })
-    }else{
+        .await
+        .tap_ok(|_| {
+            info!("Eth to Sui bridge transfer refunded");
+        })
+    } else {
         wait_for_transfer_action_status(
             bridge_test_cluster.bridge_client(),
             eth_chain_id,
             nonce,
             BridgeActionStatus::Claimed,
         )
-            .await
-            .tap_ok(|_| {
-                info!("Eth to Sui bridge transfer claimed");
-            })
+        .await
+        .tap_ok(|_| {
+            info!("Eth to Sui bridge transfer claimed");
+        })
     }
 }
 
@@ -1479,14 +1581,14 @@ pub async fn initiate_bridge_sui_to_eth(
             Ok(resp) => {
                 tracing::info!("Sui TX response: {:?}", resp);
                 if !resp.status_ok().unwrap() {
-                    return Err(anyhow!("Sui TX error"))
+                    return Err(anyhow!("Sui TX error"));
                 } else {
                     resp
                 }
             }
             Err(e) => return Err(e),
         }
-    }else{
+    } else {
         match deposit_busd_to_sui_package(
             sui_client,
             sui_address,
@@ -1510,6 +1612,32 @@ pub async fn initiate_bridge_sui_to_eth(
             Err(e) => return Err(e),
         }
     };
+    let treasury_summary = bridge_test_cluster
+        .bridge_client()
+        .get_treasury_summary()
+        .await
+        .unwrap();
+
+    let token_type = expect_token_id;
+    let mut token_type_map = HashMap::new();
+    for (id, type_) in treasury_summary.id_token_type_map.iter() {
+        println!("id: {}, type_: {}", id, type_);
+        token_type_map.insert(*id, TypeTag::from_str(&format!("0x{}", type_)).unwrap());
+    }
+    info!("debbug");
+
+    let fee = bridge_test_cluster
+        .bridge_client()
+        .sui_client()
+        .get_cross_out_fee_amount(
+            bridge_object_arg,
+            bridge_test_cluster.eth_chain_id() as u64,
+            sui_amount,
+            token_type,
+            token_type_map,
+        )
+        .await
+        .unwrap();
 
     let sui_events = resp.events.unwrap().data;
     let bridge_event = sui_events
@@ -1540,27 +1668,26 @@ pub async fn initiate_bridge_sui_to_eth(
     assert_eq!(bridge_event.sui_bridge_event.sui_address, sui_address);
     assert_eq!(bridge_event.sui_bridge_event.eth_address, eth_address);
 
-    if expect_token_id == TOKEN_ID_ETH  {
+    if expect_token_id == TOKEN_ID_ETH {
         assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_ETH);
         assert_eq!(
             bridge_event.sui_bridge_event.amount_sui_adjusted,
-            sui_amount
+            sui_amount - fee
         );
-    }else{
+    } else {
         assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_USDT);
         if bridge_event.sui_bridge_event.eth_chain_id.is_eth_chain() {
             assert_eq!(
                 bridge_event.sui_bridge_event.amount_sui_adjusted,
-                sui_amount/1000
+                sui_amount / 1000 - fee / 1000
             );
         } else {
             assert_eq!(
                 bridge_event.sui_bridge_event.amount_sui_adjusted,
-                sui_amount
+                sui_amount - fee
             );
         }
     };
-
 
     // Wait for the bridge action to be approved
     wait_for_transfer_action_status(
@@ -1687,7 +1814,14 @@ async fn deposit_busd_to_sui_package(
         BRIDGE_MODULE_NAME.to_owned(),
         ident_str!("send_busd").to_owned(),
         vec![busd_type_tag],
-        vec![arg_bridge,system_obj, arg_target_chain, arg_target_address, arg_token, arg_expect_token_id],
+        vec![
+            arg_bridge,
+            system_obj,
+            arg_target_chain,
+            arg_target_address,
+            arg_token,
+            arg_expect_token_id,
+        ],
     );
 
     let pt = builder.finish();

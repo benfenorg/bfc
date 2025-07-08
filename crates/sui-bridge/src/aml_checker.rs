@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use mysten_metrics::spawn_logged_monitored_task;
 use shared_crypto::intent::{Intent, IntentMessage};
@@ -6,7 +6,7 @@ use sui_json_rpc_types::{SuiExecutionStatus, SuiTransactionBlockEffectsAPI, SuiT
 use sui_types::{base_types::{ObjectID, ObjectRef, SuiAddress}, crypto::{Signature, SuiKeyPair}, digests::TransactionDigest, gas_coin::GasCoin, object::Owner, transaction::{ObjectArg, Transaction}};
 use tracing::{error, info};
 
-use crate::{action_executor::{submit_to_executor, BridgeActionExecutionWrapper, CHANNEL_SIZE}, aml::check_aml_risk_score, metrics::BridgeMetrics, storage::BridgeOrchestratorTables, sui_client::SuiClientInner, sui_transaction_builder::build_token_send_back_transaction, types::{BridgeAction, BridgeActionStatus}};
+use crate::{action_executor::{submit_to_executor, BridgeActionExecutionWrapper, CHANNEL_SIZE}, aml::check_aml_risk_score, fast_path::FastPathSelector, metrics::BridgeMetrics, storage::BridgeOrchestratorTables, sui_client::SuiClientInner, sui_transaction_builder::build_token_send_back_transaction, types::{BridgeAction, BridgeActionStatus}};
 use crate::sui_client::SuiClient;
 
 #[derive(Debug)]
@@ -48,9 +48,14 @@ where
                 .channel_inflight
                 .with_label_values(&["aml_checker_queue"]),
         );
+        let executor_sender_clone = executor_sender.clone();
+        let store_clone = self.store.clone();
         let mut tasks = vec![];
         tasks.push(spawn_logged_monitored_task!(
-            Self::run_inner(&self.sui_client, receiver, &self.store, executor_sender, &self.metrics,self.sui_address,self.gas_object_id,self.bridge_object_arg,&self.key,self.aml_key.clone())
+            Self::run_inner(&self.sui_client, receiver, &store_clone, executor_sender_clone.clone(), &self.metrics,self.sui_address,self.gas_object_id,self.bridge_object_arg,&self.key,self.aml_key.clone())
+        ));
+        tasks.push(spawn_logged_monitored_task!(
+            Self::resubmit_pending_actions(&self.store,executor_sender)
         ));
         (tasks, sender)
     }
@@ -81,6 +86,19 @@ where
             metrics,
             aml_key,
         }
+    }
+
+    async fn resubmit_pending_actions(store: &Arc<BridgeOrchestratorTables>,executor_sender: mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>){
+            loop{
+                let pending_actions = store.get_all_pending_actions().into_values().collect::<Vec<_>>();
+                info!("Resubmitting {} pending actions", pending_actions.len());
+                for action in pending_actions {
+                    submit_to_executor(&executor_sender, action,false)
+                        .await
+                        .expect("Submit to executor should not fail");
+                }
+                tokio::time::sleep(Duration::from_secs(60*60)).await;
+            }
     }
 
     async fn run_inner(sui_client: &Arc<SuiClient<P>>,mut receiver: mysten_metrics::metered_channel::Receiver<AMLCheckerWrapper>, store: &Arc<BridgeOrchestratorTables>, executor_sender: mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>,metrics: &Arc<BridgeMetrics>,sui_address: SuiAddress,gas_object_id: ObjectID,bridge_object_arg: ObjectArg,key: &SuiKeyPair,aml_key: String){
@@ -115,13 +133,21 @@ where
                         store.insert_pending_actions(&[bridge_action.clone()]).unwrap_or_else(|e| {
                             panic!("Write to DB should not fail: {:?}", e);
                         });
-                        submit_to_executor(&executor_sender, bridge_action.clone()).await.expect("Submit to executor should not fail");
+                        submit_to_executor(&executor_sender, bridge_action.clone(),true).await.expect("Submit to executor should not fail");
                         store.remove_pending_aml_checked_actions(&[bridge_action.digest()]).unwrap_or_else(|e| {
                             panic!("Write to DB should not fail: {:?}", e);
                         });
                         sui_client.notify_something_done().await;
                     }else{
-                        Self::send_back(bridge_action.clone(), store, key, metrics,sui_client,sui_address,gas_object_id,bridge_object_arg).await;
+                        // only finalized fast path selector will be sent back
+                        if action_inner.eth_bridge_event.fast_path_selector == FastPathSelector::Finalized {
+                            Self::send_back(bridge_action.clone(), store, key, metrics,sui_client,sui_address,gas_object_id,bridge_object_arg).await;
+                        }else{
+                            store.remove_pending_aml_checked_actions(&[bridge_action.digest()]).unwrap_or_else(|e| {
+                                panic!("remove from DB should not fail: {:?}", e);
+                            });
+                            info!("fast path selector is not finalized, skipping send back address:{:?} tx_hash:{:?}", &eth_address, &action_inner.eth_tx_hash);
+                        }
                     }
                 },
                 _ => {

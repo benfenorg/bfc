@@ -8,12 +8,12 @@ module bridge::message_tests {
         message::{
             BridgeMessage, blocklist_validator_addresses,
             create_add_tokens_on_sui_message, create_blocklist_message,
-            create_emergency_op_message, create_refund_admin_message, create_token_bridge_message,
+            create_emergency_op_message, create_refund_admin_message, create_token_bridge_message_v2,
             create_update_asset_price_message, create_update_bridge_limit_message,
             deserialize_message_test_only, emergency_op_pause, emergency_op_unpause,
             extract_add_tokens_on_sui, extract_blocklist_payload, extract_token_bridge_payload,
             extract_update_asset_price, extract_update_bridge_limit, make_add_token_on_sui,
-            make_generic_message, make_payload, peel_u64_be_for_testing, reverse_bytes_test,
+            make_generic_message, make_payload_v2, peel_u64_be_for_testing, reverse_bytes_test,
             serialize_message, set_payload,
             update_asset_price_payload_token_id, update_bridge_limit_payload_limit,
             update_bridge_limit_payload_receiving_chain,
@@ -47,27 +47,27 @@ module bridge::message_tests {
         );
 
         // Test payload extraction
-        let token_payload = make_payload(
+        let token_payload = make_payload_v2(
             address::to_bytes(sender_address),
             chain_ids::eth_sepolia(),
             hex::decode(b"00000000000000000000000000000000000000c8"),
             3u64,
             balance::value(coin::balance(&coin)),
             hex::decode(b""),
-            0u8,
+            0u16, // event_idx
         );
-        let payload = token_bridge_message.extract_token_bridge_payload();
-        assert!(payload.token_target_chain() == token_payload.token_target_chain());
-        assert!(payload.token_target_address() == token_payload.token_target_address());
-        assert!(payload.token_type() == token_payload.token_type());
-        assert!(payload.token_amount() == token_payload.token_amount());
-        assert!(payload.token_tx_hash() == token_payload.token_tx_hash());
-        assert!(payload.token_event_idx() == token_payload.token_event_idx());
+        let payload = token_bridge_message.extract_token_bridge_payload_v2();
+        assert!(payload.token_target_chain_v2() == token_payload.token_target_chain_v2());
+        assert!(payload.token_target_address_v2() == token_payload.token_target_address_v2());
+        assert!(payload.token_type_v2() == token_payload.token_type_v2());
+        assert!(payload.token_amount_v2() == token_payload.token_amount_v2());
+        assert!(payload.token_tx_hash_v2() == token_payload.token_tx_hash_v2());
+        assert!(payload.token_event_idx_v2() == token_payload.token_event_idx_v2());
         assert!(payload == token_payload);
         // Test message serialization
         let message = serialize_message(token_bridge_message);
         let expected_msg = hex::decode(
-            b"0001000000000000000a012000000000000000000000000000000000000000000000000000000000000000640b1400000000000000000000000000000000000000c8000000000000000300000000000030390000",
+            b"0001000000000000000a012000000000000000000000000000000000000000000000000000000000000000640b1400000000000000000000000000000000000000c800000000000000030000000000003039000000",
         );
         assert_eq(message, expected_msg);
         assert!(token_bridge_message == deserialize_message_test_only(message));
@@ -84,7 +84,7 @@ module bridge::message_tests {
 
         let coin = coin::mint_for_testing<USDC>(12345, ctx);
 
-        let token_bridge_message = create_token_bridge_message(
+        let token_bridge_message = create_token_bridge_message_v2(
             chain_ids::eth_sepolia(), // source chain
             10, // seq_num
             // Eth address is 20 bytes long
@@ -94,26 +94,26 @@ module bridge::message_tests {
             3u64, // token_type
             balance::value(coin::balance(&coin)), // amount: u64
             hex::decode(b""), // tx_hash
-            0u8, // event_idx
+            0u16, // event_idx
         );
 
         // Test payload extraction
-        let token_payload = make_payload(
+        let token_payload = make_payload_v2(
             hex::decode(b"00000000000000000000000000000000000000c8"),
             chain_ids::sui_testnet(),
             address::to_bytes(address_1),
             3u64,
             balance::value(coin::balance(&coin)),
             hex::decode(b""),
-            0u8, // event_idx
+            0u16, // event_idx
         );
-        assert!(token_bridge_message.extract_token_bridge_payload() == token_payload);
+        assert!(token_bridge_message.extract_token_bridge_payload_v2() == token_payload);
 
 
         // Test message serialization
         let message = serialize_message(token_bridge_message);
         let expected_msg = hex::decode(
-            b"0001000000000000000a0b1400000000000000000000000000000000000000c801200000000000000000000000000000000000000000000000000000000000000064000000000000000300000000000030390000",
+            b"0001000000000000000a0b1400000000000000000000000000000000000000c80120000000000000000000000000000000000000000000000000000000000000006400000000000000030000000000003039000000",
         );
         assert_eq(message, expected_msg);
         assert!(token_bridge_message == deserialize_message_test_only(message));
@@ -130,7 +130,7 @@ module bridge::message_tests {
 
         let coin = coin::mint_for_testing<USDC>(4200000000, ctx);
 
-        let token_bridge_message = create_token_bridge_message(
+        let token_bridge_message = create_token_bridge_message_v2(
             chain_ids::eth_sepolia(), // source chain
             10, // seq_num
             // Eth address is 20 bytes long
@@ -140,21 +140,21 @@ module bridge::message_tests {
             3u64, // token_type
             balance::value(coin::balance(&coin)), // amount: u64
             hex::decode(b""), // tx_hash
-            0u8, // event_idx
+            0u16, // event_idx
         );
 
         // Test payload extraction
-        let token_payload = make_payload(
+        let token_payload = make_payload_v2(
             hex::decode(b"00000000000000000000000000000000000000c8"),
             chain_ids::eth_custom(),
             address::to_bytes(address_1),
             2u64,
             balance::value(coin::balance(&coin)),
             hex::decode(b""),
-            0u8, // event_idx
+            0u16, // event_idx
         );
         // std::debug::print(&token_bridge_message.get_payload());
-        assert!(token_bridge_message.extract_token_bridge_payload() != token_payload);
+        assert!(token_bridge_message.extract_token_bridge_payload_v2() != token_payload);
 
         coin::burn_for_testing(coin);
         test_scenario::end(scenario);
@@ -168,7 +168,7 @@ module bridge::message_tests {
 
         let coin = coin::mint_for_testing<USDC>(12345, ctx);
 
-        let token_bridge_message = create_token_bridge_message(
+        let token_bridge_message = create_token_bridge_message_v2(
             chain_ids::eth_sepolia(), // source chain
             10, // seq_num
             // Eth address is 20 bytes long
@@ -178,26 +178,26 @@ module bridge::message_tests {
             3u64, // token_type
             balance::value(coin::balance(&coin)), // amount: u64
             hex::decode(b"ce0d649ee5b72f62a11787ebd48adbac3c05b94de68e7bb7f0c79154cfffaa40"), // tx_hash
-            0u8, // event_idx
+            0u16, // event_idx
         );
 
         // Test payload extraction
-        let token_payload = make_payload(
+        let token_payload = make_payload_v2(
             hex::decode(b"00000000000000000000000000000000000000c8"),
             chain_ids::sui_testnet(),
             address::to_bytes(address_1),
             3u64,
             balance::value(coin::balance(&coin)),
             hex::decode(b"ce0d649ee5b72f62a11787ebd48adbac3c05b94de68e7bb7f0c79154cfffaa40"), // tx_hash
-            0u8, // event_idx
+            0u16, // event_idx
         );
-        assert!(token_bridge_message.extract_token_bridge_payload() == token_payload);
+        assert!(token_bridge_message.extract_token_bridge_payload_v2() == token_payload);
 
 
         // Test message serialization
         let message = serialize_message(token_bridge_message);
         let expected_msg = hex::decode(
-            b"0001000000000000000a0b1400000000000000000000000000000000000000c8012000000000000000000000000000000000000000000000000000000000000000640000000000000003000000000000303920ce0d649ee5b72f62a11787ebd48adbac3c05b94de68e7bb7f0c79154cfffaa4000",
+            b"0001000000000000000a0b1400000000000000000000000000000000000000c8012000000000000000000000000000000000000000000000000000000000000000640000000000000003000000000000303920ce0d649ee5b72f62a11787ebd48adbac3c05b94de68e7bb7f0c79154cfffaa400000",
         );
         assert_eq(message, expected_msg);
         assert!(token_bridge_message == deserialize_message_test_only(message));
@@ -596,7 +596,7 @@ module bridge::message_tests {
         let mut scenario = test_scenario::begin(@0x1);
         let ctx = test_scenario::ctx(&mut scenario);
         let coin = coin::mint_for_testing<USDC>(12345, ctx);
-        let mut token_bridge_message = create_token_bridge_message(
+        let mut token_bridge_message = create_token_bridge_message_v2(
             chain_ids::sui_testnet(), // source chain
             10, // seq_num
             address::to_bytes(sender_address), // sender address
@@ -606,7 +606,7 @@ module bridge::message_tests {
             3u64, // token_type
             balance::value(coin::balance(&coin)), // amount: u64
             hex::decode(b""), // tx_hash
-            0u8, // event_idx
+            0u16, // event_idx
         );
         let mut payload = token_bridge_message.payload();
         payload.push_back(0u8);
@@ -730,7 +730,7 @@ module bridge::message_tests {
     //     let mut sender = address::to_bytes(sender_address);
     //     // double sender which wil make the payload different the 64 bytes
     //     sender.append(address::to_bytes(sender_address));
-    //     create_token_bridge_message(
+    //     create_token_bridge_message_v2(
     //         chain_ids::sui_testnet(), // source chain
     //         10, // seq_num
     //         sender, // sender address
@@ -740,7 +740,7 @@ module bridge::message_tests {
     //         3u64, // token_type
     //         balance::value(coin::balance(&coin)), // amount: u64
     //         hex::decode(b""), // tx_hash
-    //         0u8, // event_idx
+    //         0u16, // event_idx
     //     );
 
     //     abort 0
@@ -750,7 +750,7 @@ module bridge::message_tests {
     #[expected_failure(abort_code = bridge::message::EMustBeTokenMessage)]
     fun test_bad_token_transfer_type() {
         let msg = create_update_asset_price_message(2, chain_ids::sui_testnet(), 10, 12345);
-        msg.to_parsed_token_transfer_message();
+        msg.to_parsed_token_transfer_message_v2();
     }
 
     #[test]
@@ -841,7 +841,7 @@ module bridge::message_tests {
         source_chain: u8,
         target_chain: u8,
     ): BridgeMessage {
-        create_token_bridge_message(
+        create_token_bridge_message_v2(
             source_chain,
             10, // seq_num
             address::to_bytes(sender),
@@ -851,7 +851,7 @@ module bridge::message_tests {
             3u64, // token_type
             balance::value<T>(coin::balance(coin)), // amount: u64
             hex::decode(b""), // tx_hash
-            0u8, // event_idx
+            0u16, // event_idx
         )
     }
 

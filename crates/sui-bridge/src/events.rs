@@ -46,6 +46,18 @@ pub struct MoveTokenDepositedEvent {
     pub token_type: u64,
     pub amount_sui_adjusted: u64,
 }
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+// `TokendDepositedEventV2` emitted in bridge.move
+pub struct MoveTokenDepositedEventV2 {
+    pub seq_num: u64,
+    pub source_chain: u8,
+    pub sender_address: Vec<u8>,
+    pub target_chain: u8,
+    pub target_address: Vec<u8>,
+    pub token_type: u64,
+    pub amount_before_fee: u64,
+    pub amount_after_fee: u64,
+}
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct MoveExternalDepositStartEvent {
@@ -71,6 +83,20 @@ pub struct MoveTokenSendBackEvent {
     pub tx_hash: Vec<u8>,
     pub event_idx: u8,
 }
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct MoveTokenSendBackEventV2 {
+    pub seq_num: u64,
+    pub source_chain: u8,
+    pub sender_address: Vec<u8>,
+    pub target_chain: u8,
+    pub target_address: Vec<u8>,
+    pub token_type: u64,
+    pub amount_sui_adjusted: u64,
+    pub tx_hash: Vec<u8>,
+    pub event_idx: u16,
+}
+
 
 macro_rules! new_move_event {
     ($struct_name:ident, $move_struct_name:ident) => {
@@ -248,7 +274,7 @@ pub struct EmittedSuiToEthTokenBridgeV1 {
     // The amount of tokens deposited with decimal points on Sui side
     pub amount_sui_adjusted: u64,
     pub tx_hash: Vec<u8>,
-    pub event_idx: u8,
+    pub event_idx: u16,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
@@ -274,7 +300,7 @@ pub struct EmittedEthTokenSendBackBridgeV1 {
     // The amount of tokens deposited with decimal points on Sui side
     pub amount_sui_adjusted: u64,
     pub tx_hash: Vec<u8>,
-    pub event_idx: u8,
+    pub event_idx: u16,
 }
 
 // Sanitized version of MoveCommitteeUpdateEvent
@@ -400,6 +426,61 @@ impl TryFrom<MoveTokenDepositedEvent> for EmittedSuiToEthTokenBridgeV1 {
     }
 }
 
+impl TryFrom<MoveTokenDepositedEventV2> for EmittedSuiToEthTokenBridgeV1 {
+    type Error = BridgeError;
+
+    fn try_from(event: MoveTokenDepositedEventV2) -> BridgeResult<Self> {
+        if event.amount_after_fee == 0 {
+            return Err(BridgeError::ZeroValueBridgeTransfer(format!(
+                "Failed to convert MoveTokenDepositedEventV2 to EmittedSuiToEthTokenBridgeV1. Manual intervention is required. 0 value transfer should not be allowed in Move: {:?}",
+                event,
+            )));
+        }
+
+        let token_id = event.token_type;
+        let sui_chain_id = BridgeChainId::try_from(event.source_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventV2 to EmittedSuiToEthTokenBridgeV1. Failed to convert source chain {} to BridgeChainId",
+                event.token_type,
+            ))
+        })?;
+        let eth_chain_id = BridgeChainId::try_from(event.target_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventV2 to EmittedSuiToEthTokenBridgeV1. Failed to convert target chain {} to BridgeChainId",
+                event.token_type,
+            ))
+        })?;
+        if !sui_chain_id.is_sui_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventV2 to EmittedSuiToEthTokenBridgeV1. Invalid source chain {}",
+                event.source_chain
+            )));
+        }
+        if eth_chain_id.is_sui_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventV2 to EmittedSuiToEthTokenBridgeV1. Invalid target chain {}",
+                event.target_chain
+            )));
+        }
+
+        let sui_address = SuiAddress::from_bytes(event.sender_address)
+            .map_err(|e| BridgeError::Generic(format!("Failed to convert MoveTokenDepositedEventV2 to EmittedSuiToEthTokenBridgeV1. Failed to convert sender_address to SuiAddress: {:?}", e)))?;
+        let eth_address = EthAddress::from_str(&Hex::encode(&event.target_address))?;
+
+        Ok(Self {
+            nonce: event.seq_num,
+            sui_chain_id,
+            eth_chain_id,
+            sui_address,
+            eth_address,
+            token_id,
+            amount_sui_adjusted: event.amount_after_fee,
+            tx_hash: vec![],
+            event_idx: 0,
+        })
+    }
+}
+
 impl TryFrom<MoveTokenSendBackEvent> for EmittedEthTokenSendBackBridgeV1 {
     type Error = BridgeError;
 
@@ -439,6 +520,61 @@ impl TryFrom<MoveTokenSendBackEvent> for EmittedEthTokenSendBackBridgeV1 {
 
         let sui_address = SuiAddress::from_bytes(event.sender_address)
             .map_err(|e| BridgeError::Generic(format!("Failed to convert MoveTokenSendBackEvent to EmittedEthTokenSendBackBridgeV1. Failed to convert sender_address to SuiAddress: {:?}", e)))?;
+        let eth_address = EthAddress::from_str(&Hex::encode(&event.target_address))?;
+
+        Ok(Self {
+            nonce: event.seq_num,
+            sui_chain_id,
+            eth_chain_id,
+            sui_address,
+            eth_address,
+            token_id,
+            amount_sui_adjusted: event.amount_sui_adjusted,
+            tx_hash: event.tx_hash,
+            event_idx: event.event_idx as u16,
+        })
+    }
+}
+
+impl TryFrom<MoveTokenSendBackEventV2> for EmittedEthTokenSendBackBridgeV1 {
+    type Error = BridgeError;
+
+    fn try_from(event: MoveTokenSendBackEventV2) -> BridgeResult<Self> {
+        if event.amount_sui_adjusted == 0 {
+            return Err(BridgeError::ZeroValueBridgeTransfer(format!(
+                "Failed to convert MoveTokenSendBackEventV2 to EmittedEthTokenSendBackBridgeV1. Manual intervention is required. 0 value transfer should not be allowed in Move: {:?}",
+                event,
+            )));
+        }
+
+        let token_id = event.token_type;
+        let sui_chain_id = BridgeChainId::try_from(event.source_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEventV2 to EmittedEthTokenSendBackBridgeV1. Failed to convert source chain {} to BridgeChainId",
+                event.token_type,
+            ))
+        })?;
+        let eth_chain_id = BridgeChainId::try_from(event.target_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEventV2 to EmittedEthTokenSendBackBridgeV1. Failed to convert target chain {} to BridgeChainId",
+                event.token_type,
+            ))
+        })?;
+        if !sui_chain_id.is_sui_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEventV2 to EmittedEthTokenSendBackBridgeV1. Invalid source chain {}",
+                event.source_chain
+            )));
+        }
+        if eth_chain_id.is_sui_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEventV2 to EmittedEthTokenSendBackBridgeV1. Invalid target chain {}",
+                event.target_chain
+            )));
+        }
+
+        let sui_address = SuiAddress::from_bytes(event.sender_address)
+            .map_err(|e| BridgeError::Generic(format!("Failed to convert MoveTokenSendBackEventV2 to EmittedEthTokenSendBackBridgeV1. Failed to convert sender_address to SuiAddress: {:?}", e)))?;
         let eth_address = EthAddress::from_str(&Hex::encode(&event.target_address))?;
 
         Ok(Self {
@@ -500,8 +636,10 @@ impl TryFrom<MoveExternalDepositStartEvent> for EmittedExternalDepositStartBridg
 
 crate::declare_events!(
     SuiToEthTokenBridgeV1(EmittedSuiToEthTokenBridgeV1) => ("bridge::TokenDepositedEvent", MoveTokenDepositedEvent),
+    SuiToEthTokenBridgeV2(EmittedSuiToEthTokenBridgeV1) => ("bridge::TokenDepositedEventV2", MoveTokenDepositedEventV2),
     ExternalDepositStartBridgeV1(EmittedExternalDepositStartBridgeV1) => ("bridge::ExternalDepositStartEvent", MoveExternalDepositStartEvent),
     TokenSendBackEvent(EmittedEthTokenSendBackBridgeV1) => ("bridge::TokenSendBackEvent", MoveTokenSendBackEvent),
+    TokenSendBackEventV2(EmittedEthTokenSendBackBridgeV1) => ("bridge::TokenSendBackEventV2", MoveTokenSendBackEventV2),
     TokenTransferApproved(TokenTransferApproved) => ("bridge::TokenTransferApproved", MoveTokenTransferApproved),
     TokenTransferClaimed(TokenTransferClaimed) => ("bridge::TokenTransferClaimed", MoveTokenTransferClaimed),
     TokenTransferAlreadyApproved(TokenTransferAlreadyApproved) => ("bridge::TokenTransferAlreadyApproved", MoveTokenTransferAlreadyApproved),
@@ -572,7 +710,21 @@ impl SuiBridgeEvent {
                     sui_bridge_event: event.clone(),
                 }))
             }
+            SuiBridgeEvent::SuiToEthTokenBridgeV2(event) => {
+                Some(BridgeAction::SuiToEthBridgeAction(SuiToEthBridgeAction {
+                    sui_tx_digest,
+                    sui_tx_event_index,
+                    sui_bridge_event: event.clone(),
+                }))
+            }
             SuiBridgeEvent::TokenSendBackEvent(event) => Some(
+                BridgeAction::EthSendBackBridgeAction(EthSendBackBridgeAction {
+                    sui_tx_digest,
+                    sui_tx_event_index,
+                    sui_bridge_event: event.clone(),
+                }),
+            ),
+            SuiBridgeEvent::TokenSendBackEventV2(event) => Some(
                 BridgeAction::EthSendBackBridgeAction(EthSendBackBridgeAction {
                     sui_tx_digest,
                     sui_tx_event_index,
@@ -662,6 +814,59 @@ pub mod tests {
         });
         let event = SuiEvent {
             type_: SuiToEthTokenBridgeV1.get().unwrap().clone(),
+            bcs: BcsEvent::new(bcs::to_bytes(&emitted_event).unwrap()),
+            id: EventID {
+                tx_digest,
+                event_seq: event_idx as u64,
+            },
+
+            // The following fields do not matter as of writing,
+            // but if tests start to fail, it's worth checking these fields.
+            package_id: ObjectID::ZERO,
+            transaction_module: identifier.clone(),
+            sender: SuiAddress::random_for_testing_only(),
+            parsed_json: serde_json::json!({"test": "test"}),
+            timestamp_ms: None,
+        };
+        (event, bridge_action)
+    }
+
+     /// Returns a test SuiEvent and corresponding BridgeAction
+     pub fn get_test_sui_event_v2_and_action(identifier: Identifier) -> (SuiEvent, BridgeAction) {
+        init_all_struct_tags(); // Ensure all tags are initialized
+        let sanitized_event = EmittedSuiToEthTokenBridgeV1 {
+            nonce: 1,
+            sui_chain_id: BridgeChainId::SuiTestnet,
+            sui_address: SuiAddress::random_for_testing_only(),
+            eth_chain_id: BridgeChainId::EthSepolia,
+            eth_address: EthAddress::random(),
+            token_id: TOKEN_ID_SUI,
+            amount_sui_adjusted: 100,
+            tx_hash: vec![],
+            event_idx: 0,
+        };
+        //  pub amount_before_fee: u64,
+
+        let emitted_event = MoveTokenDepositedEventV2 {
+            seq_num: sanitized_event.nonce,
+            source_chain: sanitized_event.sui_chain_id as u8,
+            sender_address: sanitized_event.sui_address.to_vec(),
+            target_chain: sanitized_event.eth_chain_id as u8,
+            target_address: sanitized_event.eth_address.as_bytes().to_vec(),
+            token_type: sanitized_event.token_id,
+            amount_before_fee: 0,
+            amount_after_fee: sanitized_event.amount_sui_adjusted,
+        };
+
+        let tx_digest = TransactionDigest::random();
+        let event_idx = 10u16;
+        let bridge_action = BridgeAction::SuiToEthBridgeAction(SuiToEthBridgeAction {
+            sui_tx_digest: tx_digest,
+            sui_tx_event_index: event_idx,
+            sui_bridge_event: sanitized_event.clone(),
+        });
+        let event = SuiEvent {
+            type_: SuiToEthTokenBridgeV2.get().unwrap().clone(),
             bcs: BcsEvent::new(bcs::to_bytes(&emitted_event).unwrap()),
             id: EventID {
                 tx_digest,
@@ -819,6 +1024,23 @@ pub mod tests {
             other => panic!("Expected Generic error, got: {:?}", other),
         }
     }
+    #[test]
+    fn test_0_sui_amount_conversion_for_sui_event_v2() {
+        let emitted_event = MoveTokenDepositedEventV2 {
+            seq_num: 1,
+            source_chain: BridgeChainId::SuiTestnet as u8,
+            sender_address: SuiAddress::random_for_testing_only().to_vec(),
+            target_chain: BridgeChainId::EthSepolia as u8,
+            target_address: EthAddress::random().as_bytes().to_vec(),
+            token_type: TOKEN_ID_SUI,
+            amount_before_fee: 0,
+            amount_after_fee: 0,
+        };
+        match EmittedSuiToEthTokenBridgeV1::try_from(emitted_event).unwrap_err() {
+            BridgeError::ZeroValueBridgeTransfer(_) => (),
+            other => panic!("Expected Generic error, got: {:?}", other),
+        }
+    }
 
     #[test]
     fn test_0_sui_amount_conversion_for_external_event() {
@@ -840,7 +1062,7 @@ pub mod tests {
 
     #[test]
     fn test_1_token_send_back_event() {
-        let emitted_event = MoveTokenSendBackEvent {
+        let emitted_event = MoveTokenSendBackEventV2 {
             seq_num: 1,
             source_chain: BridgeChainId::SuiTestnet as u8,
             sender_address: SuiAddress::random_for_testing_only().to_vec(),

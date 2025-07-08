@@ -13,6 +13,8 @@ pub enum BridgeError {
     TxNotFound,
     // Tx is not yet finalized
     TxNotFinalized,
+    // fast path not match
+    FastPathTooFast,
     // No recognized bridge event in specified transaction and event position
     NoBridgeEventsInTxPosition,
     // Found a bridge event but not in a recognized Eth bridge contract

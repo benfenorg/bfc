@@ -77,16 +77,18 @@ impl BridgeClient {
             BridgeAction::EthToSuiBridgeAction(e) => {
                 if e.eth_bridge_event.eth_chain_id.is_eth_chain(){
                     format!(
-                        "sign/bridge_tx/eth/sui/{}/{}",
+                        "sign/bridge_tx/eth/sui/{}/{}/{}",
                         Hex::encode(e.eth_tx_hash.0),
-                        e.eth_event_index
+                        e.eth_event_index,
+                        e.eth_bridge_event.fast_path_selector as u8
                     )
                 }else{
                     format!(
-                        "sign/bridge_tx/evm/{}/sui/{}/{}",
+                        "sign/bridge_tx/evm/{}/sui/{}/{}/{}",
                         e.eth_bridge_event.eth_chain_id as u8,
                         Hex::encode(e.eth_tx_hash.0),
-                        e.eth_event_index
+                        e.eth_event_index,
+                        e.eth_bridge_event.fast_path_selector as u8
                     )
                 }
             },
@@ -121,6 +123,13 @@ impl BridgeClient {
                 let sending_chain_id = (a.sending_chain_id as u8).to_string();
                 let new_usd_limit = a.new_usd_limit.to_string();
                 format!("sign/update_limit/{chain_id}/{nonce}/{sending_chain_id}/{new_usd_limit}")
+            }
+            BridgeAction::SingleTransferLimitUpdateAction(a) =>{
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let sending_chain_id = (a.sending_chain_id as u8).to_string();
+                let new_usd_limit = a.new_usd_limit.to_string();
+                format!("sign/update_single_transfer_limit/{chain_id}/{nonce}/{sending_chain_id}/{new_usd_limit}")
             }
             BridgeAction::AssetPriceUpdateAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
@@ -203,6 +212,68 @@ impl BridgeClient {
                     "sign/remove_external_coin_target/{chain_id}/{nonce}/{coin_type}/{target_address}"
                 )
             }
+
+            BridgeAction::AddTokenOnTokenListAction(a)=>{
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let from_chain_id=(a.from_chain_id as u8).to_string();
+                let to_chain_id=(a.to_chain_id as u8).to_string();
+                let token_id=a.token_id.to_string();
+
+                format!(
+                    "sign/add_token_on_token_list/{chain_id}/{nonce}/{from_chain_id}/{to_chain_id}/{token_id}"
+                )
+            }
+
+            BridgeAction::RemoveTokenOnTokenListAction(a)=>{
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let from_chain_id=(a.from_chain_id as u8).to_string();
+                let to_chain_id=(a.to_chain_id as u8).to_string();
+                let token_id=a.token_id.to_string();
+
+                format!(
+                    "sign/remove_token_on_token_list/{chain_id}/{nonce}/{from_chain_id}/{to_chain_id}/{token_id}"
+                )
+            }
+            BridgeAction::UpdateBridgeFeeOnCrossOutAction(a)=>{
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let to_chain_id=(a.to_chain_id as u8).to_string();
+                let token_id=a.token_id.to_string();
+                let mode=a.mode.to_string();
+                let amount=a.amount.to_string();
+
+
+                format!(
+                    "sign/set_bridge_fee_on_cross_out/{chain_id}/{nonce}/{to_chain_id}/{token_id}/{mode}/{amount}"
+                )
+            }
+
+            BridgeAction::UpdateBridgeFeeOnCrossInAction(a)=>{
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let from_chain_id=(a.from_chain_id as u8).to_string();
+                let token_id=a.token_id.to_string();
+                let mode=a.mode.to_string();
+                let amount=a.amount.to_string();
+
+                format!(
+                    "sign/set_bridge_fee_on_cross_in/{chain_id}/{nonce}/{from_chain_id}/{token_id}/{mode}/{amount}"
+                )
+            }
+
+            BridgeAction::WithdrawBridgeFeeAction(a)=>{
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let addr=a.addr;
+                let coin_type=a.coin_type.clone();
+                let amount=a.amount.to_string();
+
+                format!(
+                    "sign/withdraw_bridge_fee/{chain_id}/{nonce}/{addr}/{coin_type}/{amount}"
+                )
+            }
             BridgeAction::AddTokensOnSuiAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();
@@ -259,6 +330,15 @@ impl BridgeClient {
                     .join(",");
                 format!(
                     "sign/add_tokens_on_evm/{chain_id}/{nonce}/{native}/{token_ids}/{token_addresses}/{token_sui_decimals}/{token_prices}"
+                )
+            }
+            BridgeAction::FastPathLimitUpdateAction(a) => {
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let token_id = a.token_id.to_string();
+                let amount = a.amount.to_string();
+                format!(
+                    "sign/update_fast_path_limit/{chain_id}/{nonce}/{token_id}/{amount}"
                 )
             }
         }
@@ -328,6 +408,7 @@ impl BridgeClient {
 mod tests {
     //use std::ops::Add;
     use super::*;
+    use crate::fast_path::FastPathSelector;
     use crate::test_utils::run_mock_bridge_server;
     use crate::{
         abi::EthToSuiTokenBridgeV1,
@@ -568,15 +649,17 @@ mod tests {
                 sui_adjusted_amount: 1,
                 tx_hash: vec![],
                 event_idx: 0,
+                fast_path_selector: FastPathSelector::Finalized
             },
         });
 
         assert_eq!(
             BridgeClient::bridge_action_to_path(&action),
             format!(
-                "sign/bridge_tx/eth/sui/{}/{}",
+                "sign/bridge_tx/eth/sui/{}/{}/{}",
                 Hex::encode(eth_tx_hash.0),
-                eth_event_index
+                eth_event_index,
+                FastPathSelector::Finalized as u8
             )
         );
 

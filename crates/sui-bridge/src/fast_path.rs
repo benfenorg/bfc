@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use num_enum::{IntoPrimitive, TryFromPrimitive};
 use sui_types::bridge::{BridgeChainId, TOKEN_ID_BUSD, TOKEN_ID_USDC, TOKEN_ID_USDT};
 use strum_macros::Display;
 use tracing::info;
@@ -16,6 +17,8 @@ use crate::{config::BridgeClientConfig, types::BridgeAction};
     Display,
     serde::Serialize,
     serde::Deserialize,
+    TryFromPrimitive,
+    IntoPrimitive,
 )]
 #[repr(u8)]
 pub enum FastPathSelector {
@@ -35,6 +38,10 @@ impl FastPathSelector {
         }else {
             FastPathSelector::Finalized
         }
+    }
+
+    pub fn faster(self,other:FastPathSelector) -> bool {
+        (self as u8) < (other as u8)
     }
 
     pub fn select_by_action(bridge_action:BridgeAction,config:&FastPathConfig) -> FastPathSelector {

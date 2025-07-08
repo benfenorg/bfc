@@ -212,6 +212,7 @@ pub fn generate_bridge_node_config_and_write_to_file(
             safe_fast_path_threshold: None,
             enable_fast_path_latest: false,
             enable_fast_path_safe: false,
+            enable_fast_path_finalized: true,
         },
         evm: vec![
             EthConfig {
@@ -224,6 +225,7 @@ pub fn generate_bridge_node_config_and_write_to_file(
                 safe_fast_path_threshold: None,
                 enable_fast_path_latest: false,
                 enable_fast_path_safe: false,
+                enable_fast_path_finalized: true,
             },
         ],
         aml_key: "your_aml_key".to_string(),

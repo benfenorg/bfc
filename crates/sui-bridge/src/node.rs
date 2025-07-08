@@ -266,12 +266,14 @@ async fn start_client_components(
             .channel_inflight
             .with_label_values(&["evm_events_queue"]),
     );
-    let (task_handles, _) =
-        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch.clone(), evm_evnets_tx.clone(),FastPathSelector::Finalized)
-            .run(metrics.clone())
-            .await
-            .expect("Failed to start eth syncer finalized");
-    all_handles.extend(task_handles);
+    if client_config.eth_enable_fast_path_finalized {
+        let (task_handles, _) =
+            EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch.clone(), evm_evnets_tx.clone(),FastPathSelector::Finalized)
+                .run(metrics.clone())
+                .await
+                .expect("Failed to start eth syncer finalized");
+        all_handles.extend(task_handles);
+    }
     if client_config.eth_enable_fast_path_latest {
         let keys_fast_path = client_config.eth_contracts.iter().map(|k| (*k, chain_id,FastPathSelector::Latest)).collect::<Vec<_>>();
         let eth_contracts_to_watch_fast_path = get_eth_contracts_to_watch(
@@ -309,7 +311,6 @@ async fn start_client_components(
         info!("chain_id: {}, evm_client_config: {:#?}", chain_id, evm_client_config);
         let client = client_config.evm_clients.get(&chain_id).unwrap().clone();
         let evm_chain_id = client.get_chain_id_local().await?;
-        //todo: support fast path for evm client @lifei
         let keys = evm_client_config.contracts.iter().map(|k| (*k, evm_chain_id,FastPathSelector::Finalized)).collect::<Vec<_>>();
         let evm_contracts_to_watch = get_eth_contracts_to_watch(
             &store,
@@ -320,13 +321,14 @@ async fn start_client_components(
 
         info!("chain_id: {}, evm_contracts_to_watch: {:#?}", chain_id, evm_contracts_to_watch);
 
-
-        let (task_handles, _) =
+        if evm_client_config.enable_fast_path_finalized {
+            let (task_handles, _) =
             EthSyncer::new(client.clone(), evm_contracts_to_watch, evm_evnets_tx.clone(),FastPathSelector::Finalized)
                 .run(metrics.clone())
                 .await
                 .expect("Failed to start evm syncer finalized");
-        all_handles.extend(task_handles);
+            all_handles.extend(task_handles);
+        }
         if evm_client_config.enable_fast_path_latest {
             let keys_fast_path = evm_client_config.contracts.iter().map(|k| (*k, evm_chain_id,FastPathSelector::Latest)).collect::<Vec<_>>();
             let eth_contracts_to_watch_fast_path = get_eth_contracts_to_watch(
@@ -729,19 +731,10 @@ mod tests {
                 safe_fast_path_threshold: None,
                 enable_fast_path_latest: false,
                 enable_fast_path_safe: false,
+                enable_fast_path_finalized: true,
             },
             evm: vec![
-                EthConfig {
-                    eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
-                    eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
-                    eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
-                    eth_contracts_start_block_fallback: Some(0),
-                    eth_contracts_start_block_override: None,
-                    latest_fast_path_threshold: None,
-                    safe_fast_path_threshold: None,
-                    enable_fast_path_latest: false,
-                    enable_fast_path_safe: false,
-                },
+
             ],
             aml_key: "test_key".to_string(),
             approved_governance_actions: vec![],
@@ -815,18 +808,20 @@ mod tests {
                 safe_fast_path_threshold: None,
                 enable_fast_path_latest: false,
                 enable_fast_path_safe: false,
+                enable_fast_path_finalized: true,
             },
             evm: vec![
                 EthConfig {
                     eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
                     eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
-                    eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
+                    eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
                     eth_contracts_start_block_fallback: Some(0),
                     eth_contracts_start_block_override: None,
                     latest_fast_path_threshold: None,
                     safe_fast_path_threshold: None,
                     enable_fast_path_latest: false,
                     enable_fast_path_safe: false,
+                    enable_fast_path_finalized: true,
                 },
             ],
             aml_key: "test_key".to_string(),
@@ -930,18 +925,20 @@ mod tests {
                 safe_fast_path_threshold: None,
                 enable_fast_path_latest: false,
                 enable_fast_path_safe: false,
+                enable_fast_path_finalized: true,
             },
             evm: vec![
                 EthConfig {
                     eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
                     eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
-                    eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
+                    eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
                     eth_contracts_start_block_fallback: Some(0),
                     eth_contracts_start_block_override: Some(0),
                     latest_fast_path_threshold: None,
                     safe_fast_path_threshold: None,
                     enable_fast_path_latest: false,
                     enable_fast_path_safe: false,
+                    enable_fast_path_finalized: true,
                 },
             ],
             aml_key: "test_key".to_string(),

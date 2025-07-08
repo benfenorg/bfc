@@ -15,7 +15,7 @@ use ethers::types::{TxHash, U256};
 use ethers::types::{Block, Filter};
 use sui_types::bridge::BridgeChainId;
 use tap::TapFallible;
-use tracing::info;
+use tracing::{error, info};
 
 #[cfg(test)]
 use crate::eth_mock_provider::EthMockProvider;
@@ -144,6 +144,7 @@ where
         tx_hash: TxHash,
         event_idx: u16,
         fast_path_config: FastPathConfig,
+        fast_path_selector: Option<FastPathSelector>,
     ) -> BridgeResult<BridgeAction> {
         let receipt = self
             .provider
@@ -177,13 +178,18 @@ where
             .ok_or(BridgeError::BridgeEventNotActionable)?;
 
         //fast path check
-        let fast_path_selector = FastPathSelector::select_by_action(bridge_action.clone(), &fast_path_config);
+        let fast_path_selector = fast_path_selector.unwrap_or(FastPathSelector::select_by_action(bridge_action.clone(), &fast_path_config));
         info!("bbking fast_path_selector result: {:?}", fast_path_selector);
         // TODO: save the latest finalized block id so we don't have to query it every time
         let last_block_id = self.get_block_id_by_fast_path_selector(fast_path_selector).await?;
         if receipt_block_num.as_u64() > last_block_id {
             info!("bbking tx not finalized,expect {:?} actual {:?}", last_block_id, receipt_block_num.as_u64());
             return Err(BridgeError::TxNotFinalized);
+        }
+        let fast_path_selector_by_action = FastPathSelector::select_by_action(bridge_action.clone(), &fast_path_config);
+        if fast_path_selector.faster(fast_path_selector_by_action) {
+            error!("fast path too fast, expect {:?} actual {:?}", fast_path_selector_by_action, fast_path_selector);
+            return Err(BridgeError::FastPathTooFast);
         }
 
         Ok(bridge_action)
@@ -437,7 +443,7 @@ mod tests {
             .unwrap();
 
         let error = client
-            .get_bridge_action_maybe(eth_tx_hash, 1, FastPathConfig::default())
+            .get_bridge_action_maybe(eth_tx_hash, 1, FastPathConfig::default(),Some(FastPathSelector::Finalized))
             .await
             .unwrap_err();
         match error {
@@ -449,7 +455,7 @@ mod tests {
         mock_last_finalized_block(&mock_provider, 778);
 
         let error = client
-            .get_bridge_action_maybe(eth_tx_hash, 2, FastPathConfig::default())
+            .get_bridge_action_maybe(eth_tx_hash, 2, FastPathConfig::default(),Some(FastPathSelector::Finalized))
             .await
             .unwrap_err();
         // Receipt only has 2 logs
@@ -459,7 +465,7 @@ mod tests {
         };
 
         let error = client
-            .get_bridge_action_maybe(eth_tx_hash, 0, FastPathConfig::default())
+            .get_bridge_action_maybe(eth_tx_hash, 0, FastPathConfig::default(),Some(FastPathSelector::Finalized))
             .await
             .unwrap_err();
         // Same, `log` is not a BridgeEvent
@@ -469,7 +475,7 @@ mod tests {
         };
 
         let action = client
-            .get_bridge_action_maybe(eth_tx_hash, 1, FastPathConfig::default())
+            .get_bridge_action_maybe(eth_tx_hash, 1, FastPathConfig::default(),Some(FastPathSelector::Finalized))
             .await
             .unwrap();
         assert_eq!(action, bridge_action);
@@ -511,7 +517,7 @@ mod tests {
             .unwrap();
 
         let error = client
-            .get_bridge_action_maybe(eth_tx_hash, 0, FastPathConfig::default())
+            .get_bridge_action_maybe(eth_tx_hash, 0, FastPathConfig::default(),Some(FastPathSelector::Finalized))
             .await
             .unwrap_err();
         match error {
@@ -534,7 +540,7 @@ mod tests {
             )
             .unwrap();
         let action = client
-            .get_bridge_action_maybe(eth_tx_hash, 0, FastPathConfig::default())
+            .get_bridge_action_maybe(eth_tx_hash, 0, FastPathConfig::default(),Some(FastPathSelector::Finalized))
             .await
             .unwrap();
         assert_eq!(action, bridge_action);
@@ -577,7 +583,7 @@ mod tests {
             .await.unwrap(),
         );
 
-        let result = client.get_bridge_action_maybe(TxHash::from_str("0xfa2cdc9e3e8a011f78b0ee160933f4520ede246dc73a190b4849635b1402d6e0").unwrap(), 1, FastPathConfig::default()).await.unwrap();
+        let result = client.get_bridge_action_maybe(TxHash::from_str("0xfa2cdc9e3e8a011f78b0ee160933f4520ede246dc73a190b4849635b1402d6e0").unwrap(), 1, FastPathConfig::default(),Some(FastPathSelector::Finalized)).await.unwrap();
         println!("result: {:?}", result);
         
     }

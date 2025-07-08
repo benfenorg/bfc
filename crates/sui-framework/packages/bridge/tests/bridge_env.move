@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #[test_only]
+#[allow(unused_variable)]
 module bridge::bridge_env {
     use bridge::bridge::{
         assert_not_paused,
@@ -12,17 +13,21 @@ module bridge::bridge_env {
         test_get_external_token_transfer_action_status,
         get_available_claim_amount,
         test_load_inner_mut,
+        test_load_mut_uid,
+        get_cross_out_fee_amount,
+        get_cross_in_fee_amount,
         Bridge,
         EmergencyOpEvent,
-        TokenDepositedEvent,
-        TokenSendBackEvent,
+        TokenDepositedEventV2,
+        ExternalDepositedEventV2,
+        TokenSendBackEventV2,
         TokenTransferAlreadyApproved,
         TokenTransferAlreadyClaimed,
         TokenTransferApproved,
         TokenTransferClaimed,
         TokenTransferLimitExceed,
-        ExternalDepositedEvent,
-        ExternalWithdrawEvent,
+        // ExternalDepositedEvent,
+        ExternalWithdrawEventV2,
         ExternalBridgeRecord,
         ExternalDepositedApprovedEvent,
     };
@@ -44,6 +49,11 @@ module bridge::bridge_env {
         create_add_external_coin_target_message,
         create_remove_external_coin_target_message,
         create_blocklist_message,
+        create_add_token_on_token_list,
+        create_remove_token_on_token_list,
+        create_set_cross_in_bridge_fee,
+        create_set_cross_out_bridge_fee,
+        create_withdraw_fee_cap,
         emergency_op_pause,
         emergency_op_unpause
     };
@@ -54,12 +64,16 @@ module bridge::bridge_env {
         NewTokenEvent,
         UpdateTokenPriceEvent
     };
+    use bridge::bridge_fee::{Self,WithdrawBridgeFeeCap};
     use bridge::usdc::{Self, USDC};
     use bridge::usdt::{Self, USDT};
     use std::ascii::String;
     use std::type_name;
     use bridge::bnb::{Self, BNB};
+    use bridge::busd::{Self, BUSD};
+
     use bridge::op::{ OP};
+    use bridge::tokenlist;
     use sui::address;
     use sui::clock::Clock;
     use sui::coin::{Self, Coin, CoinMetadata, TreasuryCap};
@@ -86,7 +100,7 @@ module bridge::bridge_env {
     const ETH_ID: u64 = 2;
     const USDC_ID: u64 = 3;
     const USDT_ID: u64 = 4;
-    const TEST_TOKEN_ID: u64 = 5;
+    const BUSD_ID: u64 = 5;
     const BNB_ID: u64 = 6;
     const OP_ID: u64=7;
 
@@ -107,8 +121,12 @@ module bridge::bridge_env {
         USDT_ID
     }
 
-    public fun test_token_id(): u64 {
-        TEST_TOKEN_ID
+    public fun busd_id(): u64 {
+        BUSD_ID
+    }
+
+    public fun  test_token_id(): u64 {
+        100
     }
 
     public fun bnb_id(): u64 {
@@ -338,6 +356,7 @@ module bridge::bridge_env {
         env.init_committee(sender);
         env.add_tokenlist(sender);
         env.setup_treasury(sender);
+        //env.init_external_limiter(sender);
         env.add_refund_admin(@0xABCD)
     }
 
@@ -415,6 +434,7 @@ module bridge::bridge_env {
         env.load_vault(sender);
     }
 
+
     // Register 4 tokens with the Bridge: ETH, BTC, USDT, USDC, BNB.
     fun register_default_tokens(env: &mut BridgeEnv, sender: address) {
         env.scenario.next_tx(sender);
@@ -477,6 +497,18 @@ module bridge::bridge_env {
         );
         destroy(metadata);
 
+        let (
+            upgrade_cap,
+            treasury_cap,
+            metadata,
+        ) = busd::create_bridge_token(env.scenario.ctx());
+        bridge.register_foreign_token<BUSD>(
+            treasury_cap,
+            upgrade_cap,
+            &metadata,
+        );
+        destroy(metadata);
+
         test_scenario::return_shared(bridge);
     }
 
@@ -498,15 +530,16 @@ module bridge::bridge_env {
             env.chain_id,
             bridge.get_seq_num_for(message_types::add_tokens_on_sui()),
             false,
-            vector[BTC_ID, ETH_ID, USDC_ID, USDT_ID, BNB_ID],
+            vector[BTC_ID, ETH_ID, USDC_ID, USDT_ID, BUSD_ID,BNB_ID],
             vector[
                 type_name::get<BTC>().into_string(),
                 type_name::get<ETH>().into_string(),
                 type_name::get<USDC>().into_string(),
                 type_name::get<USDT>().into_string(),
+                type_name::get<BUSD>().into_string(),
                 type_name::get<BNB>().into_string(),
             ],
-            vector[1000, 100, 1, 1, 60],
+            vector[1000, 100, 1, 1, 1,60],
         );
         let signatures = env.sign_message(add_token_message);
         bridge.execute_system_message(add_token_message, signatures);
@@ -602,6 +635,149 @@ module bridge::bridge_env {
         test_scenario::return_shared(bridge);
     }
 
+    public fun add_token_on_token_list(
+        env: &mut BridgeEnv,
+        source_chain: u8,
+        target_chain: u8,
+        token_id: u64,
+    ){
+       //let scenario = &mut env.scenario;
+        env.scenario.next_tx(@0x0);
+        let mut bridge = env.scenario.take_shared<Bridge>();
+        let add_message = create_add_token_on_token_list(env.chain_id, bridge.get_seq_num_for(message_types::add_token_on_token_list()),source_chain,target_chain , token_id);
+        let signatures = env.sign_message(add_message);
+        bridge.execute_system_message_with_ctx(add_message, signatures,env.scenario.ctx());
+        //check
+        env.scenario.next_tx(@0x1);
+        let uid=test_load_mut_uid(&mut bridge);
+        let exist= if (env.chain_id==source_chain){
+            tokenlist::is_supported_from_benfen(uid,target_chain as u64,token_id)
+        }else{
+            tokenlist::is_supported_to_benfen(uid,source_chain as u64,token_id)
+        };
+        assert!(exist,0);
+        test_scenario::return_shared(bridge);
+    }
+    public fun set_cross_in_bridge_fee<T>(
+          env: &mut BridgeEnv,
+          from_chain: u8,
+          mode :u64,
+          fee: u64,
+          amount: u64,
+    ){
+        let scenario = &mut env.scenario;
+        scenario.next_tx(@0x0);
+        let mut bridge = scenario.take_shared<Bridge>();
+        let token_id=1; //btc
+
+        let add_message = create_set_cross_in_bridge_fee(env.chain_id, bridge.get_seq_num_for(message_types::set_cross_in_bridge_fee()),from_chain,token_id,mode ,fee);
+        let signatures = env.sign_message(add_message);
+        bridge.execute_system_message_with_ctx(add_message, signatures,env.scenario.ctx());
+        env.scenario.next_tx(@0x1);
+        //check
+        if(mode==0){
+            assert!(amount>fee);
+            assert!(get_cross_in_fee_amount<T>(&bridge, from_chain as u64, amount)==fee,1);
+            //after_fee=amount-get_cross_in_fee_amount<T>(&bridge, from_chain as u64, amount);
+        }else if(mode==1){
+            std::debug::print(&get_cross_in_fee_amount<T>(&bridge, from_chain as u64, amount));
+            assert!(get_cross_in_fee_amount<T>(&bridge, from_chain as u64, amount)== (amount * fee) / 1_000_000);
+        }else{
+            abort 0
+        };
+
+        test_scenario::return_shared(bridge);
+    }
+
+    public fun set_cross_out_bridge_fee<T>(
+          env: &mut BridgeEnv,
+          to_chain: u8,
+          mode :u64,
+          fee: u64,
+          amount: u64,
+    ){
+         let scenario = &mut env.scenario;
+        scenario.next_tx(@0x0);
+        let mut bridge = scenario.take_shared<Bridge>();
+        let token_id=1; //btc
+
+        let add_message = create_set_cross_out_bridge_fee(env.chain_id, bridge.get_seq_num_for(message_types::set_cross_out_bridge_fee()),to_chain,token_id,mode ,fee);
+        let signatures = env.sign_message(add_message);
+        bridge.execute_system_message_with_ctx(add_message, signatures,env.scenario.ctx());
+        env.scenario.next_tx(@0x1);
+        //check
+        if(mode==0){
+            assert!(amount>fee);
+            assert!(get_cross_out_fee_amount<T>(&bridge, to_chain as u64, amount)==fee,1);
+        }else if(mode==1){
+            assert!(get_cross_out_fee_amount<T>(&bridge, to_chain as u64, amount)== (amount * fee) / 1_000_000);
+        }else{
+            abort 0
+        };
+        test_scenario::return_shared(bridge);
+    }
+
+
+    public fun withdraw_bridge_fee_cap<T>(
+        env: &mut BridgeEnv,
+        amount: u64
+    ){
+        // let scenario = &mut env.scenario;
+        let coin_type=type_name::get<T>().into_string();
+        env.scenario.next_tx(@0x0);
+        let mut bridge =  env.scenario.take_shared<Bridge>();
+        let sender=@0x5;
+
+        let add_message = create_withdraw_fee_cap(env.chain_id, bridge.get_seq_num_for(message_types::withdraw_bridge_fee()),sender,coin_type ,amount);
+        let signatures = env.sign_message(add_message);
+        bridge.execute_system_message_with_ctx(add_message, signatures,env.scenario.ctx());
+
+        env.scenario.next_tx(@0x5);
+        //check
+        {
+            let cap =  env.scenario.take_from_sender<WithdrawBridgeFeeCap>();
+            std::debug::print(&cap);
+            assert!(bridge_fee::get_withdraw_cap_coin_type(&cap)==coin_type,1);
+            assert!(bridge_fee::get_withdraw_cap_amount(&cap)==amount,1);
+            env.scenario.return_to_sender(cap);
+        };
+        test_scenario::return_shared(bridge);
+    }
+
+
+    public fun remove_token_on_token_list(
+        env: &mut BridgeEnv,
+        source_chain: u8,
+        target_chain: u8,
+        token_id: u64,
+    ){
+        let scenario = &mut env.scenario;
+        scenario.next_tx(@0x0);
+        let mut bridge = scenario.take_shared<Bridge>();
+        {
+            let uid=test_load_mut_uid(&mut bridge);
+            let exist= if (env.chain_id==source_chain){
+                tokenlist::is_supported_from_benfen(uid,target_chain as u64,token_id)
+            }else{
+                tokenlist::is_supported_to_benfen(uid,source_chain as u64,token_id)
+            };
+            assert!(exist,0);
+        };
+        let remove_message = create_remove_token_on_token_list(env.chain_id, bridge.get_seq_num_for(message_types::remove_token_on_token_list()),source_chain,target_chain , token_id);
+        let signatures = env.sign_message(remove_message);
+        bridge.execute_system_message_with_ctx(remove_message, signatures,env.scenario.ctx());
+        //check
+        {
+            let uid=test_load_mut_uid(&mut bridge);
+            let exist= if (env.chain_id==source_chain){
+                tokenlist::is_supported_from_benfen(uid,target_chain as u64,token_id)
+            }else{
+                tokenlist::is_supported_to_benfen(uid,source_chain as u64,token_id)
+            };
+            assert!(!exist,0);
+        };
+        test_scenario::return_shared(bridge);
+    }
 
     public fun remove_external_coin_admin(
         env: &mut BridgeEnv,
@@ -760,7 +936,7 @@ module bridge::bridge_env {
         scenario.next_tx(@0x0);
         let mut bridge = scenario.take_shared<Bridge>();
 
-        let message = message::create_token_bridge_message(
+        let message = message::create_token_bridge_in_message(
             source_chain,
             bridge.get_seq_num_inc_for(message_types::token()),
             source_address,
@@ -769,7 +945,8 @@ module bridge::bridge_env {
             token_type,
             amount,
             hex::decode(b""),
-            0u8, // event_idx
+            0u16, // event_idx
+            2u8,
         );
         test_scenario::return_shared(bridge);
         message
@@ -789,7 +966,7 @@ module bridge::bridge_env {
         scenario.next_tx(@0x0);
         let bridge = scenario.take_shared<Bridge>();
 
-        let message = message::create_token_bridge_message(
+        let message = message::create_token_bridge_message_v2(
             env.chain_id,
             transfer_id,
             address::to_bytes(source_address),
@@ -798,7 +975,7 @@ module bridge::bridge_env {
             token_type,
             amount,
             hex::decode(b""),
-            0u8, // event_idx
+            0u16, // event_idx
         );
         test_scenario::return_shared(bridge);
         message
@@ -817,7 +994,7 @@ module bridge::bridge_env {
         let mut bridge = scenario.take_shared<Bridge>();
         let seq_num = bridge.get_seq_num_inc_for(message_types::token());
         test_scenario::return_shared(bridge);
-        let message = message::create_token_bridge_message(
+        let message = message::create_token_bridge_message_v2(
             source_chain,
             seq_num,
             source_address,
@@ -826,7 +1003,7 @@ module bridge::bridge_env {
             token_type,
             amount,
             hex::decode(b""),
-            0u8, // event_idx
+            0u16, // event_idx
         );
         let signatures = env.sign_message(message);
         (message, signatures)
@@ -849,7 +1026,7 @@ module bridge::bridge_env {
 
         // sign message
         let seq_num = bridge.get_seq_num_inc_for(message_types::token());
-        let message = message::create_token_bridge_message(
+        let message = message::create_token_bridge_in_message(
             source_chain,
             seq_num,
             source_address,
@@ -858,12 +1035,13 @@ module bridge::bridge_env {
             token_type,
             amount,
             hex::decode(b""),
-            0u8, // event_idx
+            0u16, // event_idx
+            2u8,
         );
         let signatures = env.sign_message(message);
 
         // run approval
-        bridge.approve_token_transfer(message, signatures);
+        bridge.approve_token_transfer_in(message, signatures);
 
         // verify approval events
         let approved_events = event::events_by_type<TokenTransferApproved>();
@@ -919,26 +1097,27 @@ module bridge::bridge_env {
 
         bridge.approval_and_claimed_external_coin<T>(message, signatures, env.scenario.ctx());
         let approved = event::events_by_type<ExternalDepositedApprovedEvent>();
-        let deposited = event::events_by_type<ExternalDepositedEvent>();
+        let deposited = event::events_by_type<ExternalDepositedEventV2>();
         assert!(approved.length() == 0 && deposited.length() == 1);
         {
             let (
                 tx_hash,
-                coin_type,
+                token_type,
                 source_chain,
                 target_chain,
                 source_address,
                 target_address,
-                amount,
-            ) = deposited[0].unwrap_external_deposited_event();
+                amount_before_fee,
+                amount_after_fee
+            ) = deposited[0].unwrap_external_deposited_event_v2();
             assert!(
                 tx_hash == tx_hash &&
-                coin_type == type_name::get<T>().into_string() &&
+                token_type ==token_type &&
                 source_chain == source_chain &&
                 target_chain == env.chain_id &&
                 source_address == source_address &&
                 target_address == target_address &&
-                amount == amount,
+                amount == amount_before_fee,
             );
         };
 
@@ -961,33 +1140,38 @@ module bridge::bridge_env {
             env.scenario.ctx(),
         );
 
-        let withdraw = event::events_by_type<ExternalWithdrawEvent>();
+        let fee=get_cross_out_fee_amount<T>(&bridge,source_chain as u64,amount);
+        assert!(amount>fee,1);
+        let withdraw = event::events_by_type<ExternalWithdrawEventV2>();
         assert!(withdraw.length() == 1);
         {
             debug::print(&withdraw);
             let (
-                event_coin_type,
+                event_token_type,
                 event_source_chain,
                 event_target_chain,
                 event_source_address,
                 event_target_address,
-                event_amount,
-            ) = withdraw[0].unwrap_external_withdrawn_event();
-            assert!(event_coin_type == type_name::get<T>().into_string());
+                event_amount_before_fee,
+                event_amount_after_fee,
+            ) = withdraw[0].unwrap_external_withdrawn_v2_event();
+            assert!(event_token_type == token_type);
             assert!(event_source_chain == env.chain_id );
             assert!(event_target_chain == source_chain);
             assert!(event_source_address == target_address);
             assert!(event_target_address == source_address);
-            assert!(event_amount == amount);
+            assert!(event_amount_before_fee == amount);
+            std::debug::print(&fee);
+            assert!(event_amount_after_fee == amount-fee);
             assert!(
-                total_supply_before == get_total_supply<T>(&bridge),
+                total_supply_before+fee == get_total_supply<T>(&bridge),
             );
         };
 
         env.scenario.next_tx(@0x0);
         bridge.approval_and_claimed_external_coin<T>(message, signatures, env.scenario.ctx());
         let approved = event::events_by_type<ExternalDepositedApprovedEvent>();
-        let deposited = event::events_by_type<ExternalDepositedEvent>();
+        let deposited = event::events_by_type<ExternalDepositedEventV2>();
         assert!(approved.length() == 1 && deposited.length() == 0);
         {
             let (
@@ -1012,7 +1196,7 @@ module bridge::bridge_env {
 
         env.scenario.next_tx(@0x0);
         assert!(
-            total_supply_before == get_total_supply<T>(&bridge),
+            total_supply_before + fee == get_total_supply<T>(&bridge),
         );
 
         // tear down
@@ -1033,7 +1217,43 @@ module bridge::bridge_env {
         let mut bridge = scenario.take_shared<Bridge>();
 
         // run approval
-        bridge.approve_token_transfer(message, signatures);
+        bridge.approve_token_transfer_v2(message, signatures);
+
+        // verify approval events
+        let approved = event::events_by_type<TokenTransferApproved>();
+        let already_approved = event::events_by_type<
+            TokenTransferAlreadyApproved,
+        >();
+        assert!(approved.length() == 1 || already_approved.length() == 1);
+        let (key, approve_status) = if (approved.length() == 1) {
+            (approved[0].transfer_approve_key(), APPROVED)
+        } else {
+            (
+                already_approved[0].transfer_already_approved_key(),
+                ALREADY_APPROVED,
+            )
+        };
+        assert!(msg_key == key);
+
+        // tear down
+        test_scenario::return_shared(bridge);
+        approve_status
+    }
+
+    public fun approve_token_transfer_in(
+        env: &mut BridgeEnv,
+        message: BridgeMessage,
+        signatures: vector<vector<u8>>,
+    ): u8 {
+        let msg_key = message.key();
+
+        // set up
+        let scenario = &mut env.scenario;
+        scenario.next_tx(@0x0);
+        let mut bridge = scenario.take_shared<Bridge>();
+
+        // run approval
+        bridge.approve_token_transfer_in(message, signatures);
 
         // verify approval events
         let approved = event::events_by_type<TokenTransferApproved>();
@@ -1300,48 +1520,50 @@ module bridge::bridge_env {
 
         bridge.approval_and_claimed_external_coin<T>(message, node_signatures, scenario.ctx());
         let approved = event::events_by_type<ExternalDepositedApprovedEvent>();
-        let deposited = event::events_by_type<ExternalDepositedEvent>();
+        let deposited = event::events_by_type<ExternalDepositedEventV2>();
         assert!(approved.length() == 0 && deposited.length() == 1);
         {
             let (
                 tx_hash,
-                coin_type,
+                token_type,
                 source_chain,
                 target_chain,
                 source_address,
                 target_address,
-                amount,
-            ) = deposited[0].unwrap_external_deposited_event();
+                amount_before_fee,
+                amount_after_fee,
+            ) = deposited[0].unwrap_external_deposited_event_v2();
             assert!(
                 tx_hash == tx_hash &&
-                coin_type == type_name::get<T>().into_string() &&
+                token_type == token_type &&
                 source_chain == source_chain &&
                 target_chain == env.chain_id &&
                 source_address == source_address &&
                 target_address == target_address &&
-                amount == amount,
+                amount == amount_before_fee,
             );
         };
 
-        let deposited = event::events_by_type<ExternalDepositedEvent>();
+        let deposited = event::events_by_type<ExternalDepositedEventV2>();
         assert!(deposited.length() == 1);
         debug::print(&deposited);
         let (
             event_tx_hash,
-            event_coin_type,
+            token_type,
             event_source_chain,
             event_target_chain,
             event_source_address,
             event_target_address,
-            event_amount,
-        ) = deposited[0].unwrap_external_deposited_event();
+            event_amount_before_fee,
+            event_amount_after_fee,
+        ) = deposited[0].unwrap_external_deposited_event_v2();
         assert!(event_tx_hash == tx_hash);
-        assert!(event_coin_type == coin_type);
+        assert!(token_type == token_type);
         assert!(event_source_chain == source_chain);
         assert!(event_target_chain == target_chain);
         assert!(event_source_address == source_address);
         assert!(event_target_address == target_address);
-        assert!(event_amount == amount);
+        assert!(event_amount_before_fee == amount);
         assert_external_records(&bridge, source_chain, target_chain, source_address, target_address, amount, tx_hash);
 
         scenario.next_tx(sender);
@@ -1350,7 +1572,7 @@ module bridge::bridge_env {
         let token_value = token.value();
         assert!(token.balance().value() == amount);
         assert!(
-            total_supply_before + token_value == get_total_supply<T>(&bridge),
+            total_supply_before + token_value  == get_total_supply<T>(&bridge),
         );
 
         // withdraw coin
@@ -1362,25 +1584,30 @@ module bridge::bridge_env {
             scenario.ctx(),
         );
 
-        let withdraw = event::events_by_type<ExternalWithdrawEvent>();
+        let fee=get_cross_out_fee_amount<T>(&bridge,source_chain as u64,amount);
+        assert!(amount>fee,1);
+
+        let withdraw = event::events_by_type<ExternalWithdrawEventV2>();
         assert!(withdraw.length() == 1);
         debug::print(&withdraw);
         let (
-            event_coin_type,
+            event_token_type,
             event_source_chain,
             event_target_chain,
             event_source_address,
             event_target_address,
-            event_amount,
-        ) = withdraw[0].unwrap_external_withdrawn_event();
-        assert!(event_coin_type == coin_type);
+            event_amount_before_fee,
+            event_amount_after_fee,
+        ) = withdraw[0].unwrap_external_withdrawn_v2_event();
+        assert!(event_token_type == token_type);
         assert!(event_source_chain == target_chain );
         assert!(event_target_chain == source_chain);
         assert!(event_source_address == sender.to_bytes());
         assert!(event_target_address == source_address);
-        assert!(event_amount == amount);
+        assert!(event_amount_before_fee == amount);
+        assert!(event_amount_after_fee==amount-fee);
         assert!(
-            total_supply_before == get_total_supply<T>(&bridge),
+            total_supply_before + fee == get_total_supply<T>(&bridge),
         );
 
         // tear down
@@ -1443,7 +1670,7 @@ module bridge::bridge_env {
         assert!(
             total_supply_before - coin_value == get_total_supply<T>(&bridge),
         );
-        let deposited_events = event::events_by_type<TokenDepositedEvent>();
+        let deposited_events = event::events_by_type<TokenDepositedEventV2>();
         assert!(deposited_events.length() == 1);
         let (
             event_seq_num,
@@ -1452,10 +1679,11 @@ module bridge::bridge_env {
             _event_target_chain,
             _event_target_address,
             _event_token_type,
-            event_amount,
-        ) = deposited_events[0].unwrap_deposited_event();
+            event_amount_before_fee,
+            _event_amount_after_fee
+        ) = deposited_events[0].unwrap_deposited_event_v2();
         assert!(event_seq_num == seq_num);
-        assert!(event_amount == coin_value);
+        assert!(event_amount_before_fee == coin_value);
         assert_key(chain_id, &bridge);
 
         // tear down
@@ -1480,9 +1708,9 @@ module bridge::bridge_env {
         let mut bridge = scenario.take_shared<Bridge>();
         let seq_num = bridge.get_seq_num_for(message_types::token());
         // run send
-        bridge.send_back_token(target_chain_id, eth_address,token_type, amount, tx_hash, 0u8, scenario.ctx());
+        bridge.send_back_token_v2(target_chain_id, eth_address,token_type, amount, tx_hash, 0u16, scenario.ctx());
         // verify send events
-        let send_back_events = event::events_by_type<TokenSendBackEvent>();
+        let send_back_events = event::events_by_type<TokenSendBackEventV2>();
         assert!(send_back_events.length() == 1);
         let (
             event_seq_num,
@@ -1493,7 +1721,7 @@ module bridge::bridge_env {
             _event_token_type,
             event_amount,
             event_tx_hash,
-        ) = send_back_events[0].unwrap_send_back_event();
+        ) = send_back_events[0].unwrap_send_back_event_v2();
         assert!(event_seq_num == seq_num);
         assert!(event_amount == 100);
         assert!(event_tx_hash == tx_hash);
@@ -1938,7 +2166,7 @@ module bridge::bridge_env {
     // Mint some coins
     fun mint_some<T>(bridge: &mut Bridge, ctx: &mut TxContext): Coin<T> {
         let treasury = bridge.test_load_inner_mut().inner_treasury_mut();
-        let coin = treasury.mint<T>(1_000_000, ctx);
+        let coin = treasury.mint<T>(1_000_000_000, ctx);
         coin
     }
 
@@ -2205,6 +2433,44 @@ module bridge::op {
         );
 
         let type_name = type_name::get<OP>();
+        let address_bytes = hex::decode(
+            ascii::into_bytes(type_name::get_address(&type_name)),
+        );
+        let coin_id = address::from_bytes(address_bytes).to_id();
+        let upgrade_cap = test_publish(coin_id, ctx);
+
+        (upgrade_cap, treasury_cap, metadata)
+    }
+}
+
+#[test_only]
+module bridge::busd {
+    use std::ascii;
+    use std::type_name;
+    use sui::address;
+    use sui::coin::{CoinMetadata, TreasuryCap, create_currency};
+    use sui::hex;
+    use sui::package::{UpgradeCap, test_publish};
+    use sui::test_utils::create_one_time_witness;
+
+    public struct BUSD has drop {}
+
+
+    public fun create_bridge_token(
+        ctx: &mut TxContext,
+    ): (UpgradeCap, TreasuryCap<BUSD>, CoinMetadata<BUSD>) {
+        let otw = create_one_time_witness<BUSD>();
+        let (treasury_cap, metadata) = create_currency(
+            otw,
+            9,
+            b"BUSD",
+            b"BUSD",
+            b"bridge BUSD token",
+            option::none(),
+            ctx,
+        );
+
+        let type_name = type_name::get<BUSD>();
         let address_bytes = hex::decode(
             ascii::into_bytes(type_name::get_address(&type_name)),
         );

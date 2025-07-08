@@ -40,7 +40,7 @@ library BridgeUtils {
         uint64 tokenID;
         uint64 amount;
         bytes txHash;
-        uint8 eventIdx;
+        uint16 eventIdx;
     }
 
     /* ========== CONSTANTS ========== */
@@ -53,6 +53,7 @@ library BridgeUtils {
     uint8 public constant UPDATE_TOKEN_PRICE = 4;
     uint8 public constant UPGRADE = 5;
     uint8 public constant ADD_EVM_TOKENS = 7;
+    uint8 public constant UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT = 19;
 
     // Message type stake requirements
     uint32 public constant TRANSFER_STAKE_REQUIRED = 3334;
@@ -63,6 +64,7 @@ library BridgeUtils {
     uint32 public constant BRIDGE_LIMIT_STAKE_REQUIRED = 5001;
     uint32 public constant UPDATE_TOKEN_PRICE_STAKE_REQUIRED = 5001;
     uint32 public constant ADD_EVM_TOKENS_STAKE_REQUIRED = 5001;
+    uint32 public constant UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT_STAKE_REQUIRED =5001;
 
     // token Ids
     uint64 public constant SUI = 0;
@@ -120,7 +122,9 @@ library BridgeUtils {
             return UPGRADE_STAKE_REQUIRED;
         } else if (_message.messageType == ADD_EVM_TOKENS) {
             return ADD_EVM_TOKENS_STAKE_REQUIRED;
-        } else {
+        } else if (_message.messageType == UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT){
+            return UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT_STAKE_REQUIRED;
+        }else{
             revert("BridgeUtils: Invalid message type");
         }
     }
@@ -279,16 +283,18 @@ library BridgeUtils {
         offset = offset + amountLength;
 
         // extract tx hash from payload
-        bytes memory txHash = new bytes(_payload.length - offset - 1); // -1 for eventIdx
-        for (uint256 i; i < _payload.length - offset - 1; i++) {
+        bytes memory txHash = new bytes(_payload.length - offset - 2); // -1 for eventIdx
+        for (uint256 i; i < _payload.length - offset - 2; i++) {
             txHash[i] = _payload[i + offset];
         }
 
         // move offset past the tx hash
         offset = offset + uint8(txHash.length);
 
-        // event idx is a single byte
-        uint8 eventIdx = uint8(_payload[offset]);
+       uint16 eventIdx;
+        assembly {
+            eventIdx := shr(240, mload(add(_payload, add(0x20, offset))))
+        }
 
         return TokenTransferPayload(
             senderAddressLength,
@@ -370,6 +376,29 @@ library BridgeUtils {
         // Position uint64 to the least significant bits by shifting it 192 bits to the right.
         assembly {
             newLimit := shr(192, mload(add(add(_payload, 0x20), 1)))
+        }
+    }
+
+
+    /// @notice Decodes an update limit payload from bytes to a chain ID and a new limit.
+    /// @dev The function will revert if the payload length is invalid.
+    ///     Update limit payload is 9 bytes.
+    ///     byte 0       : chain ID
+    ///     bytes 1-8    : new limit
+    /// @param _payload The payload to be decoded.
+    /// @return senderChainID the sending chain ID to update the limit of.
+    /// @return newLimit the new limit of the sending chain ID.
+   function decodeUpdateSingleTransferLimitPayload(bytes memory _payload)
+        internal
+        pure
+        returns (uint8 senderChainID, uint64 newLimit)
+    {
+        require(_payload.length == 9, "BridgeUtils: Invalid payload length");
+        senderChainID = uint8(_payload[0]);
+
+        assembly {
+             newLimit := shr(192, mload(add(add(_payload, 0x20), 1)))
+            //newLimit := mload(add(add(_payload, 0x20), 1))
         }
     }
 

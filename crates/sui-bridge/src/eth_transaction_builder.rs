@@ -10,6 +10,7 @@ use crate::error::{BridgeError, BridgeResult};
 use crate::types::{
     AddTokensOnEvmAction, AssetPriceUpdateAction, BlocklistCommitteeAction,
     BridgeCommitteeValiditySignInfo, EvmContractUpgradeAction, LimitUpdateAction,
+    SingleTransferLimitUpdateAction,
     VerifiedCertifiedBridgeAction,
 };
 use crate::utils::EthSigner;
@@ -59,6 +60,9 @@ pub async fn build_eth_transaction(
             build_limit_update_approve_transaction(contract_address, signer, action.clone(), sigs)
                 .await
         }
+        BridgeAction::SingleTransferLimitUpdateAction(action)=>{
+            build_single_transfer_limit_update_transaction(contract_address, signer, action.clone(), sigs).await
+        }
         BridgeAction::AssetPriceUpdateAction(action) => {
             build_asset_price_update_approve_transaction(
                 contract_address,
@@ -93,6 +97,21 @@ pub async fn build_eth_transaction(
         BridgeAction::ExternalDepositStartBridgeAction(_) => {
             unreachable!();
         }
+        BridgeAction::AddTokenOnTokenListAction(_) => {
+            unreachable!();
+        }
+        BridgeAction::RemoveTokenOnTokenListAction(_) => {
+            unreachable!();
+        }
+        BridgeAction::UpdateBridgeFeeOnCrossOutAction(_) => {
+            unreachable!();
+        }
+        BridgeAction::UpdateBridgeFeeOnCrossInAction(_) => {
+            unreachable!();
+        }
+        BridgeAction::WithdrawBridgeFeeAction(_) => {
+            unreachable!();
+        }
         BridgeAction::AddTokensOnSuiAction(_) => {
             unreachable!();
         }
@@ -102,6 +121,9 @@ pub async fn build_eth_transaction(
         }
         BridgeAction::RefundAdminAction(_action) => {
             unreachable!();
+        }
+        BridgeAction::FastPathLimitUpdateAction(_) => {
+            unreachable!()
         }
     }
 }
@@ -155,6 +177,24 @@ pub async fn build_limit_update_approve_transaction(
         .map(|sig| Bytes::from(sig.as_ref().to_vec()))
         .collect::<Vec<_>>();
     Ok(contract.update_limit_with_signatures(signatures, message))
+}
+
+pub async fn build_single_transfer_limit_update_transaction(
+    contract_address: EthAddress,
+    signer: EthSigner,
+    action: SingleTransferLimitUpdateAction,
+    sigs: &BridgeCommitteeValiditySignInfo,
+) -> BridgeResult<ContractCall<EthSigner, ()>> {
+    let contract = EthBridgeLimiter::new(contract_address, signer.into());
+
+    let message: eth_bridge_limiter::Message = action.clone().into();
+    let signatures = sigs
+        .signatures
+        .values()
+        .map(|sig| Bytes::from(sig.as_ref().to_vec()))
+        .collect::<Vec<_>>();
+    //updateSingleTransferLimitWithSignatures
+    Ok(contract.update_single_transfer_limit_with_signatures(signatures, message))
 }
 
 pub async fn build_asset_price_update_approve_transaction(

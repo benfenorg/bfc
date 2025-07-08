@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(clippy::inconsistent_digit_grouping)]
-use crate::types::RefundAdminAction;
+use crate::types::{FastPathLimitUpdateAction, RefundAdminAction};
 use crate::with_metrics;
 use crate::{
     crypto::BridgeAuthorityPublicKeyBytes,
@@ -10,12 +10,14 @@ use crate::{
     metrics::BridgeMetrics,
     server::handler::{BridgeRequestHandler, BridgeRequestHandlerTrait},
     types::{
-        AddTokensOnEvmAction, AddTokensOnSuiAction, AssetPriceUpdateAction,
-        BlocklistCommitteeAction, BlocklistType, BridgeAction, EmergencyAction,
-        EmergencyActionType, EvmContractUpgradeAction, LimitUpdateAction, SignedBridgeAction,
-        AddExternalCoinAdminAction, RemoveExternalCoinAdminAction,
-        AddExternalCoinWitnessAction,RemoveExternalCoinWitnessAction,
-        AddExternalCoinTargetAction,RemoveExternalCoinTargetAction,
+        AddExternalCoinAdminAction, AddExternalCoinTargetAction, AddExternalCoinWitnessAction,
+        AddTokenOnTokenListAction, AddTokensOnEvmAction, AddTokensOnSuiAction,
+        AssetPriceUpdateAction, BlocklistCommitteeAction, BlocklistType, BridgeAction,
+        EmergencyAction, EmergencyActionType, EvmContractUpgradeAction, LimitUpdateAction,
+        RemoveExternalCoinAdminAction, RemoveExternalCoinTargetAction,
+        RemoveExternalCoinWitnessAction, RemoveTokenOnTokenListAction, SignedBridgeAction,
+        SingleTransferLimitUpdateAction, UpdateBridgeFeeOnCrossInAction,
+        UpdateBridgeFeeOnCrossOutAction, WithdrawBridgeFeeAction,
     },
 };
 use axum::{
@@ -31,6 +33,7 @@ use fastcrypto::{
 };
 use std::sync::Arc;
 use std::{net::SocketAddr, str::FromStr};
+use sui_types::base_types::SuiAddress;
 use sui_types::{bridge::BridgeChainId, TypeTag};
 use tracing::{info, instrument};
 
@@ -46,20 +49,25 @@ pub const PING_PATH: &str = "/ping";
 pub const METRICS_KEY_PATH: &str = "/metrics_pub_key";
 
 // Important: for BridgeActions, the paths need to match the ones in bridge_client.rs
-pub const ETH_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/eth/sui/:tx_hash/:event_index";
-pub const EVM_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/evm/:chain_id/sui/:tx_hash/:event_index";
+pub const ETH_TO_SUI_TX_PATH: &str =
+    "/sign/bridge_tx/eth/sui/:tx_hash/:event_index/:fast_path_selector";
+pub const EVM_TO_SUI_TX_PATH: &str =
+    "/sign/bridge_tx/evm/:chain_id/sui/:tx_hash/:event_index/:fast_path_selector";
 pub const SUI_TO_ETH_TX_PATH: &str = "/sign/bridge_tx/sui/eth/:tx_digest/:event_index";
 pub const SUI_TO_EVM_TX_PATH: &str = "/sign/bridge_tx/sui/evm/:tx_digest/:event_index";
-pub const SUI_TO_ETH_SEND_BACK_TX_PATH: &str = "/sign/bridge_tx/sui/eth/send/back/:tx_digest/:event_index";
-pub const SUI_TO_EVM_SEND_BACK_TX_PATH: &str = "/sign/bridge_tx/sui/evm/send/back/:tx_digest/:event_index";
+pub const SUI_TO_ETH_SEND_BACK_TX_PATH: &str =
+    "/sign/bridge_tx/sui/eth/send/back/:tx_digest/:event_index";
+pub const SUI_TO_EVM_SEND_BACK_TX_PATH: &str =
+    "/sign/bridge_tx/sui/evm/send/back/:tx_digest/:event_index";
 pub const EXTERNAL_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/external/sui/:tx_digest/:event_index";
 pub const COMMITTEE_BLOCKLIST_UPDATE_PATH: &str =
     "/sign/update_committee_blocklist/:chain_id/:nonce/:type/:keys";
 pub const EMERGENCY_BUTTON_PATH: &str = "/sign/emergency_button/:chain_id/:nonce/:type";
 pub const LIMIT_UPDATE_PATH: &str =
     "/sign/update_limit/:chain_id/:nonce/:sending_chain_id/:new_usd_limit";
-pub const MINT_BUSD_LIMIT_PATH: &str =
-    "/sign/mint_busd_limit/:chain_id/:modify_cap/:new_limit";
+pub const SINGLE_TRANSFER_LIMIT_PATH: &str =
+    "/sign/update_single_transfer_limit/:chain_id/:nonce/:sending_chain_id/:new_usd_limit";
+pub const MINT_BUSD_LIMIT_PATH: &str = "/sign/mint_busd_limit/:chain_id/:modify_cap/:new_limit";
 pub const ASSET_PRICE_UPDATE_PATH: &str =
     "/sign/update_asset_price/:chain_id/:nonce/:token_id/:new_usd_price";
 pub const EVM_CONTRACT_UPGRADE_PATH_WITH_CALLDATA: &str =
@@ -79,6 +87,21 @@ pub const ADD_EXTERNAL_COIN_TARGET: &str =
 pub const REMOVE_EXTERNAL_COIN_TARGET: &str =
     "/sign/remove_external_coin_target/:chain_id/:nonce/:coin_type/:target_address";
 
+pub const ADD_TOKEN_ON_TOKEN_LIST: &str =
+    "/sign/add_token_on_token_list/:chain_id/:nonce/:from_chain_id/:to_chain_id/:token_id";
+
+pub const REMOVE_TOKEN_ON_TOKEN_LIST: &str =
+    "/sign/remove_token_on_token_list/:chain_id/:nonce/:from_chain_id/:to_chain_id/:token_id";
+
+pub const UPDATE_BRIDGE_FEE_ON_CROSS_OUT: &str =
+    "/sign/set_bridge_fee_on_cross_out/:chain_id/:nonce/:to_chain_id/:token_id/:mode/:amount";
+
+pub const UPDATE_BRIDGE_FEE_ON_CROSS_IN: &str =
+    "/sign/set_bridge_fee_on_cross_in/:chain_id/:nonce/:from_chain_id/:token_id/:mode/:amount";
+
+pub const WITHDRAW_BRIDGE_FEE: &str =
+    "/sign/withdraw_bridge_fee/:chain_id/:nonce/:addr/:coin_type/:amount";
+
 pub const ADD_TOKENS_ON_SUI_PATH: &str =
     "/sign/add_tokens_on_sui/:chain_id/:nonce/:native/:token_ids/:token_type_names/:token_prices";
 pub const ADD_TOKENS_ON_EVM_PATH: &str =
@@ -86,6 +109,8 @@ pub const ADD_TOKENS_ON_EVM_PATH: &str =
 
 pub const UPDATE_REFUND_ADMIN_PATH: &str =
     "/sign/update_refund_admin/:chain_id/:nonce/:op_type/:sui_address";
+pub const UPDATE_FAST_PATH_LIMIT_PATH: &str =
+    "/sign/update_fast_path_limit/:chain_id/:nonce/:token_id/:amount";
 
 // BridgeNode's public metadata that is accessible via the `/ping` endpoint.
 // Be careful with what to put here, as it is public.
@@ -142,8 +167,14 @@ pub(crate) fn make_router(
         .route(EVM_TO_SUI_TX_PATH, get(handle_evm_tx_hash))
         .route(SUI_TO_ETH_TX_PATH, get(handle_sui_tx_digest))
         .route(SUI_TO_EVM_TX_PATH, get(handle_sui_tx_digest))
-        .route(SUI_TO_ETH_SEND_BACK_TX_PATH, get(handle_send_back_tx_digest))
-        .route(SUI_TO_EVM_SEND_BACK_TX_PATH, get(handle_send_back_tx_digest))
+        .route(
+            SUI_TO_ETH_SEND_BACK_TX_PATH,
+            get(handle_send_back_tx_digest),
+        )
+        .route(
+            SUI_TO_EVM_SEND_BACK_TX_PATH,
+            get(handle_send_back_tx_digest),
+        )
         .route(EXTERNAL_TO_SUI_TX_PATH, get(handle_external_coin_tx_digest))
         .route(
             COMMITTEE_BLOCKLIST_UPDATE_PATH,
@@ -151,6 +182,10 @@ pub(crate) fn make_router(
         )
         .route(EMERGENCY_BUTTON_PATH, get(handle_emergency_action))
         .route(LIMIT_UPDATE_PATH, get(handle_limit_update_action))
+        .route(
+            SINGLE_TRANSFER_LIMIT_PATH,
+            get(handle_single_transfer_limit_update_action),
+        )
         .route(MINT_BUSD_LIMIT_PATH, get(handle_limit_update_action))
         .route(
             ASSET_PRICE_UPDATE_PATH,
@@ -162,12 +197,45 @@ pub(crate) fn make_router(
             get(handle_evm_contract_upgrade_with_calldata),
         )
         .route(UPDATE_REFUND_ADMIN_PATH, get(handle_update_refund_admin))
+        .route(
+            UPDATE_FAST_PATH_LIMIT_PATH,
+            get(handle_update_fast_path_limit),
+        )
         .route(ADD_EXTERNAL_COIN_ADMIN, get(handle_add_external_coin_admin))
-        .route(REMOVE_EXTERNAL_COIN_ADMIN, get(handle_remove_external_coin_admin))
-        .route(ADD_EXTERNAL_COIN_WITNESS, get(handle_add_external_coin_witness))
-        .route(REMOVE_EXTERNAL_COIN_WITNESS, get(handle_remove_external_coin_witness))
-        .route(ADD_EXTERNAL_COIN_TARGET, get(handle_add_external_coin_target))
-        .route(REMOVE_EXTERNAL_COIN_TARGET, get(handle_remove_external_coin_target))
+        .route(
+            REMOVE_EXTERNAL_COIN_ADMIN,
+            get(handle_remove_external_coin_admin),
+        )
+        .route(
+            ADD_EXTERNAL_COIN_WITNESS,
+            get(handle_add_external_coin_witness),
+        )
+        .route(
+            REMOVE_EXTERNAL_COIN_WITNESS,
+            get(handle_remove_external_coin_witness),
+        )
+        .route(
+            ADD_EXTERNAL_COIN_TARGET,
+            get(handle_add_external_coin_target),
+        )
+        .route(
+            REMOVE_EXTERNAL_COIN_TARGET,
+            get(handle_remove_external_coin_target),
+        )
+        .route(ADD_TOKEN_ON_TOKEN_LIST, get(handle_add_token_on_token_list))
+        .route(
+            REMOVE_TOKEN_ON_TOKEN_LIST,
+            get(handle_remove_token_on_token_list),
+        )
+        .route(
+            UPDATE_BRIDGE_FEE_ON_CROSS_OUT,
+            get(handle_set_bridge_fee_on_cross_out),
+        )
+        .route(
+            UPDATE_BRIDGE_FEE_ON_CROSS_IN,
+            get(handle_set_bridge_fee_on_cross_in),
+        )
+        .route(WITHDRAW_BRIDGE_FEE, get(handle_withdraw_bridge_fee))
         .route(ADD_TOKENS_ON_SUI_PATH, get(handle_add_tokens_on_sui))
         .route(ADD_TOKENS_ON_EVM_PATH, get(handle_add_tokens_on_evm))
         .with_state((handler, metrics, metadata))
@@ -219,7 +287,7 @@ async fn metrics_key_fetch(
 
 #[instrument(level = "error", skip_all, fields(tx_hash_hex=tx_hash_hex, event_idx=event_idx))]
 async fn handle_eth_tx_hash(
-    Path((tx_hash_hex, event_idx)): Path<(String, u16)>,
+    Path((tx_hash_hex, event_idx, fast_path_selector)): Path<(String, u16, u8)>,
     State((handler, metrics, _metadata)): State<(
         Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
         Arc<BridgeMetrics>,
@@ -227,7 +295,14 @@ async fn handle_eth_tx_hash(
     )>,
 ) -> Result<Json<SignedBridgeAction>, BridgeError> {
     let future = async {
-        let sig = handler.handle_eth_tx_hash(BridgeChainId::EthMainnet as u8, tx_hash_hex, event_idx).await?;
+        let sig = handler
+            .handle_eth_tx_hash(
+                BridgeChainId::EthMainnet as u8,
+                tx_hash_hex,
+                event_idx,
+                fast_path_selector,
+            )
+            .await?;
         Ok(sig)
     };
     with_metrics!(metrics.clone(), "handle_eth_tx_hash", future).await
@@ -235,7 +310,7 @@ async fn handle_eth_tx_hash(
 
 #[instrument(level = "error", skip_all, fields(tx_hash_hex=tx_hash_hex, event_idx=event_idx))]
 async fn handle_evm_tx_hash(
-    Path((chain_id, tx_hash_hex, event_idx)): Path<(u8, String, u16)>,
+    Path((chain_id, tx_hash_hex, event_idx, fast_path_selector)): Path<(u8, String, u16, u8)>,
     State((handler, metrics, _metadata)): State<(
         Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
         Arc<BridgeMetrics>,
@@ -243,7 +318,9 @@ async fn handle_evm_tx_hash(
     )>,
 ) -> Result<Json<SignedBridgeAction>, BridgeError> {
     let future = async {
-        let sig = handler.handle_eth_tx_hash(chain_id, tx_hash_hex, event_idx).await?;
+        let sig = handler
+            .handle_eth_tx_hash(chain_id, tx_hash_hex, event_idx, fast_path_selector)
+            .await?;
         Ok(sig)
     };
     with_metrics!(metrics.clone(), "handle_eth_tx_hash", future).await
@@ -407,6 +484,40 @@ async fn handle_limit_update_action(
     with_metrics!(metrics.clone(), "handle_limit_update_action", future).await
 }
 
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, sending_chain_id=sending_chain_id, new_usd_limit=new_usd_limit))]
+async fn handle_single_transfer_limit_update_action(
+    Path((chain_id, nonce, sending_chain_id, new_usd_limit)): Path<(u8, u64, u8, u64)>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+        let sending_chain_id = BridgeChainId::try_from(sending_chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+        let action =
+            BridgeAction::SingleTransferLimitUpdateAction(SingleTransferLimitUpdateAction {
+                chain_id,
+                nonce,
+                sending_chain_id,
+                new_usd_limit,
+            });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(
+        metrics.clone(),
+        "handle_single_transfer_limit_update_action",
+        future
+    )
+    .await
+}
+
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, token_id=token_id, new_usd_price=new_usd_price))]
 async fn handle_asset_price_update_action(
     Path((chain_id, nonce, token_id, new_usd_price)): Path<(u8, u64, u64, u64)>,
@@ -510,12 +621,7 @@ async fn handle_evm_contract_upgrade(
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, coin_type=coin_type, admin_address=admin_address))]
 async fn handle_add_external_coin_admin(
-    Path((chain_id, nonce, coin_type, admin_address)): Path<(
-        u8,
-        u64,
-        String,
-        String,
-    )>,
+    Path((chain_id, nonce, coin_type, admin_address)): Path<(u8, u64, String, String)>,
     State((handler, metrics, _metadata)): State<(
         Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
         Arc<BridgeMetrics>,
@@ -547,12 +653,7 @@ async fn handle_add_external_coin_admin(
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, coin_type=coin_type, admin_address=admin_address))]
 async fn handle_remove_external_coin_admin(
-    Path((chain_id, nonce, coin_type, admin_address)): Path<(
-        u8,
-        u64,
-        String,
-        String,
-    )>,
+    Path((chain_id, nonce, coin_type, admin_address)): Path<(u8, u64, String, String)>,
     State((handler, metrics, _metadata)): State<(
         Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
         Arc<BridgeMetrics>,
@@ -584,12 +685,7 @@ async fn handle_remove_external_coin_admin(
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, coin_type=coin_type, target_address=target_address))]
 async fn handle_add_external_coin_target(
-    Path((chain_id, nonce, coin_type, target_address)): Path<(
-        u8,
-        u64,
-        String,
-        String,
-    )>,
+    Path((chain_id, nonce, coin_type, target_address)): Path<(u8, u64, String, String)>,
     State((handler, metrics, _metadata)): State<(
         Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
         Arc<BridgeMetrics>,
@@ -621,12 +717,7 @@ async fn handle_add_external_coin_target(
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, coin_type=coin_type, target_address=target_address))]
 async fn handle_remove_external_coin_target(
-    Path((chain_id, nonce, coin_type, target_address)): Path<(
-        u8,
-        u64,
-        String,
-        String,
-    )>,
+    Path((chain_id, nonce, coin_type, target_address)): Path<(u8, u64, String, String)>,
     State((handler, metrics, _metadata)): State<(
         Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
         Arc<BridgeMetrics>,
@@ -653,17 +744,17 @@ async fn handle_remove_external_coin_target(
         let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
         Ok(sig)
     };
-    with_metrics!(metrics.clone(), "handle_remove_external_coin_target", future).await
+    with_metrics!(
+        metrics.clone(),
+        "handle_remove_external_coin_target",
+        future
+    )
+    .await
 }
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, coin_type=coin_type, witness_address=witness_address))]
 async fn handle_add_external_coin_witness(
-    Path((chain_id, nonce, coin_type, witness_address)): Path<(
-        u8,
-        u64,
-        String,
-        String,
-    )>,
+    Path((chain_id, nonce, coin_type, witness_address)): Path<(u8, u64, String, String)>,
     State((handler, metrics, _metadata)): State<(
         Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
         Arc<BridgeMetrics>,
@@ -681,7 +772,7 @@ async fn handle_add_external_coin_witness(
             ));
         }
 
-        let witness_address: H160=witness_address.parse().unwrap();
+        let witness_address: H160 = witness_address.parse().unwrap();
         let action = BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
             coin_type,
             witness_address,
@@ -696,12 +787,7 @@ async fn handle_add_external_coin_witness(
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, coin_type=coin_type,witness_address=witness_address))]
 async fn handle_remove_external_coin_witness(
-    Path((chain_id, nonce, coin_type, witness_address)): Path<(
-        u8,
-        u64,
-        String,
-        String,
-    )>,
+    Path((chain_id, nonce, coin_type, witness_address)): Path<(u8, u64, String, String)>,
     State((handler, metrics, _metadata)): State<(
         Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
         Arc<BridgeMetrics>,
@@ -713,24 +799,232 @@ async fn handle_remove_external_coin_witness(
             BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
         })?;
 
-        let witness_address: H160=witness_address.parse().unwrap();
+        let witness_address: H160 = witness_address.parse().unwrap();
         if !chain_id.is_sui_chain() {
             return Err(BridgeError::InvalidBridgeClientRequest(
                 "handle_remove_external_coin_admin only expects Sui chain id".to_string(),
             ));
         }
-        let action = BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction {
-            coin_type,
-            witness_address,
-            chain_id,
+        let action =
+            BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction {
+                coin_type,
+                witness_address,
+                chain_id,
+                nonce,
+            });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(
+        metrics.clone(),
+        "handle_remove_external_coin_witness",
+        future
+    )
+    .await
+}
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, from_chain_id=from_chain_id,to_chain_id=to_chain_id,token_id=token_id))]
+async fn handle_add_token_on_token_list(
+    Path((chain_id, nonce, from_chain_id, to_chain_id, token_id)): Path<(u8, u64, u8, u8, u64)>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+        let from_chain_id = BridgeChainId::try_from(from_chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid from_chain_id: {:?}", err))
+        })?;
+        let to_chain_id = BridgeChainId::try_from(to_chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid to_chain_id: {:?}", err))
+        })?;
+
+        if !chain_id.is_sui_chain() {
+            return Err(BridgeError::InvalidBridgeClientRequest(
+                "handle_add_token_on_token_list only expects Sui chain id".to_string(),
+            ));
+        }
+        let action = BridgeAction::AddTokenOnTokenListAction(AddTokenOnTokenListAction {
             nonce,
+            chain_id,
+            from_chain_id,
+            to_chain_id,
+            token_id,
         });
         let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
         Ok(sig)
     };
-    with_metrics!(metrics.clone(), "handle_remove_external_coin_witness", future).await
+    with_metrics!(metrics.clone(), "handle_add_token_on_token_list", future).await
 }
 
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, from_chain_id=from_chain_id,to_chain_id=to_chain_id,token_id=token_id))]
+async fn handle_remove_token_on_token_list(
+    Path((chain_id, nonce, from_chain_id, to_chain_id, token_id)): Path<(u8, u64, u8, u8, u64)>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+        let from_chain_id = BridgeChainId::try_from(from_chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid from_chain_id: {:?}", err))
+        })?;
+        let to_chain_id = BridgeChainId::try_from(to_chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid to_chain_id: {:?}", err))
+        })?;
+
+        if !chain_id.is_sui_chain() {
+            return Err(BridgeError::InvalidBridgeClientRequest(
+                "handle_remove_token_on_token_list only expects Sui chain id".to_string(),
+            ));
+        }
+        let action = BridgeAction::RemoveTokenOnTokenListAction(RemoveTokenOnTokenListAction {
+            nonce,
+            chain_id,
+            from_chain_id,
+            to_chain_id,
+            token_id,
+        });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_remove_token_on_token_list", future).await
+}
+
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, to_chain_id=to_chain_id,token_id=token_id,mode=mode,amount=amount))]
+async fn handle_set_bridge_fee_on_cross_out(
+    Path((chain_id, nonce, to_chain_id, token_id, mode, amount)): Path<(
+        u8,
+        u64,
+        u8,
+        u64,
+        u64,
+        u64,
+    )>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+        let to_chain_id = BridgeChainId::try_from(to_chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid to_chain_id: {:?}", err))
+        })?;
+
+        if !chain_id.is_sui_chain() {
+            return Err(BridgeError::InvalidBridgeClientRequest(
+                "handle_set_bridge_fee_on_cross_out only expects Sui chain id".to_string(),
+            ));
+        }
+        let action =
+            BridgeAction::UpdateBridgeFeeOnCrossOutAction(UpdateBridgeFeeOnCrossOutAction {
+                nonce,
+                chain_id,
+                to_chain_id,
+                token_id,
+                mode,
+                amount,
+            });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(
+        metrics.clone(),
+        "handle_set_bridge_fee_on_cross_out",
+        future
+    )
+    .await
+}
+
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, from_chain_id=from_chain_id,token_id=token_id,mode=mode,amount=amount))]
+async fn handle_set_bridge_fee_on_cross_in(
+    Path((chain_id, nonce, from_chain_id, token_id, mode, amount)): Path<(
+        u8,
+        u64,
+        u8,
+        u64,
+        u64,
+        u64,
+    )>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+        let from_chain_id = BridgeChainId::try_from(from_chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid from_chain_id: {:?}", err))
+        })?;
+
+        if !chain_id.is_sui_chain() {
+            return Err(BridgeError::InvalidBridgeClientRequest(
+                "handle_set_bridge_fee_on_cross_in only expects Sui chain id".to_string(),
+            ));
+        }
+        let action = BridgeAction::UpdateBridgeFeeOnCrossInAction(UpdateBridgeFeeOnCrossInAction {
+            nonce,
+            chain_id,
+            from_chain_id,
+            token_id,
+            mode,
+            amount,
+        });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_set_bridge_fee_on_cross_in", future).await
+}
+
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, addr=addr,coin_type=coin_type,amount=amount))]
+async fn handle_withdraw_bridge_fee(
+    Path((chain_id, nonce, addr, coin_type, amount)): Path<(u8, u64, String, String, u64)>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+
+        let sui_address = SuiAddress::from_str(&addr).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid Sui Address: {:?}", err))
+        })?;
+
+        if !chain_id.is_sui_chain() {
+            return Err(BridgeError::InvalidBridgeClientRequest(
+                "handle_set_bridge_fee_on_cross_in only expects Sui chain id".to_string(),
+            ));
+        }
+        let action = BridgeAction::WithdrawBridgeFeeAction(WithdrawBridgeFeeAction {
+            nonce,
+            chain_id,
+            addr: sui_address,
+            coin_type,
+            amount,
+        });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_withdraw_bridge_fee", future).await
+}
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, native=native, token_ids=token_ids, token_type_names=token_type_names, token_prices=token_prices))]
 async fn handle_add_tokens_on_sui(
@@ -908,12 +1202,7 @@ async fn handle_add_tokens_on_evm(
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, op_type=op_type, sui_address=sui_address))]
 async fn handle_update_refund_admin(
-    Path((chain_id, nonce, op_type, sui_address)): Path<(
-        u8,
-        u64,
-        String,
-        String,
-    )>,
+    Path((chain_id, nonce, op_type, sui_address)): Path<(u8, u64, String, String)>,
     State((handler, metrics, _metadata)): State<(
         Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
         Arc<BridgeMetrics>,
@@ -943,6 +1232,38 @@ async fn handle_update_refund_admin(
         Ok(sig)
     };
     with_metrics!(metrics.clone(), "handle_update_refund_admin", future).await
+}
+
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, token_id=token_id, amount=amount))]
+async fn handle_update_fast_path_limit(
+    Path((chain_id, nonce, token_id, amount)): Path<(u8, u64, u64, u64)>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+
+        if chain_id.is_sui_chain() {
+            return Err(BridgeError::InvalidBridgeClientRequest(
+                "handle_update_fast_path_limit only expects EVM chain id".to_string(),
+            ));
+        }
+
+        let action = BridgeAction::FastPathLimitUpdateAction(FastPathLimitUpdateAction {
+            nonce,
+            chain_id,
+            token_id,
+            amount,
+        });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_update_fast_path_limit", future).await
 }
 
 #[macro_export]

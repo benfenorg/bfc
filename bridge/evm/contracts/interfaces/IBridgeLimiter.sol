@@ -41,4 +41,6 @@ interface IBridgeLimiter {
 
     /// @dev (deprecated in favor of LimitUpdatedV2)
     event LimitUpdated(uint8 sourceChainID, uint64 newLimit);
+
+    event SingleTransferLimitUpdate(uint64 nonce, uint8 sourceChainID, uint256 newLimit);
 }
