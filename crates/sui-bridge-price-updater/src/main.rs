@@ -85,6 +85,7 @@ async fn main() -> anyhow::Result<()> {
                 };
                 // 比较差异是否大于30%
                 if diff * 100 > (price as u128) * 30 {
+                    let new_value = new_value * 100_000_000; 
                     // 差异大于30%，更新价格
                     info!("Token {} price larger than 30%: old={}, new={}",token, price, new_value);
                     //update price of sui chain
