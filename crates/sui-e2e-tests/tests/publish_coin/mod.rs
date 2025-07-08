@@ -10,6 +10,7 @@ use sui_sdk::wallet_context::WalletContext;
 use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::{ObjectID, ObjectRef, ObjectType, SuiAddress};
 use sui_types::transaction::{Transaction, TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
+use sui_json_rpc_types::SuiTransactionBlockResponse;
 use test_cluster::TestCluster;
 
 #[allow(unused)]
@@ -99,7 +100,7 @@ pub async fn do_mint(test_cluster: &mut TestCluster, package: ObjectID) {
     test_cluster.execute_transaction(mint_tx).await;
 }
 #[allow(unused)]
-pub async fn do_mint_anonymous(test_cluster: &mut TestCluster, package: ObjectID) {
+pub async fn do_mint_anonymous(test_cluster: &mut TestCluster, package: ObjectID, mint_amount: u64) -> SuiTransactionBlockResponse {
     let context = &test_cluster.wallet;
     let address = test_cluster.get_address_0();
     let gas = context
@@ -109,8 +110,8 @@ pub async fn do_mint_anonymous(test_cluster: &mut TestCluster, package: ObjectID
         .unwrap();
     let cap = get_cap(&test_cluster.rpc_client().clone(), address).await;
     let cap_obj_ref = cap.unwrap().object().unwrap().object_ref();
-    let mint_tx = make_mint_test_anonymous_coin_transaction(context, address, gas, package, cap_obj_ref, 30000000000000000).await;
-    test_cluster.execute_transaction(mint_tx).await;
+    let mint_tx = make_mint_test_anonymous_coin_transaction(context, address, gas, package, cap_obj_ref, mint_amount).await;
+    test_cluster.execute_transaction(mint_tx).await
 }
 
 
