@@ -310,7 +310,7 @@ events: Event { package_id: sui_system, transaction_module: Identifier("sui_syst
 created: object(8,0)
 mutated: 0x0000000000000000000000000000000000000000000000000000000000000005, object(0,0), object(2,0)
 deleted: object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 27550000,  storage_rebate: 27259452, non_refundable_storage_fee: 275348
+gas summary: computation_cost: 1000000, storage_cost: 17229200,  storage_rebate: 27259452, non_refundable_storage_fee: 275348
 
 task 9, line 37:
 //# create-checkpoint
@@ -423,7 +423,7 @@ Response: {
     "epoch": "2",
     "protocolVersion": "70",
     "systemStateVersion": "2",
-    "storageFundTotalObjectStorageRebates": "27550000",
+    "storageFundTotalObjectStorageRebates": "17229200",
     "storageFundNonRefundableBalance": "275348",
     "referenceGasPrice": "100",
     "safeMode": false,
