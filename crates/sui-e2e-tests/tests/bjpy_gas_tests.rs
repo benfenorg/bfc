@@ -729,20 +729,23 @@ async fn test_move_call_new_test_coin_pool(test_cluster: &mut TestCluster, packa
     }
 
     let mut result_vec =  Vec::with_capacity(2);
+    let mut index = 0;
     for ele in  resp?.object_changes.unwrap() {
         if let ObjectChange::Created { object_id, version,digest,object_type,.. } = ele {
             if object_type.name == Identifier::from_str("TestOraclePrice").unwrap(){
-                result_vec.insert(0,(object_id,version,digest));
+                result_vec.insert(index,(object_id,version,digest));
+                index += 1;
             }
             if object_type.name == Identifier::from_str("Global").unwrap(){
-                result_vec.insert(1,(object_id,version,digest));
+                result_vec.insert(index,(object_id,version,digest));
+                index += 1;
             }
         }
     }
     if result_vec.len() != 2 {
         Err(anyhow!("not found"))
     }else {
-        return Ok((result_vec[0],result_vec[1]));
+        Ok((result_vec[1],result_vec[0])) //todo replace with map
     }
 
 }
