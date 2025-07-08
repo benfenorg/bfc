@@ -311,7 +311,7 @@ impl GenesisConfig {
             DEFAULT_NUMBER_OF_ACCOUNT,
             DEFAULT_NUMBER_OF_OBJECT_PER_ACCOUNT,
         );
-        config.bfc_skip_init_vault = 0;
+        config.bfc_skip_init_vault = 1;
         config
     }
 
