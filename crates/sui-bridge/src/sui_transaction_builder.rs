@@ -281,12 +281,12 @@ fn build_external_token_bridge_approve_and_claim_transaction(
     let arg_token_type = builder.pure(token_type).unwrap();
     let amount = builder.pure(amount).unwrap();
     let tx_hash = builder.pure(tx_hash).unwrap();
-    let event_idx = builder.pure(0 as u16).unwrap();
+    let event_idx = builder.pure(0 as u8).unwrap();
 
     let arg_msg = builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
         ident_str!("message").to_owned(),
-        ident_str!("create_token_bridge_message_v2").to_owned(),
+        ident_str!("create_token_bridge_message").to_owned(),
         vec![],
         vec![
             source_chain,
