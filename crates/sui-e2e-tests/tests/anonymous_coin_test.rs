@@ -32,7 +32,7 @@ async fn sim_test_do_publish_anonymous_test_coin(){
         = publish_coin::do_publish(&mut test_cluster,"tests/test_anonymous_coin").await.unwrap();
 
     //mint
-    publish_coin::do_mint_anonymous(&mut test_cluster,package).await;
+    publish_coin::do_mint_anonymous(&mut test_cluster,package,30000000000000000).await;
 
 
 
@@ -74,7 +74,7 @@ async fn sim_test_binding_anonymous_coin() {
         = publish_coin::do_publish(&mut test_cluster, "tests/test_anonymous_coin").await.unwrap();
 
     //mint
-    publish_coin::do_mint_anonymous(&mut test_cluster,package).await;
+    publish_coin::do_mint_anonymous(&mut test_cluster,package,30000000000000000).await;
 
     let filter=format!("{}{}{}","0x2::anonymous_coin::Anonymous_Coin<",package,"::testabfc::TESTABFC>");
     let abfc_objects =
@@ -113,6 +113,89 @@ async fn sim_test_binding_anonymous_coin() {
 }
 
 #[sim_test]
+async fn sim_test_anonymous_coin_swap_in_exceed_boundary() -> Result<(), anyhow::Error>{
+    telemetry_subscribers::init_for_testing();
+    let mut test_cluster = TestClusterBuilder::new().build().await;
+    let http_client = test_cluster.rpc_client().clone();
+    let address = test_cluster.get_address_0();
+    info!("the address is {:?}", address);
+
+    let bfc_objects =
+        do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", &http_client, address).await.unwrap();
+    let gas = bfc_objects.get(0).unwrap().object().unwrap();
+    let bfc_object = bfc_objects.get(1).unwrap().object().unwrap();
+    info!("the gas object is {:?}", gas.object_id);
+    info!("the bfc object is {:?}", bfc_object.object_id);
+
+    //publish
+    let (package, _change_objs)
+        = publish_coin::do_publish(&mut test_cluster, "tests/test_anonymous_coin").await.unwrap();
+
+    //mint
+    publish_coin::do_mint_anonymous(&mut test_cluster,package,30000000000).await;
+
+    let filter=format!("{}{}{}","0x2::anonymous_coin::Anonymous_Coin<",package,"::testabfc::TESTABFC>");
+    let abfc_objects =
+        do_get_owned_objects_with_filter(&*filter, &http_client, address).await.unwrap();
+    assert!(abfc_objects.len() != 0);
+    let testabfc_object = abfc_objects.first().unwrap().object();
+    assert!(testabfc_object.is_ok());
+
+    let package_id = SUI_FRAMEWORK_PACKAGE_ID;
+    let module = "anonymous_coin".to_string();
+    let function = "bind_swap_pool".to_string();
+    let mut type_arguments = Vec::new();
+    let anonymous_type = format!("{}{}", package, "::testabfc::TESTABFC");
+    type_arguments.push(SuiTypeTag::new(anonymous_type.to_string()));
+    type_arguments.push(SuiTypeTag::new("0x2::bfc::BFC".to_string()));
+
+    let arg = vec![
+        SuiJsonValue::from_str(&testabfc_object.unwrap().object_id.to_string()).unwrap(),
+        SuiJsonValue::from_str(&bfc_object.object_id.to_string()).unwrap(),
+    ];
+    let result = do_move_call(
+        &http_client,
+        &gas,
+        address,
+        &test_cluster,
+        package_id,
+        module.clone(),
+        function,
+        type_arguments.clone(),
+        arg,
+    ).await?;
+
+    assert!(*result.effects.clone().unwrap().status() ==  SuiExecutionStatus::Success);
+    let swap_pool = result.effects.clone().unwrap().created().to_vec()[0].reference.object_id;
+    let bfc_objects =
+        do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", &http_client, address).await.unwrap();
+    let gas = bfc_objects.get(0).unwrap().object().unwrap();
+    let bfc_object = bfc_objects.get(1).unwrap().object().unwrap();
+
+    // swap in out anonymous coin of boundary
+    let function = "swap_in".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_object.object_id.to_string()).unwrap(),
+        SuiJsonValue::from_str(&swap_pool.to_string()).unwrap(),
+    ];
+    let result = do_move_call(
+        &http_client,
+        &gas,
+        address,
+        &test_cluster,
+        package_id,
+        module,
+        function,
+        type_arguments,
+        arg,
+    ).await?;
+
+    assert!(*result.effects.unwrap().status() !=  SuiExecutionStatus::Success);
+    Ok(())
+}
+
+#[sim_test]
 async fn sim_test_anonymous_coin_swap_in() -> Result<(), anyhow::Error>{
     telemetry_subscribers::init_for_testing();
     let mut test_cluster = TestClusterBuilder::new().build().await;
@@ -133,7 +216,7 @@ async fn sim_test_anonymous_coin_swap_in() -> Result<(), anyhow::Error>{
         = publish_coin::do_publish(&mut test_cluster, "tests/test_anonymous_coin").await.unwrap();
 
     //mint
-    publish_coin::do_mint_anonymous(&mut test_cluster,package).await;
+    publish_coin::do_mint_anonymous(&mut test_cluster,package,30000000000000000).await;
 
     let filter=format!("{}{}{}","0x2::anonymous_coin::Anonymous_Coin<",package,"::testabfc::TESTABFC>");
     let abfc_objects =
@@ -183,7 +266,7 @@ async fn sim_test_anonymous_coin_swap_in() -> Result<(), anyhow::Error>{
         SuiJsonValue::from_str(&bfc_object.object_id.to_string()).unwrap(),
         SuiJsonValue::from_str(&swap_pool.to_string()).unwrap(),
     ];
-    do_move_call(
+    let result = do_move_call(
         &http_client,
         &gas,
         address,
@@ -214,13 +297,12 @@ async fn sim_test_anonymous_coin_swap_out_with_amount() -> Result<(), anyhow::Er
     info!("the gas object is {:?}", gas.object_id);
     info!("the bfc object is {:?}", bfc_object.object_id);
 
-
     //publish
     let (package, _change_objs)
         = publish_coin::do_publish(&mut test_cluster, "tests/test_anonymous_coin").await.unwrap();
 
     //mint
-    publish_coin::do_mint_anonymous(&mut test_cluster,package).await;
+    publish_coin::do_mint_anonymous(&mut test_cluster,package,30000000000000000).await;
 
     let filter=format!("{}{}{}","0x2::anonymous_coin::Anonymous_Coin<",package,"::testabfc::TESTABFC>");
     let abfc_objects =
@@ -310,6 +392,118 @@ async fn sim_test_anonymous_coin_swap_out_with_amount() -> Result<(), anyhow::Er
     Ok(())
 }
 
+
+#[sim_test]
+async fn sim_test_anonymous_coin_swap_out_with_amount_exceed_boundary() -> Result<(), anyhow::Error>{
+    telemetry_subscribers::init_for_testing();
+    let mut test_cluster = TestClusterBuilder::new().build().await;
+    let http_client = test_cluster.rpc_client().clone();
+    let address = test_cluster.get_address_0();
+    info!("the address is {:?}", address);
+
+    let bfc_objects =
+        do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", &http_client, address).await.unwrap();
+    let gas = bfc_objects.get(0).unwrap().object().unwrap();
+    let bfc_object = bfc_objects.get(1).unwrap().object().unwrap();
+    info!("the gas object is {:?}", gas.object_id);
+    info!("the bfc object is {:?}", bfc_object.object_id);
+
+    //publish
+    let (package, _change_objs)
+        = publish_coin::do_publish(&mut test_cluster, "tests/test_anonymous_coin").await.unwrap();
+
+    //mint
+    publish_coin::do_mint_anonymous(&mut test_cluster,package,30000000000000000).await;
+
+    let filter=format!("{}{}{}","0x2::anonymous_coin::Anonymous_Coin<",package,"::testabfc::TESTABFC>");
+    let abfc_objects =
+        do_get_owned_objects_with_filter(&*filter, &http_client, address).await.unwrap();
+    assert!(abfc_objects.len() != 0);
+    let testabfc_object = abfc_objects.first().unwrap().object();
+    assert!(testabfc_object.is_ok());
+
+    // public entry fun bind_swap_pool<T1, T2> (anonymous_coin: Anonymous_Coin<T1>, coin: Coin<T2>, ctx: &mut TxContext){
+    // now do the call
+    let package_id = SUI_FRAMEWORK_PACKAGE_ID;
+    let module = "anonymous_coin".to_string();
+    let function = "bind_swap_pool".to_string();
+    let mut type_arguments = Vec::new();
+    let anonymous_type = format!("{}{}", package, "::testabfc::TESTABFC");
+    type_arguments.push(SuiTypeTag::new(anonymous_type.to_string()));
+    type_arguments.push(SuiTypeTag::new("0x2::bfc::BFC".to_string()));
+
+    let arg = vec![
+        SuiJsonValue::from_str(&testabfc_object.unwrap().object_id.to_string()).unwrap(),
+        SuiJsonValue::from_str(&bfc_object.object_id.to_string()).unwrap(),
+    ];
+    let result = do_move_call(
+        &http_client,
+        &gas,
+        address,
+        &test_cluster,
+        package_id,
+        module.clone(),
+        function,
+        type_arguments.clone(),
+        arg,
+    ).await?;
+    assert!(*result.effects.clone().unwrap().status() ==  SuiExecutionStatus::Success);
+
+
+    let swap_pool = result.effects.clone().unwrap().created().to_vec()[0].reference.object_id;
+
+    let bfc_objects =
+        do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", &http_client, address).await.unwrap();
+    let gas = bfc_objects.get(0).unwrap().object().unwrap();
+    let bfc_object = bfc_objects.get(1).unwrap().object().unwrap();
+
+    // now do the call
+    let function = "swap_in".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_object.object_id.to_string()).unwrap(),
+        SuiJsonValue::from_str(&swap_pool.to_string()).unwrap(),
+    ];
+    let result = do_move_call(
+        &http_client,
+        &gas,
+        address,
+        &test_cluster,
+        package_id,
+        module.clone(),
+        function,
+        type_arguments.clone(),
+        arg,
+    ).await?;
+    assert!(*result.effects.clone().unwrap().status() ==  SuiExecutionStatus::Success);
+
+
+    let mint_response = publish_coin::do_mint_anonymous(&mut test_cluster,package,300000000000000000).await;
+    let anonymous_coin = mint_response.effects.clone().unwrap().created().to_vec()[0].reference.object_id;
+
+    let function = "swap_out_with_amount".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&mint_response.effects.clone().unwrap().created().to_vec()[0].reference.object_id.to_string()).unwrap(),
+        SuiJsonValue::new(json!("300000000000000000"))?,
+        SuiJsonValue::from_str(&swap_pool.to_string()).unwrap(),
+    ];
+    let result = do_move_call(
+        &http_client,
+        &gas,
+        address,
+        &test_cluster,
+        package_id,
+        module,
+        function,
+        type_arguments,
+        arg,
+    ).await?;
+    assert!(*result.effects.clone().unwrap().status() !=  SuiExecutionStatus::Success);
+    Ok(())
+}
+
+
 #[sim_test]
 async fn sim_test_anonymous_coin_restore() -> Result<(), anyhow::Error>{
     telemetry_subscribers::init_for_testing();
@@ -331,7 +525,7 @@ async fn sim_test_anonymous_coin_restore() -> Result<(), anyhow::Error>{
         = publish_coin::do_publish(&mut test_cluster, "tests/test_anonymous_coin").await.unwrap();
 
     //mint
-    publish_coin::do_mint_anonymous(&mut test_cluster,package).await;
+    publish_coin::do_mint_anonymous(&mut test_cluster,package,30000000000000000).await;
 
     let filter=format!("{}{}{}","0x2::anonymous_coin::Anonymous_Coin<",package,"::testabfc::TESTABFC>");
     let abfc_objects =
