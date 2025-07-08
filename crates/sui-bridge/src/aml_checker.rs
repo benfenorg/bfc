@@ -90,6 +90,8 @@ where
 
     async fn resubmit_pending_actions(store: &Arc<BridgeOrchestratorTables>,executor_sender: mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>){
             loop{
+                //sleep first to fix simtest:test_onchain_execution_loop
+                tokio::time::sleep(Duration::from_secs(60*60)).await;
                 let pending_actions = store.get_all_pending_actions().into_values().collect::<Vec<_>>();
                 info!("Resubmitting {} pending actions", pending_actions.len());
                 for action in pending_actions {
@@ -97,7 +99,6 @@ where
                         .await
                         .expect("Submit to executor should not fail");
                 }
-                tokio::time::sleep(Duration::from_secs(60*60)).await;
             }
     }
 

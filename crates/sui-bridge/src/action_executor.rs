@@ -555,7 +555,7 @@ where
             store
             .remove_pending_actions(&[action.digest()])
             .unwrap_or_else(|e| {
-                panic!("Write to DB should not fail: {:?}", e);
+                panic!("remove_pending_actions should not fail: {:?}", e);
             });
             return;
         }
@@ -926,6 +926,9 @@ mod tests {
 
         // Failure will trigger retry, we wait for 2 requests before checking WAL log
         let tx_digest = tx_subscription.recv().await.unwrap();
+        info!("bbking tx_digest: {:#?}", tx_digest);
+        info!("bbking store: {:#?}", store
+            .get_all_pending_actions());
         assert_eq!(tx_subscription.recv().await.unwrap(), tx_digest);
 
         // The retry is still going on, action still in WAL
