@@ -657,22 +657,20 @@ pub struct SystemPackage {
     #[prost(message, repeated, tag = "3")]
     pub dependencies: ::prost::alloc::vec::Vec<ObjectId>,
 }
-
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TaggedGasCostSummary {
     #[prost(message, optional, tag = "1")]
     pub tag: ::core::option::Option<TypeTag>,
     #[prost(message, optional, tag = "2")]
-    pub summary:  ::core::option::Option<GasCostSummaryAdjusted>,
+    pub summary: ::core::option::Option<GasCostSummaryAdjusted>,
 }
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct GasCostSummaryAdjusted {
     #[prost(message, optional, tag = "1")]
     pub gas_by_bfc: ::core::option::Option<GasCostSummary>,
     #[prost(message, optional, tag = "2")]
     pub gas_by_stable: ::core::option::Option<GasCostSummary>,
 }
-
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GenesisTransaction {
     #[prost(message, repeated, tag = "1")]
