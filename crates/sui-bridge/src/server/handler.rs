@@ -766,6 +766,7 @@ mod tests {
     use sui_json_rpc_types::{BcsEvent, SuiEvent};
     use sui_types::bridge::{BridgeChainId, TOKEN_ID_BTC, TOKEN_ID_USDC};
     use sui_types::{base_types::SuiAddress, crypto::get_key_pair};
+    use crate::test_utils::mock_latest_block;
 
     #[tokio::test]
     async fn test_sui_signer_with_cache() {
@@ -1186,14 +1187,14 @@ mod tests {
         let eth_tx_hash = TxHash::random();
         let eth_event_idx = 42;
         assert!(eth_signer_with_cache
-            .get_testing_only((0, eth_tx_hash, eth_event_idx, 0))
+            .get_testing_only((0, eth_tx_hash, eth_event_idx, 2))
             .await
             .is_none());
         let entry = eth_signer_with_cache
-            .get_cache_entry((0, eth_tx_hash, eth_event_idx, 0))
+            .get_cache_entry((0, eth_tx_hash, eth_event_idx, 2))
             .await;
         let entry_ = eth_signer_with_cache
-            .get_testing_only((0, eth_tx_hash, eth_event_idx, 0))
+            .get_testing_only((0, eth_tx_hash, eth_event_idx, 2))
             .await;
         // first unwrap should not pacic because the entry should have been inserted by `get_cache_entry`
         assert!(entry_.unwrap().lock().await.is_none());
@@ -1203,7 +1204,7 @@ mod tests {
         let signed_action = SignedBridgeAction::new_from_data_and_sig(action.clone(), sig);
         entry.lock().await.replace(Ok(signed_action.clone()));
         let entry_ = eth_signer_with_cache
-            .get_testing_only((0, eth_tx_hash, eth_event_idx, 0))
+            .get_testing_only((0, eth_tx_hash, eth_event_idx, 2))
             .await;
         assert_eq!(
             entry_.unwrap().lock().await.clone().unwrap().unwrap(),
@@ -1228,11 +1229,11 @@ mod tests {
         mock_last_finalized_block(&eth_mock_provider, log.block_number.unwrap().as_u64());
 
         eth_signer_with_cache
-            .sign((BridgeChainId::EthCustom as u8, eth_tx_hash, eth_event_idx, 0))
+            .sign((BridgeChainId::EthCustom as u8, eth_tx_hash, eth_event_idx, 2))
             .await
             .unwrap();
         let entry_ = eth_signer_with_cache
-            .get_testing_only((BridgeChainId::EthCustom as u8, eth_tx_hash, eth_event_idx, 0))
+            .get_testing_only((BridgeChainId::EthCustom as u8, eth_tx_hash, eth_event_idx, 2))
             .await;
         entry_.unwrap().lock().await.clone().unwrap().unwrap();
     }

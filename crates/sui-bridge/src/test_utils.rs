@@ -207,7 +207,15 @@ pub fn mock_last_finalized_block(mock_provider: &EthMockProvider, block_number: 
         .add_response("eth_getBlockByNumber", ("finalized", false), block)
         .unwrap();
 }
-
+pub fn mock_latest_block(mock_provider: &EthMockProvider, block_number: u64) {
+    let block = Block::<ethers::types::TxHash> {
+        number: Some(U64::from(block_number)),
+        ..Default::default()
+    };
+    mock_provider
+        .add_response("eth_getBlockByNumber", ("latest", false), block)
+        .unwrap();
+}
 // Mocks eth_getLogs and eth_getTransactionReceipt for the given address and block range.
 // The input log needs to have transaction_hash set.
 pub fn mock_get_logs(
