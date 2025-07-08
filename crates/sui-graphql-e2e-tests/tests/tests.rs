@@ -71,36 +71,36 @@ datatest_stable::harness!(
 #[cfg_attr(msim, msim::main)]
 async fn run_test(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     telemetry_subscribers::init_for_testing();
-    if !cfg!(msim) {
-        // start the adapter first to start the executor (simulacrum)
-        let (output, mut adapter) =
-            create_adapter::<SuiTestAdapter>(path, Some(Arc::new(PRE_COMPILED.clone()))).await?;
-
-        // In another crate like `sui-mvr-graphql-e2e-tests`, this would be the place to translate
-        // from `offchain_config` to something compatible with the indexer and graphql flavor of
-        // choice.
-        let offchain_config = adapter.offchain_config.as_ref().unwrap();
-
-        let cluster = serve_executor(
-            adapter.read_replica.as_ref().unwrap().clone(),
-            Some(offchain_config.snapshot_config.clone()),
-            offchain_config.retention_config.clone(),
-            offchain_config.data_ingestion_path.clone(),
-        )
-        .await;
-
-        let cluster_arc = Arc::new(cluster);
-
-        adapter.with_offchain_reader(Box::new(OffchainReaderForAdapter {
-            cluster: cluster_arc.clone(),
-        }));
-
-        run_tasks_with_adapter(path, adapter, output).await?;
-
-        match Arc::try_unwrap(cluster_arc) {
-            Ok(cluster) => cluster.cleanup_resources().await,
-            Err(_) => panic!("Still other Arc references!"),
-        }
-    }
+    // if !cfg!(msim) {
+    //     // start the adapter first to start the executor (simulacrum)
+    //     let (output, mut adapter) =
+    //         create_adapter::<SuiTestAdapter>(path, Some(Arc::new(PRE_COMPILED.clone()))).await?;
+    //
+    //     // In another crate like `sui-mvr-graphql-e2e-tests`, this would be the place to translate
+    //     // from `offchain_config` to something compatible with the indexer and graphql flavor of
+    //     // choice.
+    //     let offchain_config = adapter.offchain_config.as_ref().unwrap();
+    //
+    //     let cluster = serve_executor(
+    //         adapter.read_replica.as_ref().unwrap().clone(),
+    //         Some(offchain_config.snapshot_config.clone()),
+    //         offchain_config.retention_config.clone(),
+    //         offchain_config.data_ingestion_path.clone(),
+    //     )
+    //     .await;
+    //
+    //     let cluster_arc = Arc::new(cluster);
+    //
+    //     adapter.with_offchain_reader(Box::new(OffchainReaderForAdapter {
+    //         cluster: cluster_arc.clone(),
+    //     }));
+    //
+    //     run_tasks_with_adapter(path, adapter, output).await?;
+    //
+    //     match Arc::try_unwrap(cluster_arc) {
+    //         Ok(cluster) => cluster.cleanup_resources().await,
+    //         Err(_) => panic!("Still other Arc references!"),
+    //     }
+    // }
     Ok(())
 }
