@@ -7,9 +7,7 @@ title: Module `0x2::hfe_ops`
 -  [Function `hfe_ops_add`](#0x2_hfe_ops_hfe_ops_add)
 -  [Function `hfe_ops_minus`](#0x2_hfe_ops_hfe_ops_minus)
 -  [Function `hfe_ops_multiplied`](#0x2_hfe_ops_hfe_ops_multiplied)
--  [Function `hfe_ops_compare`](#0x2_hfe_ops_hfe_ops_compare)
 -  [Function `hfe_ops_compare_value`](#0x2_hfe_ops_hfe_ops_compare_value)
--  [Function `split_data`](#0x2_hfe_ops_split_data)
 -  [Function `hfe_ops_split_value`](#0x2_hfe_ops_hfe_ops_split_value)
 -  [Function `hfe_ops_restore_value`](#0x2_hfe_ops_hfe_ops_restore_value)
 
@@ -99,33 +97,6 @@ title: Module `0x2::hfe_ops`
 
 </details>
 
-<a name="0x2_hfe_ops_hfe_ops_compare"></a>
-
-## Function `hfe_ops_compare`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/hfe_ops.md#0x2_hfe_ops_hfe_ops_compare">hfe_ops_compare</a>(input_1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, input_2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, input_3: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, input_4: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>native</b> <b>fun</b> <a href="../sui-framework/hfe_ops.md#0x2_hfe_ops_hfe_ops_compare">hfe_ops_compare</a>(
-    input_1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
-    input_2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
-    input_3: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
-    input_4: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
-): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>;
-</code></pre>
-
-
-
-</details>
-
 <a name="0x2_hfe_ops_hfe_ops_compare_value"></a>
 
 ## Function `hfe_ops_compare_value`
@@ -146,32 +117,6 @@ title: Module `0x2::hfe_ops`
     input_2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     input_3: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
 ): u8;
-</code></pre>
-
-
-
-</details>
-
-<a name="0x2_hfe_ops_split_data"></a>
-
-## Function `split_data`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/hfe_ops.md#0x2_hfe_ops_split_data">split_data</a>(data: &<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, n: u8, index: u8): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>native</b> <b>fun</b> <a href="../sui-framework/hfe_ops.md#0x2_hfe_ops_split_data">split_data</a>(
-    data: &<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
-    n: u8,
-    index: u8,
-): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;;
 </code></pre>
 
 

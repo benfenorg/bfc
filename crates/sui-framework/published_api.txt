@@ -2068,13 +2068,7 @@ hfe_ops_minus
 hfe_ops_multiplied
 	public fun
 	0x2::hfe_ops
-hfe_ops_compare
-	public fun
-	0x2::hfe_ops
 hfe_ops_compare_value
-	public fun
-	0x2::hfe_ops
-split_data
 	public fun
 	0x2::hfe_ops
 hfe_ops_split_value
@@ -2187,9 +2181,6 @@ supply_mut
 	0x2::anonymous_coin
 get_anonymous_value
 	public entry fun
-	0x2::anonymous_coin
-value
-	public fun
 	0x2::anonymous_coin
 balance
 	public fun

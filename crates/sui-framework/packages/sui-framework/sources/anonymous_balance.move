@@ -237,3 +237,9 @@ public fun destroy_for_testing<T>(self: Anonymous_Balance<T>) {
 public fun create_supply_for_testing<T>(): Supply<T> {
     Supply { value: 0 }
 }
+
+#[test_only]
+/// Mint coins of any type for (obviously!) testing purposes only
+public fun compare_anoymous_coin(input1: u64, input2: u64, input3: u64): u8{
+    hfe_ops_compare_value(input1, input2, input3)
+}

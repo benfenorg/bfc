@@ -7,6 +7,7 @@ module sui::anonymous_coin_tests {
     use sui::anonymous_pay;
     use sui::url;
     use sui::test_scenario;
+    use sui:: anonymous_balance::{Self};
     use sui::deny_list;
 
     public struct COIN_TESTS has drop {}
@@ -94,6 +95,16 @@ module sui::anonymous_coin_tests {
         transfer::public_freeze_object(metadata);
         transfer::public_transfer(treasury, ctx.sender());
         scenario.end();
+    }
+
+    #[test]
+    fun tests_coin_compare_value() {
+        assert!(anonymous_balance::compare_anoymous_coin(1, 2, 3) == 0);
+
+        assert!(anonymous_balance::compare_anoymous_coin(1, 2, 2) == 1);
+
+        assert!(anonymous_balance::compare_anoymous_coin(1, 2, 4) == 2);
+
     }
 
     #[test]
