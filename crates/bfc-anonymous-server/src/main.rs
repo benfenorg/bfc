@@ -84,7 +84,6 @@ struct AnonymousCompareParams {
     value1: u64,
     value2: u64,
     value3: u64,
-    value4: u64,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -567,7 +566,7 @@ async fn handle_anonymous_compare(request: JsonRpcRequest) -> JsonRpcResponse {
             match serde_json::from_value::<AnonymousCompareParams>(params) {
                 Ok(compare_params) => {
                     let value_a = compare_params.value1 + compare_params.value2;
-                    let value_b = compare_params.value3 + compare_params.value4;
+                    let value_b = compare_params.value3;
 
                     let comparison = if value_a > value_b {
                         1
@@ -583,9 +582,8 @@ async fn handle_anonymous_compare(request: JsonRpcRequest) -> JsonRpcResponse {
                         jsonrpc: "2.0".to_string(),
                         id: request.id,
                         result: Some(serde_json::json!({
-                            "result": comparison,
-                            "value1": compare_params.value1,
-                            "value2": compare_params.value2,
+                            "value1": comparison,
+                            "value2": 0,
                             "operation": "anonymous_compare",
                             "timestamp": chrono::Utc::now().timestamp()
                         })),

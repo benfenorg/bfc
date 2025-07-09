@@ -304,65 +304,85 @@ pub fn hfe_ops_compare_value(
         anonymous_compute_cost_params.anonymous_compute_cost_base
     );
 
+
     let number3 = pop_arg!(args, u64);
     let number2 = pop_arg!(args, u64);
     let number1 = pop_arg!(args, u64);
-
-
-    let data1 = number1 + number2;
-    let data2 = number3;
-    let mut result = 0;
-    if data1 > data2 {
-        result = 1;
-    }
-    if data1 < data2 {
-        result = 2;
-    }
-
     let cost = context.gas_used();
-    Ok(NativeResult::ok(
-        cost,
-        smallvec![Value::u8(result)],
-    ))
-}
 
-pub fn hfe_ops_compare(
-    context: &mut NativeContext,
-    ty_args: Vec<Type>,
-    mut args: VecDeque<Value>,
-) -> PartialVMResult<NativeResult>{
-    let anonymous_compute_cost_params = &context
+    let anonymous_privatekey = &context
         .extensions()
         .get::<NativesCostTable>()
-        .anonymous_compute_cost_params
+        .anonymous_privatekey
         .clone();
-    // Charge the base cost for this oper
-    native_charge_gas_early_exit!(
-        context,
-        anonymous_compute_cost_params.anonymous_compute_cost_base
-    );
-    let number4 = pop_arg!(args, u64);
-    let number3 = pop_arg!(args, u64);
-    let number2 = pop_arg!(args, u64);
-    let number1 = pop_arg!(args, u64);
+    let enable_anonymous_rpc = &context
+        .extensions()
+        .get::<NativesCostTable>()
+        .enable_anonymous_rpc
+        .clone();
+    let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
+    if *enable_anonymous_rpc == Some(true) {
+        let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
+        let result = client.compare_value(number1, number2, number3);
+        Ok(NativeResult::ok(
+            cost,
+            smallvec![Value::u8(result.value1.try_into().unwrap())],
+        ))
+    } else {
+        let data1 = number1 + number2;
+        let data2 = number3;
+        let mut result = 0;
+        if data1 > data2 {
+            result = 1;
+        }
+        if data1 < data2 {
+            result = 2;
+        }
 
-
-    let data1 = number1 + number2;
-    let data2 = number3 + number4;
-    let mut result = 0;
-    if data1 > data2 {
-        result = 1;
+        Ok(NativeResult::ok(
+            cost,
+            smallvec![Value::u8(result)],
+        ))
     }
-    if data1 < data2 {
-        result = 2;
-    }
-
-    let cost = context.gas_used();
-    Ok(NativeResult::ok(
-        cost,
-        smallvec![Value::u8(result)],
-    ))
 }
+
+// pub fn hfe_ops_compare(
+//     context: &mut NativeContext,
+//     ty_args: Vec<Type>,
+//     mut args: VecDeque<Value>,
+// ) -> PartialVMResult<NativeResult>{
+//     let anonymous_compute_cost_params = &context
+//         .extensions()
+//         .get::<NativesCostTable>()
+//         .anonymous_compute_cost_params
+//         .clone();
+//     // Charge the base cost for this oper
+//     native_charge_gas_early_exit!(
+//         context,
+//         anonymous_compute_cost_params.anonymous_compute_cost_base
+//     );
+//     let number4 = pop_arg!(args, u64);
+//     let number3 = pop_arg!(args, u64);
+//     let number2 = pop_arg!(args, u64);
+//     let number1 = pop_arg!(args, u64);
+//
+//
+//     let data1 = number1 + number2;
+//     let data2 = number3 + number4;
+//     let mut result = 0;
+//     if data1 > data2 {
+//         result = 1;
+//     }
+//     if data1 < data2 {
+//         result = 2;
+//     }
+//
+//     let cost = context.gas_used();
+//     Ok(NativeResult::ok(
+//         cost,
+//         smallvec![Value::u8(result)],
+//     ))
+// }
 pub fn hfe_ops_restore_value(context: &mut NativeContext,
                               ty_args: Vec<Type>,
                               mut args: VecDeque<Value>) -> PartialVMResult<NativeResult> {
@@ -424,72 +444,72 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
 }
 
 
-pub fn split_data(context: &mut NativeContext,
-                  ty_args: Vec<Type>,
-                  mut args: VecDeque<Value>) -> PartialVMResult<NativeResult> {
+// pub fn split_data(context: &mut NativeContext,
+//                   ty_args: Vec<Type>,
+//                   mut args: VecDeque<Value>) -> PartialVMResult<NativeResult> {
+//
+//     let anonymous_compute_cost_params = &context
+//         .extensions()
+//         .get::<NativesCostTable>()
+//         .anonymous_compute_cost_params
+//         .clone();
+//     // Charge the base cost for this oper
+//     native_charge_gas_early_exit!(
+//         context,
+//         anonymous_compute_cost_params.anonymous_compute_cost_base
+//     );
+//
+//     let index = pop_arg!(args, u8);
+//     let number = pop_arg!(args, u8);
+//     let msg = pop_arg!(args, VectorRef);
+//     let bytes = msg.as_bytes_ref().to_vec();
+//     let ans = split_data_to_shard(&*bytes, number as usize);
+//     let cost = context.gas_used();
+//
+//     Ok(NativeResult::ok(
+//         cost,
+//         smallvec![Value::vector_u8(ans[index as usize].to_vec())],
+//     ))
+// }
 
-    let anonymous_compute_cost_params = &context
-        .extensions()
-        .get::<NativesCostTable>()
-        .anonymous_compute_cost_params
-        .clone();
-    // Charge the base cost for this oper
-    native_charge_gas_early_exit!(
-        context,
-        anonymous_compute_cost_params.anonymous_compute_cost_base
-    );
-
-    let index = pop_arg!(args, u8);
-    let number = pop_arg!(args, u8);
-    let msg = pop_arg!(args, VectorRef);
-    let bytes = msg.as_bytes_ref().to_vec();
-    let ans = split_data_to_shard(&*bytes, number as usize);
-    let cost = context.gas_used();
-
-    Ok(NativeResult::ok(
-        cost,
-        smallvec![Value::vector_u8(ans[index as usize].to_vec())],
-    ))
-}
-
-pub fn split_data_to_shard(data: &[u8], n: usize) -> Vec<Vec<u8>> {
-    assert!(n >= 2, "n must be at least 2");
-    assert!(!data.is_empty(), "data cannot be empty");
-    let mut seed = [0u8; 32];
-    // todo get key from private key
-    let mut key = [0u8; 32];
-    let key_hash = Sha256::digest(&key);
-    seed.copy_from_slice(&key_hash);
-    let mut rng = ChaChaRng::from_seed(seed);
-
-    let mut shards: Vec<Vec<u8>> = (0..n-1)
-        .map(|_| {
-            rng.clone().sample_iter(rand::distributions::Standard)
-                .take(data.len())
-                .collect()
-        })
-        .collect();
-
-    let last_shard = shards.iter()
-        .enumerate()
-        .fold(data.to_vec(), |acc, (i, shard)| {
-            let shard_key = derive_shard_key(i, key.into());
-            acc.iter()
-                .zip(shard.iter())
-                .zip(shard_key.iter().cycle())
-                .map(|((&a, &b), &k)| a ^ b ^ k)
-                .collect()
-        });
-
-    let last_shard_key = derive_shard_key(n-1, key.into());
-    let last_shard = last_shard.iter()
-        .zip(last_shard_key.iter().cycle())
-        .map(|(&a, &k)| a ^ k)
-        .collect();
-
-    shards.push(last_shard);
-    shards
-}
+// pub fn split_data_to_shard(data: &[u8], n: usize) -> Vec<Vec<u8>> {
+//     assert!(n >= 2, "n must be at least 2");
+//     assert!(!data.is_empty(), "data cannot be empty");
+//     let mut seed = [0u8; 32];
+//     // todo get key from private key
+//     let mut key = [0u8; 32];
+//     let key_hash = Sha256::digest(&key);
+//     seed.copy_from_slice(&key_hash);
+//     let mut rng = ChaChaRng::from_seed(seed);
+//
+//     let mut shards: Vec<Vec<u8>> = (0..n-1)
+//         .map(|_| {
+//             rng.clone().sample_iter(rand::distributions::Standard)
+//                 .take(data.len())
+//                 .collect()
+//         })
+//         .collect();
+//
+//     let last_shard = shards.iter()
+//         .enumerate()
+//         .fold(data.to_vec(), |acc, (i, shard)| {
+//             let shard_key = derive_shard_key(i, key.into());
+//             acc.iter()
+//                 .zip(shard.iter())
+//                 .zip(shard_key.iter().cycle())
+//                 .map(|((&a, &b), &k)| a ^ b ^ k)
+//                 .collect()
+//         });
+//
+//     let last_shard_key = derive_shard_key(n-1, key.into());
+//     let last_shard = last_shard.iter()
+//         .zip(last_shard_key.iter().cycle())
+//         .map(|(&a, &k)| a ^ k)
+//         .collect();
+//
+//     shards.push(last_shard);
+//     shards
+// }
 
 fn derive_shard_key(shard_id: usize, key: Vec<u8>) -> Vec<u8> {
     let mut hmac = HmacSha256::new_from_slice(&key)
@@ -622,6 +642,32 @@ impl AnonymousClient {
                     error: None,
                     value1: result1,
                     value2: result2
+                }
+            },
+            Err(e) => AnonymousResult {
+                success: false,
+                error: Some(e.to_string()),
+                value1: 0,
+                value2: 0,
+            },
+        }
+    }
+
+    pub fn compare_value(&self, value1: u64, value2: u64, value3: u64) -> AnonymousResult  {
+        let params = json!({
+            "value1": value1,
+            "value2": value2,
+            "value3": value3,
+        });
+
+        match self.send_rpc_request("bfcx_getAnonymousCompare", params, 3) {
+            Ok(response) => {
+                let result1 = response["result"]["result1"].as_u64().unwrap();
+                AnonymousResult {
+                    success: true,
+                    error: None,
+                    value1: result1,
+                    value2: 0
                 }
             },
             Err(e) => AnonymousResult {
