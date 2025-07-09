@@ -576,14 +576,14 @@ async fn handle_anonymous_compare(request: JsonRpcRequest) -> JsonRpcResponse {
                         0
                     };
                     
-                    info!("Anonymous compare: {} vs {} = {}", compare_params.value1, compare_params.value2, comparison);
+                    info!("Anonymous compare: {} vs {} = {}", value_a, value_b, comparison);
                     
                     JsonRpcResponse {
                         jsonrpc: "2.0".to_string(),
                         id: request.id,
                         result: Some(serde_json::json!({
-                            "value1": comparison,
-                            "value2": 0,
+                            "result1": comparison,
+                            "result2": 0,
                             "operation": "anonymous_compare",
                             "timestamp": chrono::Utc::now().timestamp()
                         })),
