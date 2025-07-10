@@ -852,7 +852,7 @@ pub fn build_fast_path_limit_update_approve_transaction(
     let arg_msg = builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
         ident_str!("message").to_owned(),
-        ident_str!("create_fast_path_limit_message").to_owned(),
+        ident_str!("create_fast_path_limit_message_v2").to_owned(),
         vec![],
         vec![seq_num, chain_id, token_id, amount],
     );

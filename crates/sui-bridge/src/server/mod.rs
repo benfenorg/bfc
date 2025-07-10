@@ -110,7 +110,7 @@ pub const ADD_TOKENS_ON_EVM_PATH: &str =
 pub const UPDATE_REFUND_ADMIN_PATH: &str =
     "/sign/update_refund_admin/:chain_id/:nonce/:op_type/:sui_address";
 pub const UPDATE_FAST_PATH_LIMIT_PATH: &str =
-    "/sign/update_fast_path_limit/:chain_id/:nonce/:token_id/:amount";
+    "/sign/update_fast_path_limit/:chain_id/:nonce/:token_id/:amount/:chain_id_evm";
 
 // BridgeNode's public metadata that is accessible via the `/ping` endpoint.
 // Be careful with what to put here, as it is public.
@@ -1236,7 +1236,7 @@ async fn handle_update_refund_admin(
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, token_id=token_id, amount=amount))]
 async fn handle_update_fast_path_limit(
-    Path((chain_id, nonce, token_id, amount)): Path<(u8, u64, u64, u64)>,
+    Path((chain_id, nonce, token_id, amount, chain_id_evm)): Path<(u8, u64, u64, u64, u8)>,
     State((handler, metrics, _metadata)): State<(
         Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
         Arc<BridgeMetrics>,
@@ -1248,9 +1248,19 @@ async fn handle_update_fast_path_limit(
             BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
         })?;
 
-        if chain_id.is_sui_chain() {
+        if !chain_id.is_sui_chain() {
             return Err(BridgeError::InvalidBridgeClientRequest(
-                "handle_update_fast_path_limit only expects EVM chain id".to_string(),
+                "handle_update_fast_path_limit chain id must be Sui chain".to_string(),
+            ));
+        }
+
+        let chain_id_evm = BridgeChainId::try_from(chain_id_evm).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+
+        if chain_id_evm.is_sui_chain() {
+            return Err(BridgeError::InvalidBridgeClientRequest(
+                "handle_update_fast_path_limit chain id_evm must be EVM chain".to_string(),
             ));
         }
 
@@ -1259,6 +1269,7 @@ async fn handle_update_fast_path_limit(
             chain_id,
             token_id,
             amount,
+            chain_id_evm,
         });
         let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
         Ok(sig)

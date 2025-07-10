@@ -6028,6 +6028,9 @@ create_refund_admin_message
 create_fast_path_limit_message
 	public fun
 	0xb::message
+create_fast_path_limit_message_v2
+	public fun
+	0xb::message
 create_update_bridge_limit_message
 	public fun
 	0xb::message

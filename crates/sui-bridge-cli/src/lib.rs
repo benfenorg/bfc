@@ -402,9 +402,10 @@ pub fn make_action(
             let chain_id_evm = BridgeChainId::try_from(*chain_id_evm).expect("Invalid chain id");
             BridgeAction::FastPathLimitUpdateAction(FastPathLimitUpdateAction {
                 nonce: *nonce,
-                chain_id: chain_id_evm,
+                chain_id: chain_id,
                 token_id: *token_id,
                 amount: *amount,
+                chain_id_evm,
             })
         }
         GovernanceClientCommands::UpdateLimit {
