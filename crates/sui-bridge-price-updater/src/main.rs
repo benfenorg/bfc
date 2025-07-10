@@ -50,23 +50,30 @@ async fn main() -> anyhow::Result<()> {
     let sui_bridge_client =
         SuiBridgeClient::new(&args.sui_rpc_url, bridge_metrics.clone()).await?;
 
-    // Get bridge summary
-    let bridge_summary = sui_bridge_client.get_bridge_summary().await;
-    if bridge_summary.is_err() {
-        panic!("get price summary error!");
-    }
-    let summary = bridge_summary.clone().unwrap();
-    // Get last price
-    let prices = get_notional_values(&summary);
-    let mut nonce = get_nonce(&summary).unwrap_or(0);
-    info!("Current update price nonce: {}", nonce);
-
     let price_client = PriceClient::new();
     let sui_chain_id = get_sui_chain_id(&args.chain_type).await?;
 
     let mut interval = tokio::time::interval(std::time::Duration::from_secs(1800));
     loop {
         interval.tick().await;
+        // Get bridge summary
+        let bridge_summary = sui_bridge_client.get_bridge_summary().await;
+        if bridge_summary.is_err() {
+            panic!("get price summary error!");
+        }
+        let summary = bridge_summary.clone().unwrap();
+        // Get last price
+        let prices = get_notional_values(&summary);
+        info!("price info: {:?}", prices);
+        let mut nonce = match get_nonce(&summary) {
+            Ok(n) => n,
+            Err(e) => {
+                error!("get nonce error: {}", e);
+                continue; // Skip this iteration if nonce cannot be retrieved
+            }
+        };
+        info!("Current update price nonce: {}", nonce);
+
         // 4. 获取价格
         for  (token_id, price) in prices.clone() {
             //Skip stable coins
@@ -85,20 +92,23 @@ async fn main() -> anyhow::Result<()> {
                 };
                 // 比较差异是否大于30%
                 if diff * 100 > (price as u128) * 30 {
-                    let new_value = new_value * 100_000_000; 
                     // 差异大于30%，更新价格
                     info!("Token {} price larger than 30%: old={}, new={}",token, price, new_value);
                     //update price of sui chain
-                    update_price(
+                   let result = update_price(
                         cli_path.to_str().unwrap(),
                         cli_config_path.to_str().unwrap(),
                         sui_chain_id,
-                        0,
+                        nonce,
                         token_id,
                         new_value
-                    ).await.unwrap_or_else(|e| {
-                        error!("update sui price: {}", e);
-                    });
+                    ).await;
+                    if result.is_err() {
+                        error!("update sui price error: {}", result.unwrap_err());
+                    }else {
+                        info!("update sui price success, token_id: {}, new_value: {}, nonce: {}", token_id, new_value, nonce);
+                        nonce = nonce + 1; // Increment nonce for each chain update
+                    }
                     //update price of evm chain
                     if token_id == 2 { // ETH
                         let evm_chain_ids = get_eth_chain_id(&args.chain_type).await?;
@@ -115,7 +125,7 @@ async fn main() -> anyhow::Result<()> {
                                 error!("update eth price error: {}", e);
                             } else {
                                 info!("update eth price success, token_id: {}, new_value: {}, nonce: {}", token_id, new_value, nonce);
-                                nonce = nonce + 1;
+                                nonce = nonce + 1; // Increment nonce for each chain update
                             }
                         }
                         info!("Token {} is ETH, update price for all EVM chains", token);
@@ -137,7 +147,6 @@ async fn main() -> anyhow::Result<()> {
                             error!("update evm price: {}", e);
                         } else {
                             info!("update evm price success, token_id: {}, new_value: {}, nonce: {}", token_id, new_value, nonce);
-                            nonce = nonce + 1;
                         }
                     }
                 }else {
@@ -207,6 +216,7 @@ async fn get_chain_id(
         "MAINNET" => match token_id {
             0 => 0, // SUI
             1 => 20, // BTC
+            2 => 10, // ETH
             6 => 30, // BNB
             7 => 33, // OP
             8 => 39, // POL
@@ -218,6 +228,7 @@ async fn get_chain_id(
         "TESTNET" => match token_id {
             0 => 1, // SUI
             1 => 21, // BTC
+            2 => 11, // ETH
             6 => 31, // BNB
             7 => 34, // OP
             8 => 40, // POL
@@ -228,6 +239,8 @@ async fn get_chain_id(
         },
         "CUSTOM" => match token_id {
             0 => 2, // SUI
+            1 => 21, // BTC
+            2 => 12, // ETH
             6 => 32, // BNB
             7 => 35, // OP
             8 => 41, // POL
@@ -265,7 +278,7 @@ async fn get_eth_chain_id(
     let chain_ids = match chain_type.to_uppercase().as_str() {
         "MAINNET" => vec![10, 33, 36, 42],
         "TESTNET" => vec![11, 34, 37, 43],
-        "CUSTOM" => vec![12, 35, 38, 44],
+        "CUSTOM" => vec![11],
         _ => {
             error!("unknown chain type: {}", chain_type);
             return Err(anyhow::anyhow!("Unknown chain type"));
