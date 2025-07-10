@@ -836,8 +836,8 @@ pub fn build_fast_path_limit_update_approve_transaction(
 
     let mut builder = ProgrammableTransactionBuilder::new();
 
-    let (chain_id, seq_num, token_id, amount) = match bridge_action {
-        BridgeAction::FastPathLimitUpdateAction(a) => (a.chain_id, a.nonce, a.token_id, a.amount),
+    let (chain_id, seq_num, token_id, amount, chain_id_evm) = match bridge_action {
+        BridgeAction::FastPathLimitUpdateAction(a) => (a.chain_id, a.nonce, a.token_id, a.amount, a.chain_id_evm),
         _ => unreachable!(),
     };
 
@@ -847,6 +847,7 @@ pub fn build_fast_path_limit_update_approve_transaction(
     let chain_id = builder.pure(chain_id as u8).unwrap();
     let token_id = builder.pure(token_id).unwrap();
     let amount = builder.pure(amount).unwrap();
+    let chain_id_evm = builder.pure(chain_id_evm as u8).unwrap();
     let arg_bridge = builder.obj(bridge_object_arg).unwrap();
 
     let arg_msg = builder.programmable_move_call(
@@ -854,7 +855,7 @@ pub fn build_fast_path_limit_update_approve_transaction(
         ident_str!("message").to_owned(),
         ident_str!("create_fast_path_limit_message_v2").to_owned(),
         vec![],
-        vec![seq_num, chain_id, token_id, amount],
+        vec![seq_num, chain_id, token_id, amount, chain_id_evm],
     );
 
     let mut sig_bytes = vec![];
