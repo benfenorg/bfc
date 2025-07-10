@@ -6535,6 +6535,9 @@ get_user_limit_info
 get_user_remaining_limit
 	public fun
 	0xb::limiter_fast_path
+get_limit_config_info
+	public fun
+	0xb::limiter_fast_path
 set_default_limit
 	public fun
 	0xb::limiter_fast_path
@@ -6857,6 +6860,12 @@ send_back_token
 	public fun
 	0xb::bridge
 send_back_token_v2
+	public fun
+	0xb::bridge
+fast_path_limit_by_sender
+	public fun
+	0xb::bridge
+fast_path_limit_config_info
 	public fun
 	0xb::bridge
 is_refund_admin

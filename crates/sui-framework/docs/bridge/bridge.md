@@ -40,6 +40,8 @@ title: Module `bridge::bridge`
 -  [Function `send_busd`](#bridge_bridge_send_busd)
 -  [Function `send_back_token`](#bridge_bridge_send_back_token)
 -  [Function `send_back_token_v2`](#bridge_bridge_send_back_token_v2)
+-  [Function `fast_path_limit_by_sender`](#bridge_bridge_fast_path_limit_by_sender)
+-  [Function `fast_path_limit_config_info`](#bridge_bridge_fast_path_limit_config_info)
 -  [Function `is_refund_admin`](#bridge_bridge_is_refund_admin)
 -  [Function `approve_token_transfer`](#bridge_bridge_approve_token_transfer)
 -  [Function `approve_token_transfer_v2`](#bridge_bridge_approve_token_transfer_v2)
@@ -2383,6 +2385,67 @@ title: Module `bridge::bridge`
             event_idx,
         },
     );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_fast_path_limit_by_sender"></a>
+
+## Function `fast_path_limit_by_sender`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_fast_path_limit_by_sender">fast_path_limit_by_sender</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, sender_address: vector&lt;u8&gt;, chain_id: u8, token_id: u64, clock: &<a href="../sui/clock.md#sui_clock_Clock">sui::clock::Clock</a>, _ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_fast_path_limit_by_sender">fast_path_limit_by_sender</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    sender_address: vector&lt;u8&gt;,
+    chain_id: u8,
+    token_id: u64,
+    clock: &Clock,
+    _ctx: &<b>mut</b> TxContext
+): u64 {
+    <b>let</b> (_,uid) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_get_user_remaining_limit">limiter_fast_path::get_user_remaining_limit</a>(uid, sender_address, chain_id, token_id, clock)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_fast_path_limit_config_info"></a>
+
+## Function `fast_path_limit_config_info`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_fast_path_limit_config_info">fast_path_limit_config_info</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, chain_id: u8, token_id: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_fast_path_limit_config_info">fast_path_limit_config_info</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    chain_id: u8,
+    token_id: u64,
+): u64 {
+    <b>let</b> (_,uid) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_get_limit_config_info">limiter_fast_path::get_limit_config_info</a>(uid, chain_id, token_id)
 }
 </code></pre>
 

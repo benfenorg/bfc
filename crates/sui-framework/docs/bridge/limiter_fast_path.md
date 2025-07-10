@@ -20,6 +20,7 @@ title: Module `bridge::limiter_fast_path`
 -  [Function `check_and_record_user_limit`](#bridge_limiter_fast_path_check_and_record_user_limit)
 -  [Function `get_user_limit_info`](#bridge_limiter_fast_path_get_user_limit_info)
 -  [Function `get_user_remaining_limit`](#bridge_limiter_fast_path_get_user_remaining_limit)
+-  [Function `get_limit_config_info`](#bridge_limiter_fast_path_get_limit_config_info)
 -  [Function `set_default_limit`](#bridge_limiter_fast_path_set_default_limit)
 -  [Function `get_default_limit`](#bridge_limiter_fast_path_get_default_limit)
 -  [Function `set_default_time_window`](#bridge_limiter_fast_path_set_default_time_window)
@@ -787,6 +788,40 @@ title: Module `bridge::limiter_fast_path`
     } <b>else</b> {
         <b>let</b> limit_info = option::destroy_some(limit_info_opt);
         limit_info.remaining_limit
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_limiter_fast_path_get_limit_config_info"></a>
+
+## Function `get_limit_config_info`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_get_limit_config_info">get_limit_config_info</a>(parent_id: &<b>mut</b> <a href="../sui/object.md#sui_object_UID">sui::object::UID</a>, chain_id: u8, token_id: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_get_limit_config_info">get_limit_config_info</a>(
+    parent_id: &<b>mut</b> UID,
+    chain_id: u8,
+    token_id: u64,
+): u64 {
+    <b>let</b> self=<a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_borrow_mut">borrow_mut</a>(parent_id);
+    <b>if</b> (!table::contains(&self.limit_configs, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_LimitConfigKey">LimitConfigKey</a> { chain_id, token_id })) {
+        self.default_limit
+    } <b>else</b> {
+        <b>let</b> limit_config = table::borrow(&self.limit_configs, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_LimitConfigKey">LimitConfigKey</a> { chain_id, token_id });
+        *limit_config
     }
 }
 </code></pre>

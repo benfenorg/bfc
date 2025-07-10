@@ -18,7 +18,7 @@ use tracing::{info, warn};
 
 /// The minimum and maximum protocol versions supported by this build.
 const MIN_PROTOCOL_VERSION: u64 = 1;
-const MAX_PROTOCOL_VERSION: u64 = 73;
+const MAX_PROTOCOL_VERSION: u64 = 74;
 
 // Record history of protocol version allocations here:
 //
@@ -3209,6 +3209,9 @@ impl ProtocolConfig {
                 72 => {
                 }
                 73 => {
+                }
+
+                74 => {
                     cfg.sip_45_consensus_amplification_threshold = Some(5);
 
                     // Enable bursts for congestion control. (10x the per-commit budget)
