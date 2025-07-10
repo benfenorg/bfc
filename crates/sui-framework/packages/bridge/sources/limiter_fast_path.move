@@ -275,6 +275,20 @@ module bridge::limiter_fast_path {
         }
     }
 
+    public fun get_limit_config_info(
+        parent_id: &mut UID,
+        chain_id: u8,
+        token_id: u64,
+    ): u64 {
+        let self=borrow_mut(parent_id);
+        if (!table::contains(&self.limit_configs, LimitConfigKey { chain_id, token_id })) {
+            self.default_limit
+        } else {
+            let limit_config = table::borrow(&self.limit_configs, LimitConfigKey { chain_id, token_id });
+            *limit_config
+        }
+    }
+
     // /// 重置用户限额使用记录
     // public fun reset_user_limit_usage(
     //     self: &mut UserLimiter,

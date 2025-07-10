@@ -711,6 +711,27 @@ module bridge::bridge {
         );
     }
 
+    public fun fast_path_limit_by_sender(
+        bridge: &mut Bridge,
+        sender_address: vector<u8>,
+        chain_id: u8,
+        token_id: u64,
+        clock: &Clock,
+        _ctx: &mut TxContext
+    ): u64 {
+        let (_,uid) = load_inner_mut_and_uid(bridge);
+        limiter_fast_path::get_user_remaining_limit(uid, sender_address, chain_id, token_id, clock)
+    }
+
+    public fun fast_path_limit_config_info(
+        bridge: &mut Bridge,
+        chain_id: u8,
+        token_id: u64,
+    ): u64 {
+        let (_,uid) = load_inner_mut_and_uid(bridge);
+        limiter_fast_path::get_limit_config_info(uid, chain_id, token_id)
+    }
+
     fun is_refund_admin(inner: &BridgeInner, address: String): bool {
         inner.refund_admins.contains(&address)
     }
