@@ -173,7 +173,7 @@ pub enum GovernanceClientCommands {
         #[clap(name = "nonce", long)]
         nonce: u64,
         #[clap(name = "chain-id", long)]
-        chain_id: u8,
+        chain_id_evm: u8,
         #[clap(name = "token-id", long)]
         token_id: u64,
         #[clap(name = "amount", long)]
@@ -395,14 +395,14 @@ pub fn make_action(
         }),
         GovernanceClientCommands::UpdateFastPathLimit {
             nonce,
-            chain_id,
+            chain_id_evm,
             token_id,
             amount,
         } => {
-            let chain_id = BridgeChainId::try_from(*chain_id).expect("Invalid chain id");
+            let chain_id_evm = BridgeChainId::try_from(*chain_id_evm).expect("Invalid chain id");
             BridgeAction::FastPathLimitUpdateAction(FastPathLimitUpdateAction {
                 nonce: *nonce,
-                chain_id,
+                chain_id: chain_id_evm,
                 token_id: *token_id,
                 amount: *amount,
             })
