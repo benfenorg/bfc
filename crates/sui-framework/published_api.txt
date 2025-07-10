@@ -5707,6 +5707,9 @@ set_cross_in_bridge_fee
 withdraw_bridge_fee
 	public fun
 	0xb::message_types
+fast_path_limit_update
+	public fun
+	0xb::message_types
 BridgeRoute
 	public struct
 	0xb::chain_ids

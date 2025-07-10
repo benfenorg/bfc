@@ -5025,6 +5025,8 @@ Return the required signature threshold for the message, values are voting power
         5001
     }<b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_withdraw_bridge_fee">message_types::withdraw_bridge_fee</a>()) {
         5001
+    }<b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_fast_path_limit_update">message_types::fast_path_limit_update</a>()) {
+        5001
     }
     <b>else</b> {
         <b>abort</b> <a href="../bridge/message.md#bridge_message_EInvalidMessageType">EInvalidMessageType</a>

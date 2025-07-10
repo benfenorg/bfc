@@ -1570,6 +1570,8 @@ module bridge::message {
             5001
         }else if (message_type == message_types::withdraw_bridge_fee()) {
             5001
+        }else if (message_type == message_types::fast_path_limit_update()) {
+            5001
         }
         else {
             abort EInvalidMessageType
