@@ -914,10 +914,9 @@ module bridge::message {
     ): BridgeMessage {
         chain_ids::assert_valid_chain_id(chain_id);
         chain_ids::assert_valid_chain_id(chain_id_evm);
-        let mut payload = bcs::to_bytes(&chain_id);
-        payload.append(bcs::to_bytes(&chain_id_evm));
-        payload.append(bcs::to_bytes(&token_id));
-        payload.append(bcs::to_bytes(&amount));
+        let mut payload = bcs::to_bytes(&chain_id_evm);
+        payload.append(reverse_bytes(bcs::to_bytes(&token_id)));
+        payload.append(reverse_bytes(bcs::to_bytes(&amount)));
 
         BridgeMessage {
             message_type: message_types::update_bridge_limit_fast_path(),
