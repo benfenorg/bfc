@@ -371,7 +371,7 @@ impl BridgeMessageEncoding for FastPathLimitUpdateAction {
     fn as_payload_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
         // Add chain id
-        bytes.push(self.chain_id as u8);
+        bytes.push(self.chain_id_evm as u8);
         // Add token id
         bytes.extend_from_slice(&self.token_id.to_be_bytes());
         // Add amount

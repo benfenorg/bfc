@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use sui_types::bridge::BridgeChainId;
 use tracing::{error, info};
 
-const MAINNET_URL: &str = "https://go.getblock.io/249475ea717441e8b4ddd7d5aa4f5dfc";
+const MAINNET_URL: &str = "https://go.getblock.us/b980a627a55843d299a807760ab914ba";
 const TESTNET_URL: &str = MAINNET_URL;
 
 // USDC & USDT mint addresses on mainnet

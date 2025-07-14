@@ -337,8 +337,9 @@ impl BridgeClient {
                 let nonce = a.nonce.to_string();
                 let token_id = a.token_id.to_string();
                 let amount = a.amount.to_string();
+                let chain_id_evm = (a.chain_id_evm as u8).to_string();
                 format!(
-                    "sign/update_fast_path_limit/{chain_id}/{nonce}/{token_id}/{amount}"
+                    "sign/update_fast_path_limit/{chain_id}/{nonce}/{token_id}/{amount}/{chain_id_evm}"
                 )
             }
         }

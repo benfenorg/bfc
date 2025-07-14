@@ -1678,6 +1678,17 @@ fun test_get_withdraw_fee_cap(){
 }
 
 #[test]
+fun test_fast_path_limit_update(){
+    let chain_id = chain_ids::sui_testnet();
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+
+    env.fast_path_limit_update(100000000000);
+    env.destroy_env();
+
+}
+
+#[test]
 fun test_remove_token_on_benfen(){
     let chain_id = chain_ids::sui_testnet();
     let target_id=chain_ids::aptos_testnet();

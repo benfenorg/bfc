@@ -54,6 +54,7 @@ module bridge::bridge_env {
         create_set_cross_in_bridge_fee,
         create_set_cross_out_bridge_fee,
         create_withdraw_fee_cap,
+        create_fast_path_limit_message_v2,
         emergency_op_pause,
         emergency_op_unpause
     };
@@ -92,7 +93,7 @@ module bridge::bridge_env {
         SuiSystemState
     };
     use sui::hex;
-
+    use bridge::limiter_fast_path;
     //
     // Token IDs
     //
@@ -745,6 +746,34 @@ module bridge::bridge_env {
     }
 
 
+    public fun fast_path_limit_update(
+        env: &mut BridgeEnv,
+        amount: u64
+    ){
+        let scenario = &mut env.scenario;
+        scenario.next_tx(@0x0);
+        let mut bridge =  env.scenario.take_shared<Bridge>();
+        // bridge.migrate(env.scenario.ctx());
+        let update_message = create_fast_path_limit_message_v2(
+            bridge.get_seq_num_for(message_types::fast_path_limit_update()),
+            chain_ids::sui_testnet(),
+            5,
+            amount,
+            chain_ids::arb_custom(),
+        );
+        let signatures = env.sign_message(update_message);
+        bridge.execute_system_message(update_message, signatures);
+
+        env.scenario.next_tx(@0x0);
+        {
+            let uid = bridge.test_load_mut_uid();
+            let fast_path_limit_amount = limiter_fast_path::get_limit_config_info(uid,chain_ids::arb_custom(),5);
+            assert!(fast_path_limit_amount == amount, 0);
+        };
+        test_scenario::return_shared(bridge);
+    }
+
+    
     public fun remove_token_on_token_list(
         env: &mut BridgeEnv,
         source_chain: u8,
