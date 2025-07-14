@@ -3255,6 +3255,8 @@ impl ProtocolConfig {
                     cfg.max_txn_cost_overage_per_object_in_commit = Some(u64::MAX);
                     cfg.gas_budget_based_txn_cost_absolute_cap_commit_count = Some(50);
                     cfg.allowed_txn_cost_overage_burst_per_object_in_commit = Some(370_000_000);
+
+                    cfg.feature_flags.zklogin_max_epoch_upper_bound_delta = Some(365);
                 }
 
                 // Use this template when making changes:
