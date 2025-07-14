@@ -59,7 +59,8 @@ async fn main() -> anyhow::Result<()> {
         // Get bridge summary
         let bridge_summary = sui_bridge_client.get_bridge_summary().await;
         if bridge_summary.is_err() {
-            panic!("get price summary error!");
+            error!("get price summary error!");
+            continue;
         }
         let summary = bridge_summary.clone().unwrap();
         // Get last price
