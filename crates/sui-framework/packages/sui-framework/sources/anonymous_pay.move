@@ -24,7 +24,11 @@ public entry fun split<T>(coin: &mut Anonymous_Coin<T>, split_amount: u64, ctx: 
 /// Split coin `self` into multiple coins, each with balance specified
 /// in `split_amounts`. Remaining balance is left in `self`.
 public entry fun split_vec<T>(self: &mut Anonymous_Coin<T>, split_amounts: vector<u64>, ctx: &mut TxContext) {
-    let (mut i, len) = (0, split_amounts.length());
+    let
+    ( mut
+    i,
+    len) =
+    (0, split_amounts.length());
     while (i < len) {
         split(self, split_amounts[i], ctx);
         i = i + 1;
@@ -50,21 +54,21 @@ public entry fun join<T>(self: &mut Anonymous_Coin<T>, coin: Anonymous_Coin<T>) 
 
 /// Join everything in `coins` with `self`
 public entry fun join_vec<T>(self: &mut Anonymous_Coin<T>, mut coins: vector<Anonymous_Coin<T>>) {
-    let (mut i, len) = (0, coins.length());
-    while (i < len) {
-        let coin = coins.pop_back();
-        self.join(coin);
-        i = i + 1
-    };
-    // safe because we've drained the vector
-    coins.destroy_empty()
+let ( mut i, len) = (0, coins.length());
+while (i < len) {
+let coin = coins.pop_back();
+self.join(coin);
+i = i + 1
+};
+// safe because we've drained the vector
+coins.destroy_empty()
 }
 
 /// Join a vector of `Coin` into a single object and transfer it to `receiver`.
-public entry fun join_vec_and_transfer<T>(mut coins: vector<Anonymous_Coin<T>>, receiver: address) {
-    assert!(coins.length() > 0, ENoCoins);
+public entry fun join_vec_and_transfer<T>( mut coins: vector<Anonymous_Coin<T>>, receiver: address) {
+assert!(coins.length() > 0, ENoCoins);
 
-    let mut self = coins.pop_back();
-    join_vec(&mut self, coins);
-    transfer::public_transfer(self, receiver)
+let mut self = coins.pop_back();
+join_vec(&mut self, coins);
+transfer::public_transfer(self, receiver)
 }

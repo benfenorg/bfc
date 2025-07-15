@@ -27,11 +27,11 @@ module sui::anonymous_coin {
 
     //fun sui::anonymous_pay::divide_and_keep as Anonymous_Coin.divide_and_keep;
 
-    /// A type passed to create_supply is not a one-time witness.
+    // A type passed to create_supply is not a one-time witness.
     //const EBadWitness: u64 = 0;
-    /// Invalid arguments are passed to a function.
+    // Invalid arguments are passed to a function.
     //const EInvalidArg: u64 = 1;
-    /// Trying to split a coin more times than its balance allows.
+    // Trying to split a coin more times than its balance allows.
     const ENotEnough: u64 = 2;
     // #[error]
     // const EGlobalPauseNotAllowed: vector<u8> =
@@ -39,22 +39,22 @@ module sui::anonymous_coin {
     const EGlobalPauseNotAllowed: u64 = 3;
 
     /// A coin of type `T` worth `value`. Transferable and storable
-    public struct Anonymous_Coin<phantom T> has key, store{
+    public struct Anonymous_Coin<phantom T> has key, store {
         id: UID,
         balance: Anonymous_Balance<T>
-
     }
 
     #[allow(unused_field)]
-    public struct SwapPool<phantom T1, phantom T2> has store, key{
+    public struct SwapPool<phantom T1, phantom T2> has store, key {
         id: UID,
         anonymous_coin: Anonymous_Coin<T1>,
         normal_coin: Coin<T2>,
         swap_rate: u64,
-        max_availalbe_normal_coin:u64, //current max convert  T2 normal amount...
+        max_availalbe_normal_coin: u64,
+        //current max convert  T2 normal amount...
     }
 
-    public entry fun bind_swap_pool<T1, T2> (anonymous_coin: Anonymous_Coin<T1>, coin: Coin<T2>, ctx: &mut TxContext){
+    public entry fun bind_swap_pool<T1, T2>(anonymous_coin: Anonymous_Coin<T1>, coin: Coin<T2>, ctx: &mut TxContext) {
         let value = coin.value();
         transfer::share_object(SwapPool {
             id: object::new(ctx),
@@ -77,25 +77,25 @@ module sui::anonymous_coin {
 
     entry public fun swap_out_with_amount<T1, T2>(anonymous_coin: &mut Anonymous_Coin<T1>,
                                                   swap_out_amount: u64,
-                                                  swap_pool :&mut SwapPool<T1, T2>,
+                                                  swap_pool: &mut SwapPool<T1, T2>,
                                                   ctx: &mut TxContext) {
         assert!(swap_out_amount <= swap_pool.max_availalbe_normal_coin, ENotEnough);
 
         let swap_out_acoin = anonymous_coin.split(swap_out_amount, ctx);
         join(&mut swap_pool.anonymous_coin, swap_out_acoin);
 
-        let normal_coin =coin::split(&mut swap_pool.normal_coin, swap_out_amount , ctx);
+        let normal_coin = coin::split(&mut swap_pool.normal_coin, swap_out_amount, ctx);
         swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin - swap_out_amount;
         transfer::public_transfer(normal_coin, tx_context::sender(ctx));
     }
 
-    entry public fun swap_in<T1, T2>(coin: Coin<T2>,  swap_pool : & mut SwapPool<T1, T2>, ctx: &mut TxContext){
+    entry public fun swap_in<T1, T2>(coin: Coin<T2>, swap_pool: &mut SwapPool<T1, T2>, ctx: &mut TxContext) {
         let value = coin::balance(&coin).value();
         coin::join(&mut swap_pool.normal_coin, coin);
 
         swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin + value;
 
-        let anonymous_coin =split(&mut swap_pool.anonymous_coin, value , ctx);
+        let anonymous_coin = split(&mut swap_pool.anonymous_coin, value, ctx);
         transfer::public_transfer(anonymous_coin, tx_context::sender(ctx));
     }
 
@@ -174,7 +174,11 @@ module sui::anonymous_coin {
 
     // === Balance <-> Coin accessors and type morphing ===
 
-    public entry fun get_anonymous_value<T>(self: &Anonymous_Coin<T>, signatures: vector<u8>, publickey: vector<u8>): u64 {
+    public entry fun get_anonymous_value<T>(
+        self: &Anonymous_Coin<T>,
+        signatures: vector<u8>,
+        publickey: vector<u8>
+    ): u64 {
         self.balance.get_anonymous_value(signatures, object::uid_to_address(&self.id), publickey)
     }
 
@@ -256,9 +260,9 @@ module sui::anonymous_coin {
 
     // === Registering new coin types and managing the coin supply ===
 
-    /// Create a new currency type `T` as and return the `TreasuryCap` for
-    /// `T` to the caller. Can only be called with a `one-time-witness`
-    /// type, ensuring that there's only one `TreasuryCap` per `T`.
+    // Create a new currency type `T` as and return the `TreasuryCap` for
+    // `T` to the caller. Can only be called with a `one-time-witness`
+    // type, ensuring that there's only one `TreasuryCap` per `T`.
     //#[lint_warn("skip otw check....todo: open witness for annoymous_coin!!!!")]
     public fun create_currency<T: drop>(
         witness: T,
@@ -288,8 +292,6 @@ module sui::anonymous_coin {
             }
         )
     }
-
-
 
 
     /// This creates a new currency, via `create_currency`, but with an extra capability that
@@ -372,7 +374,13 @@ module sui::anonymous_coin {
 
     /// Destroy the coin `c` and decrease the total supply in `cap`
     /// accordingly.
-    public entry fun burn<T>(cap: &mut TreasuryCap<T>, c: Anonymous_Coin<T>, signatures: vector<u8>, anonymous_coin_id: address, publickey: vector<u8>): u64 {
+    public entry fun burn<T>(
+        cap: &mut TreasuryCap<T>,
+        c: Anonymous_Coin<T>,
+        signatures: vector<u8>,
+        anonymous_coin_id: address,
+        publickey: vector<u8>
+    ): u64 {
         let Anonymous_Coin { id, balance } = c;
         id.delete();
         cap.total_supply.decrease_supply(balance, signatures, anonymous_coin_id, publickey)
@@ -581,7 +589,9 @@ module sui::anonymous_coin {
     /// This creates a new currency, via `create_currency`, but with an extra capability that
     /// allows for specific addresses to have their coins frozen. Those addresses cannot interact
     /// with the coin as input objects.
-    #[deprecated(note = b"For new coins, use `create_regulated_currency_v2`. To migrate existing regulated currencies, migrate with `migrate_regulated_currency_to_v2`")]
+    #[deprecated(
+        note = b"For new coins, use `create_regulated_currency_v2`. To migrate existing regulated currencies, migrate with `migrate_regulated_currency_to_v2`"
+    )]
     public fun create_regulated_currency<T: drop>(
         witness: T,
         decimals: u8,
@@ -625,11 +635,11 @@ module sui::anonymous_coin {
         _ctx: &mut TxContext
     ) {
         let `type` =
-        type_name::into_string(type_name::get_with_original_ids<T>()).into_bytes();
+            type_name::into_string(type_name::get_with_original_ids<T>()).into_bytes();
         deny_list.v1_add(
-        DENY_LIST_COIN_INDEX,
-        `type`,
-        addr,
+            DENY_LIST_COIN_INDEX,
+            `type`,
+            addr,
         )
     }
 
@@ -643,17 +653,19 @@ module sui::anonymous_coin {
         _ctx: &mut TxContext
     ) {
         let `type` =
-        type_name::into_string(type_name::get_with_original_ids<T>()).into_bytes();
+            type_name::into_string(type_name::get_with_original_ids<T>()).into_bytes();
         deny_list.v1_remove(
-        DENY_LIST_COIN_INDEX,
-        `type`,
-        addr,
+            DENY_LIST_COIN_INDEX,
+            `type`,
+            addr,
         )
     }
 
     /// Returns true iff the given address is denied for the given coin type. It will
     /// return false if given a non-coin type.
-    #[deprecated(note = b"Use `migrate_regulated_currency_to_v2` to migrate to v2 and then use `deny_list_v2_contains_next_epoch` or `deny_list_v2_contains_current_epoch`")]
+    #[deprecated(
+        note = b"Use `migrate_regulated_currency_to_v2` to migrate to v2 and then use `deny_list_v2_contains_next_epoch` or `deny_list_v2_contains_current_epoch`"
+    )]
     public fun deny_list_contains<T>(
         deny_list: &DenyList,
         addr: address,

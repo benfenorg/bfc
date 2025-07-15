@@ -18,7 +18,6 @@ const CURRENT_VERSION: u64 = 1;
 //const U16_MAX: u64 = 0xFFFF;
 
 
-
 /// Singleton shared object which stores the global Anonymous state.
 /// The actual state is stored in a versioned inner field.
 public struct Anonymous has key {
@@ -56,7 +55,6 @@ fun create(ctx: &mut TxContext) {
 }
 
 
-
 #[test_only]
 public fun create_for_testing(ctx: &mut TxContext) {
     let version = CURRENT_VERSION;
@@ -76,7 +74,7 @@ public fun create_for_testing(ctx: &mut TxContext) {
 
 #[test_only]
 public fun destroy_for_testing(r: Anonymous) {
-    let Anonymous {id, inner} = r;
+    let Anonymous { id, inner } = r;
     object::delete(id);
     let AnonymousInner {
         version: _,
@@ -94,6 +92,7 @@ fun load_inner_mut(self: &mut Anonymous): &mut AnonymousInner {
     assert!(inner.version == version, EWrongInnerVersion);
     inner
 }
+
 #[allow(unused_function)]
 fun load_inner(self: &Anonymous): &AnonymousInner {
     let version = versioned::version(&self.inner);
