@@ -340,6 +340,7 @@ pub enum EndOfEpochTransactionKind {
     DenyListStateCreate,
     BridgeStateCreate(ChainIdentifier),
     BridgeCommitteeInit(SequenceNumber),
+    AnonymousStateCreate,
 }
 
 impl EndOfEpochTransactionKind {
@@ -407,6 +408,10 @@ impl EndOfEpochTransactionKind {
         Self::BridgeCommitteeInit(bridge_shared_version)
     }
 
+    pub fn new_anonymous_state_create() -> Self {
+        Self::AnonymousStateCreate
+    }
+
     fn input_objects(&self) -> Vec<InputObjectKind> {
         match self {
             Self::ChangeEpoch(_) => {
@@ -435,6 +440,7 @@ impl EndOfEpochTransactionKind {
                 }]
             }
             Self::RandomnessStateCreate => vec![],
+            Self::AnonymousStateCreate => vec![],
             Self::DenyListStateCreate => vec![],
             Self::BridgeStateCreate(_) => vec![],
             Self::BridgeCommitteeInit(bridge_version) => vec![
@@ -471,6 +477,7 @@ impl EndOfEpochTransactionKind {
             ),
             Self::AuthenticatorStateCreate => Either::Right(iter::empty()),
             Self::RandomnessStateCreate => Either::Right(iter::empty()),
+            Self::AnonymousStateCreate => Either::Right(iter::empty()),
             Self::DenyListStateCreate => Either::Right(iter::empty()),
             Self::BridgeStateCreate(_) => Either::Right(iter::empty()),
             Self::BridgeCommitteeInit(bridge_version) => Either::Left(
@@ -501,6 +508,13 @@ impl EndOfEpochTransactionKind {
                 if !config.random_beacon() {
                     return Err(UserInputError::Unsupported(
                         "random beacon not enabled".to_string(),
+                    ));
+                }
+            }
+            Self::AnonymousStateCreate => {
+                if !config.enable_anonymous_coin_open() {
+                    return Err(UserInputError::Unsupported(
+                        "anonymous token not enabled".to_string(),
                     ));
                 }
             }

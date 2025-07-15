@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use sui_config::NodeConfig;
 
 use std::fmt;
+use sui_types::anonymous_status::get_anonymous_state_obj_initial_shared_version;
 use sui_types::authenticator_state::get_authenticator_state_obj_initial_shared_version;
 use sui_types::base_types::SequenceNumber;
 use sui_types::bridge::{get_bridge_obj_initial_shared_version, is_bridge_committee_initiated};
@@ -34,6 +35,7 @@ pub trait EpochStartConfigTrait {
         self.flags()
             .contains(&EpochFlag::UseVersionAssignmentTablesV3)
     }
+    fn anonymous_token_initiated(&self) -> bool;
 }
 
 // IMPORTANT: Assign explicit values to each variant to ensure that the values are stable.
@@ -123,6 +125,7 @@ pub enum EpochStartConfiguration {
     V4(EpochStartConfigurationV4),
     V5(EpochStartConfigurationV5),
     V6(EpochStartConfigurationV6),
+    V7(EpochStartConfigurationV7),
 }
 
 impl EpochStartConfiguration {
@@ -141,7 +144,14 @@ impl EpochStartConfiguration {
         let bridge_obj_initial_shared_version =
             get_bridge_obj_initial_shared_version(object_store)?;
         let bridge_committee_initiated = is_bridge_committee_initiated(object_store)?;
-        Ok(Self::V6(EpochStartConfigurationV6 {
+
+        let anonymous_state_obj_initail_shared_version =
+            get_anonymous_state_obj_initial_shared_version(object_store)?;
+        let mut anonymous_token_initiated = false;
+        if anonymous_state_obj_initail_shared_version.is_some() {
+            anonymous_token_initiated = true;
+        }
+        Ok(Self::V7(EpochStartConfigurationV7 {
             system_state,
             epoch_digest,
             flags: initial_epoch_flags,
@@ -150,6 +160,7 @@ impl EpochStartConfiguration {
             coin_deny_list_obj_initial_shared_version,
             bridge_obj_initial_shared_version,
             bridge_committee_initiated,
+            anonymous_token_initiated,
         }))
     }
 
@@ -157,8 +168,8 @@ impl EpochStartConfiguration {
         // We only need to implement this function for the latest version.
         // When a new version is introduced, this function should be updated.
         match self {
-            Self::V6(config) => {
-                Self::V6(EpochStartConfigurationV6 {
+            Self::V7(config) => {
+                Self::V7(EpochStartConfigurationV7 {
                     system_state: config.system_state.new_at_next_epoch_for_testing(),
                     epoch_digest: config.epoch_digest,
                     flags: config.flags.clone(),
@@ -167,6 +178,7 @@ impl EpochStartConfiguration {
                     coin_deny_list_obj_initial_shared_version: config.coin_deny_list_obj_initial_shared_version,
                     bridge_obj_initial_shared_version: config.bridge_obj_initial_shared_version,
                     bridge_committee_initiated: config.bridge_committee_initiated,
+                    anonymous_token_initiated: config.anonymous_token_initiated,
                 })
             }
             _ => panic!("This function is only implemented for the latest version of EpochStartConfiguration"),
@@ -246,6 +258,21 @@ pub struct EpochStartConfigurationV6 {
     bridge_committee_initiated: bool,
 }
 
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+pub struct EpochStartConfigurationV7 {
+    system_state: EpochStartSystemState,
+    epoch_digest: CheckpointDigest,
+    flags: Vec<EpochFlag>,
+    /// Do the state objects exist at the beginning of the epoch?
+    authenticator_obj_initial_shared_version: Option<SequenceNumber>,
+    randomness_obj_initial_shared_version: Option<SequenceNumber>,
+    coin_deny_list_obj_initial_shared_version: Option<SequenceNumber>,
+    bridge_obj_initial_shared_version: Option<SequenceNumber>,
+    bridge_committee_initiated: bool,
+    anonymous_token_initiated: bool,
+}
+
+
 impl EpochStartConfigurationV1 {
     pub fn new(system_state: EpochStartSystemState, epoch_digest: CheckpointDigest) -> Self {
         Self {
@@ -287,6 +314,10 @@ impl EpochStartConfigTrait for EpochStartConfigurationV1 {
     fn bridge_committee_initiated(&self) -> bool {
         false
     }
+
+    fn anonymous_token_initiated(&self) -> bool {
+        false
+    }
 }
 
 impl EpochStartConfigTrait for EpochStartConfigurationV2 {
@@ -321,6 +352,10 @@ impl EpochStartConfigTrait for EpochStartConfigurationV2 {
     fn bridge_committee_initiated(&self) -> bool {
         false
     }
+
+    fn anonymous_token_initiated(&self) -> bool {
+        false
+    }
 }
 
 impl EpochStartConfigTrait for EpochStartConfigurationV3 {
@@ -352,6 +387,10 @@ impl EpochStartConfigTrait for EpochStartConfigurationV3 {
         None
     }
     fn bridge_committee_initiated(&self) -> bool {
+        false
+    }
+
+    fn anonymous_token_initiated(&self) -> bool {
         false
     }
 }
@@ -388,6 +427,11 @@ impl EpochStartConfigTrait for EpochStartConfigurationV4 {
     fn bridge_committee_initiated(&self) -> bool {
         false
     }
+
+
+    fn anonymous_token_initiated(&self) -> bool {
+        false
+    }
 }
 
 impl EpochStartConfigTrait for EpochStartConfigurationV5 {
@@ -419,6 +463,10 @@ impl EpochStartConfigTrait for EpochStartConfigurationV5 {
         None
     }
     fn bridge_committee_initiated(&self) -> bool {
+        false
+    }
+
+    fn anonymous_token_initiated(&self) -> bool {
         false
     }
 }
@@ -454,5 +502,46 @@ impl EpochStartConfigTrait for EpochStartConfigurationV6 {
 
     fn bridge_committee_initiated(&self) -> bool {
         self.bridge_committee_initiated
+    }
+
+    fn anonymous_token_initiated(&self) -> bool {
+        false
+    }
+}
+
+impl EpochStartConfigTrait for EpochStartConfigurationV7 {
+    fn epoch_digest(&self) -> CheckpointDigest {
+        self.epoch_digest
+    }
+
+    fn epoch_start_state(&self) -> &EpochStartSystemState {
+        &self.system_state
+    }
+
+    fn flags(&self) -> &[EpochFlag] {
+        &self.flags
+    }
+
+    fn authenticator_obj_initial_shared_version(&self) -> Option<SequenceNumber> {
+        self.authenticator_obj_initial_shared_version
+    }
+
+    fn randomness_obj_initial_shared_version(&self) -> Option<SequenceNumber> {
+        self.randomness_obj_initial_shared_version
+    }
+
+    fn coin_deny_list_obj_initial_shared_version(&self) -> Option<SequenceNumber> {
+        self.coin_deny_list_obj_initial_shared_version
+    }
+
+    fn bridge_obj_initial_shared_version(&self) -> Option<SequenceNumber> {
+        self.bridge_obj_initial_shared_version
+    }
+
+    fn bridge_committee_initiated(&self) -> bool {
+        self.bridge_committee_initiated
+    }
+    fn anonymous_token_initiated(&self) -> bool {
+        self.anonymous_token_initiated
     }
 }

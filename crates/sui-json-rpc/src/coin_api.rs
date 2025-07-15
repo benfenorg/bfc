@@ -220,6 +220,23 @@ impl CoinReadApiServer for CoinReadApi {
     }
 
     #[instrument(skip(self))]
+    async fn get_anonyment_coin_metadata(&self, coin_type: String) -> RpcResult<Option<SuiCoinMetadata>> {
+        with_tracing!(async move {
+            let coin_struct = parse_to_struct_tag(&coin_type)?;
+            let metadata_object = self
+                .internal
+                .find_package_object(
+                    &coin_struct.address.into(),
+                    CoinMetadata::anonyment_type_(coin_struct.clone()),
+                )
+                .await
+                .ok();
+
+            Ok(metadata_object.and_then(|v: Object| v.try_into().ok()))
+        })
+    }
+
+    #[instrument(skip(self))]
     async fn get_coin_metadata(&self, coin_type: String) -> RpcResult<Option<SuiCoinMetadata>> {
         with_tracing!(async move {
             let coin_struct = parse_to_struct_tag(&coin_type)?;

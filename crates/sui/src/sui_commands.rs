@@ -31,7 +31,7 @@ use sui_genesis_builder::Builder;
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig};
 
 use camino::Utf8PathBuf;
-use sui_config::{sui_config_dir, Config, PersistedConfig, FULL_NODE_DB_PATH, SUI_CLIENT_CONFIG, SUI_FULLNODE_CONFIG, SUI_NETWORK_CONFIG, local_ip_utils};
+use sui_config::{sui_config_dir, Config, PersistedConfig, FULL_NODE_DB_PATH, SUI_CLIENT_CONFIG, SUI_FULLNODE_CONFIG, SUI_NETWORK_CONFIG, local_ip_utils, BFC_ANNOYMOUS_CONFIG};
 use sui_config::{
     SUI_BENCHMARK_GENESIS_GAS_KEYSTORE_FILENAME, SUI_GENESIS_FILENAME, SUI_KEYSTORE_FILENAME, genesis_blob_exists
 };
@@ -62,6 +62,7 @@ use sui_types::base_types::SuiAddress;
 use tempfile::tempdir;
 use tracing;
 use tracing::info;
+use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
 use sui_keys::keypair_file::{read_authority_keypair_from_file, read_keypair_from_file, read_network_keypair_from_file};
 
 
@@ -1304,6 +1305,14 @@ pub async fn genesis(
 
     client_config.save(&client_path)?;
     info!("Client config file is stored in {:?}.", client_path);
+
+
+    let mut annnoymous_config = AnonymousPrivateKeyConfig::new();
+    annnoymous_config.set_private_key("0x_this_is_a_private_key".to_string());
+    annnoymous_config.set_fullnode_rpc_path("https://rpc-mainnet.benfen.org".to_string());
+    annnoymous_config.enable_anonymous_rpc(false);
+    annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010".parse()?, "http://127.0.0.1:9010".parse()?]);
+    annnoymous_config.save(sui_config_dir.join(BFC_ANNOYMOUS_CONFIG))?;
 
     Ok(())
 }

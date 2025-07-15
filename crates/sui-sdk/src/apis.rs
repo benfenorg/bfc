@@ -971,6 +971,27 @@ impl CoinReadApi {
     ///     let sui = SuiClientBuilder::default().build_localnet().await?;
     ///     let coin_metadata = sui
     ///         .coin_read_api()
+    ///         .get_anonyment_coin_metadata("0x2::abfc::ABFC".to_string())
+    ///         .await?;
+    ///     Ok(())
+    /// }
+    /// ```
+    pub async fn get_anonyment_coin_metadata(&self, coin_type: String) -> SuiRpcResult<Option<SuiCoinMetadata>> {
+        Ok(self.api.http.get_anonyment_coin_metadata(coin_type).await?)
+    }
+
+    /// Return the coin metadata (name, symbol, description, decimals, etc.) for a given coin type,
+    /// or an error upon failure.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,no_run
+    /// use sui_sdk::SuiClientBuilder;
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), anyhow::Error> {
+    ///     let sui = SuiClientBuilder::default().build_localnet().await?;
+    ///     let coin_metadata = sui
+    ///         .coin_read_api()
     ///         .get_coin_metadata("0x2::sui::SUI".to_string())
     ///         .await?;
     ///     Ok(())

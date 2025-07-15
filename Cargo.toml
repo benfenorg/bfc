@@ -71,6 +71,7 @@ members = [
   "consensus/core",
   "crates/anemo-benchmark",
   "crates/bin-version",
+  "crates/bfc-anonymous-server",
   "crates/mysten-common",
   "crates/mysten-metrics",
   "crates/mysten-network",

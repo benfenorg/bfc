@@ -51,6 +51,7 @@ use sui_types::{
     SUI_BRIDGE_OBJECT_ID
 };
 use tracing::error;
+use sui_types::BFC_ANONYMOUS_STATE_OBJECT_ID;
 
 pub enum ObjectEvent {
     /// Transfer to a new address or object. Or make it shared or immutable.
@@ -316,6 +317,7 @@ impl<'a> ObjectRuntime<'a> {
             SUI_RANDOMNESS_STATE_OBJECT_ID,
             SUI_DENY_LIST_OBJECT_ID,
             SUI_BRIDGE_OBJECT_ID,
+            BFC_ANONYMOUS_STATE_OBJECT_ID,
         ]
         .contains(&id);
 

@@ -161,6 +161,7 @@ ecvrf_ecvrf_verify_alpha_string_cost_per_block: 2
 ed25519_ed25519_verify_cost_base: 52
 ed25519_ed25519_verify_msg_cost_per_byte: 2
 ed25519_ed25519_verify_msg_cost_per_block: 2
+anonymous_compute_cost_base: 52
 groth16_prepare_verifying_key_bls12381_cost_base: 52
 groth16_prepare_verifying_key_bn254_cost_base: 52
 groth16_verify_groth16_proof_internal_bls12381_cost_base: 52
@@ -178,4 +179,3 @@ hmac_hmac_sha3_256_cost_base: 52
 hmac_hmac_sha3_256_input_cost_per_byte: 2
 hmac_hmac_sha3_256_input_cost_per_block: 2
 bfc_system_state_open: 0
-

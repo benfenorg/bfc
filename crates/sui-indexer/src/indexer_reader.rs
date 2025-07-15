@@ -1407,6 +1407,18 @@ impl IndexerReader {
         Ok(Some(object))
     }
 
+    pub async fn get_anonyment_coin_metadata(
+        &self,
+        coin_struct: StructTag,
+    ) -> Result<Option<SuiCoinMetadata>, IndexerError> {
+        let coin_metadata_type = CoinMetadata::anonyment_type_(coin_struct);
+
+        self.get_singleton_object(&coin_metadata_type)
+            .await?
+            .and_then(|o| SuiCoinMetadata::try_from(o).ok())
+            .pipe(Ok)
+    }
+
     pub async fn get_coin_metadata(
         &self,
         coin_struct: StructTag,

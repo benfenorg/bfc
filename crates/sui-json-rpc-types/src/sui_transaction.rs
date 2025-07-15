@@ -547,6 +547,9 @@ impl SuiTransactionBlockKind {
                             EndOfEpochTransactionKind::RandomnessStateCreate => {
                                 SuiEndOfEpochTransactionKind::RandomnessStateCreate
                             }
+                            EndOfEpochTransactionKind::AnonymousStateCreate => {
+                                SuiEndOfEpochTransactionKind::AnonymousStateCreate
+                            }
                             EndOfEpochTransactionKind::DenyListStateCreate => {
                                 SuiEndOfEpochTransactionKind::CoinDenyListStateCreate
                             }
@@ -652,6 +655,9 @@ impl SuiTransactionBlockKind {
                             }
                             EndOfEpochTransactionKind::RandomnessStateCreate => {
                                 SuiEndOfEpochTransactionKind::RandomnessStateCreate
+                            }
+                            EndOfEpochTransactionKind::AnonymousStateCreate =>{
+                                SuiEndOfEpochTransactionKind::AnonymousStateCreate
                             }
                             EndOfEpochTransactionKind::DenyListStateCreate => {
                                 SuiEndOfEpochTransactionKind::CoinDenyListStateCreate
@@ -1777,6 +1783,7 @@ pub enum SuiEndOfEpochTransactionKind {
     CoinDenyListStateCreate,
     BridgeStateCreate(CheckpointDigest),
     BridgeCommitteeUpdate(SequenceNumber),
+    AnonymousStateCreate,
 }
 
 #[serde_as]

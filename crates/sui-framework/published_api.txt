@@ -1327,6 +1327,45 @@ vdf_verify
 vdf_verify_internal
 	fun
 	0x2::vdf
+Url
+	public struct
+	0x2::url
+new_unsafe
+	public fun
+	0x2::url
+new_unsafe_from_bytes
+	public fun
+	0x2::url
+inner_url
+	public fun
+	0x2::url
+update
+	public fun
+	0x2::url
+TxContext
+	public struct
+	0x2::tx_context
+sender
+	public fun
+	0x2::tx_context
+digest
+	public fun
+	0x2::tx_context
+epoch
+	public fun
+	0x2::tx_context
+epoch_timestamp_ms
+	public fun
+	0x2::tx_context
+fresh_object_address
+	public fun
+	0x2::tx_context
+ids_created
+	fun
+	0x2::tx_context
+derive_id
+	fun
+	0x2::tx_context
 encode
 	public fun
 	0x2::hex
@@ -1366,30 +1405,6 @@ length
 max
 	public fun
 	0x2::address
-TxContext
-	public struct
-	0x2::tx_context
-sender
-	public fun
-	0x2::tx_context
-digest
-	public fun
-	0x2::tx_context
-epoch
-	public fun
-	0x2::tx_context
-epoch_timestamp_ms
-	public fun
-	0x2::tx_context
-fresh_object_address
-	public fun
-	0x2::tx_context
-ids_created
-	fun
-	0x2::tx_context
-derive_id
-	fun
-	0x2::tx_context
 ID
 	public struct
 	0x2::object
@@ -1421,6 +1436,9 @@ authenticator_state
 	public(package) fun
 	0x2::object
 randomness_state
+	public(package) fun
+	0x2::object
+anonymous_state_id
 	public(package) fun
 	0x2::object
 sui_deny_list_object_id
@@ -1513,6 +1531,45 @@ transfer_impl
 receive_impl
 	fun
 	0x2::transfer
+VecSet
+	public struct
+	0x2::vec_set
+empty
+	public fun
+	0x2::vec_set
+singleton
+	public fun
+	0x2::vec_set
+insert
+	public fun
+	0x2::vec_set
+remove
+	public fun
+	0x2::vec_set
+contains
+	public fun
+	0x2::vec_set
+size
+	public fun
+	0x2::vec_set
+is_empty
+	public fun
+	0x2::vec_set
+into_keys
+	public fun
+	0x2::vec_set
+from_keys
+	public fun
+	0x2::vec_set
+keys
+	public fun
+	0x2::vec_set
+get_idx_opt
+	fun
+	0x2::vec_set
+get_idx
+	fun
+	0x2::vec_set
 Field
 	public struct
 	0x2::dynamic_field
@@ -1564,285 +1621,6 @@ has_child_object
 has_child_object_with_ty
 	public(package) fun
 	0x2::dynamic_field
-AuthenticatorState
-	public struct
-	0x2::authenticator_state
-AuthenticatorStateInner
-	public struct
-	0x2::authenticator_state
-JWK
-	public struct
-	0x2::authenticator_state
-JwkId
-	public struct
-	0x2::authenticator_state
-ActiveJwk
-	public struct
-	0x2::authenticator_state
-active_jwk_equal
-	fun
-	0x2::authenticator_state
-jwk_equal
-	fun
-	0x2::authenticator_state
-jwk_id_equal
-	fun
-	0x2::authenticator_state
-string_bytes_lt
-	fun
-	0x2::authenticator_state
-jwk_lt
-	fun
-	0x2::authenticator_state
-create
-	fun
-	0x2::authenticator_state
-load_inner_mut
-	fun
-	0x2::authenticator_state
-load_inner
-	fun
-	0x2::authenticator_state
-check_sorted
-	fun
-	0x2::authenticator_state
-update_authenticator_state
-	fun
-	0x2::authenticator_state
-deduplicate
-	fun
-	0x2::authenticator_state
-expire_jwks
-	fun
-	0x2::authenticator_state
-get_active_jwks
-	fun
-	0x2::authenticator_state
-Bag
-	public struct
-	0x2::bag
-new
-	public fun
-	0x2::bag
-add
-	public fun
-	0x2::bag
-borrow
-	public fun
-	0x2::bag
-borrow_mut
-	public fun
-	0x2::bag
-remove
-	public fun
-	0x2::bag
-contains
-	public fun
-	0x2::bag
-contains_with_type
-	public fun
-	0x2::bag
-length
-	public fun
-	0x2::bag
-is_empty
-	public fun
-	0x2::bag
-destroy_empty
-	public fun
-	0x2::bag
-Supply
-	public struct
-	0x2::balance
-Balance
-	public struct
-	0x2::balance
-value
-	public fun
-	0x2::balance
-supply_value
-	public fun
-	0x2::balance
-create_supply
-	public fun
-	0x2::balance
-increase_supply
-	public fun
-	0x2::balance
-decrease_supply
-	public fun
-	0x2::balance
-zero
-	public fun
-	0x2::balance
-join
-	public fun
-	0x2::balance
-split
-	public fun
-	0x2::balance
-withdraw_all
-	public fun
-	0x2::balance
-destroy_zero
-	public fun
-	0x2::balance
-create_staking_rewards
-	fun
-	0x2::balance
-destroy_storage_rebates
-	fun
-	0x2::balance
-destroy_supply
-	public(package) fun
-	0x2::balance
-BCS
-	public struct
-	0x2::bcs
-to_bytes
-	public fun
-	0x2::bcs
-new
-	public fun
-	0x2::bcs
-into_remainder_bytes
-	public fun
-	0x2::bcs
-peel_address
-	public fun
-	0x2::bcs
-peel_bool
-	public fun
-	0x2::bcs
-peel_u8
-	public fun
-	0x2::bcs
-peel_u16
-	public fun
-	0x2::bcs
-peel_u32
-	public fun
-	0x2::bcs
-peel_u64
-	public fun
-	0x2::bcs
-peel_u128
-	public fun
-	0x2::bcs
-peel_u256
-	public fun
-	0x2::bcs
-peel_vec_length
-	public fun
-	0x2::bcs
-peel_vec_address
-	public fun
-	0x2::bcs
-peel_vec_bool
-	public fun
-	0x2::bcs
-peel_vec_u8
-	public fun
-	0x2::bcs
-peel_vec_vec_u8
-	public fun
-	0x2::bcs
-peel_vec_u16
-	public fun
-	0x2::bcs
-peel_vec_u32
-	public fun
-	0x2::bcs
-peel_vec_u64
-	public fun
-	0x2::bcs
-peel_vec_u128
-	public fun
-	0x2::bcs
-peel_vec_u256
-	public fun
-	0x2::bcs
-peel_option_address
-	public fun
-	0x2::bcs
-peel_option_bool
-	public fun
-	0x2::bcs
-peel_option_u8
-	public fun
-	0x2::bcs
-peel_option_u16
-	public fun
-	0x2::bcs
-peel_option_u32
-	public fun
-	0x2::bcs
-peel_option_u64
-	public fun
-	0x2::bcs
-peel_option_u128
-	public fun
-	0x2::bcs
-peel_option_u256
-	public fun
-	0x2::bcs
-Url
-	public struct
-	0x2::url
-new_unsafe
-	public fun
-	0x2::url
-new_unsafe_from_bytes
-	public fun
-	0x2::url
-inner_url
-	public fun
-	0x2::url
-update
-	public fun
-	0x2::url
-is_one_time_witness
-	public fun
-	0x2::types
-VecSet
-	public struct
-	0x2::vec_set
-empty
-	public fun
-	0x2::vec_set
-singleton
-	public fun
-	0x2::vec_set
-insert
-	public fun
-	0x2::vec_set
-remove
-	public fun
-	0x2::vec_set
-contains
-	public fun
-	0x2::vec_set
-size
-	public fun
-	0x2::vec_set
-is_empty
-	public fun
-	0x2::vec_set
-into_keys
-	public fun
-	0x2::vec_set
-from_keys
-	public fun
-	0x2::vec_set
-keys
-	public fun
-	0x2::vec_set
-get_idx_opt
-	fun
-	0x2::vec_set
-get_idx
-	fun
-	0x2::vec_set
 Table
 	public struct
 	0x2::table
@@ -1960,6 +1738,39 @@ read_setting
 read_setting_impl
 	fun
 	0x2::config
+Bag
+	public struct
+	0x2::bag
+new
+	public fun
+	0x2::bag
+add
+	public fun
+	0x2::bag
+borrow
+	public fun
+	0x2::bag
+borrow_mut
+	public fun
+	0x2::bag
+remove
+	public fun
+	0x2::bag
+contains
+	public fun
+	0x2::bag
+contains_with_type
+	public fun
+	0x2::bag
+length
+	public fun
+	0x2::bag
+is_empty
+	public fun
+	0x2::bag
+destroy_empty
+	public fun
+	0x2::bag
 DenyList
 	public struct
 	0x2::deny_list
@@ -2044,6 +1855,54 @@ create
 per_type_list
 	fun
 	0x2::deny_list
+is_one_time_witness
+	public fun
+	0x2::types
+Supply
+	public struct
+	0x2::balance
+Balance
+	public struct
+	0x2::balance
+value
+	public fun
+	0x2::balance
+supply_value
+	public fun
+	0x2::balance
+create_supply
+	public fun
+	0x2::balance
+increase_supply
+	public fun
+	0x2::balance
+decrease_supply
+	public fun
+	0x2::balance
+zero
+	public fun
+	0x2::balance
+join
+	public fun
+	0x2::balance
+split
+	public fun
+	0x2::balance
+withdraw_all
+	public fun
+	0x2::balance
+destroy_zero
+	public fun
+	0x2::balance
+create_staking_rewards
+	fun
+	0x2::balance
+destroy_storage_rebates
+	fun
+	0x2::balance
+destroy_supply
+	public(package) fun
+	0x2::balance
 Coin
 	public struct
 	0x2::coin
@@ -2200,6 +2059,465 @@ deny_list_remove
 deny_list_contains
 	public fun
 	0x2::coin
+hfe_ops_add
+	public fun
+	0x2::hfe_ops
+hfe_ops_minus
+	public fun
+	0x2::hfe_ops
+hfe_ops_multiplied
+	public fun
+	0x2::hfe_ops
+hfe_ops_compare_value
+	public fun
+	0x2::hfe_ops
+hfe_ops_split_value
+	public fun
+	0x2::hfe_ops
+hfe_ops_restore_value
+	public fun
+	0x2::hfe_ops
+Supply
+	public struct
+	0x2::anonymous_balance
+Anonymous_Balance
+	public struct
+	0x2::anonymous_balance
+get_anonymous_value
+	public fun
+	0x2::anonymous_balance
+convert_to_string
+	public fun
+	0x2::anonymous_balance
+create_by_value
+	public fun
+	0x2::anonymous_balance
+value
+	public fun
+	0x2::anonymous_balance
+value1
+	public fun
+	0x2::anonymous_balance
+value2
+	public fun
+	0x2::anonymous_balance
+get_encode_data
+	public fun
+	0x2::anonymous_balance
+supply_value
+	public fun
+	0x2::anonymous_balance
+create_supply
+	public fun
+	0x2::anonymous_balance
+increase_supply
+	public fun
+	0x2::anonymous_balance
+decrease_supply
+	public fun
+	0x2::anonymous_balance
+zero
+	public fun
+	0x2::anonymous_balance
+update_encode_data
+	fun
+	0x2::anonymous_balance
+join
+	public fun
+	0x2::anonymous_balance
+split
+	public fun
+	0x2::anonymous_balance
+destroy_zero
+	public fun
+	0x2::anonymous_balance
+destroy_supply
+	public(package) fun
+	0x2::anonymous_balance
+Anonymous_Coin
+	public struct
+	0x2::anonymous_coin
+SwapPool
+	public struct
+	0x2::anonymous_coin
+CoinMetadata
+	public struct
+	0x2::anonymous_coin
+RegulatedCoinMetadata
+	public struct
+	0x2::anonymous_coin
+TreasuryCap
+	public struct
+	0x2::anonymous_coin
+DenyCapV2
+	public struct
+	0x2::anonymous_coin
+CurrencyCreated
+	public struct
+	0x2::anonymous_coin
+DenyCap
+	public struct
+	0x2::anonymous_coin
+bind_swap_pool
+	public entry fun
+	0x2::anonymous_coin
+swap_out_with_amount
+	public entry fun
+	0x2::anonymous_coin
+swap_in
+	public entry fun
+	0x2::anonymous_coin
+total_supply
+	public fun
+	0x2::anonymous_coin
+treasury_into_supply
+	public fun
+	0x2::anonymous_coin
+supply_immut
+	public fun
+	0x2::anonymous_coin
+supply_mut
+	public fun
+	0x2::anonymous_coin
+get_anonymous_value
+	public entry fun
+	0x2::anonymous_coin
+balance
+	public fun
+	0x2::anonymous_coin
+balance_mut
+	public fun
+	0x2::anonymous_coin
+from_balance
+	public fun
+	0x2::anonymous_coin
+into_balance
+	public fun
+	0x2::anonymous_coin
+take
+	public fun
+	0x2::anonymous_coin
+put
+	public fun
+	0x2::anonymous_coin
+join
+	public entry fun
+	0x2::anonymous_coin
+split
+	public fun
+	0x2::anonymous_coin
+zero
+	public fun
+	0x2::anonymous_coin
+destroy_zero
+	public fun
+	0x2::anonymous_coin
+create_currency
+	public fun
+	0x2::anonymous_coin
+create_regulated_currency_v2
+	public fun
+	0x2::anonymous_coin
+migrate_regulated_currency_to_v2
+	public fun
+	0x2::anonymous_coin
+mint
+	public fun
+	0x2::anonymous_coin
+mint_balance
+	public fun
+	0x2::anonymous_coin
+burn
+	public entry fun
+	0x2::anonymous_coin
+deny_list_v2_add
+	public fun
+	0x2::anonymous_coin
+deny_list_v2_remove
+	public fun
+	0x2::anonymous_coin
+deny_list_v2_contains_current_epoch
+	public fun
+	0x2::anonymous_coin
+deny_list_v2_contains_next_epoch
+	public fun
+	0x2::anonymous_coin
+deny_list_v2_enable_global_pause
+	public fun
+	0x2::anonymous_coin
+deny_list_v2_disable_global_pause
+	public fun
+	0x2::anonymous_coin
+deny_list_v2_is_global_pause_enabled_current_epoch
+	public fun
+	0x2::anonymous_coin
+deny_list_v2_is_global_pause_enabled_next_epoch
+	public fun
+	0x2::anonymous_coin
+mint_and_transfer
+	public entry fun
+	0x2::anonymous_coin
+update_name
+	public entry fun
+	0x2::anonymous_coin
+update_symbol
+	public entry fun
+	0x2::anonymous_coin
+update_description
+	public entry fun
+	0x2::anonymous_coin
+update_icon_url
+	public entry fun
+	0x2::anonymous_coin
+get_decimals
+	public fun
+	0x2::anonymous_coin
+get_name
+	public fun
+	0x2::anonymous_coin
+get_symbol
+	public fun
+	0x2::anonymous_coin
+get_description
+	public fun
+	0x2::anonymous_coin
+get_icon_url
+	public fun
+	0x2::anonymous_coin
+supply
+	public fun
+	0x2::anonymous_coin
+create_regulated_currency
+	public fun
+	0x2::anonymous_coin
+deny_list_add
+	public fun
+	0x2::anonymous_coin
+deny_list_remove
+	public fun
+	0x2::anonymous_coin
+deny_list_contains
+	public fun
+	0x2::anonymous_coin
+ABFC
+	public struct
+	0x2::abfc
+new
+	fun
+	0x2::abfc
+transfer
+	public entry fun
+	0x2::abfc
+Versioned
+	public struct
+	0x2::versioned
+VersionChangeCap
+	public struct
+	0x2::versioned
+create
+	public fun
+	0x2::versioned
+version
+	public fun
+	0x2::versioned
+load_value
+	public fun
+	0x2::versioned
+load_value_mut
+	public fun
+	0x2::versioned
+remove_value_for_upgrade
+	public fun
+	0x2::versioned
+upgrade
+	public fun
+	0x2::versioned
+destroy
+	public fun
+	0x2::versioned
+Anonymous
+	public struct
+	0x2::anonymous
+AnonymousInner
+	public struct
+	0x2::anonymous
+create
+	fun
+	0x2::anonymous
+load_inner_mut
+	fun
+	0x2::anonymous
+load_inner
+	fun
+	0x2::anonymous
+update_annoymous_state
+	fun
+	0x2::anonymous
+keep
+	public fun
+	0x2::anonymous_pay
+split
+	public entry fun
+	0x2::anonymous_pay
+split_vec
+	public entry fun
+	0x2::anonymous_pay
+split_and_transfer
+	public entry fun
+	0x2::anonymous_pay
+join
+	public entry fun
+	0x2::anonymous_pay
+join_vec
+	public entry fun
+	0x2::anonymous_pay
+join_vec_and_transfer
+	public entry fun
+	0x2::anonymous_pay
+AuthenticatorState
+	public struct
+	0x2::authenticator_state
+AuthenticatorStateInner
+	public struct
+	0x2::authenticator_state
+JWK
+	public struct
+	0x2::authenticator_state
+JwkId
+	public struct
+	0x2::authenticator_state
+ActiveJwk
+	public struct
+	0x2::authenticator_state
+active_jwk_equal
+	fun
+	0x2::authenticator_state
+jwk_equal
+	fun
+	0x2::authenticator_state
+jwk_id_equal
+	fun
+	0x2::authenticator_state
+string_bytes_lt
+	fun
+	0x2::authenticator_state
+jwk_lt
+	fun
+	0x2::authenticator_state
+create
+	fun
+	0x2::authenticator_state
+load_inner_mut
+	fun
+	0x2::authenticator_state
+load_inner
+	fun
+	0x2::authenticator_state
+check_sorted
+	fun
+	0x2::authenticator_state
+update_authenticator_state
+	fun
+	0x2::authenticator_state
+deduplicate
+	fun
+	0x2::authenticator_state
+expire_jwks
+	fun
+	0x2::authenticator_state
+get_active_jwks
+	fun
+	0x2::authenticator_state
+BCS
+	public struct
+	0x2::bcs
+to_bytes
+	public fun
+	0x2::bcs
+new
+	public fun
+	0x2::bcs
+into_remainder_bytes
+	public fun
+	0x2::bcs
+peel_address
+	public fun
+	0x2::bcs
+peel_bool
+	public fun
+	0x2::bcs
+peel_u8
+	public fun
+	0x2::bcs
+peel_u16
+	public fun
+	0x2::bcs
+peel_u32
+	public fun
+	0x2::bcs
+peel_u64
+	public fun
+	0x2::bcs
+peel_u128
+	public fun
+	0x2::bcs
+peel_u256
+	public fun
+	0x2::bcs
+peel_vec_length
+	public fun
+	0x2::bcs
+peel_vec_address
+	public fun
+	0x2::bcs
+peel_vec_bool
+	public fun
+	0x2::bcs
+peel_vec_u8
+	public fun
+	0x2::bcs
+peel_vec_vec_u8
+	public fun
+	0x2::bcs
+peel_vec_u16
+	public fun
+	0x2::bcs
+peel_vec_u32
+	public fun
+	0x2::bcs
+peel_vec_u64
+	public fun
+	0x2::bcs
+peel_vec_u128
+	public fun
+	0x2::bcs
+peel_vec_u256
+	public fun
+	0x2::bcs
+peel_option_address
+	public fun
+	0x2::bcs
+peel_option_bool
+	public fun
+	0x2::bcs
+peel_option_u8
+	public fun
+	0x2::bcs
+peel_option_u16
+	public fun
+	0x2::bcs
+peel_option_u32
+	public fun
+	0x2::bcs
+peel_option_u64
+	public fun
+	0x2::bcs
+peel_option_u128
+	public fun
+	0x2::bcs
+peel_option_u256
+	public fun
+	0x2::bcs
 BFC
 	public struct
 	0x2::bfc
@@ -3172,33 +3490,6 @@ max_heapify_recursive
 priorities
 	public fun
 	0x2::priority_queue
-Versioned
-	public struct
-	0x2::versioned
-VersionChangeCap
-	public struct
-	0x2::versioned
-create
-	public fun
-	0x2::versioned
-version
-	public fun
-	0x2::versioned
-load_value
-	public fun
-	0x2::versioned
-load_value_mut
-	public fun
-	0x2::versioned
-remove_value_for_upgrade
-	public fun
-	0x2::versioned
-upgrade
-	public fun
-	0x2::versioned
-destroy
-	public fun
-	0x2::versioned
 hmac_sha3_256
 	public fun
 	0x2::hmac
@@ -5427,6 +5718,9 @@ create_stake_manager_key
 	0xc8::bfc_system
 unstake_manager_key
 	public entry fun
+	0xc8::bfc_system
+allocate_abfc
+	public(package) fun
 	0xc8::bfc_system
 create
 	public(package) fun
