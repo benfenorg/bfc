@@ -178,6 +178,13 @@ enum AddressTransactionBlockRelationship {
 	AFFECTED
 }
 
+type AnonymousStateCreateTransaction {
+	"""
+	A workaround to define an empty variant of a GraphQL union.
+	"""
+	_: Boolean
+}
+
 """
 System transaction for creating the on-chain state used by zkLogin.
 """
@@ -1031,7 +1038,7 @@ type EndOfEpochTransaction {
 	transactions(first: Int, before: String, last: Int, after: String): EndOfEpochTransactionKindConnection!
 }
 
-union EndOfEpochTransactionKind = ChangeEpochTransaction | AuthenticatorStateCreateTransaction | AuthenticatorStateExpireTransaction | RandomnessStateCreateTransaction | CoinDenyListStateCreateTransaction | BridgeStateCreateTransaction | BridgeCommitteeInitTransaction
+union EndOfEpochTransactionKind = ChangeEpochTransaction | AuthenticatorStateCreateTransaction | AuthenticatorStateExpireTransaction | RandomnessStateCreateTransaction | CoinDenyListStateCreateTransaction | BridgeStateCreateTransaction | BridgeCommitteeInitTransaction | AnonymousStateCreateTransaction
 
 type EndOfEpochTransactionKindConnection {
 	"""
@@ -4800,4 +4807,3 @@ schema {
 	query: Query
 	mutation: Mutation
 }
-
