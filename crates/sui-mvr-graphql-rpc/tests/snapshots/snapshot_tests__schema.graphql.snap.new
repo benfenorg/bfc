@@ -1,3 +1,8 @@
+---
+source: crates/sui-mvr-graphql-rpc/tests/snapshot_tests.rs
+assertion_line: 23
+expression: sdl
+---
 type ActiveJwk {
 	"""
 	The string (Issuing Authority) that identifies the OIDC provider.
