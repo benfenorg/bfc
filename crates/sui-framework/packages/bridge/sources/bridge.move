@@ -1900,7 +1900,7 @@ module bridge::bridge {
             return (option::none(), owner)
         };
         let token_id=token_payload.token_type_in();
-        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,target_chain as u64,token_id,amount);
+        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_id,amount);
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let amount_after_fee=amount-fee;
         check_fast_path_limit(parent_id, clock, token_payload);
