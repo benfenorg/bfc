@@ -44,7 +44,7 @@ module sui::anonymous_coin {
         balance: Anonymous_Balance<T>
     }
 
-    #[allow(unused_field)]
+    #[allow(unused_field,lint(coin_field))]
     public struct SwapPool<phantom T1, phantom T2> has store, key {
         id: UID,
         anonymous_coin: Anonymous_Coin<T1>,
