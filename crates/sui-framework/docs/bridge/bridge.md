@@ -160,7 +160,10 @@ title: Module `bridge::bridge`
 <b>use</b> <a href="../std/type_name.md#std_type_name">std::type_name</a>;
 <b>use</b> <a href="../std/u64.md#std_u64">std::u64</a>;
 <b>use</b> <a href="../std/vector.md#std_vector">std::vector</a>;
+<b>use</b> <a href="../sui/anonymous_bfc.md#sui_abfc">sui::abfc</a>;
 <b>use</b> <a href="../sui/address.md#sui_address">sui::address</a>;
+<b>use</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance">sui::anonymous_balance</a>;
+<b>use</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin">sui::anonymous_coin</a>;
 <b>use</b> <a href="../sui/bag.md#sui_bag">sui::bag</a>;
 <b>use</b> <a href="../sui/balance.md#sui_balance">sui::balance</a>;
 <b>use</b> <a href="../sui/bcs.md#sui_bcs">sui::bcs</a>;
@@ -176,6 +179,7 @@ title: Module `bridge::bridge`
 <b>use</b> <a href="../sui/event.md#sui_event">sui::event</a>;
 <b>use</b> <a href="../sui/hash.md#sui_hash">sui::hash</a>;
 <b>use</b> <a href="../sui/hex.md#sui_hex">sui::hex</a>;
+<b>use</b> <a href="../sui/hfe_ops.md#sui_hfe_ops">sui::hfe_ops</a>;
 <b>use</b> <a href="../sui/linked_table.md#sui_linked_table">sui::linked_table</a>;
 <b>use</b> <a href="../sui/object.md#sui_object">sui::object</a>;
 <b>use</b> <a href="../sui/object_bag.md#sui_object_bag">sui::object_bag</a>;
