@@ -303,6 +303,7 @@ members = [
     "crates/typed-store-error",
     "crates/typed-store-workspace-hack",
     "crates/x",
+    "crates/bfc-zklogin-simple-rpc",
     "sui-execution",
     "sui-execution/cut",
     "sui-execution/latest/sui-adapter",
