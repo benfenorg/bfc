@@ -10,11 +10,16 @@ use std::{
     task::{Context, Poll},
 };
 
-use jsonrpsee::{server::middleware::rpc::RpcServiceT, types::Request, MethodResponse};
+use jsonrpsee::{
+    server::middleware::rpc::RpcServiceT,
+    types::{error::INTERNAL_ERROR_CODE, Request},
+    MethodResponse,
+};
 use pin_project_lite::pin_project;
 use prometheus::{HistogramTimer, IntCounterVec};
+use serde_json::value::RawValue;
 use tower_layer::Layer;
-use tracing::info;
+use tracing::{error, info};
 
 use super::RpcMetrics;
 
@@ -42,6 +47,8 @@ pin_project! {
     pub(crate) struct MetricsFuture<'a, F> {
         metrics: Option<RequestMetrics>,
         method: Cow<'a, str>,
+        // RPC request params for logging
+        params: Option<Cow<'a, RawValue>>,
         #[pin]
         inner: F,
     }
@@ -102,12 +109,13 @@ where
                 failed: self.layer.metrics.requests_failed.clone(),
             }),
             method,
+            params: request.params.clone(),
             inner: self.inner.call(request),
         }
     }
 }
 
-impl<'a, F> Future for MetricsFuture<'a, F>
+impl<F> Future for MetricsFuture<'_, F>
 where
     F: Future<Output = MethodResponse>,
 {
@@ -125,9 +133,31 @@ where
         };
 
         let method = this.method.as_ref();
-        let elapsed_ms = metrics.timer.stop_and_record() / 1000.0;
+        let elapsed_ms = metrics.timer.stop_and_record() * 1000.0;
 
-        if let Some(code) = resp.as_error_code() {
+        if let Some(INTERNAL_ERROR_CODE) = resp.as_error_code() {
+            metrics
+                .failed
+                .with_label_values(&[method, &format!("{INTERNAL_ERROR_CODE}")])
+                .inc();
+
+            let params = this.params.as_ref().map(|p| p.get()).unwrap_or("[]");
+            let result = resp.as_result();
+            let response = if result.len() > 1000 {
+                format!("{}...", &result[..997])
+            } else {
+                result.to_string()
+            };
+
+            error!(
+                method,
+                params,
+                code = INTERNAL_ERROR_CODE,
+                response,
+                elapsed_ms,
+                "Internal error"
+            );
+        } else if let Some(code) = resp.as_error_code() {
             metrics
                 .failed
                 .with_label_values(&[method, &format!("{code}")])

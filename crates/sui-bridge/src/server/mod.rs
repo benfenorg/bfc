@@ -49,6 +49,8 @@ pub const PING_PATH: &str = "/ping";
 pub const METRICS_KEY_PATH: &str = "/metrics_pub_key";
 
 // Important: for BridgeActions, the paths need to match the ones in bridge_client.rs
+pub const ETH_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/eth/sui/{tx_hash}/{event_index}";
+pub const SUI_TO_ETH_TX_PATH: &str = "/sign/bridge_tx/sui/eth/{tx_digest}/{event_index}";
 pub const ETH_TO_SUI_TX_PATH: &str =
     "/sign/bridge_tx/eth/sui/:tx_hash/:event_index/:fast_path_selector";
 pub const EVM_TO_SUI_TX_PATH: &str =
@@ -61,19 +63,19 @@ pub const SUI_TO_EVM_SEND_BACK_TX_PATH: &str =
     "/sign/bridge_tx/sui/evm/send/back/:tx_digest/:event_index";
 pub const EXTERNAL_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/external/sui/:tx_digest/:event_index";
 pub const COMMITTEE_BLOCKLIST_UPDATE_PATH: &str =
-    "/sign/update_committee_blocklist/:chain_id/:nonce/:type/:keys";
-pub const EMERGENCY_BUTTON_PATH: &str = "/sign/emergency_button/:chain_id/:nonce/:type";
+    "/sign/update_committee_blocklist/{chain_id}/{nonce}/{type}/{keys}";
+pub const EMERGENCY_BUTTON_PATH: &str = "/sign/emergency_button/{chain_id}/{nonce}/{type}";
 pub const LIMIT_UPDATE_PATH: &str =
-    "/sign/update_limit/:chain_id/:nonce/:sending_chain_id/:new_usd_limit";
+    "/sign/update_limit/{chain_id}/{nonce}/{sending_chain_id}/{new_usd_limit}";
 pub const SINGLE_TRANSFER_LIMIT_PATH: &str =
     "/sign/update_single_transfer_limit/:chain_id/:nonce/:sending_chain_id/:new_usd_limit";
 pub const MINT_BUSD_LIMIT_PATH: &str = "/sign/mint_busd_limit/:chain_id/:modify_cap/:new_limit";
 pub const ASSET_PRICE_UPDATE_PATH: &str =
-    "/sign/update_asset_price/:chain_id/:nonce/:token_id/:new_usd_price";
+    "/sign/update_asset_price/{chain_id}/{nonce}/{token_id}/{new_usd_price}";
 pub const EVM_CONTRACT_UPGRADE_PATH_WITH_CALLDATA: &str =
-    "/sign/upgrade_evm_contract/:chain_id/:nonce/:proxy_address/:new_impl_address/:calldata";
+    "/sign/upgrade_evm_contract/{chain_id}/{nonce}/{proxy_address}/{new_impl_address}/{calldata}";
 pub const EVM_CONTRACT_UPGRADE_PATH: &str =
-    "/sign/upgrade_evm_contract/:chain_id/:nonce/:proxy_address/:new_impl_address";
+    "/sign/upgrade_evm_contract/{chain_id}/{nonce}/{proxy_address}/{new_impl_address}";
 pub const ADD_EXTERNAL_COIN_ADMIN: &str =
     "/sign/add_external_coin_admin/:chain_id/:nonce/:coin_type/:admin_address";
 pub const REMOVE_EXTERNAL_COIN_ADMIN: &str =
@@ -103,9 +105,9 @@ pub const WITHDRAW_BRIDGE_FEE: &str =
     "/sign/withdraw_bridge_fee/:chain_id/:nonce/:addr/:coin_type/:amount";
 
 pub const ADD_TOKENS_ON_SUI_PATH: &str =
-    "/sign/add_tokens_on_sui/:chain_id/:nonce/:native/:token_ids/:token_type_names/:token_prices";
+    "/sign/add_tokens_on_sui/{chain_id}/{nonce}/{native}/{token_ids}/{token_type_names}/{token_prices}";
 pub const ADD_TOKENS_ON_EVM_PATH: &str =
-    "/sign/add_tokens_on_evm/:chain_id/:nonce/:native/:token_ids/:token_addresses/:token_sui_decimals/:token_prices";
+    "/sign/add_tokens_on_evm/{chain_id}/{nonce}/{native}/{token_ids}/{token_addresses}/{token_sui_decimals}/{token_prices}";
 
 pub const UPDATE_REFUND_ADMIN_PATH: &str =
     "/sign/update_refund_admin/:chain_id/:nonce/:op_type/:sui_address";

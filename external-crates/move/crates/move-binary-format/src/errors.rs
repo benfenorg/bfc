@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    file_format::{CodeOffset, FunctionDefinitionIndex, TableIndex},
     IndexKind,
+    file_format::{CodeOffset, FunctionDefinitionIndex, TableIndex},
 };
 use move_core_types::{
     language_storage::ModuleId,
@@ -378,7 +378,7 @@ impl fmt::Display for VMError {
 }
 
 ////////////////////////////////////////////////////////////////////////////
-/// Conversion functions from internal VM statuses into external VM statuses
+// Conversion functions from internal VM statuses into external VM statuses
 ////////////////////////////////////////////////////////////////////////////
 
 pub fn offset_out_of_bounds(

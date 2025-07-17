@@ -10,13 +10,14 @@ use crate::Config;
 use anyhow::Result;
 use consensus_config::Parameters as ConsensusParameters;
 use mysten_common::fatal;
+use nonzero_ext::nonzero;
 use once_cell::sync::OnceCell;
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use std::collections::{BTreeMap, BTreeSet};
 use std::net::SocketAddr;
-use std::num::NonZeroUsize;
+use std::num::{NonZeroU32, NonZeroUsize};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
@@ -123,9 +124,6 @@ pub struct NodeConfig {
     pub db_checkpoint_config: DBCheckpointConfig,
 
     #[serde(default)]
-    pub indirect_objects_threshold: usize,
-
-    #[serde(default)]
     pub expensive_safety_check_config: ExpensiveSafetyCheckConfig,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -145,9 +143,6 @@ pub struct NodeConfig {
 
     #[serde(default)]
     pub state_debug_dump_config: StateDebugDumpConfig,
-
-    #[serde(default)]
-    pub state_archive_write_config: StateArchiveConfig,
 
     #[serde(default)]
     pub state_archive_read_config: Vec<StateArchiveConfig>,
@@ -177,7 +172,10 @@ pub struct NodeConfig {
     pub run_with_range: Option<RunWithRange>,
 
     // For killswitch use None
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default = "default_traffic_controller_policy_config"
+    )]
     pub policy_config: Option<PolicyConfig>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -204,6 +202,129 @@ pub struct NodeConfig {
     /// By default, write stall is enabled on validators but not on fullnodes.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub enable_db_write_stall: Option<bool>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub execution_time_observer_config: Option<ExecutionTimeObserverConfig>,
+
+    /// Allow overriding the chain for testing purposes. For instance, it allows you to
+    /// create a test network that believes it is mainnet or testnet. Attempting to
+    /// override this value on production networks will result in an error.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chain_override_for_testing: Option<Chain>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct ExecutionTimeObserverConfig {
+    /// Size of the channel used for buffering local execution time observations.
+    ///
+    /// If unspecified, this will default to `1_024`.
+    pub observation_channel_capacity: Option<NonZeroUsize>,
+
+    /// Size of the LRU cache used for storing local execution time observations.
+    ///
+    /// If unspecified, this will default to `10_000`.
+    pub observation_cache_size: Option<NonZeroUsize>,
+
+    /// Size of the channel used for buffering object debt updates from consensus handler.
+    ///
+    /// If unspecified, this will default to `128`.
+    pub object_debt_channel_capacity: Option<NonZeroUsize>,
+
+    /// Size of the LRU cache used for tracking object utilization.
+    ///
+    /// If unspecified, this will default to `50_000`.
+    pub object_utilization_cache_size: Option<NonZeroUsize>,
+
+    /// If true, the execution time observer will report per-object utilization metrics
+    /// with full object IDs. When set, the metric can have a high cardinality, so this
+    /// should not be used except in controlled tests where there are a small number of
+    /// objects.
+    ///
+    /// If false, object utilization is reported using hash(object_id) % 32 as the key,
+    /// which still allows observation of utilization when there are small numbers of
+    /// over-utilized objects.
+    ///
+    /// If unspecified, this will default to `false`.
+    pub report_object_utilization_metric_with_full_id: Option<bool>,
+
+    /// Unless target object utilization is exceeded by at least this amount, no observation
+    /// will be shared with consensus.
+    ///
+    /// If unspecified, this will default to `500` milliseconds.
+    pub observation_sharing_object_utilization_threshold: Option<Duration>,
+
+    /// Unless the current local observation differs from the last one we shared by at least this
+    /// percentage, no observation will be shared with consensus.
+    ///
+    /// If unspecified, this will default to `0.1`.
+    pub observation_sharing_diff_threshold: Option<f64>,
+
+    /// Minimum interval between sharing multiple observations of the same key.
+    ///
+    /// If unspecified, this will default to `5` seconds.
+    pub observation_sharing_min_interval: Option<Duration>,
+
+    /// Global per-second rate limit for sharing observations. This is a safety valve and
+    /// should not trigger during normal operation.
+    ///
+    /// If unspecified, this will default to `10` observations per second.
+    pub observation_sharing_rate_limit: Option<NonZeroU32>,
+
+    /// Global burst limit for sharing observations.
+    ///
+    /// If unspecified, this will default to `100` observations.
+    pub observation_sharing_burst_limit: Option<NonZeroU32>,
+}
+
+impl ExecutionTimeObserverConfig {
+    pub fn observation_channel_capacity(&self) -> NonZeroUsize {
+        self.observation_channel_capacity
+            .unwrap_or(nonzero!(1_024usize))
+    }
+
+    pub fn observation_cache_size(&self) -> NonZeroUsize {
+        self.observation_cache_size.unwrap_or(nonzero!(10_000usize))
+    }
+
+    pub fn object_debt_channel_capacity(&self) -> NonZeroUsize {
+        self.object_debt_channel_capacity
+            .unwrap_or(nonzero!(128usize))
+    }
+
+    pub fn object_utilization_cache_size(&self) -> NonZeroUsize {
+        self.object_utilization_cache_size
+            .unwrap_or(nonzero!(50_000usize))
+    }
+
+    pub fn report_object_utilization_metric_with_full_id(&self) -> bool {
+        self.report_object_utilization_metric_with_full_id
+            .unwrap_or(false)
+    }
+
+    pub fn observation_sharing_object_utilization_threshold(&self) -> Duration {
+        self.observation_sharing_object_utilization_threshold
+            .unwrap_or(Duration::from_millis(500))
+    }
+
+    pub fn observation_sharing_diff_threshold(&self) -> f64 {
+        self.observation_sharing_diff_threshold.unwrap_or(0.1)
+    }
+
+    pub fn observation_sharing_min_interval(&self) -> Duration {
+        self.observation_sharing_min_interval
+            .unwrap_or(Duration::from_secs(5))
+    }
+
+    pub fn observation_sharing_rate_limit(&self) -> NonZeroU32 {
+        self.observation_sharing_rate_limit
+            .unwrap_or(nonzero!(10u32))
+    }
+
+    pub fn observation_sharing_burst_limit(&self) -> NonZeroU32 {
+        self.observation_sharing_burst_limit
+            .unwrap_or(nonzero!(100u32))
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -467,7 +588,6 @@ pub fn default_zklogin_oauth_providers() -> BTreeMap<Chain, BTreeSet<String>> {
         "Threedos".to_string(),
         "Onefc".to_string(),
         "FanTV".to_string(),
-        "AwsTenant-region:us-east-1-tenant_id:us-east-1_LPSLCkC3A".to_string(), // test tenant in mysten aws
         "AwsTenant-region:us-east-1-tenant_id:us-east-1_qPsZxYqd8".to_string(), // Ambrus, external partner
         "Arden".to_string(),                                                    // Arden partner
         "AwsTenant-region:eu-west-3-tenant_id:eu-west-3_gGVCx53Es".to_string(), // Trace, external partner
@@ -615,21 +735,15 @@ impl NodeConfig {
         (&self.account_key_pair.keypair().public()).into()
     }
 
-    pub fn archive_reader_config(&self) -> Vec<ArchiveReaderConfig> {
+    pub fn archive_reader_config(&self) -> Option<ArchiveReaderConfig> {
         self.state_archive_read_config
-            .iter()
-            .flat_map(|config| {
-                config
-                    .object_store_config
-                    .as_ref()
-                    .map(|remote_store_config| ArchiveReaderConfig {
-                        remote_store_config: remote_store_config.clone(),
-                        download_concurrency: NonZeroUsize::new(config.concurrency)
-                            .unwrap_or(NonZeroUsize::new(5).unwrap()),
-                        use_for_pruning_watermark: config.use_for_pruning_watermark,
-                    })
+            .first()
+            .map(|config| ArchiveReaderConfig {
+                ingestion_url: config.ingestion_url.clone(),
+                download_concurrency: NonZeroUsize::new(config.concurrency)
+                    .unwrap_or(NonZeroUsize::new(5).unwrap()),
+                remote_store_config: ObjectStoreConfig::default(),
             })
-            .collect()
     }
 
     pub fn jsonrpc_server_type(&self) -> ServerType {
@@ -814,7 +928,7 @@ impl ExpensiveSafetyCheckConfig {
 }
 
 fn default_checkpoint_execution_max_concurrency() -> usize {
-    200
+    4
 }
 
 fn default_local_execution_timeout_sec() -> u64 {
@@ -878,6 +992,8 @@ pub struct AuthorityStorePruningConfig {
     /// may result in some old versions that will never be pruned.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub enable_compaction_filter: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub num_epochs_to_retain_for_indexes: Option<u64>,
 }
 
 fn default_num_latest_epoch_dbs_to_retain() -> usize {
@@ -918,6 +1034,7 @@ impl Default for AuthorityStorePruningConfig {
             killswitch_tombstone_pruning: false,
             smooth: true,
             enable_compaction_filter: cfg!(test) || cfg!(msim),
+            num_epochs_to_retain_for_indexes: None,
         }
     }
 }
@@ -977,7 +1094,7 @@ pub struct DBCheckpointConfig {
 pub struct ArchiveReaderConfig {
     pub remote_store_config: ObjectStoreConfig,
     pub download_concurrency: NonZeroUsize,
-    pub use_for_pruning_watermark: bool,
+    pub ingestion_url: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, Deserialize, Serialize)]
@@ -986,7 +1103,8 @@ pub struct StateArchiveConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub object_store_config: Option<ObjectStoreConfig>,
     pub concurrency: usize,
-    pub use_for_pruning_watermark: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ingestion_url: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, Deserialize, Serialize)]
@@ -1127,6 +1245,10 @@ impl Default for AuthorityOverloadConfig {
 
 fn default_authority_overload_config() -> AuthorityOverloadConfig {
     AuthorityOverloadConfig::default()
+}
+
+fn default_traffic_controller_policy_config() -> Option<PolicyConfig> {
+    Some(PolicyConfig::default_dos_protection_policy())
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, Eq)]
@@ -1407,5 +1529,12 @@ impl RunWithRange {
 
     pub fn matches_checkpoint(&self, seq_num: CheckpointSequenceNumber) -> bool {
         matches!(self, RunWithRange::Checkpoint(seq) if *seq == seq_num)
+    }
+
+    pub fn into_checkpoint_bound(self) -> Option<CheckpointSequenceNumber> {
+        match self {
+            RunWithRange::Epoch(_) => None,
+            RunWithRange::Checkpoint(seq) => Some(seq),
+        }
     }
 }

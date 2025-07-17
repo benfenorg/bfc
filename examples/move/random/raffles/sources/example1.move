@@ -14,7 +14,7 @@ use sui::balance::{Self, Balance};
 use sui::clock::Clock;
 use sui::coin::{Self, Coin};
 use sui::random::{Random, new_generator};
-use sui::bfc::BFC;
+use sui::sui::SUI;
 
 /// Error codes
 const EGameInProgress: u64 = 0;
@@ -31,7 +31,7 @@ public struct Game has key {
     participants: u32,
     end_time: u64,
     winner: Option<u32>,
-    balance: Balance<BFC>,
+    balance: Balance<SUI>,
 }
 
 /// Ticket represents a participant in a single game.
@@ -71,7 +71,7 @@ entry fun determine_winner(game: &mut Game, r: &Random, clock: &Clock, ctx: &mut
 /// Anyone can play and receive a ticket.
 public fun buy_ticket(
     game: &mut Game,
-    coin: Coin<BFC>,
+    coin: Coin<SUI>,
     clock: &Clock,
     ctx: &mut TxContext,
 ): Ticket {
@@ -89,7 +89,7 @@ public fun buy_ticket(
 }
 
 /// The winner can take the prize.
-public fun redeem(ticket: Ticket, game: Game, ctx: &mut TxContext): Coin<BFC> {
+public fun redeem(ticket: Ticket, game: Game, ctx: &mut TxContext): Coin<SUI> {
     assert!(object::id(&game) == ticket.game_id, EGameMismatch);
     assert!(game.winner.contains(&ticket.participant_index), ENotWinner);
     destroy_ticket(ticket);

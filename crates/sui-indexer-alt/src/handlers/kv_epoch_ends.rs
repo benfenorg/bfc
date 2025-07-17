@@ -8,16 +8,17 @@ use anyhow::{bail, Context, Result};
 use diesel::{ExpressionMethods, QueryDsl};
 use diesel_async::RunQueryDsl;
 use sui_indexer_alt_framework::{
-    models::cp_sequence_numbers::epoch_interval,
     pipeline::{concurrent::Handler, Processor},
+    postgres::{Connection, Db},
+    types::{
+        event::SystemEpochInfoEvent,
+        full_checkpoint_content::CheckpointData,
+        transaction::{TransactionDataAPI, TransactionKind},
+    },
 };
 use sui_indexer_alt_schema::{epochs::StoredEpochEnd, schema::kv_epoch_ends};
-use sui_pg_db as db;
-use sui_types::{
-    event::SystemEpochInfoEvent,
-    full_checkpoint_content::CheckpointData,
-    transaction::{TransactionDataAPI, TransactionKind},
-};
+
+use crate::handlers::cp_sequence_numbers::epoch_interval;
 
 pub(crate) struct KvEpochEnds;
 
@@ -121,9 +122,11 @@ impl Processor for KvEpochEnds {
 
 #[async_trait::async_trait]
 impl Handler for KvEpochEnds {
+    type Store = Db;
+
     const MIN_EAGER_ROWS: usize = 1;
 
-    async fn commit(values: &[Self::Value], conn: &mut db::Connection<'_>) -> Result<usize> {
+    async fn commit<'a>(values: &[Self::Value], conn: &mut Connection<'a>) -> Result<usize> {
         Ok(diesel::insert_into(kv_epoch_ends::table)
             .values(values)
             .on_conflict_do_nothing()
@@ -131,11 +134,11 @@ impl Handler for KvEpochEnds {
             .await?)
     }
 
-    async fn prune(
+    async fn prune<'a>(
         &self,
         from: u64,
         to_exclusive: u64,
-        conn: &mut db::Connection<'_>,
+        conn: &mut Connection<'a>,
     ) -> Result<usize> {
         let Range {
             start: from_epoch,
@@ -155,10 +158,12 @@ impl Handler for KvEpochEnds {
 mod tests {
     use super::*;
     use anyhow::Result;
-    use sui_indexer_alt_framework::{handlers::cp_sequence_numbers::CpSequenceNumbers, Indexer};
+    use sui_indexer_alt_framework::{
+        types::test_checkpoint_data_builder::TestCheckpointDataBuilder, Indexer,
+    };
     use sui_indexer_alt_schema::MIGRATIONS;
-    use sui_pg_db::Connection;
-    use sui_types::test_checkpoint_data_builder::TestCheckpointDataBuilder;
+
+    use crate::handlers::cp_sequence_numbers::CpSequenceNumbers;
 
     async fn get_all_kv_epoch_ends(conn: &mut Connection<'_>) -> Result<Vec<StoredEpochEnd>> {
         let result = kv_epoch_ends::table
@@ -176,7 +181,7 @@ mod tests {
     #[tokio::test]
     pub async fn test_kv_epoch_ends_safe_mode() {
         let (indexer, _db) = Indexer::new_for_testing(&MIGRATIONS).await;
-        let mut conn = indexer.db().connect().await.unwrap();
+        let mut conn = indexer.store().connect().await.unwrap();
 
         let mut builder = TestCheckpointDataBuilder::new(0);
         let checkpoint = Arc::new(builder.advance_epoch(true));
@@ -201,7 +206,7 @@ mod tests {
     #[tokio::test]
     pub async fn test_kv_epoch_ends_same_epoch() {
         let (indexer, _db) = Indexer::new_for_testing(&MIGRATIONS).await;
-        let mut conn = indexer.db().connect().await.unwrap();
+        let mut conn = indexer.store().connect().await.unwrap();
 
         // Test that there is nothing to commit while we haven't reached epoch end.
         let mut builder = TestCheckpointDataBuilder::new(0);
@@ -255,7 +260,7 @@ mod tests {
     #[tokio::test]
     pub async fn test_kv_epoch_ends_advance_multiple_epochs() {
         let (indexer, _db) = Indexer::new_for_testing(&MIGRATIONS).await;
-        let mut conn = indexer.db().connect().await.unwrap();
+        let mut conn = indexer.store().connect().await.unwrap();
 
         // Advance epoch three times, 0, 1, 2
         let mut builder = TestCheckpointDataBuilder::new(0);

@@ -318,24 +318,17 @@ module sui_system::staking_pool {
     /// tokens using exchange rate at staking epoch.
     /// Returns values are amount of pool tokens withdrawn and withdrawn principal portion of SUI.
     public(package) fun withdraw_from_principal(
-        pool: &mut StakingPool,
-        staked_sui: StakedBfc,
-    ) : (u64, Balance<BFC>) {
-
+        pool: &StakingPool,
+        staked_sui: StakedSui,
+    ): (u64, Balance<BFC>) {
         // Check that the stake information matches the pool.
         assert!(staked_sui.pool_id == object::id(pool), EWrongPool);
 
-        let exchange_rate_at_staking_epoch = pool_token_exchange_rate_at_epoch(pool, staked_sui.stake_activation_epoch);
-        let principal_withdraw = unwrap_staked_sui(staked_sui);
-        let pool_token_withdraw_amount = get_token_amount(
-		    &exchange_rate_at_staking_epoch,
-		    principal_withdraw.value()
-	    );
+        let exchange_rate_at_staking_epoch = pool.pool_token_exchange_rate_at_epoch(staked_sui.stake_activation_epoch);
+        let principal_withdraw = staked_sui.into_balance();
+        let pool_token_withdraw_amount = exchange_rate_at_staking_epoch.get_token_amount(principal_withdraw.value());
 
-        (
-            pool_token_withdraw_amount,
-            principal_withdraw,
-        )
+        (pool_token_withdraw_amount, principal_withdraw)
     }
 
     fun unwrap_staked_sui(staked_sui: StakedBfc): Balance<BFC> {

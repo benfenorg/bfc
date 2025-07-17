@@ -6,16 +6,17 @@
 //! The overall verification is split between stack_usage_verifier.rs and
 //! abstract_interpreter.rs. CodeUnitVerifier simply orchestrates calls into these two files.
 use crate::{
-    ability_cache::AbilityCache, acquires_list_verifier::AcquiresVerifier, control_flow,
-    locals_safety, reference_safety, stack_usage_verifier::StackUsageVerifier, type_safety,
+    ability_cache::AbilityCache, absint::FunctionContext, acquires_list_verifier::AcquiresVerifier,
+    control_flow, locals_safety, reference_safety, stack_usage_verifier::StackUsageVerifier,
+    type_safety,
 };
-use move_abstract_interpreter::{absint::FunctionContext, control_flow_graph::ControlFlowGraph};
+use move_abstract_interpreter::control_flow_graph::ControlFlowGraph;
 use move_binary_format::{
+    IndexKind,
     errors::{Location, PartialVMError, PartialVMResult, VMResult},
     file_format::{
         CompiledModule, FunctionDefinition, FunctionDefinitionIndex, IdentifierIndex, TableIndex,
     },
-    IndexKind,
 };
 use move_bytecode_verifier_meter::{Meter, Scope};
 use move_core_types::vm_status::StatusCode;
@@ -72,7 +73,7 @@ fn verify_module_impl<'env>(
     Ok(())
 }
 
-fn verify_function<'env>(
+pub fn verify_function<'env>(
     verifier_config: &VerifierConfig,
     index: FunctionDefinitionIndex,
     function_definition: &'env FunctionDefinition,
@@ -134,7 +135,7 @@ fn verify_function<'env>(
     Ok(num_back_edges)
 }
 
-impl<'env, 'a> CodeUnitVerifier<'env, 'a> {
+impl<'env> CodeUnitVerifier<'env, '_> {
     fn verify_common(
         &self,
         verifier_config: &VerifierConfig,

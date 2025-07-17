@@ -188,7 +188,7 @@ fun test_flash_loan() {
     {
         ts::next_tx(&mut ts, ALICE);
 
-        let mut lender = ts::take_shared(&ts);
+        let mut lender: FlashLender<BFC> = ts.take_shared();
         let (loan, receipt) = loan(&mut lender, 10, ts::ctx(&mut ts));
 
         // Simulate Alice making enough profit to repay.

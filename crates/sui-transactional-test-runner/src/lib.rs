@@ -30,7 +30,6 @@ use sui_types::base_types::SuiAddress;
 use sui_types::base_types::VersionNumber;
 use sui_types::committee::EpochId;
 use sui_types::digests::TransactionDigest;
-use sui_types::digests::TransactionEventsDigest;
 use sui_types::effects::TransactionEffects;
 use sui_types::effects::TransactionEvents;
 use sui_types::error::ExecutionError;
@@ -159,7 +158,7 @@ impl TransactionalAdapter for ValidatorWithFullnode {
         )
     }
 
-    async fn prepare_txn(
+    fn prepare_txn(
         &self,
         transaction: Transaction,
         input_objects: InputObjects,
@@ -172,10 +171,10 @@ impl TransactionalAdapter for ValidatorWithFullnode {
         );
 
         let epoch_store = self.validator.load_epoch_store_one_call_per_task().clone();
-        let (_,_, effects, error) =
+        let (transaction_outputs, error) =
             self.validator
-                .prepare_certificate_for_benchmark(&tx, input_objects, &epoch_store).await?;
-        Ok((effects, error))
+                .prepare_certificate_for_benchmark(&tx, input_objects, &epoch_store)?;
+        Ok((transaction_outputs.effects, error))
     }
 
     async fn dry_run_transaction_block(
@@ -363,21 +362,15 @@ impl ReadStore for ValidatorWithFullnode {
             .get_executed_effects(tx_digest)
     }
 
-    fn get_events(&self, event_digest: &TransactionEventsDigest) -> Option<TransactionEvents> {
+    fn get_events(&self, digest: &TransactionDigest) -> Option<TransactionEvents> {
         self.validator
             .get_transaction_cache_reader()
-            .get_events(event_digest)
-    }
-
-    fn get_full_checkpoint_contents_by_sequence_number(
-        &self,
-        _sequence_number: sui_types::messages_checkpoint::CheckpointSequenceNumber,
-    ) -> Option<sui_types::messages_checkpoint::FullCheckpointContents> {
-        todo!()
+            .get_events(digest)
     }
 
     fn get_full_checkpoint_contents(
         &self,
+        _sequence_number: Option<sui_types::messages_checkpoint::CheckpointSequenceNumber>,
         _digest: &CheckpointContentsDigest,
     ) -> Option<sui_types::messages_checkpoint::FullCheckpointContents> {
         todo!()
@@ -441,7 +434,7 @@ impl TransactionalAdapter for Simulacrum<StdRng, PersistedStore> {
     ) -> SuiResult<Vec<Event>> {
         Ok(self
             .store()
-            .get_transaction_events_by_tx_digest(tx_digest)
+            .get_transaction_events(tx_digest)
             .map(|x| x.data)
             .unwrap_or_default())
     }

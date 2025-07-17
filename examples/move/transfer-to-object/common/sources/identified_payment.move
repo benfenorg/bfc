@@ -4,11 +4,11 @@
 #[lint_allow(coin_field)]
 module common::identified_payment;
 
-use sui::bfc::BFC;
 use sui::coin::{Self, Coin};
-use sui::transfer::Receiving;
-use sui::event;
 use sui::dynamic_field;
+use sui::event;
+use sui::sui::SUI;
+use sui::transfer::Receiving;
 
 const ENotEarmarkedForSender: u64 = 0;
 
@@ -21,7 +21,7 @@ const ENotEarmarkedForSender: u64 = 0;
 public struct IdentifiedPayment has key, store {
     id: UID,
     payment_id: u64,
-    coin: Coin<BFC>,
+    coin: Coin<SUI>,
 }
 
 /// An `EarmarkedPayment` payment is an `IdentifiedPayment` that is
@@ -56,7 +56,7 @@ public struct ProcessedPaymentEvent has copy, drop {
 /// Make a payment with the given payment ID to the provided `to` address.
 /// Will create an `IdentifiedPayment` object that can be unpacked by the
 /// recipient, and also emits an event.
-public fun make_payment(payment_id: u64, coin: Coin<BFC>, to: address, ctx: &mut TxContext) {
+public fun make_payment(payment_id: u64, coin: Coin<SUI>, to: address, ctx: &mut TxContext) {
     let payment_amount = coin::value(&coin);
     let identified_payment = IdentifiedPayment {
         id: object::new(ctx),
@@ -76,7 +76,7 @@ public fun make_payment(payment_id: u64, coin: Coin<BFC>, to: address, ctx: &mut
 public fun make_shared_payment(
     register_uid: &mut UID,
     payment_id: u64,
-    coin: Coin<BFC>,
+    coin: Coin<SUI>,
     ctx: &mut TxContext,
 ) {
     let payment_amount = coin::value(&coin);
@@ -96,7 +96,7 @@ public fun make_shared_payment(
 
 /// Process an `IdentifiedPayment` payment returning back the payments ID,
 /// along with the coin that was sent in the payment.
-public fun unpack(identified_payment: IdentifiedPayment): (u64, Coin<BFC>) {
+public fun unpack(identified_payment: IdentifiedPayment): (u64, Coin<SUI>) {
     let IdentifiedPayment { id, payment_id, coin } = identified_payment;
     object::delete(id);
     event::emit(ProcessedPaymentEvent {

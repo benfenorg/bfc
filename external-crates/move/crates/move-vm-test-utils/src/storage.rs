@@ -2,16 +2,16 @@
 // Copyright (c) The Move Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use move_core_types::{
     account_address::AccountAddress,
     effects::{AccountChangeSet, ChangeSet, Op},
     identifier::Identifier,
-    language_storage::{ModuleId, StructTag},
-    resolver::{LinkageResolver, ModuleResolver, MoveResolver, ResourceResolver},
+    language_storage::ModuleId,
+    resolver::{LinkageResolver, ModuleResolver, MoveResolver},
 };
 use std::{
-    collections::{btree_map, BTreeMap},
+    collections::{BTreeMap, btree_map},
     fmt::Debug,
 };
 
@@ -37,18 +37,6 @@ impl ModuleResolver for BlankStorage {
     }
 }
 
-impl ResourceResolver for BlankStorage {
-    type Error = ();
-
-    fn get_resource(
-        &self,
-        _address: &AccountAddress,
-        _tag: &StructTag,
-    ) -> Result<Option<Vec<u8>>, Self::Error> {
-        Ok(None)
-    }
-}
-
 /// A storage adapter created by stacking a change set on top of an existing storage backend.
 /// This can be used for additional computations without modifying the base.
 #[derive(Debug, Clone)]
@@ -57,7 +45,7 @@ pub struct DeltaStorage<'a, 'b, S> {
     delta: &'b ChangeSet,
 }
 
-impl<'a, 'b, S: LinkageResolver> LinkageResolver for DeltaStorage<'a, 'b, S> {
+impl<S: LinkageResolver> LinkageResolver for DeltaStorage<'_, '_, S> {
     type Error = S::Error;
 
     fn link_context(&self) -> AccountAddress {
@@ -69,7 +57,7 @@ impl<'a, 'b, S: LinkageResolver> LinkageResolver for DeltaStorage<'a, 'b, S> {
     }
 }
 
-impl<'a, 'b, S: ModuleResolver> ModuleResolver for DeltaStorage<'a, 'b, S> {
+impl<S: ModuleResolver> ModuleResolver for DeltaStorage<'_, '_, S> {
     type Error = S::Error;
 
     fn get_module(&self, module_id: &ModuleId) -> Result<Option<Vec<u8>>, Self::Error> {
@@ -80,18 +68,6 @@ impl<'a, 'b, S: ModuleResolver> ModuleResolver for DeltaStorage<'a, 'b, S> {
         }
 
         self.base.get_module(module_id)
-    }
-}
-
-impl<'a, 'b, S: ResourceResolver> ResourceResolver for DeltaStorage<'a, 'b, S> {
-    type Error = S::Error;
-
-    fn get_resource(
-        &self,
-        _address: &AccountAddress,
-        _tag: &StructTag,
-    ) -> Result<Option<Vec<u8>>, S::Error> {
-        unreachable!()
     }
 }
 
@@ -120,8 +96,8 @@ fn apply_changes<K, V>(
 where
     K: Ord + Debug,
 {
-    use btree_map::Entry::*;
     use Op::*;
+    use btree_map::Entry::*;
 
     for (k, op) in changes.into_iter() {
         match (map.entry(k), op) {
@@ -225,17 +201,5 @@ impl ModuleResolver for InMemoryStorage {
             return Ok(account_storage.modules.get(module_id.name()).cloned());
         }
         Ok(None)
-    }
-}
-
-impl ResourceResolver for InMemoryStorage {
-    type Error = ();
-
-    fn get_resource(
-        &self,
-        _address: &AccountAddress,
-        _tag: &StructTag,
-    ) -> Result<Option<Vec<u8>>, Self::Error> {
-        unreachable!()
     }
 }

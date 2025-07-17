@@ -12,9 +12,9 @@ use crate::{
     tracing2::tracer::VMTracer,
 };
 use move_binary_format::{
-    errors::{verification_error, Location, PartialVMError, PartialVMResult, VMResult},
-    file_format::{AbilitySet, LocalIndex},
     CompiledModule, IndexKind,
+    errors::{Location, PartialVMError, PartialVMResult, VMResult, verification_error},
+    file_format::{AbilitySet, LocalIndex},
 };
 use move_bytecode_verifier::script_signature;
 use move_core_types::{
@@ -496,6 +496,7 @@ impl VMRuntime {
         data_store: &mut impl DataStore,
         gas_meter: &mut impl GasMeter,
         extensions: &mut NativeContextExtensions,
+        tracer: Option<&mut MoveTraceBuilder>,
     ) -> VMResult<SerializedReturnValues> {
         move_vm_profiler::tracing_feature_enabled! {
             use move_vm_profiler::GasProfiler;
@@ -517,7 +518,7 @@ impl VMRuntime {
             gas_meter,
             extensions,
             bypass_declared_entry_check,
-            None,
+            tracer,
         )
     }
 

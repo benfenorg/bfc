@@ -36,6 +36,7 @@ pub enum Keystore {
 pub trait AccountKeystore: Send + Sync {
     fn add_key(&mut self, alias: Option<String>, keypair: SuiKeyPair) -> Result<(), anyhow::Error>;
     fn add_key_batch(&mut self, keypair: Vec<SuiKeyPair>) -> Result<(), anyhow::Error>;
+    fn remove_key(&mut self, address: SuiAddress) -> Result<(), anyhow::Error>;
     fn keys(&self) -> Vec<PublicKey>;
     fn get_key(&self, address: &SuiAddress) -> Result<&SuiKeyPair, anyhow::Error>;
 
@@ -233,6 +234,13 @@ impl AccountKeystore for FileBasedKeystore {
         for key in keypair {
             self.add_key(None, key)?;
         }
+        self.save()?;
+        Ok(())
+    }
+
+    fn remove_key(&mut self, address: SuiAddress) -> Result<(), anyhow::Error> {
+        self.aliases.remove(&address);
+        self.keys.remove(&address);
         self.save()?;
         Ok(())
     }
@@ -440,13 +448,6 @@ impl FileBasedKeystore {
     /// To see Bech32 format encoding, use `sui keytool export $SUI_ADDRESS` where
     /// $SUI_ADDRESS can be found with `sui keytool list`. Or use `sui keytool convert $BASE64_STR`
     pub fn save_keystore(&self) -> Result<(), anyhow::Error> {
-
-        // eprintln!(
-        //     "Keys saved as Base64 with 33 bytes `flag || privkey` ($BASE64_STR).
-        // To see Bech32 format encoding, use `sui keytool export $SUI_ADDRESS` where
-        // $SUI_ADDRESS can be found with `sui keytool list`. Or use `sui keytool convert $BASE64_STR`."
-        // );
-
         if let Some(path) = &self.path {
             let store = serde_json::to_string_pretty(
                 &self
@@ -529,6 +530,12 @@ impl AccountKeystore for InMemKeystore {
         };
         self.aliases.insert(address, alias);
         self.keys.insert(address, keypair);
+        Ok(())
+    }
+
+    fn remove_key(&mut self, address: SuiAddress) -> Result<(), anyhow::Error> {
+        self.aliases.remove(&address);
+        self.keys.remove(&address);
         Ok(())
     }
 

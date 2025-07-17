@@ -590,7 +590,7 @@ impl<'a> BorrowAnalysis<'a> {
     }
 }
 
-impl<'a> TransferFunctions for BorrowAnalysis<'a> {
+impl TransferFunctions for BorrowAnalysis<'_> {
     type State = BorrowInfo;
     const BACKWARD: bool = false;
 
@@ -619,10 +619,11 @@ impl<'a> TransferFunctions for BorrowAnalysis<'a> {
                     }
                     AssignKind::Store => {
                         if self.func_target.get_local_type(*src).is_mutable_reference() {
-                            assert!(self
-                                .func_target
-                                .get_local_type(*dest)
-                                .is_mutable_reference());
+                            assert!(
+                                self.func_target
+                                    .get_local_type(*dest)
+                                    .is_mutable_reference()
+                            );
                             state.add_edge(src_node, dest_node, BorrowEdge::Direct);
                         }
                     }
@@ -731,7 +732,7 @@ impl<'a> TransferFunctions for BorrowAnalysis<'a> {
     }
 }
 
-impl<'a> DataflowAnalysis for BorrowAnalysis<'a> {}
+impl DataflowAnalysis for BorrowAnalysis<'_> {}
 
 impl AbstractDomain for BorrowInfo {
     fn join(&mut self, other: &Self) -> JoinResult {

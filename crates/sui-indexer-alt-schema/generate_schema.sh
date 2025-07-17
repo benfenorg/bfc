@@ -67,7 +67,7 @@ done
 # Run all migrations on the new database, for the framework and the indexer
 diesel migration run                                                          \
   --database-url "postgres://postgres:postgrespw@localhost:$PORT"             \
-  --migration-dir "$REPO/crates/sui-indexer-alt-framework/migrations"
+  --migration-dir "$REPO/crates/sui-pg-db/migrations"
 
 diesel migration run                                                          \
   --database-url "postgres://postgres:postgrespw@localhost:$PORT"             \
@@ -78,5 +78,4 @@ diesel migration run                                                          \
 diesel print-schema                                                           \
   --database-url "postgres://postgres:postgrespw@localhost:$PORT"             \
   --patch-file "$REPO/crates/sui-indexer-alt-schema/schema.patch"             \
-  --except-tables watermarks cp_sequence_numbers                              \
   > "$REPO/crates/sui-indexer-alt-schema/src/schema.rs"

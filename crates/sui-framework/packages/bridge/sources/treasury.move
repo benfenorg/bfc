@@ -92,17 +92,17 @@ module bridge::treasury {
     public struct RemoveExternalCoinAdminEvent has copy, drop {
     coin_type_name: String,
     address: String,
-}
+    }
 
     public struct AddExternalCoinWitnessEvent has copy, drop {
     coin_type_name: String,
     address: vector<u8>,
-}
+    }
 
     public struct RemoveExternalCoinWitnessEvent has copy, drop {
     coin_type_name: String,
     address: vector<u8>,
-}
+    }
 
     public struct AddExternalCoinTargetEvent has copy, drop {
     coin_type_name: String,

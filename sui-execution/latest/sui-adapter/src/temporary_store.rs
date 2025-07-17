@@ -48,7 +48,7 @@ use sui_types::{
     //transaction::InputObjects,
     SUI_DENY_LIST_OBJECT_ID
 };
-use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
+use sui_types::{SUI_SYSTEM_STATE_OBJECT_ID, is_system_package};
 
 pub struct TemporaryStore<'backing> {
     // The backing store for retrieving Move packages onchain.
@@ -59,7 +59,7 @@ pub struct TemporaryStore<'backing> {
     store: &'backing dyn BackingStore,
     tx_digest: TransactionDigest,
     input_objects: BTreeMap<ObjectID, Object>,
-    deleted_consensus_objects: BTreeMap<ObjectID, SequenceNumber /* start_version */>,
+    stream_ended_consensus_objects: BTreeMap<ObjectID, SequenceNumber /* start_version */>,
     /// The version to assign to all objects written by the transaction using this store.
     lamport_timestamp: SequenceNumber,
     mutable_input_refs: BTreeMap<ObjectID, (VersionDigest, Owner)>, // Inputs that are mutable
@@ -100,28 +100,30 @@ impl<'backing> TemporaryStore<'backing> {
     ) -> Self {
         let mutable_input_refs = input_objects.mutable_inputs();
         let lamport_timestamp = input_objects.lamport_timestamp(&receiving_objects);
-        let deleted_consensus_objects = input_objects.deleted_consensus_objects();
+        let stream_ended_consensus_objects = input_objects.consensus_stream_ended_objects();
         let objects = input_objects.into_object_map();
         #[cfg(debug_assertions)]
         {
             // Ensure that input objects and receiving objects must not overlap.
-            assert!(objects
-                .keys()
-                .collect::<HashSet<_>>()
-                .intersection(
-                    &receiving_objects
-                        .iter()
-                        .map(|oref| &oref.0)
-                        .collect::<HashSet<_>>()
-                )
-                .next()
-                .is_none());
+            assert!(
+                objects
+                    .keys()
+                    .collect::<HashSet<_>>()
+                    .intersection(
+                        &receiving_objects
+                            .iter()
+                            .map(|oref| &oref.0)
+                            .collect::<HashSet<_>>()
+                    )
+                    .next()
+                    .is_none()
+            );
         }
         Self {
             store,
             tx_digest,
             input_objects: objects,
-            deleted_consensus_objects,
+            stream_ended_consensus_objects,
             lamport_timestamp,
             mutable_input_refs,
             execution_results: ExecutionResultsV2::default(),
@@ -159,7 +161,7 @@ impl<'backing> TemporaryStore<'backing> {
         let results = self.execution_results;
         InnerTemporaryStore {
             input_objects: self.input_objects,
-            deleted_consensus_objects: self.deleted_consensus_objects,
+            stream_ended_consensus_objects: self.stream_ended_consensus_objects,
             mutable_inputs: self.mutable_input_refs,
             written: results.written_objects,
             events: TransactionEvents {
@@ -530,7 +532,7 @@ impl<'backing> TemporaryStore<'backing> {
     }
 }
 
-impl<'backing> TemporaryStore<'backing> {
+impl TemporaryStore<'_> {
     // check that every object read is owned directly or indirectly by sender, sponsor,
     // or a shared object input
     pub fn check_ownership_invariants(
@@ -558,7 +560,7 @@ impl<'backing> TemporaryStore<'backing> {
                         assert!(sender == a, "Input object must be owned by sender");
                         Some(id)
                     }
-                    Owner::Shared { .. } | Owner::ConsensusV2 { .. } => Some(id),
+                    Owner::Shared { .. } | Owner::ConsensusAddressOwner { .. } => Some(id),
                     Owner::Immutable => {
                         // object is authenticated, but it cannot own other objects,
                         // so we should not add it to `authenticated_objs`
@@ -624,10 +626,12 @@ impl<'backing> TemporaryStore<'backing> {
                         // it would already have been in authenticated_for_mutation
                         ObjectID::from(*parent)
                     }
-                    owner @ Owner::Shared { .. } | owner @ Owner::ConsensusV2 { .. } => panic!(
-                        "Unauthenticated root at {to_authenticate:?} with owner {owner:?}\n\
+                    owner @ Owner::Shared { .. } | owner @ Owner::ConsensusAddressOwner { .. } => {
+                        panic!(
+                            "Unauthenticated root at {to_authenticate:?} with owner {owner:?}\n\
                         Potentially covering objects in: {authenticated_for_mutation:#?}",
-                    ),
+                        )
+                    }
                     Owner::Immutable => {
                         assert!(
                             is_epoch_change,
@@ -653,7 +657,7 @@ impl<'backing> TemporaryStore<'backing> {
     }
 }
 
-impl<'backing> TemporaryStore<'backing> {
+impl TemporaryStore<'_> {
     /// Track storage gas for each mutable input object (including the gas coin)
     /// and each created object. Compute storage refunds for each deleted object.
     /// Will *not* charge anything, gas status keeps track of storage cost and rebate.
@@ -735,7 +739,7 @@ impl<'backing> TemporaryStore<'backing> {
 // Charge gas current - end
 //==============================================================================
 
-impl<'backing> TemporaryStore<'backing> {
+impl TemporaryStore<'_> {
     pub fn advance_epoch_safe_mode(
         &mut self,
         params: &AdvanceEpochParams,
@@ -816,6 +820,7 @@ type ModifiedObjectInfo<'a> = (
 
 impl<'backing> TemporaryStore<'backing> {
     #[allow(dead_code)]
+impl TemporaryStore<'_> {
     fn get_input_sui(
         &self,
         id: &ObjectID,
@@ -1151,7 +1156,7 @@ impl<'backing> TemporaryStore<'backing> {
     }
 }
 
-impl<'backing> ChildObjectResolver for TemporaryStore<'backing> {
+impl ChildObjectResolver for TemporaryStore<'_> {
     fn read_child_object(
         &self,
         parent: &ObjectID,
@@ -1174,30 +1179,31 @@ impl<'backing> ChildObjectResolver for TemporaryStore<'backing> {
         receiving_object_id: &ObjectID,
         receive_object_at_version: SequenceNumber,
         epoch_id: EpochId,
-        // TODO: Delete this parameter once table migration is complete.
-        use_object_per_epoch_marker_table_v2: bool,
     ) -> SuiResult<Option<Object>> {
         // You should never be able to try and receive an object after deleting it or writing it in the same
         // transaction since `Receiving` doesn't have copy.
-        debug_assert!(!self
-            .execution_results
-            .written_objects
-            .contains_key(receiving_object_id));
-        debug_assert!(!self
-            .execution_results
-            .deleted_object_ids
-            .contains(receiving_object_id));
+        debug_assert!(
+            !self
+                .execution_results
+                .written_objects
+                .contains_key(receiving_object_id)
+        );
+        debug_assert!(
+            !self
+                .execution_results
+                .deleted_object_ids
+                .contains(receiving_object_id)
+        );
         self.store.get_object_received_at_version(
             owner,
             receiving_object_id,
             receive_object_at_version,
             epoch_id,
-            use_object_per_epoch_marker_table_v2,
         )
     }
 }
 
-impl<'backing> Storage for TemporaryStore<'backing> {
+impl Storage for TemporaryStore<'_> {
     fn reset(&mut self) {
         self.drop_writes();
     }
@@ -1249,7 +1255,7 @@ impl<'backing> Storage for TemporaryStore<'backing> {
     }
 }
 
-impl<'backing> BackingPackageStore for TemporaryStore<'backing> {
+impl BackingPackageStore for TemporaryStore<'_> {
     fn get_package_object(&self, package_id: &ObjectID) -> SuiResult<Option<PackageObject>> {
         // We first check the objects in the temporary store because in non-production code path,
         // it is possible to read packages that are just written in the same transaction.
@@ -1282,45 +1288,7 @@ impl<'backing> BackingPackageStore for TemporaryStore<'backing> {
     }
 }
 
-impl<'backing> ResourceResolver for TemporaryStore<'backing> {
-    type Error = SuiError;
-
-    fn get_resource(
-        &self,
-        address: &AccountAddress,
-        struct_tag: &StructTag,
-    ) -> Result<Option<Vec<u8>>, Self::Error> {
-        let object = match self.read_object(&ObjectID::from(*address)) {
-            Some(x) => x,
-            None => match self.read_object(&ObjectID::from(*address)) {
-                None => return Ok(None),
-                Some(x) => {
-                    if !x.is_immutable() {
-                        fp_bail!(SuiError::ExecutionInvariantViolation);
-                    }
-                    x
-                }
-            },
-        };
-
-        match &object.data {
-            Data::Move(m) => {
-                assert!(
-                    m.is_type(struct_tag),
-                    "Invariant violation: ill-typed object in storage \
-                    or bad object request from caller"
-                );
-                Ok(Some(m.contents().to_vec()))
-            }
-            other => unimplemented!(
-                "Bad object lookup: expected Move object, but got {:?}",
-                other
-            ),
-        }
-    }
-}
-
-impl<'backing> ParentSync for TemporaryStore<'backing> {
+impl ParentSync for TemporaryStore<'_> {
     fn get_latest_parent_entry_ref_deprecated(&self, _object_id: ObjectID) -> Option<ObjectRef> {
         unreachable!("Never called in newer protocol versions")
     }

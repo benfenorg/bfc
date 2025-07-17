@@ -14,8 +14,8 @@ use sui_core::checkpoints::checkpoint_executor::CheckpointExecutor;
 use sui_core::consensus_adapter::{
     ConnectionMonitorStatusForTests, ConsensusAdapter, ConsensusAdapterMetrics,
 };
+use sui_core::global_state_hasher::GlobalStateHasher;
 use sui_core::mock_consensus::{ConsensusMode, MockConsensusClient};
-use sui_core::state_accumulator::StateAccumulator;
 use sui_test_transaction_builder::{PublishData, TestTransactionBuilder};
 use sui_types::base_types::{AuthorityName, ObjectRef, SuiAddress, TransactionDigest};
 use sui_types::committee::Committee;
@@ -30,7 +30,6 @@ use sui_types::transaction::{
     CertifiedTransaction, Transaction, TransactionDataAPI, VerifiedCertificate,
     VerifiedTransaction,
 };
-use tokio::sync::broadcast;
 
 #[derive(Clone)]
 pub struct SingleValidator {
@@ -57,6 +56,7 @@ impl SingleValidator {
                 Arc::downgrade(&validator),
                 consensus_mode,
             )),
+            validator.checkpoint_store.clone(),
             validator.name,
             Arc::new(ConnectionMonitorStatusForTests {}),
             100_000,
@@ -135,7 +135,6 @@ impl SingleValidator {
                 transaction.data().intent_message().value.clone(),
                 *transaction.digest(),
             )
-            .await
             .unwrap()
             .2;
         assert!(effects.status().is_ok());
@@ -167,7 +166,7 @@ impl SingleValidator {
                         .enqueue_certificates_for_execution(vec![cert.clone()], &self.epoch_store);
                 }
                 self.get_validator()
-                    .execute_certificate(&cert, &self.epoch_store)
+                    .wait_for_certificate_execution(&cert, &self.epoch_store)
                     .await
                     .unwrap()
             }
@@ -214,7 +213,7 @@ impl SingleValidator {
             None,
         )
         .unwrap();
-        let (kind, signer, gas) = executable.transaction_data().execution_parts();
+        let (kind, signer, gas_data) = executable.transaction_data().execution_parts();
         let (inner_temp_store, _, effects, _timings, _) =
             self.epoch_store.executor().execute_transaction_to_effects(
                 &store,
@@ -225,11 +224,12 @@ impl SingleValidator {
                 &self.epoch_store.epoch(),
                 0,
                 input_objects,
-                gas,
+                gas_data,
                 gas_status,
                 kind,
                 signer,
                 *executable.digest(),
+                &mut None,
             );
         assert!(effects.status().is_ok());
         store.commit_objects(inner_temp_store);
@@ -254,6 +254,7 @@ impl SingleValidator {
             self.get_validator()
                 .get_checkpoint_store()
                 .get_latest_certified_checkpoint()
+                .unwrap()
                 .unwrap(),
         );
         let mut checkpoints = vec![];
@@ -275,26 +276,22 @@ impl SingleValidator {
         checkpoints
     }
 
-    pub fn create_checkpoint_executor(
-        &self,
-    ) -> (CheckpointExecutor, broadcast::Sender<VerifiedCheckpoint>) {
+    pub fn create_checkpoint_executor(&self) -> CheckpointExecutor {
         let validator = self.get_validator();
-        let (ckpt_sender, ckpt_receiver) = broadcast::channel(1000000);
-        let checkpoint_executor = CheckpointExecutor::new_for_tests(
-            ckpt_receiver,
+        CheckpointExecutor::new_for_tests(
+            self.epoch_store.clone(),
             validator.get_checkpoint_store().clone(),
             validator.clone(),
-            Arc::new(StateAccumulator::new_for_tests(
-                validator.get_accumulator_store().clone(),
+            Arc::new(GlobalStateHasher::new_for_tests(
+                validator.get_global_state_hash_store().clone(),
             )),
-        );
-        (checkpoint_executor, ckpt_sender)
+        )
     }
 
     pub(crate) fn create_in_memory_store(&self) -> InMemoryObjectStore {
         let objects: HashMap<_, _> = self
             .get_validator()
-            .get_accumulator_store()
+            .get_global_state_hash_store()
             .iter_cached_live_object_set_for_testing(false)
             .map(|o| match o {
                 LiveObject::Normal(object) => (object.id(), object),
@@ -321,7 +318,6 @@ impl SingleValidator {
                 self.get_validator().get_object_cache_reader().as_ref(),
                 &transactions,
             )
-            .await
             .unwrap();
     }
 }

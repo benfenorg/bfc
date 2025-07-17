@@ -8,19 +8,19 @@ use crate::move_vm::MoveVM;
 use move_binary_format::{
     errors::{VMError, VMResult},
     file_format::{
-        empty_module, AbilitySet, AddressIdentifierIndex, Bytecode, CodeUnit, CompiledModule,
-        DatatypeHandle, DatatypeHandleIndex, FieldDefinition, FunctionDefinition, FunctionHandle,
+        AbilitySet, AddressIdentifierIndex, Bytecode, CodeUnit, CompiledModule, DatatypeHandle,
+        DatatypeHandleIndex, FieldDefinition, FunctionDefinition, FunctionHandle,
         FunctionHandleIndex, IdentifierIndex, ModuleHandle, ModuleHandleIndex, Signature,
         SignatureIndex, SignatureToken, StructDefinition, StructFieldInformation, TableIndex,
-        TypeSignature, Visibility,
+        TypeSignature, Visibility, empty_module,
     },
 };
 use move_core_types::{
     account_address::AccountAddress,
     identifier::{IdentStr, Identifier},
-    language_storage::{ModuleId, StructTag, TypeTag},
-    resolver::{LinkageResolver, ModuleResolver, ResourceResolver},
-    runtime_value::{serialize_values, MoveValue},
+    language_storage::{ModuleId, TypeTag},
+    resolver::{LinkageResolver, ModuleResolver},
+    runtime_value::{MoveValue, serialize_values},
     u256::U256,
     vm_status::{StatusCode, StatusType},
 };
@@ -55,6 +55,7 @@ fn make_module_with_function(
     };
     let module = CompiledModule {
         version: move_binary_format::file_format_common::VERSION_MAX,
+        publishable: true,
         self_module_handle_idx: ModuleHandleIndex(0),
         module_handles: vec![ModuleHandle {
             address: AddressIdentifierIndex(0),
@@ -158,18 +159,6 @@ impl ModuleResolver for RemoteStore {
     }
 }
 
-impl ResourceResolver for RemoteStore {
-    type Error = VMError;
-
-    fn get_resource(
-        &self,
-        _address: &AccountAddress,
-        _tag: &StructTag,
-    ) -> Result<Option<Vec<u8>>, Self::Error> {
-        Ok(None)
-    }
-}
-
 fn combine_signers_and_args(
     signers: Vec<AccountAddress>,
     non_signer_args: Vec<Vec<u8>>,
@@ -205,6 +194,7 @@ fn call_script_function_with_args_ty_args_signers(
         ty_args,
         combine_signers_and_args(signers, non_signer_args),
         &mut UnmeteredGasMeter,
+        None,
     )?;
     Ok(())
 }
@@ -626,7 +616,7 @@ fn call_missing_item() {
     let module = empty_module();
     let id = &module.self_id();
     let function_name = IdentStr::new("foo").unwrap();
-    // mising module
+    // missing module
     let move_vm = MoveVM::new(vec![]).unwrap();
     let mut remote_view = RemoteStore::new();
     let mut session = move_vm.new_session(&remote_view);
@@ -637,6 +627,7 @@ fn call_missing_item() {
             vec![],
             Vec::<Vec<u8>>::new(),
             &mut UnmeteredGasMeter,
+            None,
         )
         .err()
         .unwrap();
@@ -654,6 +645,7 @@ fn call_missing_item() {
             vec![],
             Vec::<Vec<u8>>::new(),
             &mut UnmeteredGasMeter,
+            None,
         )
         .err()
         .unwrap();

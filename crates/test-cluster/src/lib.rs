@@ -3,6 +3,7 @@
 
 use futures::{future::join_all, StreamExt};
 use jsonrpsee::http_client::{HttpClient, HttpClientBuilder};
+use mysten_common::fatal;
 use rand::{distributions::*, rngs::OsRng, seq::SliceRandom};
 use std::collections::HashMap;
 use std::net::SocketAddr;
@@ -22,7 +23,7 @@ use sui_json_rpc_types::{
 };
 use sui_keys::keystore::{AccountKeystore, FileBasedKeystore, Keystore};
 use sui_node::SuiNodeHandle;
-use sui_protocol_config::ProtocolVersion;
+use sui_protocol_config::{Chain, ProtocolVersion};
 use sui_sdk::apis::QuorumDriverApi;
 use sui_sdk::sui_client_config::{SuiClientConfig, SuiEnv};
 use sui_sdk::wallet_context::WalletContext;
@@ -33,7 +34,7 @@ use sui_swarm_config::genesis_config::{
 };
 use sui_swarm_config::network_config::NetworkConfig;
 use sui_swarm_config::network_config_builder::{
-    ProtocolVersionsConfig, StateAccumulatorV2EnabledCallback, StateAccumulatorV2EnabledConfig,
+    GlobalStateHashV2EnabledCallback, GlobalStateHashV2EnabledConfig, ProtocolVersionsConfig,
     SupportedProtocolVersionsCallback,
 };
 use sui_swarm_config::node_config_builder::{FullnodeConfigBuilder, ValidatorConfigBuilder};
@@ -46,7 +47,6 @@ use sui_types::crypto::KeypairTraits;
 use sui_types::crypto::SuiKeyPair;
 use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::error::SuiResult;
-use sui_types::governance::MIN_VALIDATOR_JOINING_STAKE_MIST;
 use sui_types::message_envelope::Message;
 use sui_types::object::Object;
 use sui_types::sui_system_state::epoch_start_sui_system_state::EpochStartSystemStateTrait;
@@ -348,7 +348,12 @@ impl TestCluster {
             node.get_node_handle()
                 .unwrap()
                 .with_async(|node| async {
-                    node.close_epoch_for_testing().await.unwrap();
+                    node.close_epoch_for_testing().await.unwrap_or_else(|_| {
+                        fatal!(
+                            "Failed to close epoch for validator {:?}",
+                            node.state().name
+                        );
+                    });
                     cur_stake += cur_committee.weight(&node.state().name);
                 })
                 .await;
@@ -818,6 +823,7 @@ pub struct TestClusterBuilder {
     network_config: Option<NetworkConfig>,
     additional_objects: Vec<Object>,
     num_validators: Option<usize>,
+    validators: Option<Vec<ValidatorGenesisConfig>>,
     fullnode_rpc_port: Option<u16>,
     enable_fullnode_events: bool,
     disable_fullnode_pruning: bool,
@@ -839,9 +845,11 @@ pub struct TestClusterBuilder {
 
     max_submit_position: Option<usize>,
     submit_delay_step_override_millis: Option<u64>,
-    validator_state_accumulator_v2_enabled_config: StateAccumulatorV2EnabledConfig,
+    validator_global_state_hash_v2_enabled_config: GlobalStateHashV2EnabledConfig,
 
     indexer_backed_rpc: bool,
+
+    chain_override: Option<Chain>,
 }
 
 impl TestClusterBuilder {
@@ -849,9 +857,11 @@ impl TestClusterBuilder {
         TestClusterBuilder {
             genesis_config: None,
             network_config: None,
+            chain_override: None,
             additional_objects: vec![],
             fullnode_rpc_port: None,
             num_validators: None,
+            validators: None,
             enable_fullnode_events: false,
             disable_fullnode_pruning: false,
             validator_supported_protocol_versions_config: ProtocolVersionsConfig::Default,
@@ -870,7 +880,7 @@ impl TestClusterBuilder {
             fullnode_fw_config: None,
             max_submit_position: None,
             submit_delay_step_override_millis: None,
-            validator_state_accumulator_v2_enabled_config: StateAccumulatorV2EnabledConfig::Global(
+            validator_global_state_hash_v2_enabled_config: GlobalStateHashV2EnabledConfig::Global(
                 true,
             ),
             indexer_backed_rpc: false,
@@ -921,8 +931,16 @@ impl TestClusterBuilder {
         self
     }
 
+    /// Set the number of default validators to spawn. Can be overridden by `with_validators`, if
+    /// you need to provide more specific genesis configs for each validator.
     pub fn with_num_validators(mut self, num: usize) -> Self {
         self.num_validators = Some(num);
+        self
+    }
+
+    /// Provide validator genesis configs, overrides the `num_validators` setting.
+    pub fn with_validators(mut self, validators: Vec<ValidatorGenesisConfig>) -> Self {
+        self.validators = Some(validators);
         self
     }
 
@@ -1006,12 +1024,12 @@ impl TestClusterBuilder {
         self
     }
 
-    pub fn with_state_accumulator_v2_enabled_callback(
+    pub fn with_global_state_hash_v2_enabled_callback(
         mut self,
-        func: StateAccumulatorV2EnabledCallback,
+        func: GlobalStateHashV2EnabledCallback,
     ) -> Self {
-        self.validator_state_accumulator_v2_enabled_config =
-            StateAccumulatorV2EnabledConfig::PerValidator(func);
+        self.validator_global_state_hash_v2_enabled_config =
+            GlobalStateHashV2EnabledConfig::PerValidator(func);
         self
     }
 
@@ -1023,7 +1041,7 @@ impl TestClusterBuilder {
             .accounts
             .extend(addresses.into_iter().map(|address| AccountConfig {
                 address: Some(address),
-                gas_amounts: vec![DEFAULT_GAS_AMOUNT, MIN_VALIDATOR_JOINING_STAKE_MIST],
+                gas_amounts: vec![DEFAULT_GAS_AMOUNT, DEFAULT_GAS_AMOUNT],
             }));
         self
     }
@@ -1088,6 +1106,11 @@ impl TestClusterBuilder {
         self
     }
 
+    pub fn with_chain_override(mut self, chain: Chain) -> Self {
+        self.chain_override = Some(chain);
+        self
+    }
+
     pub async fn build(mut self) -> TestCluster {
         // All test clusters receive a continuous stream of random JWKs.
         // If we later use zklogin authenticated transactions in tests we will need to supply
@@ -1123,7 +1146,7 @@ impl TestClusterBuilder {
 
         if self.indexer_backed_rpc {
             if self.data_ingestion_dir.is_none() {
-                temp_data_ingestion_dir = Some(tempfile::tempdir().unwrap());
+                temp_data_ingestion_dir = Some(mysten_common::tempdir().unwrap());
                 self.data_ingestion_dir = Some(
                     temp_data_ingestion_dir
                         .as_ref()
@@ -1176,7 +1199,7 @@ impl TestClusterBuilder {
             .unwrap();
 
         let wallet_conf = swarm.dir().join(SUI_CLIENT_CONFIG);
-        let wallet = WalletContext::new(&wallet_conf, None, None).unwrap();
+        let wallet = WalletContext::new(&wallet_conf).unwrap();
 
         TestCluster {
             swarm,
@@ -1189,16 +1212,13 @@ impl TestClusterBuilder {
     /// Start a Swarm and set up WalletConfig
     async fn start_swarm(&mut self) -> Result<Swarm, anyhow::Error> {
         let mut builder: SwarmBuilder = Swarm::builder()
-            .committee_size(
-                NonZeroUsize::new(self.num_validators.unwrap_or(NUM_VALIDATOR)).unwrap(),
-            )
             .with_objects(self.additional_objects.clone())
             .with_db_checkpoint_config(self.db_checkpoint_config_validators.clone())
             .with_supported_protocol_versions_config(
                 self.validator_supported_protocol_versions_config.clone(),
             )
-            .with_state_accumulator_v2_enabled_config(
-                self.validator_state_accumulator_v2_enabled_config.clone(),
+            .with_global_state_hash_v2_enabled_config(
+                self.validator_global_state_hash_v2_enabled_config.clone(),
             )
             .with_fullnode_count(1)
             .with_fullnode_supported_protocol_versions_config(
@@ -1210,6 +1230,18 @@ impl TestClusterBuilder {
             .with_fullnode_run_with_range(self.fullnode_run_with_range)
             .with_fullnode_policy_config(self.fullnode_policy_config.clone())
             .with_fullnode_fw_config(self.fullnode_fw_config.clone());
+
+        if let Some(validators) = self.validators.take() {
+            builder = builder.with_validators(validators);
+        } else {
+            builder = builder.committee_size(
+                NonZeroUsize::new(self.num_validators.unwrap_or(NUM_VALIDATOR)).unwrap(),
+            )
+        };
+
+        if let Some(chain) = self.chain_override {
+            builder = builder.with_chain_override(chain);
+        }
 
         if let Some(genesis_config) = self.genesis_config.take() {
             builder = builder.with_genesis_config(genesis_config);

@@ -10,6 +10,7 @@ use std::{
 };
 
 use crate::{
+    FullyCompiledProgram,
     diagnostics::warning_filters::WarningFilters,
     expansion::ast::{Fields, ModuleIdent},
     naming::ast as N,
@@ -23,7 +24,6 @@ use crate::{
         UID_TYPE_NAME,
     },
     typing::{ast as T, visitor::TypingVisitorContext},
-    FullyCompiledProgram,
 };
 use move_ir_types::location::Loc;
 use move_proc_macros::growing_stack;
@@ -271,7 +271,7 @@ fn add_private_transfers(
     struct TransferVisitor<'a> {
         transferred: &'a mut BTreeMap<(ModuleIdent, DatatypeName), TransferKind>,
     }
-    impl<'a> TypingVisitorContext for TransferVisitor<'a> {
+    impl TypingVisitorContext for TransferVisitor<'_> {
         fn push_warning_filter_scope(&mut self, _: WarningFilters) {
             unreachable!("no warning filters in function bodies")
         }

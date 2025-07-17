@@ -6,7 +6,7 @@ mod state;
 
 use super::{
     absint::*,
-    cfg::{MutForwardCFG, MutReverseCFG, ReverseCFG, CFG},
+    cfg::{CFG, MutForwardCFG, MutReverseCFG, ReverseCFG},
     locals,
 };
 use crate::{
@@ -167,7 +167,6 @@ fn exp(state: &mut LivenessState, parent_e: &Exp) {
 ///   It will error if the `copy` was specified by the user
 /// - Reports an error if an assignment/let was not used
 ///   Switches it to an `Ignore` if it has the drop ability (helps with error messages for borrows)
-
 pub fn last_usage(context: &super::CFGContext, cfg: &mut MutForwardCFG) {
     let super::CFGContext {
         infinite_loop_starts,
@@ -187,11 +186,11 @@ mod last_usage {
     use move_proc_macros::growing_stack;
 
     use crate::{
-        cfgir::{liveness::state::LivenessState, CFGContext},
+        cfgir::{CFGContext, liveness::state::LivenessState},
         diag,
         hlir::{
             ast::*,
-            translate::{display_var, DisplayVar},
+            translate::{DisplayVar, display_var},
         },
     };
     use std::collections::{BTreeSet, VecDeque};
@@ -391,7 +390,6 @@ mod last_usage {
 /// predecessors.
 /// Then `release_dead_refs_block` adds a release at the beginning of the block if the reference
 /// satisfies (1) and (2)
-
 pub fn release_dead_refs(
     context: &super::CFGContext,
     locals_pre_states: &BTreeMap<Label, locals::state::LocalStates>,

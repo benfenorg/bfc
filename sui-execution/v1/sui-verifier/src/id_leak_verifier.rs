@@ -265,7 +265,7 @@ impl<'a> IDLeakAnalysis<'a> {
     }
 }
 
-impl<'a> TransferFunctions for IDLeakAnalysis<'a> {
+impl TransferFunctions for IDLeakAnalysis<'_> {
     type Error = ExecutionError;
     type State = AbstractState;
 
@@ -293,7 +293,7 @@ impl<'a> TransferFunctions for IDLeakAnalysis<'a> {
     }
 }
 
-impl<'a> AbstractInterpreter for IDLeakAnalysis<'a> {}
+impl AbstractInterpreter for IDLeakAnalysis<'_> {}
 
 fn call(
     verifier: &mut IDLeakAnalysis,

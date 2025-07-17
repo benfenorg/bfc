@@ -748,6 +748,7 @@ impl RpcExampleProvider {
                     },
                     events_digest: Some(TransactionEventsDigest::new(self.rng.gen())),
                     dependencies: vec![],
+                    abort_error: None,
                 },
             )),
             events: None,
@@ -755,7 +756,11 @@ impl RpcExampleProvider {
             balance_changes: None,
             timestamp_ms: None,
             transaction: Some(SuiTransactionBlock {
-                data: SuiTransactionBlockData::try_from(data1, &&mut NoOpsModuleResolver).unwrap(),
+                data: SuiTransactionBlockData::try_from_with_module_cache(
+                    data1,
+                    &&mut NoOpsModuleResolver,
+                )
+                .unwrap(),
                 tx_signatures: signatures.clone(),
             }),
             raw_transaction,
@@ -854,7 +859,6 @@ impl RpcExampleProvider {
         let limit = 3;
         let owner = SuiAddress::from(ObjectID::new(self.rng.gen()));
         let cursor = ObjectID::new(self.rng.gen());
-        let next = ObjectID::new(self.rng.gen());
         let coins = (0..3)
             .map(|_| Coin {
                 coin_type: "0x2::sui::SUI".to_string(),
@@ -868,7 +872,7 @@ impl RpcExampleProvider {
             .collect::<Vec<_>>();
         let page = CoinPage {
             data: coins,
-            next_cursor: Some(next),
+            next_cursor: Some("abcd".to_string()),
             has_next_page: true,
         };
 
@@ -956,11 +960,9 @@ impl RpcExampleProvider {
             })
             .collect::<Vec<_>>();
 
-        let next_cursor = coins.last().unwrap().coin_object_id;
-
         let page = CoinPage {
             data: coins,
-            next_cursor: Some(next_cursor),
+            next_cursor: Some("abcd".to_string()),
             has_next_page: true,
         };
 
@@ -1212,7 +1214,7 @@ impl RpcExampleProvider {
                     },
                     MoveStructLayout {
                         type_: struct_tag,
-                        fields: Box::new(Vec::new()),
+                        fields: Vec::new(),
                     },
                 )
                 .unwrap(),

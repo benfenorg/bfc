@@ -5,7 +5,7 @@ use std::{collections::BTreeMap, sync::Arc};
 use mysten_common::debug_fatal;
 use mysten_metrics::monitored_mpsc::{channel, Receiver, Sender};
 use parking_lot::Mutex;
-use tap::tap::TapFallible;
+use tap::TapFallible;
 use thiserror::Error;
 use tokio::sync::oneshot;
 use tracing::{error, warn};
@@ -35,7 +35,6 @@ pub(crate) struct TransactionsGuard {
 /// The transactions are submitted to a channel which is shared between the TransactionConsumer and the TransactionClient
 /// and are pulled every time the `next` method is called.
 pub(crate) struct TransactionConsumer {
-    context: Arc<Context>,
     tx_receiver: Receiver<TransactionsGuard>,
     max_transactions_in_block_bytes: u64,
     max_num_transactions_in_block: u64,
@@ -72,7 +71,6 @@ impl TransactionConsumer {
                 .protocol_config
                 .max_transactions_in_block_bytes(),
             max_num_transactions_in_block: context.protocol_config.max_num_transactions_in_block(),
-            context,
             pending_transactions: None,
             block_status_subscribers: Arc::new(Mutex::new(BTreeMap::new())),
         }
@@ -130,7 +128,6 @@ impl TransactionConsumer {
         }
 
         let block_status_subscribers = self.block_status_subscribers.clone();
-        let gc_enabled = self.context.protocol_config.gc_depth() > 0;
         (
             transactions,
             Box::new(move |block_ref: BlockRef| {
@@ -139,16 +136,10 @@ impl TransactionConsumer {
                 for ack in acks {
                     let (status_tx, status_rx) = oneshot::channel();
 
-                    if gc_enabled {
-                        block_status_subscribers
-                            .entry(block_ref)
-                            .or_default()
-                            .push(status_tx);
-                    } else {
-                        // When gc is not enabled, then report directly the block as sequenced while tx is acknowledged for inclusion.
-                        // As blocks can never get garbage collected it is there is actually no meaning to do otherwise and also is safer for edge cases.
-                        status_tx.send(BlockStatus::Sequenced(block_ref)).ok();
-                    }
+                    block_status_subscribers
+                        .entry(block_ref)
+                        .or_default()
+                        .push(status_tx);
 
                     let _ = ack.send((block_ref, status_rx));
                 }
@@ -327,17 +318,20 @@ impl TransactionClient {
 
 /// `TransactionVerifier` implementation is supplied by Sui to validate transactions in a block,
 /// before acceptance of the block.
-#[async_trait::async_trait]
 pub trait TransactionVerifier: Send + Sync + 'static {
     /// Determines if this batch of transactions is valid.
     /// Fails if any one of the transactions is invalid.
     fn verify_batch(&self, batch: &[&[u8]]) -> Result<(), ValidationError>;
 
-    /// Returns indices of transactions to reject, validator error over transactions.
-    /// Currently only uncertified user transactions can be rejected. The rest of transactions
-    /// are implicitly voted to be accepted.
-    /// When the result is an error, the whole block should be rejected from local DAG instead.
-    async fn verify_and_vote_batch(
+    /// Returns indices of transactions to reject, or a transaction validation error.
+    /// Currently only uncertified user transactions can be voted to reject, which are created
+    /// by Mysticeti fastpath client.
+    /// Honest validators may disagree on voting for uncertified user transactions.
+    /// The other types of transactions are implicitly voted to be accepted if they pass validation.
+    ///
+    /// Honest validators should produce the same validation outcome on the same batch of
+    /// transactions. So if a batch from a peer fails validation, the peer is equivocating.
+    fn verify_and_vote_batch(
         &self,
         batch: &[&[u8]],
     ) -> Result<Vec<TransactionIndex>, ValidationError>;
@@ -350,17 +344,16 @@ pub enum ValidationError {
 }
 
 /// `NoopTransactionVerifier` accepts all transactions.
-#[cfg(test)]
-pub(crate) struct NoopTransactionVerifier;
+#[cfg(any(test, msim))]
+pub struct NoopTransactionVerifier;
 
-#[cfg(test)]
-#[async_trait::async_trait]
+#[cfg(any(test, msim))]
 impl TransactionVerifier for NoopTransactionVerifier {
     fn verify_batch(&self, _batch: &[&[u8]]) -> Result<(), ValidationError> {
         Ok(())
     }
 
-    async fn verify_and_vote_batch(
+    fn verify_and_vote_batch(
         &self,
         _batch: &[&[u8]],
     ) -> Result<Vec<TransactionIndex>, ValidationError> {
@@ -438,7 +431,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "current_thread", start_paused = true)]
-    async fn block_status_update_gc_enabled() {
+    async fn block_status_update() {
         let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
             config.set_consensus_max_transaction_size_bytes_for_testing(2_000); // 2KB
             config.set_consensus_max_transactions_in_block_bytes_for_testing(2_000);
@@ -501,60 +494,6 @@ mod tests {
             } else {
                 assert!(matches!(block_status, BlockStatus::Sequenced(_)));
             }
-        }
-
-        // Ensure internal structure is clear
-        assert!(consumer.block_status_subscribers.lock().is_empty());
-    }
-
-    #[tokio::test(flavor = "current_thread", start_paused = true)]
-    async fn block_status_update_gc_disabled() {
-        let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
-            config.set_consensus_max_transaction_size_bytes_for_testing(2_000); // 2KB
-            config.set_consensus_max_transactions_in_block_bytes_for_testing(2_000);
-            config.set_consensus_gc_depth_for_testing(0);
-            config
-        });
-
-        let context = Arc::new(Context::new_for_test(4).0);
-        let (client, tx_receiver) = TransactionClient::new(context.clone());
-        let mut consumer = TransactionConsumer::new(tx_receiver, context.clone());
-
-        // submit the transactions and include 2 of each on a new block
-        let mut included_in_block_waiters = FuturesUnordered::new();
-        for i in 1..=10 {
-            let transaction =
-                bcs::to_bytes(&format!("transaction {i}")).expect("Serialization should not fail.");
-            let w = client
-                .submit_no_wait(vec![transaction])
-                .await
-                .expect("Shouldn't submit successfully transaction");
-            included_in_block_waiters.push(w);
-
-            // Every 2 transactions simulate the creation of a new block and acknowledge the inclusion of the transactions
-            if i % 2 == 0 {
-                let (transactions, ack_transactions, _limit_reached) = consumer.next();
-                assert_eq!(transactions.len(), 2);
-                ack_transactions(BlockRef::new(
-                    i,
-                    AuthorityIndex::new_for_test(0),
-                    BlockDigest::MIN,
-                ));
-            }
-        }
-
-        // Now iterate over all the waiters. Everyone should have been acknowledged.
-        let mut block_status_waiters = Vec::new();
-        while let Some(result) = included_in_block_waiters.next().await {
-            let (block_ref, block_status_waiter) =
-                result.expect("Block inclusion waiter shouldn't fail");
-            block_status_waiters.push((block_ref, block_status_waiter));
-        }
-
-        // Now iterate over all the block status waiters. Everyone should have been notified and everyone should be considered sequenced.
-        for (_block_ref, waiter) in block_status_waiters {
-            let block_status = waiter.await.expect("Block status waiter shouldn't fail");
-            assert!(matches!(block_status, BlockStatus::Sequenced(_)));
         }
 
         // Ensure internal structure is clear

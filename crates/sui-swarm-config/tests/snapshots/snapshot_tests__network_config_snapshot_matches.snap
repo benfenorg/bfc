@@ -14,8 +14,7 @@ validator_configs:
     db-path: /tmp/foo/
     network-address: ""
     json-rpc-address: "0.0.0.0:1"
-    rpc:
-      enable-experimental-rest-api: true
+    rpc: {}
     metrics-address: "0.0.0.0:1"
     admin-interface-port: 8888
     consensus-config:
@@ -44,11 +43,10 @@ validator_configs:
       max-transactions-in-batch: 1000
     end-of-epoch-broadcast-channel-capacity: 128
     checkpoint-executor-config:
-      checkpoint-execution-max-concurrency: 200
+      checkpoint-execution-max-concurrency: 4
       local-execution-timeout-sec: 30
     db-checkpoint-config:
       perform-db-checkpoints-at-epoch-end: false
-    indirect-objects-threshold: 18446744073709551615
     expensive-safety-check-config:
       enable-epoch-sui-conservation-check: false
       enable-deep-per-tx-sui-conservation-check: false
@@ -66,9 +64,6 @@ validator_configs:
       zklogin-disabled-providers: []
     certificate-deny-config: {}
     state-debug-dump-config: {}
-    state-archive-write-config:
-      concurrency: 0
-      use-for-pruning-watermark: false
     state-archive-read-config: []
     state-snapshot-write-config:
       concurrency: 0
@@ -110,7 +105,6 @@ validator_configs:
         - Apple
         - Arden
         - "AwsTenant-region:eu-west-3-tenant_id:eu-west-3_gGVCx53Es"
-        - "AwsTenant-region:us-east-1-tenant_id:us-east-1_LPSLCkC3A"
         - "AwsTenant-region:us-east-1-tenant_id:us-east-1_qPsZxYqd8"
         - Credenza3
         - Facebook
@@ -177,8 +171,7 @@ validator_configs:
     db-path: /tmp/foo/
     network-address: ""
     json-rpc-address: "0.0.0.0:1"
-    rpc:
-      enable-experimental-rest-api: true
+    rpc: {}
     metrics-address: "0.0.0.0:1"
     admin-interface-port: 8888
     consensus-config:
@@ -207,11 +200,10 @@ validator_configs:
       max-transactions-in-batch: 1000
     end-of-epoch-broadcast-channel-capacity: 128
     checkpoint-executor-config:
-      checkpoint-execution-max-concurrency: 200
+      checkpoint-execution-max-concurrency: 4
       local-execution-timeout-sec: 30
     db-checkpoint-config:
       perform-db-checkpoints-at-epoch-end: false
-    indirect-objects-threshold: 18446744073709551615
     expensive-safety-check-config:
       enable-epoch-sui-conservation-check: false
       enable-deep-per-tx-sui-conservation-check: false
@@ -229,9 +221,6 @@ validator_configs:
       zklogin-disabled-providers: []
     certificate-deny-config: {}
     state-debug-dump-config: {}
-    state-archive-write-config:
-      concurrency: 0
-      use-for-pruning-watermark: false
     state-archive-read-config: []
     state-snapshot-write-config:
       concurrency: 0
@@ -273,7 +262,6 @@ validator_configs:
         - Apple
         - Arden
         - "AwsTenant-region:eu-west-3-tenant_id:eu-west-3_gGVCx53Es"
-        - "AwsTenant-region:us-east-1-tenant_id:us-east-1_LPSLCkC3A"
         - "AwsTenant-region:us-east-1-tenant_id:us-east-1_qPsZxYqd8"
         - Credenza3
         - Facebook
@@ -340,8 +328,7 @@ validator_configs:
     db-path: /tmp/foo/
     network-address: ""
     json-rpc-address: "0.0.0.0:1"
-    rpc:
-      enable-experimental-rest-api: true
+    rpc: {}
     metrics-address: "0.0.0.0:1"
     admin-interface-port: 8888
     consensus-config:
@@ -370,11 +357,10 @@ validator_configs:
       max-transactions-in-batch: 1000
     end-of-epoch-broadcast-channel-capacity: 128
     checkpoint-executor-config:
-      checkpoint-execution-max-concurrency: 200
+      checkpoint-execution-max-concurrency: 4
       local-execution-timeout-sec: 30
     db-checkpoint-config:
       perform-db-checkpoints-at-epoch-end: false
-    indirect-objects-threshold: 18446744073709551615
     expensive-safety-check-config:
       enable-epoch-sui-conservation-check: false
       enable-deep-per-tx-sui-conservation-check: false
@@ -392,9 +378,6 @@ validator_configs:
       zklogin-disabled-providers: []
     certificate-deny-config: {}
     state-debug-dump-config: {}
-    state-archive-write-config:
-      concurrency: 0
-      use-for-pruning-watermark: false
     state-archive-read-config: []
     state-snapshot-write-config:
       concurrency: 0
@@ -436,7 +419,6 @@ validator_configs:
         - Apple
         - Arden
         - "AwsTenant-region:eu-west-3-tenant_id:eu-west-3_gGVCx53Es"
-        - "AwsTenant-region:us-east-1-tenant_id:us-east-1_LPSLCkC3A"
         - "AwsTenant-region:us-east-1-tenant_id:us-east-1_qPsZxYqd8"
         - Credenza3
         - Facebook
@@ -503,8 +485,7 @@ validator_configs:
     db-path: /tmp/foo/
     network-address: ""
     json-rpc-address: "0.0.0.0:1"
-    rpc:
-      enable-experimental-rest-api: true
+    rpc: {}
     metrics-address: "0.0.0.0:1"
     admin-interface-port: 8888
     consensus-config:
@@ -533,11 +514,10 @@ validator_configs:
       max-transactions-in-batch: 1000
     end-of-epoch-broadcast-channel-capacity: 128
     checkpoint-executor-config:
-      checkpoint-execution-max-concurrency: 200
+      checkpoint-execution-max-concurrency: 4
       local-execution-timeout-sec: 30
     db-checkpoint-config:
       perform-db-checkpoints-at-epoch-end: false
-    indirect-objects-threshold: 18446744073709551615
     expensive-safety-check-config:
       enable-epoch-sui-conservation-check: false
       enable-deep-per-tx-sui-conservation-check: false
@@ -555,9 +535,6 @@ validator_configs:
       zklogin-disabled-providers: []
     certificate-deny-config: {}
     state-debug-dump-config: {}
-    state-archive-write-config:
-      concurrency: 0
-      use-for-pruning-watermark: false
     state-archive-read-config: []
     state-snapshot-write-config:
       concurrency: 0
@@ -599,7 +576,6 @@ validator_configs:
         - Apple
         - Arden
         - "AwsTenant-region:eu-west-3-tenant_id:eu-west-3_gGVCx53Es"
-        - "AwsTenant-region:us-east-1-tenant_id:us-east-1_LPSLCkC3A"
         - "AwsTenant-region:us-east-1-tenant_id:us-east-1_qPsZxYqd8"
         - Credenza3
         - Facebook
@@ -666,8 +642,7 @@ validator_configs:
     db-path: /tmp/foo/
     network-address: ""
     json-rpc-address: "0.0.0.0:1"
-    rpc:
-      enable-experimental-rest-api: true
+    rpc: {}
     metrics-address: "0.0.0.0:1"
     admin-interface-port: 8888
     consensus-config:
@@ -696,11 +671,10 @@ validator_configs:
       max-transactions-in-batch: 1000
     end-of-epoch-broadcast-channel-capacity: 128
     checkpoint-executor-config:
-      checkpoint-execution-max-concurrency: 200
+      checkpoint-execution-max-concurrency: 4
       local-execution-timeout-sec: 30
     db-checkpoint-config:
       perform-db-checkpoints-at-epoch-end: false
-    indirect-objects-threshold: 18446744073709551615
     expensive-safety-check-config:
       enable-epoch-sui-conservation-check: false
       enable-deep-per-tx-sui-conservation-check: false
@@ -718,9 +692,6 @@ validator_configs:
       zklogin-disabled-providers: []
     certificate-deny-config: {}
     state-debug-dump-config: {}
-    state-archive-write-config:
-      concurrency: 0
-      use-for-pruning-watermark: false
     state-archive-read-config: []
     state-snapshot-write-config:
       concurrency: 0
@@ -762,7 +733,6 @@ validator_configs:
         - Apple
         - Arden
         - "AwsTenant-region:eu-west-3-tenant_id:eu-west-3_gGVCx53Es"
-        - "AwsTenant-region:us-east-1-tenant_id:us-east-1_LPSLCkC3A"
         - "AwsTenant-region:us-east-1-tenant_id:us-east-1_qPsZxYqd8"
         - Credenza3
         - Facebook
@@ -829,8 +799,7 @@ validator_configs:
     db-path: /tmp/foo/
     network-address: ""
     json-rpc-address: "0.0.0.0:1"
-    rpc:
-      enable-experimental-rest-api: true
+    rpc: {}
     metrics-address: "0.0.0.0:1"
     admin-interface-port: 8888
     consensus-config:
@@ -859,11 +828,10 @@ validator_configs:
       max-transactions-in-batch: 1000
     end-of-epoch-broadcast-channel-capacity: 128
     checkpoint-executor-config:
-      checkpoint-execution-max-concurrency: 200
+      checkpoint-execution-max-concurrency: 4
       local-execution-timeout-sec: 30
     db-checkpoint-config:
       perform-db-checkpoints-at-epoch-end: false
-    indirect-objects-threshold: 18446744073709551615
     expensive-safety-check-config:
       enable-epoch-sui-conservation-check: false
       enable-deep-per-tx-sui-conservation-check: false
@@ -881,9 +849,6 @@ validator_configs:
       zklogin-disabled-providers: []
     certificate-deny-config: {}
     state-debug-dump-config: {}
-    state-archive-write-config:
-      concurrency: 0
-      use-for-pruning-watermark: false
     state-archive-read-config: []
     state-snapshot-write-config:
       concurrency: 0
@@ -925,7 +890,6 @@ validator_configs:
         - Apple
         - Arden
         - "AwsTenant-region:eu-west-3-tenant_id:eu-west-3_gGVCx53Es"
-        - "AwsTenant-region:us-east-1-tenant_id:us-east-1_LPSLCkC3A"
         - "AwsTenant-region:us-east-1-tenant_id:us-east-1_qPsZxYqd8"
         - Credenza3
         - Facebook
@@ -992,8 +956,7 @@ validator_configs:
     db-path: /tmp/foo/
     network-address: ""
     json-rpc-address: "0.0.0.0:1"
-    rpc:
-      enable-experimental-rest-api: true
+    rpc: {}
     metrics-address: "0.0.0.0:1"
     admin-interface-port: 8888
     consensus-config:
@@ -1022,11 +985,10 @@ validator_configs:
       max-transactions-in-batch: 1000
     end-of-epoch-broadcast-channel-capacity: 128
     checkpoint-executor-config:
-      checkpoint-execution-max-concurrency: 200
+      checkpoint-execution-max-concurrency: 4
       local-execution-timeout-sec: 30
     db-checkpoint-config:
       perform-db-checkpoints-at-epoch-end: false
-    indirect-objects-threshold: 18446744073709551615
     expensive-safety-check-config:
       enable-epoch-sui-conservation-check: false
       enable-deep-per-tx-sui-conservation-check: false
@@ -1044,9 +1006,6 @@ validator_configs:
       zklogin-disabled-providers: []
     certificate-deny-config: {}
     state-debug-dump-config: {}
-    state-archive-write-config:
-      concurrency: 0
-      use-for-pruning-watermark: false
     state-archive-read-config: []
     state-snapshot-write-config:
       concurrency: 0
@@ -1088,7 +1047,6 @@ validator_configs:
         - Apple
         - Arden
         - "AwsTenant-region:eu-west-3-tenant_id:eu-west-3_gGVCx53Es"
-        - "AwsTenant-region:us-east-1-tenant_id:us-east-1_LPSLCkC3A"
         - "AwsTenant-region:us-east-1-tenant_id:us-east-1_qPsZxYqd8"
         - Credenza3
         - Facebook

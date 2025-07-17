@@ -6,13 +6,17 @@ use std::{collections::BTreeMap, sync::Arc};
 use anyhow::Result;
 use diesel::sql_query;
 use diesel_async::RunQueryDsl;
-use sui_field_count::FieldCount;
-use sui_indexer_alt_framework::pipeline::{concurrent::Handler, Processor};
+use sui_indexer_alt_framework::{
+    pipeline::{concurrent::Handler, Processor},
+    postgres::{Connection, Db},
+    types::{base_types::ObjectID, full_checkpoint_content::CheckpointData, object::Object},
+    FieldCount,
+};
 use sui_indexer_alt_schema::{objects::StoredObjInfo, schema::obj_info};
-use sui_pg_db as db;
-use sui_types::{base_types::ObjectID, full_checkpoint_content::CheckpointData, object::Object};
 
 use crate::consistent_pruning::{PruningInfo, PruningLookupTable};
+
+use super::checkpoint_input_objects;
 
 #[derive(Default)]
 pub(crate) struct ObjInfo {
@@ -36,7 +40,7 @@ impl Processor for ObjInfo {
     // TODO: Add tests for this function and the pruner.
     fn process(&self, checkpoint: &Arc<CheckpointData>) -> Result<Vec<Self::Value>> {
         let cp_sequence_number = checkpoint.checkpoint_summary.sequence_number;
-        let checkpoint_input_objects = checkpoint.checkpoint_input_objects();
+        let checkpoint_input_objects = checkpoint_input_objects(checkpoint)?;
         let latest_live_output_objects = checkpoint
             .latest_live_output_objects()
             .into_iter()
@@ -91,9 +95,11 @@ impl Processor for ObjInfo {
 
 #[async_trait::async_trait]
 impl Handler for ObjInfo {
+    type Store = Db;
+
     const PRUNING_REQUIRES_PROCESSED_VALUES: bool = true;
 
-    async fn commit(values: &[Self::Value], conn: &mut db::Connection<'_>) -> Result<usize> {
+    async fn commit<'a>(values: &[Self::Value], conn: &mut Connection<'a>) -> Result<usize> {
         let stored = values
             .iter()
             .map(|v| v.try_into())
@@ -106,11 +112,11 @@ impl Handler for ObjInfo {
     }
 
     // TODO: Add tests for this function.
-    async fn prune(
+    async fn prune<'a>(
         &self,
         from: u64,
         to_exclusive: u64,
-        conn: &mut db::Connection<'_>,
+        conn: &mut Connection<'a>,
     ) -> Result<usize> {
         use sui_indexer_alt_schema::schema::obj_info::dsl;
 
@@ -123,9 +129,7 @@ impl Handler for ObjInfo {
             return Ok(0);
         }
 
-        // For each (object_id, cp_sequence_number_exclusive), delete all entries in obj_info with
-        // cp_sequence_number less than cp_sequence_number_exclusive that match the object_id.
-
+        // For each (object_id, cp_sequence_number), find and delete its immediate predecessor
         let values = to_prune
             .iter()
             .map(|(object_id, seq_number)| {
@@ -134,20 +138,31 @@ impl Handler for ObjInfo {
             })
             .collect::<Vec<_>>()
             .join(",");
+
         let query = format!(
             "
-            WITH to_prune_data (object_id, cp_sequence_number_exclusive) AS (
+            WITH modifications(object_id, cp_sequence_number) AS (
                 VALUES {}
             )
-            DELETE FROM obj_info
-            USING to_prune_data
-            WHERE obj_info.{:?} = to_prune_data.object_id
-              AND obj_info.{:?} < to_prune_data.cp_sequence_number_exclusive
+            DELETE FROM obj_info oi
+            USING modifications m
+            WHERE oi.{:?} = m.object_id
+              AND oi.{:?} = (
+                SELECT oi2.cp_sequence_number
+                FROM obj_info oi2
+                WHERE oi2.{:?} = m.object_id
+                  AND oi2.{:?} < m.cp_sequence_number
+                ORDER BY oi2.cp_sequence_number DESC
+                LIMIT 1
+              )
             ",
             values,
             dsl::object_id,
             dsl::cp_sequence_number,
+            dsl::object_id,
+            dsl::cp_sequence_number,
         );
+
         let rows_deleted = sql_query(query).execute(conn).await?;
         self.pruning_lookup_table.gc_prune_info(from, to_exclusive);
         Ok(rows_deleted)
@@ -182,19 +197,21 @@ impl TryInto<StoredObjInfo> for &ProcessedObjInfo {
 
 #[cfg(test)]
 mod tests {
-    use sui_indexer_alt_framework::Indexer;
-    use sui_indexer_alt_schema::{objects::StoredOwnerKind, MIGRATIONS};
-    use sui_types::{
-        base_types::{dbg_addr, SequenceNumber},
-        object::{Authenticator, Owner},
-        test_checkpoint_data_builder::TestCheckpointDataBuilder,
+    use sui_indexer_alt_framework::{
+        types::{
+            base_types::{dbg_addr, SequenceNumber},
+            object::Owner,
+            test_checkpoint_data_builder::TestCheckpointDataBuilder,
+        },
+        Indexer,
     };
+    use sui_indexer_alt_schema::{objects::StoredOwnerKind, MIGRATIONS};
 
     use super::*;
 
     // A helper function to return all entries in the obj_info table sorted by object_id and
     // cp_sequence_number.
-    async fn get_all_obj_info(conn: &mut db::Connection<'_>) -> Result<Vec<StoredObjInfo>> {
+    async fn get_all_obj_info(conn: &mut Connection<'_>) -> Result<Vec<StoredObjInfo>> {
         let query = obj_info::table.load(conn).await?;
         Ok(query)
     }
@@ -202,7 +219,7 @@ mod tests {
     #[tokio::test]
     async fn test_process_basics() {
         let (indexer, _db) = Indexer::new_for_testing(&MIGRATIONS).await;
-        let mut conn = indexer.db().connect().await.unwrap();
+        let mut conn = indexer.store().connect().await.unwrap();
         let obj_info = ObjInfo::default();
         let mut builder = TestCheckpointDataBuilder::new(0);
         builder = builder
@@ -235,7 +252,7 @@ mod tests {
 
         builder = builder
             .start_transaction(0)
-            .mutate_object(0)
+            .mutate_owned_object(0)
             .finish_transaction();
         let checkpoint2 = builder.build_checkpoint();
         let result = obj_info.process(&Arc::new(checkpoint2)).unwrap();
@@ -311,7 +328,7 @@ mod tests {
     #[tokio::test]
     async fn test_process_noop() {
         let (indexer, _db) = Indexer::new_for_testing(&MIGRATIONS).await;
-        let mut conn = indexer.db().connect().await.unwrap();
+        let mut conn = indexer.store().connect().await.unwrap();
         let obj_info = ObjInfo::default();
         // In this checkpoint, an object is created and deleted in the same checkpoint.
         // We expect that no updates are made to the table.
@@ -338,7 +355,7 @@ mod tests {
     #[tokio::test]
     async fn test_process_wrap() {
         let (indexer, _db) = Indexer::new_for_testing(&MIGRATIONS).await;
-        let mut conn = indexer.db().connect().await.unwrap();
+        let mut conn = indexer.store().connect().await.unwrap();
         let obj_info = ObjInfo::default();
         let mut builder = TestCheckpointDataBuilder::new(0)
             .start_transaction(0)
@@ -409,7 +426,7 @@ mod tests {
     #[tokio::test]
     async fn test_process_shared_object() {
         let (indexer, _db) = Indexer::new_for_testing(&MIGRATIONS).await;
-        let mut conn = indexer.db().connect().await.unwrap();
+        let mut conn = indexer.store().connect().await.unwrap();
         let obj_info = ObjInfo::default();
         let mut builder = TestCheckpointDataBuilder::new(0)
             .start_transaction(0)
@@ -440,7 +457,7 @@ mod tests {
     #[tokio::test]
     async fn test_process_immutable_object() {
         let (indexer, _db) = Indexer::new_for_testing(&MIGRATIONS).await;
-        let mut conn = indexer.db().connect().await.unwrap();
+        let mut conn = indexer.store().connect().await.unwrap();
         let obj_info = ObjInfo::default();
         let mut builder = TestCheckpointDataBuilder::new(0)
             .start_transaction(0)
@@ -479,7 +496,7 @@ mod tests {
     #[tokio::test]
     async fn test_process_object_owned_object() {
         let (indexer, _db) = Indexer::new_for_testing(&MIGRATIONS).await;
-        let mut conn = indexer.db().connect().await.unwrap();
+        let mut conn = indexer.store().connect().await.unwrap();
         let obj_info = ObjInfo::default();
         let mut builder = TestCheckpointDataBuilder::new(0)
             .start_transaction(0)
@@ -521,7 +538,7 @@ mod tests {
     #[tokio::test]
     async fn test_process_consensus_v2_object() {
         let (indexer, _db) = Indexer::new_for_testing(&MIGRATIONS).await;
-        let mut conn = indexer.db().connect().await.unwrap();
+        let mut conn = indexer.store().connect().await.unwrap();
         let obj_info = ObjInfo::default();
         let mut builder = TestCheckpointDataBuilder::new(0)
             .start_transaction(0)
@@ -536,9 +553,9 @@ mod tests {
             .start_transaction(0)
             .change_object_owner(
                 0,
-                Owner::ConsensusV2 {
+                Owner::ConsensusAddressOwner {
                     start_version: SequenceNumber::from_u64(1),
-                    authenticator: Box::new(Authenticator::SingleOwner(dbg_addr(0))),
+                    owner: dbg_addr(0),
                 },
             )
             .finish_transaction();
@@ -573,7 +590,7 @@ mod tests {
     #[tokio::test]
     async fn test_obj_info_batch_prune() {
         let (indexer, _db) = Indexer::new_for_testing(&MIGRATIONS).await;
-        let mut conn = indexer.db().connect().await.unwrap();
+        let mut conn = indexer.store().connect().await.unwrap();
         let obj_info = ObjInfo::default();
         let mut builder = TestCheckpointDataBuilder::new(0);
         builder = builder
@@ -610,7 +627,7 @@ mod tests {
     #[tokio::test]
     async fn test_obj_info_prune_with_missing_data() {
         let (indexer, _db) = Indexer::new_for_testing(&MIGRATIONS).await;
-        let mut conn = indexer.db().connect().await.unwrap();
+        let mut conn = indexer.store().connect().await.unwrap();
         let obj_info = ObjInfo::default();
         let mut builder = TestCheckpointDataBuilder::new(0);
         builder = builder
@@ -657,5 +674,36 @@ mod tests {
 
         // Now we can prune checkpoint 2, as well as 3.
         obj_info.prune(2, 4, &mut conn).await.unwrap();
+    }
+
+    /// In our processing logic, we consider objects that appear as input to the checkpoint but not
+    /// in the output as wrapped or deleted. This emits a tombstone row. Meanwhile, the remote store
+    /// containing `CheckpointData` used to include unchanged shared objects in the `input_objects`
+    /// of a `CheckpointTransaction`. Because these read-only shared objects were not modified, they
+    ///were not included in `output_objects`. But that means within our pipeline, these object
+    /// states were incorrectly treated as deleted, and thus every transaction read emitted a
+    /// tombstone row. This test validates that unless an object appears as an input object from
+    /// `tx.effects.object_changes`, we do not consider it within our pipeline.
+    ///
+    /// Use the checkpoint builder to create a shared object. Then, remove this from the checkpoint,
+    /// and replace it with a transaction that takes the shared object as read-only.
+    #[tokio::test]
+    async fn test_process_unchanged_shared_object() {
+        let obj_info = ObjInfo::default();
+        let mut builder = TestCheckpointDataBuilder::new(0)
+            .start_transaction(0)
+            .create_shared_object(1)
+            .finish_transaction();
+
+        builder.build_checkpoint();
+
+        builder = builder
+            .start_transaction(0)
+            .read_shared_object(1)
+            .finish_transaction();
+
+        let checkpoint = builder.build_checkpoint();
+        let result = obj_info.process(&Arc::new(checkpoint)).unwrap();
+        assert!(result.is_empty());
     }
 }

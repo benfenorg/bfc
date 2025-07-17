@@ -21,7 +21,6 @@ title: Module `sui_system::storage_fund`
 <b>use</b> <a href="../sui/address.md#sui_address">sui::address</a>;
 <b>use</b> <a href="../sui/bag.md#sui_bag">sui::bag</a>;
 <b>use</b> <a href="../sui/balance.md#sui_balance">sui::balance</a>;
-<b>use</b> <a href="../sui/bfc.md#sui_bfc">sui::bfc</a>;
 <b>use</b> <a href="../sui/coin.md#sui_coin">sui::coin</a>;
 <b>use</b> <a href="../sui/config.md#sui_config">sui::config</a>;
 <b>use</b> <a href="../sui/deny_list.md#sui_deny_list">sui::deny_list</a>;
@@ -30,11 +29,14 @@ title: Module `sui_system::storage_fund`
 <b>use</b> <a href="../sui/event.md#sui_event">sui::event</a>;
 <b>use</b> <a href="../sui/hex.md#sui_hex">sui::hex</a>;
 <b>use</b> <a href="../sui/object.md#sui_object">sui::object</a>;
+<b>use</b> <a href="../sui/party.md#sui_party">sui::party</a>;
+<b>use</b> <a href="../sui/sui.md#sui_sui">sui::sui</a>;
 <b>use</b> <a href="../sui/table.md#sui_table">sui::table</a>;
 <b>use</b> <a href="../sui/transfer.md#sui_transfer">sui::transfer</a>;
 <b>use</b> <a href="../sui/tx_context.md#sui_tx_context">sui::tx_context</a>;
 <b>use</b> <a href="../sui/types.md#sui_types">sui::types</a>;
 <b>use</b> <a href="../sui/url.md#sui_url">sui::url</a>;
+<b>use</b> <a href="../sui/vec_map.md#sui_vec_map">sui::vec_map</a>;
 <b>use</b> <a href="../sui/vec_set.md#sui_vec_set">sui::vec_set</a>;
 </code></pre>
 
@@ -65,12 +67,12 @@ be taken out of the fund.
 
 <dl>
 <dt>
-<code><a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_object_storage_rebates">total_object_storage_rebates</a>: <a href="../sui/balance.md#sui_balance_Balance">sui::balance::Balance</a>&lt;<a href="../sui/bfc.md#sui_bfc_BFC">sui::bfc::BFC</a>&gt;</code>
+<code><a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_object_storage_rebates">total_object_storage_rebates</a>: <a href="../sui/balance.md#sui_balance_Balance">sui::balance::Balance</a>&lt;<a href="../sui/sui.md#sui_sui_SUI">sui::sui::SUI</a>&gt;</code>
 </dt>
 <dd>
 </dd>
 <dt>
-<code>non_refundable_balance: <a href="../sui/balance.md#sui_balance_Balance">sui::balance::Balance</a>&lt;<a href="../sui/bfc.md#sui_bfc_BFC">sui::bfc::BFC</a>&gt;</code>
+<code>non_refundable_balance: <a href="../sui/balance.md#sui_balance_Balance">sui::balance::Balance</a>&lt;<a href="../sui/sui.md#sui_sui_SUI">sui::sui::SUI</a>&gt;</code>
 </dt>
 <dd>
 </dd>
@@ -86,7 +88,7 @@ be taken out of the fund.
 Called by <code><a href="../sui_system/sui_system.md#sui_system_sui_system">sui_system</a></code> at genesis time.
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../sui_system/storage_fund.md#sui_system_storage_fund_new">new</a>(initial_fund: <a href="../sui/balance.md#sui_balance_Balance">sui::balance::Balance</a>&lt;<a href="../sui/bfc.md#sui_bfc_BFC">sui::bfc::BFC</a>&gt;): <a href="../sui_system/storage_fund.md#sui_system_storage_fund_StorageFund">sui_system::storage_fund::StorageFund</a>
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../sui_system/storage_fund.md#sui_system_storage_fund_new">new</a>(initial_fund: <a href="../sui/balance.md#sui_balance_Balance">sui::balance::Balance</a>&lt;<a href="../sui/sui.md#sui_sui_SUI">sui::sui::SUI</a>&gt;): <a href="../sui_system/storage_fund.md#sui_system_storage_fund_StorageFund">sui_system::storage_fund::StorageFund</a>
 </code></pre>
 
 
@@ -95,7 +97,7 @@ Called by <code><a href="../sui_system/sui_system.md#sui_system_sui_system">sui_
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../sui_system/storage_fund.md#sui_system_storage_fund_new">new</a>(initial_fund: Balance&lt;BFC&gt;) : <a href="../sui_system/storage_fund.md#sui_system_storage_fund_StorageFund">StorageFund</a> {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../sui_system/storage_fund.md#sui_system_storage_fund_new">new</a>(initial_fund: Balance&lt;SUI&gt;): <a href="../sui_system/storage_fund.md#sui_system_storage_fund_StorageFund">StorageFund</a> {
     <a href="../sui_system/storage_fund.md#sui_system_storage_fund_StorageFund">StorageFund</a> {
         // At the beginning there's no object in the storage yet
         <a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_object_storage_rebates">total_object_storage_rebates</a>: balance::zero(),
@@ -115,7 +117,7 @@ Called by <code><a href="../sui_system/sui_system.md#sui_system_sui_system">sui_
 Called by <code><a href="../sui_system/sui_system.md#sui_system_sui_system">sui_system</a></code> at epoch change times to process the inflows and outflows of storage fund.
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../sui_system/storage_fund.md#sui_system_storage_fund_advance_epoch">advance_epoch</a>(self: &<b>mut</b> <a href="../sui_system/storage_fund.md#sui_system_storage_fund_StorageFund">sui_system::storage_fund::StorageFund</a>, storage_charges: <a href="../sui/balance.md#sui_balance_Balance">sui::balance::Balance</a>&lt;<a href="../sui/bfc.md#sui_bfc_BFC">sui::bfc::BFC</a>&gt;, storage_fund_reinvestment: <a href="../sui/balance.md#sui_balance_Balance">sui::balance::Balance</a>&lt;<a href="../sui/bfc.md#sui_bfc_BFC">sui::bfc::BFC</a>&gt;, leftover_staking_rewards: <a href="../sui/balance.md#sui_balance_Balance">sui::balance::Balance</a>&lt;<a href="../sui/bfc.md#sui_bfc_BFC">sui::bfc::BFC</a>&gt;, storage_rebate_amount: u64, non_refundable_storage_fee_amount: u64): <a href="../sui/balance.md#sui_balance_Balance">sui::balance::Balance</a>&lt;<a href="../sui/bfc.md#sui_bfc_BFC">sui::bfc::BFC</a>&gt;
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../sui_system/storage_fund.md#sui_system_storage_fund_advance_epoch">advance_epoch</a>(self: &<b>mut</b> <a href="../sui_system/storage_fund.md#sui_system_storage_fund_StorageFund">sui_system::storage_fund::StorageFund</a>, storage_charges: <a href="../sui/balance.md#sui_balance_Balance">sui::balance::Balance</a>&lt;<a href="../sui/sui.md#sui_sui_SUI">sui::sui::SUI</a>&gt;, storage_fund_reinvestment: <a href="../sui/balance.md#sui_balance_Balance">sui::balance::Balance</a>&lt;<a href="../sui/sui.md#sui_sui_SUI">sui::sui::SUI</a>&gt;, leftover_staking_rewards: <a href="../sui/balance.md#sui_balance_Balance">sui::balance::Balance</a>&lt;<a href="../sui/sui.md#sui_sui_SUI">sui::sui::SUI</a>&gt;, storage_rebate_amount: u64, non_refundable_storage_fee_amount: u64): <a href="../sui/balance.md#sui_balance_Balance">sui::balance::Balance</a>&lt;<a href="../sui/sui.md#sui_sui_SUI">sui::sui::SUI</a>&gt;
 </code></pre>
 
 
@@ -126,25 +128,27 @@ Called by <code><a href="../sui_system/sui_system.md#sui_system_sui_system">sui_
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="../sui_system/storage_fund.md#sui_system_storage_fund_advance_epoch">advance_epoch</a>(
     self: &<b>mut</b> <a href="../sui_system/storage_fund.md#sui_system_storage_fund_StorageFund">StorageFund</a>,
-    storage_charges: Balance&lt;BFC&gt;,
-    storage_fund_reinvestment: Balance&lt;BFC&gt;,
-    leftover_staking_rewards: Balance&lt;BFC&gt;,
+    storage_charges: Balance&lt;SUI&gt;,
+    storage_fund_reinvestment: Balance&lt;SUI&gt;,
+    leftover_staking_rewards: Balance&lt;SUI&gt;,
     storage_rebate_amount: u64,
     non_refundable_storage_fee_amount: u64,
-) : Balance&lt;BFC&gt; {
+): Balance&lt;SUI&gt; {
     // Both the reinvestment and leftover rewards are not to be refunded so they go to the non-refundable balance.
-    balance::join(&<b>mut</b> self.non_refundable_balance, storage_fund_reinvestment);
-    balance::join(&<b>mut</b> self.non_refundable_balance, leftover_staking_rewards);
+    self.non_refundable_balance.join(storage_fund_reinvestment);
+    self.non_refundable_balance.join(leftover_staking_rewards);
     // The storage charges <b>for</b> the epoch come from the storage rebate of the <a href="../sui_system/storage_fund.md#sui_system_storage_fund_new">new</a> objects created
     // and the <a href="../sui_system/storage_fund.md#sui_system_storage_fund_new">new</a> storage rebates of the objects modified during the epoch so we put the charges
     // into `<a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_object_storage_rebates">total_object_storage_rebates</a>`.
-    balance::join(&<b>mut</b> self.<a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_object_storage_rebates">total_object_storage_rebates</a>, storage_charges);
+    self.<a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_object_storage_rebates">total_object_storage_rebates</a>.join(storage_charges);
     // Split out the non-refundable portion of the storage rebate and put it into the non-refundable balance.
-    <b>let</b> non_refundable_storage_fee = balance::split(&<b>mut</b> self.<a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_object_storage_rebates">total_object_storage_rebates</a>, non_refundable_storage_fee_amount);
-    balance::join(&<b>mut</b> self.non_refundable_balance, non_refundable_storage_fee);
+    <b>let</b> non_refundable_storage_fee = self
+        .<a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_object_storage_rebates">total_object_storage_rebates</a>
+        .split(non_refundable_storage_fee_amount);
+    self.non_refundable_balance.join(non_refundable_storage_fee);
     // `storage_rebates` include the already refunded rebates of deleted objects and old rebates of modified objects and
     // should be taken out of the `<a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_object_storage_rebates">total_object_storage_rebates</a>`.
-    <b>let</b> storage_rebate = balance::split(&<b>mut</b> self.<a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_object_storage_rebates">total_object_storage_rebates</a>, storage_rebate_amount);
+    <b>let</b> storage_rebate = self.<a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_object_storage_rebates">total_object_storage_rebates</a>.split(storage_rebate_amount);
     // The storage rebate <b>has</b> already been returned to individual transaction senders' gas coins
     // so we <b>return</b> the balance to be burnt at the very end of epoch change.
     storage_rebate
@@ -171,7 +175,7 @@ Called by <code><a href="../sui_system/sui_system.md#sui_system_sui_system">sui_
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_object_storage_rebates">total_object_storage_rebates</a>(self: &<a href="../sui_system/storage_fund.md#sui_system_storage_fund_StorageFund">StorageFund</a>): u64 {
-    balance::value(&self.<a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_object_storage_rebates">total_object_storage_rebates</a>)
+    self.<a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_object_storage_rebates">total_object_storage_rebates</a>.value()
 }
 </code></pre>
 
@@ -195,7 +199,7 @@ Called by <code><a href="../sui_system/sui_system.md#sui_system_sui_system">sui_
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_balance">total_balance</a>(self: &<a href="../sui_system/storage_fund.md#sui_system_storage_fund_StorageFund">StorageFund</a>): u64 {
-    balance::value(&self.<a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_object_storage_rebates">total_object_storage_rebates</a>) + balance::value(&self.non_refundable_balance)
+    self.<a href="../sui_system/storage_fund.md#sui_system_storage_fund_total_object_storage_rebates">total_object_storage_rebates</a>.value() + self.non_refundable_balance.value()
 }
 </code></pre>
 

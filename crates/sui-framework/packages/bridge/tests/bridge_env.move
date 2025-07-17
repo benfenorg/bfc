@@ -65,6 +65,7 @@ module bridge::bridge_env {
         UpdateTokenPriceEvent
     };
     use bridge::bridge_fee::{Self,WithdrawBridgeFeeCap};
+    use bridge::treasury::{TokenRegistrationEvent, NewTokenEvent, UpdateTokenPriceEvent};
     use bridge::usdc::{Self, USDC};
     use bridge::usdt::{Self, USDT};
     use std::ascii::String;
@@ -92,6 +93,7 @@ module bridge::bridge_env {
         SuiSystemState
     };
     use sui::hex;
+    use sui_system::sui_system::{validator_voting_powers_for_testing, SuiSystemState};
 
     //
     // Token IDs
@@ -301,22 +303,17 @@ module bridge::bridge_env {
     //
     // Add a set of validators to the chain.
     // Call only once in a test scenario.
-    public fun setup_validators(
-        env: &mut BridgeEnv,
-        validators_info: vector<ValidatorInfo>,
-    ) {
+    public fun setup_validators(env: &mut BridgeEnv, validators_info: vector<ValidatorInfo>) {
         let scenario = &mut env.scenario;
         scenario.next_tx(@0x0);
         let ctx = scenario.ctx();
-        let validators = validators_info.map_ref!(
-            |validator| {
-                create_validator_for_testing(
-                    validator.validator,
-                    validator.stake_amount,
-                    ctx,
-                )
-            },
-        );
+        let validators = validators_info.map_ref!(|validator| {
+            create_validator_for_testing(
+                validator.validator,
+                validator.stake_amount,
+                ctx,
+            )
+        });
         env.validators = validators_info;
         create_sui_system_state_for_testing(validators, 0, 0, ctx);
         advance_epoch_with_reward_amounts(0, 0, scenario);
@@ -389,19 +386,15 @@ module bridge::bridge_env {
             scenario,
         );
 
-        env
-            .validators
-            .do_ref!(
-                |validator| {
-                    scenario.next_tx(validator.validator);
-                    bridge.committee_registration(
-                        &mut system_state,
-                        *validator.key_pair.public_key(),
-                        b"",
-                        scenario.ctx(),
-                    );
-                },
+        env.validators.do_ref!(|validator| {
+            scenario.next_tx(validator.validator);
+            bridge.committee_registration(
+                &mut system_state,
+                *validator.key_pair.public_key(),
+                b"",
+                scenario.ctx(),
             );
+        });
 
         test_scenario::return_shared(bridge);
         test_scenario::return_shared(system_state);
@@ -441,9 +434,7 @@ module bridge::bridge_env {
         let mut bridge = env.scenario.take_shared<Bridge>();
 
         // BTC
-        let (upgrade_cap, treasury_cap, metadata) = btc::create_bridge_token(env
-            .scenario
-            .ctx());
+        let (upgrade_cap, treasury_cap, metadata) = btc::create_bridge_token(env.scenario.ctx());
         bridge.register_foreign_token<BTC>(
             treasury_cap,
             upgrade_cap,
@@ -451,9 +442,7 @@ module bridge::bridge_env {
         );
         destroy(metadata);
         // ETH
-        let (upgrade_cap, treasury_cap, metadata) = eth::create_bridge_token(env
-            .scenario
-            .ctx());
+        let (upgrade_cap, treasury_cap, metadata) = eth::create_bridge_token(env.scenario.ctx());
         bridge.register_foreign_token<ETH>(
             treasury_cap,
             upgrade_cap,
@@ -461,11 +450,7 @@ module bridge::bridge_env {
         );
         destroy(metadata);
         // USDC
-        let (
-            upgrade_cap,
-            treasury_cap,
-            metadata,
-        ) = usdc::create_bridge_token(env.scenario.ctx());
+        let (upgrade_cap, treasury_cap, metadata) = usdc::create_bridge_token(env.scenario.ctx());
         bridge.register_foreign_token<USDC>(
             treasury_cap,
             upgrade_cap,
@@ -473,11 +458,7 @@ module bridge::bridge_env {
         );
         destroy(metadata);
         // USDT
-        let (
-            upgrade_cap,
-            treasury_cap,
-            metadata,
-        ) = usdt::create_bridge_token(env.scenario.ctx());
+        let (upgrade_cap, treasury_cap, metadata) = usdt::create_bridge_token(env.scenario.ctx());
         bridge.register_foreign_token<USDT>(
             treasury_cap,
             upgrade_cap,
@@ -882,26 +863,19 @@ module bridge::bridge_env {
 
     const SUI_MESSAGE_PREFIX: vector<u8> = b"SUI_BRIDGE_MESSAGE";
 
-    fun sign_message(
-        env: &BridgeEnv,
-        message: BridgeMessage,
-    ): vector<vector<u8>> {
+    fun sign_message(env: &BridgeEnv, message: BridgeMessage): vector<vector<u8>> {
         let mut message_bytes = SUI_MESSAGE_PREFIX;
         message_bytes.append(message.serialize_message());
         let mut message_bytes = SUI_MESSAGE_PREFIX;
         message_bytes.append(message.serialize_message());
-        env
-            .validators
-            .map_ref!(
-                |validator| {
-                    secp256k1_sign(
-                        validator.key_pair.private_key(),
-                        &message_bytes,
-                        0,
-                        true,
-                    )
-                },
+        env.validators.map_ref!(|validator| {
+            secp256k1_sign(
+                validator.key_pair.private_key(),
+                &message_bytes,
+                0,
+                true,
             )
+        })
     }
 
     public fun sign_message_with(
@@ -911,16 +885,14 @@ module bridge::bridge_env {
     ): vector<vector<u8>> {
         let mut message_bytes = SUI_MESSAGE_PREFIX;
         message_bytes.append(message.serialize_message());
-        validator_idxs.map!(
-            |idx| {
-                secp256k1_sign(
-                    env.validators[idx].key_pair.private_key(),
-                    &message_bytes,
-                    0,
-                    true,
-                )
-            },
-        )
+        validator_idxs.map!(|idx| {
+            secp256k1_sign(
+                env.validators[idx].key_pair.private_key(),
+                &message_bytes,
+                0,
+                true,
+            )
+        })
     }
 
     public fun bridge_in_message<Token>(
@@ -1045,13 +1017,9 @@ module bridge::bridge_env {
 
         // verify approval events
         let approved_events = event::events_by_type<TokenTransferApproved>();
-        let already_approved_events = event::events_by_type<
-            TokenTransferAlreadyApproved,
-        >();
-        assert!(
-            approved_events.length() == 1 ||
-            already_approved_events.length() == 1,
-        );
+        let already_approved_events = event::events_by_type<TokenTransferAlreadyApproved>();
+        assert!(approved_events.length() == 1 ||
+            already_approved_events.length() == 1);
         let key = if (approved_events.length() == 1) {
             approved_events[0].transfer_approve_key()
         } else {
@@ -1257,17 +1225,12 @@ module bridge::bridge_env {
 
         // verify approval events
         let approved = event::events_by_type<TokenTransferApproved>();
-        let already_approved = event::events_by_type<
-            TokenTransferAlreadyApproved,
-        >();
+        let already_approved = event::events_by_type<TokenTransferAlreadyApproved>();
         assert!(approved.length() == 1 || already_approved.length() == 1);
         let (key, approve_status) = if (approved.length() == 1) {
             (approved[0].transfer_approve_key(), APPROVED)
         } else {
-            (
-                already_approved[0].transfer_already_approved_key(),
-                ALREADY_APPROVED,
-            )
+            (already_approved[0].transfer_already_approved_key(), ALREADY_APPROVED)
         };
         assert!(msg_key == key);
 
@@ -1300,13 +1263,9 @@ module bridge::bridge_env {
 
         // verify value change and claim events
         let token_value = token.value();
-        assert!(
-            total_supply_before + token_value == get_total_supply<T>(&bridge),
-        );
+        assert!(total_supply_before + token_value == get_total_supply<T>(&bridge));
         let claimed = event::events_by_type<TokenTransferClaimed>();
-        let already_claimed = event::events_by_type<
-            TokenTransferAlreadyClaimed,
-        >();
+        let already_claimed = event::events_by_type<TokenTransferAlreadyClaimed>();
         let limit_exceeded = event::events_by_type<TokenTransferLimitExceed>();
         assert!(
             claimed.length() == 1 || already_claimed.length() == 1 ||
@@ -1354,9 +1313,7 @@ module bridge::bridge_env {
 
         // verify claim events
         let claimed = event::events_by_type<TokenTransferClaimed>();
-        let already_claimed = event::events_by_type<
-            TokenTransferAlreadyClaimed,
-        >();
+        let already_claimed = event::events_by_type<TokenTransferAlreadyClaimed>();
         let limit_exceeded = event::events_by_type<TokenTransferLimitExceed>();
         assert!(
             claimed.length() == 1 || already_claimed.length() == 1 ||
@@ -1671,6 +1628,8 @@ module bridge::bridge_env {
             total_supply_before - coin_value == get_total_supply<T>(&bridge),
         );
         let deposited_events = event::events_by_type<TokenDepositedEventV2>();
+        assert!(total_supply_before - coin_value == get_total_supply<T>(&bridge));
+        let deposited_events = event::events_by_type<TokenDepositedEvent>();
         assert!(deposited_events.length() == 1);
         let (
             event_seq_num,
@@ -1777,8 +1736,7 @@ module bridge::bridge_env {
         sender: address,
         token_id: u64,
         value: u64,
-    ) {
-        // set up
+    ) { // set up
         let scenario = &mut env.scenario;
         scenario.next_tx(sender);
         let mut bridge = scenario.take_shared<Bridge>();
@@ -1798,9 +1756,7 @@ module bridge::bridge_env {
         // verify price events
         let update_events = event::events_by_type<UpdateTokenPriceEvent>();
         assert!(update_events.length() == 1);
-        let (event_token_id, event_new_price) = update_events[
-            0
-        ].unwrap_update_event();
+        let (event_token_id, event_new_price) = update_events[0].unwrap_update_event();
         assert!(event_token_id == token_id);
         assert!(event_new_price == value);
 
@@ -1816,11 +1772,7 @@ module bridge::bridge_env {
         let mut bridge = scenario.take_shared<Bridge>();
 
         // "create" the `Coin`
-        let (
-            upgrade_cap,
-            treasury_cap,
-            metadata,
-        ) = test_token::create_bridge_token(scenario.ctx());
+        let (upgrade_cap, treasury_cap, metadata) = test_token::create_bridge_token(scenario.ctx());
         // register the coin/token with the bridge
         bridge.register_foreign_token<TEST_TOKEN>(
             treasury_cap,

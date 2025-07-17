@@ -12,6 +12,8 @@ use crate::errors::IndexerError;
 use crate::indexer_reader::IndexerReader;
 use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_api::{ReadApiServer, QUERY_MAX_RESULT_LIMIT};
+use sui_json_rpc_types::ZkLoginIntentScope;
+use sui_json_rpc_types::ZkLoginVerifyResult;
 use sui_json_rpc_types::{
     Checkpoint, CheckpointId, CheckpointPage, ProtocolConfigResponse, SuiEvent,
     SuiGetPastObjectRequest, SuiObjectDataOptions, SuiObjectResponse, SuiPastObjectResponse,
@@ -19,6 +21,7 @@ use sui_json_rpc_types::{
 };
 use sui_open_rpc::Module;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
+use sui_types::base_types::SuiAddress;
 use sui_types::base_types::{ObjectID, SequenceNumber};
 use sui_types::dao::DaoRPC;
 use sui_types::digests::{ChainIdentifier, TransactionDigest};
@@ -62,7 +65,7 @@ impl ReadApiServer for ReadApi {
         options: Option<SuiObjectDataOptions>,
     ) -> RpcResult<SuiObjectResponse> {
         let object_read = self.inner.get_object_read(object_id).await?;
-        object_read_to_object_response(&self.inner, object_read, options.unwrap_or_default()).await
+        object_read_to_object_response(object_read, options.unwrap_or_default()).await
     }
 
     // For ease of implementation we just forward to the single object query, although in the
@@ -85,7 +88,7 @@ impl ReadApiServer for ReadApi {
             let object_read = stored_object
                 .try_into_object_read(self.inner.package_resolver())
                 .await?;
-            object_read_to_object_response(&self.inner, object_read, options.clone()).await
+            object_read_to_object_response(object_read, options.clone()).await
         });
 
         let mut objects = futures::future::try_join_all(futures).await?;
@@ -233,6 +236,16 @@ impl ReadApiServer for ReadApi {
         self.get_chain_identifier().await.map(|id| id.to_string())
     }
 
+    async fn verify_zklogin_signature(
+        &self,
+        _bytes: String,
+        _signature: String,
+        _intent_scope: ZkLoginIntentScope,
+        _author: SuiAddress,
+    ) -> RpcResult<ZkLoginVerifyResult> {
+        Err(jsonrpsee::types::error::ErrorCode::MethodNotFound.into())
+    }
+
     async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {
         todo!()
     }
@@ -249,7 +262,6 @@ impl SuiRpcModule for ReadApi {
 }
 
 async fn object_read_to_object_response(
-    indexer_reader: &IndexerReader,
     object_read: ObjectRead,
     options: SuiObjectDataOptions,
 ) -> RpcResult<SuiObjectResponse> {
@@ -258,26 +270,14 @@ async fn object_read_to_object_response(
             SuiObjectResponseError::NotExists { object_id: id },
         )),
         ObjectRead::Exists(object_ref, o, layout) => {
-            let mut display_fields = None;
             if options.show_display {
-                match indexer_reader.get_display_fields(&o, &layout).await {
-                    Ok(rendered_fields) => display_fields = Some(rendered_fields),
-                    Err(e) => {
-                        return Ok(SuiObjectResponse::new(
-                            Some(
-                                (object_ref, o, layout, options, None)
-                                    .try_into()
-                                    .map_err(IndexerError::from)?,
-                            ),
-                            Some(SuiObjectResponseError::DisplayError {
-                                error: e.to_string(),
-                            }),
-                        ));
-                    }
-                }
+                return Err(IndexerError::NotSupportedError(
+                    "Display fields are not supported".to_owned(),
+                )
+                .into());
             }
             Ok(SuiObjectResponse::new_with_data(
-                (object_ref, o, layout, options, display_fields)
+                (object_ref, o, layout, options, None)
                     .try_into()
                     .map_err(IndexerError::from)?,
             ))

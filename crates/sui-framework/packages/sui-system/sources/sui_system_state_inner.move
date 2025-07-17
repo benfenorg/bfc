@@ -2,12 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module sui_system::sui_system_state_inner {
-    use std::ascii;
     use sui::balance::{Self, Balance};
-    use sui::coin::{Self,Coin};
-
-    use sui_system::staking_pool::{StakedBfc, FungibleStakedSui};
-    use sui::bfc::BFC;
+    use sui::coin::Coin;
+    use sui_system::staking_pool::{StakedSui, FungibleStakedSui};
+    use sui::sui::SUI;
     use sui_system::validator::{Self, Validator};
     use sui_system::validator_set::{Self, ValidatorSet};
     use sui_system::validator_cap::{UnverifiedValidatorOperationCap, ValidatorOperationCap};
@@ -20,9 +18,6 @@ module sui_system::sui_system_state_inner {
     use sui::table::Table;
     use sui::bag::Bag;
     use sui::bag;
-    use sui_system::stable_pool;
-    use sui_system::stable_pool::{StakedStable, PoolStableTokenExchangeRate};
-
 
     // same as in validator_set
     const ACTIVE_VALIDATOR_ONLY: u8 = 1;
@@ -952,6 +947,16 @@ module sui_system::sui_system_state_inner {
             (storage_fund_reinvestment_amount as u64),
         );
 
+    let mut storage_fund_reward = computation_reward.split(storage_fund_reward_amount as u64);
+    let storage_fund_reinvestment_amount = mul_div!(
+        storage_fund_reward_amount,
+        storage_fund_reinvest_rate,
+        BASIS_POINT_DENOMINATOR,
+    );
+    let storage_fund_reinvestment = storage_fund_reward.split(
+        storage_fund_reinvestment_amount,
+    );
+
         self.epoch = self.epoch + 1;
         // Sanity check to make sure we are advancing to the right epoch.
         assert!(new_epoch == self.epoch, EAdvancedToWrongEpoch);
@@ -1148,13 +1153,15 @@ module sui_system::sui_system_state_inner {
     }
 
     #[allow(lint(self_transfer))]
-    /// Extract required Balance from vector of Coin<BFC>, transfer the remainder back to sender.
-    fun extract_coin_balance(mut coins: vector<Coin<BFC>>, amount: option::Option<u64>, ctx: &mut TxContext): Balance<BFC> {
-        let mut merged_coin = vector::pop_back(&mut coins);
-        //pay::join_vec(&mut merged_coin, coins);
-        merged_coin.join_vec(coins);
-
-        let mut total_balance = merged_coin.into_balance();
+    /// Extract required Balance from vector of Coin<SUI>, transfer the remainder back to sender.
+    fun extract_coin_balance(
+        mut coins: vector<Coin<BFC>>,
+        amount: Option<u64>,
+        ctx: &mut TxContext,
+    ): Balance<BFC> {
+        let acc = coins.pop_back();
+        let merged = coins.fold!(acc, |mut acc, coin| { acc.join(coin); acc });
+        let mut total_balance = merged.into_balance();
         // return the full amount if amount is not specified
         if (amount.is_some()) {
         let amount = amount.destroy_some();
@@ -1169,7 +1176,19 @@ module sui_system::sui_system_state_inner {
         } else {
         total_balance
         }
-        }
+    }
+
+    public(package) fun store_execution_time_estimates(
+        self: &mut SuiSystemStateInnerV2,
+        estimates: vector<u8>,
+    ) {
+        let key = EXTRA_FIELD_EXECUTION_TIME_ESTIMATES_KEY;
+        if (self.extra_fields.contains(key)) {
+            self.extra_fields.remove<_, vector<u8>>(key);
+        };
+        self.extra_fields.add(key, estimates);
+    }
+
 
         #[test_only]
         /// Return the current validator set
@@ -1182,6 +1201,19 @@ module sui_system::sui_system_state_inner {
         public(package) fun active_validator_by_address(self: &SuiSystemStateInnerV2, validator_address: address): &Validator {
         self.validators().get_active_validator_ref(validator_address)
         }
+    #[test_only]
+    public(package) fun validators_mut(self: &mut SuiSystemStateInnerV2): &mut ValidatorSet {
+        &mut self.validators
+    }
+
+#[test_only]
+/// Return the currently active validator by address
+public(package) fun active_validator_by_address(
+    self: &SuiSystemStateInnerV2,
+    validator_address: address,
+): &Validator {
+    self.validators().get_active_validator_ref(validator_address)
+}
 
         #[test_only]
         /// Return the currently pending validator by address
@@ -1278,4 +1310,9 @@ module sui_system::sui_system_state_inner {
         self.validators.request_add_validator_candidate(validator, ctx);
         }
 
+    macro fun mul_div($a: u64, $b: u64, $c: u64): u64 {
+        (($a as u128) * ($b as u128) / ($c as u128)) as u64
     }
+
+    }
+

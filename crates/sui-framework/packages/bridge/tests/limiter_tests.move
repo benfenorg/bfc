@@ -574,7 +574,7 @@ module bridge::limiter_tests {
             limiter.transfer_limits()[
                 &chain_ids::get_route(chain_ids::eth_mainnet(), chain_ids::sui_mainnet())
             ],
-            500_000 * usd_value_multiplier(),
+            5_000_000 * usd_value_multiplier(),
         );
 
         assert_eq(
@@ -597,7 +597,7 @@ module bridge::limiter_tests {
             limiter.transfer_limits()[
                 &chain_ids::get_route(chain_ids::eth_mainnet(), chain_ids::sui_mainnet())
             ],
-            500_000 * usd_value_multiplier(),
+            5_000_000  * usd_value_multiplier(),
         );
         destroy(limiter);
     }

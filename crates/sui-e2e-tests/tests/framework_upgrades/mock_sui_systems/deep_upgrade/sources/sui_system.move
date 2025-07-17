@@ -722,18 +722,17 @@ module sui_system::sui_system {
     }
 
     fun load_inner_maybe_upgrade(self: &mut SuiSystemState): &mut SuiSystemStateInnerV2 {
-        if (self.version == 1) {
-            let v1: SuiSystemStateInner = dynamic_field::remove(&mut self.id, self.version);
-            let v2 = v1.v1_to_v2();
-            self.version = 2;
-            dynamic_field::add(&mut self.id, self.version, v2);
+        let mut version = self.version;
+        if (version == sui_system_state_inner::genesis_system_state_version()) {
+            let inner: SuiSystemStateInner = dynamic_field::remove(&mut self.id, version);
+            let new_inner = sui_system_state_inner::v1_to_v2(inner);
+            version = sui_system_state_inner::system_state_version(&new_inner);
+            dynamic_field::add(&mut self.id, version, new_inner);
+            self.version = version;
         };
 
-        let inner: &mut SuiSystemStateInnerV2 = dynamic_field::borrow_mut(
-            &mut self.id,
-            self.version
-        );
-        assert!(inner.system_state_version() == self.version, EWrongInnerVersion);
+        let inner: &mut SuiSystemStateInnerV2 = dynamic_field::borrow_mut(&mut self.id, version);
+        assert!(sui_system_state_inner::system_state_version(inner) == version, 0);
         inner
     }
 
@@ -961,5 +960,10 @@ module sui_system::sui_system {
             epoch_start_timestamp_ms,
             ctx,
         )
+    }
+
+    fun store_execution_time_estimates(wrapper: &mut SuiSystemState, estimates_bytes: vector<u8>) {
+        let self = load_system_state_mut(wrapper);
+        sui_system_state_inner::store_execution_time_estimates(self, estimates_bytes)
     }
 }

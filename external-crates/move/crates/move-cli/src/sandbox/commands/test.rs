@@ -7,15 +7,14 @@ use crate::{DEFAULT_BUILD_DIR, DEFAULT_STORAGE_DIR};
 use move_command_line_common::{
     env::read_bool_env_var,
     files::{find_filenames, path_to_string},
-    testing::{add_update_baseline_fix, format_diff, read_env_update_baseline, EXP_EXT},
 };
 use move_compiler::command_line::COLOR_MODE_ENV_VAR;
 use move_coverage::coverage_map::{CoverageMap, ExecCoverageMapWithModules};
 use move_package::{
+    BuildConfig,
     compilation::{compiled_package::OnDiskCompiledPackage, package_layout::CompiledPackageLayout},
     resolution::resolution_graph::ResolvedGraph,
     source_package::{layout::SourcePackageLayout, manifest_parser::parse_move_manifest_from_file},
-    BuildConfig,
 };
 use std::{
     collections::{BTreeMap, HashMap},
@@ -28,11 +27,11 @@ use std::{
 };
 use tempfile::tempdir;
 
-/// Basic datatest testing framework for the CLI. The `run_one` entrypoint expects
-/// an `args.txt` file with arguments that the `move` binary understands (one set
-/// of arguments per line). The testing framework runs the commands, compares the
-/// result to the expected output, and runs `move clean` to discard resources,
-/// modules, and event data created by running the test.
+// Basic datatest testing framework for the CLI. The `run_one` entrypoint expects
+// an `args.txt` file with arguments that the `move` binary understands (one set
+// of arguments per line). The testing framework runs the commands, compares the
+// result to the expected output, and runs `move clean` to discard resources,
+// modules, and event data created by running the test.
 
 /// If this env var is set, `move clean` will not be run after each test.
 /// this is useful if you want to look at the `storage` or `move_events`
@@ -224,7 +223,7 @@ pub fn run_one(
     };
 
     // Disable colors in error reporting from the Move compiler
-    env::set_var(COLOR_MODE_ENV_VAR, "NONE");
+    unsafe { env::set_var(COLOR_MODE_ENV_VAR, "NONE") };
     for args_line in args_file {
         let args_line = args_line?;
 
@@ -244,8 +243,8 @@ pub fn run_one(
             let cmd_output = command.output()?;
 
             writeln!(&mut output, "External Command `{}`:", external_cmd)?;
-            output += std::str::from_utf8(&cmd_output.stdout)?;
-            output += std::str::from_utf8(&cmd_output.stderr)?;
+            output += std::str::from_utf8(cmd_output.stdout.trim_ascii_start())?;
+            output += std::str::from_utf8(cmd_output.stderr.trim_ascii_start())?;
 
             continue;
         }
@@ -268,9 +267,9 @@ pub fn run_one(
                 //   1. we run with move-cli test <path-to-args-A.txt> --track-cov, and
                 //   2. in this <args-A.txt>, there is another command: test <args-B.txt>
                 // then, when running <args-B.txt>, coverage will not be tracked nor printed
-                env::remove_var(MOVE_VM_TRACING_ENV_VAR_NAME);
+                unsafe { env::remove_var(MOVE_VM_TRACING_ENV_VAR_NAME) };
             }
-            Some(path) => env::set_var(MOVE_VM_TRACING_ENV_VAR_NAME, path.as_os_str()),
+            Some(path) => unsafe { env::set_var(MOVE_VM_TRACING_ENV_VAR_NAME, path.as_os_str()) },
         }
 
         let cmd_output = cli_command_template().args(args_iter).output()?;
@@ -396,4 +395,49 @@ pub fn run_all(
     }
 
     Ok(())
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// The following code is migrated from `move-command-line-common` crate, which switched to `insta`
+// for expected output testing. That is not really desierable for the Move CLI, so it has kept
+// this hand rolled approach.
+
+/// Extension for expected output files
+const EXP_EXT: &str = "exp";
+
+/// If any of these env vars is set, the test harness should overwrite
+/// the existing .exp files with the output instead of checking
+/// them against the output.
+const UPDATE_BASELINE: &str = "UPDATE_BASELINE";
+const UPBL: &str = "UPBL";
+const UB: &str = "UB";
+
+fn read_env_update_baseline() -> bool {
+    read_bool_env_var(UPDATE_BASELINE) || read_bool_env_var(UPBL) || read_bool_env_var(UB)
+}
+
+fn add_update_baseline_fix(s: impl AsRef<str>) -> String {
+    format!(
+        "{}\n\
+        Run with `env {}=1` (or `env {}=1`) to save the current output as \
+        the new expected output",
+        s.as_ref(),
+        UB,
+        UPDATE_BASELINE
+    )
+}
+
+fn format_diff(expected: impl AsRef<str>, actual: impl AsRef<str>) -> String {
+    use colored::Colorize;
+    use similar::ChangeTag;
+    let diff = similar::TextDiff::from_lines(expected.as_ref(), actual.as_ref());
+
+    diff.iter_all_changes()
+        .map(|change| match change.tag() {
+            ChangeTag::Delete => format!("{}{}", "-".bold(), change.value()).red(),
+            ChangeTag::Insert => format!("{}{}", "+".bold(), change.value()).green(),
+            ChangeTag::Equal => change.value().dimmed(),
+        })
+        .map(|s| s.to_string())
+        .collect()
 }

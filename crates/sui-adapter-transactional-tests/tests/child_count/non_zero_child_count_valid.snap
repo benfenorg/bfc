@@ -1,0 +1,76 @@
+---
+source: external-crates/move/crates/move-transactional-test-runner/src/framework.rs
+---
+processed 10 tasks
+
+init:
+A: object(0,0), B: object(0,1)
+
+task 1, lines 9-45:
+//# publish
+created: object(1,0)
+mutated: object(0,2)
+gas summary: computation_cost: 1000000, storage_cost: 7296000,  storage_rebate: 0, non_refundable_storage_fee: 0
+
+task 2, line 47:
+//# run test::m::mint_and_share --sender A
+created: object(2,0), object(2,1), object(2,2)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 6178800,  storage_rebate: 0, non_refundable_storage_fee: 0
+
+task 3, lines 49-53:
+//# view-object 2,1
+Owner: Object ID: ( BFCfaeccb41267e22d3ab0fb5f7d68cd66a0bed90e7d01af7ec074601d57f016ae82968 )
+Version: 2
+Contents: test::m::S {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,1),
+        },
+    },
+}
+
+task 4, line 55:
+//# run test::m::mint --sender A
+created: object(4,0), object(4,1), object(4,2)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 6178800,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
+
+task 5, line 57:
+//# run test::m::transfer --sender A --args object(4,2) @B
+mutated: object(0,0), object(4,2)
+gas summary: computation_cost: 1000000, storage_cost: 2515600,  storage_rebate: 2490444, non_refundable_storage_fee: 25156
+
+task 6, lines 59-63:
+//# view-object 4,2
+Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
+Version: 4
+Contents: test::m::S {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(4,2),
+        },
+    },
+}
+
+task 7, line 65:
+//# run test::m::mint --sender A
+created: object(7,0), object(7,1), object(7,2)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 6178800,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
+
+task 8, line 67:
+//# transfer-object 7,1 --sender A --recipient B
+Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: object(7,1), parent_id: object(7,0) }
+
+task 9, line 69:
+//# view-object 7,1
+Owner: Object ID: ( BFC8d089c745b8ce42a84f52c33a446d4b70fc4dafdf851bdcc05f90154fd246b088480 )
+Version: 5
+Contents: test::m::S {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(7,1),
+        },
+    },
+}

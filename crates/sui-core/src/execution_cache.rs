@@ -7,8 +7,10 @@ use crate::authority::backpressure::BackpressureManager;
 use crate::authority::epoch_start_configuration::EpochFlag;
 use crate::authority::epoch_start_configuration::EpochStartConfiguration;
 use crate::authority::AuthorityStore;
-use crate::state_accumulator::AccumulatorStore;
+use crate::global_state_hasher::GlobalStateHashStore;
 use crate::transaction_outputs::TransactionOutputs;
+use either::Either;
+use itertools::Itertools;
 use mysten_common::fatal;
 use sui_types::bridge::Bridge;
 
@@ -20,9 +22,10 @@ use std::sync::Arc;
 use sui_config::ExecutionCacheConfig;
 use sui_protocol_config::ProtocolVersion;
 use sui_types::base_types::{FullObjectID, VerifiedExecutionData};
-use sui_types::digests::{TransactionDigest, TransactionEffectsDigest, TransactionEventsDigest};
+use sui_types::digests::{TransactionDigest, TransactionEffectsDigest};
 use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::error::{SuiError, SuiResult, UserInputError};
+use sui_types::executable_transaction::VerifiedExecutableTransaction;
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
 use sui_types::object::Object;
 use sui_types::storage::{
@@ -37,6 +40,7 @@ use sui_types::{
     storage::InputKey,
 };
 use tracing::instrument;
+use typed_store::rocks::DBBatch;
 
 pub(crate) mod cache_types;
 pub mod metrics;
@@ -63,7 +67,7 @@ pub struct ExecutionCacheTraitPointers {
     pub backing_package_store: Arc<dyn BackingPackageStore + Send + Sync>,
     pub object_store: Arc<dyn ObjectStore + Send + Sync>,
     pub reconfig_api: Arc<dyn ExecutionCacheReconfigAPI>,
-    pub accumulator_store: Arc<dyn AccumulatorStore>,
+    pub global_state_hash_store: Arc<dyn GlobalStateHashStore>,
     pub checkpoint_cache: Arc<dyn CheckpointCache>,
     pub state_sync_store: Arc<dyn StateSyncAPI>,
     pub cache_commit: Arc<dyn ExecutionCacheCommit>,
@@ -80,7 +84,7 @@ impl ExecutionCacheTraitPointers {
             + BackingPackageStore
             + ObjectStore
             + ExecutionCacheReconfigAPI
-            + AccumulatorStore
+            + GlobalStateHashStore
             + CheckpointCache
             + StateSyncAPI
             + ExecutionCacheCommit
@@ -95,7 +99,7 @@ impl ExecutionCacheTraitPointers {
             backing_package_store: cache.clone(),
             object_store: cache.clone(),
             reconfig_api: cache.clone(),
-            accumulator_store: cache.clone(),
+            global_state_hash_store: cache.clone(),
             checkpoint_cache: cache.clone(),
             state_sync_store: cache.clone(),
             cache_commit: cache.clone(),
@@ -142,39 +146,26 @@ pub fn build_execution_cache_from_env(
     )
 }
 
+pub type Batch = (Vec<Arc<TransactionOutputs>>, DBBatch);
+
 pub trait ExecutionCacheCommit: Send + Sync {
+    /// Build a DBBatch containing the given transaction outputs.
+    fn build_db_batch(&self, epoch: EpochId, digests: &[TransactionDigest]) -> Batch;
+
     /// Durably commit the outputs of the given transactions to the database.
     /// Will be called by CheckpointExecutor to ensure that transaction outputs are
     /// written durably before marking a checkpoint as finalized.
-    fn commit_transaction_outputs<'a>(
-        &'a self,
-        epoch: EpochId,
-        digests: &'a [TransactionDigest],
-        // TODO: Delete this parameter once table migration is complete.
-        use_object_per_epoch_marker_table_v2: bool,
-    ) -> BoxFuture<'a, ()>;
-
-    /// Durably commit transactions (but not their outputs) to the database.
-    /// Called before writing a locally built checkpoint to the CheckpointStore, so that
-    /// the inputs of the checkpoint cannot be lost.
-    /// These transactions are guaranteed to be final unless this validator
-    /// forks (i.e. constructs a checkpoint which will never be certified). In this case
-    /// some non-final transactions could be left in the database.
-    ///
-    /// This is an intermediate solution until we delay commits to the epoch db. After
-    /// we have done that, crash recovery will be done by re-processing consensus commits
-    /// and pending_consensus_transactions, and this method can be removed.
-    fn persist_transactions<'a>(&'a self, digests: &'a [TransactionDigest]) -> BoxFuture<'a, ()>;
-
-    /// Persist transactions and their effects to the database, but no other outputs.
-    /// Additionally this stores the content-addressed effects in the database but does
-    /// not add an executed_effects. This is required for recovery from a crash when
-    /// upgrading to data-quarantining.
-    /// TODO: remove this once all nodes have upgraded to data-quarantining.
-    fn persist_transactions_and_effects(
+    fn commit_transaction_outputs(
         &self,
-        digests: &[(TransactionDigest, TransactionEffectsDigest)],
+        epoch: EpochId,
+        batch: Batch,
+        digests: &[TransactionDigest],
     );
+
+    /// Durably commit a transaction to the database. Used to store any transactions
+    /// that cannot be reconstructed at start-up by consensus replay. Currently the only
+    /// case of this is RandomnessStateUpdate.
+    fn persist_transaction(&self, transaction: &VerifiedExecutableTransaction);
 
     // Number of pending uncommitted transactions
     fn approximate_pending_transaction_count(&self) -> u64;
@@ -251,28 +242,36 @@ pub trait ObjectCacheRead: Send + Sync {
         Ok(result)
     }
 
-    /// Used by transaction manager to determine if input objects are ready. Distinct from multi_get_object_by_key
+    /// Used by execution scheduler to determine if input objects are ready. Distinct from multi_get_object_by_key
     /// because it also consults markers to handle the case where an object will never become available (e.g.
     /// because it has been received by some other transaction already).
     fn multi_input_objects_available(
         &self,
         keys: &[InputKey],
-        receiving_objects: HashSet<InputKey>,
-        epoch: EpochId,
-        // TODO: Delete this parameter once table migration is complete.
-        use_object_per_epoch_marker_table_v2: bool,
+        receiving_objects: &HashSet<InputKey>,
+        epoch: &EpochId,
     ) -> Vec<bool> {
-        let (keys_with_version, keys_without_version): (Vec<_>, Vec<_>) = keys
-            .iter()
-            .enumerate()
-            .partition(|(_, key)| key.version().is_some());
+        let mut results = vec![false; keys.len()];
+        let non_canceled_keys = keys.iter().enumerate().filter(|(idx, key)| {
+            if key.is_cancelled() {
+                // Shared objects in canceled transactions are always available.
+                results[*idx] = true;
+                false
+            } else {
+                true
+            }
+        });
+        let (move_object_keys, package_object_keys): (Vec<_>, Vec<_>) = non_canceled_keys
+            .partition_map(|(idx, key)| match key {
+                InputKey::VersionedObject { id, version } => Either::Left((idx, (id, version))),
+                InputKey::Package { id } => Either::Right((idx, id)),
+            });
 
-        let mut versioned_results = vec![];
-        for ((idx, input_key), has_key) in keys_with_version.iter().zip(
+        for ((idx, (id, version)), has_key) in move_object_keys.iter().zip(
             self.multi_object_exists_by_key(
-                &keys_with_version
+                &move_object_keys
                     .iter()
-                    .map(|(_, k)| ObjectKey(k.id().id(), k.version().unwrap()))
+                    .map(|(_, k)| ObjectKey(k.0.id(), *k.1))
                     .collect::<Vec<_>>(),
             )
                 .into_iter(),
@@ -285,8 +284,11 @@ pub trait ObjectCacheRead: Send + Sync {
             );
             // If the key exists at the specified version, then the object is available.
             if has_key {
-                versioned_results.push((*idx, true))
-            } else if receiving_objects.contains(input_key) {
+                results[*idx] = true;
+            } else if receiving_objects.contains(&InputKey::VersionedObject {
+                id: **id,
+                version: **version,
+            }) {
                 // There could be a more recent version of this object, and the object at the
                 // specified version could have already been pruned. In such a case `has_key` will
                 // be false, but since this is a receiving object we should mark it as available if
@@ -294,8 +296,8 @@ pub trait ObjectCacheRead: Send + Sync {
                 // specified version exists or was deleted. We will then let mark it as available
                 // to let the transaction through so it can fail at execution.
                 let is_available = self
-                    .get_object(&input_key.id().id())
-                    .map(|obj| obj.version() >= input_key.version().unwrap())
+                    .get_object(&id.id())
+                    .map(|obj| obj.version() >= **version)
                     .unwrap_or(false)
                     || self.have_deleted_fastpath_object_at_version_or_after(
                     input_key.id().id(),
@@ -315,28 +317,28 @@ pub trait ObjectCacheRead: Send + Sync {
                 // If the object is an already deleted shared object, mark it as available if the
                 // version for that object is in the shared deleted marker table.
                 versioned_results.push((*idx, true));
+                    || self.fastpath_stream_ended_at_version_or_after(id.id(), **version, *epoch);
+                results[*idx] = is_available;
             } else {
-                versioned_results.push((*idx, false));
+                // If the object is an already-removed consensus object, mark it as available if the
+                // version for that object is in the marker table.
+                let is_consensus_stream_ended = self
+                    .get_consensus_stream_end_tx_digest(FullObjectKey::new(**id, **version), *epoch)
+                    .is_some();
+                results[*idx] = is_consensus_stream_ended;
             }
         }
 
-        let unversioned_results = keys_without_version.into_iter().map(|(idx, key)| {
-            (
-                idx,
-                match self.get_latest_object_ref_or_tombstone(key.id().id()) {
-                    None => false,
-                    Some(entry) => entry.2.is_alive(),
-                },
-            )
+        package_object_keys.into_iter().for_each(|(idx, id)| {
+            // unwrap is safe since this only errors when the object is not a package,
+            // which is impossible if we have a certificate for execution.
+            results[idx] = self.get_package_object(id).unwrap().is_some();
         });
 
-        let mut results = versioned_results
-            .into_iter()
-            .chain(unversioned_results)
-            .collect::<Vec<_>>();
-        results.sort_by_key(|(idx, _)| *idx);
-        results.into_iter().map(|(_, result)| result).collect()
+        results
     }
+
+    fn multi_input_objects_available_cache_only(&self, keys: &[InputKey]) -> Vec<bool>;
 
     /// Return the object with version less then or eq to the provided seq number.
     /// This is used by indexer to find the correct version of dynamic field child object.
@@ -368,47 +370,38 @@ pub trait ObjectCacheRead: Send + Sync {
     // Marker methods
 
     /// Get the marker at a specific version
-    fn get_marker_value(
-        &self,
-        object_key: FullObjectKey,
-        epoch_id: EpochId,
-        // TODO: Delete this parameter once table migration is complete.
-        use_object_per_epoch_marker_table_v2: bool,
-    ) -> Option<MarkerValue>;
+    fn get_marker_value(&self, object_key: FullObjectKey, epoch_id: EpochId)
+        -> Option<MarkerValue>;
 
     /// Get the latest marker for a given object.
     fn get_latest_marker(
         &self,
         object_id: FullObjectID,
         epoch_id: EpochId,
-        // TODO: Delete this parameter once table migration is complete.
-        use_object_per_epoch_marker_table_v2: bool,
     ) -> Option<(SequenceNumber, MarkerValue)>;
 
-    /// If the shared object was deleted, return deletion info for the current live version
-    fn get_last_shared_object_deletion_info(
+    /// If the given consensus object stream was ended, return related
+    /// version and transaction digest.
+    fn get_last_consensus_stream_end_info(
         &self,
         object_id: FullObjectID,
         epoch_id: EpochId,
-        // TODO: Delete this parameter once table migration is complete.
-        use_object_per_epoch_marker_table_v2: bool,
     ) -> Option<(SequenceNumber, TransactionDigest)> {
-        match self.get_latest_marker(object_id, epoch_id, use_object_per_epoch_marker_table_v2) {
-            Some((version, MarkerValue::SharedDeleted(digest))) => Some((version, digest)),
+        match self.get_latest_marker(object_id, epoch_id) {
+            Some((version, MarkerValue::ConsensusStreamEnded(digest))) => Some((version, digest)),
             _ => None,
         }
     }
 
-    /// If the shared object was deleted, return deletion info for the specified version.
-    fn get_deleted_shared_object_previous_tx_digest(
+    /// If the given consensus object stream was ended at the specified version,
+    /// return related transaction digest.
+    fn get_consensus_stream_end_tx_digest(
         &self,
         object_key: FullObjectKey,
         epoch_id: EpochId,
-        // TODO: Delete this parameter once table migration is complete.
-        use_object_per_epoch_marker_table_v2: bool,
     ) -> Option<TransactionDigest> {
-        match self.get_marker_value(object_key, epoch_id, use_object_per_epoch_marker_table_v2) {
-            Some(MarkerValue::SharedDeleted(digest)) => Some(digest),
+        match self.get_marker_value(object_key, epoch_id) {
+            Some(MarkerValue::ConsensusStreamEnded(digest)) => Some(digest),
             _ => None,
         }
     }
@@ -417,32 +410,42 @@ pub trait ObjectCacheRead: Send + Sync {
         &self,
         object_key: FullObjectKey,
         epoch_id: EpochId,
-        // TODO: Delete this parameter once table migration is complete.
-        use_object_per_epoch_marker_table_v2: bool,
     ) -> bool {
         matches!(
-            self.get_marker_value(object_key, epoch_id, use_object_per_epoch_marker_table_v2),
+            self.get_marker_value(object_key, epoch_id),
             Some(MarkerValue::Received)
         )
     }
 
-    fn have_deleted_fastpath_object_at_version_or_after(
+    fn fastpath_stream_ended_at_version_or_after(
         &self,
         object_id: ObjectID,
         version: SequenceNumber,
         epoch_id: EpochId,
-        // TODO: Delete this parameter once table migration is complete.
-        use_object_per_epoch_marker_table_v2: bool,
     ) -> bool {
-        let full_id = FullObjectID::Fastpath(object_id); // function explicilty assumes "fastpath"
+        let full_id = FullObjectID::Fastpath(object_id); // function explicitly assumes "fastpath"
         matches!(
-            self.get_latest_marker(full_id, epoch_id, use_object_per_epoch_marker_table_v2),
-            Some((marker_version, MarkerValue::OwnedDeleted)) if marker_version >= version
+            self.get_latest_marker(full_id, epoch_id),
+            Some((marker_version, MarkerValue::FastpathStreamEnded)) if marker_version >= version
         )
     }
 
     /// Return the watermark for the highest checkpoint for which we've pruned objects.
-    fn get_highest_pruned_checkpoint(&self) -> CheckpointSequenceNumber;
+    fn get_highest_pruned_checkpoint(&self) -> Option<CheckpointSequenceNumber>;
+
+    /// Given a list of input and receiving objects for a transaction,
+    /// wait until all of them become available, so that the transaction
+    /// can start execution.
+    /// `input_and_receiving_keys` contains both input objects and receiving
+    /// input objects, including canceled objects.
+    /// TODO: Eventually this can return the objects read results,
+    /// so that execution does not need to load them again.
+    fn notify_read_input_objects<'a>(
+        &'a self,
+        input_and_receiving_keys: &'a [InputKey],
+        receiving_keys: &'a HashSet<InputKey>,
+        epoch: &'a EpochId,
+    ) -> BoxFuture<'a, ()>;
 }
 
 pub trait TransactionCacheRead: Send + Sync {
@@ -538,12 +541,9 @@ pub trait TransactionCacheRead: Send + Sync {
             .expect("multi-get must return correct number of items")
     }
 
-    fn multi_get_events(
-        &self,
-        event_digests: &[TransactionEventsDigest],
-    ) -> Vec<Option<TransactionEvents>>;
+    fn multi_get_events(&self, digests: &[TransactionDigest]) -> Vec<Option<TransactionEvents>>;
 
-    fn get_events(&self, digest: &TransactionEventsDigest) -> Option<TransactionEvents> {
+    fn get_events(&self, digest: &TransactionDigest) -> Option<TransactionEvents> {
         self.multi_get_events(&[*digest])
             .pop()
             .expect("multi-get must return correct number of items")
@@ -595,22 +595,22 @@ pub trait ExecutionCacheWrite: Send + Sync {
     /// Any write performed by this method immediately notifies any waiter that has previously
     /// called notify_read_objects_for_execution or notify_read_objects_for_signing for the object
     /// in question.
-    fn write_transaction_outputs(
-        &self,
-        epoch_id: EpochId,
-        tx_outputs: Arc<TransactionOutputs>,
-        // TODO: Delete this parameter once table migration is complete.
-        use_object_per_epoch_marker_table_v2: bool,
-    ) -> BoxFuture<'_, ()>;
+    fn write_transaction_outputs(&self, epoch_id: EpochId, tx_outputs: Arc<TransactionOutputs>);
 
     /// Attempt to acquire object locks for all of the owned input locks.
-    fn acquire_transaction_locks<'a>(
-        &'a self,
-        epoch_store: &'a AuthorityPerEpochStore,
-        owned_input_objects: &'a [ObjectRef],
+    fn acquire_transaction_locks(
+        &self,
+        epoch_store: &AuthorityPerEpochStore,
+        owned_input_objects: &[ObjectRef],
         tx_digest: TransactionDigest,
         signed_transaction: Option<VerifiedSignedTransaction>,
-    ) -> BoxFuture<'a, SuiResult>;
+    ) -> SuiResult;
+
+    /// Write an object entry directly to the cache for testing.
+    /// This allows us to write an object without constructing the entire
+    /// transaction outputs.
+    #[cfg(test)]
+    fn write_object_entry_for_test(&self, object: Object);
 }
 
 pub trait CheckpointCache: Send + Sync {
@@ -737,8 +737,6 @@ macro_rules! implement_storage_traits {
                 receiving_object_id: &ObjectID,
                 receive_object_at_version: SequenceNumber,
                 epoch_id: EpochId,
-                // TODO: Delete this parameter once table migration is complete.
-                use_object_per_epoch_marker_table_v2: bool,
             ) -> SuiResult<Option<Object>> {
                 let Some(recv_object) = ObjectCacheRead::get_object_by_key(
                     self,
@@ -755,13 +753,12 @@ macro_rules! implement_storage_traits {
                 // transaction replay due to possible reordering of transactions during replay.
                 if recv_object.owner != Owner::AddressOwner((*owner).into())
                     || self.have_received_object_at_version(
-                        // TODO: Add support for receiving ConsensusV2 objects. For now this assumes fastpath.
+                        // TODO: Add support for receiving consensus objects. For now this assumes fastpath.
                         FullObjectKey::new(
                             FullObjectID::new(*receiving_object_id, None),
                             receive_object_at_version,
                         ),
                         epoch_id,
-                        use_object_per_epoch_marker_table_v2,
                     )
                 {
                     return Ok(None);

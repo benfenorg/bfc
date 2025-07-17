@@ -8,20 +8,20 @@
 use crate::{
     diag,
     diagnostics::{
-        codes::{custom, DiagnosticInfo, Severity},
-        warning_filters::WarningFilters,
         Diagnostic, DiagnosticReporter, Diagnostics,
+        codes::{DiagnosticInfo, Severity, custom},
+        warning_filters::WarningFilters,
     },
     expansion::ast as E,
     naming::ast as N,
     parser::ast::{self as P, Ability_},
-    shared::{program_info::TypingProgramInfo, CompilationEnv, Identifier},
+    shared::{CompilationEnv, Identifier, program_info::TypingProgramInfo},
     sui_mode::{
+        SUI_ADDR_VALUE,
         linters::{
-            LinterDiagnosticCategory, LinterDiagnosticCode, FREEZE_FUN, LINT_WARNING_PREFIX,
+            FREEZE_FUN, LINT_WARNING_PREFIX, LinterDiagnosticCategory, LinterDiagnosticCode,
             PUBLIC_FREEZE_FUN, TRANSFER_MOD_NAME,
         },
-        SUI_ADDR_VALUE,
     },
     typing::{
         ast as T,
@@ -110,7 +110,7 @@ impl Context<'_> {
     }
 }
 
-impl<'a> TypingVisitorContext for Context<'a> {
+impl TypingVisitorContext for Context<'_> {
     fn visit_module_custom(&mut self, _ident: E::ModuleIdent, mdef: &T::ModuleDefinition) -> bool {
         // skips if true
         mdef.attributes.is_test_or_test_only()
@@ -161,7 +161,7 @@ impl<'a> TypingVisitorContext for Context<'a> {
     }
 }
 
-impl<'a> Context<'a> {
+impl Context<'_> {
     /// Checks if a given field (identified by ftype and fname) wraps other objects and, if so,
     /// returns its location and information on whether wrapping is direct or indirect.
     fn wraps_object(

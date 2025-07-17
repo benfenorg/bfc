@@ -32,7 +32,7 @@ use tokio::time::timeout;
 use tracing::{info, warn};
 
 use crate::authority::AuthorityState;
-use crate::state_accumulator::StateAccumulator;
+use crate::global_state_hasher::GlobalStateHasher;
 
 const WAIT_FOR_TX_TIMEOUT: Duration = Duration::from_secs(15);
 
@@ -63,7 +63,8 @@ pub async fn send_and_confirm_transaction(
     //
     // We also check the incremental effects of the transaction on the live object set against StateAccumulator
     // for testing and regression detection
-    let state_acc = StateAccumulator::new_for_tests(authority.get_accumulator_store().clone());
+    let state_acc =
+        GlobalStateHasher::new_for_tests(authority.get_global_state_hash_store().clone());
     let include_wrapped_tombstone = !authority
         .epoch_store_for_testing()
         .protocol_config()
@@ -74,7 +75,7 @@ pub async fn send_and_confirm_transaction(
     let state_after =
         state_acc.accumulate_cached_live_object_set_for_testing(include_wrapped_tombstone);
     let effects_acc = state_acc.accumulate_effects(
-        vec![result.inner().data().clone()],
+        &[result.inner().data().clone()],
         epoch_store.protocol_config(),
     );
     state.union(&effects_acc);
@@ -310,6 +311,7 @@ pub fn make_cert_with_large_committee(
         committee,
         &Default::default(),
         Arc::new(VerifiedDigestCache::new_empty()),
+        None,
     )
     .unwrap();
     cert

@@ -61,7 +61,6 @@ of the type at once.
 <b>use</b> <a href="../sui/address.md#sui_address">sui::address</a>;
 <b>use</b> <a href="../sui/bag.md#sui_bag">sui::bag</a>;
 <b>use</b> <a href="../sui/balance.md#sui_balance">sui::balance</a>;
-<b>use</b> <a href="../sui/bfc.md#sui_bfc">sui::bfc</a>;
 <b>use</b> <a href="../sui/coin.md#sui_coin">sui::coin</a>;
 <b>use</b> <a href="../sui/config.md#sui_config">sui::config</a>;
 <b>use</b> <a href="../sui/deny_list.md#sui_deny_list">sui::deny_list</a>;
@@ -71,11 +70,14 @@ of the type at once.
 <b>use</b> <a href="../sui/hex.md#sui_hex">sui::hex</a>;
 <b>use</b> <a href="../sui/object.md#sui_object">sui::object</a>;
 <b>use</b> <a href="../sui/package.md#sui_package">sui::package</a>;
+<b>use</b> <a href="../sui/party.md#sui_party">sui::party</a>;
+<b>use</b> <a href="../sui/sui.md#sui_sui">sui::sui</a>;
 <b>use</b> <a href="../sui/table.md#sui_table">sui::table</a>;
 <b>use</b> <a href="../sui/transfer.md#sui_transfer">sui::transfer</a>;
 <b>use</b> <a href="../sui/tx_context.md#sui_tx_context">sui::tx_context</a>;
 <b>use</b> <a href="../sui/types.md#sui_types">sui::types</a>;
 <b>use</b> <a href="../sui/url.md#sui_url">sui::url</a>;
+<b>use</b> <a href="../sui/vec_map.md#sui_vec_map">sui::vec_map</a>;
 <b>use</b> <a href="../sui/vec_set.md#sui_vec_set">sui::vec_set</a>;
 </code></pre>
 
@@ -160,7 +162,7 @@ policies can be used to confirm the <code><a href="../sui/transfer_policy.md#sui
 <dd>
 </dd>
 <dt>
-<code><a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/balance.md#sui_balance_Balance">sui::balance::Balance</a>&lt;<a href="../sui/bfc.md#sui_bfc_BFC">sui::bfc::BFC</a>&gt;</code>
+<code><a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/balance.md#sui_balance_Balance">sui::balance::Balance</a>&lt;<a href="../sui/sui.md#sui_sui_SUI">sui::sui::SUI</a>&gt;</code>
 </dt>
 <dd>
  The Balance of the <code><a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a></code> which collects <code>SUI</code>.
@@ -297,6 +299,16 @@ Key to store "Rule" configuration for a specific <code><a href="../sui/transfer_
 ## Constants
 
 
+<a name="sui_transfer_policy_EPolicyNotSatisfied"></a>
+
+The number of receipts does not match the <code><a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a></code> requirement.
+
+
+<pre><code><b>const</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_EPolicyNotSatisfied">EPolicyNotSatisfied</a>: u64 = 0;
+</code></pre>
+
+
+
 <a name="sui_transfer_policy_EIllegalRule"></a>
 
 A completed rule is not set in the <code><a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a></code>.
@@ -307,32 +319,12 @@ A completed rule is not set in the <code><a href="../sui/transfer_policy.md#sui_
 
 
 
-<a name="sui_transfer_policy_ENotEnough"></a>
+<a name="sui_transfer_policy_EUnknownRequirement"></a>
 
-Trying to <code><a href="../sui/transfer_policy.md#sui_transfer_policy_withdraw">withdraw</a></code> more than there is.
-
-
-<pre><code><b>const</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_ENotEnough">ENotEnough</a>: u64 = 5;
-</code></pre>
+A Rule is not set.
 
 
-
-<a name="sui_transfer_policy_ENotOwner"></a>
-
-Trying to <code><a href="../sui/transfer_policy.md#sui_transfer_policy_withdraw">withdraw</a></code> or <code>close_and_withdraw</code> with a wrong Cap.
-
-
-<pre><code><b>const</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_ENotOwner">ENotOwner</a>: u64 = 4;
-</code></pre>
-
-
-
-<a name="sui_transfer_policy_EPolicyNotSatisfied"></a>
-
-The number of receipts does not match the <code><a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a></code> requirement.
-
-
-<pre><code><b>const</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_EPolicyNotSatisfied">EPolicyNotSatisfied</a>: u64 = 0;
+<pre><code><b>const</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_EUnknownRequirement">EUnknownRequirement</a>: u64 = 2;
 </code></pre>
 
 
@@ -347,12 +339,22 @@ Attempting to create a Rule that is already set.
 
 
 
-<a name="sui_transfer_policy_EUnknownRequirement"></a>
+<a name="sui_transfer_policy_ENotOwner"></a>
 
-A Rule is not set.
+Trying to <code><a href="../sui/transfer_policy.md#sui_transfer_policy_withdraw">withdraw</a></code> or <code>close_and_withdraw</code> with a wrong Cap.
 
 
-<pre><code><b>const</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_EUnknownRequirement">EUnknownRequirement</a>: u64 = 2;
+<pre><code><b>const</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_ENotOwner">ENotOwner</a>: u64 = 4;
+</code></pre>
+
+
+
+<a name="sui_transfer_policy_ENotEnough"></a>
+
+Trying to <code><a href="../sui/transfer_policy.md#sui_transfer_policy_withdraw">withdraw</a></code> more than there is.
+
+
+<pre><code><b>const</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_ENotEnough">ENotEnough</a>: u64 = 5;
 </code></pre>
 
 
@@ -376,9 +378,7 @@ the transaction will fail.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_new_request">new_request</a>&lt;T&gt;(
-    <a href="../sui/transfer_policy.md#sui_transfer_policy_item">item</a>: ID, <a href="../sui/transfer_policy.md#sui_transfer_policy_paid">paid</a>: u64, <a href="../sui/transfer_policy.md#sui_transfer_policy_from">from</a>: ID
-): <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferRequest">TransferRequest</a>&lt;T&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_new_request">new_request</a>&lt;T&gt;(<a href="../sui/transfer_policy.md#sui_transfer_policy_item">item</a>: ID, <a href="../sui/transfer_policy.md#sui_transfer_policy_paid">paid</a>: u64, <a href="../sui/transfer_policy.md#sui_transfer_policy_from">from</a>: ID): <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferRequest">TransferRequest</a>&lt;T&gt; {
     <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferRequest">TransferRequest</a> { <a href="../sui/transfer_policy.md#sui_transfer_policy_item">item</a>, <a href="../sui/transfer_policy.md#sui_transfer_policy_paid">paid</a>, <a href="../sui/transfer_policy.md#sui_transfer_policy_from">from</a>, receipts: <a href="../sui/vec_set.md#sui_vec_set_empty">vec_set::empty</a>() }
 }
 </code></pre>
@@ -406,16 +406,14 @@ available for use, the type can not be traded in kiosks.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_new">new</a>&lt;T&gt;(
-    pub: &Publisher, ctx: &<b>mut</b> TxContext
-): (<a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;, <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">TransferPolicyCap</a>&lt;T&gt;) {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_new">new</a>&lt;T&gt;(pub: &Publisher, ctx: &<b>mut</b> TxContext): (<a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;, <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">TransferPolicyCap</a>&lt;T&gt;) {
     <b>assert</b>!(<a href="../sui/package.md#sui_package_from_package">package::from_package</a>&lt;T&gt;(pub), 0);
     <b>let</b> id = <a href="../sui/object.md#sui_object_new">object::new</a>(ctx);
     <b>let</b> policy_id = id.to_inner();
     <a href="../sui/event.md#sui_event_emit">event::emit</a>(<a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCreated">TransferPolicyCreated</a>&lt;T&gt; { id: policy_id });
     (
         <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a> { id, <a href="../sui/transfer_policy.md#sui_transfer_policy_rules">rules</a>: <a href="../sui/vec_set.md#sui_vec_set_empty">vec_set::empty</a>(), <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/balance.md#sui_balance_zero">balance::zero</a>() },
-        <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">TransferPolicyCap</a> { id: <a href="../sui/object.md#sui_object_new">object::new</a>(ctx), policy_id }
+        <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">TransferPolicyCap</a> { id: <a href="../sui/object.md#sui_object_new">object::new</a>(ctx), policy_id },
     )
 }
 </code></pre>
@@ -461,7 +459,7 @@ Withdraw some amount of profits from the <code><a href="../sui/transfer_policy.m
 is not specified, all profits are withdrawn.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_withdraw">withdraw</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">sui::transfer_policy::TransferPolicy</a>&lt;T&gt;, cap: &<a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">sui::transfer_policy::TransferPolicyCap</a>&lt;T&gt;, amount: <a href="../std/option.md#std_option_Option">std::option::Option</a>&lt;u64&gt;, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): <a href="../sui/coin.md#sui_coin_Coin">sui::coin::Coin</a>&lt;<a href="../sui/bfc.md#sui_bfc_BFC">sui::bfc::BFC</a>&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_withdraw">withdraw</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">sui::transfer_policy::TransferPolicy</a>&lt;T&gt;, cap: &<a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">sui::transfer_policy::TransferPolicyCap</a>&lt;T&gt;, amount: <a href="../std/option.md#std_option_Option">std::option::Option</a>&lt;u64&gt;, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): <a href="../sui/coin.md#sui_coin_Coin">sui::coin::Coin</a>&lt;<a href="../sui/sui.md#sui_sui_SUI">sui::sui::SUI</a>&gt;
 </code></pre>
 
 
@@ -474,8 +472,8 @@ is not specified, all profits are withdrawn.
     self: &<b>mut</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;,
     cap: &<a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">TransferPolicyCap</a>&lt;T&gt;,
     amount: Option&lt;u64&gt;,
-    ctx: &<b>mut</b> TxContext
-): Coin&lt;BFC&gt; {
+    ctx: &<b>mut</b> TxContext,
+): Coin&lt;SUI&gt; {
     <b>assert</b>!(<a href="../sui/object.md#sui_object_id">object::id</a>(self) == cap.policy_id, <a href="../sui/transfer_policy.md#sui_transfer_policy_ENotOwner">ENotOwner</a>);
     <b>let</b> amount = <b>if</b> (amount.is_some()) {
         <b>let</b> amt = amount.destroy_some();
@@ -500,7 +498,7 @@ Destroy a TransferPolicyCap.
 Can be performed by any party as long as they own it.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_destroy_and_withdraw">destroy_and_withdraw</a>&lt;T&gt;(self: <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">sui::transfer_policy::TransferPolicy</a>&lt;T&gt;, cap: <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">sui::transfer_policy::TransferPolicyCap</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): <a href="../sui/coin.md#sui_coin_Coin">sui::coin::Coin</a>&lt;<a href="../sui/bfc.md#sui_bfc_BFC">sui::bfc::BFC</a>&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_destroy_and_withdraw">destroy_and_withdraw</a>&lt;T&gt;(self: <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">sui::transfer_policy::TransferPolicy</a>&lt;T&gt;, cap: <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">sui::transfer_policy::TransferPolicyCap</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): <a href="../sui/coin.md#sui_coin_Coin">sui::coin::Coin</a>&lt;<a href="../sui/sui.md#sui_sui_SUI">sui::sui::SUI</a>&gt;
 </code></pre>
 
 
@@ -510,8 +508,10 @@ Can be performed by any party as long as they own it.
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_destroy_and_withdraw">destroy_and_withdraw</a>&lt;T&gt;(
-    self: <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;, cap: <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">TransferPolicyCap</a>&lt;T&gt;, ctx: &<b>mut</b> TxContext
-): Coin&lt;BFC&gt; {
+    self: <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;,
+    cap: <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">TransferPolicyCap</a>&lt;T&gt;,
+    ctx: &<b>mut</b> TxContext,
+): Coin&lt;SUI&gt; {
     <b>assert</b>!(<a href="../sui/object.md#sui_object_id">object::id</a>(&self) == cap.policy_id, <a href="../sui/transfer_policy.md#sui_transfer_policy_ENotOwner">ENotOwner</a>);
     <b>let</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">TransferPolicyCap</a> { id: cap_id, policy_id } = cap;
     <b>let</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a> { id, <a href="../sui/transfer_policy.md#sui_transfer_policy_rules">rules</a>: _, <a href="../sui/balance.md#sui_balance">balance</a> } = self;
@@ -548,7 +548,8 @@ Kiosk trades will not be possible.
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_confirm_request">confirm_request</a>&lt;T&gt;(
-    self: &<a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;, request: <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferRequest">TransferRequest</a>&lt;T&gt;
+    self: &<a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;,
+    request: <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferRequest">TransferRequest</a>&lt;T&gt;,
 ): (ID, u64, ID) {
     <b>let</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferRequest">TransferRequest</a> { <a href="../sui/transfer_policy.md#sui_transfer_policy_item">item</a>, <a href="../sui/transfer_policy.md#sui_transfer_policy_paid">paid</a>, <a href="../sui/transfer_policy.md#sui_transfer_policy_from">from</a>, receipts } = request;
     <b>let</b> <b>mut</b> completed = receipts.into_keys();
@@ -592,7 +593,10 @@ even if graceful unpacking has not been implemented in a "rule module".
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_add_rule">add_rule</a>&lt;T, Rule: drop, Config: store + drop&gt;(
-    _: Rule, policy: &<b>mut</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;, cap: &<a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">TransferPolicyCap</a>&lt;T&gt;, cfg: Config
+    _: Rule,
+    policy: &<b>mut</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;,
+    cap: &<a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">TransferPolicyCap</a>&lt;T&gt;,
+    cfg: Config,
 ) {
     <b>assert</b>!(<a href="../sui/object.md#sui_object_id">object::id</a>(policy) == cap.policy_id, <a href="../sui/transfer_policy.md#sui_transfer_policy_ENotOwner">ENotOwner</a>);
     <b>assert</b>!(!<a href="../sui/transfer_policy.md#sui_transfer_policy_has_rule">has_rule</a>&lt;T, Rule&gt;(policy), <a href="../sui/transfer_policy.md#sui_transfer_policy_ERuleAlreadySet">ERuleAlreadySet</a>);
@@ -622,8 +626,9 @@ Get the custom Config for the Rule (can be only one per "Rule" type).
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_get_rule">get_rule</a>&lt;T, Rule: drop, Config: store + drop&gt;(
-    _: Rule, policy: &<a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;)
-: &Config {
+    _: Rule,
+    policy: &<a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;,
+): &Config {
     df::borrow(&policy.id, <a href="../sui/transfer_policy.md#sui_transfer_policy_RuleKey">RuleKey</a>&lt;Rule&gt; {})
 }
 </code></pre>
@@ -639,7 +644,7 @@ Get the custom Config for the Rule (can be only one per "Rule" type).
 Add some <code>SUI</code> to the balance of a <code><a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a></code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_add_to_balance">add_to_balance</a>&lt;T, Rule: drop&gt;(_: Rule, policy: &<b>mut</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">sui::transfer_policy::TransferPolicy</a>&lt;T&gt;, <a href="../sui/coin.md#sui_coin">coin</a>: <a href="../sui/coin.md#sui_coin_Coin">sui::coin::Coin</a>&lt;<a href="../sui/bfc.md#sui_bfc_BFC">sui::bfc::BFC</a>&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_add_to_balance">add_to_balance</a>&lt;T, Rule: drop&gt;(_: Rule, policy: &<b>mut</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">sui::transfer_policy::TransferPolicy</a>&lt;T&gt;, <a href="../sui/coin.md#sui_coin">coin</a>: <a href="../sui/coin.md#sui_coin_Coin">sui::coin::Coin</a>&lt;<a href="../sui/sui.md#sui_sui_SUI">sui::sui::SUI</a>&gt;)
 </code></pre>
 
 
@@ -648,9 +653,7 @@ Add some <code>SUI</code> to the balance of a <code><a href="../sui/transfer_pol
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_add_to_balance">add_to_balance</a>&lt;T, Rule: drop&gt;(
-    _: Rule, policy: &<b>mut</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;, <a href="../sui/coin.md#sui_coin">coin</a>: Coin&lt;BFC&gt;
-) {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_add_to_balance">add_to_balance</a>&lt;T, Rule: drop&gt;(_: Rule, policy: &<b>mut</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;, <a href="../sui/coin.md#sui_coin">coin</a>: Coin&lt;SUI&gt;) {
     <b>assert</b>!(<a href="../sui/transfer_policy.md#sui_transfer_policy_has_rule">has_rule</a>&lt;T, Rule&gt;(policy), <a href="../sui/transfer_policy.md#sui_transfer_policy_EUnknownRequirement">EUnknownRequirement</a>);
     <a href="../sui/coin.md#sui_coin_put">coin::put</a>(&<b>mut</b> policy.<a href="../sui/balance.md#sui_balance">balance</a>, <a href="../sui/coin.md#sui_coin">coin</a>)
 }
@@ -677,9 +680,7 @@ confirming that the policy requirements are satisfied.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_add_receipt">add_receipt</a>&lt;T, Rule: drop&gt;(
-    _: Rule, request: &<b>mut</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferRequest">TransferRequest</a>&lt;T&gt;
-) {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_add_receipt">add_receipt</a>&lt;T, Rule: drop&gt;(_: Rule, request: &<b>mut</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferRequest">TransferRequest</a>&lt;T&gt;) {
     request.receipts.insert(type_name::get&lt;Rule&gt;())
 }
 </code></pre>
@@ -730,7 +731,8 @@ Remove the Rule from the <code><a href="../sui/transfer_policy.md#sui_transfer_p
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_remove_rule">remove_rule</a>&lt;T, Rule: drop, Config: store + drop&gt;(
-    policy: &<b>mut</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;, cap: &<a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">TransferPolicyCap</a>&lt;T&gt;
+    policy: &<b>mut</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;,
+    cap: &<a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">TransferPolicyCap</a>&lt;T&gt;,
 ) {
     <b>assert</b>!(<a href="../sui/object.md#sui_object_id">object::id</a>(policy) == cap.policy_id, <a href="../sui/transfer_policy.md#sui_transfer_policy_ENotOwner">ENotOwner</a>);
     <b>let</b> _: Config = df::remove(&<b>mut</b> policy.id, <a href="../sui/transfer_policy.md#sui_transfer_policy_RuleKey">RuleKey</a>&lt;Rule&gt; {});
@@ -782,9 +784,7 @@ to the <code><a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPoli
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_uid_mut_as_owner">uid_mut_as_owner</a>&lt;T&gt;(
-    self: &<b>mut</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;, cap: &<a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">TransferPolicyCap</a>&lt;T&gt;,
-): &<b>mut</b> UID {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_uid_mut_as_owner">uid_mut_as_owner</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicy">TransferPolicy</a>&lt;T&gt;, cap: &<a href="../sui/transfer_policy.md#sui_transfer_policy_TransferPolicyCap">TransferPolicyCap</a>&lt;T&gt;): &<b>mut</b> UID {
     <b>assert</b>!(<a href="../sui/object.md#sui_object_id">object::id</a>(self) == cap.policy_id, <a href="../sui/transfer_policy.md#sui_transfer_policy_ENotOwner">ENotOwner</a>);
     &<b>mut</b> self.id
 }

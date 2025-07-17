@@ -4,11 +4,12 @@
 module shared_with_tto::shared_cash_register;
 
 use common::identified_payment::{Self, IdentifiedPayment, EarmarkedPayment};
-use sui::bfc::BFC;
+use std::string::String;
 use sui::coin::Coin;
+use sui::sui::SUI;
 use sui::transfer::Receiving;
 use sui::vec_set::{Self, VecSet};
-use std::string::String;
+
 const EInvalidOwner: u64 = 0;
 const ENotAuthorized: u64 = 2;
 
@@ -86,7 +87,7 @@ public fun process_payment(
     register: &mut CashRegister,
     payment_ticket: Receiving<IdentifiedPayment>,
     ctx: &TxContext,
-): Coin<BFC> {
+): Coin<SUI> {
     let sender = tx_context::sender(ctx);
     assert!(
         vec_set::contains(&register.authorized_individuals, &sender) || sender == register.register_owner,
@@ -102,7 +103,7 @@ public fun process_tip(
     register: &mut CashRegister,
     earmarked_ticket: Receiving<EarmarkedPayment>,
     ctx: &TxContext,
-): Coin<BFC> {
+): Coin<SUI> {
     let payment: IdentifiedPayment = identified_payment::receive(
         &mut register.id,
         earmarked_ticket,

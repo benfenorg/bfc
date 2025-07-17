@@ -36,15 +36,6 @@ const concepts = [
 					},
 					{
 						type: 'category',
-						label: 'Dynamic Fields',
-						link: {
-							type: 'doc',
-							id: 'concepts/dynamic-fields',
-						},
-						items: ['concepts/dynamic-fields/tables-bags'],
-					},
-					{
-						type: 'category',
 						label: 'Transfers',
 						link: {
 							type: 'doc',
@@ -76,6 +67,15 @@ const concepts = [
 							'concepts/sui-move-concepts/packages/automated-address-management',
 						],
 					},
+					{
+						type: 'category',
+						label: 'Dynamic Fields',
+						link: {
+							type: 'doc',
+							id: 'concepts/dynamic-fields',
+						},
+						items: ['concepts/dynamic-fields/tables-bags'],
+					},
 					'concepts/sui-move-concepts/conventions',
 				],
 			},
@@ -92,7 +92,9 @@ const concepts = [
 					'concepts/transactions/gas-smashing',
 				],
 			},
+			'concepts/grpc-overview',
 			'concepts/graphql-rpc',
+			'concepts/gaming'
 		],
 	},
 	{
@@ -119,6 +121,19 @@ const concepts = [
 				],
 			},
 			'concepts/cryptography/zklogin',
+			'concepts/cryptography/passkeys',
+			{
+				type: 'category',
+				label: 'Nautilus',
+				link: {
+					type: 'doc',
+					id: 'concepts/cryptography/nautilus',
+				},
+				items: [
+					'concepts/cryptography/nautilus/nautilus-design',
+					'concepts/cryptography/nautilus/using-nautilus',
+				],
+			},
 			'concepts/cryptography/system/checkpoint-verification',
 			/*{
 				type: 'category',
@@ -167,9 +182,9 @@ const concepts = [
 			'concepts/tokenomics/sui-bridging',
 			'concepts/tokenomics/gas-pricing',
 			'concepts/tokenomics/gas-in-sui',
+			'concepts/tokenomics/vesting-strategies'
 		],
 	},
-	'concepts/sui-bridge',
 	'concepts/research-papers',
 ];
 module.exports = concepts;

@@ -6,6 +6,7 @@ pub mod codes;
 pub mod warning_filters;
 
 use crate::{
+    Flags,
     command_line::COLOR_MODE_ENV_VAR,
     diagnostics::{
         codes::{Category, DiagnosticCode, DiagnosticInfo, DiagnosticsID, Severity},
@@ -17,14 +18,12 @@ use crate::{
         ide::{IDEAnnotation, IDEInfo},
         known_attributes,
     },
-    Flags,
 };
 use codespan_reporting::{
     self as csr,
     term::{
-        emit,
+        Config, emit,
         termcolor::{Buffer, ColorChoice, StandardStream, WriteColor},
-        Config,
     },
 };
 use csr::files::Files;
@@ -830,8 +829,7 @@ macro_rules! diag {
     }};
 }
 
-pub const ICE_BUG_REPORT_MESSAGE: &str =
-    "The Move compiler has encountered an internal compiler error.\n \
+pub const ICE_BUG_REPORT_MESSAGE: &str = "The Move compiler has encountered an internal compiler error.\n \
     Please report this issue to the Mysten Labs Move language team,\n \
     including this error and any relevant code, to the Mysten Labs issue tracker\n \
     at : https://github.com/MystenLabs/sui/issues";
@@ -869,12 +867,9 @@ macro_rules! ice_assert {
 pub fn print_stack_trace() {
     use std::backtrace::{Backtrace, BacktraceStatus};
     let stacktrace = Backtrace::capture();
-    match stacktrace.status() {
-        BacktraceStatus::Captured => {
-            eprintln!("stacktrace:");
-            eprintln!("{}", stacktrace);
-        }
-        BacktraceStatus::Unsupported | BacktraceStatus::Disabled | _ => (),
+    if stacktrace.status() == BacktraceStatus::Captured {
+        eprintln!("stacktrace:");
+        eprintln!("{}", stacktrace);
     }
 }
 

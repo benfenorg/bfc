@@ -3,21 +3,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    compilation::compiled_package::{make_deps_for_compiler_internal, CompiledPackage},
+    compilation::compiled_package::{CompiledPackage, make_deps_for_compiler_internal},
     resolution::resolution_graph::Package,
     resolution::resolution_graph::ResolvedGraph,
     source_package::{
-        manifest_parser::{resolve_move_manifest_path, EDITION_NAME, PACKAGE_NAME},
+        manifest_parser::{EDITION_NAME, PACKAGE_NAME, resolve_move_manifest_path},
         parsed_manifest::PackageName,
     },
 };
 use anyhow::Result;
 use move_compiler::{
-    compiled_unit::AnnotatedCompiledUnit,
-    diagnostics::{report_diagnostics_to_buffer_with_env_color, Migration},
-    editions::Edition,
-    shared::{files::MappedFiles, PackagePaths},
     Compiler,
+    compiled_unit::AnnotatedCompiledUnit,
+    diagnostics::{Migration, report_diagnostics_to_buffer_with_env_color},
+    editions::Edition,
+    shared::{PackagePaths, files::MappedFiles},
 };
 use move_symbol_pool::Symbol;
 use std::{
@@ -25,7 +25,7 @@ use std::{
     io::Write,
     path::{Path, PathBuf},
 };
-use toml_edit::{value, Document};
+use toml_edit::{DocumentMut, value};
 use vfs::VfsPath;
 
 use super::{
@@ -34,10 +34,10 @@ use super::{
 };
 
 #[derive(Debug, Clone)]
-pub struct BuildPlan {
+pub struct BuildPlan<'a> {
     root: PackageName,
     sorted_deps: Vec<PackageName>,
-    resolution_graph: ResolvedGraph,
+    resolution_graph: &'a ResolvedGraph,
     compiler_vfs_root: Option<VfsPath>,
 }
 
@@ -47,7 +47,7 @@ pub struct CompilationDependencies<'a> {
     transitive_dependencies: Vec<DependencyInfo<'a>>,
 }
 
-impl<'a> CompilationDependencies<'a> {
+impl CompilationDependencies<'_> {
     pub fn remove_deps(&mut self, names: BTreeSet<Symbol>) {
         self.transitive_dependencies
             .retain(|d| !names.contains(&d.name));
@@ -58,8 +58,8 @@ impl<'a> CompilationDependencies<'a> {
     }
 }
 
-impl BuildPlan {
-    pub fn create(resolution_graph: ResolvedGraph) -> Result<Self> {
+impl<'a> BuildPlan<'a> {
+    pub fn create(resolution_graph: &'a ResolvedGraph) -> Result<Self> {
         let mut sorted_deps = resolution_graph.topological_order();
         sorted_deps.reverse();
 
@@ -109,7 +109,7 @@ impl BuildPlan {
             self.compiler_vfs_root.clone(),
             root_package,
             transitive_dependencies,
-            &self.resolution_graph,
+            self.resolution_graph,
             |compiler| compiler.generate_migration_patch(&self.root),
         )?;
         let migration = match res {
@@ -177,7 +177,7 @@ impl BuildPlan {
             None => self.resolution_graph.graph.root_path.clone(),
         };
         let immediate_dependencies_names =
-            root_package.immediate_dependencies(&self.resolution_graph);
+            root_package.immediate_dependencies(self.resolution_graph);
         let transitive_dependencies = self
             .resolution_graph
             .topological_order()
@@ -256,7 +256,7 @@ impl BuildPlan {
             &project_root,
             root_package,
             transitive_dependencies,
-            &self.resolution_graph,
+            self.resolution_graph,
             compiler_driver,
         )?;
 
@@ -292,7 +292,7 @@ impl BuildPlan {
     pub fn record_package_edition(&self, edition: Edition) -> anyhow::Result<()> {
         let move_toml_path = resolve_move_manifest_path(&self.root_package_path());
         let mut toml = std::fs::read_to_string(move_toml_path.clone())?
-            .parse::<Document>()
+            .parse::<DocumentMut>()
             .expect("Failed to read TOML file to update edition");
         toml[PACKAGE_NAME][EDITION_NAME] = value(edition.to_string());
         std::fs::write(move_toml_path, toml.to_string())?;

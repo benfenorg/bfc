@@ -6,7 +6,9 @@ use move_binary_format::errors::{PartialVMError, PartialVMResult};
 use move_core_types::{gas_algebra::InternalGas, language_storage::TypeTag, vm_status::StatusCode};
 use move_vm_runtime::{native_charge_gas_early_exit, native_functions::NativeContext};
 use move_vm_types::{
-    loaded_data::runtime_types::Type, natives::function::NativeResult, values::Value,
+    loaded_data::runtime_types::Type,
+    natives::function::NativeResult,
+    values::{Value, VectorSpecialization},
 };
 use smallvec::smallvec;
 use std::collections::VecDeque;
@@ -38,7 +40,7 @@ pub fn emit(
 
     let event_emit_cost_params = context
         .extensions_mut()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .event_emit_cost_params
         .clone();
 
@@ -74,7 +76,7 @@ pub fn emit(
             * u64::from(tag_size).into()
     );
 
-    let obj_runtime: &mut ObjectRuntime = context.extensions_mut().get_mut();
+    let obj_runtime: &mut ObjectRuntime = context.extensions_mut().get_mut()?;
     let max_event_emit_size = obj_runtime.protocol_config.max_event_emit_size();
     let ev_size = u64::from(tag_size + event_value_size);
     // Check if the event size is within the limit
@@ -112,7 +114,7 @@ pub fn emit(
         event_emit_cost_params.event_emit_output_cost_per_byte * ev_size.into()
     );
 
-    let obj_runtime: &mut ObjectRuntime = context.extensions_mut().get_mut();
+    let obj_runtime: &mut ObjectRuntime = context.extensions_mut().get_mut()?;
 
     obj_runtime.emit_event(ty, *tag, event_value)?;
     Ok(NativeResult::ok(context.gas_used(), smallvec![]))
@@ -126,7 +128,7 @@ pub fn num_events(
 ) -> PartialVMResult<NativeResult> {
     assert!(ty_args.is_empty());
     assert!(args.is_empty());
-    let object_runtime_ref: &ObjectRuntime = context.extensions().get();
+    let object_runtime_ref: &ObjectRuntime = context.extensions().get()?;
     let num_events = object_runtime_ref.state.events().len();
     Ok(NativeResult::ok(
         legacy_test_cost(),
@@ -142,8 +144,9 @@ pub fn get_events_by_type(
 ) -> PartialVMResult<NativeResult> {
     assert_eq!(ty_args.len(), 1);
     let specified_ty = ty_args.pop().unwrap();
+    let specialization: VectorSpecialization = (&specified_ty).try_into()?;
     assert!(args.is_empty());
-    let object_runtime_ref: &ObjectRuntime = context.extensions().get();
+    let object_runtime_ref: &ObjectRuntime = context.extensions().get()?;
     let matched_events = object_runtime_ref
         .state
         .events()
@@ -158,6 +161,9 @@ pub fn get_events_by_type(
         .collect::<Vec<_>>();
     Ok(NativeResult::ok(
         legacy_test_cost(),
-        smallvec![Value::vector_for_testing_only(matched_events)],
+        smallvec![move_vm_types::values::Vector::pack(
+            specialization,
+            matched_events
+        )?],
     ))
 }

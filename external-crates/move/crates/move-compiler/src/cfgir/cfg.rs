@@ -262,9 +262,7 @@ impl<T: Deref<Target = BasicBlocks>> CFG for ForwardCFG<T> {
     fn is_back_edge(&self, cur: Label, next: Label) -> bool {
         self.loop_heads
             .get(&next)
-            .map_or(false, |back_edge_predecessors| {
-                back_edge_predecessors.contains(&cur)
-            })
+            .is_some_and(|back_edge_predecessors| back_edge_predecessors.contains(&cur))
     }
 
     fn debug(&self) {
@@ -418,9 +416,11 @@ fn post_order_traversal(
                     .map(|successor| (*successor, /* is_first_visit */ true)),
             );
         } else {
-            debug_assert!(dag[&cur]
-                .iter()
-                .all(|successor| finished.contains(successor)));
+            debug_assert!(
+                dag[&cur]
+                    .iter()
+                    .all(|successor| finished.contains(successor))
+            );
             if finished.insert(cur) {
                 post_order.push(cur)
             }
@@ -579,7 +579,7 @@ impl<'forward, Blocks: Deref<Target = BasicBlocks>> ReverseCFG<'forward, Blocks>
     }
 }
 
-impl<'forward, 'blocks> MutReverseCFG<'forward, 'blocks> {
+impl MutReverseCFG<'_, '_> {
     pub fn block_mut(&mut self, label: Label) -> &mut BasicBlock {
         if label == self.terminal {
             &mut self.terminal_block
@@ -595,7 +595,7 @@ impl<'forward, 'blocks> MutReverseCFG<'forward, 'blocks> {
     }
 }
 
-impl<'forward, Blocks: Deref<Target = BasicBlocks>> Drop for ReverseCFG<'forward, Blocks> {
+impl<Blocks: Deref<Target = BasicBlocks>> Drop for ReverseCFG<'_, Blocks> {
     fn drop(&mut self) {
         assert!(self.terminal_block.is_empty());
         let start_predecessors = self.predecessor_map.remove(&self.terminal);
@@ -613,7 +613,7 @@ impl<'forward, Blocks: Deref<Target = BasicBlocks>> Drop for ReverseCFG<'forward
     }
 }
 
-impl<'forward, Blocks: Deref<Target = BasicBlocks>> CFG for ReverseCFG<'forward, Blocks> {
+impl<Blocks: Deref<Target = BasicBlocks>> CFG for ReverseCFG<'_, Blocks> {
     fn successors(&self, label: Label) -> &BTreeSet<Label> {
         self.successor_map.get(&label).unwrap()
     }
@@ -646,9 +646,7 @@ impl<'forward, Blocks: Deref<Target = BasicBlocks>> CFG for ReverseCFG<'forward,
     fn is_back_edge(&self, cur: Label, next: Label) -> bool {
         self.loop_heads
             .get(&next)
-            .map_or(false, |back_edge_predecessors| {
-                back_edge_predecessors.contains(&cur)
-            })
+            .is_some_and(|back_edge_predecessors| back_edge_predecessors.contains(&cur))
     }
 
     fn debug(&self) {
@@ -684,7 +682,7 @@ impl<T: Deref<Target = BasicBlocks>> AstDebug for ForwardCFG<T> {
     }
 }
 
-impl<'a, T: Deref<Target = BasicBlocks>> AstDebug for ReverseCFG<'a, T> {
+impl<T: Deref<Target = BasicBlocks>> AstDebug for ReverseCFG<'_, T> {
     fn ast_debug(&self, w: &mut AstWriter) {
         let ReverseCFG {
             terminal,

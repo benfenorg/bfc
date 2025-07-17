@@ -512,10 +512,7 @@ pub(crate) mod tests {
             .map(|(name, layout)| A::MoveFieldLayout::new(ident_(name), layout))
             .collect();
 
-        A::MoveTypeLayout::Struct(Box::new(A::MoveStructLayout {
-            type_,
-            fields: Box::new(fields),
-        }))
+        A::MoveTypeLayout::Struct(Box::new(A::MoveStructLayout { type_, fields }))
     }
 
     /// Create a variant value for test purposes.
@@ -560,7 +557,7 @@ pub(crate) mod tests {
     }
 
     /// BCS encode Move value.
-    fn serialize(value: A::MoveValue) -> Vec<u8> {
+    pub(crate) fn serialize(value: A::MoveValue) -> Vec<u8> {
         value.clone().undecorate().simple_serialize().unwrap()
     }
 }

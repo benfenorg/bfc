@@ -71,9 +71,6 @@ pub(crate) enum ConsensusError {
     #[error("Too many blocks have been returned from authority {0} when requesting to fetch missing blocks")]
     TooManyFetchedBlocksReturned(AuthorityIndex),
 
-    #[error("Too many blocks have been requested from authority {0}")]
-    TooManyFetchBlocksRequested(AuthorityIndex),
-
     #[error("Too many authorities have been provided from authority {0}")]
     TooManyAuthoritiesProvided(AuthorityIndex),
 
@@ -159,6 +156,14 @@ pub(crate) enum ConsensusError {
         peer: AuthorityIndex,
         requested: BlockRef,
         received: BlockRef,
+    },
+
+    #[error(
+        "Unexpected certified commit index and last committed index. Expected next commit index to be {expected_commit_index}, but found {commit_index}"
+    )]
+    UnexpectedCertifiedCommitIndex {
+        expected_commit_index: CommitIndex,
+        commit_index: CommitIndex,
     },
 
     #[error("RocksDB failure: {0}")]

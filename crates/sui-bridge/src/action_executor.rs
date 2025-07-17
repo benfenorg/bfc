@@ -133,7 +133,7 @@ where
             key,
             gas_object_id,
             sui_address,
-            bridge_object_arg, 
+            bridge_object_arg,
             admin_cap,
             sui_token_type_tags,
             bridge_pause_rx,
@@ -329,7 +329,7 @@ where
                     .await;
             },
         };
-        
+
         match status {
             BridgeActionStatus::Approved | BridgeActionStatus::Claimed => {
                 info!(
@@ -619,6 +619,23 @@ where
         let status = effects.status();
         match status {
             SuiExecutionStatus::Success => {
+                let events = response.events.expect("We requested events but got None.");
+                let relevant_events = events
+                    .data
+                    .iter()
+                    .filter(|e| {
+                        e.type_ == *TokenTransferAlreadyClaimed.get().unwrap()
+                            || e.type_ == *TokenTransferClaimed.get().unwrap()
+                            || e.type_ == *TokenTransferApproved.get().unwrap()
+                            || e.type_ == *TokenTransferAlreadyApproved.get().unwrap()
+                    })
+                    .collect::<Vec<_>>();
+                assert!(
+                    !relevant_events.is_empty(),
+                    "Expected TokenTransferAlreadyClaimed, TokenTransferClaimed, TokenTransferApproved \
+                    or TokenTransferAlreadyApproved event but got: {:?}",
+                    events
+                );
                 // TODO: handle the events, add external approved events
                 // let events = response.events.expect("We requested events but got None.");
                 // // If the transaction is successful, there must be either
@@ -634,6 +651,30 @@ where
                 //     events,
                 //     );
                 info!(?tx_digest, "Sui transaction executed successfully");
+                // track successful approval and claim events
+                relevant_events.iter().for_each(|e| {
+                    if e.type_ == *TokenTransferClaimed.get().unwrap() {
+                        match action {
+                            BridgeAction::EthToSuiBridgeAction(_) => {
+                                metrics.eth_sui_token_transfer_claimed.inc();
+                            }
+                            BridgeAction::SuiToEthBridgeAction(_) => {
+                                metrics.sui_eth_token_transfer_claimed.inc();
+                            }
+                            _ => error!("Unexpected action type for claimed event: {:?}", action),
+                        }
+                    } else if e.type_ == *TokenTransferApproved.get().unwrap() {
+                        match action {
+                            BridgeAction::EthToSuiBridgeAction(_) => {
+                                metrics.eth_sui_token_transfer_approved.inc();
+                            }
+                            BridgeAction::SuiToEthBridgeAction(_) => {
+                                metrics.sui_eth_token_transfer_approved.inc();
+                            }
+                            _ => error!("Unexpected action type for approved event: {:?}", action),
+                        }
+                    }
+                });
                 store
                     .remove_pending_actions(&[action.digest()])
                     .unwrap_or_else(|e| {

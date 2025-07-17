@@ -81,7 +81,9 @@ fn async_verifier_bench(c: &mut Criterion) {
                         ZkLoginEnv::Test,
                         true,
                         true,
+                        true,
                         Some(30),
+                        vec![],
                     ));
 
                     b.iter(|| {
@@ -138,6 +140,7 @@ fn batch_verification_bench(c: &mut Criterion) {
                             &committee,
                             &certs.iter().collect_vec(),
                             Arc::new(VerifiedDigestCache::new_empty()),
+                            None,
                         );
                     })
                 },

@@ -137,7 +137,8 @@ mod checked {
         let shared_object_refs = input_objects.filter_shared_objects();
         let receiving_objects = transaction_kind.receiving_objects();
         let mut transaction_dependencies = input_objects.transaction_dependencies();
-        let contains_deleted_input = input_objects.contains_deleted_objects();
+        let contains_deleted_input = input_objects.contains_consensus_stream_ended_objects();
+        let cancelled_objects = input_objects.get_cancelled_objects();
 
         let mut temporary_store = TemporaryStore::new(
             store,
@@ -155,6 +156,11 @@ mod checked {
             &transaction_digest,
             epoch_id,
             epoch_timestamp_ms,
+            // Those values are unused in execution versions before 3 (or latest)
+            1,
+            1_000_000,
+            None,
+            protocol_config,
         );
 
         let is_epoch_change = transaction_kind.is_end_of_epoch_tx();
@@ -190,21 +196,21 @@ mod checked {
                 K::SuiMoveVerificationError | K::VMVerificationOrDeserializationError => {
                     #[skip_checked_arithmetic]
                     tracing::debug!(
-        kind = ?error.kind(),
-        tx_digest = ?transaction_digest,
-        "V1 Verification Error. Source: {:?}",
-        error.source(),
-        );
+                    kind = ?error.kind(),
+                    tx_digest = ?transaction_digest,
+                    "V1 Verification Error. Source: {:?}",
+                    error.source(),
+                    );
                 }
 
                 K::PublishUpgradeMissingDependency | K::PublishUpgradeDependencyDowngrade => {
                     #[skip_checked_arithmetic]
                     tracing::debug!(
-        kind = ?error.kind(),
-        tx_digest = ?transaction_digest,
-        "Publish/Upgrade Error. Source: {:?}",
-        error.source(),
-        )
+                        kind = ?error.kind(),
+                        tx_digest = ?transaction_digest,
+                        "Publish/Upgrade Error. Source: {:?}",
+                        error.source(),
+                    )
                 }
 
                 _ => (),
@@ -274,15 +280,15 @@ mod checked {
         programmable_transactions::execution::execute::<execution_mode::Genesis>(
             protocol_config,
             metrics,
-                        move_vm,
-                        &mut temporary_store,
-                        tx_context,
-                        &mut gas_charger,
-                        pt,
-                        )?;
-                        temporary_store.update_object_version_and_prev_tx();
-                        Ok(temporary_store.into_inner())
-                    }
+            move_vm,
+            &mut temporary_store,
+            tx_context,
+            &mut gas_charger,
+            pt,
+        )?;
+        temporary_store.update_object_version_and_prev_tx();
+        Ok(temporary_store.into_inner())
+    }
 
 
     #[instrument(name = "tx_execute", level = "debug", skip_all)]
@@ -606,6 +612,19 @@ mod checked {
                 .expect("ConsensusCommitPrologue cannot fail");
                 Ok(Mode::empty_results())
             }
+            TransactionKind::ConsensusCommitPrologueV4(prologue) => {
+                setup_consensus_commit(
+                    prologue.commit_timestamp_ms,
+                    temporary_store,
+                    tx_ctx,
+                    move_vm,
+                    gas_charger,
+                    protocol_config,
+                    metrics,
+                )
+                .expect("ConsensusCommitPrologue cannot fail");
+                Ok(Mode::empty_results())
+            }
             TransactionKind::ProgrammableTransaction(pt) => {
                 programmable_transactions::execution::execute::<Mode>(
                     protocol_config,
@@ -662,6 +681,9 @@ mod checked {
                         }
                         EndOfEpochTransactionKind::BridgeCommitteeInit(_) => {
                             panic!("EndOfEpochTransactionKind::BridgeCommitteeInit should not exist in v1");
+                        }
+                        EndOfEpochTransactionKind::StoreExecutionTimeObservations(_) => {
+                            panic!("EndOfEpochTransactionKind::StoreExecutionTimeEstimates should not exist in v1");
                         }
                     }
                 }

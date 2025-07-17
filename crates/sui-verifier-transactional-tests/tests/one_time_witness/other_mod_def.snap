@@ -1,0 +1,8 @@
+---
+source: external-crates/move/crates/move-transactional-test-runner/src/framework.rs
+---
+processed 1 task
+
+task 0, lines 6-16:
+//# publish
+Error: Dependency not provided for object(0x0000000000000000000000000000000000000000000000000000000000000002).obc

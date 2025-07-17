@@ -31,17 +31,23 @@ use self::{
     transfer::{
         TransferFreezeObjectCostParams, TransferInternalCostParams, TransferShareObjectCostParams,
     },
-    tx_context::TxContextDeriveIdCostParams,
+    tx_context::{
+        TxContextDeriveIdCostParams, TxContextEpochCostParams, TxContextEpochTimestampMsCostParams,
+        TxContextFreshIdCostParams, TxContextGasBudgetCostParams, TxContextGasPriceCostParams,
+        TxContextIdsCreatedCostParams, TxContextReplaceCostParams, TxContextSenderCostParams,
+        TxContextSponsorCostParams,
+    },
     types::TypesIsOneTimeWitnessCostParams,
     validator::ValidatorValidateMetadataBcsCostParams,
     curve::CurveDxCostParams
 };
-use crate::crypto::group_ops;
 use crate::crypto::group_ops::GroupOpsCostParams;
 use crate::crypto::poseidon::PoseidonBN254CostParams;
 use crate::crypto::zklogin;
 use crate::crypto::zklogin::{CheckZkloginIdCostParams, CheckZkloginIssuerCostParams};
+use crate::{crypto::group_ops, transfer::PartyTransferInternalCostParams};
 use better_any::{Tid, TidAble};
+use crypto::nitro_attestation::{self, NitroAttestationCostParams};
 use crypto::vdf::{self, VDFCostParams};
 use move_binary_format::errors::{PartialVMError, PartialVMResult};
 use move_core_types::{
@@ -53,7 +59,10 @@ use move_core_types::{
     vm_status::StatusCode,
 };
 use move_stdlib_natives::{self as MSN, GasParameters};
-use move_vm_runtime::native_functions::{NativeContext, NativeFunction, NativeFunctionTable};
+use move_vm_runtime::{
+    native_extensions::NativeExtensionMarker,
+    native_functions::{NativeContext, NativeFunction, NativeFunctionTable},
+};
 use move_vm_types::{
     loaded_data::runtime_types::Type,
     natives::function::NativeResult,
@@ -74,12 +83,15 @@ pub mod object_runtime;
 mod random;
 pub mod test_scenario;
 mod test_utils;
+pub mod transaction_context;
 mod transfer;
 mod tx_context;
 mod types;
 mod validator;
 mod curve;
 
+// TODO: remove in later PRs once we define the proper cost of native functions
+const DEFAULT_UNUSED_TX_CONTEXT_ENTRY_COST: u64 = 10;
 #[derive(Tid)]
 pub struct NativesCostTable {
     // Address natives
@@ -112,11 +124,21 @@ pub struct NativesCostTable {
 
     // Transfer
     pub transfer_transfer_internal_cost_params: TransferInternalCostParams,
+    pub transfer_party_transfer_internal_cost_params: PartyTransferInternalCostParams,
     pub transfer_freeze_object_cost_params: TransferFreezeObjectCostParams,
     pub transfer_share_object_cost_params: TransferShareObjectCostParams,
 
     // TxContext
     pub tx_context_derive_id_cost_params: TxContextDeriveIdCostParams,
+    pub tx_context_fresh_id_cost_params: TxContextFreshIdCostParams,
+    pub tx_context_sender_cost_params: TxContextSenderCostParams,
+    pub tx_context_epoch_cost_params: TxContextEpochCostParams,
+    pub tx_context_epoch_timestamp_ms_cost_params: TxContextEpochTimestampMsCostParams,
+    pub tx_context_sponsor_cost_params: TxContextSponsorCostParams,
+    pub tx_context_gas_price_cost_params: TxContextGasPriceCostParams,
+    pub tx_context_gas_budget_cost_params: TxContextGasBudgetCostParams,
+    pub tx_context_ids_created_cost_params: TxContextIdsCreatedCostParams,
+    pub tx_context_replace_cost_params: TxContextReplaceCostParams,
 
     // Type
     pub type_is_one_time_witness_cost_params: TypesIsOneTimeWitnessCostParams,
@@ -172,7 +194,12 @@ pub struct NativesCostTable {
 
     // Receive object
     pub transfer_receive_object_internal_cost_params: TransferReceiveObjectInternalCostParams,
+
+    // nitro attestation
+    pub nitro_attestation_cost_params: NitroAttestationCostParams,
 }
+
+impl NativeExtensionMarker<'_> for NativesCostTable {}
 
 impl NativesCostTable {
     pub fn from_protocol_config(protocol_config: &ProtocolConfig) -> NativesCostTable {
@@ -333,6 +360,11 @@ impl NativesCostTable {
                     .transfer_transfer_internal_cost_base()
                     .into(),
             },
+            transfer_party_transfer_internal_cost_params: PartyTransferInternalCostParams {
+                transfer_party_transfer_internal_cost_base: protocol_config
+                    .transfer_party_transfer_internal_cost_base_as_option()
+                    .map(Into::into),
+            },
             transfer_freeze_object_cost_params: TransferFreezeObjectCostParams {
                 transfer_freeze_object_cost_base: protocol_config
                     .transfer_freeze_object_cost_base()
@@ -343,10 +375,76 @@ impl NativesCostTable {
                     .transfer_share_object_cost_base()
                     .into(),
             },
+            // tx_context
             tx_context_derive_id_cost_params: TxContextDeriveIdCostParams {
                 tx_context_derive_id_cost_base: protocol_config
                     .tx_context_derive_id_cost_base()
                     .into(),
+            },
+            tx_context_fresh_id_cost_params: TxContextFreshIdCostParams {
+                tx_context_fresh_id_cost_base: if protocol_config.move_native_context() {
+                    protocol_config.tx_context_fresh_id_cost_base().into()
+                } else {
+                    DEFAULT_UNUSED_TX_CONTEXT_ENTRY_COST.into()
+                },
+            },
+            tx_context_sender_cost_params: TxContextSenderCostParams {
+                tx_context_sender_cost_base: if protocol_config.move_native_context() {
+                    protocol_config.tx_context_sender_cost_base().into()
+                } else {
+                    DEFAULT_UNUSED_TX_CONTEXT_ENTRY_COST.into()
+                },
+            },
+            tx_context_epoch_cost_params: TxContextEpochCostParams {
+                tx_context_epoch_cost_base: if protocol_config.move_native_context() {
+                    protocol_config.tx_context_epoch_cost_base().into()
+                } else {
+                    DEFAULT_UNUSED_TX_CONTEXT_ENTRY_COST.into()
+                },
+            },
+            tx_context_epoch_timestamp_ms_cost_params: TxContextEpochTimestampMsCostParams {
+                tx_context_epoch_timestamp_ms_cost_base: if protocol_config.move_native_context() {
+                    protocol_config
+                        .tx_context_epoch_timestamp_ms_cost_base()
+                        .into()
+                } else {
+                    DEFAULT_UNUSED_TX_CONTEXT_ENTRY_COST.into()
+                },
+            },
+            tx_context_sponsor_cost_params: TxContextSponsorCostParams {
+                tx_context_sponsor_cost_base: if protocol_config.move_native_context() {
+                    protocol_config.tx_context_sponsor_cost_base().into()
+                } else {
+                    DEFAULT_UNUSED_TX_CONTEXT_ENTRY_COST.into()
+                },
+            },
+            tx_context_gas_price_cost_params: TxContextGasPriceCostParams {
+                tx_context_gas_price_cost_base: if protocol_config.move_native_context() {
+                    protocol_config.tx_context_gas_price_cost_base().into()
+                } else {
+                    DEFAULT_UNUSED_TX_CONTEXT_ENTRY_COST.into()
+                },
+            },
+            tx_context_gas_budget_cost_params: TxContextGasBudgetCostParams {
+                tx_context_gas_budget_cost_base: if protocol_config.move_native_context() {
+                    protocol_config.tx_context_gas_budget_cost_base().into()
+                } else {
+                    DEFAULT_UNUSED_TX_CONTEXT_ENTRY_COST.into()
+                },
+            },
+            tx_context_ids_created_cost_params: TxContextIdsCreatedCostParams {
+                tx_context_ids_created_cost_base: if protocol_config.move_native_context() {
+                    protocol_config.tx_context_ids_created_cost_base().into()
+                } else {
+                    DEFAULT_UNUSED_TX_CONTEXT_ENTRY_COST.into()
+                },
+            },
+            tx_context_replace_cost_params: TxContextReplaceCostParams {
+                tx_context_replace_cost_base: if protocol_config.move_native_context() {
+                    protocol_config.tx_context_replace_cost_base().into()
+                } else {
+                    DEFAULT_UNUSED_TX_CONTEXT_ENTRY_COST.into()
+                },
             },
             type_is_one_time_witness_cost_params: TypesIsOneTimeWitnessCostParams {
                 types_is_one_time_witness_cost_base: protocol_config
@@ -630,9 +728,7 @@ impl NativesCostTable {
                 bls12381_g2_msm_base_cost_per_input: protocol_config
                     .group_ops_bls12381_g2_msm_base_cost_per_input_as_option()
                     .map(Into::into),
-                bls12381_msm_max_len: protocol_config
-                    .group_ops_bls12381_msm_max_len_as_option()
-                    .map(Into::into),
+                bls12381_msm_max_len: protocol_config.group_ops_bls12381_msm_max_len_as_option(),
                 bls12381_pairing_cost: protocol_config
                     .group_ops_bls12381_pairing_cost_as_option()
                     .map(Into::into),
@@ -649,8 +745,7 @@ impl NativesCostTable {
                     .group_ops_bls12381_uncompressed_g1_sum_cost_per_term_as_option()
                     .map(Into::into),
                 bls12381_uncompressed_g1_sum_max_terms: protocol_config
-                    .group_ops_bls12381_uncompressed_g1_sum_max_terms_as_option()
-                    .map(Into::into),
+                    .group_ops_bls12381_uncompressed_g1_sum_max_terms_as_option(),
             },
             vdf_cost_params: VDFCostParams {
                 vdf_verify_cost: protocol_config
@@ -658,6 +753,20 @@ impl NativesCostTable {
                     .map(Into::into),
                 hash_to_input_cost: protocol_config
                     .vdf_hash_to_input_cost_as_option()
+                    .map(Into::into),
+            },
+            nitro_attestation_cost_params: NitroAttestationCostParams {
+                parse_base_cost: protocol_config
+                    .nitro_attestation_parse_base_cost_as_option()
+                    .map(Into::into),
+                parse_cost_per_byte: protocol_config
+                    .nitro_attestation_parse_cost_per_byte_as_option()
+                    .map(Into::into),
+                verify_base_cost: protocol_config
+                    .nitro_attestation_verify_base_cost_as_option()
+                    .map(Into::into),
+                verify_cost_per_cert: protocol_config
+                    .nitro_attestation_verify_cost_per_cert_as_option()
                     .map(Into::into),
             },
         }
@@ -1004,6 +1113,11 @@ pub fn all_natives(silent: bool, protocol_config: &ProtocolConfig) -> NativeFunc
         ),
         (
             "transfer",
+            "party_transfer_impl",
+            make_native!(transfer::party_transfer_internal),
+        ),
+        (
+            "transfer",
             "freeze_object_impl",
             make_native!(transfer::freeze_object),
         ),
@@ -1019,9 +1133,51 @@ pub fn all_natives(silent: bool, protocol_config: &ProtocolConfig) -> NativeFunc
         ),
         (
             "tx_context",
+            "last_created_id",
+            make_native!(tx_context::last_created_id),
+        ),
+        (
+            "tx_context",
             "derive_id",
             make_native!(tx_context::derive_id),
         ),
+        ("tx_context", "fresh_id", make_native!(tx_context::fresh_id)),
+        (
+            "tx_context",
+            "native_sender",
+            make_native!(tx_context::sender),
+        ),
+        (
+            "tx_context",
+            "native_epoch",
+            make_native!(tx_context::epoch),
+        ),
+        (
+            "tx_context",
+            "native_epoch_timestamp_ms",
+            make_native!(tx_context::epoch_timestamp_ms),
+        ),
+        (
+            "tx_context",
+            "native_sponsor",
+            make_native!(tx_context::sponsor),
+        ),
+        (
+            "tx_context",
+            "native_gas_price",
+            make_native!(tx_context::gas_price),
+        ),
+        (
+            "tx_context",
+            "native_gas_budget",
+            make_native!(tx_context::gas_budget),
+        ),
+        (
+            "tx_context",
+            "native_ids_created",
+            make_native!(tx_context::ids_created),
+        ),
+        ("tx_context", "replace", make_native!(tx_context::replace)),
         (
             "types",
             "is_one_time_witness",
@@ -1072,6 +1228,11 @@ pub fn all_natives(silent: bool, protocol_config: &ProtocolConfig) -> NativeFunc
             "ecdsa_k1",
             "secp256k1_keypair_from_seed",
             make_native!(ecdsa_k1::secp256k1_keypair_from_seed),
+        ),
+        (
+            "nitro_attestation",
+            "load_nitro_attestation_internal",
+            make_native!(nitro_attestation::load_nitro_attestation_internal),
         ),
     ];
     let sui_framework_natives_iter =

@@ -42,20 +42,17 @@ module sui_system::voting_power {
     const EVotingPowerOverThreshold: u64 = 3;
     const EInvalidVotingPower: u64 = 4;
 
-    /// Set the voting power of all validators.
-    /// Each validator's voting power is initialized using their stake. We then attempt to cap their voting power
-    /// at `MAX_VOTING_POWER`. If `MAX_VOTING_POWER` is not a feasible cap, we pick the lowest possible cap.
-    public(package) fun set_voting_power(
-        validators: &mut vector<Validator>,
-        stable_rate: VecMap<ascii::String, u64>) {
+    public(package) fun set_voting_power(validators: &mut vector<Validator>, stable_rate: VecMap<ascii::String, u64>, total_stake: u64) {
         // If threshold_pct is too small, it's possible that even when all validators reach the threshold we still don't
         // have 100%. So we bound the threshold_pct to be always enough to find a solution.
-        let threshold = std::u64::min(
-            TOTAL_VOTING_POWER,
-            std::u64::max(MAX_VOTING_POWER, std::u64::divide_and_round_up(TOTAL_VOTING_POWER, validators.length())),
+        let total_voting_power = TOTAL_VOTING_POWER;
+        let average_voting_power = total_voting_power.divide_and_round_up(validators.length());
+        let threshold = total_voting_power.min(MAX_VOTING_POWER.max(average_voting_power));
+        let (mut info_list, remaining_power) = init_voting_power_info(
+            validators,
+            threshold,
+            total_stake,
         );
-        let (mut info_list, remaining_power) = init_voting_power_info(validators, threshold, stable_rate);
-
         adjust_voting_power(&mut info_list, threshold, remaining_power);
         update_voting_power(validators, info_list);
         check_invariants(validators, stable_rate);
@@ -92,6 +89,29 @@ module sui_system::voting_power {
         (result, TOTAL_VOTING_POWER - total_power)
     }
 
+
+
+/// Create the initial voting power of each validator, set using their stake, but capped using threshold.
+/// We also perform insertion sort while creating the voting power list, by maintaining the list in
+/// descending order using voting power.
+/// Anything beyond the threshold is added to the remaining_power, which is also returned.
+fun init_voting_power_info(
+    validators: &vector<Validator>,
+    threshold: u64,
+    total_stake: u64,
+): (vector<VotingPowerInfoV2>, u64) {
+    let mut total_power = 0;
+    let mut result = vector[];
+    validators.length().do!(|i| {
+        let stake = validators[i].total_stake();
+        let voting_power = derive_raw_voting_power(stake, total_stake).min(threshold);
+        insert(&mut result, VotingPowerInfoV2 { validator_index: i, voting_power, stake });
+        total_power = total_power + voting_power;
+    });
+
+    (result, TOTAL_VOTING_POWER - total_power)
+}
+
     /// Sum up the total stake of all validators.
     fun total_stake(validators: &vector<Validator>, stable_rate: VecMap<ascii::String, u64>): u64 {
         let mut i = 0;
@@ -104,50 +124,47 @@ module sui_system::voting_power {
         };
         total_stake
     }
+public(package) fun derive_raw_voting_power(stake: u64, total_stake: u64): u64 {
+    ((stake as u128 * (TOTAL_VOTING_POWER as u128) / (total_stake as u128)) as u64)
+}
 
     /// Insert `new_info` to `info_list` as part of insertion sort, such that `info_list` is always sorted
     /// using stake, in descending order.
     fun insert(info_list: &mut vector<VotingPowerInfoV2>, new_info: VotingPowerInfoV2) {
-        let mut i = 0;
-        let len = vector::length(info_list);
-        while (i < len && vector::borrow(info_list, i).stake > new_info.stake) {
-            i = i + 1;
-        };
-        vector::insert(info_list, new_info, i);
+        let len = info_list.length();
+        let idx = info_list.find_index!(|info| new_info.stake >= info.stake);
+        info_list.insert(new_info, idx.destroy_or!(len));
     }
 
     /// Distribute remaining_power to validators that are not capped at threshold.
-    fun adjust_voting_power(info_list: &mut vector<VotingPowerInfoV2>, threshold: u64, mut remaining_power: u64) {
+    fun adjust_voting_power(
+        info_list: &mut vector<VotingPowerInfoV2>,
+        threshold: u64,
+        mut remaining_power: u64,
+    ) {
         let mut i = 0;
-        let len = vector::length(info_list);
+        let len = info_list.length();
         while (i < len && remaining_power > 0) {
-            let v = vector::borrow_mut(info_list, i);
-            // planned is the amount of extra power we want to distribute to this validator.
-            let planned = remaining_power.divide_and_round_up(len - i);
-            // target is the targeting power this validator will reach, capped by threshold.
-            let target = threshold.min(v.voting_power + planned);
-            // actual is the actual amount of power we will be distributing to this validator.
-            let actual = remaining_power.min(target - v.voting_power);
-            v.voting_power = v.voting_power + actual;
-            assert!(v.voting_power <= threshold, EVotingPowerOverThreshold);
-            remaining_power = remaining_power - actual;
-            i = i + 1;
+        let v = &mut info_list[i];
+        // planned is the amount of extra power we want to distribute to this validator.
+        let planned = remaining_power.divide_and_round_up(len - i);
+        // target is the targeting power this validator will reach, capped by threshold.
+        let target = threshold.min(v.voting_power + planned);
+        // actual is the actual amount of power we will be distributing to this validator.
+        let actual = remaining_power.min(target - v.voting_power);
+        v.voting_power = v.voting_power + actual;
+        assert!(v.voting_power <= threshold, EVotingPowerOverThreshold);
+        remaining_power = remaining_power - actual;
+        i = i + 1;
         };
         assert!(remaining_power == 0, ETotalPowerMismatch);
     }
 
     /// Update validators with the decided voting power.
-    fun update_voting_power(validators: &mut vector<Validator>, mut info_list: vector<VotingPowerInfoV2>) {
-        while (!vector::is_empty(&info_list)) {
-            let VotingPowerInfoV2 {
-                validator_index,
-                voting_power,
-                stake: _,
-            } = info_list.pop_back();
-            let v = vector::borrow_mut(validators, validator_index);
-            validator::set_voting_power(v, voting_power);
-        };
-        vector::destroy_empty(info_list);
+    fun update_voting_power(validators: &mut vector<Validator>, info_list: vector<VotingPowerInfoV2>) {
+        info_list.destroy!(|VotingPowerInfoV2 { validator_index, voting_power, .. }| {
+            validators[validator_index].set_voting_power(voting_power);
+        });
     }
 
     /// Check a few invariants that must hold after setting the voting power.
@@ -189,13 +206,12 @@ module sui_system::voting_power {
         }
     }
 
-    /// Return the (constant) total voting power
-    public fun total_voting_power(): u64 {
-        TOTAL_VOTING_POWER
-    }
+/// Return the (constant) total voting power
+public fun total_voting_power(): u64 {
+    TOTAL_VOTING_POWER
+}
 
-    /// Return the (constant) quorum threshold
-    public fun quorum_threshold(): u64 {
-        QUORUM_THRESHOLD
-    }
+/// Return the (constant) quorum threshold
+public fun quorum_threshold(): u64 {
+    QUORUM_THRESHOLD
 }

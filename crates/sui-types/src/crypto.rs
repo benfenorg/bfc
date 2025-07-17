@@ -125,12 +125,12 @@ pub fn verify_proof_of_possession(
     )
 }
 ///////////////////////////////////////////////
-/// Account Keys
-///
-/// * The following section defines the keypairs that are used by
-/// * accounts to interact with Sui.
-/// * Currently we support eddsa and ecdsa on Sui.
-///
+// Account Keys
+//
+// * The following section defines the keypairs that are used by
+// * accounts to interact with Sui.
+// * Currently we support eddsa and ecdsa on Sui.
+//
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, From, PartialEq, Eq)]
@@ -1290,7 +1290,13 @@ impl<const STRONG_THRESHOLD: bool> AuthoritySignInfoTrait
             .get_mut(message_index)
             .ok_or(SuiError::InvalidAuthenticator)?;
 
+        let mut seen = std::collections::BTreeSet::new();
         for authority_index in self.signers_map.iter() {
+            if !seen.insert(authority_index) {
+                continue;
+            }
+
+            // Update weight when seeing the authority for the first time.
             let authority = committee
                 .authority_by_index(authority_index)
                 .ok_or_else(|| SuiError::UnknownSigner {
@@ -1298,8 +1304,6 @@ impl<const STRONG_THRESHOLD: bool> AuthoritySignInfoTrait
                     index: Some(authority_index),
                     committee: Box::new(committee.clone()),
                 })?;
-
-            // Update weight.
             let voting_rights = committee.weight(authority);
             fp_ensure!(
                 voting_rights > 0,
@@ -1377,7 +1381,7 @@ impl<const STRONG_THRESHOLD: bool> AuthorityQuorumSignInfo<STRONG_THRESHOLD> {
     pub fn authorities<'a>(
         &'a self,
         committee: &'a Committee,
-    ) -> impl Iterator<Item = SuiResult<&AuthorityName>> {
+    ) -> impl Iterator<Item = SuiResult<&'a AuthorityName>> {
         self.signers_map.iter().map(|i| {
             committee
                 .authority_by_index(i)
@@ -1457,7 +1461,7 @@ mod bcs_signable {
     impl BcsSignable for crate::transaction::SenderSignedData {}
     impl BcsSignable for crate::object::ObjectInner {}
 
-    impl BcsSignable for crate::accumulator::Accumulator {}
+    impl BcsSignable for crate::global_state_hash::GlobalStateHash {}
 
     impl BcsSignable for super::bcs_signable_test::Foo {}
     #[cfg(test)]
@@ -1709,9 +1713,14 @@ pub enum CompressedSignature {
     Secp256k1(Secp256k1SignatureAsBytes),
     Secp256r1(Secp256r1SignatureAsBytes),
     ZkLogin(ZkLoginAuthenticatorAsBytes),
+    Passkey(PasskeyAuthenticatorAsBytes),
 }
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, JsonSchema)]
 pub struct ZkLoginAuthenticatorAsBytes(#[schemars(with = "Base64")] pub Vec<u8>);
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, JsonSchema)]
+pub struct PasskeyAuthenticatorAsBytes(#[schemars(with = "Base64")] pub Vec<u8>);
 
 impl AsRef<[u8]> for CompressedSignature {
     fn as_ref(&self) -> &[u8] {
@@ -1720,6 +1729,7 @@ impl AsRef<[u8]> for CompressedSignature {
             CompressedSignature::Secp256k1(sig) => &sig.0,
             CompressedSignature::Secp256r1(sig) => &sig.0,
             CompressedSignature::ZkLogin(sig) => &sig.0,
+            CompressedSignature::Passkey(sig) => &sig.0,
         }
     }
 }

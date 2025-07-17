@@ -10,7 +10,6 @@ Sui object identifiers
 -  [Constants](#@Constants_0)
 -  [Function `id_to_bytes`](#sui_object_id_to_bytes)
 -  [Function `id_to_address`](#sui_object_id_to_address)
--  [Function `bfc_system_state`](#sui_object_bfc_system_state)
 -  [Function `id_from_bytes`](#sui_object_id_from_bytes)
 -  [Function `id_from_address`](#sui_object_id_from_address)
 -  [Function `sui_system_state`](#sui_object_sui_system_state)
@@ -116,41 +115,12 @@ This is a privileged type that can only be derived from a <code>TxContext</code>
 ## Constants
 
 
-<a name="sui_object_BFC_SYSTEM_STATE_OBJECT_ID"></a>
+<a name="sui_object_SUI_SYSTEM_STATE_OBJECT_ID"></a>
+
+The hardcoded ID for the singleton Sui System State Object.
 
 
-
-<pre><code><b>const</b> <a href="../sui/object.md#sui_object_BFC_SYSTEM_STATE_OBJECT_ID">BFC_SYSTEM_STATE_OBJECT_ID</a>: <b>address</b> = 0xc9;
-</code></pre>
-
-
-
-<a name="sui_object_ENotSystemAddress"></a>
-
-Sender is not @0x0 the system address.
-
-
-<pre><code><b>const</b> <a href="../sui/object.md#sui_object_ENotSystemAddress">ENotSystemAddress</a>: u64 = 0;
-</code></pre>
-
-
-
-<a name="sui_object_SUI_AUTHENTICATOR_STATE_ID"></a>
-
-The hardcoded ID for the singleton AuthenticatorState Object.
-
-
-<pre><code><b>const</b> <a href="../sui/object.md#sui_object_SUI_AUTHENTICATOR_STATE_ID">SUI_AUTHENTICATOR_STATE_ID</a>: <b>address</b> = 0x7;
-</code></pre>
-
-
-
-<a name="sui_object_SUI_BRIDGE_ID"></a>
-
-The hardcoded ID for the Bridge Object.
-
-
-<pre><code><b>const</b> <a href="../sui/object.md#sui_object_SUI_BRIDGE_ID">SUI_BRIDGE_ID</a>: <b>address</b> = 0x9;
+<pre><code><b>const</b> <a href="../sui/object.md#sui_object_SUI_SYSTEM_STATE_OBJECT_ID">SUI_SYSTEM_STATE_OBJECT_ID</a>: <b>address</b> = 0x5;
 </code></pre>
 
 
@@ -165,12 +135,12 @@ The hardcoded ID for the singleton Clock Object.
 
 
 
-<a name="sui_object_SUI_DENY_LIST_OBJECT_ID"></a>
+<a name="sui_object_SUI_AUTHENTICATOR_STATE_ID"></a>
 
-The hardcoded ID for the singleton DenyList.
+The hardcoded ID for the singleton AuthenticatorState Object.
 
 
-<pre><code><b>const</b> <a href="../sui/object.md#sui_object_SUI_DENY_LIST_OBJECT_ID">SUI_DENY_LIST_OBJECT_ID</a>: <b>address</b> = 0x403;
+<pre><code><b>const</b> <a href="../sui/object.md#sui_object_SUI_AUTHENTICATOR_STATE_ID">SUI_AUTHENTICATOR_STATE_ID</a>: <b>address</b> = 0x7;
 </code></pre>
 
 
@@ -185,12 +155,32 @@ The hardcoded ID for the singleton Random Object.
 
 
 
-<a name="sui_object_SUI_SYSTEM_STATE_OBJECT_ID"></a>
+<a name="sui_object_SUI_DENY_LIST_OBJECT_ID"></a>
 
-The hardcoded ID for the singleton Sui System State Object.
+The hardcoded ID for the singleton DenyList.
 
 
-<pre><code><b>const</b> <a href="../sui/object.md#sui_object_SUI_SYSTEM_STATE_OBJECT_ID">SUI_SYSTEM_STATE_OBJECT_ID</a>: <b>address</b> = 0x5;
+<pre><code><b>const</b> <a href="../sui/object.md#sui_object_SUI_DENY_LIST_OBJECT_ID">SUI_DENY_LIST_OBJECT_ID</a>: <b>address</b> = 0x403;
+</code></pre>
+
+
+
+<a name="sui_object_SUI_BRIDGE_ID"></a>
+
+The hardcoded ID for the Bridge Object.
+
+
+<pre><code><b>const</b> <a href="../sui/object.md#sui_object_SUI_BRIDGE_ID">SUI_BRIDGE_ID</a>: <b>address</b> = 0x9;
+</code></pre>
+
+
+
+<a name="sui_object_ENotSystemAddress"></a>
+
+Sender is not @0x0 the system address.
+
+
+<pre><code><b>const</b> <a href="../sui/object.md#sui_object_ENotSystemAddress">ENotSystemAddress</a>: u64 = 0;
 </code></pre>
 
 
@@ -238,35 +228,6 @@ Get the inner bytes of <code><a href="../sui/object.md#sui_object_id">id</a></co
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui/object.md#sui_object_id_to_address">id_to_address</a>(<a href="../sui/object.md#sui_object_id">id</a>: &<a href="../sui/object.md#sui_object_ID">ID</a>): <b>address</b> {
     <a href="../sui/object.md#sui_object_id">id</a>.bytes
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="sui_object_bfc_system_state"></a>
-
-## Function `bfc_system_state`
-
-Create the <code><a href="../sui/object.md#sui_object_UID">UID</a></code> for the singleton <code>SuiSystemState</code> object.
-This should only be called once from <code>sui_system</code>.
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/object.md#sui_object_bfc_system_state">bfc_system_state</a>(ctx: &<a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): <a href="../sui/object.md#sui_object_UID">sui::object::UID</a>
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/object.md#sui_object_bfc_system_state">bfc_system_state</a>(ctx: &TxContext): <a href="../sui/object.md#sui_object_UID">UID</a> {
-    <b>assert</b>!(<a href="../sui/tx_context.md#sui_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="../sui/object.md#sui_object_ENotSystemAddress">ENotSystemAddress</a>);
-    <a href="../sui/object.md#sui_object_UID">UID</a> {
-        <a href="../sui/object.md#sui_object_id">id</a>: <a href="../sui/object.md#sui_object_ID">ID</a> { bytes: <a href="../sui/object.md#sui_object_BFC_SYSTEM_STATE_OBJECT_ID">BFC_SYSTEM_STATE_OBJECT_ID</a> },
-    }
 }
 </code></pre>
 

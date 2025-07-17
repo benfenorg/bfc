@@ -247,12 +247,12 @@ fn test_meter_system_packages() {
             &mut meter,
             &bytecode_verifier_metrics,
         )
-            .unwrap_or_else(|_| {
-                panic!(
-                    "Verification of all system packages should succeed, but failed on {}",
-                    system_package.id(),
-                )
-            });
+        .unwrap_or_else(|_| {
+            panic!(
+                "Verification of all system packages should succeed, but failed on {}",
+                system_package.id,
+            )
+        });
     }
 
     // Ensure metrics worked as expected

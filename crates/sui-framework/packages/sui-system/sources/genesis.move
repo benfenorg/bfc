@@ -88,6 +88,55 @@ module sui_system::genesis {
         // Ensure this is only called at genesis
         assert!(ctx.epoch() == 0, ENotCalledAtGenesis);
 
+    // Create all the `Validator` structs
+    let mut validators = vector[];
+    genesis_validators.do!(|genesis_validator| {
+        let GenesisValidatorMetadata {
+            name,
+            description,
+            image_url,
+            project_url,
+            sui_address,
+            gas_price,
+            commission_rate,
+            protocol_public_key,
+            proof_of_possession,
+            network_public_key,
+            worker_public_key,
+            network_address,
+            p2p_address,
+            primary_address,
+            worker_address,
+        } = genesis_validator;
+
+        let validator = validator::new(
+            sui_address,
+            protocol_public_key,
+            network_public_key,
+            worker_public_key,
+            proof_of_possession,
+            name,
+            description,
+            image_url,
+            project_url,
+            network_address,
+            p2p_address,
+            primary_address,
+            worker_address,
+            gas_price,
+            commission_rate,
+            ctx,
+        );
+
+        // Ensure that each validator is unique
+        assert!(
+            !validator_set::is_duplicate_validator(&validators, &validator),
+            EDuplicateValidator,
+        );
+
+            validators.push_back(validator);
+        });
+
         let TokenDistributionSchedule {
             stake_subsidy_fund_mist,
             allocations,
@@ -96,81 +145,21 @@ module sui_system::genesis {
         let subsidy_fund = sui_supply.split(stake_subsidy_fund_mist);
         let storage_fund = balance::zero();
 
-        // Create all the `Validator` structs
-        let mut validators = vector[];
-        let count = genesis_validators.length();
-        let mut i = 0;
-        while (i < count) {
-            let GenesisValidatorMetadata {
-                name,
-                description,
-                image_url,
-                project_url,
-                sui_address,
-                gas_price,
-                commission_rate,
-                protocol_public_key,
-                proof_of_possession,
-                network_public_key,
-                worker_public_key,
-                network_address,
-                p2p_address,
-                primary_address,
-                worker_address,
-            } = genesis_validators[i];
-
-            let validator = validator::new(
-                sui_address,
-                protocol_public_key,
-                network_public_key,
-                worker_public_key,
-                proof_of_possession,
-                name,
-                description,
-                image_url,
-                project_url,
-                network_address,
-                p2p_address,
-                primary_address,
-                worker_address,
-                gas_price,
-                commission_rate,
-                ctx
-            );
-
-            // Ensure that each validator is unique
-            assert!(
-                !validator_set::is_duplicate_validator(&validators, &validator),
-                EDuplicateValidator,
-            );
-
-            validators.push_back(validator);
-
-            i = i + 1;
-        };
-
         // Allocate tokens and staking operations
-        allocate_tokens(
-            sui_supply,
-            allocations,
-            &mut validators,
-            ctx
-        );
+        allocate_tokens(sui_supply, allocations, &mut validators, ctx);
 
         // Activate all validators
-        activate_validators(&mut validators);
+        validators.do_mut!(|validator| validator.activate(0));
 
         let system_parameters = sui_system_state_inner::create_system_parameters(
             genesis_chain_parameters.epoch_duration_ms,
             genesis_chain_parameters.stake_subsidy_start_epoch,
-
-            // Validator committee parameters
+        // Validator committee parameters
             genesis_chain_parameters.max_validator_count,
             genesis_chain_parameters.min_validator_joining_stake,
             genesis_chain_parameters.validator_low_stake_threshold,
             genesis_chain_parameters.validator_very_low_stake_threshold,
             genesis_chain_parameters.validator_low_stake_grace_period,
-
             ctx,
         );
 

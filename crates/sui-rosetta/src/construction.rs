@@ -37,7 +37,7 @@ use crate::types::{
 };
 use crate::{OnlineServerContext, SuiEnv};
 
-/// This module implements the [Rosetta Construction API](https://www.rosetta-api.org/docs/ConstructionApi.html)
+// This module implements the [Rosetta Construction API](https://www.rosetta-api.org/docs/ConstructionApi.html)
 
 /// Derive returns the AccountIdentifier associated with a public key.
 ///
@@ -124,6 +124,7 @@ pub async fn combine(
         place_holder_epoch,
         &VerifyParams::default(),
         Arc::new(VerifiedDigestCache::new_empty()), // no need to use cache in rosetta
+        None,
     )?;
     let signed_tx_bytes = bcs::to_bytes(&signed_tx)?;
 

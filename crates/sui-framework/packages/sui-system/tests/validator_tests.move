@@ -71,6 +71,7 @@ module sui_system::validator_tests {
 
         validator
     }
+const DEFAULT_STAKE: u64 = 10;
 
     #[test]
     fun test_validator_with_stable() {
@@ -96,81 +97,81 @@ module sui_system::validator_tests {
     }
 
     #[test]
-    fun test_validator_owner_flow() {
-        let sender = VALID_ADDRESS;
-        let mut scenario_val = test_scenario::begin(sender);
-        let scenario = &mut scenario_val;
-        {
-            let ctx = scenario.ctx();
+    fun validator_owner_flow() {
+        let initial_stake = DEFAULT_STAKE * 1_000_000_000;
+        let mut runner = test_runner::new().build();
+        runner.set_sender(@2);
 
-            let validator = get_test_validator(ctx);
-            assert!(validator::total_stake_amount(&validator) == 1_000_000_000, 0);
-            assert!(validator.sui_address() == sender);
+        let validator = validator_builder::new()
+        .sui_address(@2)
+        .initial_stake(DEFAULT_STAKE)
+        .build(runner.ctx());
 
-            test_utils::destroy(validator);
-        };
+        let pool_id = validator.staking_pool_id();
 
-        // Check that after destroy, the original stake still exists.
-         scenario.next_tx(sender);
-         {
-             let stake = scenario.take_from_sender<StakedBfc>();
-             assert!(staking_pool::staked_sui_amount(&stake) == 1_000_000_000, 0);
-             scenario.return_to_sender(stake);
-         };
-        scenario_val.end();
+        assert_eq!(validator.total_stake(), initial_stake);
+        assert_eq!(validator.sui_address(), @2);
+        test_runner::destroy(validator);
+
+        runner.owned_tx!<StakedBfc>(|stake| {
+        assert_eq!(stake.amount(), initial_stake);
+        assert_eq!(stake.pool_id(), pool_id);
+        assert_eq!(stake.stake_activation_epoch(), 0);
+        runner.keep(stake);
+        });
+
+        runner.finish();
     }
 
-    #[test]
-    fun test_pending_validator_flow() {
-        let sender = VALID_ADDRESS;
-        let mut scenario_val = test_scenario::begin(sender);
-        let scenario = &mut scenario_val;
-        let ctx = scenario.ctx();
+#[test]
+// Scenario:
+// 1. Create a validator with initial stake
+// 2. Add extra stake, check pending stake amount
+// 3. Withdraw initial stake, check pending stake amount and pending withdraw amount
+// 4. Trigger state change and pending processing
+// 5. Check that pending values have been processed
+fun pending_validator_flow() {
+    let initial_stake = DEFAULT_STAKE * 1_000_000_000;
+    let added_stake = 30_000_000_000;
+    let mut runner = test_runner::new().build();
+    runner.set_sender(@2);
 
-        let mut validator = get_test_validator(ctx);
-        scenario.next_tx(sender);
-        {
-            let ctx = scenario.ctx();
-            let new_stake = coin::mint_for_testing(30_000_000_000, ctx).into_balance();
-            let stake = validator.request_add_stake(new_stake, sender, ctx);
-            transfer::public_transfer(stake, sender);
-            assert!(validator::total_stake(&validator) == 1_000_000_000, 0);
-            assert!(validator.pending_stake_amount() == 30_000_000_000);
-        };
+    let mut validator = validator_builder::new()
+    .sui_address(@2)
+    .initial_stake(DEFAULT_STAKE)
+    .is_active_at_genesis(true)
+    .build(runner.ctx());
 
-        scenario.next_tx(sender);
-        {
-            let coin_ids = scenario.ids_for_sender<StakedBfc>();
-            let stake = scenario.take_from_sender_by_id<StakedBfc>(coin_ids[0]);
-            let ctx = scenario.ctx();
-            let withdrawn_balance = validator.request_withdraw_stake(stake, ctx);
-            transfer::public_transfer(withdrawn_balance.into_coin(ctx), sender);
+    // add extra stake, but don't send it to the inventory just yet
+    let extra_stake = validator.request_add_stake(test_runner::mint(30), @2, runner.ctx());
 
-            assert!(validator::total_stake(&validator) == 1_000_000_000, 0);
-            assert!(validator.pending_stake_amount() == 30_000_000_000);
-            assert!(validator::pending_stake_withdraw_amount(&validator) == 1_000_000_000, 0);
+    assert_eq!(validator.total_stake(), initial_stake);
+    assert_eq!(validator.pending_stake_amount(), added_stake);
 
-            validator.deposit_stake_rewards(balance::zero(), &rate_vec_map());
+    // take initial stake out of inventory
+    runner.owned_tx!<StakedSui>(|staked_sui| {
+    let withdrawn_balance = validator
+    .request_withdraw_stake(staked_sui, runner.ctx())
+    .destroy_for_testing();
 
-            // Calling `process_pending_stakes_and_withdraws` will withdraw the coin and transfer to sender.
-            validator.process_pending_stakes_and_withdraws(ctx);
+    assert_eq!(withdrawn_balance, initial_stake);
+    assert_eq!(validator.total_stake(), initial_stake);
+    assert_eq!(validator.pending_stake_amount(), added_stake);
+    assert_eq!(validator.pending_stake_withdraw_amount(), initial_stake);
 
-            assert!(validator.total_stake() == 30_000_000_000);
-            assert!(validator.pending_stake_amount() == 0);
-            assert!(validator.pending_stake_withdraw_amount() == 0);
-        };
+    // trigger the state change and pending processing
+    validator.deposit_stake_rewards(balance::zero());
+    validator.process_pending_stakes_and_withdraws(runner.ctx());
 
-        scenario.next_tx(sender);
-        {
-            let coin_ids = scenario.ids_for_sender<Coin<BFC>>();
-            let withdraw = scenario.take_from_sender_by_id<Coin<BFC>>(coin_ids[0]);
-            assert!(coin::value(&withdraw) == 1_000_000_000, 0);
-            scenario.return_to_sender(withdraw);
-        };
+    assert_eq!(validator.total_stake(), added_stake);
+    assert_eq!(validator.pending_stake_amount(), 0);
+    assert_eq!(validator.pending_stake_withdraw_amount(), 0);
+    });
 
-        test_utils::destroy(validator);
-        test_scenario::end(scenario_val);
-    }
+    runner.finish();
+    test_runner::destroy(validator);
+    test_runner::destroy(extra_stake);
+}
 
     #[test]
     fun test_pending_validator_flow_with_stable() {
@@ -277,6 +278,13 @@ module sui_system::validator_tests {
         test_utils::destroy(metadata);
         test_scenario::end(scenario_val);
     }
+#[test]
+fun metadata() {
+    let ctx = &mut tx_context::dummy();
+    let metadata = validator_builder::preset().build_metadata(ctx);
+    metadata.validate();
+    test_utils::destroy(metadata);
+}
 
     #[test]
     #[expected_failure(abort_code = validator::EMetadataInvalidNetPubkey)]
@@ -299,11 +307,29 @@ module sui_system::validator_tests {
             string::from_ascii(ascii::string(VALID_WORKER_ADDR)),
             bag::new(ctx),
         );
+#[test, expected_failure(abort_code = sui_system::validator::EMetadataInvalidPubkey)]
+fun metadata_invalid_pubkey() {
+    let ctx = &mut tx_context::dummy();
+    let metadata = validator_builder::preset()
+        .protocol_pubkey_bytes(b"incorrect")
+        .build_metadata(ctx);
 
-        validator::validate_metadata(&metadata);
-        test_utils::destroy(metadata);
-        scenario_val.end();
-    }
+    metadata.validate();
+
+    abort
+}
+
+#[test, expected_failure(abort_code = sui_system::validator::EMetadataInvalidNetPubkey)]
+fun metadata_invalid_net_pubkey() {
+    let ctx = &mut tx_context::dummy();
+    let metadata = validator_builder::preset()
+        .network_pubkey_bytes(b"incorrect")
+        .build_metadata(ctx);
+
+    metadata.validate();
+
+    abort
+}
 
     #[test]
     #[expected_failure(abort_code = validator::EMetadataInvalidWorkerPubkey)]
@@ -327,422 +353,317 @@ module sui_system::validator_tests {
             bag::new(ctx),
         );
 
-        validator::validate_metadata(&metadata);
-        test_utils::destroy(metadata);
-        scenario_val.end();
-    }
+    abort
+}
 
-    #[test]
-    #[expected_failure(abort_code = validator::EMetadataInvalidNetAddr)]
-    fun test_metadata_invalid_net_addr() {
-        let mut scenario_val = test_scenario::begin(VALID_ADDRESS);
-        let ctx = scenario_val.ctx();
-        let metadata = validator::new_metadata(
-            VALID_ADDRESS,
-            VALID_PUBKEY,
-            VALID_NET_PUBKEY,
-            VALID_WORKER_PUBKEY,
-            PROOF_OF_POSSESSION,
-            b"Validator1".to_string(),
-            b"Validator1".to_string(),
-            url::new_unsafe_from_bytes(b"image_url1"),
-            url::new_unsafe_from_bytes(b"project_url1"),
-            b"42".to_string(),
-            VALID_P2P_ADDR.to_string(),
-            VALID_CONSENSUS_ADDR.to_string(),
-            VALID_WORKER_ADDR.to_string(),
-            bag::new(ctx),
-        );
+#[test, expected_failure(abort_code = sui_system::validator::EMetadataInvalidNetAddr)]
+fun metadata_invalid_net_addr() {
+    let ctx = &mut tx_context::dummy();
+    let metadata = validator_builder::preset().net_address(b"incorrect").build_metadata(ctx);
 
-        validator::validate_metadata(&metadata);
-        test_utils::destroy(metadata);
-        scenario_val.end();
-    }
+    metadata.validate();
 
-    #[test]
-    #[expected_failure(abort_code = validator::EMetadataInvalidP2pAddr)]
-    fun test_metadata_invalid_p2p_addr() {
-        let mut scenario_val = test_scenario::begin(VALID_ADDRESS);
-        let ctx = scenario_val.ctx();
-        let metadata = validator::new_metadata(
-            VALID_ADDRESS,
-            VALID_PUBKEY,
-            VALID_NET_PUBKEY,
-            VALID_WORKER_PUBKEY,
-            PROOF_OF_POSSESSION,
-            b"Validator1".to_string(),
-            b"Validator1".to_string(),
-            url::new_unsafe_from_bytes(b"image_url1"),
-            url::new_unsafe_from_bytes(b"project_url1"),
-            VALID_NET_ADDR.to_string(),
-            b"42".to_string(),
-            VALID_CONSENSUS_ADDR.to_string(),
-            VALID_WORKER_ADDR.to_string(),
-            bag::new(ctx),
-        );
+    abort
+}
 
-        validator::validate_metadata(&metadata);
-        test_utils::destroy(metadata);
-        scenario_val.end();
-    }
+#[test, expected_failure(abort_code = sui_system::validator::EMetadataInvalidP2pAddr)]
+fun metadata_invalid_p2p_addr() {
+    let ctx = &mut tx_context::dummy();
+    let metadata = validator_builder::preset().p2p_address(b"incorrect").build_metadata(ctx);
 
-    #[test]
-    #[expected_failure(abort_code = validator::EMetadataInvalidPrimaryAddr)]
-    fun test_metadata_invalid_consensus_addr() {
-        let mut scenario_val = test_scenario::begin(VALID_ADDRESS);
-        let ctx = scenario_val.ctx();
-        let metadata = validator::new_metadata(
-            VALID_ADDRESS,
-            VALID_PUBKEY,
-            VALID_NET_PUBKEY,
-            VALID_WORKER_PUBKEY,
-            PROOF_OF_POSSESSION,
-            b"Validator1".to_string(),
-            b"Validator1".to_string(),
-            url::new_unsafe_from_bytes(b"image_url1"),
-            url::new_unsafe_from_bytes(b"project_url1"),
-            VALID_NET_ADDR.to_string(),
-            VALID_P2P_ADDR.to_string(),
-            b"42".to_string(),
-            VALID_WORKER_ADDR.to_string(),
-            bag::new(ctx),
-        );
+    metadata.validate();
 
-        validator::validate_metadata(&metadata);
-        test_utils::destroy(metadata);
-        scenario_val.end();
-    }
+    abort
+}
 
-    #[test]
-    #[expected_failure(abort_code = validator::EMetadataInvalidWorkerAddr)]
-    fun test_metadata_invalid_worker_addr() {
-        let mut scenario_val = test_scenario::begin(VALID_ADDRESS);
-        let ctx = scenario_val.ctx();
-        let metadata = validator::new_metadata(
-            VALID_ADDRESS,
-            VALID_PUBKEY,
-            VALID_NET_PUBKEY,
-            VALID_WORKER_PUBKEY,
-            PROOF_OF_POSSESSION,
-            b"Validator1".to_string(),
-            b"Validator1".to_string(),
-            url::new_unsafe_from_bytes(b"image_url1"),
-            url::new_unsafe_from_bytes(b"project_url1"),
-            VALID_NET_ADDR.to_string(),
-            VALID_P2P_ADDR.to_string(),
-            VALID_CONSENSUS_ADDR.to_string(),
-            b"42".to_string(),
-            bag::new(ctx),
-        );
+#[test, expected_failure(abort_code = sui_system::validator::EMetadataInvalidPrimaryAddr)]
+fun metadata_invalid_consensus_addr() {
+    let ctx = &mut tx_context::dummy();
+    let metadata = validator_builder::preset().primary_address(b"incorrect").build_metadata(ctx);
 
-        validator::validate_metadata(&metadata);
-        test_utils::destroy(metadata);
-        scenario_val.end();
-    }
+    metadata.validate();
 
-    #[test, allow(implicit_const_copy)]
-    fun test_validator_update_metadata_ok() {
-        let sender = VALID_ADDRESS;
-        let mut scenario_val = test_scenario::begin(sender);
-        let scenario = &mut scenario_val;
-        let ctx = scenario.ctx();
-        let new_protocol_pub_key = x"96d19c53f1bee2158c3fcfb5bb2f06d3a8237667529d2d8f0fbb22fe5c3b3e64748420b4103674490476d98530d063271222d2a59b0f7932909cc455a30f00c69380e6885375e94243f7468e9563aad29330aca7ab431927540e9508888f0e1c";
-        let new_pop = x"a8a0bcaf04e13565914eb22fa9f27a76f297db04446860ee2b923d10224cedb130b30783fb60b12556e7fc50e5b57a86";
-        let new_worker_pub_key = vector[115, 220, 238, 151, 134, 159, 173, 41, 80, 2, 66, 196, 61, 17, 191, 76, 103, 39, 246, 127, 171, 85, 19, 235, 210, 106, 97, 97, 116, 48, 244, 191];
-        let new_network_pub_key = vector[149, 128, 161, 13, 11, 183, 96, 45, 89, 20, 188, 205, 26, 127, 147, 254, 184, 229, 184, 102, 64, 170, 104, 29, 191, 171, 91, 99, 58, 178, 41, 156];
+    abort
+}
 
-        let mut validator = get_test_validator(ctx);
+#[test, expected_failure(abort_code = sui_system::validator::EMetadataInvalidWorkerAddr)]
+fun metadata_invalid_worker_addr() {
+    let ctx = &mut tx_context::dummy();
+    let metadata = validator_builder::preset().worker_address(b"incorrect").build_metadata(ctx);
 
-        scenario.next_tx(sender);
-        {
-            validator.update_next_epoch_network_address(b"/ip4/192.168.1.1/tcp/80");
-            validator.update_next_epoch_p2p_address(b"/ip4/192.168.1.1/udp/80");
-            validator.update_next_epoch_primary_address(b"/ip4/192.168.1.1/udp/80");
-            validator.update_next_epoch_worker_address(b"/ip4/192.168.1.1/udp/80");
-            validator.update_next_epoch_protocol_pubkey(new_protocol_pub_key, new_pop);
-            validator.update_next_epoch_worker_pubkey( new_worker_pub_key);
-            validator.update_next_epoch_network_pubkey(new_network_pub_key);
+    metadata.validate();
 
-            validator.update_name(b"new_name");
-            validator.update_description(b"new_desc");
-            validator.update_image_url(b"new_image_url");
-            validator.update_project_url(b"new_proj_url");
-        };
+    abort
+}
 
-        scenario.next_tx(sender);
-        {
-            // Current epoch
-            assert!(validator.name() == &b"new_name".to_string());
-            assert!(validator.description() == &b"new_desc".to_string());
-            assert!(validator.image_url() == &url::new_unsafe_from_bytes(b"new_image_url"));
-            assert!(validator.project_url() == &url::new_unsafe_from_bytes(b"new_proj_url"));
-            assert!(validator.network_address() == &VALID_NET_ADDR.to_string());
-            assert!(validator.p2p_address() == &VALID_P2P_ADDR.to_string());
-            assert!(validator.primary_address() == &VALID_CONSENSUS_ADDR.to_string());
-            assert!(validator.worker_address() == &VALID_WORKER_ADDR.to_string());
-            assert!(validator.protocol_pubkey_bytes() == &VALID_PUBKEY);
-            assert!(validator.proof_of_possession() == &PROOF_OF_POSSESSION);
-            assert!(validator.network_pubkey_bytes() == &VALID_NET_PUBKEY);
-            assert!(validator.worker_pubkey_bytes() == &VALID_WORKER_PUBKEY);
+#[test, allow(implicit_const_copy)]
+fun validator_update_metadata_ok() {
+    let new_protocol_pub_key =
+        x"96d19c53f1bee2158c3fcfb5bb2f06d3a8237667529d2d8f0fbb22fe5c3b3e64748420b4103674490476d98530d063271222d2a59b0f7932909cc455a30f00c69380e6885375e94243f7468e9563aad29330aca7ab431927540e9508888f0e1c";
+    let new_pop =
+        x"a8a0bcaf04e13565914eb22fa9f27a76f297db04446860ee2b923d10224cedb130b30783fb60b12556e7fc50e5b57a86";
 
-            // Next epoch
-            assert!(validator.next_epoch_network_address() == &option::some(b"/ip4/192.168.1.1/tcp/80".to_string()));
-            assert!(validator.next_epoch_p2p_address() == &option::some(b"/ip4/192.168.1.1/udp/80".to_string()));
-            assert!(validator.next_epoch_primary_address() == &option::some(b"/ip4/192.168.1.1/udp/80".to_string()));
-            assert!(validator.next_epoch_worker_address() == &option::some(b"/ip4/192.168.1.1/udp/80".to_string()));
-            assert!(
-                validator.next_epoch_protocol_pubkey_bytes() == &option::some(new_protocol_pub_key),
-                0
-            );
-            assert!(
-                validator.next_epoch_proof_of_possession() == &option::some(new_pop),
-                0
-            );
-            assert!(
-                validator.next_epoch_worker_pubkey_bytes() == &option::some(new_worker_pub_key),
-                0
-            );
-            assert!(
-                validator.next_epoch_network_pubkey_bytes() == &option::some(new_network_pub_key),
-                0
-            );
-        };
+    // prettier-ignore
+    let new_worker_pub_key = vector[115, 220, 238, 151, 134, 159, 173, 41, 80, 2, 66, 196, 61, 17, 191, 76, 103, 39, 246, 127, 171, 85, 19, 235, 210, 106, 97, 97, 116, 48, 244, 191];
+    // prettier-ignore
+    let new_network_pub_key = vector[149, 128, 161, 13, 11, 183, 96, 45, 89, 20, 188, 205, 26, 127, 147, 254, 184, 229, 184, 102, 64, 170, 104, 29, 191, 171, 91, 99, 58, 178, 41, 156];
 
-        test_utils::destroy(validator);
-        scenario_val.end();
-    }
+    let ctx = &mut tx_context::dummy();
+    let mut validator = validator_builder::preset().build(ctx);
 
-    #[expected_failure(abort_code = sui_system::validator::EInvalidProofOfPossession)]
-    #[test]
-    fun test_validator_update_metadata_invalid_proof_of_possession() {
-        let (sender, mut scenario, mut validator) = set_up();
+    // perform updates
+    validator.update_next_epoch_network_address(b"/ip4/192.168.1.1/tcp/80");
+    validator.update_next_epoch_p2p_address(b"/ip4/192.168.1.1/udp/80");
+    validator.update_next_epoch_primary_address(b"/ip4/192.168.1.1/udp/80");
+    validator.update_next_epoch_worker_address(b"/ip4/192.168.1.1/udp/80");
+    validator.update_next_epoch_protocol_pubkey(new_protocol_pub_key, new_pop);
+    validator.update_next_epoch_worker_pubkey(new_worker_pub_key);
+    validator.update_next_epoch_network_pubkey(new_network_pub_key);
 
-        scenario.next_tx(sender);
-        {
-            validator.update_next_epoch_protocol_pubkey(
-                x"96d19c53f1bee2158c3fcfb5bb2f06d3a8237667529d2d8f0fbb22fe5c3b3e64748420b4103674490476d98530d063271222d2a59b0f7932909cc455a30f00c69380e6885375e94243f7468e9563aad29330aca7ab431927540e9508888f0e1c",
-                // This is an invalid proof of possession, so we abort
-                x"8b9794dfd11b88e16ba8f6a4a2c1e7580738dce2d6910ee594bebd88297b22ae8c34d1ee3f5a081159d68e076ef5d300");
-        };
+    validator.update_name(b"new_name");
+    validator.update_description(b"new_desc");
+    validator.update_image_url(b"new_image_url");
+    validator.update_project_url(b"new_proj_url");
 
-        tear_down(validator, scenario);
-    }
+    // check updates
+    assert_eq!(*validator.name(), b"new_name".to_string());
+    assert_eq!(*validator.description(), b"new_desc".to_string());
+    assert_eq!(*validator.image_url(), url::new_unsafe_from_bytes(b"new_image_url"));
+    assert_eq!(*validator.project_url(), url::new_unsafe_from_bytes(b"new_proj_url"));
+    assert_eq!(*validator.network_address(), validator_builder::valid_net_addr().to_string());
+    assert_eq!(*validator.p2p_address(), validator_builder::valid_p2p_addr().to_string());
+    assert_eq!(*validator.primary_address(), validator_builder::valid_consensus_addr().to_string());
+    assert_eq!(*validator.worker_address(), validator_builder::valid_worker_addr().to_string());
+    assert_eq!(*validator.protocol_pubkey_bytes(), validator_builder::valid_pubkey());
+    assert_eq!(*validator.proof_of_possession(), validator_builder::valid_proof_of_possession());
+    assert_eq!(*validator.network_pubkey_bytes(), validator_builder::valid_net_pubkey());
+    assert_eq!(*validator.worker_pubkey_bytes(), validator_builder::valid_worker_pubkey());
 
-    #[expected_failure(abort_code = sui_system::validator::EMetadataInvalidNetPubkey)]
-    #[test]
-    fun test_validator_update_metadata_invalid_network_key() {
-        let (sender, mut scenario, mut validator) = set_up();
+    // next epoch
+    assert!(
+        validator
+            .next_epoch_network_address()
+            .is_some_and!(|addr| addr == b"/ip4/192.168.1.1/tcp/80".to_string()),
+    );
+    assert!(
+        validator
+            .next_epoch_p2p_address()
+            .is_some_and!(|addr| addr == b"/ip4/192.168.1.1/udp/80".to_string()),
+    );
+    assert!(
+        validator
+            .next_epoch_primary_address()
+            .is_some_and!(|addr| addr == b"/ip4/192.168.1.1/udp/80".to_string()),
+    );
+    assert!(
+        validator
+            .next_epoch_worker_address()
+            .is_some_and!(|addr| addr == b"/ip4/192.168.1.1/udp/80".to_string()),
+    );
+    assert!(
+        validator
+            .next_epoch_protocol_pubkey_bytes()
+            .is_some_and!(|key| key == new_protocol_pub_key),
+    );
+    assert!(validator.next_epoch_proof_of_possession().is_some_and!(|pop| pop == new_pop));
+    assert!(
+        validator.next_epoch_worker_pubkey_bytes().is_some_and!(|key| key == new_worker_pub_key),
+    );
+    assert!(
+        validator.next_epoch_network_pubkey_bytes().is_some_and!(|key| key == new_network_pub_key),
+    );
 
-        scenario.next_tx(sender);
-        {
-            validator.update_next_epoch_network_pubkey(x"beef");
-        };
+    test_utils::destroy(validator);
+}
 
-        tear_down(validator, scenario);
-    }
+#[test, expected_failure(abort_code = sui_system::validator::EInvalidProofOfPossession)]
+fun validator_update_metadata_invalid_proof_of_possession() {
+    let ctx = &mut tx_context::dummy();
+    let mut validator = validator_builder::preset().build(ctx);
 
-    #[expected_failure(abort_code = sui_system::validator::EMetadataInvalidWorkerPubkey)]
-    #[test]
-    fun test_validator_update_metadata_invalid_worker_key() {
-        let (sender, mut scenario, mut validator) = set_up();
+    validator.update_next_epoch_protocol_pubkey(
+        x"96d19c53f1bee2158c3fcfb5bb2f06d3a8237667529d2d8f0fbb22fe5c3b3e64748420b4103674490476d98530d063271222d2a59b0f7932909cc455a30f00c69380e6885375e94243f7468e9563aad29330aca7ab431927540e9508888f0e1c",
+        x"8b9794dfd11b88e16ba8f6a4a2c1e7580738dce2d6910ee594bebd88297b22ae8c34d1ee3f5a081159d68e076ef5d300",
+    );
 
-        scenario.next_tx(sender);
-        {
-            validator.update_next_epoch_worker_pubkey(x"beef");
-        };
+    abort
+}
 
-        tear_down(validator, scenario);
-    }
+#[test, expected_failure(abort_code = sui_system::validator::EMetadataInvalidNetPubkey)]
+fun validator_update_metadata_invalid_network_key() {
+    let ctx = &mut tx_context::dummy();
+    let mut validator = validator_builder::preset().build(ctx);
 
-    #[expected_failure(abort_code = sui_system::validator::EMetadataInvalidNetAddr)]
-    #[test]
-    fun test_validator_update_metadata_invalid_network_addr() {
-        let (sender, mut scenario, mut validator) = set_up();
+    validator.update_next_epoch_network_pubkey(x"beef");
 
-        scenario.next_tx(sender);
-        {
-            validator.update_next_epoch_network_address(b"beef");
-        };
+    abort
+}
 
-        tear_down(validator, scenario);
-    }
+#[test, expected_failure(abort_code = sui_system::validator::EMetadataInvalidWorkerPubkey)]
+fun validator_update_metadata_invalid_worker_key() {
+    let ctx = &mut tx_context::dummy();
+    let mut validator = validator_builder::preset().build(ctx);
 
-    #[expected_failure(abort_code = sui_system::validator::EMetadataInvalidPrimaryAddr)]
-    #[test]
-    fun test_validator_update_metadata_invalid_primary_addr() {
-        let (sender, mut scenario, mut validator) = set_up();
+    validator.update_next_epoch_worker_pubkey(x"beef");
 
-        scenario.next_tx(sender);
-        {
-            validator.update_next_epoch_primary_address(b"beef");
-        };
+    abort
+}
 
-        tear_down(validator, scenario);
-    }
+#[test, expected_failure(abort_code = sui_system::validator::EMetadataInvalidNetAddr)]
+fun validator_update_metadata_invalid_network_addr() {
+    let ctx = &mut tx_context::dummy();
+    let mut validator = validator_builder::preset().build(ctx);
 
-    #[expected_failure(abort_code = sui_system::validator::EMetadataInvalidWorkerAddr)]
-    #[test]
-    fun test_validator_update_metadata_invalid_worker_addr() {
-        let (sender, mut scenario, mut validator) = set_up();
+    validator.update_next_epoch_network_address(b"beef");
 
-        scenario.next_tx(sender);
-        {
-            validator.update_next_epoch_worker_address(b"beef");
-        };
+    abort
+}
 
-        tear_down(validator, scenario);
-    }
+#[test, expected_failure(abort_code = sui_system::validator::EMetadataInvalidPrimaryAddr)]
+fun validator_update_metadata_invalid_primary_addr() {
+    let ctx = &mut tx_context::dummy();
+    let mut validator = validator_builder::preset().build(ctx);
 
-    #[expected_failure(abort_code = sui_system::validator::EMetadataInvalidP2pAddr)]
-    #[test]
-    fun test_validator_update_metadata_invalid_p2p_address() {
-        let (sender, mut scenario, mut validator) = set_up();
+    validator.update_next_epoch_primary_address(b"beef");
 
-        scenario.next_tx(sender);
-        {
-            validator::update_next_epoch_p2p_address(
-                &mut validator,
-                b"beef",
-            );
-        };
+    abort
+}
 
-        tear_down(validator, scenario);
-    }
+#[test, expected_failure(abort_code = sui_system::validator::EMetadataInvalidWorkerAddr)]
+fun validator_update_metadata_invalid_worker_addr() {
+    let ctx = &mut tx_context::dummy();
+    let mut validator = validator_builder::preset().build(ctx);
 
-    #[expected_failure(abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit)]
-    #[test]
-    fun test_validator_update_metadata_primary_address_too_long() {
-        let (sender, mut scenario, mut validator) = set_up();
+    validator.update_next_epoch_worker_address(b"beef");
 
-        scenario.next_tx(sender);
-        {
-            validator.update_next_epoch_primary_address(
-                // 257 bytes but limit is 256 bytes
-                TOO_LONG_257_BYTES,
-            );
-        };
+    abort
+}
 
-        tear_down(validator, scenario);
-    }
+#[test, expected_failure(abort_code = sui_system::validator::EMetadataInvalidP2pAddr)]
+fun validator_update_metadata_invalid_p2p_address() {
+    let ctx = &mut tx_context::dummy();
+    let mut validator = validator_builder::preset().build(ctx);
 
-    #[expected_failure(abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit)]
-    #[test]
-    fun test_validator_update_metadata_net_address_too_long() {
-        let (sender, mut scenario, mut validator) = set_up();
+    validator.update_next_epoch_p2p_address(b"beef");
 
-        scenario.next_tx(sender);
-        {
-            validator.update_next_epoch_network_address(
-                // 257 bytes but limit is 256 bytes
-                TOO_LONG_257_BYTES,
-            );
-        };
+    abort
+}
 
-        tear_down(validator, scenario);
-    }
+#[
+    test,
+    expected_failure(
+        abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit,
+    ),
+]
+fun validator_update_metadata_primary_address_too_long() {
+    let ctx = &mut tx_context::dummy();
+    let mut validator = validator_builder::preset().build(ctx);
 
+    validator.update_next_epoch_primary_address(vector::tabulate!(257, |_| 0));
+    abort
+}
 
-    #[expected_failure(abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit)]
-    #[test]
-    fun test_validator_update_metadata_worker_address_too_long() {
-        let (sender, mut scenario, mut validator) = set_up();
-        scenario.next_tx(sender);
-        {
-            validator.update_next_epoch_worker_address(
-                // 257 bytes but limit is 256 bytes
-                TOO_LONG_257_BYTES,
-            );
-        };
+#[
+    test,
+    expected_failure(
+        abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit,
+    ),
+]
+fun validator_update_metadata_net_address_too_long() {
+    let ctx = &mut tx_context::dummy();
+    let mut validator = validator_builder::preset().build(ctx);
 
-        tear_down(validator, scenario);
-    }
+    validator.update_next_epoch_network_address(vector::tabulate!(257, |_| 0));
 
-    #[expected_failure(abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit)]
-    #[test]
-    fun test_validator_update_metadata_p2p_address_too_long() {
-        let (sender, mut scenario, mut validator) = set_up();
+    abort
+}
 
-        scenario.next_tx(sender);
-        {
-            validator.update_next_epoch_p2p_address(
-                // 257 bytes but limit is 256 bytes
-                TOO_LONG_257_BYTES,
-            );
-        };
+#[
+    test,
+    expected_failure(
+        abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit,
+    ),
+]
+fun validator_update_metadata_worker_address_too_long() {
+    let ctx = &mut tx_context::dummy();
+    let mut validator = validator_builder::preset().build(ctx);
 
-        tear_down(validator, scenario);
-    }
+    validator.update_next_epoch_worker_address(vector::tabulate!(257, |_| 0));
 
-    #[expected_failure(abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit)]
-    #[test]
-    fun test_validator_update_name_too_long() {
-        let (sender, mut scenario, mut validator) = set_up();
+    abort
+}
 
-        scenario.next_tx(sender);
-        {
-            validator.update_name(
-                // 257 bytes but limit is 256 bytes
-                TOO_LONG_257_BYTES,
-            );
-        };
-        tear_down(validator, scenario);
-    }
+#[
+    test,
+    expected_failure(
+        abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit,
+    ),
+]
+fun validator_update_metadata_p2p_address_too_long() {
+    let ctx = &mut tx_context::dummy();
+    let mut validator = validator_builder::preset().build(ctx);
 
-    #[expected_failure(abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit)]
-    #[test]
-    fun test_validator_update_description_too_long() {
-        let (sender, mut scenario, mut validator) = set_up();
+    validator.update_next_epoch_p2p_address(vector::tabulate!(257, |_| 0));
 
-        scenario.next_tx(sender);
-        {
-            validator.update_description(
-                // 257 bytes but limit is 256 bytes
-                TOO_LONG_257_BYTES,
-            );
-        };
-        tear_down(validator, scenario);
-    }
+    abort
+}
 
-    #[expected_failure(abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit)]
-    #[test]
-    fun test_validator_update_project_url_too_long() {
-        let (sender, mut scenario, mut validator) = set_up();
+#[
+    test,
+    expected_failure(
+        abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit,
+    ),
+]
+fun validator_update_name_too_long() {
+    let ctx = &mut tx_context::dummy();
+    let mut validator = validator_builder::preset().build(ctx);
 
-        scenario.next_tx(sender);
-        {
-            validator.update_project_url(
-                // 257 bytes but limit is 256 bytes
-                TOO_LONG_257_BYTES,
-            );
-        };
-        tear_down(validator, scenario);
-    }
+    validator.update_name(vector::tabulate!(257, |_| 0));
 
-    #[expected_failure(abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit)]
-    #[test]
-    fun test_validator_update_image_url_too_long() {
-        let (sender, mut scenario, mut validator) = set_up();
+    abort
+}
 
-        scenario.next_tx(sender);
-        {
-            validator.update_image_url(
-                // 257 bytes but limit is 256 bytes
-                TOO_LONG_257_BYTES,
-            );
-        };
-        tear_down(validator, scenario);
-    }
+#[
+    test,
+    expected_failure(
+        abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit,
+    ),
+]
+fun validator_update_description_too_long() {
+    let ctx = &mut tx_context::dummy();
+    let mut validator = validator_builder::preset().build(ctx);
 
-    fun set_up(): (address, test_scenario::Scenario, validator::Validator) {
-        let sender = VALID_ADDRESS;
-        let mut scenario_val = test_scenario::begin(sender);
-        let ctx = scenario_val.ctx();
-        let validator = get_test_validator(ctx);
-        (sender, scenario_val, validator)
-    }
+    validator.update_description(vector::tabulate!(257, |_| 0));
 
-    fun tear_down(validator: validator::Validator, scenario: test_scenario::Scenario) {
-        test_utils::destroy(validator);
-        scenario.end();
-    }
+    abort
+}
+
+#[
+    test,
+    expected_failure(
+        abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit,
+    ),
+]
+fun validator_update_project_url_too_long() {
+    let ctx = &mut tx_context::dummy();
+    let mut validator = validator_builder::preset().build(ctx);
+
+    validator.update_project_url(vector::tabulate!(257, |_| 0));
+
+    abort
+}
+
+#[
+    test,
+    expected_failure(
+        abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit,
+    ),
+]
+fun validator_update_image_url_too_long() {
+    let ctx = &mut tx_context::dummy();
+    let mut validator = validator_builder::preset().build(ctx);
+
+    validator.update_image_url(vector::tabulate!(257, |_| 0));
+
+    abort
 }

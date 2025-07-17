@@ -20,6 +20,8 @@ sui-types.workspace = true
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }
+move-package.workspace = true
+sui-move-build.workspace = true
 
 [[bin]]
 name = "bfc-framework-snapshot"

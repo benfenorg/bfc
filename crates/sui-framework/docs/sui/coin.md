@@ -79,11 +79,13 @@ tokens and coins. <code><a href="../sui/coin.md#sui_coin_Coin">Coin</a></code> c
 <b>use</b> <a href="../sui/event.md#sui_event">sui::event</a>;
 <b>use</b> <a href="../sui/hex.md#sui_hex">sui::hex</a>;
 <b>use</b> <a href="../sui/object.md#sui_object">sui::object</a>;
+<b>use</b> <a href="../sui/party.md#sui_party">sui::party</a>;
 <b>use</b> <a href="../sui/table.md#sui_table">sui::table</a>;
 <b>use</b> <a href="../sui/transfer.md#sui_transfer">sui::transfer</a>;
 <b>use</b> <a href="../sui/tx_context.md#sui_tx_context">sui::tx_context</a>;
 <b>use</b> <a href="../sui/types.md#sui_types">sui::types</a>;
 <b>use</b> <a href="../sui/url.md#sui_url">sui::url</a>;
+<b>use</b> <a href="../sui/vec_map.md#sui_vec_map">sui::vec_map</a>;
 <b>use</b> <a href="../sui/vec_set.md#sui_vec_set">sui::vec_set</a>;
 </code></pre>
 
@@ -350,31 +352,12 @@ interacting with the coin as an input to a transaction.
 ## Constants
 
 
-<a name="sui_coin_DENY_LIST_COIN_INDEX"></a>
-
-The index into the deny list vector for the <code><a href="../sui/coin.md#sui_coin_Coin">sui::coin::Coin</a></code> type.
-
-
-<pre><code><b>const</b> <a href="../sui/coin.md#sui_coin_DENY_LIST_COIN_INDEX">DENY_LIST_COIN_INDEX</a>: u64 = 0;
-</code></pre>
-
-
-
 <a name="sui_coin_EBadWitness"></a>
 
 A type passed to create_supply is not a one-time witness.
 
 
 <pre><code><b>const</b> <a href="../sui/coin.md#sui_coin_EBadWitness">EBadWitness</a>: u64 = 0;
-</code></pre>
-
-
-
-<a name="sui_coin_EGlobalPauseNotAllowed"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui/coin.md#sui_coin_EGlobalPauseNotAllowed">EGlobalPauseNotAllowed</a>: u64 = 3;
 </code></pre>
 
 
@@ -395,6 +378,25 @@ Trying to split a coin more times than its balance allows.
 
 
 <pre><code><b>const</b> <a href="../sui/coin.md#sui_coin_ENotEnough">ENotEnough</a>: u64 = 2;
+</code></pre>
+
+
+
+<a name="sui_coin_EGlobalPauseNotAllowed"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui/coin.md#sui_coin_EGlobalPauseNotAllowed">EGlobalPauseNotAllowed</a>: u64 = 3;
+</code></pre>
+
+
+
+<a name="sui_coin_DENY_LIST_COIN_INDEX"></a>
+
+The index into the deny list vector for the <code><a href="../sui/coin.md#sui_coin_Coin">sui::coin::Coin</a></code> type.
+
+
+<pre><code><b>const</b> <a href="../sui/coin.md#sui_coin_DENY_LIST_COIN_INDEX">DENY_LIST_COIN_INDEX</a>: u64 = 0;
 </code></pre>
 
 

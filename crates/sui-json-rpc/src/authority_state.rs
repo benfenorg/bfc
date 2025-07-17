@@ -41,10 +41,11 @@ use sui_types::transaction::{Transaction, TransactionData, TransactionKind};
 use thiserror::Error;
 use tokio::task::JoinError;
 use sui_types::bfc_system_state::BFCSystemState;
-#[cfg(test)]
-use mockall::automock;
 
 use crate::ObjectProvider;
+#[cfg(test)]
+use mockall::automock;
+use typed_store_error::TypedStoreError;
 
 pub type StateReadResult<T = ()> = Result<T, StateReadError>;
 
@@ -439,7 +440,7 @@ impl StateRead for AuthorityState {
                 balance: coin.balance,
                 previous_transaction: coin.previous_transaction,
             })
-            .collect::<Vec<_>>())
+            .collect())
     }
 
     async fn get_executed_transaction_and_effects(
@@ -457,24 +458,30 @@ impl StateRead for AuthorityState {
         owner: SuiAddress,
         coin_type: TypeTag,
     ) -> StateReadResult<TotalBalance> {
-        Ok(self
-            .indexes
-            .as_ref()
-            .ok_or(SuiError::IndexStoreNotAvailable)?
-            .get_balance(owner, coin_type)
-            .await?)
+        let indexes = self.indexes.clone();
+        Ok(tokio::task::spawn_blocking(move || {
+            indexes
+                .as_ref()
+                .ok_or(SuiError::IndexStoreNotAvailable)?
+                .get_balance(owner, coin_type)
+        })
+        .await
+        .map_err(|e: JoinError| SuiError::ExecutionError(e.to_string()))??)
     }
 
     async fn get_all_balance(
         &self,
         owner: SuiAddress,
     ) -> StateReadResult<Arc<HashMap<TypeTag, TotalBalance>>> {
-        Ok(self
-            .indexes
-            .as_ref()
-            .ok_or(SuiError::IndexStoreNotAvailable)?
-            .get_all_balance(owner)
-            .await?)
+        let indexes = self.indexes.clone();
+        Ok(tokio::task::spawn_blocking(move || {
+            indexes
+                .as_ref()
+                .ok_or(SuiError::IndexStoreNotAvailable)?
+                .get_all_balance(owner)
+        })
+        .await
+        .map_err(|e: JoinError| SuiError::ExecutionError(e.to_string()))??)
     }
 
     fn get_verified_checkpoint_by_sequence_number(
@@ -662,5 +669,12 @@ impl From<JoinError> for StateReadError {
 impl From<anyhow::Error> for StateReadError {
     fn from(e: anyhow::Error) -> Self {
         StateReadError::Internal(e.into())
+    }
+}
+
+impl From<TypedStoreError> for StateReadError {
+    fn from(e: TypedStoreError) -> Self {
+        let error: SuiError = e.into();
+        StateReadError::Internal(error.into())
     }
 }

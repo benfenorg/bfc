@@ -68,9 +68,12 @@ module sui_system::sui_system {
         bfc_system_id: UID,
     }
 
+
     const ENotSystemAddress: u64 = 0;
     const EWrongInnerVersion: u64 = 1;
     // ==== functions that can only be called by genesis ====
+
+// ==== functions that can only be called by genesis ====
 
     /// Create a new SuiSystemState object and make it shared.
     /// This function will be called only once in genesis.
@@ -739,8 +742,14 @@ module sui_system::sui_system {
     #[allow(unused_function)]
     /// Returns the voting power of the active validators, values are voting power in the scale of 10000.
     fun validator_voting_powers(wrapper: &mut SuiSystemState): VecMap<address, u64> {
-        let self = load_system_state(wrapper);
-        sui_system_state_inner::active_validator_voting_powers(self)
+        wrapper.load_system_state().active_validator_voting_powers()
+    }
+
+    #[allow(unused_function)]
+    /// Saves the given execution time estimate blob to the SuiSystemState object, for system use
+    /// at the start of the next epoch.
+    fun store_execution_time_estimates(wrapper: &mut SuiSystemState, estimates_bytes: vector<u8>) {
+        wrapper.load_system_state_mut().store_execution_time_estimates(estimates_bytes)
     }
 
     #[test_only]

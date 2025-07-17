@@ -3,17 +3,15 @@
 
 module reviews_rating::service;
 
+use reviews_rating::moderator::Moderator;
+use reviews_rating::review::{Self, Review};
 use std::string::String;
-
 use sui::balance::{Self, Balance};
 use sui::clock::Clock;
 use sui::coin::{Self, Coin};
 use sui::dynamic_field as df;
-use sui::bfc::BFC;
 use sui::object_table::{Self, ObjectTable};
-
-use reviews_rating::moderator::{Moderator};
-use reviews_rating::review::{Self, Review};
+use sui::sui::SUI;
 
 const EInvalidPermission: u64 = 1;
 const ENotEnoughBalance: u64 = 2;
@@ -30,7 +28,7 @@ public struct AdminCap has key, store {
 /// Represents a service
 public struct Service has key, store {
     id: UID,
-    reward_pool: Balance<BFC>,
+    reward_pool: Balance<SUI>,
     reward: u64,
     top_reviews: vector<ID>,
     reviews: ObjectTable<ID, Review>,
@@ -45,7 +43,7 @@ public struct ProofOfExperience has key {
 }
 
 /// Represents a review record
-public struct ReviewRecord has store, drop {
+public struct ReviewRecord has drop, store {
     owner: address,
     overall_rate: u8,
     time_issued: u64,
@@ -197,7 +195,7 @@ public fun distribute_reward(cap: &AdminCap, service: &mut Service, ctx: &mut Tx
 }
 
 /// Adds coins to reward pool
-public fun top_up_reward(service: &mut Service, coin: Coin<BFC>) {
+public fun top_up_reward(service: &mut Service, coin: Coin<SUI>) {
     service.reward_pool.join(coin.into_balance());
 }
 

@@ -31,15 +31,15 @@ use sui_storage::blob::{Blob, BlobEncoding};
 use sui_storage::object_store::http::HttpDownloaderBuilder;
 use sui_storage::object_store::util::{copy_file, copy_files, path_to_filesystem};
 use sui_storage::object_store::{ObjectStoreGetExt, ObjectStoreListExt, ObjectStorePutExt};
-use sui_types::accumulator::Accumulator;
 use sui_types::base_types::{ObjectDigest, ObjectID, ObjectRef, SequenceNumber};
+use sui_types::global_state_hash::GlobalStateHash;
 use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
 use tokio::time::Duration;
 use tokio::time::Instant;
 use tracing::{error, info};
 
-pub type SnapshotChecksums = (DigestByBucketAndPartition, Accumulator);
+pub type SnapshotChecksums = (DigestByBucketAndPartition, GlobalStateHash);
 pub type DigestByBucketAndPartition = BTreeMap<u32, BTreeMap<u32, [u8; 32]>>;
 pub type Sha3DigestType = Arc<Mutex<BTreeMap<u32, BTreeMap<u32, [u8; 32]>>>>;
 #[derive(Clone)]
@@ -50,7 +50,6 @@ pub struct StateSnapshotReaderV1 {
     local_object_store: Arc<dyn ObjectStorePutExt>,
     ref_files: BTreeMap<u32, BTreeMap<u32, FileMetadata>>,
     object_files: BTreeMap<u32, BTreeMap<u32, FileMetadata>>,
-    indirect_objects_threshold: usize,
     m: MultiProgress,
     concurrency: usize,
 }
@@ -60,7 +59,6 @@ impl StateSnapshotReaderV1 {
         epoch: u64,
         remote_store_config: &ObjectStoreConfig,
         local_store_config: &ObjectStoreConfig,
-        indirect_objects_threshold: usize,
         download_concurrency: NonZeroUsize,
         m: MultiProgress,
         skip_reset_local_store: bool,
@@ -186,7 +184,6 @@ impl StateSnapshotReaderV1 {
             local_object_store,
             ref_files,
             object_files,
-            indirect_objects_threshold,
             m,
             concurrency: download_concurrency.get(),
         })
@@ -196,7 +193,7 @@ impl StateSnapshotReaderV1 {
         &mut self,
         perpetual_db: &AuthorityPerpetualTables,
         abort_registration: AbortRegistration,
-        sender: Option<tokio::sync::mpsc::Sender<(Accumulator, u64)>>,
+        sender: Option<tokio::sync::mpsc::Sender<(GlobalStateHash, u64)>>,
     ) -> Result<()> {
         // This computes and stores the sha3 digest of object references in REFERENCE file for each
         // bucket partition. When downloading objects, we will match sha3 digest of object references
@@ -289,7 +286,7 @@ impl StateSnapshotReaderV1 {
 
     fn spawn_accumulation_tasks(
         &self,
-        sender: tokio::sync::mpsc::Sender<(Accumulator, u64)>,
+        sender: tokio::sync::mpsc::Sender<(GlobalStateHash, u64)>,
         num_part_files: usize,
     ) -> JoinHandle<()> {
         // Spawn accumulation progress bar
@@ -355,7 +352,7 @@ impl StateSnapshotReaderV1 {
                         .collect::<Vec<ObjectDigest>>();
                         let sender_clone = sender.clone();
                         tokio::spawn(async move {
-                            let mut partial_acc = Accumulator::default();
+                            let mut partial_acc = GlobalStateHash::default();
                             let num_objects = obj_digests.len();
                             partial_acc.insert_all(obj_digests);
                             sender_clone
@@ -385,7 +382,6 @@ impl StateSnapshotReaderV1 {
     ) -> Result<(), anyhow::Error> {
         let epoch_dir = self.epoch_dir();
         let concurrency = self.concurrency;
-        let threshold = self.indirect_objects_threshold;
         let remote_object_store = self.remote_object_store.clone();
         let input_files: Vec<_> = self
             .object_files
@@ -445,7 +441,6 @@ impl StateSnapshotReaderV1 {
                                 AuthorityStore::bulk_insert_live_objects(
                                     perpetual_db,
                                     obj_iter,
-                                    threshold,
                                     &sha3_digest,
                                 )
                                 .expect("Failed to insert live objects");

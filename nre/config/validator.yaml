@@ -29,6 +29,7 @@ consensus-config:
       primary_network_admin_server_port: 41303
       worker_network_admin_server_base_port: 41669
 enable-event-processing: false
+  db-path: /opt/sui/db/consensus_db
 p2p-config:
   listen-address: 0.0.0.0:8084
   external-address: /dns/$HOSTNAME/udp/8084 # UPDATE THIS
@@ -36,13 +37,10 @@ p2p-config:
     max-concurrent-connections: 0
 genesis:
   genesis-file-location: /opt/bfc/config/genesis.blob
+enable-index-processing: false
 authority-store-pruning-config:
-  num-latest-epoch-dbs-to-retain: 3
-  epoch-db-pruning-period-secs: 3600
-  num-epochs-to-retain: 1
-  max-checkpoints-in-batch: 5
-  max-transactions-in-batch: 1000
-end-of-epoch-broadcast-channel-capacity: 128
+  num-epochs-to-retain: 0
+  num-epochs-to-retain-for-checkpoints: 2
 checkpoint-executor-config:
   checkpoint-execution-max-concurrency: 200
   local-execution-timeout-sec: 10

@@ -51,7 +51,10 @@ mod metrics_layer;
 mod network_tests;
 #[cfg(test)]
 pub(crate) mod test_network;
+#[cfg(not(msim))]
 pub(crate) mod tonic_network;
+#[cfg(msim)]
+pub mod tonic_network;
 mod tonic_tls;
 
 /// A stream of serialized filtered blocks returned over the network.
@@ -93,6 +96,7 @@ pub(crate) trait NetworkClient: Send + Sync + Sized + 'static {
         peer: AuthorityIndex,
         block_refs: Vec<BlockRef>,
         highest_accepted_rounds: Vec<Round>,
+        breadth_first: bool,
         timeout: Duration,
     ) -> ConsensusResult<Vec<Bytes>>;
 
@@ -156,6 +160,7 @@ pub(crate) trait NetworkService: Send + Sync + 'static {
         peer: AuthorityIndex,
         block_refs: Vec<BlockRef>,
         highest_accepted_rounds: Vec<Round>,
+        breadth_first: bool,
     ) -> ConsensusResult<Vec<Bytes>>;
 
     /// Handles the request to fetch commits by index range from the peer.

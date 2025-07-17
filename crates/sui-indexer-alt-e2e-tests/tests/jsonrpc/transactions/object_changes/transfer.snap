@@ -1,0 +1,68 @@
+---
+source: external-crates/move/crates/move-transactional-test-runner/src/framework.rs
+---
+processed 6 tasks
+
+init:
+A: object(0,0), B: object(0,1)
+
+task 1, lines 8-17:
+//# publish
+created: object(1,0)
+mutated: object(0,2)
+gas summary: computation_cost: 1000000, storage_cost: 4864000,  storage_rebate: 0, non_refundable_storage_fee: 0
+
+task 2, lines 19-21:
+//# programmable --sender A --inputs @A
+//> 0: P0::M::new();
+//> 1: TransferObjects([Result(0)], Input(0))
+created: object(2,0)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 2515600,  storage_rebate: 0, non_refundable_storage_fee: 0
+
+task 3, lines 23-24:
+//# programmable --sender A --inputs object(2,0) @B
+//> 0: TransferObjects([Input(0)], Input(1))
+mutated: object(0,0), object(2,0)
+gas summary: computation_cost: 1000000, storage_cost: 2515600,  storage_rebate: 2490444, non_refundable_storage_fee: 25156
+
+task 4, line 26:
+//# create-checkpoint
+Checkpoint created: 1
+
+task 5, lines 28-32:
+//# run-jsonrpc
+Response: {
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": {
+    "digest": "Eb2NG5gyM9AswctbtZJG5SvP88enVYwzJyTv2VfJq1rk",
+    "objectChanges": [
+      {
+        "type": "mutated",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
+        "owner": {
+          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
+        },
+        "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
+        "objectId": "BFCa016256dc9858e74591041652d515c888e08b0e27350fcead8a1484266b50ef0b0b0",
+        "version": "3",
+        "previousVersion": "2",
+        "digest": "ChemELMbDUmKwPjWBavZsrhzdwt9h26eZGQYHXoJjxLT"
+      },
+      {
+        "type": "transferred",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
+        "recipient": {
+          "AddressOwner": "BFCa7b032703878aa74c3126935789fd1d4d7e111d5911b09247d6963061c312b5a5cf9"
+        },
+        "objectType": "0xd405bbb8bf705a8ee286efd89648e08853a75163023a16eec198713c62ff9ee0::M::O",
+        "objectId": "BFCd3e1e4ae23773612260b122cb682b23ffbf73d83da6821ed00cde5e019662cea8656",
+        "version": "3",
+        "digest": "Q55YCmwxrKjjTFys86vEA17eGKjKA16wkCxb4hvPff8"
+      }
+    ],
+    "timestampMs": "0",
+    "checkpoint": "1"
+  }
+}

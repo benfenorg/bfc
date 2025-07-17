@@ -14,7 +14,7 @@ use sui::balance::{Self, Balance};
 use sui::clock::Clock;
 use sui::coin::{Self, Coin};
 use sui::random::{Random, new_generator};
-use sui::bfc::BFC;
+use sui::sui::SUI;
 use sui::table_vec::{Self, TableVec};
 use sui::tx_context::sender;
 
@@ -32,7 +32,7 @@ public struct Game has key {
     cost_in_sui: u64,
     participants: u32,
     end_time: u64,
-    balance: Balance<BFC>,
+    balance: Balance<SUI>,
     participants_table: TableVec<address>,
 }
 
@@ -72,7 +72,7 @@ entry fun close(game: Game, r: &Random, clock: &Clock, ctx: &mut TxContext) {
 }
 
 /// Anyone can play.
-public fun play(game: &mut Game, coin: Coin<BFC>, clock: &Clock, ctx: &mut TxContext) {
+public fun play(game: &mut Game, coin: Coin<SUI>, clock: &Clock, ctx: &mut TxContext) {
     assert!(game.end_time > clock.timestamp_ms(), EGameAlreadyCompleted);
     assert!(coin.value() == game.cost_in_sui, EInvalidAmount);
     assert!(game.participants < MaxParticipants, EReachedMaxParticipants);

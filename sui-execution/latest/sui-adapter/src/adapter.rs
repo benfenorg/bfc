@@ -6,7 +6,9 @@ pub use checked::*;
 mod checked {
     #[cfg(feature = "tracing")]
     use move_vm_config::runtime::VMProfilerConfig;
+    use std::cell::RefCell;
     use std::path::PathBuf;
+    use std::rc::Rc;
     use std::{collections::BTreeMap, sync::Arc};
 
     use anyhow::Result;
@@ -22,12 +24,12 @@ mod checked {
         move_vm::MoveVM, native_extensions::NativeContextExtensions,
         native_functions::NativeFunctionTable,
     };
-    use sui_move_natives::object_runtime;
+    use sui_move_natives::{object_runtime, transaction_context::TransactionContext};
     use sui_types::metrics::BytecodeVerifierMetrics;
     use sui_verifier::check_for_verifier_timeout;
     use tracing::instrument;
 
-    use sui_move_natives::{object_runtime::ObjectRuntime, NativesCostTable};
+    use sui_move_natives::{NativesCostTable, object_runtime::ObjectRuntime};
     use sui_protocol_config::ProtocolConfig;
     use sui_types::{
         base_types::*,
@@ -85,8 +87,9 @@ mod checked {
         is_metered: bool,
         protocol_config: &'r ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
-        current_epoch_id: EpochId,
+        tx_context: Rc<RefCell<TxContext>>,
     ) -> NativeContextExtensions<'r> {
+        let current_epoch_id: EpochId = tx_context.borrow().epoch();
         let mut extensions = NativeContextExtensions::default();
         extensions.add(ObjectRuntime::new(
             child_resolver,
@@ -97,6 +100,7 @@ mod checked {
             current_epoch_id,
         ));
         extensions.add(NativesCostTable::from_protocol_config(protocol_config));
+        extensions.add(TransactionContext::new(tx_context));
         extensions
     }
 
@@ -137,9 +141,9 @@ mod checked {
 
     pub fn missing_unwrapped_msg(id: &ObjectID) -> String {
         format!(
-        "Unable to unwrap object {}. Was unable to retrieve last known version in the parent sync",
-        id
-    )
+            "Unable to unwrap object {}. Was unable to retrieve last known version in the parent sync",
+            id
+        )
     }
 
     /// Run the bytecode verifier with a meter limit

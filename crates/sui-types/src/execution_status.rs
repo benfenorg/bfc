@@ -199,7 +199,7 @@ pub enum ExecutionFailureStatus {
     #[error("The shared object operation is not allowed.")]
     SharedObjectOperationNotAllowed,
 
-    #[error("Certificate cannot be executed due to a dependency on a deleted shared object")]
+    #[error("Certificate cannot be executed due to a dependency on a deleted shared object or an object that was transferred out of consensus")]
     InputObjectDeleted,
 
     #[error("Failed to read or deserialize stable coin rate: {0}")]
@@ -219,6 +219,26 @@ pub enum ExecutionFailureStatus {
 
     #[error("Certificate is cancelled because randomness could not be generated this epoch")]
     ExecutionCancelledDueToRandomnessUnavailable,
+
+    #[error(
+        "Move vector element (passed to MakeMoveVec) with size {value_size} is larger \
+        than the maximum size {max_scaled_size}. Note that this maximum is scaled based on the \
+        type of the vector element."
+    )]
+    MoveVectorElemTooBig {
+        value_size: u64,
+        max_scaled_size: u64,
+    },
+
+    #[error(
+        "Move value (possibly an upgrade ticket or a dev-inspect value) with size {value_size} \
+        is larger than the maximum size  {max_scaled_size}. Note that this maximum is scaled based \
+        on the type of the value."
+    )]
+    MoveRawValueTooBig {
+        value_size: u64,
+        max_scaled_size: u64,
+    },
     // NOTE: if you want to add a new enum,
     // please add it at the end for Rust SDK backward compatibility.
 }
@@ -280,6 +300,11 @@ pub enum CommandArgumentError {
         allowed."
     )]
     SharedObjectOperationNotAllowed,
+    #[error(
+        "Invalid argument arity. Expected a single argument but found a result that expanded to \
+        multiple arguments."
+    )]
+    InvalidArgumentArity,
 }
 
 #[derive(Eq, PartialEq, Clone, Debug, Serialize, Deserialize, Hash, Error)]
@@ -378,6 +403,31 @@ impl ExecutionStatus {
             }
             ExecutionStatus::Failure { error, command } => (error, command),
         }
+    }
+
+    pub fn get_congested_objects(&self) -> Option<&CongestedObjects> {
+        if let ExecutionStatus::Failure {
+            error:
+                ExecutionFailureStatus::ExecutionCancelledDueToSharedObjectCongestion {
+                    congested_objects,
+                },
+            ..
+        } = self
+        {
+            Some(congested_objects)
+        } else {
+            None
+        }
+    }
+
+    pub fn is_cancelled(&self) -> bool {
+        matches!(
+            self,
+            ExecutionStatus::Failure {
+                error: ExecutionFailureStatus::ExecutionCancelledDueToSharedObjectCongestion { .. },
+                ..
+            }
+        )
     }
 }
 

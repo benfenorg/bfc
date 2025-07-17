@@ -3,8 +3,6 @@ title: DeepBookV3
 description: A central limit order book that offers features and functionality for marketplaces on Sui. Token exchanges leveraging the layer can feature transparency, a full range of trading options, and customer privacy.
 ---
 
-{@include: ../snippets/deepbook.mdx}
-
 DeepBook is a next-generation decentralized central limit order book (CLOB) built on Sui. DeepBook leverages Sui's parallel execution and low transaction fees to bring a highly performant, low-latency exchange on chain. 
 
 The latest version delivers new features including flash loans, governance, improved account abstraction, and enhancements to the existing matching engine. This version also introduces its own tokenomics with the [DEEP token](https://suiscan.xyz/mainnet/coin/0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP/txs), which you can stake for additional benefits. 
@@ -13,7 +11,9 @@ DeepBook does not include an end-user interface for token trading. Rather, it of
 
 ## DeepBook tokenomics  
 
-The DEEP token is used to pay for trading fees on the exchange. Future upgrades will allow users to pay trading fees using the input token, but owning, using, and staking DEEP will continue to provide benefits to active DeepBook traders on the Sui network.
+The DEEP token pays for trading fees on the exchange. Users can pay trading fees using DEEP tokens or input tokens, but owning, using, and staking DEEP continues to provide the most benefits to active DeepBook traders on the Sui network.
+
+As an example, governance determines the fee for paying in DEEP tokens, which is 20% lower than the fee for using input tokens.
 
 Users that stake DEEP can enjoy taker and maker incentives. Taker incentives can reduce trading fees by half, dropping them to as low as 0.25 basis points (bps) on stable pairs and 2.5 bps on volatile pairs. Maker incentives are rebates earned based on maker volume generated.
 

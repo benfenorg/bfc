@@ -39,6 +39,11 @@ use sui_faucet::{create_wallet_context, start_faucet, AppState, FaucetConfig, Si
 use sui_indexer::test_utils::{
     start_indexer_jsonrpc_for_testing, start_indexer_writer_for_testing,
 };
+use sui_json_rpc_types::{SuiObjectDataOptions, SuiRawData};
+use sui_move::summary::PackageSummaryMetadata;
+use sui_sdk::apis::ReadApi;
+use sui_sdk::SuiClient;
+use sui_types::move_package::MovePackage;
 
 use sui_graphql_rpc::{
     config::{ConnectionConfig, ServiceConfig},
@@ -52,7 +57,7 @@ use sui_move_build::SuiPackageHooks;
 use sui_sdk::sui_client_config::{SuiClientConfig, SuiEnv};
 use sui_sdk::wallet_context::WalletContext;
 use sui_swarm::memory::Swarm;
-use sui_swarm_config::genesis_config::{GenesisConfig, DEFAULT_NUMBER_OF_AUTHORITIES};
+use sui_swarm_config::genesis_config::GenesisConfig;
 use sui_swarm_config::network_config::NetworkConfig;
 use sui_swarm_config::network_config_builder::ConfigBuilder;
 use sui_swarm_config::node_config_builder::FullnodeConfigBuilder;
@@ -65,9 +70,8 @@ use tracing::info;
 use sui_keys::keypair_file::{read_authority_keypair_from_file, read_keypair_from_file, read_network_keypair_from_file};
 
 
-const CONCURRENCY_LIMIT: usize = 30;
 const DEFAULT_EPOCH_DURATION_MS: u64 = 60_000;
-const DEFAULT_FAUCET_NUM_COINS: usize = 5; // 5 coins per request was the default in sui-test-validator
+
 const DEFAULT_FAUCET_MIST_AMOUNT: u64 = 200_000_000_000; // 200 SUI
 const DEFAULT_FAUCET_PORT: u16 = 9123;
 
@@ -138,6 +142,17 @@ impl IndexerArgs {
             pg_password: "postgrespw".to_string(),
         }
     }
+}
+
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
+pub struct SuiEnvConfig {
+    /// Sets the file storing the state of our user accounts (an empty one will be created if missing)
+    #[clap(long = "client.config")]
+    config: Option<PathBuf>,
+    /// The Sui environment to use. This must be present in the current config file.
+    #[clap(long = "client.env")]
+    env: Option<String>,
 }
 
 #[allow(clippy::large_enum_variant)]
@@ -338,11 +353,11 @@ pub enum SuiCommand {
         config: Option<PathBuf>,
     },
     /// Client for interacting with the Bfc network.
+    /// Client for interacting with the Sui network.
     #[clap(name = "client")]
     Client {
-        /// Sets the file storing the state of our user accounts (an empty one will be created if missing)
-        #[clap(long = "client.config")]
-        config: Option<PathBuf>,
+        #[clap(flatten)]
+        config: SuiEnvConfig,
         #[clap(subcommand)]
         cmd: Option<SuiClientCommands>,
         /// Return command outputs in json format.
@@ -371,10 +386,8 @@ pub enum SuiCommand {
         /// Path to a package which the command should be run with respect to.
         #[clap(long = "path", short = 'p', global = true)]
         package_path: Option<PathBuf>,
-        /// Sets the file storing the state of our user accounts (an empty one will be created if missing)
-        /// Only used when the `--dump-bytecode-as-base64` is set.
-        #[clap(long = "client.config")]
-        config: Option<PathBuf>,
+        #[clap(flatten)]
+        config: SuiEnvConfig,
         /// Package build options
         #[clap(flatten)]
         build_config: BuildConfig,
@@ -437,7 +450,6 @@ impl SuiCommand {
                 config_dir,
                 force_regenesis,
                 with_faucet,
-
                 indexer_feature_args,
                 fullnode_rpc_port,
                 data_ingestion_dir,
@@ -539,10 +551,20 @@ impl SuiCommand {
                 json,
                 accept_defaults,
             } => {
-                let config_path = config.unwrap_or(sui_config_dir()?.join(SUI_CLIENT_CONFIG));
+                let config_path = config
+                    .config
+                    .unwrap_or(sui_config_dir()?.join(SUI_CLIENT_CONFIG));
                 prompt_if_no_config(&config_path, accept_defaults).await?;
                 if let Some(cmd) = cmd {
                     let mut context = WalletContext::new(&config_path, None, None)?;
+                    if let Ok(client) = context.get_client().await {
+                        if let Err(e) = client.check_api_version() {
+                            eprintln!("{}", format!("[warning] {e}").yellow().bold());
+                        }
+                    let mut context = WalletContext::new(&config_path)?;
+                    if let Some(env_override) = config.env {
+                        context = context.with_env_override(env_override);
+                    }
                     if let Ok(client) = context.get_client().await {
                         if let Err(e) = client.check_api_version() {
                             eprintln!("{}", format!("[warning] {e}").yellow().bold());
@@ -565,7 +587,7 @@ impl SuiCommand {
             } => {
                 let config_path = config.unwrap_or(sui_config_dir()?.join(SUI_CLIENT_CONFIG));
                 prompt_if_no_config(&config_path, accept_defaults).await?;
-                let mut context = WalletContext::new(&config_path, None, None)?;
+                let mut context = WalletContext::new(&config_path)?;
                 if let Some(cmd) = cmd {
                     if let Ok(client) = context.get_client().await {
                         if let Err(e) = client.check_api_version() {
@@ -584,10 +606,54 @@ impl SuiCommand {
             SuiCommand::Move {
                 package_path,
                 build_config,
-                mut cmd,
+                cmd,
                 config: client_config,
             } => {
-                match &mut cmd {
+                match cmd {
+                    sui_move::Command::Summary(mut s) if s.package_id.is_some() => {
+                        let (_, client) = get_chain_id_and_client(
+                            client_config,
+                            "sui move summary --package-id <object_id>",
+                        )
+                        .await?;
+                        let Some(client) = client else {
+                            bail!("`sui move summary --package-id <object_id>` requires a configured network");
+                        };
+
+                        let read_api = client.read_api();
+
+                        // If they didn't run with `--bytecode` correct this for them but warn them
+                        // to let them know that we are changing it.
+                        if !s.summary.bytecode {
+                            eprintln!("{}",
+                                "[warning] `sui move summary --package-id <object_id>` only supports bytecode summaries. \
+                                 Falling back to producing a bytecode-based summary. To not get this warning you can run with `--bytecode`".yellow().bold()
+                            );
+                            s.summary.bytecode = true;
+                        }
+                        let root_package_id = s
+                            .package_id
+                            .as_ref()
+                            .expect("Safe since we checked in the match statement");
+
+                        // Create a tempdir to download the package bytes to, and then download the
+                        // packages bytes there.
+                        let package_bytes_location = tempdir()?;
+                        let path = package_bytes_location.path();
+                        let package_metadata =
+                            download_package_and_deps_under(read_api, path, *root_package_id)
+                                .await?;
+
+                        // Now produce the summary, pointing at the tempdir containing the package
+                        // bytes.
+                        execute_move_command(
+                            Some(path),
+                            build_config,
+                            sui_move::Command::Summary(s),
+                            Some(sui_move::CommandMeta::Summary(package_metadata)),
+                        )?;
+                        return Ok(());
+                    }
                     sui_move::Command::Build(build) if build.dump_bytecode_as_base64 => {
                         if build.ignore_chain {
                             build.chain_id = None;
@@ -608,11 +674,71 @@ impl SuiCommand {
                             let client = context.get_client().await?;
                             let chain_id = client.read_api().get_chain_identifier().await.ok();
                             build.chain_id = chain_id.clone();
+                        // `sui move build` does not ordinarily require a network connection.
+                        // The exception is when --dump-bytecode-as-base64 is specified: In this
+                        // case, we should resolve the correct addresses for the respective chain
+                        // (e.g., testnet, mainnet) from the Move.lock under automated address management.
+                        // In addition, tree shaking also requires a network as it needs to fetch
+                        // on-chain linkage table of package dependencies.
+                        let (chain_id, client) = if build.ignore_chain {
+                            // for tests it's useful to ignore the chain id!
+                            (None, None)
+                        } else {
+                            get_chain_id_and_client(
+                                client_config,
+                                "sui move build --dump-bytecode-as-base64",
+                            )
+                            .await?
+                        };
+
+                        let rerooted_path = move_cli::base::reroot_path(package_path.as_deref())?;
+                        let mut build_config =
+                            resolve_lock_file_path(build_config, Some(&rerooted_path))?;
+                        if let Some(client) = &client {
+                            let protocol_config =
+                                client.read_api().get_protocol_config(None).await?;
+                            build_config.implicit_dependencies =
+                                implicit_deps_for_protocol_version(
+                                    protocol_config.protocol_version,
+                                )?;
+                        } else {
+                            build_config.implicit_dependencies =
+                                implicit_deps(latest_system_packages());
                         }
+
+                        let mut pkg = SuiBuildConfig {
+                            config: build_config,
+                            run_bytecode_verifier: true,
+                            print_diags_to_stderr: true,
+                            chain_id,
+                        }
+                        .build(&rerooted_path)?;
+
+                        let with_unpublished_deps = build.with_unpublished_dependencies;
+
+                        check_invalid_dependencies(&pkg.dependency_ids.invalid)?;
+                        if !with_unpublished_deps {
+                            check_unpublished_dependencies(&pkg.dependency_ids.unpublished)?;
+                        }
+
+                        if let Some(client) = client {
+                            pkg_tree_shake(client.read_api(), with_unpublished_deps, &mut pkg)
+                                .await?;
+                        }
+
+                        println!(
+                            "{}",
+                            json!({
+                                "modules": pkg.get_package_base64(with_unpublished_deps),
+                                "dependencies": pkg.get_dependency_storage_package_ids(),
+                                "digest": pkg.get_package_digest(with_unpublished_deps),
+                            })
+                        );
+                        return Ok(());
                     }
                     _ => (),
                 };
-                execute_move_command(package_path.as_deref(), build_config, cmd)
+                execute_move_command(package_path.as_deref(), build_config, cmd, None)
             }
             SuiCommand::BridgeInitialize {
                 network_config,
@@ -645,9 +771,14 @@ impl SuiCommand {
                     if let Err(e) = client.check_api_version() {
                         eprintln!("{}", format!("[warning] {e}").yellow().bold());
                     }
+                let mut context = WalletContext::new(&config_path)?;
+                if let Ok(client) = context.get_client().await {
+                    if let Err(e) = client.check_api_version() {
+                        eprintln!("{}", format!("[warning] {e}").yellow().bold());
+                    }
                 }
                 let rgp = context.get_reference_gas_price().await?;
-                let rpc_url = &context.config.get_active_env()?.rpc;
+                let rpc_url = &context.get_active_env()?.rpc;
                 println!("rpc_url: {}", rpc_url);
                 let bridge_metrics = Arc::new(BridgeMetrics::new_for_testing());
                 let sui_bridge_client = SuiBridgeClient::new(rpc_url, bridge_metrics).await?;
@@ -702,7 +833,7 @@ impl SuiCommand {
             }
             SuiCommand::FireDrill { fire_drill } => run_fire_drill(fire_drill).await,
             SuiCommand::Analyzer => {
-                analyzer::run();
+                analyzer::run(implicit_deps(latest_system_packages()));
                 Ok(())
             }
         }
@@ -766,15 +897,16 @@ async fn start(
     let config_dir = if force_regenesis {
         let committee_size = match committee_size {
             Some(x) => NonZeroUsize::new(x),
-            None => NonZeroUsize::new(DEFAULT_NUMBER_OF_AUTHORITIES),
+            None => NonZeroUsize::new(1),
         }
         .ok_or_else(|| anyhow!("Committee size must be at least 1."))?;
+        println!("committee_size: {}", committee_size);
         swarm_builder = swarm_builder.committee_size(committee_size);
         let genesis_config = GenesisConfig::custom_genesis(1, 100);
         swarm_builder = swarm_builder.with_genesis_config(genesis_config);
         let epoch_duration_ms = epoch_duration_ms.unwrap_or(DEFAULT_EPOCH_DURATION_MS);
         swarm_builder = swarm_builder.with_epoch_duration_ms(epoch_duration_ms);
-        tempdir()?.into_path()
+        mysten_common::tempdir()?.keep()
     } else {
         // If the config path looks like a YAML file, it is treated as if it is the network.yaml
         // overriding the network.yaml found in the sui config directry. Otherwise it is treated as
@@ -882,7 +1014,7 @@ async fn start(
     // note that this overrides the default configuration that is set when running the genesis
     // command, which sets data_ingestion_dir to None.
     if with_indexer.is_some() && data_ingestion_dir.is_none() {
-        data_ingestion_dir = Some(tempdir()?.into_path())
+        data_ingestion_dir = Some(mysten_common::tempdir()?.keep())
     }
 
     if let Some(ref dir) = data_ingestion_dir {
@@ -971,12 +1103,10 @@ async fn start(
         let config = FaucetConfig {
             host_ip,
             port: faucet_address.port(),
-            num_coins: DEFAULT_FAUCET_NUM_COINS,
             amount: DEFAULT_FAUCET_MIST_AMOUNT,
             ..Default::default()
         };
 
-        let prometheus_registry = prometheus::Registry::new();
         if force_regenesis {
             let kp = swarm.config_mut().account_keys.swap_remove(0);
             let keystore_path = config_dir.join(SUI_KEYSTORE_FILENAME);
@@ -998,22 +1128,19 @@ async fn start(
             .save()
             .unwrap();
         }
-        let faucet_wal = config_dir.join("faucet.wal");
-        let simple_faucet = SimpleFaucet::new(
-            create_wallet_context(config.wallet_client_timeout_secs, config_dir)?,
-            &prometheus_registry,
-            faucet_wal.as_path(),
+
+        let local_faucet = LocalFaucet::new(
+            create_wallet_context(config.wallet_client_timeout_secs, config_dir.clone())?,
             config.clone(),
         )
-        .await
-        .unwrap();
+        .await?;
 
         let app_state = Arc::new(AppState {
-            faucet: simple_faucet,
+            faucet: local_faucet,
             config,
         });
 
-        start_faucet(app_state, CONCURRENCY_LIMIT, &prometheus_registry).await?;
+        start_faucet(app_state).await?;
     }
 
     let mut interval = tokio::time::interval(std::time::Duration::from_secs(3));
@@ -1160,7 +1287,7 @@ pub async fn genesis(
     }
     let committee_size = match committee_size {
         Some(x) => NonZeroUsize::new(x),
-        None => NonZeroUsize::new(DEFAULT_NUMBER_OF_AUTHORITIES),
+        None => NonZeroUsize::new(1),
     }
     .ok_or_else(|| anyhow!("Committee size must be at least 1."))?;
 
@@ -1805,6 +1932,130 @@ fn read_validator_keypair(name : String, dir: Utf8PathBuf, manager: &mut Private
 
     Ok(())
 }
+/// Get the currently configured client, and the chain ID for that client.
+async fn get_chain_id_and_client(
+    client_config: SuiEnvConfig,
+    command_err_string: &str,
+) -> anyhow::Result<(Option<String>, Option<SuiClient>)> {
+    let config = client_config
+        .config
+        .unwrap_or(sui_config_dir()?.join(SUI_CLIENT_CONFIG));
+    prompt_if_no_config(&config, false).await?;
+    let mut context = WalletContext::new(&config)?;
+
+    if let Some(env_override) = client_config.env {
+        context = context.with_env_override(env_override);
+    }
+
+    let Ok(client) = context.get_client().await else {
+        bail!(
+            "`{command_err_string}` requires a connection to the network. \
+             Current active network is {} but failed to connect to it.",
+            context.config.active_env.as_ref().unwrap()
+        );
+    };
+
+    if let Err(e) = client.check_api_version() {
+        eprintln!("{}", format!("[warning] {e}").yellow().bold());
+    }
+
+    Ok((
+        client.read_api().get_chain_identifier().await.ok(),
+        Some(client),
+    ))
+}
+
+/// Try to resolve an ObjectID to a MovePackage
+async fn resolve_package(reader: &ReadApi, package_id: ObjectID) -> anyhow::Result<MovePackage> {
+    let object = reader
+        .get_object_with_options(package_id, SuiObjectDataOptions::bcs_lossless())
+        .await?
+        .into_object()?;
+
+    let Some(SuiRawData::Package(package)) = object.bcs else {
+        bail!("Object {} is not a package.", package_id);
+    };
+
+    Ok(MovePackage::new(
+        package.id,
+        package.version,
+        package.module_map,
+        // This package came from on-chain and the tool runs locally, so don't worry about
+        // trying to enforce the package size limit.
+        u64::MAX,
+        package.type_origin_table,
+        package.linkage_table,
+    )?)
+}
+
+/// Download the package's modules and its dependencies to the specified path.
+async fn download_package_and_deps_under(
+    read_api: &ReadApi,
+    path: &Path,
+    package_id: ObjectID,
+) -> anyhow::Result<PackageSummaryMetadata> {
+    let mut dependencies = BTreeMap::new();
+    let mut linkage = BTreeMap::new();
+    let mut type_origins = BTreeMap::new();
+
+    let root_package = resolve_package(read_api, package_id).await?;
+    for (original_id, pkg_info) in root_package.linkage_table().iter() {
+        let package = resolve_package(read_api, pkg_info.upgraded_id).await?;
+        let relative_package_path = package
+            .id()
+            .deref()
+            .to_canonical_string(/* with_prefix */ true);
+
+        let package_path = path.join(&relative_package_path);
+        fs::create_dir_all(&package_path)?;
+        for (m_name, module) in package.serialized_module_map() {
+            let mut file = fs::File::create(
+                package_path
+                    .join(m_name)
+                    .with_extension(MOVE_COMPILED_EXTENSION),
+            )?;
+            file.write_all(module)?;
+        }
+
+        dependencies.insert(*original_id, PathBuf::from(relative_package_path));
+        linkage.insert(*original_id, pkg_info.clone());
+        type_origins.insert(*original_id, package.type_origin_table().clone());
+    }
+
+    let package_path = path.join(
+        root_package
+            .id()
+            .deref()
+            .to_canonical_string(/* with_prefix */ true),
+    );
+    fs::create_dir_all(&package_path)?;
+    for (m_name, module) in root_package.serialized_module_map() {
+        let file_path = package_path
+            .join(m_name)
+            .with_extension(MOVE_COMPILED_EXTENSION);
+        let mut file = fs::File::create(&file_path)?;
+        file.write_all(module).with_context(|| {
+            format!(
+                "Unable to write module {m_name} for package {} to {}",
+                root_package
+                    .id()
+                    .deref()
+                    .to_canonical_string(/* with_prefix */ true),
+                file_path.display(),
+            )
+        })?;
+    }
+
+    Ok(PackageSummaryMetadata {
+        root_package_id: Some(root_package.id()),
+        root_package_original_id: Some(root_package.original_package_id()),
+        root_package_version: Some(root_package.version().value()),
+        type_origins: Some(type_origins),
+        dependencies: Some(dependencies),
+        linkage: Some(linkage),
+    })
+}
+
 /// Parse the input string into a SocketAddr, with a default port if none is provided.
 pub fn parse_host_port(
     input: String,

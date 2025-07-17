@@ -1,0 +1,351 @@
+---
+source: external-crates/move/crates/move-transactional-test-runner/src/framework.rs
+---
+processed 16 tasks
+
+init:
+A: object(0,0), B: object(0,1)
+
+task 1, lines 13-26:
+//# publish
+created: object(1,0)
+mutated: object(0,2)
+gas summary: computation_cost: 1000000, storage_cost: 5494800,  storage_rebate: 0, non_refundable_storage_fee: 0
+
+task 2, line 28:
+//# run Test::M1::create --args 0 @A --sender A
+created: object(2,0)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 0, non_refundable_storage_fee: 0
+
+task 3, line 30:
+//# run Test::M1::create --args 0 @A --sender A
+created: object(3,0)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
+
+task 4, line 32:
+//# run Test::M1::create --args 0 @A --sender A
+created: object(4,0)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
+
+task 5, line 34:
+//# run Test::M1::create --args 0 @A --sender A
+created: object(5,0)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
+
+task 6, line 36:
+//# create-checkpoint
+Checkpoint created: 1
+
+task 7, line 38:
+//# run Test::M1::create --args 0 @A --sender A
+created: object(7,0)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
+
+task 8, line 40:
+//# run Test::M1::create --args 0 @A --sender A
+created: object(8,0)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
+
+task 9, line 42:
+//# run Test::M1::create --args 0 @A --sender A
+created: object(9,0)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
+
+task 10, line 44:
+//# create-checkpoint
+Checkpoint created: 2
+
+task 11, line 46:
+//# run Test::M1::create --args 0 @A --sender A
+created: object(11,0)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
+
+task 12, line 48:
+//# run Test::M1::create --args 0 @A --sender A
+created: object(12,0)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
+
+task 13, line 50:
+//# create-checkpoint
+Checkpoint created: 3
+
+task 14, lines 52-76:
+//# run-graphql
+Response: {
+  "data": {
+    "checkpoints": {
+      "nodes": [
+        {
+          "sequenceNumber": 0,
+          "transactionBlocks": {
+            "edges": []
+          }
+        },
+        {
+          "sequenceNumber": 1,
+          "transactionBlocks": {
+            "edges": [
+              {
+                "cursor": "eyJjIjozLCJ0IjoyLCJpIjpmYWxzZX0",
+                "node": {
+                  "digest": "HYDjwVGFW14GFM6o1P1kk7ymutKbWKWRqa9mwc1inDtf",
+                  "sender": {
+                    "objects": {
+                      "edges": [
+                        {
+                          "cursor": "IP37u6srCFdF+bTvIpaQAVebc3P5lFZHuV13BQOMsXZxAwAAAAAAAAA="
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "cursor": "eyJjIjozLCJ0IjozLCJpIjpmYWxzZX0",
+                "node": {
+                  "digest": "HTBBwUsBmpFFyyQcQdbCtcroaLJXKLihDHcihXm2DK4n",
+                  "sender": {
+                    "objects": {
+                      "edges": [
+                        {
+                          "cursor": "IP37u6srCFdF+bTvIpaQAVebc3P5lFZHuV13BQOMsXZxAwAAAAAAAAA="
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "cursor": "eyJjIjozLCJ0Ijo0LCJpIjpmYWxzZX0",
+                "node": {
+                  "digest": "FSQuJWWSYM7uT8DrnkPEYvdscphqDsnw14CoMCkhegJV",
+                  "sender": {
+                    "objects": {
+                      "edges": [
+                        {
+                          "cursor": "IP37u6srCFdF+bTvIpaQAVebc3P5lFZHuV13BQOMsXZxAwAAAAAAAAA="
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "cursor": "eyJjIjozLCJ0Ijo1LCJpIjpmYWxzZX0",
+                "node": {
+                  "digest": "Fj9hoDxEkNyVQxvCDnVCfm6HwBuECdieirgGsdBcVKtn",
+                  "sender": {
+                    "objects": {
+                      "edges": [
+                        {
+                          "cursor": "IP37u6srCFdF+bTvIpaQAVebc3P5lFZHuV13BQOMsXZxAwAAAAAAAAA="
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "sequenceNumber": 2,
+          "transactionBlocks": {
+            "edges": [
+              {
+                "cursor": "eyJjIjozLCJ0Ijo2LCJpIjpmYWxzZX0",
+                "node": {
+                  "digest": "CEoTShSUNYkpBrWjTFnsowzhgCxyKkkZgiNe2m8KaFpy",
+                  "sender": {
+                    "objects": {
+                      "edges": [
+                        {
+                          "cursor": "IP37u6srCFdF+bTvIpaQAVebc3P5lFZHuV13BQOMsXZxAwAAAAAAAAA="
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "cursor": "eyJjIjozLCJ0Ijo3LCJpIjpmYWxzZX0",
+                "node": {
+                  "digest": "3byKdFNtcw6czPL6x38ZCPXFxPN3x6dSLGnQWmUJieBw",
+                  "sender": {
+                    "objects": {
+                      "edges": [
+                        {
+                          "cursor": "IP37u6srCFdF+bTvIpaQAVebc3P5lFZHuV13BQOMsXZxAwAAAAAAAAA="
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "cursor": "eyJjIjozLCJ0Ijo4LCJpIjpmYWxzZX0",
+                "node": {
+                  "digest": "6be5T3FkQZcuUQQXoVkRsJ2WyJUzmvkxn5aziNxTGBbP",
+                  "sender": {
+                    "objects": {
+                      "edges": [
+                        {
+                          "cursor": "IP37u6srCFdF+bTvIpaQAVebc3P5lFZHuV13BQOMsXZxAwAAAAAAAAA="
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "sequenceNumber": 3,
+          "transactionBlocks": {
+            "edges": [
+              {
+                "cursor": "eyJjIjozLCJ0Ijo5LCJpIjpmYWxzZX0",
+                "node": {
+                  "digest": "GPPYuxT3Tfy1AmSDTErJfF1ayjBUG5JiSQAHhiBqYLWd",
+                  "sender": {
+                    "objects": {
+                      "edges": [
+                        {
+                          "cursor": "IP37u6srCFdF+bTvIpaQAVebc3P5lFZHuV13BQOMsXZxAwAAAAAAAAA="
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "cursor": "eyJjIjozLCJ0IjoxMCwiaSI6ZmFsc2V9",
+                "node": {
+                  "digest": "7JsXn2yxw3nutSw7udfYUCemo4fdP1nJFhrs4YUju83x",
+                  "sender": {
+                    "objects": {
+                      "edges": [
+                        {
+                          "cursor": "IP37u6srCFdF+bTvIpaQAVebc3P5lFZHuV13BQOMsXZxAwAAAAAAAAA="
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
+
+task 15, lines 78-95:
+//# run-graphql
+Response: {
+  "data": {
+    "checkpoints": {
+      "nodes": [
+        {
+          "sequenceNumber": 0,
+          "epoch": {
+            "epochId": 0,
+            "checkpoints": {
+              "nodes": [
+                {
+                  "sequenceNumber": 0
+                },
+                {
+                  "sequenceNumber": 1
+                },
+                {
+                  "sequenceNumber": 2
+                },
+                {
+                  "sequenceNumber": 3
+                }
+              ]
+            }
+          }
+        },
+        {
+          "sequenceNumber": 1,
+          "epoch": {
+            "epochId": 0,
+            "checkpoints": {
+              "nodes": [
+                {
+                  "sequenceNumber": 0
+                },
+                {
+                  "sequenceNumber": 1
+                },
+                {
+                  "sequenceNumber": 2
+                },
+                {
+                  "sequenceNumber": 3
+                }
+              ]
+            }
+          }
+        },
+        {
+          "sequenceNumber": 2,
+          "epoch": {
+            "epochId": 0,
+            "checkpoints": {
+              "nodes": [
+                {
+                  "sequenceNumber": 0
+                },
+                {
+                  "sequenceNumber": 1
+                },
+                {
+                  "sequenceNumber": 2
+                },
+                {
+                  "sequenceNumber": 3
+                }
+              ]
+            }
+          }
+        },
+        {
+          "sequenceNumber": 3,
+          "epoch": {
+            "epochId": 0,
+            "checkpoints": {
+              "nodes": [
+                {
+                  "sequenceNumber": 0
+                },
+                {
+                  "sequenceNumber": 1
+                },
+                {
+                  "sequenceNumber": 2
+                },
+                {
+                  "sequenceNumber": 3
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

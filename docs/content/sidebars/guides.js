@@ -30,7 +30,7 @@ const guides = [
 					'guides/developer/getting-started/local-network',
 					'guides/developer/getting-started/get-address',
 					'guides/developer/getting-started/get-coins',
-					'guides/developer/getting-started/graphql-rpc',
+					'guides/developer/getting-started/data-serving',
 				],
 			},
 			{
@@ -94,7 +94,7 @@ const guides = [
 					type: 'doc',
 					id: 'guides/developer/nft',
 				},
-				items: ['guides/developer/nft/nft-rental', 'guides/developer/nft/asset-tokenization'],
+				items: ['guides/developer/nft/nft-soulbound', 'guides/developer/nft/nft-rental', 'guides/developer/nft/asset-tokenization'],
 			},
 			{
 				type: 'category',
@@ -143,7 +143,9 @@ const guides = [
 					'guides/developer/advanced/move-2024-migration',
 					'guides/developer/advanced/custom-indexer',
 					'guides/developer/advanced/randomness-onchain',
+					'guides/developer/getting-started/graphql-rpc',
 					'guides/developer/advanced/graphql-migration',
+					'guides/developer/advanced/local-fee-markets',
 				],
 			},
 			{

@@ -1,0 +1,115 @@
+---
+source: external-crates/move/crates/move-transactional-test-runner/src/framework.rs
+---
+processed 8 tasks
+
+init:
+A: object(0,0)
+
+task 1, lines 9-36:
+//# publish
+created: object(1,0)
+mutated: object(0,1)
+gas summary: computation_cost: 1000000, storage_cost: 7037600,  storage_rebate: 0, non_refundable_storage_fee: 0
+
+task 2, lines 38-40:
+//# programmable --sender A --inputs @A
+//> 0: P0::M::new();
+//> 1: TransferObjects([Result(0)], Input(0))
+created: object(2,0)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 2523200,  storage_rebate: 0, non_refundable_storage_fee: 0
+
+task 3, lines 42-43:
+//# programmable --sender A --inputs object(2,0)
+//> 0: P0::M::wrap(Input(0))
+mutated: object(0,0), object(2,0)
+gas summary: computation_cost: 1000000, storage_cost: 2766400,  storage_rebate: 2497968, non_refundable_storage_fee: 25232
+
+task 4, lines 45-47:
+//# programmable --sender A --inputs object(2,0)
+//> 0: P0::M::unwrap(Input(0));
+//> 1: P0::M::delete(Result(0))
+mutated: object(0,0), object(2,0)
+unwrapped_then_deleted: object(_)
+gas summary: computation_cost: 1000000, storage_cost: 2523200,  storage_rebate: 2738736, non_refundable_storage_fee: 27664
+
+task 5, line 49:
+//# create-checkpoint
+Checkpoint created: 1
+
+task 6, lines 51-55:
+//# run-jsonrpc
+Response: {
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": {
+    "digest": "8PMevvPJNsieb3725nUBhg2P7qbtesYJhAVYaM7Ag5bB",
+    "objectChanges": [
+      {
+        "type": "mutated",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
+        "owner": {
+          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
+        },
+        "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
+        "objectId": "BFC1368f3ce1a354a08e6a92821900897ceb1ad5c9ba4ddcde7c0f0f88a2e9bfbfd4278",
+        "version": "3",
+        "previousVersion": "2",
+        "digest": "DYZsVsqeHYEC6vLZycfQktKhoAwbYDhzBDcpd16LX3RN"
+      },
+      {
+        "type": "mutated",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
+        "owner": {
+          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
+        },
+        "objectType": "0xa779efc90d5be458626ed8d106d075937bd37436dc97b59e0e357553c91dc12e::M::O",
+        "objectId": "BFC51a533c4dd97172123c16b257d96cfa807b549a4b6d3fd90238636ad7f43b8ce58be",
+        "version": "3",
+        "previousVersion": "2",
+        "digest": "DxPtWjEMmfv9MCQxzN2DJkqXuMvpZUPJiSdKz5fRgLCf"
+      }
+    ],
+    "timestampMs": "0",
+    "checkpoint": "1"
+  }
+}
+
+task 7, lines 57-61:
+//# run-jsonrpc
+Response: {
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "digest": "F9FnX9N5pZ9Cp9QHfrpdwKQugVofpyVfxQCPjoWvj6uJ",
+    "objectChanges": [
+      {
+        "type": "mutated",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
+        "owner": {
+          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
+        },
+        "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
+        "objectId": "BFC1368f3ce1a354a08e6a92821900897ceb1ad5c9ba4ddcde7c0f0f88a2e9bfbfd4278",
+        "version": "4",
+        "previousVersion": "3",
+        "digest": "3m3dtu22JMRVeVWMv4KPuJK7hKV1f6M9hR2YAc7x2MLa"
+      },
+      {
+        "type": "mutated",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
+        "owner": {
+          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
+        },
+        "objectType": "0xa779efc90d5be458626ed8d106d075937bd37436dc97b59e0e357553c91dc12e::M::O",
+        "objectId": "BFC51a533c4dd97172123c16b257d96cfa807b549a4b6d3fd90238636ad7f43b8ce58be",
+        "version": "4",
+        "previousVersion": "3",
+        "digest": "H2tZhQQFDFiAFQ3cxaU6P7Jd3HYFA9jySULkFUevhPM1"
+      }
+    ],
+    "timestampMs": "0",
+    "checkpoint": "1"
+  }
+}

@@ -1,13 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use sui_sdk_types::{CheckpointSequenceNumber, EpochId, SignedTransaction, ValidatorCommittee};
 use sui_sdk_types::{Object, ObjectId, Version};
+use sui_types::balance_change::BalanceChange;
+use sui_types::base_types::{ObjectID, ObjectType};
 use sui_types::storage::error::{Error as StorageError, Result};
-use sui_types::storage::ObjectStore;
 use sui_types::storage::RpcStateReader;
+use sui_types::storage::{ObjectStore, TransactionInfo};
 use tap::Pipe;
 
 use crate::Direction;
@@ -26,6 +29,7 @@ impl StateReader {
         &self.inner
     }
 
+    #[tracing::instrument(skip(self))]
     pub fn get_object(&self, object_id: ObjectId) -> crate::Result<Option<Object>> {
         self.inner
             .get_object(&object_id.into())
@@ -34,6 +38,7 @@ impl StateReader {
             .map_err(Into::into)
     }
 
+    #[tracing::instrument(skip(self))]
     pub fn get_object_with_version(
         &self,
         object_id: ObjectId,
@@ -46,22 +51,34 @@ impl StateReader {
             .map_err(Into::into)
     }
 
+    #[tracing::instrument(skip(self))]
     pub fn get_committee(&self, epoch: EpochId) -> Option<ValidatorCommittee> {
         self.inner
             .get_committee(epoch)
             .map(|committee| (*committee).clone().into())
     }
 
-    pub fn get_system_state_summary(&self) -> Result<super::rest::system::SystemStateSummary> {
+    #[tracing::instrument(skip(self))]
+    pub fn get_system_state_summary(
+        &self,
+    ) -> Result<sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary> {
         use sui_types::sui_system_state::SuiSystemStateTrait;
 
         let system_state = sui_types::sui_system_state::get_sui_system_state(self.inner())
             .map_err(StorageError::custom)?;
-        let summary = system_state.into_sui_system_state_summary().into();
+        let summary = system_state.into_sui_system_state_summary();
 
         Ok(summary)
     }
 
+    pub fn get_authenticator_state(
+        &self,
+    ) -> Result<Option<sui_types::authenticator_state::AuthenticatorStateInner>> {
+        sui_types::authenticator_state::get_authenticator_state(self.inner())
+            .map_err(StorageError::custom)
+    }
+
+    #[tracing::instrument(skip(self))]
     pub fn get_transaction(
         &self,
         digest: sui_sdk_types::TransactionDigest,
@@ -70,7 +87,6 @@ impl StateReader {
         sui_sdk_types::TransactionEffects,
         Option<sui_sdk_types::TransactionEvents>,
     )> {
-        use super::rest::transactions::TransactionNotFoundError;
         use sui_types::effects::TransactionEffectsAPI;
 
         let transaction_digest = digest.into();
@@ -79,15 +95,15 @@ impl StateReader {
             .inner()
             .get_transaction(&transaction_digest)
             .ok_or(TransactionNotFoundError(digest))?)
-            .clone()
-            .into_inner();
+        .clone()
+        .into_inner();
         let effects = self
             .inner()
             .get_transaction_effects(&transaction_digest)
             .ok_or(TransactionNotFoundError(digest))?;
-        let events = if let Some(event_digest) = effects.events_digest() {
+        let events = if effects.events_digest().is_some() {
             self.inner()
-                .get_events(event_digest)
+                .get_events(effects.transaction_digest())
                 .ok_or(TransactionNotFoundError(digest))?
                 .pipe(Some)
         } else {
@@ -101,16 +117,19 @@ impl StateReader {
         ))
     }
 
-    pub fn get_transaction_checkpoint(
+    #[tracing::instrument(skip(self))]
+    pub fn get_transaction_info(
         &self,
         digest: &sui_types::digests::TransactionDigest,
-    ) -> Option<CheckpointSequenceNumber> {
+    ) -> Option<TransactionInfo> {
         self.inner()
             .indexes()?
-            .get_transaction_checkpoint(digest)
-            .ok()?
+            .get_transaction_info(digest)
+            .ok()
+            .flatten()
     }
 
+    #[tracing::instrument(skip(self))]
     pub fn get_transaction_read(
         &self,
         digest: sui_sdk_types::TransactionDigest,
@@ -124,7 +143,16 @@ impl StateReader {
             events,
         ) = self.get_transaction(digest)?;
 
-        let checkpoint = self.get_transaction_checkpoint(&(digest.into()));
+        let (checkpoint, balance_changes, object_types) =
+            if let Some(info) = self.get_transaction_info(&(digest.into())) {
+                (
+                    Some(info.checkpoint),
+                    Some(info.balance_changes),
+                    Some(info.object_types),
+                )
+            } else {
+                (None, None, None)
+            };
         let timestamp_ms = if let Some(checkpoint) = checkpoint {
             self.inner()
                 .get_checkpoint_by_sequence_number(checkpoint)
@@ -141,9 +169,12 @@ impl StateReader {
             events,
             checkpoint,
             timestamp_ms,
+            balance_changes,
+            object_types,
         })
     }
 
+    #[allow(unused)]
     pub fn checkpoint_iter(
         &self,
         direction: Direction,
@@ -152,6 +183,7 @@ impl StateReader {
         CheckpointIter::new(self.clone(), direction, start)
     }
 
+    #[allow(unused)]
     pub fn transaction_iter(
         &self,
         direction: Direction,
@@ -170,6 +202,8 @@ pub struct TransactionRead {
     pub events: Option<sui_sdk_types::TransactionEvents>,
     pub checkpoint: Option<u64>,
     pub timestamp_ms: Option<u64>,
+    pub balance_changes: Option<Vec<BalanceChange>>,
+    pub object_types: Option<HashMap<ObjectID, ObjectType>>,
 }
 
 pub struct CheckpointTransactionsIter {
@@ -184,6 +218,7 @@ pub struct CheckpointTransactionsIter {
 }
 
 impl CheckpointTransactionsIter {
+    #[allow(unused)]
     pub fn new(
         reader: StateReader,
         direction: Direction,
@@ -213,22 +248,14 @@ impl Iterator for CheckpointTransactionsIter {
                     checkpoint
                 }
             } else {
-                let checkpoint = match self
+                let checkpoint = self
                     .reader
                     .inner()
-                    .get_checkpoint_by_sequence_number(current_checkpoint)
-                {
-                    Some(checkpoint) => checkpoint,
-                    None => return None,
-                };
-                let contents = match self
+                    .get_checkpoint_by_sequence_number(current_checkpoint)?;
+                let contents = self
                     .reader
                     .inner()
-                    .get_checkpoint_contents_by_sequence_number(checkpoint.sequence_number)
-                {
-                    Some(contents) => contents,
-                    None => return None,
-                };
+                    .get_checkpoint_contents_by_sequence_number(checkpoint.sequence_number)?;
 
                 self.checkpoint = Some((checkpoint.into_inner().into_data(), contents));
                 self.checkpoint.as_ref().unwrap()
@@ -284,6 +311,7 @@ impl Iterator for CheckpointTransactionsIter {
     }
 }
 
+#[allow(unused)]
 pub struct CursorInfo {
     pub checkpoint: CheckpointSequenceNumber,
     pub timestamp_ms: u64,
@@ -302,6 +330,7 @@ pub struct CheckpointIter {
 }
 
 impl CheckpointIter {
+    #[allow(unused)]
     pub fn new(reader: StateReader, direction: Direction, start: CheckpointSequenceNumber) -> Self {
         Self {
             reader,
@@ -320,23 +349,15 @@ impl Iterator for CheckpointIter {
     fn next(&mut self) -> Option<Self::Item> {
         let current_checkpoint = self.next_cursor?;
 
-        let checkpoint = match self
+        let checkpoint = self
             .reader
             .inner()
-            .get_checkpoint_by_sequence_number(current_checkpoint)
-        {
-            Some(checkpoint) => checkpoint,
-            None => return None,
-        }
+            .get_checkpoint_by_sequence_number(current_checkpoint)?
             .into_inner();
-        let contents = match self
+        let contents = self
             .reader
             .inner()
-            .get_checkpoint_contents_by_sequence_number(checkpoint.sequence_number)
-        {
-            Some(contents) => contents,
-            None => return None,
-        };
+            .get_checkpoint_contents_by_sequence_number(checkpoint.sequence_number)?;
 
         self.next_cursor = match self.direction {
             Direction::Ascending => current_checkpoint.checked_add(1),
@@ -344,5 +365,22 @@ impl Iterator for CheckpointIter {
         };
 
         Some(Ok((checkpoint, contents)))
+    }
+}
+
+#[derive(Debug)]
+pub struct TransactionNotFoundError(pub sui_sdk_types::TransactionDigest);
+
+impl std::fmt::Display for TransactionNotFoundError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Transaction {} not found", self.0)
+    }
+}
+
+impl std::error::Error for TransactionNotFoundError {}
+
+impl From<TransactionNotFoundError> for crate::RpcError {
+    fn from(value: TransactionNotFoundError) -> Self {
+        Self::new(tonic::Code::NotFound, value.to_string())
     }
 }

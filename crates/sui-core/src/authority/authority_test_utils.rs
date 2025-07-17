@@ -4,9 +4,11 @@
 
 use crate::checkpoints::CheckpointServiceNoop;
 use crate::consensus_handler::SequencedConsensusTransaction;
+use crate::execution_scheduler::ExecutionSchedulerAPI;
 use core::default::Default;
 use fastcrypto::hash::MultisetHash;
 use fastcrypto::traits::KeyPair;
+use sui_protocol_config::Chain;
 use sui_types::crypto::{AccountKeyPair, AuthorityKeyPair};
 use sui_types::messages_consensus::ConsensusTransaction;
 use sui_types::utils::to_sender_signed_transaction;
@@ -86,7 +88,8 @@ pub async fn execute_certificate_with_execution_error(
     // for testing and regression detection.
     // We must do this before sending to consensus, otherwise consensus may already
     // lead to transaction execution and state change.
-    let state_acc = StateAccumulator::new_for_tests(authority.get_accumulator_store().clone());
+    let state_acc =
+        GlobalStateHasher::new_for_tests(authority.get_global_state_hash_store().clone());
     let include_wrapped_tombstone = !authority
         .epoch_store_for_testing()
         .protocol_config()
@@ -106,8 +109,7 @@ pub async fn execute_certificate_with_execution_error(
                     &vec![VerifiedExecutableTransaction::new_from_certificate(
                         certificate.clone(),
                     )],
-                )
-                .await?;
+                )?;
         }
         if let Some(fullnode) = fullnode {
             fullnode
@@ -117,8 +119,7 @@ pub async fn execute_certificate_with_execution_error(
                     &vec![VerifiedExecutableTransaction::new_from_certificate(
                         certificate.clone(),
                     )],
-                )
-                .await?;
+                )?;
         }
     }
 
@@ -128,7 +129,7 @@ pub async fn execute_certificate_with_execution_error(
     let state_after =
         state_acc.accumulate_cached_live_object_set_for_testing(include_wrapped_tombstone);
     let effects_acc = state_acc.accumulate_effects(
-        vec![result.inner().data().clone()],
+        &[result.inner().data().clone()],
         epoch_store.protocol_config(),
     );
     state.union(&effects_acc);
@@ -199,8 +200,14 @@ pub async fn init_state_with_committee(
     genesis: &Genesis,
     authority_key: &AuthorityKeyPair,
 ) -> Arc<AuthorityState> {
+    let mut protocol_config =
+        ProtocolConfig::get_for_version(ProtocolVersion::max(), Chain::Unknown);
+    protocol_config
+        .set_per_object_congestion_control_mode_for_testing(PerObjectCongestionControlMode::None);
+
     TestAuthorityBuilder::new()
         .with_genesis_and_keypair(genesis, authority_key)
+        .with_protocol_config(protocol_config)
         .build()
         .await
 }
@@ -438,6 +445,7 @@ pub async fn send_consensus(authority: &AuthorityState, cert: &VerifiedCertifica
             vec![transaction],
             &Arc::new(CheckpointServiceNoop {}),
             authority.get_object_cache_reader().as_ref(),
+            authority.get_transaction_cache_reader().as_ref(),
             &authority.metrics,
             true,
         )
@@ -445,7 +453,7 @@ pub async fn send_consensus(authority: &AuthorityState, cert: &VerifiedCertifica
         .unwrap();
 
     authority
-        .transaction_manager()
+        .execution_scheduler()
         .enqueue(certs, &authority.epoch_store_for_testing());
 }
 
@@ -462,6 +470,7 @@ pub async fn send_consensus_no_execution(authority: &AuthorityState, cert: &Veri
             vec![transaction],
             &Arc::new(CheckpointServiceNoop {}),
             authority.get_object_cache_reader().as_ref(),
+            authority.get_transaction_cache_reader().as_ref(),
             &authority.metrics,
             true,
         )
@@ -492,6 +501,7 @@ pub async fn send_batch_consensus_no_execution(
             transactions,
             &Arc::new(CheckpointServiceNoop {}),
             authority.get_object_cache_reader().as_ref(),
+            authority.get_transaction_cache_reader().as_ref(),
             &authority.metrics,
             skip_consensus_commit_prologue_in_test,
         )

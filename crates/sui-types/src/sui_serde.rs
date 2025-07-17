@@ -35,7 +35,7 @@ use crate::base_types_bfc::bfc_address_util::convert_to_evm_address;
 use crate::base_types_bfc::bfc_address_util::sha256_string;
 
 #[inline]
-fn to_custom_error<'de, D, E>(e: E) -> D::Error
+pub(crate) fn to_custom_deser_error<'de, D, E>(e: E) -> D::Error
 where
     E: Debug,
     D: Deserializer<'de>,
@@ -44,7 +44,7 @@ where
 }
 
 #[inline]
-fn to_custom_ser_error<S, E>(e: E) -> S::Error
+pub(crate) fn to_custom_ser_error<S, E>(e: E) -> S::Error
 where
     E: Debug,
     S: Serializer,
@@ -453,5 +453,73 @@ impl<'de> DeserializeAs<'de, ProtocolVersion> for AsProtocolVersion {
     {
         let b = BigInt::<u64>::deserialize(deserializer)?;
         Ok(ProtocolVersion::from(*b))
+    }
+}
+
+/// Serializes and deserializes a RoaringBitmap with its own on-disk standard.
+/// <https://github.com/RoaringBitmap/RoaringFormatSpec>
+pub(crate) struct SuiBitmap;
+
+impl SerializeAs<roaring::RoaringBitmap> for SuiBitmap {
+    fn serialize_as<S>(source: &roaring::RoaringBitmap, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut bytes = vec![];
+
+        source
+            .serialize_into(&mut bytes)
+            .map_err(to_custom_ser_error::<S, _>)?;
+        Bytes::serialize_as(&bytes, serializer)
+    }
+}
+
+impl<'de> DeserializeAs<'de, roaring::RoaringBitmap> for SuiBitmap {
+    fn deserialize_as<D>(deserializer: D) -> Result<roaring::RoaringBitmap, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let bytes: Vec<u8> = Bytes::deserialize_as(deserializer)?;
+        deserialize_sui_bitmap(&bytes).map_err(to_custom_deser_error::<'de, D, _>)
+    }
+}
+
+// RoaringBitmap::deserialize_from() or iter() do not check for duplicates.
+// So this function is needed to sanitize the bitmap to ensure unique entries.
+fn deserialize_sui_bitmap(bytes: &[u8]) -> std::io::Result<roaring::RoaringBitmap> {
+    let orig_bitmap = roaring::RoaringBitmap::deserialize_from(bytes)?;
+    // Ensure there is no duplicated entries in the bitmap.
+    let mut seen = std::collections::BTreeSet::new();
+    let mut new_bitmap = roaring::RoaringBitmap::new();
+    for v in orig_bitmap.iter() {
+        if seen.insert(v) {
+            new_bitmap.insert(v);
+        }
+    }
+    Ok(new_bitmap)
+}
+
+#[cfg(test)]
+mod test {
+    use base64::Engine as _;
+
+    use super::*;
+
+    #[test]
+    fn test_sui_bitmap_unique_deserialize() {
+        let raw = "OjAAAAoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWAAAAFoAAABcAAAAXgAAAGAAAABiAAAAZAAAAGYAAABoAAAAagAAAAEAAQABAAEAAQABAAEAAQABAAEA";
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(raw)
+            .unwrap();
+
+        let bitmap = roaring::RoaringBitmap::deserialize_from(&bytes[..]).unwrap();
+        assert_eq!(bitmap.len(), 10);
+        let bitmap_values: Vec<u32> = bitmap.iter().collect();
+        assert_eq!(bitmap_values, vec![1; 10]);
+
+        let sui_bitmap = deserialize_sui_bitmap(&bytes[..]).unwrap();
+        assert_eq!(sui_bitmap.len(), 1);
+        let bitmap_values: Vec<u32> = sui_bitmap.iter().collect();
+        assert_eq!(bitmap_values, vec![1]);
     }
 }

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    compiled_unit::NamedCompiledModule, shared::files::MappedFiles, shared::NumericalAddress,
+    compiled_unit::NamedCompiledModule, shared::NumericalAddress, shared::files::MappedFiles,
 };
 use move_binary_format::CompiledModule;
 use move_core_types::{
@@ -127,7 +127,7 @@ impl<'a> ExpectedMoveError {
     }
 }
 
-impl<'a> ExpectedMoveErrorDisplay<'a> {
+impl ExpectedMoveErrorDisplay<'_> {
     pub fn past_tense(mut self) -> Self {
         self.is_past_tense = true;
         self
@@ -148,7 +148,7 @@ impl fmt::Display for MoveErrorType {
     }
 }
 
-impl<'a> fmt::Display for ExpectedMoveErrorDisplay<'a> {
+impl fmt::Display for ExpectedMoveErrorDisplay<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use move_binary_format::errors::Location;
         let Self {

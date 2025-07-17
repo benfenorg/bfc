@@ -512,8 +512,10 @@ impl ObjectRuntimeState {
             .filter_map(|(id, owner)| match owner {
                 Owner::AddressOwner(_) | Owner::Shared { .. } | Owner::Immutable => None,
                 Owner::ObjectOwner(parent) => Some((*id, (*parent).into())),
-                Owner::ConsensusV2 { .. } => {
-                    unimplemented!("ConsensusV2 does not exist for this execution version")
+                Owner::ConsensusAddressOwner { .. } => {
+                    unimplemented!(
+                        "ConsensusAddressOwner does not exist for this execution version"
+                    )
                 }
             })
             .collect();
@@ -611,8 +613,8 @@ fn update_owner_map(
                 }
                 object_owner_map.insert(id, new_owner);
             }
-            Owner::ConsensusV2 { .. } => {
-                unimplemented!("ConsensusV2 does not exist for this execution version")
+            Owner::ConsensusAddressOwner { .. } => {
+                unimplemented!("ConsensusAddressOwner does not exist for this execution version")
             }
         }
     }
@@ -632,7 +634,7 @@ pub fn get_all_uids(
     struct UIDTraversal<'i>(&'i mut BTreeSet<ObjectID>);
     struct UIDCollector<'i>(&'i mut BTreeSet<ObjectID>);
 
-    impl<'i, 'b, 'l> AV::Traversal<'b, 'l> for UIDTraversal<'i> {
+    impl<'b, 'l> AV::Traversal<'b, 'l> for UIDTraversal<'_> {
         type Error = AV::Error;
 
         fn traverse_struct(
@@ -648,7 +650,7 @@ pub fn get_all_uids(
         }
     }
 
-    impl<'i, 'b, 'l> AV::Traversal<'b, 'l> for UIDCollector<'i> {
+    impl<'b, 'l> AV::Traversal<'b, 'l> for UIDCollector<'_> {
         type Error = AV::Error;
         fn traverse_address(
             &mut self,

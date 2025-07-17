@@ -4,7 +4,7 @@
 
 use core::fmt;
 use std::{
-    collections::{btree_map::Entry as MapEntry, BTreeMap, BTreeSet},
+    collections::{BTreeMap, BTreeSet, btree_map::Entry as MapEntry},
     fmt::Formatter,
     fs,
 };
@@ -145,7 +145,7 @@ pub struct ProcessorResultDisplay<'a> {
     pub processor: &'a dyn FunctionTargetProcessor,
 }
 
-impl<'a> fmt::Display for ProcessorResultDisplay<'a> {
+impl fmt::Display for ProcessorResultDisplay<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.processor.dump_result(f, self.env, self.targets)
     }

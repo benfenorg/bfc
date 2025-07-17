@@ -55,7 +55,7 @@ pub struct Resolver<S> {
 
 /// Optional configuration that imposes limits on the work that the resolver can do for each
 /// request.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Limits {
     /// Maximum recursion depth through type parameters.
     pub max_type_argument_depth: usize,
@@ -111,6 +111,8 @@ pub struct CleverError {
     pub error_info: ErrorConstants,
     /// The line number in the source file where the error occured.
     pub source_line_number: u16,
+    /// The error code of the abort
+    pub error_code: Option<u8>,
 }
 
 /// The `ErrorConstants` enum is used to represent the different kinds of error information that
@@ -426,16 +428,16 @@ impl<S: PackageStore> Resolver<S> {
 
     /// Returns the signatures of parameters to function `pkg::module::function` in the package
     /// store, assuming the function exists.
-    pub async fn function_parameters(
+    pub async fn function_signature(
         &self,
         pkg: AccountAddress,
         module: &str,
         function: &str,
-    ) -> Result<Vec<OpenSignature>> {
+    ) -> Result<FunctionDef> {
         let mut context = ResolutionContext::new(self.limits.as_ref());
 
         let package = self.package_store.fetch(pkg).await?;
-        let Some(def) = package.module(module)?.function_def(function)? else {
+        let Some(mut def) = package.module(module)?.function_def(function)? else {
             return Err(Error::FunctionNotFound(
                 pkg,
                 module.to_string(),
@@ -443,11 +445,9 @@ impl<S: PackageStore> Resolver<S> {
             ));
         };
 
-        let mut sigs = def.parameters.clone();
-
         // (1). Fetch all the information from this store that is necessary to resolve types
         // referenced by this tag.
-        for sig in &sigs {
+        for sig in def.parameters.iter().chain(def.return_.iter()) {
             context
                 .add_signature(
                     sig.body.clone(),
@@ -459,11 +459,11 @@ impl<S: PackageStore> Resolver<S> {
         }
 
         // (2). Use that information to relocate package IDs in the signature.
-        for sig in &mut sigs {
+        for sig in def.parameters.iter_mut().chain(def.return_.iter_mut()) {
             context.relocate_signature(&mut sig.body)?;
         }
 
-        Ok(sigs)
+        Ok(def)
     }
 
     /// Attempts to infer the type layouts for pure inputs to the programmable transaction.
@@ -482,27 +482,29 @@ impl<S: PackageStore> Resolver<S> {
         let mut tags = vec![None; tx.inputs.len()];
         let mut register_type = |arg: &Argument, tag: &TypeTag| {
             let &Argument::Input(ix) = arg else {
-                return Ok(());
+                return;
             };
 
             if !matches!(tx.inputs.get(ix as usize), Some(CallArg::Pure(_))) {
-                return Ok(());
+                return;
             }
 
             let Some(type_) = tags.get_mut(ix as usize) else {
-                return Ok(());
+                return;
             };
 
+            // Types are initially `None`, and are set to `Some(Ok(_))` as long as the input can be
+            // mapped to a unique type, and to `Some(Err(()))` if the input is used with
+            // conflicting types at some point.
             match type_ {
-                None => *type_ = Some(tag.clone()),
-                Some(prev) => {
+                None => *type_ = Some(Ok(tag.clone())),
+                Some(Err(())) => {}
+                Some(Ok(prev)) => {
                     if prev != tag {
-                        return Err(Error::InputTypeConflict(ix, prev.clone(), tag.clone()));
+                        *type_ = Some(Err(()));
                     }
                 }
             }
-
-            Ok(())
         };
 
         // (1). Infer type tags for pure inputs from their uses.
@@ -510,24 +512,25 @@ impl<S: PackageStore> Resolver<S> {
             match cmd {
                 Command::MoveCall(call) => {
                     let params = self
-                        .function_parameters(
+                        .function_signature(
                             call.package.into(),
                             call.module.as_str(),
                             call.function.as_str(),
                         )
-                        .await?;
+                        .await?
+                        .parameters;
 
                     for (open_sig, arg) in params.iter().zip(call.arguments.iter()) {
                         let sig = open_sig.instantiate(&call.type_arguments)?;
-                        register_type(arg, &sig.body)?;
+                        register_type(arg, &sig.body);
                     }
                 }
 
-                Command::TransferObjects(_, arg) => register_type(arg, &TypeTag::Address)?,
+                Command::TransferObjects(_, arg) => register_type(arg, &TypeTag::Address),
 
                 Command::SplitCoins(_, amounts) => {
                     for amount in amounts {
-                        register_type(amount, &TypeTag::U64)?;
+                        register_type(amount, &TypeTag::U64);
                     }
                 }
 
@@ -535,7 +538,7 @@ impl<S: PackageStore> Resolver<S> {
                     let tag = as_type_tag(tag)?;
                     if is_primitive_type_tag(&tag) {
                         for elem in elems {
-                            register_type(elem, &tag)?;
+                            register_type(elem, &tag);
                         }
                     }
                 }
@@ -546,7 +549,11 @@ impl<S: PackageStore> Resolver<S> {
 
         // (2). Gather all the unique type tags to convert into layouts. There are relatively few
         // primitive types so this is worth doing to avoid redundant work.
-        let unique_tags: BTreeSet<_> = tags.iter().filter_map(|t| t.clone()).collect();
+        let unique_tags: BTreeSet<_> = tags
+            .iter()
+            .flat_map(|t| t.clone())
+            .flat_map(|t| t.ok())
+            .collect();
 
         // (3). Convert the type tags into layouts.
         let mut layouts = BTreeMap::new();
@@ -558,7 +565,11 @@ impl<S: PackageStore> Resolver<S> {
         // (4) Prepare the result vector.
         Ok(tags
             .iter()
-            .map(|t| t.as_ref().and_then(|t| layouts.get(t).cloned()))
+            .map(|t| -> Option<_> {
+                let t = t.as_ref()?;
+                let t = t.as_ref().ok()?;
+                layouts.get(t).cloned()
+            })
             .collect())
     }
 
@@ -600,6 +611,7 @@ impl<S: PackageStore> Resolver<S> {
         let package = self.package_store.fetch(*module_id.address()).await.ok()?;
         let module = package.module(module_id.name().as_str()).ok()?.bytecode();
         let source_line_number = bitset.line_number()?;
+        let error_code = bitset.error_code();
 
         // We only have a line number in our clever error, so return early.
         if bitset.identifier_index().is_none() && bitset.constant_index().is_none() {
@@ -607,6 +619,7 @@ impl<S: PackageStore> Resolver<S> {
                 module_id,
                 error_info: ErrorConstants::None,
                 source_line_number,
+                error_code,
             });
         } else if bitset.identifier_index().is_none() || bitset.constant_index().is_none() {
             return None;
@@ -646,6 +659,7 @@ impl<S: PackageStore> Resolver<S> {
             module_id,
             error_info,
             source_line_number,
+            error_code,
         })
     }
 }
@@ -1135,7 +1149,7 @@ impl OpenSignatureBody {
     }
 }
 
-impl<'m, 'n> DatatypeRef<'m, 'n> {
+impl DatatypeRef<'_, '_> {
     pub fn as_key(&self) -> DatatypeKey {
         DatatypeKey {
             package: self.package,
@@ -1517,7 +1531,7 @@ impl<'l> ResolutionContext<'l> {
                 (
                     MoveTypeLayout::Struct(Box::new(MoveStructLayout {
                         type_,
-                        fields: Box::new(resolved_fields),
+                        fields: resolved_fields,
                     })),
                     field_depth + 1,
                 )
@@ -2404,9 +2418,9 @@ mod tests {
         let resolver = Resolver::new(cache);
         let c0 = addr("0xc0");
 
-        let foo = resolver.function_parameters(c0, "m", "foo").await.unwrap();
-        let bar = resolver.function_parameters(c0, "m", "bar").await.unwrap();
-        let baz = resolver.function_parameters(c0, "m", "baz").await.unwrap();
+        let foo = resolver.function_signature(c0, "m", "foo").await.unwrap();
+        let bar = resolver.function_signature(c0, "m", "bar").await.unwrap();
+        let baz = resolver.function_signature(c0, "m", "baz").await.unwrap();
 
         insta::assert_snapshot!(format!(
             "c0::m::foo: {foo:#?}\n\
@@ -2857,6 +2871,7 @@ mod tests {
 
         insta::assert_snapshot!(output);
     }
+
     #[tokio::test]
     async fn test_pure_input_layouts_conflicting() {
         use CallArg as I;
@@ -2896,10 +2911,19 @@ mod tests {
             ],
         };
 
-        insta::assert_snapshot!(
-            resolver.pure_input_layouts(&ptb).await.unwrap_err(),
-            @"Conflicting types for input 3: u64 and u32"
-        );
+        let inputs = resolver.pure_input_layouts(&ptb).await.unwrap();
+
+        // Make the output format a little nicer for the snapshot
+        let mut output = String::new();
+        for input in inputs {
+            if let Some(layout) = input {
+                output += &format!("{layout:#}\n");
+            } else {
+                output += "???\n";
+            }
+        }
+
+        insta::assert_snapshot!(output);
     }
 
     /***** Test Helpers ***************************************************************************/

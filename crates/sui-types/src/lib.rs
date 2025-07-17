@@ -1,10 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 #![warn(
-future_incompatible,
-nonstandard_style,
-rust_2018_idioms,
-rust_2021_compatibility
+    future_incompatible,
+    nonstandard_style,
+    rust_2018_idioms,
+    rust_2021_compatibility
 )]
 
 use base_types::{SequenceNumber, SuiAddress};
@@ -26,9 +26,9 @@ use crate::{base_types::RESOLVED_STD_OPTION, id::RESOLVED_SUI_ID};
 #[macro_use]
 pub mod error;
 
-pub mod accumulator;
 pub mod authenticator_state;
 pub mod balance;
+pub mod balance_change;
 pub mod base_types;
 pub mod bridge;
 pub mod clock;
@@ -53,6 +53,7 @@ pub mod full_checkpoint_content;
 pub mod gas;
 pub mod gas_coin;
 pub mod gas_model;
+pub mod global_state_hash;
 pub mod governance;
 pub mod proposal;
 pub mod dao;
@@ -75,6 +76,8 @@ pub mod nitro_attestation;
 pub mod object;
 pub mod passkey_authenticator;
 pub mod programmable_transaction_builder;
+pub mod proto_value;
+pub mod ptb_trace;
 pub mod quorum_driver_types;
 pub mod randomness_state;
 pub mod signature;
@@ -121,15 +124,6 @@ macro_rules! built_in_pkgs {
         }
     }
 }
-
-//v1.2.0 todo: change add in is_system_package
-// macro_rules! built_in_pkgs {
-//     ($($addr:ident / $id:ident = $init:expr);* $(;)?) => {
-//         built_in_ids! { $($addr / $id = $init;)* }
-//         pub const SYSTEM_PACKAGE_ADDRESSES: &[AccountAddress] = &[$($addr),*];
-//
-//     }
-// }
 
 built_in_pkgs! {
     MOVE_STDLIB_ADDRESS / MOVE_STDLIB_PACKAGE_ID = 0x1;

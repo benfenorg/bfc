@@ -29,12 +29,11 @@ module examples::sword {
 module examples::gem {
     use std::option::none;
     use std::string::{Self, String};
-    use sui::bfc::BFC;
     use sui::balance::{Self, Balance};
-    use sui::tx_context::{sender};
     use sui::coin::{Self, Coin, TreasuryCap};
-
+    use sui::sui::SUI;
     use sui::token::{Self, Token, ActionRequest};
+    use sui::tx_context::sender;
 
     /// Trying to purchase Gems with an unexpected amount.
     const EUnknownAmount: u64 = 0;
@@ -57,7 +56,7 @@ module examples::gem {
     public struct GemStore has key {
         id: UID,
         /// Profits from selling Gems.
-        profits: Balance<BFC>,
+        profits: Balance<SUI>,
         /// The Treasury Cap for the in-game currency.
         gem_treasury: TreasuryCap<GEM>,
     }
@@ -101,7 +100,7 @@ module examples::gem {
     /// constants...
     public fun buy_gems(
         self: &mut GemStore,
-        payment: Coin<BFC>,
+        payment: Coin<SUI>,
         ctx: &mut TxContext,
     ): (Token<GEM>, ActionRequest<GEM>) {
         let amount = coin::value(&payment);

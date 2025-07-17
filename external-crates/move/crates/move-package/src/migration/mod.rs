@@ -12,8 +12,7 @@ use once_cell::sync::Lazy;
 
 use crate::compilation::build_plan::BuildPlan;
 
-pub const MIGRATION_MSG: &str =
-    "Package toml does not specify an edition. As of 2024, Move requires all packages to define \
+pub const MIGRATION_MSG: &str = "Package toml does not specify an edition. As of 2024, Move requires all packages to define \
     a language edition.";
 
 pub const EDITION_SELECT_PROMPT: &str = "Please select one of the following editions:";
@@ -50,7 +49,7 @@ pub const NO_MIGRATION_NEEDED_MSG: &str = "No migration is required. Enjoy!";
 pub const BAR: &str = "============================================================";
 
 pub struct MigrationContext<'a, W: Write, R: BufRead> {
-    build_plan: BuildPlan,
+    build_plan: &'a BuildPlan<'a>,
     terminal: Terminal<'a, W, R>,
 }
 
@@ -59,7 +58,7 @@ pub struct MigrationOptions {
 }
 
 pub fn migrate<W: Write, R: BufRead>(
-    build_plan: BuildPlan,
+    build_plan: &BuildPlan,
     writer: &mut W,
     reader: &mut R,
 ) -> anyhow::Result<MigrationOptions> {
@@ -67,9 +66,9 @@ pub fn migrate<W: Write, R: BufRead>(
     mcontext.prompt_for_migration()
 }
 
-impl<'a, W: Write, R: BufRead> MigrationContext<'a, W, R> {
+impl<W: Write, R: BufRead> MigrationContext<'_, W, R> {
     pub fn new<'new>(
-        build_plan: BuildPlan,
+        build_plan: &'new BuildPlan,
         writer: &'new mut W,
         reader: &'new mut R,
     ) -> MigrationContext<'new, W, R> {

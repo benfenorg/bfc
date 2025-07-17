@@ -60,6 +60,7 @@ let leftovers = prepared.into_remainder_bytes();
 -  [Function `peel_vec_u64`](#sui_bcs_peel_vec_u64)
 -  [Function `peel_vec_u128`](#sui_bcs_peel_vec_u128)
 -  [Function `peel_vec_u256`](#sui_bcs_peel_vec_u256)
+-  [Function `peel_enum_tag`](#sui_bcs_peel_enum_tag)
 -  [Macro function `peel_option`](#sui_bcs_peel_option)
 -  [Function `peel_option_address`](#sui_bcs_peel_option_address)
 -  [Function `peel_option_bool`](#sui_bcs_peel_option_bool)
@@ -116,12 +117,12 @@ enables use of <code>vector::pop_back</code>.
 ## Constants
 
 
-<a name="sui_bcs_ELenOutOfRange"></a>
+<a name="sui_bcs_EOutOfRange"></a>
 
-For when ULEB byte is out of range (or not found).
+For when bytes length is less than required for deserialization.
 
 
-<pre><code><b>const</b> <a href="../sui/bcs.md#sui_bcs_ELenOutOfRange">ELenOutOfRange</a>: u64 = 2;
+<pre><code><b>const</b> <a href="../sui/bcs.md#sui_bcs_EOutOfRange">EOutOfRange</a>: u64 = 0;
 </code></pre>
 
 
@@ -136,12 +137,12 @@ For when the boolean value different than <code>0</code> or <code>1</code>.
 
 
 
-<a name="sui_bcs_EOutOfRange"></a>
+<a name="sui_bcs_ELenOutOfRange"></a>
 
-For when bytes length is less than required for deserialization.
+For when ULEB byte is out of range (or not found).
 
 
-<pre><code><b>const</b> <a href="../sui/bcs.md#sui_bcs_EOutOfRange">EOutOfRange</a>: u64 = 0;
+<pre><code><b>const</b> <a href="../sui/bcs.md#sui_bcs_ELenOutOfRange">ELenOutOfRange</a>: u64 = 2;
 </code></pre>
 
 
@@ -768,6 +769,46 @@ Peel a vector of <code>u256</code> from serialized bytes.
 
 </details>
 
+<a name="sui_bcs_peel_enum_tag"></a>
+
+## Function `peel_enum_tag`
+
+Peel enum from serialized bytes, where <code>$f</code> takes a <code>tag</code> value and returns
+the corresponding enum variant. Move enums are limited to 127 variants,
+however the tag can be any <code>u32</code> value.
+
+Example:
+```rust
+let my_enum = match (bcs.peel_enum_tag()) {
+0 => Enum::Empty,
+1 => Enum::U8(bcs.peel_u8()),
+2 => Enum::U16(bcs.peel_u16()),
+3 => Enum::Struct { a: bcs.peel_address(), b: bcs.peel_u8() },
+_ => abort,
+};
+```
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/bcs.md#sui_bcs_peel_enum_tag">peel_enum_tag</a>(<a href="../sui/bcs.md#sui_bcs">bcs</a>: &<b>mut</b> <a href="../sui/bcs.md#sui_bcs_BCS">sui::bcs::BCS</a>): u32
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/bcs.md#sui_bcs_peel_enum_tag">peel_enum_tag</a>(<a href="../sui/bcs.md#sui_bcs">bcs</a>: &<b>mut</b> <a href="../sui/bcs.md#sui_bcs_BCS">BCS</a>): u32 {
+    <b>let</b> tag = <a href="../sui/bcs.md#sui_bcs">bcs</a>.<a href="../sui/bcs.md#sui_bcs_peel_vec_length">peel_vec_length</a>();
+    <b>assert</b>!(tag &lt;= <a href="../std/u32.md#std_u32_max_value">std::u32::max_value</a>!() <b>as</b> u64, <a href="../sui/bcs.md#sui_bcs_EOutOfRange">EOutOfRange</a>);
+    tag <b>as</b> u32
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="sui_bcs_peel_option"></a>
 
 ## Macro function `peel_option`
@@ -787,8 +828,7 @@ functionality of peeling the inner value.
 
 <pre><code><b>public</b> <b>macro</b> <b>fun</b> <a href="../sui/bcs.md#sui_bcs_peel_option">peel_option</a>&lt;$T&gt;($<a href="../sui/bcs.md#sui_bcs">bcs</a>: &<b>mut</b> <a href="../sui/bcs.md#sui_bcs_BCS">BCS</a>, $peel: |&<b>mut</b> <a href="../sui/bcs.md#sui_bcs_BCS">BCS</a>| -&gt; $T): Option&lt;$T&gt; {
     <b>let</b> <a href="../sui/bcs.md#sui_bcs">bcs</a> = $<a href="../sui/bcs.md#sui_bcs">bcs</a>;
-    <b>if</b> (<a href="../sui/bcs.md#sui_bcs">bcs</a>.<a href="../sui/bcs.md#sui_bcs_peel_bool">peel_bool</a>()) option::some($peel(<a href="../sui/bcs.md#sui_bcs">bcs</a>))
-    <b>else</b> option::none()
+    <b>if</b> (<a href="../sui/bcs.md#sui_bcs">bcs</a>.<a href="../sui/bcs.md#sui_bcs_peel_bool">peel_bool</a>()) option::some($peel(<a href="../sui/bcs.md#sui_bcs">bcs</a>)) <b>else</b> option::none()
 }
 </code></pre>
 

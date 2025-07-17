@@ -2,9 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::gas_charger::GasCharger;
-use move_core_types::account_address::AccountAddress;
-use move_core_types::language_storage::StructTag;
-use move_core_types::resolver::ResourceResolver;
 use parking_lot::RwLock;
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 use sui_protocol_config::ProtocolConfig;
@@ -24,11 +21,10 @@ use sui_types::sui_system_state::{get_sui_system_state_wrapper, AdvanceEpochPara
 use sui_types::{
     base_types::{ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest},
     effects::EffectsObjectChange,
-    error::{ExecutionError, SuiError, SuiResult},
-    fp_bail,
+    error::{ExecutionError, SuiResult},
     gas::GasCostSummary,
+    object::Object,
     object::Owner,
-    object::{Data, Object},
     storage::{BackingPackageStore, ChildObjectResolver, ParentSync, Storage},
     transaction::InputObjects,
 };
@@ -75,7 +71,7 @@ impl<'backing> TemporaryStore<'backing> {
     ) -> Self {
         let mutable_input_refs = input_objects.mutable_inputs();
         let lamport_timestamp = input_objects.lamport_timestamp(&receiving_objects);
-        let deleted_consensus_objects = input_objects.deleted_consensus_objects();
+        let deleted_consensus_objects = input_objects.consensus_stream_ended_objects();
         let objects = input_objects.into_object_map();
         #[cfg(debug_assertions)]
         {
@@ -133,7 +129,7 @@ impl<'backing> TemporaryStore<'backing> {
         InnerTemporaryStore {
             input_objects: self.input_objects,
             mutable_inputs: self.mutable_input_refs,
-            deleted_consensus_objects: self.deleted_consensus_objects,
+            stream_ended_consensus_objects: self.deleted_consensus_objects,
             written: results.written_objects,
             events: TransactionEvents {
                 data: results.user_events,
@@ -236,7 +232,7 @@ impl<'backing> TemporaryStore<'backing> {
                 .into_iter()
                 .map(|shared_input| match shared_input {
                     SharedInput::Existing(oref) => oref,
-                    SharedInput::Deleted(_) => {
+                    SharedInput::ConsensusStreamEnded(_) => {
                         unreachable!("Shared object deletion not supported in effects v1")
                     }
                     SharedInput::Cancelled(_) => {
@@ -662,7 +658,7 @@ impl<'backing> TemporaryStore<'backing> {
     }
 }
 
-impl<'backing> TemporaryStore<'backing> {
+impl TemporaryStore<'_> {
     // check that every object read is owned directly or indirectly by sender, sponsor,
     // or a shared object input
     pub fn check_ownership_invariants(
@@ -707,8 +703,10 @@ impl<'backing> TemporaryStore<'backing> {
                     Owner::ObjectOwner(_parent) => {
                         unreachable!("Input objects must be address owned, shared, or immutable")
                     }
-                    Owner::ConsensusV2 { .. } => {
-                        unimplemented!("ConsensusV2 does not exist for this execution version")
+                    Owner::ConsensusAddressOwner { .. } => {
+                        unimplemented!(
+                            "ConsensusAddressOwner does not exist for this execution version"
+                        )
                     }
                 }
             })
@@ -776,8 +774,10 @@ impl<'backing> TemporaryStore<'backing> {
                         );
                         continue;
                     }
-                    Owner::ConsensusV2 { .. } => {
-                        unimplemented!("ConsensusV2 does not exist for this execution version")
+                    Owner::ConsensusAddressOwner { .. } => {
+                        unimplemented!(
+                            "ConsensusAddressOwner does not exist for this execution version"
+                        )
                     }
                 }
             };
@@ -789,7 +789,7 @@ impl<'backing> TemporaryStore<'backing> {
     }
 }
 
-impl<'backing> TemporaryStore<'backing> {
+impl TemporaryStore<'_> {
     /// Track storage gas for each mutable input object (including the gas coin)
     /// and each created object. Compute storage refunds for each deleted object.
     /// Will *not* charge anything, gas status keeps track of storage cost and rebate.
@@ -871,7 +871,7 @@ impl<'backing> TemporaryStore<'backing> {
 // Charge gas current - end
 //==============================================================================
 
-impl<'backing> TemporaryStore<'backing> {
+impl TemporaryStore<'_> {
     pub fn advance_epoch_safe_mode(
         &mut self,
         params: &AdvanceEpochParams,
@@ -892,7 +892,7 @@ type ModifiedObjectInfo<'a> = (
     Option<&'a Object>,
 );
 
-impl<'backing> TemporaryStore<'backing> {
+impl TemporaryStore<'_> {
     fn get_input_sui(
         &self,
         id: &ObjectID,
@@ -1101,7 +1101,7 @@ impl<'backing> TemporaryStore<'backing> {
     }
 }
 
-impl<'backing> ChildObjectResolver for TemporaryStore<'backing> {
+impl ChildObjectResolver for TemporaryStore<'_> {
     fn read_child_object(
         &self,
         parent: &ObjectID,
@@ -1123,8 +1123,6 @@ impl<'backing> ChildObjectResolver for TemporaryStore<'backing> {
         receiving_object_id: &ObjectID,
         receive_object_at_version: SequenceNumber,
         epoch_id: EpochId,
-        // TODO: Delete this parameter once table migration is complete.
-        use_object_per_epoch_marker_table_v2: bool,
     ) -> SuiResult<Option<Object>> {
         // You should never be able to try and receive an object after deleting it or writing it in the same
         // transaction since `Receiving` doesn't have copy.
@@ -1141,12 +1139,11 @@ impl<'backing> ChildObjectResolver for TemporaryStore<'backing> {
             receiving_object_id,
             receive_object_at_version,
             epoch_id,
-            use_object_per_epoch_marker_table_v2,
         )
     }
 }
 
-impl<'backing> Storage for TemporaryStore<'backing> {
+impl Storage for TemporaryStore<'_> {
     fn reset(&mut self) {
         self.drop_writes();
     }
@@ -1187,7 +1184,7 @@ impl<'backing> Storage for TemporaryStore<'backing> {
     }
 }
 
-impl<'backing> BackingPackageStore for TemporaryStore<'backing> {
+impl BackingPackageStore for TemporaryStore<'_> {
     fn get_package_object(&self, package_id: &ObjectID) -> SuiResult<Option<PackageObject>> {
         // We first check the objects in the temporary store because in non-production code path,
         // it is possible to read packages that are just written in the same transaction.
@@ -1220,45 +1217,7 @@ impl<'backing> BackingPackageStore for TemporaryStore<'backing> {
     }
 }
 
-impl<'backing> ResourceResolver for TemporaryStore<'backing> {
-    type Error = SuiError;
-
-    fn get_resource(
-        &self,
-        address: &AccountAddress,
-        struct_tag: &StructTag,
-    ) -> Result<Option<Vec<u8>>, Self::Error> {
-        let object = match self.read_object(&ObjectID::from(*address)) {
-            Some(x) => x,
-            None => match self.read_object(&ObjectID::from(*address)) {
-                None => return Ok(None),
-                Some(x) => {
-                    if !x.is_immutable() {
-                        fp_bail!(SuiError::ExecutionInvariantViolation);
-                    }
-                    x
-                }
-            },
-        };
-
-        match &object.data {
-            Data::Move(m) => {
-                assert!(
-                    m.is_type(struct_tag),
-                    "Invariant violation: ill-typed object in storage \
-                    or bad object request from caller"
-                );
-                Ok(Some(m.contents().to_vec()))
-            }
-            other => unimplemented!(
-                "Bad object lookup: expected Move object, but got {:?}",
-                other
-            ),
-        }
-    }
-}
-
-impl<'backing> ParentSync for TemporaryStore<'backing> {
+impl ParentSync for TemporaryStore<'_> {
     fn get_latest_parent_entry_ref_deprecated(&self, _object_id: ObjectID) -> Option<ObjectRef> {
         unreachable!("Never called in newer protocol versions")
     }

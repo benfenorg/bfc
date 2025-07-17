@@ -13,9 +13,9 @@ use sui_graphql_rpc::{
 };
 use sui_graphql_rpc::test_infra::cluster::start_network_cluster_with_long_epoch;
 use sui_graphql_rpc_client::simple_client::SimpleClient;
-use sui_json_rpc::name_service::{Domain, DomainFormat};
 use sui_json_rpc_types::ObjectChange;
 use sui_move_build::BuildConfig;
+use sui_name_service::{Domain, DomainFormat};
 use sui_pg_db::temp::get_available_port;
 use sui_types::{
     base_types::{ObjectID, SequenceNumber},

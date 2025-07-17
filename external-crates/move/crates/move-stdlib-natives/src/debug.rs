@@ -389,7 +389,7 @@ mod testing {
                     R::MoveValue::Struct(s) => s,
                     _ => {
                         return Err(PartialVMError::new(StatusCode::INTERNAL_TYPE_ERROR)
-                            .with_message("Expected MoveValue::MoveStruct".to_string()))
+                            .with_message("Expected MoveValue::MoveStruct".to_string()));
                     }
                 };
 
@@ -416,7 +416,7 @@ mod testing {
                     R::MoveValue::Variant(v) => v,
                     _ => {
                         return Err(PartialVMError::new(StatusCode::INTERNAL_TYPE_ERROR)
-                            .with_message("Expected MoveValue::MoveStruct".to_string()))
+                            .with_message("Expected MoveValue::MoveStruct".to_string()));
                     }
                 };
 
@@ -538,7 +538,7 @@ mod testing {
                         .map_err(fmt_error_to_partial_vm_error)?;
                 } else {
                     let is_complex_inner_type =
-                        vec.last().map_or(false, is_vector_or_data_move_value);
+                        vec.last().is_some_and(is_vector_or_data_move_value);
                     print_non_u8_vector(
                         out,
                         move_std_addr,

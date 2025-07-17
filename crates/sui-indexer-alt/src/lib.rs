@@ -4,29 +4,31 @@
 use anyhow::Context;
 use bootstrap::bootstrap;
 use config::{IndexerConfig, PipelineLayer};
-use handlers::coin_balance_buckets::CoinBalanceBuckets;
 use handlers::{
+    coin_balance_buckets::CoinBalanceBuckets, cp_sequence_numbers::CpSequenceNumbers,
     ev_emit_mod::EvEmitMod, ev_struct_inst::EvStructInst, kv_checkpoints::KvCheckpoints,
     kv_epoch_ends::KvEpochEnds, kv_epoch_starts::KvEpochStarts, kv_feature_flags::KvFeatureFlags,
-    kv_objects::KvObjects, kv_protocol_configs::KvProtocolConfigs, kv_transactions::KvTransactions,
-    obj_info::ObjInfo, obj_versions::ObjVersions, sum_displays::SumDisplays,
-    sum_packages::SumPackages, tx_affected_addresses::TxAffectedAddresses,
+    kv_objects::KvObjects, kv_packages::KvPackages, kv_protocol_configs::KvProtocolConfigs,
+    kv_transactions::KvTransactions, obj_info::ObjInfo, obj_versions::ObjVersions,
+    sum_displays::SumDisplays, tx_affected_addresses::TxAffectedAddresses,
     tx_affected_objects::TxAffectedObjects, tx_balance_changes::TxBalanceChanges,
     tx_calls::TxCalls, tx_digests::TxDigests, tx_kinds::TxKinds,
 };
 use prometheus::Registry;
-use sui_indexer_alt_framework::handlers::cp_sequence_numbers::CpSequenceNumbers;
-use sui_indexer_alt_framework::ingestion::{ClientArgs, IngestionConfig};
-use sui_indexer_alt_framework::pipeline::{
-    concurrent::{ConcurrentConfig, PrunerConfig},
-    sequential::SequentialConfig,
-    CommitterConfig,
+use sui_indexer_alt_framework::{
+    ingestion::{ClientArgs, IngestionConfig},
+    pipeline::{
+        concurrent::{ConcurrentConfig, PrunerConfig},
+        sequential::SequentialConfig,
+        CommitterConfig,
+    },
+    postgres::{Db, DbArgs},
+    Indexer, IndexerArgs,
 };
-use sui_indexer_alt_framework::{Indexer, IndexerArgs};
+use sui_indexer_alt_metrics::db::DbConnectionStatsCollector;
 use sui_indexer_alt_schema::MIGRATIONS;
-use sui_pg_db::DbArgs;
-use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
+use url::Url;
 
 pub mod args;
 #[cfg(feature = "benchmark")]
@@ -36,7 +38,8 @@ pub mod config;
 pub(crate) mod consistent_pruning;
 pub(crate) mod handlers;
 
-pub async fn start_indexer(
+pub async fn setup_indexer(
+    database_url: Url,
     db_args: DbArgs,
     indexer_args: IndexerArgs,
     client_args: ClientArgs,
@@ -48,7 +51,7 @@ pub async fn start_indexer(
     with_genesis: bool,
     registry: &Registry,
     cancel: CancellationToken,
-) -> anyhow::Result<JoinHandle<()>> {
+) -> anyhow::Result<Indexer<Db>> {
     let IndexerConfig {
         ingestion,
         consistency,
@@ -60,7 +63,6 @@ pub async fn start_indexer(
 
     let PipelineLayer {
         sum_displays,
-        sum_packages,
         coin_balance_buckets,
         cp_sequence_numbers,
         ev_emit_mod,
@@ -70,6 +72,7 @@ pub async fn start_indexer(
         kv_epoch_starts,
         kv_feature_flags,
         kv_objects,
+        kv_packages,
         kv_protocol_configs,
         kv_transactions,
         obj_info,
@@ -90,12 +93,27 @@ pub async fn start_indexer(
 
     let retry_interval = ingestion.retry_interval();
 
+    // Prepare the store for the indexer
+    let store = Db::for_write(database_url, db_args)
+        .await
+        .context("Failed to connect to database")?;
+
+    // we want to merge &MIGRATIONS with the migrations from the store
+    store
+        .run_migrations(Some(&MIGRATIONS))
+        .await
+        .context("Failed to run pending migrations")?;
+
+    registry.register(Box::new(DbConnectionStatsCollector::new(
+        Some("indexer_db"),
+        store.clone(),
+    )))?;
+
     let mut indexer = Indexer::new(
-        db_args,
+        store,
         indexer_args,
         client_args,
         ingestion,
-        &MIGRATIONS,
         registry,
         cancel.clone(),
     )
@@ -178,7 +196,6 @@ pub async fn start_indexer(
 
     // Summary tables (without write-ahead log)
     add_sequential!(SumDisplays, sum_displays);
-    add_sequential!(SumPackages, sum_packages);
 
     // Unpruned concurrent pipelines
     add_concurrent!(CpSequenceNumbers, cp_sequence_numbers);
@@ -188,6 +205,7 @@ pub async fn start_indexer(
     add_concurrent!(KvEpochEnds, kv_epoch_ends);
     add_concurrent!(KvEpochStarts, kv_epoch_starts);
     add_concurrent!(KvObjects, kv_objects);
+    add_concurrent!(KvPackages, kv_packages);
     add_concurrent!(KvTransactions, kv_transactions);
     add_concurrent!(ObjVersions, obj_versions);
     add_concurrent!(TxAffectedAddresses, tx_affected_addresses);
@@ -197,5 +215,5 @@ pub async fn start_indexer(
     add_concurrent!(TxDigests, tx_digests);
     add_concurrent!(TxKinds, tx_kinds);
 
-    indexer.run().await.context("Failed to start indexer")
+    Ok(indexer)
 }

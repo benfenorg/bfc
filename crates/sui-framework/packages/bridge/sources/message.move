@@ -1616,27 +1616,27 @@ module bridge::message {
     // Test functions
     //
 
-    #[test_only]
-    public(package) fun peel_u64_be_for_testing(bcs: &mut BCS): u64 {
-        peel_u64_be(bcs)
-    }
+#[test_only]
+public(package) fun peel_u64_be_for_testing(bcs: &mut BCS): u64 {
+    peel_u64_be(bcs)
+}
 
-    #[test_only]
-    public(package) fun make_generic_message(
-        message_type: u8,
-        message_version: u8,
-        seq_num: u64,
-        source_chain: u8,
-        payload: vector<u8>,
-    ): BridgeMessage {
-        BridgeMessage {
-            message_type,
-            message_version,
-            seq_num,
-            source_chain,
-            payload,
-        }
+#[test_only]
+public(package) fun make_generic_message(
+    message_type: u8,
+    message_version: u8,
+    seq_num: u64,
+    source_chain: u8,
+    payload: vector<u8>,
+): BridgeMessage {
+    BridgeMessage {
+        message_type,
+        message_version,
+        seq_num,
+        source_chain,
+        payload,
     }
+}
 
     #[test_only]
     public(package) fun make_payload(

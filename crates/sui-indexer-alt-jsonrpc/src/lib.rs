@@ -3,29 +3,39 @@
 
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::Duration;
 
 use anyhow::Context as _;
-use api::objects::{Objects, ObjectsConfig};
+use api::checkpoints::Checkpoints;
+use api::coin::{Coins, DelegationCoins};
+use api::dynamic_fields::DynamicFields;
+use api::move_utils::MoveUtils;
+use api::name_service::NameService;
+use api::objects::{Objects, QueryObjects};
 use api::rpc_module::RpcModule;
-use api::transactions::{QueryTransactions, Transactions, TransactionsConfig};
+use api::transactions::{QueryTransactions, Transactions};
+use api::write::Write;
 use config::RpcConfig;
-use data::system_package_task::{SystemPackageTask, SystemPackageTaskArgs};
-use jsonrpsee::server::{RpcServiceBuilder, ServerBuilder};
+use jsonrpsee::server::{BatchRequestConfig, RpcServiceBuilder, ServerBuilder};
 use metrics::middleware::MetricsLayer;
 use metrics::RpcMetrics;
 use prometheus::Registry;
 use serde_json::json;
+use sui_indexer_alt_reader::bigtable_reader::BigtableArgs;
+use sui_indexer_alt_reader::pg_reader::db::DbArgs;
+use sui_indexer_alt_reader::system_package_task::{SystemPackageTask, SystemPackageTaskArgs};
 use sui_open_rpc::Project;
-use sui_pg_db::DbArgs;
-use tokio::{join, signal, task::JoinHandle};
+use timeout::TimeoutLayer;
+use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 use tower_layer::Identity;
-use tracing::info;
+use tracing::{info, warn};
+use url::Url;
 
 use crate::api::governance::Governance;
 use crate::context::Context;
 
-mod api;
+pub mod api;
 pub mod args;
 pub mod config;
 mod context;
@@ -33,6 +43,7 @@ pub mod data;
 mod error;
 mod metrics;
 mod paginate;
+mod timeout;
 
 #[derive(clap::Args, Debug, Clone)]
 pub struct RpcArgs {
@@ -40,9 +51,15 @@ pub struct RpcArgs {
     #[clap(long, default_value_t = Self::default().rpc_listen_address)]
     pub rpc_listen_address: SocketAddr,
 
-    /// The maximum number of concurrent connections to accept.
-    #[clap(long, default_value_t = Self::default().max_rpc_connections)]
-    pub max_rpc_connections: u32,
+    /// The maximum number of concurrent requests to accept. If the service receives more than this
+    /// many requests, it will start responding with 429.
+    #[clap(long, default_value_t = Self::default().max_in_flight_requests)]
+    pub max_in_flight_requests: u32,
+
+    /// Requests that take longer than this (in milliseconds) to respond to will be terminated, and
+    /// the query itself will be logged as a warning.
+    #[clap(long, default_value_t = Self::default().request_timeout_ms)]
+    pub request_timeout_ms: u64,
 }
 
 pub struct RpcService {
@@ -55,6 +72,9 @@ pub struct RpcService {
     /// Metrics for the RPC service.
     metrics: Arc<RpcMetrics>,
 
+    /// Maximum time a request can take to complete.
+    request_timeout: Duration,
+
     /// All the methods added to the server so far.
     modules: jsonrpsee::RpcModule<()>,
 
@@ -65,6 +85,13 @@ pub struct RpcService {
     cancel: CancellationToken,
 }
 
+impl RpcArgs {
+    /// Requests that take longer than this should be logged for debugging.
+    fn request_timeout(&self) -> Duration {
+        Duration::from_millis(self.request_timeout_ms)
+    }
+}
+
 impl RpcService {
     /// Create a new instance of the JSON-RPC service, configured by `rpc_args`. The service will
     /// not accept connections until [Self::run] is called.
@@ -73,16 +100,15 @@ impl RpcService {
         registry: &Registry,
         cancel: CancellationToken,
     ) -> anyhow::Result<Self> {
-        let RpcArgs {
-            rpc_listen_address,
-            max_rpc_connections,
-        } = rpc_args;
-
         let metrics = RpcMetrics::new(registry);
 
         let server = ServerBuilder::new()
             .http_only()
-            .max_connections(max_rpc_connections);
+            // `jsonrpsee` calls this a limit on connections, but it is implemented as a limit on
+            // requests.
+            .max_connections(rpc_args.max_in_flight_requests)
+            .max_response_body_size(u32::MAX)
+            .set_batch_request_config(BatchRequestConfig::Disabled);
 
         let schema = Project::new(
             env!("CARGO_PKG_VERSION"),
@@ -96,9 +122,10 @@ impl RpcService {
         );
 
         Ok(Self {
-            rpc_listen_address,
+            rpc_listen_address: rpc_args.rpc_listen_address,
             server,
             metrics,
+            request_timeout: rpc_args.request_timeout(),
             modules: jsonrpsee::RpcModule::new(()),
             schema,
             cancel,
@@ -126,6 +153,7 @@ impl RpcService {
             rpc_listen_address,
             server,
             metrics,
+            request_timeout,
             mut modules,
             schema,
             cancel,
@@ -139,13 +167,23 @@ impl RpcService {
             .register_method("rpc.discover", move |_, _, _| json!(schema.clone()))
             .context("Failed to add schema discovery method")?;
 
-        let middleware = RpcServiceBuilder::new().layer(MetricsLayer::new(
-            metrics,
-            modules.method_names().map(|n| n.to_owned()).collect(),
-        ));
+        let middleware = RpcServiceBuilder::new()
+            .layer(TimeoutLayer::new(request_timeout))
+            .layer(MetricsLayer::new(
+                metrics,
+                modules.method_names().map(|n| n.to_owned()).collect(),
+            ));
 
         let handle = server
             .set_rpc_middleware(middleware)
+            .set_http_middleware(
+                tower::builder::ServiceBuilder::new().layer(
+                    tower_http::cors::CorsLayer::new()
+                        .allow_methods([http::Method::GET, http::Method::POST])
+                        .allow_origin(tower_http::cors::Any)
+                        .allow_headers(tower_http::cors::Any),
+                ),
+            )
             .build(rpc_listen_address)
             .await
             .context("Failed to bind JSON-RPC service")?
@@ -160,22 +198,10 @@ impl RpcService {
             cancel_handle.stop()
         });
 
-        // Set-up another helper task that will listen for Ctrl-C and trigger the cancellation
-        // token.
-        let ctrl_c_cancel = cancel.clone();
-        let h_ctrl_c = tokio::spawn(async move {
-            tokio::select! {
-                _ = ctrl_c_cancel.cancelled() => {}
-                _ = signal::ctrl_c() => {
-                    ctrl_c_cancel.cancel();
-                }
-            }
-        });
-
         Ok(tokio::spawn(async move {
             handle.stopped().await;
             cancel.cancel();
-            let _ = join!(h_cancel, h_ctrl_c);
+            let _ = h_cancel.await;
         }))
     }
 }
@@ -184,49 +210,91 @@ impl Default for RpcArgs {
     fn default() -> Self {
         Self {
             rpc_listen_address: "0.0.0.0:6000".parse().unwrap(),
-            max_rpc_connections: 100,
+            max_in_flight_requests: 2000,
+            request_timeout_ms: 60_000,
         }
     }
+}
+
+#[derive(clap::Args, Debug, Clone, Default)]
+pub struct NodeArgs {
+    /// The URL of the fullnode RPC we connect to for transaction execution,
+    /// dry-running, and delegation coin queries etc.
+    #[arg(long)]
+    pub fullnode_rpc_url: Option<url::Url>,
 }
 
 /// Set-up and run the RPC service, using the provided arguments (expected to be extracted from the
 /// command-line). The service will continue to run until the cancellation token is triggered, and
 /// will signal cancellation on the token when it is shutting down.
 ///
+/// Access to most reads is controlled by the `database_url` -- if it is `None`, reads will not work.
+/// The only exception is the `DelegationCoins` module, which is controlled by `node_args.fullnode_rpc_url`,
+/// which can be omitted to disable reads from this RPC.
+///
+/// KV queries can optionally be served by a Bigtable instance, if `bigtable_instance` is provided.
+/// Otherwise these requests are served by the database. If a `bigtable_instance` is provided, the
+/// `GOOGLE_APPLICATION_CREDENTIALS` environment variable must point to the credentials JSON file.
+///
+/// Access to writes (executing and dry-running transactions) is controlled by `node_args.fullnode_rpc_url`,
+/// which can be omitted to disable writes from this RPC.
+///
 /// The service may spin up auxiliary services (such as the system package task) to support itself,
 /// and will clean these up on shutdown as well.
 pub async fn start_rpc(
+    database_url: Option<Url>,
+    bigtable_instance: Option<String>,
     db_args: DbArgs,
+    bigtable_args: BigtableArgs,
     rpc_args: RpcArgs,
+    node_args: NodeArgs,
     system_package_task_args: SystemPackageTaskArgs,
     rpc_config: RpcConfig,
     registry: &Registry,
     cancel: CancellationToken,
 ) -> anyhow::Result<JoinHandle<()>> {
-    let RpcConfig {
-        objects,
-        transactions,
-        extra: _,
-    } = rpc_config.finish();
-
-    let objects_config = objects.finish(ObjectsConfig::default());
-    let transactions_config = transactions.finish(TransactionsConfig::default());
-
     let mut rpc = RpcService::new(rpc_args, registry, cancel.child_token())
         .context("Failed to create RPC service")?;
 
-    let context = Context::new(db_args, rpc.metrics(), registry).await?;
+    let context = Context::new(
+        database_url,
+        bigtable_instance,
+        db_args,
+        bigtable_args,
+        rpc_config,
+        rpc.metrics(),
+        registry,
+        cancel.child_token(),
+    )
+    .await?;
 
     let system_package_task = SystemPackageTask::new(
-        context.clone(),
         system_package_task_args,
+        context.pg_reader().clone(),
+        context.package_resolver().clone(),
         cancel.child_token(),
     );
 
+    rpc.add_module(Checkpoints(context.clone()))?;
+    rpc.add_module(Coins(context.clone()))?;
+    rpc.add_module(DynamicFields(context.clone()))?;
     rpc.add_module(Governance(context.clone()))?;
-    rpc.add_module(Objects(context.clone(), objects_config))?;
-    rpc.add_module(QueryTransactions(context.clone(), transactions_config))?;
+    rpc.add_module(MoveUtils(context.clone()))?;
+    rpc.add_module(NameService(context.clone()))?;
+    rpc.add_module(Objects(context.clone()))?;
+    rpc.add_module(QueryObjects(context.clone()))?;
+    rpc.add_module(QueryTransactions(context.clone()))?;
     rpc.add_module(Transactions(context.clone()))?;
+
+    if let Some(fullnode_rpc_url) = node_args.fullnode_rpc_url {
+        rpc.add_module(DelegationCoins::new(
+            fullnode_rpc_url.clone(),
+            context.config().node.clone(),
+        )?)?;
+        rpc.add_module(Write::new(fullnode_rpc_url, context.config().node.clone())?)?;
+    } else {
+        warn!("No fullnode rpc url provided, DelegationCoins and Write modules will not be added.");
+    }
 
     let h_rpc = rpc.run().await.context("Failed to start RPC service")?;
     let h_system_package_task = system_package_task.run();

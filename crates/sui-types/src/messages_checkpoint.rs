@@ -120,7 +120,7 @@ impl From<fastcrypto::hash::Digest<32>> for ECMHLiveObjectSetDigest {
 
 impl Default for ECMHLiveObjectSetDigest {
     fn default() -> Self {
-        Accumulator::default().digest().into()
+        GlobalStateHash::default().digest().into()
     }
 }
 
@@ -440,8 +440,8 @@ impl CheckpointContents {
         contents: T,
         user_signatures: Vec<Vec<GenericSignature>>,
     ) -> Self
-        where
-            T: IntoIterator<Item = ExecutionDigests>,
+    where
+        T: IntoIterator<Item = ExecutionDigests>,
     {
         let transactions: Vec<_> = contents.into_iter().collect();
         assert_eq!(transactions.len(), user_signatures.len());
@@ -453,8 +453,8 @@ impl CheckpointContents {
     }
 
     pub fn new_with_causally_ordered_execution_data<'a, T>(contents: T) -> Self
-        where
-            T: IntoIterator<Item = &'a VerifiedExecutionData>,
+    where
+        T: IntoIterator<Item = &'a VerifiedExecutionData>,
     {
         let (transactions, user_signatures): (Vec<_>, Vec<_>) = contents
             .into_iter()
@@ -474,8 +474,8 @@ impl CheckpointContents {
     }
 
     pub fn new_with_digests_only_for_tests<T>(contents: T) -> Self
-        where
-            T: IntoIterator<Item = ExecutionDigests>,
+    where
+        T: IntoIterator<Item = ExecutionDigests>,
     {
         let transactions: Vec<_> = contents.into_iter().collect();
         let user_signatures = transactions.iter().map(|_| vec![]).collect();
@@ -565,8 +565,8 @@ pub struct FullCheckpointContents {
 
 impl FullCheckpointContents {
     pub fn new_with_causally_ordered_transactions<T>(contents: T) -> Self
-        where
-            T: IntoIterator<Item = ExecutionData>,
+    where
+        T: IntoIterator<Item = ExecutionData>,
     {
         let (transactions, user_signatures): (Vec<_>, Vec<_>) = contents
             .into_iter()
@@ -590,26 +590,6 @@ impl FullCheckpointContents {
             transactions,
             user_signatures: contents.into_v1().user_signatures,
         }
-    }
-    pub fn from_checkpoint_contents<S>(store: S, contents: CheckpointContents) -> Option<Self>
-    where
-        S: ReadStore,
-    {
-        let mut transactions = Vec::with_capacity(contents.size());
-        for tx in contents.iter() {
-            if let (Some(t), Some(e)) = (
-                store.get_transaction(&tx.transaction),
-                store.get_transaction_effects(&tx.transaction),
-            ) {
-                transactions.push(ExecutionData::new((*t).clone().into_inner(), e))
-            } else {
-                return None;
-            }
-        }
-        Some(Self {
-            transactions,
-            user_signatures: contents.into_v1().user_signatures,
-        })
     }
 
     pub fn iter(&self) -> Iter<'_, ExecutionData> {

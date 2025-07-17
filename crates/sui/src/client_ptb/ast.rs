@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::fmt;
+use std::{collections::BTreeMap, fmt};
 
 use move_core_types::parsing::{
     address::{NumericalAddress, ParsedAddress},
@@ -10,6 +10,7 @@ use move_core_types::parsing::{
 use move_core_types::runtime_value::MoveValue;
 use sui_types::{
     base_types::{ObjectID, RESOLVED_ASCII_STR, RESOLVED_STD_OPTION, RESOLVED_UTF8_STR},
+    id::RESOLVED_SUI_ID,
     Identifier, TypeTag,
 };
 
@@ -31,13 +32,17 @@ pub const ASSIGN: &str = "assign";
 pub const PREVIEW: &str = "preview";
 pub const WARN_SHADOWS: &str = "warn-shadows";
 pub const GAS_BUDGET: &str = "gas-budget";
+pub const GAS_PRICE: &str = "gas-price";
+pub const GAS_SPONSOR: &str = "gas-sponsor";
 pub const SUMMARY: &str = "summary";
 pub const GAS_COIN: &str = "gas-coin";
 pub const JSON: &str = "json";
+pub const TX_DIGEST: &str = "tx-digest";
 pub const DRY_RUN: &str = "dry-run";
 pub const DEV_INSPECT: &str = "dev-inspect";
 pub const SERIALIZE_UNSIGNED: &str = "serialize-unsigned-transaction";
 pub const SERIALIZE_SIGNED: &str = "serialize-signed-transaction";
+pub const SENDER: &str = "sender";
 
 // Types
 pub const U8: &str = "u8";
@@ -71,6 +76,7 @@ pub const COMMANDS: &[&str] = &[
     PREVIEW,
     WARN_SHADOWS,
     GAS_BUDGET,
+    GAS_PRICE,
     SUMMARY,
     GAS_COIN,
     JSON,
@@ -78,6 +84,7 @@ pub const COMMANDS: &[&str] = &[
     DEV_INSPECT,
     SERIALIZE_UNSIGNED,
     SERIALIZE_SIGNED,
+    SENDER,
 ];
 
 pub fn is_keyword(s: &str) -> bool {
@@ -110,11 +117,16 @@ pub struct ProgramMetadata {
     pub summary_set: bool,
     pub serialize_unsigned_set: bool,
     pub serialize_signed_set: bool,
-    pub gas_object_id: Option<Spanned<ObjectID>>,
+    pub gas_object_ids: Option<Vec<Spanned<ObjectID>>>,
     pub json_set: bool,
+    pub tx_digest_set: bool,
     pub dry_run_set: bool,
     pub dev_inspect_set: bool,
     pub gas_budget: Option<Spanned<u64>>,
+    pub gas_price: Option<Spanned<u64>>,
+    pub gas_sponsor: Option<Spanned<NumericalAddress>>,
+    pub mvr_names: BTreeMap<String, Span>,
+    pub sender: Option<Spanned<NumericalAddress>>,
 }
 
 /// A parsed module access consisting of the address, module name, and function name.
@@ -201,6 +213,30 @@ impl Argument {
                 } =>
             {
                 MoveValue::Vector(s.bytes().map(MoveValue::U8).collect::<Vec<_>>())
+            }
+            (Argument::Address(a), TypeTag::Struct(stag))
+                if (
+                    &stag.address,
+                    stag.module.as_ident_str(),
+                    stag.name.as_ident_str(),
+                ) == RESOLVED_SUI_ID =>
+            {
+                MoveValue::Address(a.into_inner())
+            }
+            (Argument::Option(sp!(loc, o)), TypeTag::Vector(ty)) => {
+                if let Some(v) = o {
+                    let v = v
+                        .as_ref()
+                        .checked_to_pure_move_value(*loc, ty)
+                        .map_err(|e| {
+                            e.with_help(
+                                "Literal option values cannot contain object values.".to_string(),
+                            )
+                        })?;
+                    MoveValue::Vector(vec![v])
+                } else {
+                    MoveValue::Vector(vec![])
+                }
             }
             (Argument::Option(sp!(loc, o)), TypeTag::Struct(stag))
                 if (
@@ -433,7 +469,7 @@ impl fmt::Display for ParsedPTBCommand {
 
 struct TyDisplay<'a>(&'a ParsedType);
 
-impl<'a> fmt::Display for TyDisplay<'a> {
+impl fmt::Display for TyDisplay<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use ParsedType::*;
         match self.0 {

@@ -28,6 +28,11 @@ use clap::{Parser, Subcommand};
 use std::{collections::HashMap, fs, io::Write, path::PathBuf, str::FromStr, sync::Mutex};
 use std::{io::Read, sync::Arc};
 use std::path;
+use std::{fs, path::PathBuf, str::FromStr};
+use sui_light_client::checkpoint::check_and_sync_checkpoints;
+use sui_light_client::config::Config;
+use sui_light_client::package_store::RemotePackageStore;
+use sui_light_client::verifier::{get_verified_effects_and_events, get_verified_object};
 
 use log::info;
 use object_store::parse_url;
@@ -46,43 +51,6 @@ struct Args {
 
     #[command(subcommand)]
     command: Option<SCommands>,
-}
-
-struct RemotePackageStore {
-    config: Config,
-    cache: Mutex<HashMap<AccountAddress, Arc<Package>>>,
-}
-
-impl RemotePackageStore {
-    pub fn new(config: Config) -> Self {
-        Self {
-            config,
-            cache: Mutex::new(HashMap::new()),
-        }
-    }
-}
-
-#[async_trait]
-impl PackageStore for RemotePackageStore {
-    /// Read package contents. Fails if `id` is not an object, not a package, or is malformed in
-    /// some way.
-    async fn fetch(&self, id: AccountAddress) -> ResolverResult<Arc<Package>> {
-        // Check if we have it in the cache
-        if let Some(package) = self.cache.lock().unwrap().get(&id) {
-            info!("Fetch Package: {} cache hit", id);
-            return Ok(package.clone());
-        }
-
-        info!("Fetch Package: {}", id);
-
-        let object = get_verified_object(&self.config, id.into()).await.unwrap();
-        let package = Arc::new(Package::read_from_object(&object).unwrap());
-
-        // Add to the cache
-        self.cache.lock().unwrap().insert(id, package.clone());
-
-        Ok(package)
-    }
 }
 
 #[derive(Subcommand, Debug)]
@@ -825,5 +793,8 @@ mod tests {
             TransactionDigest::from_str("8RiKBwuAbtu8zNCtz8SrcfHyEUzto6zj6cMVA9t4WhWk").unwrap(),
         )
             .is_err());
+        _ => {
+            println!("No command...");
+        }
     }
 }

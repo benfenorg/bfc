@@ -68,8 +68,8 @@ pub struct IngestionLayer {
 #[DefaultConfig]
 #[derive(Clone, Default, Debug)]
 pub struct SequentialLayer {
-    committer: Option<CommitterLayer>,
-    checkpoint_lag: Option<u64>,
+    pub committer: Option<CommitterLayer>,
+    pub checkpoint_lag: Option<u64>,
 
     #[serde(flatten)]
     pub extra: toml::Table,
@@ -78,8 +78,8 @@ pub struct SequentialLayer {
 #[DefaultConfig]
 #[derive(Clone, Default, Debug)]
 pub struct ConcurrentLayer {
-    committer: Option<CommitterLayer>,
-    pruner: Option<PrunerLayer>,
+    pub committer: Option<CommitterLayer>,
+    pub pruner: Option<PrunerLayer>,
 
     #[serde(flatten)]
     pub extra: toml::Table,
@@ -88,9 +88,9 @@ pub struct ConcurrentLayer {
 #[DefaultConfig]
 #[derive(Clone, Default, Debug)]
 pub struct CommitterLayer {
-    write_concurrency: Option<usize>,
-    collect_interval_ms: Option<u64>,
-    watermark_interval_ms: Option<u64>,
+    pub write_concurrency: Option<usize>,
+    pub collect_interval_ms: Option<u64>,
+    pub watermark_interval_ms: Option<u64>,
 
     #[serde(flatten)]
     pub extra: toml::Table,
@@ -119,7 +119,6 @@ pub struct PipelineLayer {
 
     // Sequential pipelines
     pub sum_displays: Option<SequentialLayer>,
-    pub sum_packages: Option<SequentialLayer>,
 
     // All concurrent pipelines
     pub cp_sequence_numbers: Option<ConcurrentLayer>,
@@ -130,6 +129,7 @@ pub struct PipelineLayer {
     pub kv_epoch_starts: Option<ConcurrentLayer>,
     pub kv_feature_flags: Option<ConcurrentLayer>,
     pub kv_objects: Option<ConcurrentLayer>,
+    pub kv_packages: Option<ConcurrentLayer>,
     pub kv_protocol_configs: Option<ConcurrentLayer>,
     pub kv_transactions: Option<ConcurrentLayer>,
     pub obj_versions: Option<ConcurrentLayer>,
@@ -161,6 +161,36 @@ impl IndexerConfig {
         example.pipeline = PipelineLayer::example();
 
         example
+    }
+
+    /// Generate a configuration suitable for testing. This is the same as the example
+    /// configuration, but with reduced concurrency and faster polling intervals so tests spend
+    /// less time waiting.
+    pub fn for_test() -> Self {
+        Self::example().merge(IndexerConfig {
+            ingestion: IngestionLayer {
+                retry_interval_ms: Some(10),
+                ingest_concurrency: Some(1),
+                ..Default::default()
+            },
+            committer: CommitterLayer {
+                collect_interval_ms: Some(50),
+                watermark_interval_ms: Some(50),
+                write_concurrency: Some(1),
+                ..Default::default()
+            },
+            consistency: PrunerLayer {
+                interval_ms: Some(50),
+                delay_ms: Some(0),
+                ..Default::default()
+            },
+            pruner: PrunerLayer {
+                interval_ms: Some(50),
+                delay_ms: Some(0),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
     }
 
     pub fn finish(mut self) -> IndexerConfig {
@@ -249,7 +279,6 @@ impl PipelineLayer {
             coin_balance_buckets: Some(Default::default()),
             obj_info: Some(Default::default()),
             sum_displays: Some(Default::default()),
-            sum_packages: Some(Default::default()),
             cp_sequence_numbers: Some(Default::default()),
             ev_emit_mod: Some(Default::default()),
             ev_struct_inst: Some(Default::default()),
@@ -258,6 +287,7 @@ impl PipelineLayer {
             kv_epoch_starts: Some(Default::default()),
             kv_feature_flags: Some(Default::default()),
             kv_objects: Some(Default::default()),
+            kv_packages: Some(Default::default()),
             kv_protocol_configs: Some(Default::default()),
             kv_transactions: Some(Default::default()),
             obj_versions: Some(Default::default()),
@@ -371,7 +401,6 @@ impl Merge for PipelineLayer {
             coin_balance_buckets: self.coin_balance_buckets.merge(other.coin_balance_buckets),
             obj_info: self.obj_info.merge(other.obj_info),
             sum_displays: self.sum_displays.merge(other.sum_displays),
-            sum_packages: self.sum_packages.merge(other.sum_packages),
             cp_sequence_numbers: self.cp_sequence_numbers.merge(other.cp_sequence_numbers),
             ev_emit_mod: self.ev_emit_mod.merge(other.ev_emit_mod),
             ev_struct_inst: self.ev_struct_inst.merge(other.ev_struct_inst),
@@ -380,6 +409,7 @@ impl Merge for PipelineLayer {
             kv_epoch_starts: self.kv_epoch_starts.merge(other.kv_epoch_starts),
             kv_feature_flags: self.kv_feature_flags.merge(other.kv_feature_flags),
             kv_objects: self.kv_objects.merge(other.kv_objects),
+            kv_packages: self.kv_packages.merge(other.kv_packages),
             kv_protocol_configs: self.kv_protocol_configs.merge(other.kv_protocol_configs),
             kv_transactions: self.kv_transactions.merge(other.kv_transactions),
             obj_versions: self.obj_versions.merge(other.obj_versions),
@@ -501,7 +531,6 @@ mod tests {
                 checkpoint_lag: Some(100),
                 extra: Default::default(),
             }),
-            sum_packages: None,
             ev_emit_mod: Some(ConcurrentLayer {
                 committer: Some(CommitterLayer {
                     write_concurrency: Some(5),
@@ -525,15 +554,6 @@ mod tests {
                 checkpoint_lag: Some(200),
                 extra: Default::default(),
             }),
-            sum_packages: Some(SequentialLayer {
-                committer: Some(CommitterLayer {
-                    write_concurrency: Some(10),
-                    collect_interval_ms: None,
-                    watermark_interval_ms: Some(1000),
-                    extra: Default::default(),
-                }),
-                ..Default::default()
-            }),
             ev_emit_mod: None,
             ..Default::default()
         };
@@ -552,16 +572,6 @@ mod tests {
                         extra: _,
                     }),
                     checkpoint_lag: Some(200),
-                    extra: _,
-                }),
-                sum_packages: Some(SequentialLayer {
-                    committer: Some(CommitterLayer {
-                        write_concurrency: Some(10),
-                        collect_interval_ms: None,
-                        watermark_interval_ms: Some(1000),
-                        extra: _,
-                    }),
-                    checkpoint_lag: None,
                     extra: _,
                 }),
                 ev_emit_mod: Some(ConcurrentLayer {
@@ -589,16 +599,6 @@ mod tests {
                         extra: _,
                     }),
                     checkpoint_lag: Some(100),
-                    extra: _,
-                }),
-                sum_packages: Some(SequentialLayer {
-                    committer: Some(CommitterLayer {
-                        write_concurrency: Some(10),
-                        collect_interval_ms: None,
-                        watermark_interval_ms: Some(1000),
-                        extra: _,
-                    }),
-                    checkpoint_lag: None,
                     extra: _,
                 }),
                 ev_emit_mod: Some(ConcurrentLayer {

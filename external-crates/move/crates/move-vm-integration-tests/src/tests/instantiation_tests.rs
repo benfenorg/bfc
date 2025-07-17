@@ -30,8 +30,8 @@ use move_vm_runtime::{
     session::{SerializedReturnValues, Session},
 };
 use move_vm_test_utils::{
-    gas_schedule::{Gas, GasStatus, INITIAL_COST_SCHEDULE},
     InMemoryStorage,
+    gas_schedule::{Gas, GasStatus, INITIAL_COST_SCHEDULE},
 };
 #[cfg(feature = "tracing")]
 use move_vm_types::gas::GasMeter;
@@ -160,7 +160,7 @@ fn test_instantiation_no_instantiation() {
 // Common runner for all tests.
 // Run a control test (load_pop) and an instantiation test which is then
 // compared against the control.
-// Ensure that tests complete with "out of gas" and withing a given time range.
+// Ensure that tests complete with "out of gas" and within a given time range.
 fn test_runner(
     gas_val: u64,
     test_name: &str,
@@ -185,7 +185,7 @@ fn test_runner(
     // assert_eq!(err, StatusCode::OUT_OF_GAS, "Must finish OutOfGas");
     assert!(
         check_result(time, ref_time),
-        "Instantion test taking too long {}",
+        "Instantiation test taking too long {}",
         time
     );
 }
@@ -384,6 +384,7 @@ fn make_module(
 
     let module = CompiledModule {
         version: 6,
+        publishable: true,
         // Module definition
         self_module_handle_idx: ModuleHandleIndex(0),
         module_handles: vec![ModuleHandle {

@@ -8,11 +8,11 @@ use move_symbol_pool::Symbol;
 
 use crate::{
     diag,
-    diagnostics::{warning_filters::WarningFilters, Diagnostic, DiagnosticReporter, Diagnostics},
+    diagnostics::{Diagnostic, DiagnosticReporter, Diagnostics, warning_filters::WarningFilters},
     editions::Flavor,
     expansion::ast::{AbilitySet, Fields, ModuleIdent, Mutability, Visibility},
     naming::ast::{
-        self as N, BuiltinTypeName_, FunctionSignature, StructFields, Type, TypeName_, Type_, Var,
+        self as N, BuiltinTypeName_, FunctionSignature, StructFields, Type, Type_, TypeName_, Var,
     },
     sui_mode::{
         ASCII_MODULE_NAME, ASCII_TYPE_NAME, CLOCK_MODULE_NAME, CLOCK_TYPE_NAME,
@@ -22,11 +22,11 @@ use crate::{
         TX_CONTEXT_TYPE_NAME, UTF_MODULE_NAME, UTF_TYPE_NAME,
     },
     parser::ast::{Ability_, DatatypeName, DocComment, FunctionName, TargetKind},
-    shared::{program_info::TypingProgramInfo, CompilationEnv, Identifier},
+    shared::{CompilationEnv, Identifier, program_info::TypingProgramInfo},
     sui_mode::*,
     typing::{
         ast::{self as T, ModuleCall},
-        core::{ability_not_satisfied_tips, error_format, error_format_, Subst},
+        core::{Subst, ability_not_satisfied_tips, error_format, error_format_},
         visitor::{TypingVisitorConstructor, TypingVisitorContext},
     },
 };
@@ -116,7 +116,7 @@ const OTW_NOTE: &str = "One-time witness types are structs with the following re
 // Entry
 //**************************************************************************************************
 
-impl<'a> TypingVisitorContext for Context<'a> {
+impl TypingVisitorContext for Context<'_> {
     fn push_warning_filter_scope(&mut self, filters: WarningFilters) {
         self.reporter.push_warning_filter_scope(filters)
     }

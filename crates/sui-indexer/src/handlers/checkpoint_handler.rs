@@ -13,10 +13,10 @@ use tracing::{info, warn};
 use move_core_types::language_storage::{StructTag, TypeTag};
 use mysten_metrics::{get_metrics, spawn_monitored_task};
 use sui_data_ingestion_core::Worker;
-use sui_rpc_api::{CheckpointData, CheckpointTransaction};
 use sui_types::dynamic_field::DynamicFieldType;
 use sui_types::effects::{ObjectChange, TransactionEffectsAPI};
 use sui_types::event::SystemEpochInfoEvent;
+use sui_types::full_checkpoint_content::{CheckpointData, CheckpointTransaction};
 use sui_types::messages_checkpoint::{
     CertifiedCheckpointSummary, CheckpointContents, CheckpointSequenceNumber,
 };
@@ -51,7 +51,6 @@ pub async fn new_handlers(
     cancel: CancellationToken,
     start_checkpoint_opt: Option<CheckpointSequenceNumber>,
     end_checkpoint_opt: Option<CheckpointSequenceNumber>,
-    mvr_mode: bool,
 ) -> Result<(CheckpointHandler, u64), IndexerError> {
     let start_checkpoint = match start_checkpoint_opt {
         Some(start_checkpoint) => start_checkpoint,
@@ -84,7 +83,6 @@ pub async fn new_handlers(
         cancel.clone(),
         start_checkpoint,
         end_checkpoint_opt,
-        mvr_mode
     ));
     Ok((
         CheckpointHandler::new(state, metrics, indexed_checkpoint_sender),

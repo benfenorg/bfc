@@ -1,0 +1,236 @@
+---
+source: external-crates/move/crates/move-transactional-test-runner/src/framework.rs
+---
+processed 24 tasks
+
+init:
+A: object(0,0)
+
+task 1, lines 6-58:
+//# publish
+created: object(1,0)
+mutated: object(0,1)
+gas summary: computation_cost: 1000000, storage_cost: 10852800,  storage_rebate: 0, non_refundable_storage_fee: 0
+
+task 2, line 60:
+//# run tto::M1::start --sender A
+created: object(2,0), object(2,1), object(2,2), object(2,3)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 7592400,  storage_rebate: 0, non_refundable_storage_fee: 0
+
+task 3, line 62:
+//# view-object 2,0
+Owner: Object ID: ( BFC524d6d8bcc996f44069c96b178de951a7101e0a63864be37aef12fdbe0bfe41d1799 )
+Version: 2
+Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,0),
+        },
+    },
+    name: sui::dynamic_object_field::Wrapper<u64> {
+        name: 0u64,
+    },
+    value: sui::object::ID {
+        bytes: fake(2,3),
+    },
+}
+
+task 4, line 64:
+//# view-object 2,3
+Owner: Object ID: ( BFC9a860864495ee17c01896280573b1dd56c90fcbfc6db11b19dd442f91a0f83c3a4fc )
+Version: 2
+Contents: tto::M1::A {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,3),
+        },
+    },
+    value: 0u64,
+}
+
+task 5, line 66:
+//# view-object 2,1
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
+Version: 2
+Contents: tto::M1::A {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,1),
+        },
+    },
+    value: 0u64,
+}
+
+task 6, line 68:
+//# view-object 2,2
+Owner: Account Address ( BFC00ab340fb31f0174cba64ca258e9e2c162d822ec582f65ef6aac52b996b281299a01 )
+Version: 2
+Contents: tto::M1::A {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,2),
+        },
+    },
+    value: 0u64,
+}
+
+task 7, line 70:
+//# run tto::M1::receive --args object(2,2) receiving(2,1) --sender A
+Error: Error checking transaction input objects: IncorrectUserSignature { error: "Object object(2,2) is owned by account address object(2,1), but given owner/signer address is @A" }
+
+task 8, lines 72-74:
+//# view-object 2,0
+Owner: Object ID: ( BFC524d6d8bcc996f44069c96b178de951a7101e0a63864be37aef12fdbe0bfe41d1799 )
+Version: 2
+Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,0),
+        },
+    },
+    name: sui::dynamic_object_field::Wrapper<u64> {
+        name: 0u64,
+    },
+    value: sui::object::ID {
+        bytes: fake(2,3),
+    },
+}
+
+task 9, line 75:
+//# view-object 2,3
+Owner: Object ID: ( BFC9a860864495ee17c01896280573b1dd56c90fcbfc6db11b19dd442f91a0f83c3a4fc )
+Version: 2
+Contents: tto::M1::A {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,3),
+        },
+    },
+    value: 0u64,
+}
+
+task 10, line 77:
+//# view-object 2,1
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
+Version: 2
+Contents: tto::M1::A {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,1),
+        },
+    },
+    value: 0u64,
+}
+
+task 11, line 79:
+//# view-object 2,2
+Owner: Account Address ( BFC00ab340fb31f0174cba64ca258e9e2c162d822ec582f65ef6aac52b996b281299a01 )
+Version: 2
+Contents: tto::M1::A {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,2),
+        },
+    },
+    value: 0u64,
+}
+
+task 12, lines 81-82:
+//# programmable --sender A --inputs object(2,2) 1 2 3
+//> tto::M1::set(Input(0), Input(1), Input(2), Input(3))
+Error: Error checking transaction input objects: IncorrectUserSignature { error: "Object object(2,2) is owned by account address object(2,1), but given owner/signer address is @A" }
+
+task 13, lines 84-86:
+//# view-object 2,0
+Owner: Object ID: ( BFC524d6d8bcc996f44069c96b178de951a7101e0a63864be37aef12fdbe0bfe41d1799 )
+Version: 2
+Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,0),
+        },
+    },
+    name: sui::dynamic_object_field::Wrapper<u64> {
+        name: 0u64,
+    },
+    value: sui::object::ID {
+        bytes: fake(2,3),
+    },
+}
+
+task 14, line 87:
+//# view-object 2,3
+Owner: Object ID: ( BFC9a860864495ee17c01896280573b1dd56c90fcbfc6db11b19dd442f91a0f83c3a4fc )
+Version: 2
+Contents: tto::M1::A {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,3),
+        },
+    },
+    value: 0u64,
+}
+
+task 15, line 89:
+//# view-object 2,1
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
+Version: 2
+Contents: tto::M1::A {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,1),
+        },
+    },
+    value: 0u64,
+}
+
+task 16, line 91:
+//# view-object 2,2
+Owner: Account Address ( BFC00ab340fb31f0174cba64ca258e9e2c162d822ec582f65ef6aac52b996b281299a01 )
+Version: 2
+Contents: tto::M1::A {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,2),
+        },
+    },
+    value: 0u64,
+}
+
+task 17, lines 93-96:
+//# programmable --sender A --inputs object(2,2)
+//> tto::M1::remove(Input(0))
+// dev-inspect with 'check' and correct values
+Error: Error checking transaction input objects: IncorrectUserSignature { error: "Object object(2,2) is owned by account address object(2,1), but given owner/signer address is @A" }
+
+task 18, lines 98-99:
+//# programmable --sender A --inputs object(2,2)@3 0 0 vector[0] --dev-inspect
+//> tto::M1::check(Input(0), Input(1), Input(2), Input(3))
+Error: INVALID TEST. Could not load object argument object(2,2)
+
+task 19, lines 101-102:
+//# programmable --sender A --inputs object(2,2)@4 1 2 vector[3] --dev-inspect
+//> tto::M1::check(Input(0), Input(1), Input(2), Input(3))
+Error: INVALID TEST. Could not load object argument object(2,2)
+
+task 20, lines 104-107:
+//# programmable --sender A --inputs object(2,2)@5 1 2 vector[] --dev-inspect
+//> tto::M1::check(Input(0), Input(1), Input(2), Input(3))
+// dev-inspect with 'check' and _incorrect_ values
+Error: INVALID TEST. Could not load object argument object(2,2)
+
+task 21, lines 109-110:
+//# programmable --sender A --inputs object(2,2)@4 0 0 vector[0] --dev-inspect
+//> tto::M1::check(Input(0), Input(1), Input(2), Input(3))
+Error: INVALID TEST. Could not load object argument object(2,2)
+
+task 22, lines 112-113:
+//# programmable --sender A --inputs object(2,2)@5 1 2 vector[3] --dev-inspect
+//> tto::M1::check(Input(0), Input(1), Input(2), Input(3))
+Error: INVALID TEST. Could not load object argument object(2,2)
+
+task 23, lines 115-116:
+//# programmable --sender A --inputs object(2,2)@3 1 2 vector[] --dev-inspect
+//> tto::M1::check(Input(0), Input(1), Input(2), Input(3))
+Error: INVALID TEST. Could not load object argument object(2,2)

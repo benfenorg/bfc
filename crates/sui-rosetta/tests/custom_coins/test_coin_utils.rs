@@ -13,7 +13,7 @@ use sui_json_rpc_types::{
     SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
 };
 use sui_keys::keystore::{AccountKeystore, Keystore};
-use sui_move_build::BuildConfig as MoveBuildConfig;
+use sui_move_build::BuildConfig;
 
 use sui_sdk::SuiClient;
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
@@ -135,7 +135,7 @@ pub async fn init_package(
 ) -> Result<InitRet> {
     let path_buf = base::reroot_path(Some(path))?;
 
-    let move_build_config = MoveBuildConfig::default();
+    let move_build_config = BuildConfig::new_for_testing();
     let compiled_modules = move_build_config.build(path_buf.as_path())?;
     let modules_bytes = compiled_modules.get_package_bytes(false);
 
@@ -152,17 +152,14 @@ pub async fn init_package(
         .await?;
 
     let gas_data = select_gas(client, sender, None, None, vec![], None).await?;
-    let tx_data = client
-        .transaction_builder()
-        .tx_data(
-            sender,
-            tx_kind,
-            gas_data.budget,
-            gas_data.price,
-            vec![gas_data.object.0],
-            None,
-        )
-        .await?;
+    let tx_data = TransactionData::new_with_gas_coins_allow_sponsor(
+        tx_kind,
+        sender,
+        vec![gas_data.object],
+        gas_data.budget,
+        gas_data.price,
+        sender,
+    );
 
     let sig = keystore.sign_secure(&tx_data.sender(), &tx_data, Intent::sui_transaction())?;
 

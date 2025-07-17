@@ -18,7 +18,7 @@
 //! function.
 
 use crate::values::Value;
-use smallvec::{smallvec, SmallVec};
+use smallvec::{SmallVec, smallvec};
 
 pub use move_binary_format::errors::{PartialVMError, PartialVMResult};
 pub use move_core_types::{gas_algebra::InternalGas, vm_status::StatusCode};
@@ -49,7 +49,7 @@ impl NativeResult {
 
     /// Failed execution. The failure is a runtime failure in the function and not an invariant
     /// failure of the VM which would raise a `PartialVMError` error directly.
-    /// The only thing the funciton can specify is its abort code, as if it had invoked the `Abort`
+    /// The only thing the function can specify is its abort code, as if it had invoked the `Abort`
     /// bytecode instruction
     pub fn err(cost: InternalGas, abort_code: u64) -> Self {
         NativeResult {
@@ -114,7 +114,7 @@ macro_rules! pop_arg {
             None => {
                 return Err(PartialVMError::new(
                     StatusCode::UNKNOWN_INVARIANT_VIOLATION_ERROR,
-                ))
+                ));
             }
             Some(Err(e)) => return Err(e),
             Some(Ok(v)) => v,

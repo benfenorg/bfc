@@ -303,8 +303,9 @@ mod tests {
     use sui_types::messages_grpc::{
         HandleCertificateRequestV3, HandleCertificateResponseV2, HandleCertificateResponseV3,
         HandleSoftBundleCertificatesRequestV3, HandleSoftBundleCertificatesResponseV3,
-        HandleTransactionResponse, ObjectInfoRequest, ObjectInfoResponse, SystemStateRequest,
-        TransactionInfoRequest, TransactionInfoResponse,
+        HandleTransactionResponse, ObjectInfoRequest, ObjectInfoResponse, RawSubmitTxRequest,
+        RawSubmitTxResponse, RawWaitForEffectsRequest, RawWaitForEffectsResponse,
+        SystemStateRequest, TransactionInfoRequest, TransactionInfoResponse,
     };
     use sui_types::object::Object;
     use sui_types::sui_system_state::SuiSystemState;
@@ -322,6 +323,14 @@ mod tests {
 
     #[async_trait]
     impl AuthorityAPI for MockAuthorityClient {
+        async fn submit_transaction(
+            &self,
+            _request: RawSubmitTxRequest,
+            _client_addr: Option<SocketAddr>,
+        ) -> Result<RawSubmitTxResponse, SuiError> {
+            unimplemented!();
+        }
+
         async fn handle_transaction(
             &self,
             transaction: Transaction,
@@ -355,9 +364,11 @@ mod tests {
                     &epoch_store,
                 )
                 .await?;
-            let events = match effects.events_digest() {
-                None => TransactionEvents::default(),
-                Some(digest) => self.authority.get_transaction_events(digest)?,
+            let events = if effects.events_digest().is_some() {
+                self.authority
+                    .get_transaction_events(effects.transaction_digest())?
+            } else {
+                TransactionEvents::default()
             };
             let signed_effects = self
                 .authority
@@ -375,6 +386,14 @@ mod tests {
             _request: HandleCertificateRequestV3,
             _client_addr: Option<SocketAddr>,
         ) -> Result<HandleCertificateResponseV3, SuiError> {
+            unimplemented!()
+        }
+
+        async fn wait_for_effects(
+            &self,
+            _request: RawWaitForEffectsRequest,
+            _client_addr: Option<SocketAddr>,
+        ) -> Result<RawWaitForEffectsResponse, SuiError> {
             unimplemented!()
         }
 

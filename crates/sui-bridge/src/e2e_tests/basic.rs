@@ -1458,7 +1458,7 @@ async fn test_set_single_transfer_limit_on_eth() {
 }
 
 // Test add new coins on both Sui and Eth
-// Also test bridge ndoe handling `NewTokenEvent``
+// Also test bridge ndoe handling `NewTokenEvent`
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_add_new_coins_on_sui_and_eth() {
     telemetry_subscribers::init_for_testing();

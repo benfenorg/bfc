@@ -85,7 +85,6 @@ implement custom authorization scheme for <code><a href="../sui/kiosk_extension.
 <b>use</b> <a href="../sui/address.md#sui_address">sui::address</a>;
 <b>use</b> <a href="../sui/bag.md#sui_bag">sui::bag</a>;
 <b>use</b> <a href="../sui/balance.md#sui_balance">sui::balance</a>;
-<b>use</b> <a href="../sui/bfc.md#sui_bfc">sui::bfc</a>;
 <b>use</b> <a href="../sui/coin.md#sui_coin">sui::coin</a>;
 <b>use</b> <a href="../sui/config.md#sui_config">sui::config</a>;
 <b>use</b> <a href="../sui/deny_list.md#sui_deny_list">sui::deny_list</a>;
@@ -96,12 +95,15 @@ implement custom authorization scheme for <code><a href="../sui/kiosk_extension.
 <b>use</b> <a href="../sui/kiosk.md#sui_kiosk">sui::kiosk</a>;
 <b>use</b> <a href="../sui/object.md#sui_object">sui::object</a>;
 <b>use</b> <a href="../sui/package.md#sui_package">sui::package</a>;
+<b>use</b> <a href="../sui/party.md#sui_party">sui::party</a>;
+<b>use</b> <a href="../sui/sui.md#sui_sui">sui::sui</a>;
 <b>use</b> <a href="../sui/table.md#sui_table">sui::table</a>;
 <b>use</b> <a href="../sui/transfer.md#sui_transfer">sui::transfer</a>;
 <b>use</b> <a href="../sui/transfer_policy.md#sui_transfer_policy">sui::transfer_policy</a>;
 <b>use</b> <a href="../sui/tx_context.md#sui_tx_context">sui::tx_context</a>;
 <b>use</b> <a href="../sui/types.md#sui_types">sui::types</a>;
 <b>use</b> <a href="../sui/url.md#sui_url">sui::url</a>;
+<b>use</b> <a href="../sui/vec_map.md#sui_vec_map">sui::vec_map</a>;
 <b>use</b> <a href="../sui/vec_set.md#sui_vec_set">sui::vec_set</a>;
 </code></pre>
 
@@ -193,6 +195,16 @@ to identify the extension witness.
 ## Constants
 
 
+<a name="sui_kiosk_extension_ENotOwner"></a>
+
+Trying to add an extension while not being the owner of the Kiosk.
+
+
+<pre><code><b>const</b> <a href="../sui/kiosk_extension.md#sui_kiosk_extension_ENotOwner">ENotOwner</a>: u64 = 0;
+</code></pre>
+
+
+
 <a name="sui_kiosk_extension_EExtensionNotAllowed"></a>
 
 Extension is trying to access a permissioned action while not having
@@ -214,12 +226,12 @@ Extension is not installed in the Kiosk.
 
 
 
-<a name="sui_kiosk_extension_ENotOwner"></a>
+<a name="sui_kiosk_extension_PLACE"></a>
 
-Trying to add an extension while not being the owner of the Kiosk.
+Value that represents the <code><a href="../sui/kiosk_extension.md#sui_kiosk_extension_place">place</a></code> permission in the permissions bitmap.
 
 
-<pre><code><b>const</b> <a href="../sui/kiosk_extension.md#sui_kiosk_extension_ENotOwner">ENotOwner</a>: u64 = 0;
+<pre><code><b>const</b> <a href="../sui/kiosk_extension.md#sui_kiosk_extension_PLACE">PLACE</a>: u128 = 1;
 </code></pre>
 
 
@@ -231,16 +243,6 @@ permissions bitmap.
 
 
 <pre><code><b>const</b> <a href="../sui/kiosk_extension.md#sui_kiosk_extension_LOCK">LOCK</a>: u128 = 2;
-</code></pre>
-
-
-
-<a name="sui_kiosk_extension_PLACE"></a>
-
-Value that represents the <code><a href="../sui/kiosk_extension.md#sui_kiosk_extension_place">place</a></code> permission in the permissions bitmap.
-
-
-<pre><code><b>const</b> <a href="../sui/kiosk_extension.md#sui_kiosk_extension_PLACE">PLACE</a>: u128 = 1;
 </code></pre>
 
 

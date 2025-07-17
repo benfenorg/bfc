@@ -19,8 +19,9 @@ use sui_types::base_types::SuiAddress;
 use sui_types::crypto::{
     AggregateAuthoritySignature, AuthorityQuorumSignInfo, AuthorityStrongQuorumSignInfo,
 };
-use sui_types::effects::TransactionEvents;
+use sui_types::effects::{AccumulatorOperation, AccumulatorValue, TransactionEvents};
 use sui_types::event::Event;
+use sui_types::execution::ExecutionTimeObservationKey;
 use sui_types::execution_status::{
     CommandArgumentError, ExecutionFailureStatus, ExecutionStatus, PackageUpgradeError,
     TypeArgumentError,
@@ -31,7 +32,9 @@ use sui_types::messages_consensus::ConsensusDeterminedVersionAssignments;
 use sui_types::messages_grpc::ObjectInfoRequestKind;
 use sui_types::move_package::TypeOrigin;
 use sui_types::object::Object;
-use sui_types::transaction::{GenesisObject, SenderSignedData, TransactionData};
+use sui_types::transaction::{
+    GenesisObject, SenderSignedData, StoredExecutionTimeObservations, TransactionData,
+};
 use sui_types::type_input::{StructInput, TypeInput};
 use sui_types::{
     base_types::MoveObjectType_,
@@ -233,6 +236,12 @@ fn get_registry() -> Result<Registry> {
         .trace_type::<TransactionExpiration>(&samples)
         .unwrap();
     tracer
+        .trace_type::<ExecutionTimeObservationKey>(&samples)
+        .unwrap();
+    tracer
+        .trace_type::<StoredExecutionTimeObservations>(&samples)
+        .unwrap();
+    tracer
         .trace_type::<EndOfEpochTransactionKind>(&samples)
         .unwrap();
 
@@ -240,6 +249,8 @@ fn get_registry() -> Result<Registry> {
     tracer.trace_type::<ObjectIn>(&samples).unwrap();
     tracer.trace_type::<ObjectOut>(&samples).unwrap();
     tracer.trace_type::<UnchangedSharedKind>(&samples).unwrap();
+    tracer.trace_type::<AccumulatorValue>(&samples).unwrap();
+    tracer.trace_type::<AccumulatorOperation>(&samples).unwrap();
     tracer.trace_type::<TransactionEffects>(&samples).unwrap();
 
     // uncomment once GenericSignature is added
@@ -293,9 +304,6 @@ fn get_registry() -> Result<Registry> {
     tracer.trace_type::<TransactionData>(&samples).unwrap();
     tracer.trace_type::<GenesisObject>(&samples).unwrap();
     tracer.trace_type::<CheckpointCommitment>(&samples).unwrap();
-    tracer
-        .trace_type::<sui_types::object::Authenticator>(&samples)
-        .unwrap();
 
     tracer.registry()
 }
