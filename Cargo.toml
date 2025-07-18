@@ -83,8 +83,8 @@ members = [
   "crates/mysten-metrics",
   "crates/mysten-network",
   "crates/mysten-service",
-  "crates/mysten-util-mem",
-  "crates/mysten-util-mem-derive",
+  #"crates/mysten-util-mem",
+  #"crates/mysten-util-mem-derive",
   "crates/prometheus-closure-metric",
   "crates/shared-crypto",
   "crates/simulacrum",
@@ -92,7 +92,7 @@ members = [
   "crates/sui-adapter-transactional-tests",
   "crates/sui-analytics-indexer",
   "crates/sui-analytics-indexer-derive",
-  "crates/sui-archival",
+  #"crates/sui-archival",
   "crates/sui-authority-aggregation",
   "crates/sui-aws-orchestrator",
   "crates/sui-benchmark",
@@ -168,7 +168,7 @@ members = [
   "crates/sui-upgrade-compatibility-transactional-tests",
   "crates/sui-verifier-transactional-tests",
   "crates/suins-indexer",
-  "crates/suiop-cli",
+  #"crates/suiop-cli",
   "crates/telemetry-subscribers",
   "crates/test-cluster",
   "crates/transaction-fuzzer",
@@ -199,8 +199,8 @@ members = [
     "crates/mysten-metrics",
     "crates/mysten-network",
     "crates/mysten-service",
-    "crates/mysten-util-mem",
-    "crates/mysten-util-mem-derive",
+    #"crates/mysten-util-mem",
+    #"crates/mysten-util-mem-derive",
     "crates/prometheus-closure-metric",
     "crates/shared-crypto",
     "crates/simulacrum",
@@ -208,7 +208,7 @@ members = [
     "crates/sui-adapter-transactional-tests",
     "crates/sui-analytics-indexer",
     "crates/sui-analytics-indexer-derive",
-    "crates/sui-archival",
+    #"crates/sui-archival",
     "crates/sui-authority-aggregation",
     "crates/sui-aws-orchestrator",
     "crates/sui-benchmark",
@@ -260,8 +260,8 @@ members = [
     "crates/sui-move",
     "crates/sui-move-build",
     "crates/sui-move-lsp",
-    "crates/sui-mvr-graphql-e2e-tests",
-    "crates/sui-mvr-graphql-rpc",
+    #"crates/sui-mvr-graphql-e2e-tests",
+    #"crates/sui-mvr-graphql-rpc",
     "crates/sui-network",
     "crates/sui-node",
     "crates/sui-open-rpc",
@@ -302,7 +302,7 @@ members = [
     "crates/sui-upgrade-compatibility-transactional-tests",
     "crates/sui-verifier-transactional-tests",
     "crates/suins-indexer",
-    "crates/suiop-cli",
+    #"crates/suiop-cli",
     "crates/telemetry-subscribers",
     "crates/test-cluster",
     "crates/transaction-fuzzer",
@@ -909,8 +909,6 @@ anemo-tower = { git = "https://github.com/mystenlabs/anemo.git", rev = "9c52c3c7
 # sui-sdk-types = { version = "0.0.1", features = ["hash", "serde", "schemars"] } 1646c4bc2e81ca668ed06ba2aeaef3babfbb3209
 sui-sdk-types = { git = "https://github.com/hellokittyboy-code/bfc-rust-sdk.git", rev = "4ea7a6917b7e5e3bcca46ad0cc5d66ad6167d442", features = ["hash", "serde"] }
 sui-sdk-transaction-builder = { git = "https://github.com/hellokittyboy-code/bfc-rust-sdk.git", rev = "4ea7a6917b7e5e3bcca46ad0cc5d66ad6167d442", package = "sui-transaction-builder" }
-# core-types from the new sdk for use in gRPC
-sui-sdk-types = { git = "https://github.com/MystenLabs/sui-rust-sdk.git", rev = "bf1875211b15bd67ce5f7a72152bf952479f1668", features = [ "hash", "serde" ] }
 sui-crypto = { git = "https://github.com/MystenLabs/sui-rust-sdk.git", rev = "bf1875211b15bd67ce5f7a72152bf952479f1668", features = [ "ed25519", "secp256r1", "secp256k1", "passkey", "zklogin" ] }
 sui-graphql-client = { git = "https://github.com/MystenLabs/sui-rust-sdk.git", rev = "bf1875211b15bd67ce5f7a72152bf952479f1668" }
 sui-graphql-client-build = { git = "https://github.com/MystenLabs/sui-rust-sdk.git", rev = "bf1875211b15bd67ce5f7a72152bf952479f1668" }
