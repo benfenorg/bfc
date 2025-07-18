@@ -21,7 +21,7 @@ use sui_storage::key_value_store::{
 use sui_types::base_types::{
     MoveObjectType, ObjectID, ObjectInfo, ObjectRef, SequenceNumber, SuiAddress,
 };
-use sui_types::bridge::Bridge;
+use sui_types::bridge::{Bridge, MoveTypeBridgeExternalLimiter};
 use sui_types::committee::{Committee, EpochId};
 use sui_types::digests::{ChainIdentifier, TransactionDigest};
 use sui_types::dynamic_field::DynamicFieldInfo;
@@ -163,6 +163,7 @@ pub trait StateRead: Send + Sync {
     // bridge_api
     fn get_bridge(&self) -> StateReadResult<Bridge>;
 
+    fn get_bridge_external_limiter(&self) -> StateReadResult<MoveTypeBridgeExternalLimiter>;
     // coin_api
     fn find_publish_txn_digest(&self, package_id: ObjectID) -> StateReadResult<TransactionDigest>;
     fn get_owned_coins(
@@ -416,6 +417,11 @@ impl StateRead for AuthorityState {
     fn get_bridge(&self) -> StateReadResult<Bridge> {
         self.get_cache_reader()
             .get_bridge_object_unsafe()
+            .map_err(|err| err.into())
+    }
+    fn get_bridge_external_limiter(&self) -> StateReadResult<MoveTypeBridgeExternalLimiter> {
+        self.get_cache_reader()
+            .get_bridge_limiter()
             .map_err(|err| err.into())
     }
 

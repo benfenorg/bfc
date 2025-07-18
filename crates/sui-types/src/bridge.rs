@@ -162,6 +162,12 @@ pub enum BridgeChainId {
 
     DogeMainnet = 54,
     DogeTestnet = 55,
+
+    SuiOfficialMainnet = 56,
+    SuiOfficialTestnet = 57,
+
+    AptosMainnet = 58,
+    AptosTestnet = 59,
 }
 
 impl BridgeChainId {
@@ -309,7 +315,7 @@ pub trait BridgeTrait {
     fn treasury(&self) -> &MoveTypeBridgeTreasury;
     fn bridge_records(&self) -> &LinkedTable<MoveTypeBridgeMessageKey>;
     fn frozen(&self) -> bool;
-    fn try_into_bridge_summary(self) -> SuiResult<BridgeSummary>;
+    fn try_into_bridge_summary(self, external_limiter: MoveTypeBridgeExternalLimiter) -> SuiResult<BridgeSummary>;
 }
 
 #[serde_as]
@@ -390,6 +396,25 @@ pub fn get_bridge(object_store: &dyn ObjectStore) -> Result<Bridge, SuiError> {
     }
 }
 
+pub fn get_bridge_external_limiter(
+    object_store: &dyn ObjectStore,
+) -> Result<MoveTypeBridgeExternalLimiter, SuiError> {
+    let wrapper = get_bridge_wrapper(object_store)?;
+    let id = wrapper.id.id.bytes;
+    let key = "bridge_external_limits";
+    let limiter: MoveTypeBridgeExternalLimiter = get_dynamic_field_from_store(
+        object_store,
+        id,
+        &key.to_string().into_bytes(),
+    ).map_err(|err| SuiError::SuiBridgeReadError(
+        format!(
+            "Failed to load bridge external limiter with ID {:?} and key {:?}: {:?}",
+            id, key, err
+        )
+    ))?;
+    Ok(limiter)
+}
+
 /// Rust version of the Move bridge::BridgeInner type.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BridgeInnerV1 {
@@ -442,10 +467,28 @@ impl BridgeTrait for BridgeInnerV1 {
         self.frozen
     }
 
-    fn try_into_bridge_summary(self) -> SuiResult<BridgeSummary> {
+    fn try_into_bridge_summary(self, external_limiter: MoveTypeBridgeExternalLimiter) -> SuiResult<BridgeSummary> {
         let transfer_limit = self
             .limiter
             .transfer_limit
+            .contents
+            .into_iter()
+            .map(|e| {
+                let source = BridgeChainId::try_from(e.key.source).map_err(|_e| {
+                    SuiError::GenericBridgeError {
+                        error: format!("Unrecognized chain id: {}", e.key.source),
+                    }
+                })?;
+                let destination = BridgeChainId::try_from(e.key.destination).map_err(|_e| {
+                    SuiError::GenericBridgeError {
+                        error: format!("Unrecognized chain id: {}", e.key.destination),
+                    }
+                })?;
+                Ok((source, destination, e.value))
+            })
+            .collect::<SuiResult<Vec<_>>>()?;
+        let transfer_out_limits = external_limiter
+            .transfer_out_limits
             .contents
             .into_iter()
             .map(|e| {
@@ -509,6 +552,7 @@ impl BridgeTrait for BridgeInnerV1 {
             transfer_limit,
             transfer_records,
             max_mint_busd_limit,
+            transfer_out_limits,
         };
         Ok(BridgeSummary {
             bridge_version: self.bridge_version,
@@ -606,6 +650,7 @@ pub struct BridgeLimiterSummary {
     pub transfer_limit: Vec<(BridgeChainId, BridgeChainId, u64)>,
     pub transfer_records: Vec<(BridgeChainId, BridgeChainId, MoveTypeBridgeTransferRecord)>,
     pub max_mint_busd_limit: u64,
+    pub transfer_out_limits: Vec<(BridgeChainId, BridgeChainId, u64)>, //from external limiter,
 }
 
 #[serde_as]
@@ -670,6 +715,14 @@ pub struct MoveTypeBridgeTransferLimiter {
     pub transfer_records: VecMap<MoveTypeBridgeRoute, MoveTypeBridgeTransferRecord>,
     pub max_mint_busd_limit: u64,
 }
+
+/// Rust version of the Move limiter::ExternalLimiter type.
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct MoveTypeBridgeExternalLimiter {
+    pub transfer_out_limits: VecMap<MoveTypeBridgeRoute, u64>,
+    pub external: Bag,
+}
+
 
 /// Rust version of the Move chain_ids::BridgeRoute type.
 #[derive(Debug, Serialize, Deserialize, Clone)]

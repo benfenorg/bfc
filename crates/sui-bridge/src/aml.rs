@@ -145,7 +145,9 @@ fn get_coin_by_chain_token(chain: BridgeChainId, token: u64) -> String {
         BridgeChainId::LTCMainnet | BridgeChainId::LTCTestnet |
         BridgeChainId::DogeMainnet | BridgeChainId::DogeTestnet |
         BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom |
-        BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet
+        BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet 
+        | BridgeChainId::SuiOfficialMainnet | BridgeChainId::SuiOfficialTestnet
+        | BridgeChainId::AptosMainnet | BridgeChainId::AptosTestnet
         => {
             error!("Unsupported chain in check_aml_risk_score");
             MISTTRACK_ETH_COIN
