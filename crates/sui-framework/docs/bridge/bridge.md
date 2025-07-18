@@ -4154,7 +4154,7 @@ title: Module `bridge::bridge`
         <b>return</b> (option::none(), owner)
     };
     <b>let</b> token_id=token_payload.token_type_in();
-    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id,target_chain <b>as</b> u64,token_id,amount);
+    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id,source_chain <b>as</b> u64,token_id,amount);
     <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
     <b>let</b> amount_after_fee=amount-fee;
     <a href="../bridge/bridge.md#bridge_bridge_check_fast_path_limit">check_fast_path_limit</a>(parent_id, clock, token_payload);

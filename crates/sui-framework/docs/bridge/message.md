@@ -2713,10 +2713,9 @@ Blocklist Message Format:
 ): <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a> {
     <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(<a href="../bridge/message.md#bridge_message_chain_id">chain_id</a>);
     <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(chain_id_evm);
-    <b>let</b> <b>mut</b> <a href="../bridge/message.md#bridge_message_payload">payload</a> = bcs::to_bytes(&<a href="../bridge/message.md#bridge_message_chain_id">chain_id</a>);
-    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(bcs::to_bytes(&chain_id_evm));
-    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(bcs::to_bytes(&<a href="../bridge/message.md#bridge_message_token_id">token_id</a>));
-    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(bcs::to_bytes(&<a href="../bridge/message.md#bridge_message_amount">amount</a>));
+    <b>let</b> <b>mut</b> <a href="../bridge/message.md#bridge_message_payload">payload</a> = bcs::to_bytes(&chain_id_evm);
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&<a href="../bridge/message.md#bridge_message_token_id">token_id</a>)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&<a href="../bridge/message.md#bridge_message_amount">amount</a>)));
     <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a> {
         <a href="../bridge/message.md#bridge_message_message_type">message_type</a>: <a href="../bridge/message_types.md#bridge_message_types_update_bridge_limit_fast_path">message_types::update_bridge_limit_fast_path</a>(),
         <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
