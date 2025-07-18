@@ -2,7 +2,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use super::{base_types::*, error::*, SUI_BRIDGE_OBJECT_ID};
+use super::{base_types::*, error::*, SUI_AUTHENTICATOR_STATE_OBJECT_SHARED_VERSION, SUI_BRIDGE_OBJECT_ID};
 use crate::authenticator_state::ActiveJwk;
 use crate::committee::{EpochId, ProtocolVersion};
 //use crate::authenticator_state::ActiveJwk;
@@ -209,7 +209,7 @@ pub struct ChangeEpoch {
     /// The non-refundable storage fee.
     pub bfc_non_refundable_storage_fee: u64,
 
-    pub stable_gas_summarys:Vec<(TypeTag,GasCostSummaryAdjusted)>,
+    pub stable_gas_summarys: Vec<(TypeTag, GasCostSummaryAdjusted)>,
     /// Unix timestamp when epoch started
     pub epoch_start_timestamp_ms: u64,
 
@@ -382,16 +382,16 @@ impl EndOfEpochTransactionKind {
         computation_charge: u64,
         storage_rebate: u64,
         non_refundable_storage_fee: u64,
-        stable_gas_summary_map : HashMap<TypeTag,GasCostSummaryAdjusted>,
+        stable_gas_summary_map: HashMap<TypeTag, GasCostSummaryAdjusted>,
         epoch_start_timestamp_ms: u64,
         epoch_duration_ms: u64,
         system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
     ) -> Self {
-        let mut stable_gas_summarys= vec![];
+        let mut stable_gas_summarys = vec![];
         for type_tag in STABLE::all_stable_coins_type() {
             let gas_summary = stable_gas_summary_map.get(&type_tag);
             if let Some(summary) = gas_summary {
-                stable_gas_summarys.push((type_tag.clone(),summary.clone()));
+                stable_gas_summarys.push((type_tag.clone(), summary.clone()));
             }
         }
 
@@ -453,16 +453,16 @@ impl EndOfEpochTransactionKind {
                     initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
                 },
-                    InputObjectKind::SharedMoveObject {
-                    id: BFC_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                },
-                InputObjectKind::SharedMoveObject {
-                    id: SUI_CLOCK_OBJECT_ID,
-                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                }]
+                     InputObjectKind::SharedMoveObject {
+                         id: BFC_SYSTEM_STATE_OBJECT_ID,
+                         initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                         mutable: true,
+                     },
+                     InputObjectKind::SharedMoveObject {
+                         id: SUI_CLOCK_OBJECT_ID,
+                         initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                         mutable: true,
+                     }]
             }
             Self::AuthenticatorStateCreate => vec![],
             Self::AuthenticatorStateExpire(expire) => {
@@ -497,7 +497,7 @@ impl EndOfEpochTransactionKind {
         }
     }
 
-    fn shared_input_objects(&self) -> impl Iterator<Item = SharedInputObject> + '_ {
+    fn shared_input_objects(&self) -> impl Iterator<Item=SharedInputObject> + '_ {
         match self {
             Self::ChangeEpoch(_) => {
                 Either::Left(vec![
@@ -512,7 +512,7 @@ impl EndOfEpochTransactionKind {
                     initial_shared_version: expire.authenticator_obj_initial_shared_version(),
                     mutable: true,
                 }]
-                .into_iter(),
+                    .into_iter(),
             ),
             Self::AuthenticatorStateCreate => Either::Right(iter::empty()),
             Self::RandomnessStateCreate => Either::Right(iter::empty()),
@@ -527,7 +527,7 @@ impl EndOfEpochTransactionKind {
                     },
                     SharedInputObject::SUI_SYSTEM_OBJ,
                 ]
-                .into_iter(),
+                    .into_iter(),
             ),
             Self::StoreExecutionTimeObservations(_) => {
                 Either::Left(vec![SharedInputObject::SUI_SYSTEM_OBJ].into_iter())
@@ -700,10 +700,10 @@ impl CallArg {
                 vec![InputObjectKind::ImmOrOwnedMoveObject(*object_ref)]
             }
             CallArg::Object(ObjectArg::SharedObject {
-                id,
-                initial_shared_version,
-                mutable,
-            }) => {
+                                id,
+                                initial_shared_version,
+                                mutable,
+                            }) => {
                 let id = *id;
                 let initial_shared_version = *initial_shared_version;
                 let mutable = *mutable;
@@ -1136,7 +1136,7 @@ impl Command {
 
 pub fn write_sep<T: Display>(
     f: &mut Formatter<'_>,
-    items: impl IntoIterator<Item = T>,
+    items: impl IntoIterator<Item=T>,
     sep: &str,
 ) -> std::fmt::Result {
     let mut xs = items.into_iter();
@@ -1249,16 +1249,16 @@ impl ProgrammableTransaction {
         Ok(())
     }
 
-    pub fn shared_input_objects(&self) -> impl Iterator<Item = SharedInputObject> + '_ {
+    pub fn shared_input_objects(&self) -> impl Iterator<Item=SharedInputObject> + '_ {
         self.inputs.iter().filter_map(|arg| match arg {
             CallArg::Pure(_)
             | CallArg::Object(ObjectArg::Receiving(_))
             | CallArg::Object(ObjectArg::ImmOrOwnedObject(_)) => None,
             CallArg::Object(ObjectArg::SharedObject {
-                id,
-                initial_shared_version,
-                mutable,
-            }) => Some(SharedInputObject {
+                                id,
+                                initial_shared_version,
+                                mutable,
+                            }) => Some(SharedInputObject {
                 id: *id,
                 initial_shared_version: *initial_shared_version,
                 mutable: *mutable,
@@ -1276,7 +1276,7 @@ impl ProgrammableTransaction {
             .collect()
     }
 
-    pub fn non_system_packages_to_be_published(&self) -> impl Iterator<Item = &Vec<Vec<u8>>> + '_ {
+    pub fn non_system_packages_to_be_published(&self) -> impl Iterator<Item=&Vec<Vec<u8>>> + '_ {
         self.commands
             .iter()
             .filter_map(|q| q.non_system_packages_to_be_published())
@@ -1451,7 +1451,7 @@ impl TransactionKind {
         let e = match self {
             Self::ChangeEpoch(e) => {
                 e
-            },
+            }
             Self::EndOfEpochTransaction(txns) => {
                 if let EndOfEpochTransactionKind::ChangeEpoch(e) =
                     txns.last().expect("at least one end-of-epoch txn required")
@@ -1474,7 +1474,7 @@ impl TransactionKind {
 
     /// Returns an iterator of all shared input objects used by this transaction.
     /// It covers both Call and ChangeEpoch transaction kind, because both makes Move calls.
-    pub fn shared_input_objects(&self) -> impl Iterator<Item = SharedInputObject> + '_ {
+    pub fn shared_input_objects(&self) -> impl Iterator<Item=SharedInputObject> + '_ {
         match &self {
             Self::ChangeEpoch(_) => {
                 Either::Left(Either::Left(iter::once(SharedInputObject::SUI_SYSTEM_OBJ)))
@@ -1613,34 +1613,8 @@ impl TransactionKind {
         }
         Ok(input_objects)
     }
-                pub fn validity_check(&self, config: &ProtocolConfig) -> UserInputResult {
-                    match self {
-                        TransactionKind::ProgrammableTransaction(p) => p.validity_check(config)?,
-                        // All transactiond kinds below are assumed to be system,
-                        // and no validity or limit checks are performed.
-                        TransactionKind::ChangeEpoch(_)
-                        | TransactionKind::Genesis(_)
-                        | TransactionKind::ConsensusCommitPrologue(_) => (),
-                        TransactionKind::ConsensusCommitPrologueV2(_) => {
-                            if !config.include_consensus_digest_in_prologue() {
-                                return Err(UserInputError::Unsupported(
-                                    "ConsensusCommitPrologueV2 is not supported".to_string(),
-                                ));
-                            }
-                        }
-                        TransactionKind::ConsensusCommitPrologueV3(_) => {
-                            if !config.record_consensus_determined_version_assignments_in_prologue() {
-                                return Err(UserInputError::Unsupported(
-                                    "ConsensusCommitPrologueV3 is not supported".to_string(),
-                                ));
-                            }
-                        }
-                        TransactionKind::EndOfEpochTransaction(txns) => {
-                            if !config.end_of_epoch_transaction_supported() {
-                                return Err(UserInputError::Unsupported(
-                                    "EndOfEpochTransaction is not supported".to_string(),
-                                ));
-                            }
+
+
 
     pub fn validity_check(&self, config: &ProtocolConfig) -> UserInputResult {
         match self {
@@ -1678,60 +1652,39 @@ impl TransactionKind {
                     ));
                 }
 
-                            for tx in txns {
-                                tx.validity_check(config)?;
-                            }
-                        }
-
-                        TransactionKind::AuthenticatorStateUpdate(_) => {
-                            // The transaction should have been rejected earlier if the feature is not enabled.
-                            assert!(config.enable_jwk_consensus_updates());
-                        }
-                        TransactionKind::RandomnessStateUpdate(_) => {
-                            // The transaction should have been rejected earlier if the feature is not enabled.
-                            assert!(config.random_beacon());
-                        }
-                    };
-                    Ok(())
+                for tx in txns {
+                    tx.validity_check(config)?;
                 }
+            }
+
+            TransactionKind::AuthenticatorStateUpdate(_) => {
+                // The transaction should have been rejected earlier if the feature is not enabled.
+                assert!(config.enable_jwk_consensus_updates());
+            }
+            TransactionKind::RandomnessStateUpdate(_) => {
+                // The transaction should have been rejected earlier if the feature is not enabled.
+                assert!(config.random_beacon());
+            }
+        };
+        Ok(())
+    }
 
 
-        /// number of commands, or 0 if it is a system transaction
-        pub fn num_commands(&self) -> usize {
-            match self {
-                TransactionKind::ProgrammableTransaction(pt) => pt.commands.len(),
-                _ => 0,
-            }
-        }
-
-        pub fn iter_commands(&self) -> impl Iterator<Item=&Command> {
-            match self {
-                TransactionKind::ProgrammableTransaction(pt) => pt.commands.iter(),
-                _ => [].iter(),
-            }
-        }
-
-        /// number of transactions, or 1 if it is a system transaction
-        pub fn tx_count(&self) -> usize {
-            match self {
-                TransactionKind::ProgrammableTransaction(pt) => pt.commands.len(),
-                _ => 1,
-            }
-        }
-        pub fn name(&self) -> &'static str {
-            match self {
-                Self::ChangeEpoch(_) => "ChangeEpoch",
-                Self::Genesis(_) => "Genesis",
-                Self::ConsensusCommitPrologue(_) => "ConsensusCommitPrologue",
-                Self::ConsensusCommitPrologueV2(_) => "ConsensusCommitPrologueV2",
-                Self::ConsensusCommitPrologueV3(_) => "ConsensusCommitPrologueV3",
-                Self::ProgrammableTransaction(_) => "ProgrammableTransaction",
-                Self::AuthenticatorStateUpdate(_) => "AuthenticatorStateUpdate",
-                Self::RandomnessStateUpdate(_) => "RandomnessStateUpdate",
-                Self::EndOfEpochTransaction(_) => "EndOfEpochTransaction",
-            }
+    /// number of commands, or 0 if it is a system transaction
+    pub fn num_commands(&self) -> usize {
+        match self {
+            TransactionKind::ProgrammableTransaction(pt) => pt.commands.len(),
+            _ => 0,
         }
     }
+
+    pub fn iter_commands(&self) -> impl Iterator<Item=&Command> {
+        match self {
+            TransactionKind::ProgrammableTransaction(pt) => pt.commands.iter(),
+            _ => [].iter(),
+        }
+    }
+
     /// number of transactions, or 1 if it is a system transaction
     pub fn tx_count(&self) -> usize {
         match self {
@@ -1755,6 +1708,9 @@ impl TransactionKind {
         }
     }
 }
+
+
+
 
 impl Display for TransactionKind {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -2048,8 +2004,8 @@ impl TransactionData {
     ) -> anyhow::Result<Self> {
         let pt = {
             let mut builder = ProgrammableTransactionBuilder::new();
-            let arg= builder.split_coins(gas_budget);
-            builder.move_call_with_args(package, module, function, type_arguments, arguments,vec![arg])?;
+            let arg = builder.split_coins(gas_budget);
+            builder.move_call_with_args(package, module, function, type_arguments, arguments, vec![arg])?;
             builder.finish()
         };
         Ok(Self::new_programmable(
@@ -2907,7 +2863,6 @@ impl Message for SenderSignedData {
     // }
 }
 
-
 impl<S> Envelope<SenderSignedData, S> {
     pub fn sender_address(&self) -> SuiAddress {
         self.data().intent_message().value.sender()
@@ -2925,7 +2880,7 @@ impl<S> Envelope<SenderSignedData, S> {
         self.shared_input_objects().next().is_some()
     }
 
-    pub fn shared_input_objects(&self) -> impl Iterator<Item = SharedInputObject> + '_ {
+    pub fn shared_input_objects(&self) -> impl Iterator<Item=SharedInputObject> + '_ {
         self.data()
             .inner()
             .intent_message
@@ -3023,16 +2978,16 @@ impl VerifiedTransaction {
         bfc_computation_charge: u64,
         bfc_storage_rebate: u64,
         bfc_non_refundable_storage_fee: u64,
-        stable_gas_summary_map:HashMap<TypeTag,GasCostSummaryAdjusted>,
+        stable_gas_summary_map: HashMap<TypeTag, GasCostSummaryAdjusted>,
         epoch_start_timestamp_ms: u64,
         epoch_duration_ms: u64,
         system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
     ) -> Self {
-        let mut stable_gas_summarys= vec![];
+        let mut stable_gas_summarys = vec![];
         for type_tag in STABLE::all_stable_coins_type() {
             let gas_summary = stable_gas_summary_map.get(&type_tag);
             if let Some(summary) = gas_summary {
-                stable_gas_summarys.push((type_tag.clone(),summary.clone()));
+                stable_gas_summarys.push((type_tag.clone(), summary.clone()));
             }
         }
 
@@ -3048,7 +3003,7 @@ impl VerifiedTransaction {
             epoch_duration_ms: epoch_duration_ms,
             system_packages,
         }
-        .pipe(TransactionKind::ChangeEpoch)
+            .pipe(TransactionKind::ChangeEpoch)
             .pipe(Self::new_system_transaction)
     }
 
@@ -3068,8 +3023,8 @@ impl VerifiedTransaction {
             round,
             commit_timestamp_ms,
         }
-        .pipe(TransactionKind::ConsensusCommitPrologue)
-        .pipe(Self::new_system_transaction)
+            .pipe(TransactionKind::ConsensusCommitPrologue)
+            .pipe(Self::new_system_transaction)
     }
 
     pub fn new_consensus_commit_prologue_v2(
@@ -3084,8 +3039,8 @@ impl VerifiedTransaction {
             commit_timestamp_ms,
             consensus_commit_digest,
         }
-        .pipe(TransactionKind::ConsensusCommitPrologueV2)
-        .pipe(Self::new_system_transaction)
+            .pipe(TransactionKind::ConsensusCommitPrologueV2)
+            .pipe(Self::new_system_transaction)
     }
 
     pub fn new_consensus_commit_prologue_v3(
@@ -3104,8 +3059,8 @@ impl VerifiedTransaction {
             consensus_commit_digest,
             consensus_determined_version_assignments,
         }
-        .pipe(TransactionKind::ConsensusCommitPrologueV3)
-        .pipe(Self::new_system_transaction)
+            .pipe(TransactionKind::ConsensusCommitPrologueV3)
+            .pipe(Self::new_system_transaction)
     }
 
     pub fn new_consensus_commit_prologue_v4(
@@ -3126,8 +3081,8 @@ impl VerifiedTransaction {
             consensus_determined_version_assignments,
             additional_state_digest,
         }
-        .pipe(TransactionKind::ConsensusCommitPrologueV4)
-        .pipe(Self::new_system_transaction)
+            .pipe(TransactionKind::ConsensusCommitPrologueV4)
+            .pipe(Self::new_system_transaction)
     }
 
     pub fn new_authenticator_state_update(
@@ -3142,8 +3097,8 @@ impl VerifiedTransaction {
             new_active_jwks,
             authenticator_obj_initial_shared_version,
         }
-        .pipe(TransactionKind::AuthenticatorStateUpdate)
-        .pipe(Self::new_system_transaction)
+            .pipe(TransactionKind::AuthenticatorStateUpdate)
+            .pipe(Self::new_system_transaction)
     }
 
     pub fn new_randomness_state_update(
@@ -3158,8 +3113,8 @@ impl VerifiedTransaction {
             random_bytes,
             randomness_obj_initial_shared_version,
         }
-        .pipe(TransactionKind::RandomnessStateUpdate)
-        .pipe(Self::new_system_transaction)
+            .pipe(TransactionKind::RandomnessStateUpdate)
+            .pipe(Self::new_system_transaction)
     }
 
     pub fn new_end_of_epoch_transaction(txns: Vec<EndOfEpochTransactionKind>) -> Self {
@@ -3781,7 +3736,7 @@ impl InputObjects {
         SequenceNumber::lamport_increment(input_versions)
     }
 
-    pub fn object_kinds(&self) -> impl Iterator<Item = &InputObjectKind> {
+    pub fn object_kinds(&self) -> impl Iterator<Item=&InputObjectKind> {
         self.objects.iter().map(
             |ObjectReadResult {
                  input_object_kind, ..
@@ -3819,11 +3774,11 @@ impl InputObjects {
         self.objects.push(object);
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = &ObjectReadResult> {
+    pub fn iter(&self) -> impl Iterator<Item=&ObjectReadResult> {
         self.objects.iter()
     }
 
-    pub fn iter_objects(&self) -> impl Iterator<Item = &Object> {
+    pub fn iter_objects(&self) -> impl Iterator<Item=&Object> {
         self.objects.iter().filter_map(|o| o.as_object())
     }
 }
@@ -3876,11 +3831,11 @@ pub struct ReceivingObjects {
 }
 
 impl ReceivingObjects {
-    pub fn iter(&self) -> impl Iterator<Item = &ReceivingObjectReadResult> {
+    pub fn iter(&self) -> impl Iterator<Item=&ReceivingObjectReadResult> {
         self.objects.iter()
     }
 
-    pub fn iter_objects(&self) -> impl Iterator<Item = &Object> {
+    pub fn iter_objects(&self) -> impl Iterator<Item=&Object> {
         self.objects.iter().filter_map(|o| o.object.as_object())
     }
 }
