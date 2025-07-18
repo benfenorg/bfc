@@ -25,6 +25,7 @@ pub mod u256;
 mod unit_tests;
 pub mod vm_status;
 pub mod parser;
+pub mod transaction_argument;
 
 pub const VARIANT_COUNT_MAX: u64 = 127;
 

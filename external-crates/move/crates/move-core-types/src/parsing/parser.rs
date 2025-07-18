@@ -11,10 +11,9 @@ use crate::{
     account_address::AccountAddress,
     u256::{U256, U256FromStrError},
 };
-use anyhow::{Result, anyhow, bail};
 use std::{fmt::Display, iter::Peekable, num::ParseIntError};
 use anyhow::{anyhow, bail, Result};
-use std::{borrow::Cow, fmt::Display, iter::Peekable, num::ParseIntError};
+use std::{borrow::Cow};
 use crate::parsing::address::convert_to_evm_address;
 
 const MAX_TYPE_DEPTH: u64 = 128;
