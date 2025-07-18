@@ -14,6 +14,7 @@ use tap::Pipe;
 use std::collections::HashMap;
 
 use crate::crypto::SuiSignature as _;
+use crate::execution::ExecutionTimeObservationKey;
 
 #[derive(Debug)]
 pub struct SdkTypeConversionError(String);
@@ -1320,10 +1321,10 @@ impl From<crate::transaction::ChangeEpoch> for ChangeEpoch {
         Self {
             epoch,
             protocol_version: protocol_version.as_u64(),
-            storage_charge,
-            computation_charge,
-            storage_rebate,
-            non_refundable_storage_fee,
+            bfc_storage_charge: storage_charge,
+            bfc_computation_charge: computation_charge,
+            bfc_storage_rebate: storage_rebate,
+            bfc_non_refundable_storage_fee: non_refundable_storage_fee,
             epoch_start_timestamp_ms,
             system_packages: system_packages
                 .into_iter()

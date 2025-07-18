@@ -2068,9 +2068,9 @@ pub mod ledger_service_server {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
                                 <T as LedgerService>::batch_get_transactions(
-                                        &inner,
-                                        request,
-                                    )
+                                    &inner,
+                                    request,
+                                )
                                     .await
                             };
                             Box::pin(fut)
@@ -3655,9 +3655,9 @@ pub mod transaction_execution_service_server {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
                                 <T as TransactionExecutionService>::execute_transaction(
-                                        &inner,
-                                        request,
-                                    )
+                                    &inner,
+                                    request,
+                                )
                                     .await
                             };
                             Box::pin(fut)

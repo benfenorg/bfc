@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::collections::HashMap;
-use crate::accumulator::Accumulator;
+//use crate::accumulator::Accumulator;
 use crate::base_types::{
     random_object_ref, ExecutionData, ExecutionDigests, VerifiedExecutionData,
 };
@@ -44,6 +44,7 @@ use tracing::warn;
 
 pub use crate::digests::CheckpointContentsDigest;
 pub use crate::digests::CheckpointDigest;
+use crate::global_state_hash::GlobalStateHash;
 
 pub type CheckpointSequenceNumber = u64;
 pub type CheckpointTimestamp = u64;
