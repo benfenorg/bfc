@@ -1,19 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::dynamic_field::{
-    get_dynamic_field_from_store, get_dynamic_field_object_from_store, Field,
-};
+use crate::dynamic_field::{get_dynamic_field_from_store};
 use crate::error::SuiError;
-use crate::object::{MoveObject, Object};
 use crate::storage::ObjectStore;
 use anyhow::Result;
-use sui_protocol_config::ProtocolConfig;
 use crate::{id::UID, BFC_SYSTEM_ADDRESS, BFC_SYSTEM_STATE_OBJECT_ID};
 use enum_dispatch::enum_dispatch;
 use move_core_types::{ident_str, identifier::IdentStr, language_storage::StructTag};
 use move_core_types::account_address::AccountAddress;
-use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use crate::balance::Balance;
 use crate::collection_types::{VecMap, Bag, VecSet};
@@ -70,53 +65,53 @@ impl BfcSystemStateWrapper {
         }
     }
 
-    pub fn bfc_round_safe_mode(
-        &self,
-        object_store: &dyn ObjectStore,
-        protocol_config: &ProtocolConfig,
-    ) -> (Object, Object) {
-        let id = self.id.id.bytes;
-        let old_field_object = get_dynamic_field_object_from_store(object_store, id, &self.version)
-            .expect("Dynamic field object of wrapper should always be present in the object store");
-        let mut new_field_object = old_field_object.clone();
-        let move_object = new_field_object
-            .data
-            .try_as_move_mut()
-            .expect("Dynamic field object must be a Move object");
-        match self.version {
-            1 => {
-                Self::bfc_round_safe_mode_impl::<BfcSystemStateInnerV1>(
-                    move_object,
-                    protocol_config,
-                );
-            }
-            _ => unreachable!(),
-        }
-        (old_field_object, new_field_object)
-    }
+    // pub fn bfc_round_safe_mode(
+    //     &self,
+    //     object_store: &dyn ObjectStore,
+    //     protocol_config: &ProtocolConfig,
+    // ) -> (Object, Object) {
+    //     let id = self.id.id.bytes;
+    //     let old_field_object = get_dynamic_field_object_from_store(object_store, id, &self.version)
+    //         .expect("Dynamic field object of wrapper should always be present in the object store");
+    //     let mut new_field_object = old_field_object.clone();
+    //     let move_object = new_field_object
+    //         .data
+    //         .try_as_move_mut()
+    //         .expect("Dynamic field object must be a Move object");
+    //     match self.version {
+    //         1 => {
+    //             Self::bfc_round_safe_mode_impl::<BfcSystemStateInnerV1>(
+    //                 move_object,
+    //                 protocol_config,
+    //             );
+    //         }
+    //         _ => unreachable!(),
+    //     }
+    //     (old_field_object, new_field_object)
+    // }
 
-    fn bfc_round_safe_mode_impl<T>(
-        move_object: &mut MoveObject,
-        protocol_config: &ProtocolConfig,
-    ) where
-        T: Serialize + DeserializeOwned + BfcSystemStateTrait,
-    {
-        let mut field: Field<u64, T> =
-            bcs::from_bytes(move_object.contents()).expect("bcs deserialization should never fail");
-        tracing::info!(
-            "bfc round safe mode: current round: {}",
-            field.value.round(),
-        );
-        field.value.bfc_round_safe_mode();
-        tracing::info!(
-            "Safe mode activated. New epoch: {}",
-            field.value.round(),
-        );
-        let new_contents = bcs::to_bytes(&field).expect("bcs serialization should never fail");
-        move_object
-            .update_contents(new_contents, protocol_config)
-            .expect("Update bfc system object content cannot fail since it should be small");
-    }
+    // fn bfc_round_safe_mode_impl<T>(
+    //     move_object: &mut MoveObject,
+    //     protocol_config: &ProtocolConfig,
+    // ) where
+    //     T: Serialize + DeserializeOwned + BfcSystemStateTrait,
+    // {
+    //     let mut field: Field<u64, T> =
+    //         bcs::from_bytes(move_object.contents()).expect("bcs deserialization should never fail");
+    //     tracing::info!(
+    //         "bfc round safe mode: current round: {}",
+    //         field.value.round(),
+    //     );
+    //     field.value.bfc_round_safe_mode();
+    //     tracing::info!(
+    //         "Safe mode activated. New epoch: {}",
+    //         field.value.round(),
+    //     );
+    //     let new_contents = bcs::to_bytes(&field).expect("bcs serialization should never fail");
+    //     move_object
+    //         .update_contents(new_contents, protocol_config)
+    //         .expect("Update bfc system object content cannot fail since it should be small");
+    // }
 }
 
 /// This is the standard API that all inner system state object type should implement.

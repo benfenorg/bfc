@@ -188,7 +188,7 @@ impl RpcService {
 
             if let Some(subscription_service_handle) = self.subscription_service_handle.clone() {
                 let subscription_service =
-crate::proto::rpc::v2alpha::subscription_service_server::SubscriptionServiceServer::new(subscription_service_handle);
+                    crate::proto::rpc::v2alpha::subscription_service_server::SubscriptionServiceServer::new(subscription_service_handle);
                 health_reporter
                     .set_service_status(
                         service_name(&subscription_service),

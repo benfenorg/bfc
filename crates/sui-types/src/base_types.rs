@@ -32,7 +32,6 @@ use crate::object::{Object, Owner};
 use crate::parse_sui_struct_tag;
 use crate::signature::GenericSignature;
 use crate::sui_serde::HexBFCAddress;
-use crate::sui_serde::to_custom_deser_error;
 use crate::sui_serde::to_sui_struct_tag_string;
 use crate::sui_serde::Readable;
 use crate::transaction::Transaction;
@@ -64,6 +63,7 @@ use serde::ser::Error;
 use serde::ser::SerializeSeq;
 use serde::Deserializer;
 use serde::Serializer;
+
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use serde_with::DeserializeAs;
@@ -77,7 +77,11 @@ use tracing::{error, info};
 use crate::stable_coin::{StableCoin};
 use crate::base_types_bfc::bfc_address_util::{convert_to_evm_address};
 use crate::stable_coin::stable::checked::{STABLE};
+
+use std::fmt::Debug;
 use sui_protocol_config::ProtocolConfig;
+use sha2::{Sha256, Digest};
+use std::fmt::Write;
 
 #[cfg(test)]
 #[path = "unit_tests/base_types_tests.rs"]
@@ -253,7 +257,7 @@ impl MoveObjectType {
     // pub fn default
     pub fn coin(coin_type: TypeTag) -> Self {
         Self(if GAS::is_gas_type(&coin_type) {
-            MoveObjectType_::GasCoin
+            MoveObjectType_::GasCoin(coin_type)
         } else {
             MoveObjectType_::Coin(coin_type)
         })
@@ -1680,9 +1684,24 @@ struct HexAccountAddress;
 
 impl SerializeAs<AccountAddress> for HexAccountAddress {
     fn serialize_as<S>(value: &AccountAddress, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
+        if serializer.is_human_readable() {
+            let mut s = String::new();
+            for i in 0..value.len() {
+                write!(s, "{:02x}", value[i]).unwrap();
+            }
+            //let temp =  serializer.clone().serialize_str(&s.clone());
+            let mut hasher = Sha256::new();
+            hasher.update(s.as_bytes());
+            let result = format!("{:x}", hasher.finalize());
+            let check_sum = result.get(0..4).unwrap();
+            let bfc_address = String::from("BFC") + &s + check_sum;
+
+            return bfc_address.serialize(serializer);
+        }
+
         Hex::serialize_as(value, serializer)
     }
 }
@@ -1692,13 +1711,27 @@ impl<'de> DeserializeAs<'de, AccountAddress> for HexAccountAddress {
     where
         D: Deserializer<'de>,
     {
-        let s = String::deserialize(deserializer)?;
+        let mut s = String::deserialize(deserializer)?;
+
+        //bfcAddress convert to suiAddress format...
+        if s.to_ascii_lowercase().starts_with("bfc")  {
+            let sui = convert_to_evm_address(s.clone());
+            if !sui.is_empty() {
+                s = sui;
+            } else {
+                //todo..
+                info!("deserializing error bfc address from hex: {}", s);
+                return Err("invalid bfc address").map_err(serde::de::Error::custom);
+            }
+        }
+        //end of bfcAddress convert to suiAddress format...
+
         if s.starts_with("0x") {
             AccountAddress::from_hex_literal(&s)
         } else {
             AccountAddress::from_hex(&s)
         }
-        .map_err(to_custom_deser_error::<'de, D, _>)
+            .map_err(serde::de::Error::custom)
     }
 }
 

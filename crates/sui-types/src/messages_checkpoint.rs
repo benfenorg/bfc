@@ -19,7 +19,6 @@ use crate::message_envelope::{
     Envelope, Message, TrustedEnvelope, VerifiedEnvelope,
 };
 use crate::signature::GenericSignature;
-use crate::storage::ReadStore;
 use crate::sui_serde::AsProtocolVersion;
 use crate::sui_serde::BigInt;
 use crate::sui_serde::Readable;

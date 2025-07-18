@@ -7,8 +7,10 @@ use std::fmt::{Debug, Display, Formatter};
 use std::marker::PhantomData;
 use std::ops::Deref;
 use std::str::FromStr;
-
-use fastcrypto::encoding::{decode_bytes_hex, Hex};
+use tracing::info;
+use crate::base_types_bfc::bfc_address_util::sha256_string;
+use crate::base_types_bfc::bfc_address_util::convert_to_evm_address;
+use fastcrypto::encoding::{Hex, decode_bytes_hex};
 use move_core_types::account_address::AccountAddress;
 use move_core_types::language_storage::{StructTag, TypeTag};
 use schemars::JsonSchema;
@@ -19,10 +21,6 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use serde_with::DisplayFromStr;
 use serde_with::{Bytes, DeserializeAs, SerializeAs};
-//use tonic::codegen::Body;
-use sha2::{Digest, Sha256};
-use tracing::info;
-//use shared_crypto::intent::AppId::Sui;
 
 use sui_protocol_config::ProtocolVersion;
 
@@ -30,24 +28,21 @@ use crate::{
     parse_sui_struct_tag, parse_sui_type_tag, DEEPBOOK_ADDRESS, SUI_CLOCK_ADDRESS,
     SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, SUI_SYSTEM_STATE_ADDRESS,
 };
-//use crate::base_types::{SuiAddress};
-use crate::base_types_bfc::bfc_address_util::convert_to_evm_address;
-use crate::base_types_bfc::bfc_address_util::sha256_string;
 
 #[inline]
 pub(crate) fn to_custom_deser_error<'de, D, E>(e: E) -> D::Error
-where
-    E: Debug,
-    D: Deserializer<'de>,
+    where
+        E: Debug,
+        D: Deserializer<'de>,
 {
     Error::custom(format!("byte deserialization failed, cause by: {:?}", e))
 }
 
 #[inline]
 pub(crate) fn to_custom_ser_error<S, E>(e: E) -> S::Error
-where
-    E: Debug,
-    S: Serializer,
+    where
+        E: Debug,
+        S: Serializer,
 {
     S::Error::custom(format!("byte serialization failed, cause by: {:?}", e))
 }
@@ -72,13 +67,13 @@ pub struct Readable<H, R> {
 }
 
 impl<T: ?Sized, H, R> SerializeAs<T> for Readable<H, R>
-where
-    H: SerializeAs<T>,
-    R: SerializeAs<T>,
+    where
+        H: SerializeAs<T>,
+        R: SerializeAs<T>,
 {
     fn serialize_as<S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         if serializer.is_human_readable() {
             H::serialize_as(value, serializer)
@@ -89,13 +84,13 @@ where
 }
 
 impl<'de, R, H, T> DeserializeAs<'de, T> for Readable<H, R>
-where
-    H: DeserializeAs<'de, T>,
-    R: DeserializeAs<'de, T>,
+    where
+        H: DeserializeAs<'de, T>,
+        R: DeserializeAs<'de, T>,
 {
     fn deserialize_as<D>(deserializer: D) -> Result<T, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         if deserializer.is_human_readable() {
             H::deserialize_as(deserializer)
@@ -111,8 +106,8 @@ pub struct HexBFCAddress;
 
 impl SerializeAs<[u8; 32]> for HexBFCAddress {
     fn serialize_as<S>(value: &[u8; 32], serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         if serializer.is_human_readable() {
             let mut s = String::new();
@@ -133,8 +128,8 @@ impl SerializeAs<[u8; 32]> for HexBFCAddress {
 
 impl<'de> DeserializeAs<'de, [u8; 32]> for HexBFCAddress {
     fn deserialize_as<D>(deserializer: D) -> Result<[u8; 32], D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         let mut s = String::deserialize(deserializer)?;
         if s.to_ascii_lowercase().starts_with("bfc") {
@@ -154,76 +149,13 @@ impl<'de> DeserializeAs<'de, [u8; 32]> for HexBFCAddress {
     }
 }
 
-///
-///
-///
-
-/// custom serde for AccountAddress
-pub struct HexAccountAddress;
-
-impl SerializeAs<AccountAddress> for HexAccountAddress {
-    fn serialize_as<S>(value: &AccountAddress, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        if serializer.is_human_readable() {
-            let mut s = String::new();
-            for i in 0..value.len() {
-                write!(s, "{:02x}", value[i]).unwrap();
-            }
-            //let temp =  serializer.clone().serialize_str(&s.clone());
-            let mut hasher = Sha256::new();
-            hasher.update(s.as_bytes());
-            let result = format!("{:x}", hasher.finalize());
-            let check_sum = result.get(0..4).unwrap();
-            let bfc_address = String::from("BFC") + &s + check_sum;
-
-            return bfc_address.serialize(serializer);
-        }
-
-        Hex::serialize_as(value, serializer)
-    }
-}
-
-impl<'de> DeserializeAs<'de, AccountAddress> for HexAccountAddress {
-    fn deserialize_as<D>(deserializer: D) -> Result<AccountAddress, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let mut s = String::deserialize(deserializer)?;
-
-        //bfcAddress convert to suiAddress format...
-        if s.to_ascii_lowercase().starts_with("bfc")  {
-            let sui = convert_to_evm_address(s.clone());
-            if !sui.is_empty() {
-                s = sui;
-            } else {
-                //todo..
-                info!("deserializing error bfc address from hex: {}", s);
-                return Err("invalid bfc address").map_err(serde::de::Error::custom);
-            }
-        }
-        //end of bfcAddress convert to suiAddress format...
-
-        if s.starts_with("0x") {
-            AccountAddress::from_hex_literal(&s)
-        } else {
-            AccountAddress::from_hex(&s)
-        }
-        .map_err(to_custom_error::<'de, D, _>)
-    }
-}
-
-/// Serializes a bitmap according to the roaring bitmap on-disk standard.
-/// <https://github.com/RoaringBitmap/RoaringFormatSpec>
-
 
 pub struct SuiStructTag;
 
 impl SerializeAs<StructTag> for SuiStructTag {
     fn serialize_as<S>(value: &StructTag, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         let f = to_sui_struct_tag_string(value).map_err(S::Error::custom)?;
         f.serialize(serializer)
@@ -271,8 +203,8 @@ fn to_sui_type_tag_string(value: &TypeTag) -> Result<String, fmt::Error> {
 
 impl<'de> DeserializeAs<'de, StructTag> for SuiStructTag {
     fn deserialize_as<D>(deserializer: D) -> Result<StructTag, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
         parse_sui_struct_tag(&s).map_err(D::Error::custom)
@@ -283,8 +215,8 @@ pub struct SuiTypeTag;
 
 impl SerializeAs<TypeTag> for SuiTypeTag {
     fn serialize_as<S>(value: &TypeTag, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         let s = to_sui_type_tag_string(value).map_err(S::Error::custom)?;
         s.serialize(serializer)
@@ -293,8 +225,8 @@ impl SerializeAs<TypeTag> for SuiTypeTag {
 
 impl<'de> DeserializeAs<'de, TypeTag> for SuiTypeTag {
     fn deserialize_as<D>(deserializer: D) -> Result<TypeTag, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
         parse_sui_type_tag(&s).map_err(D::Error::custom)
@@ -308,14 +240,14 @@ pub struct BigInt<T>(
     #[serde_as(as = "DisplayFromStr")]
     T,
 )
-where
-    T: Display + FromStr,
-    <T as FromStr>::Err: Display;
+    where
+        T: Display + FromStr,
+        <T as FromStr>::Err: Display;
 
 impl<T> BigInt<T>
-where
-    T: Display + FromStr,
-    <T as FromStr>::Err: Display,
+    where
+        T: Display + FromStr,
+        <T as FromStr>::Err: Display,
 {
     pub fn into_inner(self) -> T {
         self.0
@@ -323,35 +255,35 @@ where
 }
 
 impl<T> SerializeAs<T> for BigInt<T>
-where
-    T: Display + FromStr + Copy,
-    <T as FromStr>::Err: Display,
+    where
+        T: Display + FromStr + Copy,
+        <T as FromStr>::Err: Display,
 {
     fn serialize_as<S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         BigInt(*value).serialize(serializer)
     }
 }
 
 impl<'de, T> DeserializeAs<'de, T> for BigInt<T>
-where
-    T: Display + FromStr + Copy,
-    <T as FromStr>::Err: Display,
+    where
+        T: Display + FromStr + Copy,
+        <T as FromStr>::Err: Display,
 {
     fn deserialize_as<D>(deserializer: D) -> Result<T, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         Ok(*BigInt::deserialize(deserializer)?)
     }
 }
 
 impl<T> From<T> for BigInt<T>
-where
-    T: Display + FromStr,
-    <T as FromStr>::Err: Display,
+    where
+        T: Display + FromStr,
+        <T as FromStr>::Err: Display,
 {
     fn from(v: T) -> BigInt<T> {
         BigInt(v)
@@ -359,9 +291,9 @@ where
 }
 
 impl<T> Deref for BigInt<T>
-where
-    T: Display + FromStr,
-    <T as FromStr>::Err: Display,
+    where
+        T: Display + FromStr,
+        <T as FromStr>::Err: Display,
 {
     type Target = T;
 
@@ -371,9 +303,9 @@ where
 }
 
 impl<T> Display for BigInt<T>
-where
-    T: Display + FromStr,
-    <T as FromStr>::Err: Display,
+    where
+        T: Display + FromStr,
+        <T as FromStr>::Err: Display,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
@@ -389,8 +321,8 @@ impl SerializeAs<crate::base_types::SequenceNumber> for SequenceNumber {
         value: &crate::base_types::SequenceNumber,
         serializer: S,
     ) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         let s = value.value().to_string();
         s.serialize(serializer)
@@ -399,8 +331,8 @@ impl SerializeAs<crate::base_types::SequenceNumber> for SequenceNumber {
 
 impl<'de> DeserializeAs<'de, crate::base_types::SequenceNumber> for SequenceNumber {
     fn deserialize_as<D>(deserializer: D) -> Result<crate::base_types::SequenceNumber, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         let b = BigInt::deserialize(deserializer)?;
         Ok(crate::base_types::SequenceNumber::from_u64(*b))
@@ -414,8 +346,8 @@ pub struct AsProtocolVersion(#[schemars(with = "BigInt<u64>")] u64);
 
 impl SerializeAs<ProtocolVersion> for AsProtocolVersion {
     fn serialize_as<S>(value: &ProtocolVersion, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         let s = value.as_u64().to_string();
         s.serialize(serializer)
@@ -424,8 +356,8 @@ impl SerializeAs<ProtocolVersion> for AsProtocolVersion {
 
 impl<'de> DeserializeAs<'de, ProtocolVersion> for AsProtocolVersion {
     fn deserialize_as<D>(deserializer: D) -> Result<ProtocolVersion, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         let b = BigInt::<u64>::deserialize(deserializer)?;
         Ok(ProtocolVersion::from(*b))
@@ -438,8 +370,8 @@ pub(crate) struct SuiBitmap;
 
 impl SerializeAs<roaring::RoaringBitmap> for SuiBitmap {
     fn serialize_as<S>(source: &roaring::RoaringBitmap, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         let mut bytes = vec![];
 
@@ -452,8 +384,8 @@ impl SerializeAs<roaring::RoaringBitmap> for SuiBitmap {
 
 impl<'de> DeserializeAs<'de, roaring::RoaringBitmap> for SuiBitmap {
     fn deserialize_as<D>(deserializer: D) -> Result<roaring::RoaringBitmap, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         let bytes: Vec<u8> = Bytes::deserialize_as(deserializer)?;
         deserialize_sui_bitmap(&bytes).map_err(to_custom_deser_error::<'de, D, _>)

@@ -11,10 +11,9 @@
 use fastcrypto::traits::ToFromBytes;
 use sui_sdk_types::*;
 use tap::Pipe;
-use std::collections::HashMap;
+use crate::execution_status::ExecutionFailureStatus;
 
 use crate::crypto::SuiSignature as _;
-use crate::execution::ExecutionTimeObservationKey;
 
 #[derive(Debug)]
 pub struct SdkTypeConversionError(String);
@@ -22,91 +21,6 @@ pub struct SdkTypeConversionError(String);
 impl std::fmt::Display for SdkTypeConversionError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.0)
-    }
-}
-
-impl From<&sui_sdk_types::CheckpointSummary>  for crate::messages_checkpoint::CheckpointSummary {
-    fn from(value : &sui_sdk_types::CheckpointSummary) -> Self {
-        Self {
-            epoch: value.epoch,
-            sequence_number: value.sequence_number,
-            network_total_transactions: value.network_total_transactions,
-            content_digest: crate::digests::CheckpointContentsDigest::new(*value.content_digest.inner()),
-            previous_digest: value.previous_digest.map(|d | crate::digests::CheckpointDigest::new(*d.inner())),
-            epoch_rolling_bfc_gas_cost_summary: crate::gas::GasCostSummary{
-                base_point: value.epoch_rolling_bfc_gas_cost_summary.base_point,
-                rate: value.epoch_rolling_bfc_gas_cost_summary.rate,
-                computation_cost: value.epoch_rolling_bfc_gas_cost_summary.computation_cost,
-                storage_cost: value.epoch_rolling_bfc_gas_cost_summary.storage_cost,
-                storage_rebate: value.epoch_rolling_bfc_gas_cost_summary.storage_rebate,
-                non_refundable_storage_fee: value.epoch_rolling_bfc_gas_cost_summary.non_refundable_storage_fee,
-            },
-            epoch_rolling_stable_gas_cost_summary_map: HashMap::new(),
-            timestamp_ms: value.timestamp_ms,
-            checkpoint_commitments: value.checkpoint_commitments.clone().into_iter().map(|c |
-                match c {
-                    sui_sdk_types::CheckpointCommitment::EcmhLiveObjectSet{ digest} =>
-                        crate::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(crate::messages_checkpoint::ECMHLiveObjectSetDigest{
-                            digest: crate::digests::Digest::new(*digest.inner())
-                        })
-                }).collect(),
-            end_of_epoch_data: value.end_of_epoch_data.clone().map(|c | crate::messages_checkpoint::EndOfEpochData {
-                next_epoch_committee: c.next_epoch_committee.into_iter().map(|next_epoch_committee | {
-                    (crate::crypto::AuthorityPublicKeyBytes(*next_epoch_committee.public_key.inner()), next_epoch_committee.stake)
-                }).collect(),
-                next_epoch_protocol_version: crate::committee::ProtocolVersion::new(c.next_epoch_protocol_version),
-                epoch_commitments: c.epoch_commitments.clone().into_iter().map(|epoch_commitment |
-                    match epoch_commitment {
-                        sui_sdk_types::CheckpointCommitment::EcmhLiveObjectSet{ digest} =>
-                            crate::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(crate::messages_checkpoint::ECMHLiveObjectSetDigest{
-                                digest: crate::digests::Digest::new(*digest.inner())
-                            })
-                    }).collect(),
-            }),
-            version_specific_data: value.version_specific_data.clone(),
-        }
-    }
-}
-impl From<&crate::messages_checkpoint::CheckpointSummary> for sui_sdk_types::CheckpointSummary {
-    fn from(value : &crate::messages_checkpoint::CheckpointSummary) -> Self {
-        Self {
-            epoch: value.epoch,
-            sequence_number: *value.sequence_number(),
-            network_total_transactions: value.network_total_transactions,
-            content_digest: sui_sdk_types::CheckpointContentsDigest::new(*value.content_digest.inner()),
-            previous_digest: value.previous_digest.map(|d | sui_sdk_types::CheckpointDigest::new(*d.inner())),
-            epoch_rolling_bfc_gas_cost_summary: sui_sdk_types::GasCostSummary {
-                base_point: value.epoch_rolling_bfc_gas_cost_summary.base_point,
-                rate: value.epoch_rolling_bfc_gas_cost_summary.rate,
-                computation_cost: value.epoch_rolling_bfc_gas_cost_summary.computation_cost,
-                storage_cost: value.epoch_rolling_bfc_gas_cost_summary.storage_cost,
-                storage_rebate: value.epoch_rolling_bfc_gas_cost_summary.storage_rebate,
-                non_refundable_storage_fee: value.epoch_rolling_bfc_gas_cost_summary.non_refundable_storage_fee,
-            },
-            timestamp_ms: value.timestamp_ms,
-            checkpoint_commitments: value.checkpoint_commitments.clone().into_iter().map(|c |
-                sui_sdk_types::CheckpointCommitment::EcmhLiveObjectSet{digest: match c {
-                    crate::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(ecmh_live_object_set_digest) =>
-                        sui_sdk_types::Digest::new(*ecmh_live_object_set_digest.digest.inner()
-                        ),
-                }}).collect(),
-            end_of_epoch_data: value.end_of_epoch_data.clone().map(|c | sui_sdk_types::EndOfEpochData {
-                next_epoch_committee: c.next_epoch_committee.into_iter().map(|next_epoch_committee | {
-                    sui_sdk_types::ValidatorCommitteeMember {
-                        public_key: sui_sdk_types::Bls12381PublicKey::new(next_epoch_committee.0.0),
-                        stake: next_epoch_committee.1,
-                    }
-                }).collect(),
-                next_epoch_protocol_version: c.next_epoch_protocol_version.as_u64(),
-                epoch_commitments: c.epoch_commitments.clone().into_iter().map(|epoch_commitment |
-                    sui_sdk_types::CheckpointCommitment::EcmhLiveObjectSet{digest: match epoch_commitment {
-                        crate::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(ecmh_live_object_set_digest) =>
-                            sui_sdk_types::Digest::new(*ecmh_live_object_set_digest.digest.inner()
-                            ),
-                    }}).collect(),
-            }),
-            version_specific_data: value.version_specific_data.clone(),
-        }
     }
 }
 
@@ -491,7 +405,7 @@ impl TryFrom<crate::type_input::TypeInput> for TypeTag {
             crate::type_input::TypeInput::U32 => Self::U32,
             crate::type_input::TypeInput::U256 => Self::U256,
         }
-        .pipe(Ok)
+            .pipe(Ok)
     }
 }
 
@@ -509,7 +423,7 @@ impl TryFrom<crate::type_input::StructInput> for StructTag {
                 .map(TryInto::try_into)
                 .collect::<Result<_, _>>()?,
         }
-        .pipe(Ok)
+            .pipe(Ok)
     }
 }
 
@@ -847,6 +761,7 @@ impl From<crate::execution_status::ExecutionFailureStatus> for ExecutionError {
             crate::execution_status::ExecutionFailureStatus::ExecutionCancelledDueToRandomnessUnavailable => Self::ExecutionCanceledDueToRandomnessUnavailable,
             crate::execution_status::ExecutionFailureStatus::MoveVectorElemTooBig { value_size, max_scaled_size } => Self::MoveVectorElemTooBig { value_size, max_scaled_size },
             crate::execution_status::ExecutionFailureStatus::MoveRawValueTooBig { value_size, max_scaled_size } => Self::MoveRawValueTooBig { value_size, max_scaled_size },
+            ExecutionFailureStatus::StableCoinRateErr(_) => todo!(),
         }
     }
 }
@@ -908,7 +823,7 @@ impl TryFrom<crate::crypto::PublicKey> for MultisigMemberPublicKey {
                 Self::Passkey(PasskeyPublicKey::new(Secp256r1PublicKey::new(p.0)))
             }
         }
-        .pipe(Ok)
+            .pipe(Ok)
     }
 }
 
@@ -931,7 +846,7 @@ impl TryFrom<crate::crypto::CompressedSignature> for MultisigMemberSignature {
             }
             crate::crypto::CompressedSignature::Passkey(p) => Self::Passkey(p.try_into()?),
         }
-        .pipe(Ok)
+            .pipe(Ok)
     }
 }
 
@@ -966,7 +881,7 @@ impl TryFrom<crate::crypto::Signature> for SimpleSignature {
                 }
             }
         }
-        .pipe(Ok)
+            .pipe(Ok)
     }
 }
 
@@ -1080,7 +995,7 @@ impl TryFrom<TransactionEffects> for crate::effects::TransactionEffects {
             TransactionEffects::V1(v1) => Self::V1((*v1).try_into()?),
             TransactionEffects::V2(v2) => Self::V2((*v2).try_into()?),
         }
-        .pipe(Ok)
+            .pipe(Ok)
     }
 }
 
@@ -1092,7 +1007,7 @@ impl TryFrom<crate::effects::TransactionEffects> for TransactionEffects {
             crate::effects::TransactionEffects::V1(v1) => Self::V1(Box::new(v1.try_into()?)),
             crate::effects::TransactionEffects::V2(v2) => Self::V2(Box::new(v2.try_into()?)),
         }
-        .pipe(Ok)
+            .pipe(Ok)
     }
 }
 
@@ -1141,7 +1056,7 @@ impl TryFrom<crate::transaction::Command> for Command {
                 })
             }
         }
-        .pipe(Ok)
+            .pipe(Ok)
     }
 }
 
@@ -1160,7 +1075,7 @@ impl TryFrom<crate::transaction::ProgrammableMoveCall> for MoveCall {
                 .collect::<Result<_, _>>()?,
             arguments: value.arguments.into_iter().map(Into::into).collect(),
         }
-        .pipe(Ok)
+            .pipe(Ok)
     }
 }
 
@@ -1190,26 +1105,26 @@ impl From<Command> for crate::transaction::Command {
                 Self::SplitCoins(coin.into(), amounts.into_iter().map(Into::into).collect())
             }
             Command::MergeCoins(MergeCoins {
-                coin,
-                coins_to_merge,
-            }) => Self::MergeCoins(
+                                    coin,
+                                    coins_to_merge,
+                                }) => Self::MergeCoins(
                 coin.into(),
                 coins_to_merge.into_iter().map(Into::into).collect(),
             ),
             Command::Publish(Publish {
-                modules,
-                dependencies,
-            }) => Self::Publish(modules, dependencies.into_iter().map(Into::into).collect()),
+                                 modules,
+                                 dependencies,
+                             }) => Self::Publish(modules, dependencies.into_iter().map(Into::into).collect()),
             Command::MakeMoveVector(MakeMoveVector { type_, elements }) => Self::MakeMoveVec(
                 type_.map(Into::into),
                 elements.into_iter().map(Into::into).collect(),
             ),
             Command::Upgrade(Upgrade {
-                modules,
-                dependencies,
-                package,
-                ticket,
-            }) => Self::Upgrade(
+                                 modules,
+                                 dependencies,
+                                 package,
+                                 ticket,
+                             }) => Self::Upgrade(
                 modules,
                 dependencies.into_iter().map(Into::into).collect(),
                 package.into(),
@@ -1310,21 +1225,24 @@ impl From<crate::transaction::ChangeEpoch> for ChangeEpoch {
         crate::transaction::ChangeEpoch {
             epoch,
             protocol_version,
-            storage_charge,
-            computation_charge,
-            storage_rebate,
-            non_refundable_storage_fee,
+            bfc_storage_charge,
+
+            bfc_computation_charge,
+            bfc_storage_rebate,
+            bfc_non_refundable_storage_fee,
+            epoch_duration_ms,
             epoch_start_timestamp_ms,
             system_packages,
+            stable_gas_summarys,
         }: crate::transaction::ChangeEpoch,
     ) -> Self {
         Self {
             epoch,
             protocol_version: protocol_version.as_u64(),
-            bfc_storage_charge: storage_charge,
-            bfc_computation_charge: computation_charge,
-            bfc_storage_rebate: storage_rebate,
-            bfc_non_refundable_storage_fee: non_refundable_storage_fee,
+            storage_charge: bfc_storage_charge,
+            computation_charge: bfc_computation_charge,
+            storage_rebate: bfc_storage_rebate,
+            non_refundable_storage_fee: bfc_non_refundable_storage_fee,
             epoch_start_timestamp_ms,
             system_packages: system_packages
                 .into_iter()
@@ -1350,7 +1268,7 @@ impl From<crate::transaction::AuthenticatorStateExpire> for AuthenticatorStateEx
 }
 
 impl From<crate::messages_consensus::ConsensusDeterminedVersionAssignments>
-    for ConsensusDeterminedVersionAssignments
+for ConsensusDeterminedVersionAssignments
 {
     fn from(value: crate::messages_consensus::ConsensusDeterminedVersionAssignments) -> Self {
         use crate::messages_consensus::ConsensusDeterminedVersionAssignments::*;

@@ -8,7 +8,6 @@ use std::fmt::{Display, Formatter};
 use crate::{
     coin::Coin,
     error::{ExecutionError, ExecutionErrorKind},
-    id::UID,
     object::{Data, MoveObject, Object},
 };
 use crate::stable_coin::stable::checked::{STABLE, STABLE::BUSD};
@@ -32,7 +31,7 @@ mod checked {
 
     impl StableCoin {
         pub fn new(id: ObjectID, value: u64) -> Self {
-            Self(Coin::new(UID::new(id), value))
+            Self(Coin::new(id, value))
         }
 
         pub fn value(&self) -> u64 {
