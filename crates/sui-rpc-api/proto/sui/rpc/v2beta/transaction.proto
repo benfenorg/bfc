@@ -163,6 +163,15 @@ message Command {
   }
 }
 
+message GasCostSummary {
+  optional uint64 base_point = 1;
+  optional uint64 rate = 2;
+  optional uint64 computation_cost = 3;
+  optional uint64 storage_cost = 4;
+  optional uint64 storage_rebate = 5;
+  optional uint64 non_refundable_storage_fee = 6;
+}
+
 // Command to call a Move function.
 //
 // Functions that can be called by a `MoveCall` command are those that have a function signature
@@ -414,6 +423,16 @@ message Jwk {
   optional string alg = 4;
 }
 
+
+message TaggedGasCostSummary {
+  optional string tag = 1;
+  optional GasCostSummaryAdjusted summary = 2;
+}
+
+message GasCostSummaryAdjusted {
+    optional GasCostSummary gas_by_bfc = 1;
+    optional GasCostSummary gas_by_stable = 2;
+}
 // Set of operations run at the end of the epoch to close out the current epoch
 // and start the next one.
 message EndOfEpochTransaction {
