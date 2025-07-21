@@ -1245,7 +1245,7 @@ impl From<crate::transaction::ChangeEpoch> for ChangeEpoch {
             bfc_non_refundable_storage_fee,
             epoch_duration_ms,
             epoch_start_timestamp_ms,
-
+            stable_gas_summarys: stable_gas_summarys,
             system_packages: system_packages
                 .into_iter()
                 .map(|(version, modules, dependencies)| SystemPackage {
