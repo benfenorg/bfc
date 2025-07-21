@@ -4,7 +4,7 @@
 use crate::gas_charger::GasCharger;
 use move_core_types::account_address::AccountAddress;
 use move_core_types::language_storage::StructTag;
-use move_core_types::resolver::ResourceResolver;
+//use move_core_types::resolver::ResourceResolver;
 use parking_lot::RwLock;
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 use sui_protocol_config::ProtocolConfig;
@@ -37,6 +37,7 @@ use sui_types::{
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 use sui_types::bfc_system_state::{get_stable_rate_and_reward_rate, get_stable_rate_with_base_point};
 use sui_types::collection_types::VecMap;
+use sui_types::error::SuiError;
 use sui_types::gas::calculate_bfc_to_stable_cost_with_base_point;
 
 pub struct TemporaryStore<'backing> {
@@ -891,8 +892,8 @@ type ModifiedObjectInfo<'a> = (
     Option<&'a Object>,
 );
 
-impl<'backing> TemporaryStore<'backing> {
-    #[allow(dead_code)]
+
+#[allow(dead_code)]
 impl TemporaryStore<'_> {
     fn get_input_sui(
         &self,

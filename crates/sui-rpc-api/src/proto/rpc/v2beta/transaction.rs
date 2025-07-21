@@ -5,6 +5,7 @@ use super::Transaction;
 use crate::message::{MessageField, MessageFields, MessageMerge};
 use crate::proto::TryFromProtoError;
 use tap::Pipe;
+use sui_types::gas::GasCostSummaryAdjusted;
 
 //
 // Transaction
@@ -1083,22 +1084,22 @@ impl From<sui_sdk_types::SystemPackage> for super::SystemPackage {
         }
     }
 }
-impl From<sui_sdk_types::TaggedGasCostSummary> for super::TaggedGasCostSummary {
-    fn from(value: sui_sdk_types::TaggedGasCostSummary) -> Self {
-        Self {
-            tag: Some(value.tag.into()),
-            summary: Some(value.gas_cost_summary.into()),
-        }
-    }
-}
-impl From<sui_sdk_types::GasCostSummaryAdjusted> for super::GasCostSummaryAdjusted {
-    fn from(value: sui_sdk_types::GasCostSummaryAdjusted) -> Self {
-        Self {
-            gas_by_bfc: Some(value.gas_by_bfc.into()),
-            gas_by_stable: Some(value.gas_by_stable.into()),
-        }
-    }
-}
+// impl From<sui_sdk_types::TaggedGasCostSummary> for super::TaggedGasCostSummary {
+//     fn from(value: sui_sdk_types::TaggedGasCostSummary) -> Self {
+//         Self {
+//             tag: Some(value.tag.into()),
+//             summary: Some(value.gas_cost_summary.into()),
+//         }
+//     }
+// }
+// impl From<sui_sdk_types::GasCostSummaryAdjusted> for super::GasCostSummaryAdjusted {
+//     fn from(value: sui_sdk_types::GasCostSummaryAdjusted) -> Self {
+//         Self {
+//             gas_by_bfc: Some(value.gas_by_bfc.into()),
+//             gas_by_stable: Some(value.gas_by_stable.into()),
+//         }
+//     }
+// }
 
 impl TryFrom<&super::SystemPackage> for sui_sdk_types::SystemPackage {
     type Error = TryFromProtoError;
@@ -1119,41 +1120,41 @@ impl TryFrom<&super::SystemPackage> for sui_sdk_types::SystemPackage {
     }
 }
 
-impl TryFrom<&super::TaggedGasCostSummary> for sui_sdk_types::TaggedGasCostSummary {
-    type Error = TryFromProtoError;
-    fn try_from(value: &super::TaggedGasCostSummary) -> Result<Self, Self::Error> {
-        Ok(Self {
-            tag: value
-                .tag
-                .as_ref()
-                .ok_or_else(|| TryFromProtoError::missing("tag"))?
-                .try_into()?,
-            gas_cost_summary: value
-                .summary
-                .as_ref()
-                .ok_or_else(|| TryFromProtoError::missing("summary"))?
-                .try_into()?,
-        })
-    }
-}
-
-impl TryFrom<&super::GasCostSummaryAdjusted> for sui_sdk_types::GasCostSummaryAdjusted {
-    type Error = TryFromProtoError;
-    fn try_from(value: &super::GasCostSummaryAdjusted) -> Result<Self, Self::Error> {
-        Ok(Self {
-            gas_by_bfc:  value
-                .gas_by_bfc
-                .as_ref()
-                .ok_or_else(|| TryFromProtoError::missing("gas_by_bfc"))?
-                .try_into()?,
-            gas_by_stable: value
-                .gas_by_stable
-                .as_ref()
-                .ok_or_else(|| TryFromProtoError::missing("gas_by_stable"))?
-                .try_into()?,
-        })
-    }
-}
+// impl TryFrom<&super::TaggedGasCostSummary> for sui_sdk_types::TaggedGasCostSummary {
+//     type Error = TryFromProtoError;
+//     fn try_from(value: &super::TaggedGasCostSummary) -> Result<Self, Self::Error> {
+//         Ok(Self {
+//             tag: value
+//                 .tag
+//                 .as_ref()
+//                 .ok_or_else(|| TryFromProtoError::missing("tag"))?
+//                 .try_into()?,
+//             gas_cost_summary: value
+//                 .summary
+//                 .as_ref()
+//                 .ok_or_else(|| TryFromProtoError::missing("summary"))?
+//                 .try_into()?,
+//         })
+//     }
+// }
+//
+// impl TryFrom<&super::GasCostSummaryAdjusted> for sui_sdk_types::GasCostSummaryAdjusted {
+//     type Error = TryFromProtoError;
+//     fn try_from(value: &super::GasCostSummaryAdjusted) -> Result<Self, Self::Error> {
+//         Ok(Self {
+//             gas_by_bfc:  value
+//                 .gas_by_bfc
+//                 .as_ref()
+//                 .ok_or_else(|| TryFromProtoError::missing("gas_by_bfc"))?
+//                 .try_into()?,
+//             gas_by_stable: value
+//                 .gas_by_stable
+//                 .as_ref()
+//                 .ok_or_else(|| TryFromProtoError::missing("gas_by_stable"))?
+//                 .try_into()?,
+//         })
+//     }
+// }
 
 //
 // EndOfEpochTransactionkind
