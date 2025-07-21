@@ -16212,7 +16212,7 @@ dependencies = [
 [[package]]
 name = "sui-sdk-types"
 version = "0.0.6"
-source = "git+https://github.com/hellokittyboy-code/bfc-rust-sdk.git?rev=594042787f44d06abfda1164fa46552500f12c64#594042787f44d06abfda1164fa46552500f12c64"
+source = "git+https://github.com/hellokittyboy-code/bfc-rust-sdk.git?rev=c0aecac7d6f2c8020983c277388eb977027a406d#c0aecac7d6f2c8020983c277388eb977027a406d"
 dependencies = [
  "base64ct",
  "bcs",
