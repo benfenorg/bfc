@@ -209,7 +209,7 @@ pub struct ChangeEpoch {
     /// The non-refundable storage fee.
     pub bfc_non_refundable_storage_fee: u64,
 
-    pub stable_gas_summarys: Vec<(TypeTag, GasCostSummaryAdjusted)>,
+    pub stable_gas_summarys: Vec<(TaggedGasCostSummary)>,
     /// Unix timestamp when epoch started
     pub epoch_start_timestamp_ms: u64,
 
