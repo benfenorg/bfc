@@ -32,7 +32,7 @@ pub fn curve_dx(
 
     let curve_dx_cost_params = context
         .extensions_mut()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>().unwrap()
         .curve_dx_cost_params
         .clone();
     // Charge base fee

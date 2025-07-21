@@ -4,7 +4,7 @@
 use crate::gas_charger::GasCharger;
 use move_core_types::account_address::AccountAddress;
 use move_core_types::language_storage::StructTag;
-use move_core_types::resolver::ResourceResolver;
+//use move_core_types::resolver::ResourceResolver;
 use mysten_metrics::monitored_scope;
 use parking_lot::RwLock;
 use std::collections::{BTreeMap, BTreeSet, HashSet};
@@ -818,7 +818,7 @@ type ModifiedObjectInfo<'a> = (
     Option<&'a Object>,
 );
 
-impl<'backing> TemporaryStore<'backing> {
+// impl<'backing> TemporaryStore<'backing> {
     #[allow(dead_code)]
 impl TemporaryStore<'_> {
     fn get_input_sui(

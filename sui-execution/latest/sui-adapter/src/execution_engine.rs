@@ -15,7 +15,7 @@ mod checked {
     use sui_types::gas::{calculate_add, calculate_reward_rate};
     use sui_types::gas_coin::GAS;
 
-    use std::{cell::RefCell, collections::HashSet, rc::Rc, sync::Arc};
+    use std::{cell::RefCell,rc::Rc};
     use sui_types::balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
@@ -72,7 +72,6 @@ mod checked {
     use sui_types::sui_system_state::{
         AdvanceEpochParams, ChangeObcRoundParams, ADVANCE_EPOCH_SAFE_MODE_FUNCTION_NAME,
     };
-    use sui_types::sui_system_state::{ADVANCE_EPOCH_SAFE_MODE_FUNCTION_NAME, AdvanceEpochParams};
     use sui_types::transaction::{
         Argument, AuthenticatorStateExpire, AuthenticatorStateUpdate, CallArg, ChangeEpoch,
         Command, EndOfEpochTransactionKind, GasData, GenesisTransaction, ObjectArg,
@@ -86,9 +85,6 @@ mod checked {
         sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
         SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS, SUI_FRAMEWORK_PACKAGE_ID,
         SUI_SYSTEM_PACKAGE_ID,
-        base_types::{ObjectID, SuiAddress, TransactionDigest, TxContext},
-        object::{Object, ObjectInner},
-        sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
     };
 
     use sui_types::bfc_system_state::{BFC_ROUND_FUNCTION_NAME, BFC_ROUND_V2_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME, WITHDRAW_BFC_FUNCTION_NAME};
@@ -545,7 +541,7 @@ mod checked {
                         // we will create or destroy SUI otherwise
                         panic!(
                             "SUI conservation fail in tx block {}: {}\nGas status is {}\nTx was ",
-                            tx_ctx.digest(),
+                            tx_digest,
                             recovery_err,
                             gas_charger.summary()
                         )
@@ -562,6 +558,7 @@ mod checked {
                                     cost_summary,
                                     advance_epoch_gas_summary,
                                     &mut layout_resolver,
+                                    gas_charger.is_pay_with_stable_coin(temporary_store)
                                 )
                             } else {
                                 Ok(())
