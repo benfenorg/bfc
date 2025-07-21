@@ -392,7 +392,7 @@ impl EndOfEpochTransactionKind {
         for type_tag in STABLE::all_stable_coins_type() {
             let gas_summary = stable_gas_summary_map.get(&type_tag);
             if let Some(summary) = gas_summary {
-                stable_gas_summarys.push((type_tag.clone(), summary.clone()));
+                stable_gas_summarys.push(summary.clone());
             }
         }
 
@@ -2988,7 +2988,11 @@ impl VerifiedTransaction {
         for type_tag in STABLE::all_stable_coins_type() {
             let gas_summary = stable_gas_summary_map.get(&type_tag);
             if let Some(summary) = gas_summary {
-                stable_gas_summarys.push((type_tag.clone(), summary.clone()));
+                let taggedGasCostSummary = TaggedGasCostSummary {
+                    tag: type_tag.into(),
+                    summary: summary.clone(),
+                };
+                stable_gas_summarys.push(taggedGasCostSummary);
             }
         }
 
