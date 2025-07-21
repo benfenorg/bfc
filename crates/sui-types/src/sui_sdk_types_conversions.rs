@@ -1239,11 +1239,13 @@ impl From<crate::transaction::ChangeEpoch> for ChangeEpoch {
         Self {
             epoch,
             protocol_version: protocol_version.as_u64(),
-            storage_charge: bfc_storage_charge,
-            computation_charge: bfc_computation_charge,
-            storage_rebate: bfc_storage_rebate,
-            non_refundable_storage_fee: bfc_non_refundable_storage_fee,
+            bfc_storage_charge,
+            bfc_computation_charge,
+            bfc_storage_rebate,
+            bfc_non_refundable_storage_fee,
+            epoch_duration_ms,
             epoch_start_timestamp_ms,
+
             system_packages: system_packages
                 .into_iter()
                 .map(|(version, modules, dependencies)| SystemPackage {
