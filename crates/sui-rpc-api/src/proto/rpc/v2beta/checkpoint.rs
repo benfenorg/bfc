@@ -81,7 +81,7 @@ impl MessageMerge<sui_sdk_types::CheckpointSummary> for CheckpointSummary {
             network_total_transactions,
             content_digest,
             previous_digest,
-            epoch_rolling_gas_cost_summary,
+            epoch_rolling_bfc_gas_cost_summary,
             timestamp_ms,
             checkpoint_commitments,
             end_of_epoch_data,
@@ -260,7 +260,7 @@ impl TryFrom<&CheckpointSummary> for sui_sdk_types::CheckpointSummary {
             network_total_transactions,
             content_digest,
             previous_digest,
-            epoch_rolling_gas_cost_summary,
+            epoch_rolling_bfc_gas_cost_summary,
             timestamp_ms,
             checkpoint_commitments,
             end_of_epoch_data,
@@ -276,6 +276,8 @@ impl TryFrom<&CheckpointSummary> for sui_sdk_types::CheckpointSummary {
 impl From<sui_sdk_types::GasCostSummary> for super::GasCostSummary {
     fn from(
         sui_sdk_types::GasCostSummary {
+            base_point,
+            rate,
             computation_cost,
             storage_cost,
             storage_rebate,

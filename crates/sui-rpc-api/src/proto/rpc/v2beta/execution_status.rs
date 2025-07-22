@@ -209,6 +209,7 @@ impl From<sui_sdk_types::ExecutionError> for super::ExecutionError {
                 });
                 ExecutionErrorKind::MoveRawValueTooBig
             }
+            InvalidLinkage => todo!()
         };
 
         message.set_kind(kind);

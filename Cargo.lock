@@ -14081,8 +14081,8 @@ dependencies = [
 
 [[package]]
 name = "sui-crypto"
-version = "0.0.4"
-source = "git+https://github.com/MystenLabs/sui-rust-sdk.git?rev=bf1875211b15bd67ce5f7a72152bf952479f1668#bf1875211b15bd67ce5f7a72152bf952479f1668"
+version = "0.0.6"
+source = "git+https://github.com/hellokittyboy-code/bfc-rust-sdk.git?rev=557c4b7a90dd5a75aa7a9a03cbbc093843fde0b5#557c4b7a90dd5a75aa7a9a03cbbc093843fde0b5"
 dependencies = [
  "ark-bn254",
  "ark-ff",
@@ -14101,7 +14101,7 @@ dependencies = [
  "serde_json",
  "sha2 0.10.8",
  "signature 2.2.0",
- "sui-sdk-types 0.0.4",
+ "sui-sdk-types",
 ]
 
 [[package]]
@@ -14266,7 +14266,7 @@ dependencies = [
  "sui-protocol-config",
  "sui-rpc-api",
  "sui-sdk",
- "sui-sdk-types 0.0.6",
+ "sui-sdk-types",
  "sui-simulator",
  "sui-storage",
  "sui-swarm",
@@ -15307,7 +15307,7 @@ dependencies = [
  "sui-kvstore",
  "sui-protocol-config",
  "sui-rpc-api",
- "sui-sdk-types 0.0.6",
+ "sui-sdk-types",
  "sui-types",
  "tonic 0.13.1",
 ]
@@ -16078,7 +16078,7 @@ dependencies = [
  "serde_with",
  "sui-crypto",
  "sui-protocol-config",
- "sui-sdk-types 0.0.6",
+ "sui-sdk-types",
  "sui-types",
  "tap",
  "test-strategy",
@@ -16187,26 +16187,6 @@ dependencies = [
  "thiserror 1.0.69",
  "tokio",
  "tracing",
-]
-
-[[package]]
-name = "sui-sdk-types"
-version = "0.0.4"
-source = "git+https://github.com/MystenLabs/sui-rust-sdk.git?rev=bf1875211b15bd67ce5f7a72152bf952479f1668#bf1875211b15bd67ce5f7a72152bf952479f1668"
-dependencies = [
- "base64ct",
- "bcs",
- "blake2",
- "bnum",
- "bs58 0.5.1",
- "hex",
- "itertools 0.13.0",
- "roaring",
- "serde",
- "serde_derive",
- "serde_json",
- "serde_with",
- "winnow 0.7.3",
 ]
 
 [[package]]
@@ -16826,7 +16806,7 @@ dependencies = [
  "sui-enum-compat-util",
  "sui-macros",
  "sui-protocol-config",
- "sui-sdk-types 0.0.6",
+ "sui-sdk-types",
  "tap",
  "thiserror 1.0.69",
  "tokio",

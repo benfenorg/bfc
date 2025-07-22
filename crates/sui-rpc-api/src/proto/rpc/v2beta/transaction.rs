@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use sui_sdk_types::TransactionKind;
 use super::Transaction;
 use crate::message::{MessageField, MessageFields, MessageMerge};
 use crate::proto::TryFromProtoError;
@@ -292,6 +293,8 @@ impl From<sui_sdk_types::TransactionKind> for super::TransactionKind {
             ConsensusCommitPrologueV2(prologue) => Kind::ConsensusCommitPrologueV2(prologue.into()),
             ConsensusCommitPrologueV3(prologue) => Kind::ConsensusCommitPrologueV3(prologue.into()),
             ConsensusCommitPrologueV4(prologue) => Kind::ConsensusCommitPrologueV4(prologue.into()),
+            ProgrammableSystemTransaction(_) => todo!(),
+
         };
 
         Self { kind: Some(kind) }
@@ -1175,9 +1178,13 @@ impl From<sui_sdk_types::EndOfEpochTransactionKind> for super::EndOfEpochTransac
             BridgeCommitteeInit {
                 bridge_object_version,
             } => Kind::BridgeCommitteeInit(bridge_object_version),
+
             StoreExecutionTimeObservations(observations) => {
                 Kind::ExecutionTimeObservations(observations.into())
-            }
+            },
+            sui_sdk_types::EndOfEpochTransactionKind::AccumulatorRootCreate |
+            sui_sdk_types::EndOfEpochTransactionKind::CoinRegistryCreate => { panic!("Should not run this conversion for AccumulatorRootCreate or CoinRegistryCreate") }
+
         };
 
         Self { kind: Some(kind) }
