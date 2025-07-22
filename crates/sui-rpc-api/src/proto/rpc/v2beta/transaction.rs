@@ -1090,7 +1090,7 @@ impl From<sui_sdk_types::SystemPackage> for super::SystemPackage {
 impl From<sui_sdk_types::TaggedGasCostSummary> for super::TaggedGasCostSummary {
     fn from(value: sui_sdk_types::TaggedGasCostSummary) -> Self {
         Self {
-            tag: Some(value.tag.into()),
+            tag: Some(value.tag.to_string()),
             summary: Some(value.gas_cost_summary.into()),
         }
     }
@@ -1131,7 +1131,7 @@ impl TryFrom<&super::TaggedGasCostSummary> for sui_sdk_types::TaggedGasCostSumma
                 .tag
                 .as_ref()
                 .ok_or_else(|| TryFromProtoError::missing("tag"))?
-                .try_into()?,
+                .parse().map_err(TryFromProtoError::from_error)?,
             gas_cost_summary: value
                 .summary
                 .as_ref()
