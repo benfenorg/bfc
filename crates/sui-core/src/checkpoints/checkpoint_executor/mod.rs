@@ -22,6 +22,8 @@ use futures::StreamExt;
 use mysten_common::{debug_fatal, fatal};
 use parking_lot::Mutex;
 use std::{sync::Arc, time::Instant};
+use std::collections::HashMap;
+use std::path::PathBuf;
 use sui_types::crypto::RandomnessRound;
 use sui_types::inner_temporary_store::PackageStoreWithFallback;
 use sui_types::messages_checkpoint::{CheckpointContents, CheckpointSequenceNumber};
@@ -40,7 +42,7 @@ use sui_types::{
     transaction::VerifiedTransaction,
 };
 use tap::{TapFallible, TapOptional};
-use tracing::{debug, info, instrument, warn};
+use tracing::{debug, error, info, instrument, warn};
 
 use crate::authority::authority_per_epoch_store::AuthorityPerEpochStore;
 use crate::authority::backpressure::BackpressureManager;
@@ -71,8 +73,8 @@ type CheckpointExecutionBuffer = FuturesOrdered<
         Vec<RandomnessRound>,
     )>,
 >;
-use data_ingestion_handler::{load_checkpoint_data, store_checkpoint_locally};
 use metrics::CheckpointExecutorMetrics;
+use sui_types::error::SuiResult;
 use utils::*;
 
 const CHECKPOINT_PROGRESS_LOG_COUNT_INTERVAL: u64 = 5000;

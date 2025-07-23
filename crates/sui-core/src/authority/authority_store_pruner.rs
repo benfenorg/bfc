@@ -32,10 +32,10 @@ use sui_types::{
     base_types::{ObjectID, VersionNumber},
     storage::ObjectKey,
 };
-use crate::rpc_index::RpcIndexStore;
 use tokio::sync::oneshot::{self, Sender};
 use tokio::time::Instant;
 use tracing::{debug, error, info, warn};
+use sui_storage::mutex_table::RwLockTable;
 use typed_store::rocksdb::compaction_filter::Decision;
 use typed_store::rocksdb::LiveFile;
 use typed_store::{Map, TypedStoreError};
@@ -742,8 +742,6 @@ impl AuthorityStorePruner {
     pub fn new(
         perpetual_db: Arc<AuthorityPerpetualTables>,
         checkpoint_store: Arc<CheckpointStore>,
-        rest_index: Option<Arc<RpcIndexStore>>,
-        objects_lock_table: Arc<RwLockTable<ObjectContentDigest>>,
         rpc_index: Option<Arc<RpcIndexStore>>,
         jsonrpc_index: Option<Arc<IndexStore>>,
         mut pruning_config: AuthorityStorePruningConfig,
@@ -768,8 +766,6 @@ impl AuthorityStorePruner {
                 epoch_duration_ms,
                 perpetual_db,
                 checkpoint_store,
-                rest_index,
-                objects_lock_table,
                 rpc_index,
                 jsonrpc_index,
                 pruner_db,

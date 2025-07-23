@@ -161,10 +161,10 @@ use crate::metrics::RateTracker;
 use crate::module_cache_metrics::ResolverMetrics;
 use crate::overload_monitor::{overload_monitor_accept_tx, AuthorityOverloadInfo};
 use crate::stake_aggregator::StakeAggregator;
-use crate::state_accumulator::{AccumulatorStore, StateAccumulator, WrappedObject};
+//use crate::state_accumulator::{AccumulatorStore, StateAccumulator, WrappedObject};
 use crate::subscription_handler::SubscriptionHandler;
 use crate::transaction_input_loader::TransactionInputLoader;
-use crate::transaction_manager::TransactionManager;
+//use crate::transaction_manager::TransactionManager;
 
 #[cfg(msim)]
 pub use crate::checkpoints::checkpoint_executor::{

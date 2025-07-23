@@ -82,13 +82,11 @@ use typed_store::rocks::{default_db_options, DBBatch, DBMap, DBOptions, MetricCo
 use typed_store::rocks::{read_size_from_env, ReadWriteOptions};
 use typed_store::rocksdb::Options;
 use typed_store::DBMapUtils;
-use typed_store::{retry_transaction_forever, Map};
+//use typed_store::{retry_transaction_forever, Map};
 use typed_store::{
-    rocks::{default_db_options, DBBatch, DBMap, DBOptions, MetricConf},
     traits::{TableSummary, TypedStoreDebug},
     TypedStoreError,
 };
-use typed_store::Map;
 
 use super::authority_store_tables::ENV_VAR_LOCKS_BLOCK_CACHE_SIZE;
 use super::consensus_tx_status_cache::{ConsensusTxStatus, ConsensusTxStatusCache};
@@ -125,11 +123,6 @@ use crate::fallback_fetch::do_fallback_lookup;
 use crate::module_cache_metrics::ResolverMetrics;
 use crate::post_consensus_tx_reorder::PostConsensusTxReorder;
 use crate::signature_verifier::*;
-use crate::stake_aggregator::StakeAggregator;
-use sui_types::sui_system_state::epoch_start_sui_system_state::{
-    EpochStartSystemState, EpochStartSystemStateTrait,
-};
-use crate::stake_aggregator::GenericMultiStakeAggregator;
 use crate::stake_aggregator::{GenericMultiStakeAggregator, StakeAggregator};
 use crate::wait_for_effects_request::ConsensusTxPosition;
 
@@ -1074,7 +1067,7 @@ impl AuthorityPerEpochStore {
 
             for active_jwk in &authenticator_state.active_jwks {
                 let ActiveJwk { jwk_id, jwk, epoch } = active_jwk;
-                assert!(epoch < = &epoch_id);
+                assert!(epoch <= &epoch_id);
                 signature_verifier.insert_jwk(jwk_id, jwk);
             }
         } else {

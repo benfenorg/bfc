@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use prometheus::{register_int_gauge_with_registry, IntGauge, Registry, IntGaugeVec, register_int_gauge_vec_with_registry};
+use prometheus::{register_int_gauge_with_registry, IntGauge, Registry, IntGaugeVec, register_int_gauge_vec_with_registry, register_int_counter_vec_with_registry};
 use std::sync::Arc;
 
 pub struct EpochMetrics {
