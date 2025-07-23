@@ -81,7 +81,7 @@ use tracing::{debug, error, info, instrument, trace, warn};
 use typed_store::rocks::{default_db_options, DBBatch, DBMap, DBOptions, MetricConf};
 use typed_store::rocks::{read_size_from_env, ReadWriteOptions};
 use typed_store::rocksdb::Options;
-use typed_store::DBMapUtils;
+use typed_store::{DBMapUtils, Map};
 //use typed_store::{retry_transaction_forever, Map};
 use typed_store::{
     traits::{TableSummary, TypedStoreDebug},
