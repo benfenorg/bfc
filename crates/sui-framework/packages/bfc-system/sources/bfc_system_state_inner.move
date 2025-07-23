@@ -74,6 +74,10 @@ module bfc_system::bfc_system_state_inner {
     const KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST:  vector<u8>  = b"ToDeleteExternalStableCoinList";
     //spec module { pragma verify = false; }
 
+    /// Key for deposit stable gas coin map in extra_fields
+    const KEY_DEPOSIT_STABLE_GAS_COIN_MAP: vector<u8> = b"DepositStableGasCoinMap";
+
+
     public struct BfcSystemStateInner has store {
         round: u64,
         stable_base_points: u64,
@@ -1009,6 +1013,31 @@ module bfc_system::bfc_system_state_inner {
 
     public(package) fun get_extra_fields(self: &BfcSystemStateInnerV2): &Bag {
         &self.extra_fields
+    }
+
+    /// Deposit any type of stable gas coin balance into extra_fields, grouped by coin type
+    public(package) fun deposit_stable_gas_coin<StableCoinType>(
+        self: &mut BfcSystemStateInnerV2,
+        balance: Balance<StableCoinType>,
+        _ctx: &mut TxContext,
+    ) {
+        let coin_type_key = type_name::into_string(type_name::get<StableCoinType>());
+        // VecMap<String, Balance<StableCoinType>>
+        // Here we use any to store different types of balance, make sure type safety when retrieving
+        if (self.extra_fields.contains(&KEY_DEPOSIT_STABLE_GAS_COIN_MAP)) {
+            let map = self.extra_fields.borrow_mut<vector<u8>, VecMap<String, Balance<StableCoinType>>>(&KEY_DEPOSIT_STABLE_GAS_COIN_MAP);
+            if (vec_map::contains(map, &coin_type_key)) {
+                let mut old_balance = vec_map::remove(map, &coin_type_key);
+                balance::join(&mut old_balance, balance);
+                vec_map::insert(map, coin_type_key, old_balance);
+            } else {
+                vec_map::insert(map, coin_type_key, balance);
+            }
+        } else {
+            let mut map = vec_map::empty<String, Balance<StableCoinType>>();
+            vec_map::insert(&mut map, coin_type_key, balance);
+            self.extra_fields.add(KEY_DEPOSIT_STABLE_GAS_COIN_MAP, map);
+        }
     }
 
     #[test_only]

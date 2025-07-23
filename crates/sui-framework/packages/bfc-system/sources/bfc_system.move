@@ -285,6 +285,11 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::withdraw_balance(inner_state, expect)
     }
 
+    fun deposit_stable_gas_coin(wrapper: &mut BfcSystemState, balance: Balance<StableCoinType>, ctx: &mut TxContext) {
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
+        inner_state.deposit_stable_gas_coin(balance, _ctx);
+    }
+
     #[test_only]
     public fun inner_stablecoin_to_bfc_test<StableCoinType>(
         wrapper: &mut BfcSystemState,
