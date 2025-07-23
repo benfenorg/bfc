@@ -16,7 +16,7 @@ const DEFAULT_AMOUNT: u64 = 1000 * 1_000_000_000;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    let config: FaucetConfig = FaucetConfig::parse();
+    let mut config: FaucetConfig = FaucetConfig::parse();
     let FaucetConfig {
         wallet_client_timeout_secs,
         ..

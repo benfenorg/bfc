@@ -49,7 +49,6 @@ use sui_types::{base_types::ObjectID,
                 move_package::{FnInfo, FnInfoKey, FnInfoMap, MovePackage},
                 DEEPBOOK_ADDRESS, MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS,
                 SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
-use sui_package_management::{resolve_published_id, PublishedAtError};
 use sui_package_management::{
     resolve_published_id,
     system_package_versions::{SystemPackagesVersion, SYSTEM_GIT_REPO},

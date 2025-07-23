@@ -477,7 +477,7 @@ impl TestTransactionBuilder {
                 self.sender,
                 data.coin,
                 data.amounts,
-                self.gas_object,
+                self.gas_object(),
                 self.gas_budget
                     .unwrap_or(self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
                 self.gas_price,
