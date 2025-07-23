@@ -25,10 +25,10 @@ use sui_types::{
     transaction::Transaction,
 };
 
-use crate::events::{
-    TokenTransferAlreadyApproved, TokenTransferAlreadyClaimed, TokenTransferApproved,
-    TokenTransferClaimed,
-};
+// use crate::events::{
+//     TokenTransferAlreadyApproved, TokenTransferAlreadyClaimed, TokenTransferApproved,
+//     TokenTransferClaimed,
+// };
 use crate::metrics::BridgeMetrics;
 use crate::{
     client::bridge_authority_aggregator::BridgeAuthorityAggregator,
