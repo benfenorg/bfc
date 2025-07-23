@@ -765,16 +765,6 @@ impl CheckpointStore {
             if seq_number >= *checkpoint.sequence_number() {
                 return Ok(());
             }
-            assert_eq!(seq_number + 1, *checkpoint.sequence_number(),
-                       "Cannot update highest executed checkpoint to {} when current highest executed checkpoint is {}",
-                       checkpoint.sequence_number(),
-                       seq_number);
-        }
-        debug!(
-            checkpoint_seq = checkpoint.sequence_number(),
-            "Updating highest executed checkpoint",
-        );
-        self.watermarks.insert(
             assert_eq!(
                 seq_number + 1,
                 *checkpoint.sequence_number(),

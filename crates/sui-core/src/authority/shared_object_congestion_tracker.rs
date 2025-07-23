@@ -121,7 +121,7 @@ pub struct SharedObjectCongestionTracker {
 
 impl SharedObjectCongestionTracker {
     pub fn new(
-        initial_object_debts: impl IntoIterator<Item = (ObjectID, u64)>,
+        initial_object_debts: impl IntoIterator<Item=(ObjectID, u64)>,
         mode: PerObjectCongestionControlMode,
         for_randomness: bool,
         max_accumulated_txn_cost_per_object_in_commit: Option<u64>,
@@ -173,7 +173,7 @@ impl SharedObjectCongestionTracker {
     }
 
     pub fn from_protocol_config(
-        initial_object_debts: impl IntoIterator<Item = (ObjectID, u64)>,
+        initial_object_debts: impl IntoIterator<Item=(ObjectID, u64)>,
         protocol_config: &ProtocolConfig,
         for_randomness: bool,
     ) -> SuiResult<Self> {
@@ -382,7 +382,7 @@ impl SharedObjectCongestionTracker {
             * self
             .gas_budget_based_txn_cost_cap_factor
             .expect("cap factor must be set if TotalGasBudgetWithCap mode is used.");
-            * self.params.gas_budget_based_txn_cost_cap_factor();
+        *self.params.gas_budget_based_txn_cost_cap_factor();
 
         // Apply absolute cap if configured.
         std::cmp::min(
@@ -568,9 +568,9 @@ mod object_cost_tests {
     #[rstest]
     fn test_should_defer_return_correct_congested_objects(
         #[values(
-        PerObjectCongestionControlMode::TotalGasBudget,
-        PerObjectCongestionControlMode::TotalTxCount,
-        PerObjectCongestionControlMode::TotalGasBudgetWithCap
+            PerObjectCongestionControlMode::TotalGasBudget,
+            PerObjectCongestionControlMode::TotalTxCount,
+            PerObjectCongestionControlMode::TotalGasBudgetWithCap
         )]
         mode: PerObjectCongestionControlMode,
     ) {
@@ -731,9 +731,6 @@ mod object_cost_tests {
     #[rstest]
     fn test_should_defer_return_correct_deferral_key(
         #[values(
-        PerObjectCongestionControlMode::TotalGasBudget,
-        PerObjectCongestionControlMode::TotalTxCount,
-        PerObjectCongestionControlMode::TotalGasBudgetWithCap
             PerObjectCongestionControlMode::TotalGasBudget,
             PerObjectCongestionControlMode::TotalTxCount,
             PerObjectCongestionControlMode::TotalGasBudgetWithCap,
@@ -782,12 +779,6 @@ mod object_cost_tests {
                         },
                         _,
                     )) = shared_object_congestion_tracker.should_defer_due_to_object_congestion(
-            DeferralKey::ConsensusRound {
-                future_round,
-                deferred_from_round,
-            },
-            _,
-        )) = shared_object_congestion_tracker.should_defer_due_to_object_congestion(
             Some(&execution_time_estimator),
             &tx,
             &previously_deferred_tx_digests,
@@ -796,7 +787,7 @@ mod object_cost_tests {
                 10,
                 Duration::from_micros(10_000_000),
             ),
-        ) {
+        ){
             assert_eq!(future_round, 11);
             assert_eq!(deferred_from_round, 10);
         } else {
@@ -819,12 +810,6 @@ mod object_cost_tests {
                         },
                         _,
                     )) = shared_object_congestion_tracker.should_defer_due_to_object_congestion(
-            DeferralKey::ConsensusRound {
-                future_round,
-                deferred_from_round,
-            },
-            _,
-        )) = shared_object_congestion_tracker.should_defer_due_to_object_congestion(
             Some(&execution_time_estimator),
             &tx,
             &previously_deferred_tx_digests,
@@ -833,7 +818,8 @@ mod object_cost_tests {
                 10,
                 Duration::from_micros(10_000_000),
             ),
-        ) {
+        )
+        {
             assert_eq!(future_round, 11);
             assert_eq!(deferred_from_round, 4);
         } else {
@@ -857,12 +843,6 @@ mod object_cost_tests {
                         },
                         _,
                     )) = shared_object_congestion_tracker.should_defer_due_to_object_congestion(
-            DeferralKey::ConsensusRound {
-                future_round,
-                deferred_from_round,
-            },
-            _,
-        )) = shared_object_congestion_tracker.should_defer_due_to_object_congestion(
             Some(&execution_time_estimator),
             &tx,
             &previously_deferred_tx_digests,
@@ -871,7 +851,8 @@ mod object_cost_tests {
                 10,
                 Duration::from_micros(10_000_000),
             ),
-        ) {
+        )
+        {
             assert_eq!(future_round, 11);
             assert_eq!(deferred_from_round, 5);
         } else {

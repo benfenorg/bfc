@@ -473,10 +473,10 @@ impl TestTransactionBuilder {
                     .unwrap_or(self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
                 self.gas_price,
             ),
-            TestTransactionData::SplitCoin(data) => TransactionData::new_split_coin(
+            TestTransactionData::SplitCoin(ref data) => TransactionData::new_split_coin(
                 self.sender,
                 data.coin,
-                data.amounts,
+                data.amounts.clone(),
                 self.gas_object(),
                 self.gas_budget
                     .unwrap_or(self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),

@@ -1496,14 +1496,13 @@ impl AuthorityState {
         // non-transient (transaction input is invalid, move vm errors). However, all errors from
         // this function occur before we have written anything to the db, so we commit the tx
         // guard and rely on the client to retry the tx (if it was transient).
-        let (inner_temporary_store, _, effects, execution_error_opt) = match self.prepare_certificate(
         let (transaction_outputs, timings, execution_error_opt) = match self.execute_certificate(
             &execution_guard,
             certificate,
             input_objects,
             expected_effects_digest,
             epoch_store,
-        ).await {
+        ) {
             Err(e) => {
                 info!(name = ?self.name, ?tx_digest, "Error executing transaction: {e}");
                 tx_guard.release();
@@ -1512,42 +1511,6 @@ impl AuthorityState {
             Ok(res) => res,
         };
 
-        if let Some(expected_effects_digest) = expected_effects_digest {
-            if effects.digest() != expected_effects_digest {
-                // We dont want to mask the original error, so we log it and continue.
-                match self.debug_dump_transaction_state(
-                    &digest,
-                    &effects,
-                    expected_effects_digest,
-                    &inner_temporary_store,
-                    certificate,
-                    &self.config.state_debug_dump_config,
-                ) {
-                    Ok(out_path) => {
-                        info!(
-                        "Dumped node state for transaction {} to {}",
-                        digest,
-                        out_path.as_path().display().to_string()
-                    );
-                    }
-                    Err(e) => {
-                        error!("Error dumping state for transaction {}: {e}", digest);
-                    }
-                }
-                error!(
-            tx_digest = ?digest,
-            ?expected_effects_digest,
-            actual_effects = ?effects,
-            "fork detected!"
-            );
-                panic!(
-                    "Transaction {} is expected to have effects digest {}, but got {}!",
-                    digest,
-                    expected_effects_digest,
-                    effects.digest(),
-                );
-            }
-        }
         fail_point!("crash");
 
         let effects = transaction_outputs.effects.clone();
@@ -1556,8 +1519,6 @@ impl AuthorityState {
             transaction_outputs,
             execution_guard,
             epoch_store,
-        )
-            .await?;
         ) {
             Err(err) => {
                 error!(?tx_digest, "Error committing transaction: {err}");
@@ -5623,7 +5584,7 @@ impl AuthorityState {
         }
 
         //let system_obj = temporary_store.get_sui_system_state_object();
-        let system_obj = get_sui_system_state(&temporary_store.written)
+        let system_obj = get_sui_system_state(&temporary_store.written);
         let (transaction_outputs, _timings, _execution_error_opt) = self.execute_certificate(
             &execution_guard,
             &executable_tx,
@@ -5631,8 +5592,8 @@ impl AuthorityState {
             None,
             epoch_store,
         )?;
-        let system_obj = get_sui_system_state(&transaction_outputs.written)
-            .expect("change epoch tx must write to system object");
+        //let system_obj = get_sui_system_state(&transaction_outputs.written)
+          //  .expect("change epoch tx must write to system object");
 
         let effects = transaction_outputs.effects;
         // We must write tx and effects to the state sync tables so that state sync is able to

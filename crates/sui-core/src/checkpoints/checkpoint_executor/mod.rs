@@ -1223,10 +1223,9 @@ impl CheckpointExecutor {
     }
 
 
-    /// Check whether `checkpoint` is the last checkpoint of the current epoch. If so,
-    /// perform special case logic (execute change_epoch tx, accumulate epoch,
-    /// finalize transactions), then return true.
-    pub async fn check_epoch_last_checkpoint(
+    // Extract randomness rounds from the checkpoint version-specific data (if available).
+    // Otherwise, extract randomness rounds from the first transaction in the checkpoint
+    #[instrument(level = "debug", skip_all)]
     fn extract_randomness_rounds(
         &self,
         epoch_store: Arc<AuthorityPerEpochStore>,
@@ -1989,45 +1988,4 @@ async fn finalize_checkpoint(
     }
 
     Ok((checkpoint_acc, checkpoint_data))
-        checkpoint: &VerifiedCheckpoint,
-        checkpoint_contents: &CheckpointContents,
-    ) -> Vec<RandomnessRound> {
-        if let Some(version_specific_data) = checkpoint
-            .version_specific_data(self.epoch_store.protocol_config())
-            .expect("unable to get version_specific_data")
-        {
-            // With version-specific data, randomness rounds are stored in checkpoint summary.
-            version_specific_data.into_v1().randomness_rounds
-        } else {
-            // Before version-specific data, checkpoint batching must be disabled. In this case,
-            // randomness state update tx must be first if it exists, because all other
-            // transactions in a checkpoint that includes a randomness state update are causally
-            // dependent on it.
-            assert_eq!(
-                0,
-                self.epoch_store
-                    .protocol_config()
-                    .min_checkpoint_interval_ms_as_option()
-                    .unwrap_or_default(),
-            );
-            if let Some(first_digest) = checkpoint_contents.inner().first() {
-                let maybe_randomness_tx = self.transaction_cache_reader.get_transaction_block(&first_digest.transaction)
-                .unwrap_or_else(||
-                    fatal!(
-                        "state-sync should have ensured that transaction with digests {first_digest:?} exists for checkpoint: {}",
-                        checkpoint.sequence_number()
-                    )
-                );
-                if let TransactionKind::RandomnessStateUpdate(rsu) =
-                    maybe_randomness_tx.data().transaction_data().kind()
-                {
-                    vec![rsu.randomness_round]
-                } else {
-                    Vec::new()
-                }
-            } else {
-                Vec::new()
-            }
-        }
-    }
 }

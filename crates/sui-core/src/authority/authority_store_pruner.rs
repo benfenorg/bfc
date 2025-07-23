@@ -297,8 +297,6 @@ impl AuthorityStorePruner {
             )],
         )?;
 
-        if let Some(rest_index) = rest_index {
-            rest_index.prune(&checkpoint_content_to_prune)?;
         if let Some(rpc_index) = rpc_index {
             rpc_index.prune(checkpoint_number, &checkpoint_content_to_prune)?;
         }
