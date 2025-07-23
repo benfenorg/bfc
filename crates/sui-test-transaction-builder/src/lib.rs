@@ -30,7 +30,7 @@ use sui_types::{TypeTag, SUI_SYSTEM_PACKAGE_ID};
 pub struct TestTransactionBuilder {
     test_data: TestTransactionData,
     sender: SuiAddress,
-    gas_objects: Vec<ObjectRef>,
+    gas_object: ObjectRef,
     gas_price: u64,
     gas_budget: Option<u64>,
 }
@@ -40,7 +40,7 @@ impl TestTransactionBuilder {
         Self {
             test_data: TestTransactionData::Empty,
             sender,
-            gas_objects:vec![gas_object],
+            gas_object: gas_object,
             gas_price,
             gas_budget: None,
         }
@@ -50,7 +50,7 @@ impl TestTransactionBuilder {
         Self {
             test_data: TestTransactionData::Empty,
             sender,
-            gas_objects,
+            gas_object: gas_objects[0],
             gas_price,
             gas_budget: None,
         }
@@ -61,7 +61,7 @@ impl TestTransactionBuilder {
     }
 
     pub fn gas_object(&self) -> ObjectRef {
-        self.gas_objects[0]
+        self.gas_object
     }
 
     // Use `with_type_args` below to provide type args if any
@@ -434,7 +434,7 @@ impl TestTransactionBuilder {
                 ident_str!(data.module).to_owned(),
                 ident_str!(data.function).to_owned(),
                 data.type_args,
-                self.gas_objects,
+                vec![self.gas_object],
                 data.args,
                 self.gas_budget
                     .unwrap_or(self.gas_price * TEST_ONLY_GAS_UNIT_FOR_HEAVY_COMPUTATION_STORAGE),
@@ -447,7 +447,7 @@ impl TestTransactionBuilder {
                 ident_str!(data.module).to_owned(),
                 ident_str!(data.function).to_owned(),
                 data.type_args,
-                self.gas_objects,
+                vec![self.gas_object],
                 data.args,
                 self.gas_budget
                     .unwrap_or(self.gas_price * TEST_ONLY_GAS_UNIT_FOR_HEAVY_COMPUTATION_STORAGE),
@@ -458,7 +458,7 @@ impl TestTransactionBuilder {
                 data.recipient,
                 data.object,
                 self.sender,
-                self.gas_objects[0],
+                self.gas_object,
                 self.gas_budget
                     .unwrap_or(self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
                 //self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
@@ -468,16 +468,16 @@ impl TestTransactionBuilder {
                 data.recipient,
                 self.sender,
                 data.amount,
-                self.gas_objects,
+                vec![self.gas_object],
                 self.gas_budget
                     .unwrap_or(self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
                 self.gas_price,
             ),
-            TestTransactionData::SplitCoin(ref data) => TransactionData::new_split_coin(
+            TestTransactionData::SplitCoin(data) => TransactionData::new_split_coin(
                 self.sender,
                 data.coin,
-                data.amounts.clone(),
-                self.gas_object(),
+                data.amounts,
+                self.gas_object,
                 self.gas_budget
                     .unwrap_or(self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
                 self.gas_price,
@@ -501,7 +501,7 @@ impl TestTransactionBuilder {
 
                 TransactionData::new_module(
                     self.sender,
-                    self.gas_objects[0],
+                    self.gas_object,
                     all_module_bytes,
                     dependencies,
                     self.gas_budget.unwrap_or(
@@ -512,7 +512,7 @@ impl TestTransactionBuilder {
             }
             TestTransactionData::Programmable(pt) => TransactionData::new_programmable(
                 self.sender,
-                self.gas_objects,
+                vec![self.gas_object],
                 pt,
                 self.gas_budget
                     .unwrap_or(self.gas_price * TEST_ONLY_GAS_UNIT_FOR_HEAVY_COMPUTATION_STORAGE),
