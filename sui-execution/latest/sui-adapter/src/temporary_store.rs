@@ -35,10 +35,9 @@ use sui_types::sui_system_state::{
 use sui_types::{
     base_types::{ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest},
     error::{ExecutionError, SuiError, SuiResult},
-    fp_bail,
     gas::GasCostSummary,
     object::Owner,
-    object::{Data, Object},
+    object::{Object},
     storage::{BackingPackageStore, ChildObjectResolver, ParentSync, Storage},
     transaction::InputObjects,
 };

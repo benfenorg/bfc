@@ -8,7 +8,7 @@ use crate::execution_cache::TransactionCacheRead;
 use crate::jsonrpc_index::CoinIndexKey2;
 use crate::rpc_index::RpcIndexStore;
 use crate::transaction_outputs::TransactionOutputs;
-use crate::verify_indexes::verify_indexes;
+use crate::verify_indexes::{fix_indexes, verify_indexes};
 use anyhow::anyhow;
 use arc_swap::{ArcSwap, Guard};
 use async_trait::async_trait;
@@ -35,7 +35,7 @@ use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use std::{collections::HashMap, fs, pin::Pin, sync::Arc};
 use std::sync::atomic::Ordering;
 use std::time::SystemTime;
@@ -83,6 +83,7 @@ use sui_json_rpc_types::{
     SuiTransactionBlockEvents, TransactionFilter,
 };
 use sui_macros::{fail_point, fail_point_async, fail_point_if};
+use sui_protocol_config::PerObjectCongestionControlMode;
 use sui_storage::key_value_store::{TransactionKeyValueStore, TransactionKeyValueStoreTrait};
 use sui_storage::key_value_store_metrics::KeyValueStoreMetrics;
 use sui_types::authenticator_state::get_authenticator_state;
@@ -177,8 +178,9 @@ use sui_types::deny_list_v2::check_coin_deny_list_v2_during_signing;
 use sui_types::execution::{ExecutionTimeObservationKey, ExecutionTiming};
 use sui_types::execution_config_utils::to_binary_config;
 use sui_types::oracle_price::OraclePrice;
+use crate::congestion_tracker::CongestionTracker;
 use crate::execution_scheduler::ExecutionSchedulerWrapper;
-use crate::global_state_hasher::GlobalStateHasher;
+use crate::global_state_hasher::{GlobalStateHashStore, GlobalStateHasher};
 
 #[cfg(test)]
 #[path = "unit_tests/authority_tests.rs"]
@@ -1495,13 +1497,16 @@ impl AuthorityState {
         // non-transient (transaction input is invalid, move vm errors). However, all errors from
         // this function occur before we have written anything to the db, so we commit the tx
         // guard and rely on the client to retry the tx (if it was transient).
-        let (inner_temporary_store, _, effects, execution_error_opt) = match self.execute_certificate(
+
+
+        let (inner_temporary_store, proposal_status, effects,
+            transaction_outputs, timings,  execution_error_opt) = match self.execute_certificate(
             &execution_guard,
             certificate,
             input_objects,
             expected_effects_digest,
             epoch_store,
-        ).await {
+        ) {
             Err(e) => {
                 info!(name = ?self.name, ?tx_digest, "Error executing transaction: {e}");
                 tx_guard.release();
@@ -1510,43 +1515,6 @@ impl AuthorityState {
             Ok(res) => res,
         };
 
-        if let Some(expected_effects_digest) = expected_effects_digest {
-            if effects.digest() != expected_effects_digest {
-                // We dont want to mask the original error, so we log it and continue.
-                match self.debug_dump_transaction_state(
-                    &digest,
-                    &effects,
-                    expected_effects_digest,
-                    &inner_temporary_store,
-                    certificate,
-                    &self.config.state_debug_dump_config,
-                ) {
-                    Ok(out_path) => {
-                        info!(
-                        "Dumped node state for transaction {} to {}",
-                        digest,
-                        out_path.as_path().display().to_string()
-                    );
-                    }
-                    Err(e) => {
-                        error!("Error dumping state for transaction {}: {e}", digest);
-                    }
-                }
-                error!(
-            tx_digest = ?digest,
-            ?expected_effects_digest,
-            actual_effects = ?effects,
-            "fork detected!"
-            );
-                panic!(
-                    "Transaction {} is expected to have effects digest {}, but got {}!",
-                    digest,
-                    expected_effects_digest,
-                    effects.digest(),
-                );
-            }
-        }
-        fail_point!("crash");
 
         let effects = transaction_outputs.effects.clone();
         match self.commit_certificate(

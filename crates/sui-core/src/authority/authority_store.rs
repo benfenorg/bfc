@@ -11,7 +11,7 @@ use crate::authority::authority_store_pruner::{
 };
 use crate::authority::authority_store_types::{get_store_object, StoreObject, StoreObjectWrapper};
 use crate::authority::epoch_start_configuration::{EpochFlag, EpochStartConfiguration};
-use crate::global_state_hasher::GlobalStateHashStore;
+use crate::global_state_hasher::{GlobalStateHashStore, WrappedObject};
 use crate::rpc_index::RpcIndexStore;
 use crate::transaction_outputs::TransactionOutputs;
 use either::Either;
@@ -888,21 +888,7 @@ impl AuthorityStore {
                 .map(|(key, store_object)| (key, StoreObjectWrapper::from(store_object))),
         )?;
 
-        // Insert each output object into the stores
-        let (new_objects, new_indirect_move_objects): (Vec<_>, Vec<_>) = written
-            .iter()
-            //.map(|(_, (obj_ref, new_object, _))| {
-            .map(|(id, new_object)| {
-                let version = new_object.version();
-                trace!(?id, ?version, "writing object");
-                let StoreObjectPair(store_object, indirect_object) =
-                    get_store_object_pair(new_object.clone(), self.indirect_objects_threshold);
-                (
-                    (ObjectKey(*id, version), store_object),
-                    indirect_object.map(|obj| (obj.inner().digest(), obj)),
-                )
-            })
-            .unzip();
+
         let new_objects = written.iter().map(|(id, new_object)| {
             let version = new_object.version();
             trace!(?id, ?version, "writing object");

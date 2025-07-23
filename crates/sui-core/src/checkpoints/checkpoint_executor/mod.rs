@@ -967,64 +967,7 @@ impl CheckpointExecutor {
         );
     }
 
-    /// Post processing and plumbing after we executed a checkpoint. This function is guaranteed
-    /// to be called in the order of checkpoint sequence number.
-    #[instrument(level = "info", skip_all, fields(seq = ?checkpoint.sequence_number()))]
-    async fn process_executed_checkpoint(
-        &self,
-        epoch_store: &AuthorityPerEpochStore,
-        checkpoint: &VerifiedCheckpoint,
-        checkpoint_acc: Option<Accumulator>,
-        checkpoint_data: Option<CheckpointData>,
-        all_tx_digests: &[TransactionDigest],
-        randomness_rounds: Vec<RandomnessRound>,
-    ) {
-        // Commit all transaction effects to disk
-        let cache_commit = self.state.get_cache_commit();
-        debug!("committing checkpoint transactions to disk");
-        cache_commit
-            .commit_transaction_outputs(
-                epoch_store.epoch(),
-                all_tx_digests,
-                epoch_store
-                    .protocol_config()
-                    .use_object_per_epoch_marker_table_v2_as_option()
-                    .unwrap_or(false),
-            )
-            .await;
 
-        epoch_store
-            .handle_committed_transactions(all_tx_digests)
-            .expect("cannot fail");
-
-        // Once the checkpoint is finalized, we know that any randomness contained in this checkpoint has
-        // been successfully included in a checkpoint certified by quorum of validators.
-        // (RandomnessManager/RandomnessReporter is only present on validators.)
-        if let Some(randomness_reporter) = epoch_store.randomness_reporter() {
-            for round in randomness_rounds {
-                debug!(
-                    ?round,
-                    "notifying RandomnessReporter that randomness update was executed in checkpoint"
-                );
-                randomness_reporter
-                    .notify_randomness_in_checkpoint(round)
-                    .expect("epoch cannot have ended");
-            }
-        }
-
-        if let Some(checkpoint_data) = checkpoint_data {
-            self.commit_index_updates_and_enqueue_to_subscription_service(checkpoint_data)
-                .await;
-        }
-
-        if !checkpoint.is_last_checkpoint_of_epoch() {
-            self.accumulator
-                .accumulate_running_root(epoch_store, checkpoint.sequence_number, checkpoint_acc)
-                .await
-                .expect("Failed to accumulate running root");
-            self.bump_highest_executed_checkpoint(checkpoint);
-        }
-    }
 
     /// If configured, commit the pending index updates for the provided checkpoint as well as
     /// enqueuing the checkpoint to the subscription service
