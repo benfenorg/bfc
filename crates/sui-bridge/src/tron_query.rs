@@ -19,26 +19,40 @@ struct JsonRpcRequest<T> {
 
 #[derive(Debug, Deserialize)]
 struct EthTxByHashResponse {
+    #[allow(dead_code)]
     jsonrpc: String,
+    #[allow(dead_code)]
     id: String,
     result: Option<EthTransaction>,
 }
 
 #[derive(Debug, Deserialize)]
 struct EthTransaction {
+    #[allow(dead_code)]
     hash: String,
+    #[allow(dead_code)]
     from: String,
     to: Option<String>,
     value: String,
+    #[allow(dead_code)]
     block_hash: Option<String>,
+    #[allow(dead_code)]
     block_number: Option<String>,
+    #[allow(dead_code)]
     transaction_index: Option<String>,
+    #[allow(dead_code)]
     gas: Option<String>,
+    #[allow(dead_code)]
     gas_price: Option<String>,
+    #[allow(dead_code)]
     input: Option<String>,
+    #[allow(dead_code)]
     nonce: Option<String>,
+    #[allow(dead_code)]
     v: Option<String>,
+    #[allow(dead_code)]
     r: Option<String>,
+    #[allow(dead_code)]
     s: Option<String>,
 }
 
