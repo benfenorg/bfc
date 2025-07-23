@@ -74,7 +74,6 @@ use crate::jsonrpc_index::IndexStore;
 use crate::jsonrpc_index::{CoinInfo, ObjectIndexChanges};
 use mysten_common::debug_fatal;
 use shared_crypto::intent::{AppId, Intent, IntentMessage, IntentScope, IntentVersion};
-use sui_archival::reader::ArchiveReaderBalancer;
 use sui_config::genesis::Genesis;
 use sui_config::node::{DBCheckpointConfig, ExpensiveSafetyCheckConfig};
 use sui_framework::{BuiltInFramework, SystemPackage};
@@ -161,10 +160,8 @@ use crate::metrics::RateTracker;
 use crate::module_cache_metrics::ResolverMetrics;
 use crate::overload_monitor::{overload_monitor_accept_tx, AuthorityOverloadInfo};
 use crate::stake_aggregator::StakeAggregator;
-//use crate::state_accumulator::{AccumulatorStore, StateAccumulator, WrappedObject};
 use crate::subscription_handler::SubscriptionHandler;
 use crate::transaction_input_loader::TransactionInputLoader;
-//use crate::transaction_manager::TransactionManager;
 
 #[cfg(msim)]
 pub use crate::checkpoints::checkpoint_executor::{
@@ -1496,13 +1493,13 @@ impl AuthorityState {
         // non-transient (transaction input is invalid, move vm errors). However, all errors from
         // this function occur before we have written anything to the db, so we commit the tx
         // guard and rely on the client to retry the tx (if it was transient).
-        let (transaction_outputs, timings, execution_error_opt) = match self.execute_certificate(
+        let (inner_temporary_store, _, effects, execution_error_opt) = match self.execute_certificate(
             &execution_guard,
             certificate,
             input_objects,
             expected_effects_digest,
             epoch_store,
-        ) {
+        ).await {
             Err(e) => {
                 info!(name = ?self.name, ?tx_digest, "Error executing transaction: {e}");
                 tx_guard.release();
@@ -1511,6 +1508,42 @@ impl AuthorityState {
             Ok(res) => res,
         };
 
+        if let Some(expected_effects_digest) = expected_effects_digest {
+            if effects.digest() != expected_effects_digest {
+                // We dont want to mask the original error, so we log it and continue.
+                match self.debug_dump_transaction_state(
+                    &digest,
+                    &effects,
+                    expected_effects_digest,
+                    &inner_temporary_store,
+                    certificate,
+                    &self.config.state_debug_dump_config,
+                ) {
+                    Ok(out_path) => {
+                        info!(
+                        "Dumped node state for transaction {} to {}",
+                        digest,
+                        out_path.as_path().display().to_string()
+                    );
+                    }
+                    Err(e) => {
+                        error!("Error dumping state for transaction {}: {e}", digest);
+                    }
+                }
+                error!(
+            tx_digest = ?digest,
+            ?expected_effects_digest,
+            actual_effects = ?effects,
+            "fork detected!"
+            );
+                panic!(
+                    "Transaction {} is expected to have effects digest {}, but got {}!",
+                    digest,
+                    expected_effects_digest,
+                    effects.digest(),
+                );
+            }
+        }
         fail_point!("crash");
 
         let effects = transaction_outputs.effects.clone();
@@ -5584,7 +5617,6 @@ impl AuthorityState {
         }
 
         //let system_obj = temporary_store.get_sui_system_state_object();
-        let system_obj = get_sui_system_state(&temporary_store.written);
         let (transaction_outputs, _timings, _execution_error_opt) = self.execute_certificate(
             &execution_guard,
             &executable_tx,
@@ -5592,8 +5624,8 @@ impl AuthorityState {
             None,
             epoch_store,
         )?;
-        //let system_obj = get_sui_system_state(&transaction_outputs.written)
-          //  .expect("change epoch tx must write to system object");
+        let system_obj = get_sui_system_state(&transaction_outputs.written)
+            .expect("change epoch tx must write to system object");
 
         let effects = transaction_outputs.effects;
         // We must write tx and effects to the state sync tables so that state sync is able to

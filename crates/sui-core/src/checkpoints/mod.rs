@@ -70,7 +70,7 @@ use sui_types::sui_system_state::{SuiSystemState, SuiSystemStateTrait};
 use sui_types::transaction::{TransactionDataAPI, TransactionKey, TransactionKind};
 use tokio::{sync::Notify, task::JoinSet, time::timeout};
 use tracing::{debug, error, info, instrument, trace, warn};
-use typed_store::traits::{TableSummary, TypedStoreDebug};
+use typed_store::traits::{TableSummary};
 use typed_store::DBMapUtils;
 use typed_store::Map;
 use typed_store::{
