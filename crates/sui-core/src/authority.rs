@@ -72,7 +72,7 @@ use mysten_metrics::{monitored_scope, spawn_monitored_task};
 
 use crate::jsonrpc_index::IndexStore;
 use crate::jsonrpc_index::{CoinInfo, ObjectIndexChanges};
-use mysten_common::debug_fatal;
+use mysten_common::{debug_fatal, fatal};
 use shared_crypto::intent::{AppId, Intent, IntentMessage, IntentScope, IntentVersion};
 use sui_config::genesis::Genesis;
 use sui_config::node::{DBCheckpointConfig, ExpensiveSafetyCheckConfig};
@@ -174,9 +174,11 @@ use crate::validator_tx_finalizer::ValidatorTxFinalizer;
 #[cfg(msim)]
 use sui_types::committee::CommitteeTrait;
 use sui_types::deny_list_v2::check_coin_deny_list_v2_during_signing;
-use sui_types::execution::ExecutionTiming;
+use sui_types::execution::{ExecutionTimeObservationKey, ExecutionTiming};
 use sui_types::execution_config_utils::to_binary_config;
 use sui_types::oracle_price::OraclePrice;
+use crate::execution_scheduler::ExecutionSchedulerWrapper;
+use crate::global_state_hasher::GlobalStateHasher;
 
 #[cfg(test)]
 #[path = "unit_tests/authority_tests.rs"]

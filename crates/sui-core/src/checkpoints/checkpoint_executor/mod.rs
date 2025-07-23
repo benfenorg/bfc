@@ -22,6 +22,11 @@ use futures::StreamExt;
 use mysten_common::{debug_fatal, fatal};
 use parking_lot::Mutex;
 use std::{sync::Arc, time::Instant};
+use std::collections::HashMap;
+use std::path::PathBuf;
+use std::time::Duration;
+use futures::stream::FuturesOrdered;
+use itertools::izip;
 use sui_types::crypto::RandomnessRound;
 use sui_types::inner_temporary_store::PackageStoreWithFallback;
 use sui_types::messages_checkpoint::{CheckpointContents, CheckpointSequenceNumber};
@@ -40,7 +45,8 @@ use sui_types::{
     transaction::VerifiedTransaction,
 };
 use tap::{TapFallible, TapOptional};
-use tracing::{debug, info, instrument, warn};
+use tokio::time::timeout;
+use tracing::{debug, error, info, instrument, trace, warn};
 
 use crate::authority::authority_per_epoch_store::AuthorityPerEpochStore;
 use crate::authority::backpressure::BackpressureManager;
@@ -60,17 +66,13 @@ mod data_ingestion_handler;
 pub mod metrics;
 pub(crate) mod utils;
 
-type CheckpointExecutionBuffer = FuturesOrdered<
-    JoinHandle<(
-        VerifiedCheckpoint,
-        Option<Accumulator>,
-        Option<CheckpointData>,
-        Vec<TransactionDigest>,
-        Vec<RandomnessRound>,
-    )>,
->;
+
 use metrics::CheckpointExecutorMetrics;
+use mysten_metrics::spawn_monitored_task;
+use sui_types::base_types::ExecutionDigests;
+use sui_types::error::SuiResult;
 use utils::*;
+use crate::execution_scheduler::transaction_manager::TransactionManager;
 
 const CHECKPOINT_PROGRESS_LOG_COUNT_INTERVAL: u64 = 5000;
 

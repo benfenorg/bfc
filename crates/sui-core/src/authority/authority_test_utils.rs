@@ -8,11 +8,11 @@ use crate::execution_scheduler::ExecutionSchedulerAPI;
 use core::default::Default;
 use fastcrypto::hash::MultisetHash;
 use fastcrypto::traits::KeyPair;
-use sui_protocol_config::Chain;
+use sui_protocol_config::{Chain, PerObjectCongestionControlMode};
 use sui_types::crypto::{AccountKeyPair, AuthorityKeyPair};
 use sui_types::messages_consensus::ConsensusTransaction;
 use sui_types::utils::to_sender_signed_transaction;
-
+use crate::global_state_hasher::GlobalStateHasher;
 use super::test_authority_builder::TestAuthorityBuilder;
 use super::*;
 
