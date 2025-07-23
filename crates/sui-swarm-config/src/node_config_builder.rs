@@ -409,7 +409,7 @@ impl FullnodeConfigBuilder {
         let key_path = get_key_path(&validator_config.key_pair);
         let config_directory = self
             .config_directory
-            .unwrap_or_else(|| tempfile::tempdir().unwrap().into_path());
+            .unwrap_or_else(|| mysten_common::tempdir().unwrap().keep());
 
         let p2p_config = {
             let seed_peers = network_config
@@ -473,7 +473,6 @@ impl FullnodeConfigBuilder {
                 network_config.genesis.clone(),
             )),
             rpc: Some(sui_rpc_api::Config {
-                enable_experimental_rest_api: Some(true),
                 enable_indexing: Some(true),
                 ..Default::default()
             }),
@@ -487,7 +486,6 @@ impl FullnodeConfigBuilder {
             metrics: None,
             supported_protocol_versions: self.supported_protocol_versions,
             db_checkpoint_config: self.db_checkpoint_config.unwrap_or_default(),
-            indirect_objects_threshold: usize::MAX,
             expensive_safety_check_config: self
                 .expensive_safety_check_config
                 .unwrap_or_else(ExpensiveSafetyCheckConfig::new_enable_all),
@@ -497,7 +495,6 @@ impl FullnodeConfigBuilder {
             transaction_deny_config: Default::default(),
             certificate_deny_config: Default::default(),
             state_debug_dump_config: Default::default(),
-            state_archive_write_config: StateArchiveConfig::default(),
             state_archive_read_config: vec![],
             state_snapshot_write_config: StateSnapshotConfig::default(),
             indexer_max_subscriptions: Default::default(),
@@ -518,6 +515,8 @@ impl FullnodeConfigBuilder {
             state_accumulator_v2: true, //TODO check this field
             enable_db_write_stall: None,
             verifier_signing_config: VerifierSigningConfig::default(),
+            execution_time_observer_config: None,
+            chain_override_for_testing: self.chain_override,
         }
     }
 

@@ -12,7 +12,6 @@ use fastcrypto::traits::ToFromBytes;
 use sui_sdk_types::*;
 use tap::Pipe;
 use crate::execution_status::ExecutionFailureStatus;
-
 use crate::crypto::SuiSignature as _;
 
 #[derive(Debug)]
@@ -1236,6 +1235,28 @@ impl From<crate::transaction::ChangeEpoch> for ChangeEpoch {
             stable_gas_summarys,
         }: crate::transaction::ChangeEpoch,
     ) -> Self {
+        let mut stable_gas_summarys_vec= vec![];
+        for (type_tag, summary) in stable_gas_summarys {
+            let tagged_gas_cost_summary = TaggedGasCostSummary {
+                tag: type_tag_core_to_sdk(type_tag).unwrap(),
+                gas_cost_summary: sui_sdk_types::GasCostSummaryAdjusted{
+                    gas_by_bfc: sui_sdk_types::GasCostSummary::new( summary.gas_by_bfc.base_point,
+                                                                    summary.gas_by_bfc.rate,
+                                                                    summary.gas_by_bfc.computation_cost,
+                                                                    summary.gas_by_bfc.storage_cost,
+                                                                    summary.gas_by_bfc.storage_rebate,
+                                                                    summary.gas_by_bfc.non_refundable_storage_fee),
+                    gas_by_stable: sui_sdk_types::GasCostSummary::new( summary.gas_by_stable.base_point,
+                                                                       summary.gas_by_stable.rate,
+                                                                       summary.gas_by_stable.computation_cost,
+                                                                       summary.gas_by_stable.storage_cost,
+                                                                       summary.gas_by_stable.storage_rebate,
+                                                                       summary.gas_by_stable.non_refundable_storage_fee),
+                },
+            };
+            stable_gas_summarys_vec.push(tagged_gas_cost_summary);
+        }
+
         Self {
             epoch,
             protocol_version: protocol_version.as_u64(),
@@ -1245,7 +1266,7 @@ impl From<crate::transaction::ChangeEpoch> for ChangeEpoch {
             bfc_non_refundable_storage_fee,
             epoch_duration_ms,
             epoch_start_timestamp_ms,
-            stable_gas_summarys: stable_gas_summarys,
+            stable_gas_summarys: stable_gas_summarys_vec,
             system_packages: system_packages
                 .into_iter()
                 .map(|(version, modules, dependencies)| SystemPackage {

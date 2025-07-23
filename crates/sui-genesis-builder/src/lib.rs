@@ -1136,7 +1136,7 @@ fn create_genesis_objects(
             epoch_data,
             genesis_digest,
             &system_package.modules(),
-            system_package.dependencies,
+            system_package.dependencies.clone(),
             &protocol_config,
             metrics.clone(),
         )

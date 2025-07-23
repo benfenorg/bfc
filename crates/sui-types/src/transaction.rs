@@ -59,8 +59,6 @@ use tap::Pipe;
 use tracing::trace;
 use crate::gas::GasCostSummaryAdjusted;
 use crate::stable_coin::stable::checked::STABLE;
-use sui_sdk_types::TaggedGasCostSummary;
-use crate::sui_sdk_types_conversions::type_tag_core_to_sdk;
 //use crate::supported_protocol_versions::SupportedProtocolVersions;
 
 
@@ -209,7 +207,7 @@ pub struct ChangeEpoch {
     /// The non-refundable storage fee.
     pub bfc_non_refundable_storage_fee: u64,
 
-    pub stable_gas_summarys: Vec<(TaggedGasCostSummary)>,
+    pub stable_gas_summarys:Vec<(TypeTag,GasCostSummaryAdjusted)>,
     /// Unix timestamp when epoch started
     pub epoch_start_timestamp_ms: u64,
 
@@ -391,24 +389,7 @@ impl EndOfEpochTransactionKind {
         for type_tag in STABLE::all_stable_coins_type() {
             let gas_summary = stable_gas_summary_map.get(&type_tag);
             if let Some(summary) = gas_summary {
-                let tagged_gas_cost_summary = TaggedGasCostSummary {
-                    tag: type_tag_core_to_sdk(type_tag).unwrap(),
-                    gas_cost_summary: sui_sdk_types::GasCostSummaryAdjusted{
-                        gas_by_bfc: sui_sdk_types::GasCostSummary::new( summary.gas_by_bfc.base_point,
-                                                                       summary.gas_by_bfc.rate,
-                                                                       summary.gas_by_bfc.computation_cost,
-                                                                       summary.gas_by_bfc.storage_cost,
-                                                                       summary.gas_by_bfc.storage_rebate,
-                                                                       summary.gas_by_bfc.non_refundable_storage_fee),
-                        gas_by_stable: sui_sdk_types::GasCostSummary::new( summary.gas_by_stable.base_point,
-                                                                          summary.gas_by_stable.rate,
-                                                                          summary.gas_by_stable.computation_cost,
-                                                                          summary.gas_by_stable.storage_cost,
-                                                                          summary.gas_by_stable.storage_rebate,
-                                                                          summary.gas_by_stable.non_refundable_storage_fee),
-                    },
-                };
-                stable_gas_summarys.push(tagged_gas_cost_summary);
+                stable_gas_summarys.push((type_tag.clone(),summary.clone()));
             }
         }
 
@@ -3002,28 +2983,11 @@ impl VerifiedTransaction {
         epoch_duration_ms: u64,
         system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
     ) -> Self {
-        let mut stable_gas_summarys = vec![];
+        let mut stable_gas_summarys= vec![];
         for type_tag in STABLE::all_stable_coins_type() {
             let gas_summary = stable_gas_summary_map.get(&type_tag);
             if let Some(summary) = gas_summary {
-                let tagged_gas_cost_summary = TaggedGasCostSummary {
-                    tag: type_tag_core_to_sdk(type_tag).unwrap(),
-                    gas_cost_summary: sui_sdk_types::GasCostSummaryAdjusted{
-                        gas_by_bfc: sui_sdk_types::GasCostSummary::new( summary.gas_by_bfc.base_point,
-                                                                        summary.gas_by_bfc.rate,
-                                                                        summary.gas_by_bfc.computation_cost,
-                                                                        summary.gas_by_bfc.storage_cost,
-                                                                        summary.gas_by_bfc.storage_rebate,
-                                                                        summary.gas_by_bfc.non_refundable_storage_fee),
-                        gas_by_stable: sui_sdk_types::GasCostSummary::new( summary.gas_by_stable.base_point,
-                                                                           summary.gas_by_stable.rate,
-                                                                           summary.gas_by_stable.computation_cost,
-                                                                           summary.gas_by_stable.storage_cost,
-                                                                           summary.gas_by_stable.storage_rebate,
-                                                                           summary.gas_by_stable.non_refundable_storage_fee),
-                    },
-                };
-                stable_gas_summarys.push(tagged_gas_cost_summary);
+                stable_gas_summarys.push((type_tag.clone(),summary.clone()));
             }
         }
 
