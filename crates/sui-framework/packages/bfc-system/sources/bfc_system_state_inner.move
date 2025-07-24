@@ -1024,10 +1024,10 @@ module bfc_system::bfc_system_state_inner {
         let coin_type_key = type_name::into_string(type_name::get<StableCoinType>());
         // VecMap<String, Balance<StableCoinType>>
         // Here we use any to store different types of balance, make sure type safety when retrieving
-        if (self.extra_fields.contains(&KEY_DEPOSIT_STABLE_GAS_COIN_MAP)) {
-            let map = self.extra_fields.borrow_mut<vector<u8>, VecMap<String, Balance<StableCoinType>>>(&KEY_DEPOSIT_STABLE_GAS_COIN_MAP);
+        if (self.extra_fields.contains(KEY_DEPOSIT_STABLE_GAS_COIN_MAP)) {
+            let map = self.extra_fields.borrow_mut<vector<u8>, VecMap<String, Balance<StableCoinType>>>(KEY_DEPOSIT_STABLE_GAS_COIN_MAP);
             if (vec_map::contains(map, &coin_type_key)) {
-                let mut old_balance = vec_map::remove(map, &coin_type_key);
+                let (_, mut old_balance) = vec_map::remove(map, &coin_type_key);
                 balance::join(&mut old_balance, balance);
                 vec_map::insert(map, coin_type_key, old_balance);
             } else {
