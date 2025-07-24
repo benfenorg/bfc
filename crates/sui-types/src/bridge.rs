@@ -723,6 +723,14 @@ pub struct MoveTypeBridgeExternalLimiter {
     pub external: Bag,
 }
 
+impl Default for MoveTypeBridgeExternalLimiter {
+    fn default() -> Self {
+        Self {
+            transfer_out_limits: VecMap { contents: vec![] },
+            external: Bag::default(),
+        }
+    }
+}
 
 /// Rust version of the Move chain_ids::BridgeRoute type.
 #[derive(Debug, Serialize, Deserialize, Clone)]

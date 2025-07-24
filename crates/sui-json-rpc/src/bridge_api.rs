@@ -34,9 +34,7 @@ impl BridgeReadApiServer for BridgeReadApi {
     async fn get_latest_bridge(&self) -> RpcResult<BridgeSummary> {
         with_tracing!(async move {
             let limiter = 
-            self.state.
-            get_bridge_external_limiter()
-            .map_err(Error::from)?;
+            self.state.get_bridge_external_limiter().unwrap_or_else(|_| Default::default());
             self.state
                 .get_bridge()
                 .map_err(Error::from)?
