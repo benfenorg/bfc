@@ -25,10 +25,6 @@ use sui_types::{
     transaction::Transaction,
 };
 
-// use crate::events::{
-//     TokenTransferAlreadyApproved, TokenTransferAlreadyClaimed, TokenTransferApproved,
-//     TokenTransferClaimed,
-// };
 use crate::metrics::BridgeMetrics;
 use crate::{
     client::bridge_authority_aggregator::BridgeAuthorityAggregator,
@@ -749,7 +745,7 @@ mod tests {
         },
         types::{BridgeCommittee, BridgeCommitteeValiditySignInfo, CertifiedBridgeAction},
     };
-    use crate::events::SuiBridgeEvent::TokenTransferClaimed;
+    use crate::events::TokenTransferClaimed;
     use super::*;
 
     #[tokio::test]
@@ -803,7 +799,7 @@ mod tests {
 
         // Mock the transaction to be successfully executed
         let mut event = SuiEvent::random_for_testing();
-        //event.type_ = TokenTransferClaimed.get("").unwrap().clone();
+        event.type_ = TokenTransferClaimed.get().unwrap().clone();
         let events = vec![event];
         mock_transaction_response(
             &sui_client_mock,
