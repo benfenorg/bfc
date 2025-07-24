@@ -276,12 +276,7 @@ pub trait ObjectCacheRead: Send + Sync {
             )
                 .into_iter(),
         ) {
-            assert!(
-                input_key.version().is_none() || input_key.version().unwrap().is_valid(),
-                "Shared objects in cancelled transaction should always be available immediately,
-                 but it appears that transaction manager is waiting for {:?} to become available",
-                input_key
-            );
+
             // If the key exists at the specified version, then the object is available.
             if has_key {
                 results[*idx] = true;
@@ -299,24 +294,6 @@ pub trait ObjectCacheRead: Send + Sync {
                     .get_object(&id.id())
                     .map(|obj| obj.version() >= **version)
                     .unwrap_or(false)
-                    || self.have_deleted_fastpath_object_at_version_or_after(
-                    input_key.id().id(),
-                    input_key.version().unwrap(),
-                    epoch,
-                    use_object_per_epoch_marker_table_v2,
-                );
-                versioned_results.push((*idx, is_available));
-            } else if self
-                .get_deleted_shared_object_previous_tx_digest(
-                    FullObjectKey::new(input_key.id(), input_key.version().unwrap()),
-                    epoch,
-                    use_object_per_epoch_marker_table_v2,
-                )
-                .is_some()
-            {
-                // If the object is an already deleted shared object, mark it as available if the
-                // version for that object is in the shared deleted marker table.
-                versioned_results.push((*idx, true));
                     || self.fastpath_stream_ended_at_version_or_after(id.id(), **version, *epoch);
                 results[*idx] = is_available;
             } else {
