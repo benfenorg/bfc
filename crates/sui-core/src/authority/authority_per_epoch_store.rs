@@ -937,13 +937,13 @@ impl AuthorityEpochTables {
             .collect::<Result<_, _>>()?)
     }
 
-    fn load_oauth_provider_jwk(&self) -> SuiResult<HashMap<JwkId, Arc<JWK>>> {
-        Ok(self
-            .oauth_provider_jwk
-            .unbounded_iter()
-            .map(|(k, v)| (k, Arc::new(v)))
-            .collect())
-    }
+    // fn load_oauth_provider_jwk(&self) -> SuiResult<HashMap<JwkId, Arc<JWK>>> {
+    //     Ok(self
+    //         .oauth_provider_jwk
+    //         .unbounded_iter()
+    //         .map(|(k, v)| (k, Arc::new(v)))
+    //         .collect())
+    // }
 }
 
 pub(crate) const MUTEX_TABLE_SIZE: usize = 1024;
@@ -1027,10 +1027,6 @@ impl AuthorityPerEpochStore {
             cache_metrics,
             expensive_safety_check_config,
         );
-
-        let _oauth_provider_jwk = tables
-            .load_oauth_provider_jwk()
-            .expect("Load oauth provider jwk at initialization cannot fail");
 
         let zklogin_env = match chain.1 {
             // Testnet and mainnet are treated the same since it is permanent.

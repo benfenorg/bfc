@@ -157,7 +157,7 @@ pub(crate) fn try_construct_object(
                 u64::MAX,
             )?)
         },
-        (StoreData::StableCoin(index, balance), None) => unsafe {
+        StoreData::StableCoin(index, balance) => unsafe {
             let move_obj_type = match MoveObjectType::stable_gas_coin(index) {
                 Ok(type_) => type_,
                 Err(e) => {

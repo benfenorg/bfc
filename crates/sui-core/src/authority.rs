@@ -1011,8 +1011,11 @@ impl AuthorityState {
         // Ensure that validator cannot reconfigure while we are signing the tx
         let _execution_lock = self.execution_lock_for_signing()?;
 
-        let checked_input_objects =
-            self.handle_transaction_deny_checks(&transaction, epoch_store).await?;
+        // TODO
+        // let checked_input_objects =
+        //     self.handle_transaction_deny_checks(&transaction, epoch_store).await?;
+
+        let checked_input_objects = CheckedInputObjects::new_for_genesis(vec![]);
 
         let owned_objects = checked_input_objects.inner().filter_owned_objects();
 
@@ -1500,8 +1503,7 @@ impl AuthorityState {
         // guard and rely on the client to retry the tx (if it was transient).
 
 
-        let (inner_temporary_store, proposal_status, effects,
-            transaction_outputs, timings,  execution_error_opt) = match self.execute_certificate(
+        let (transaction_outputs, timings, execution_error_opt) = match self.execute_certificate(
             &execution_guard,
             certificate,
             input_objects,
@@ -1688,9 +1690,6 @@ impl AuthorityState {
         expected_effects_digest: Option<TransactionEffectsDigest>,
         epoch_store: &Arc<AuthorityPerEpochStore>,
     ) -> SuiResult<(
-        InnerTemporaryStore,
-        Option<VecMap<u64, ProposalStatus>>,
-        TransactionEffects,
         TransactionOutputs,
         Vec<ExecutionTiming>,
         Option<ExecutionError>,
@@ -1702,12 +1701,14 @@ impl AuthorityState {
         // TODO: We need to move this to a more appropriate place to avoid redundant checks.
         let tx_data = certificate.data().transaction_data();
         tx_data.validity_check(epoch_store.protocol_config())?;
-        // The cost of partially re-auditing a transaction before execution is tolerated.
+
         let (stable_rate, base_point) = if !tx_data.is_system_txn() {
-            self.get_stable_rate_and_base_points(tx_data.gas()).await?
+            (None, None)
         } else {
             (None, None)
         };
+
+        // The cost of partially re-auditing a transaction before execution is tolerated.
         // This step is required for correctness because, for example, ConsensusAddressOwner
         // object owner may have changed between signing and execution.
         let (gas_status, input_objects) = sui_transaction_checks::check_certificate_input(
@@ -1715,6 +1716,7 @@ impl AuthorityState {
             input_objects,
             epoch_store.protocol_config(),
             epoch_store.reference_gas_price(),
+            // TODO
             stable_rate,
             base_point,
         )?;
@@ -1723,35 +1725,11 @@ impl AuthorityState {
         self.check_owned_locks(&owned_object_refs)?;
         let tx_digest = *certificate.digest();
         let protocol_config = epoch_store.protocol_config();
-
-        //todo : add temporary store
-        // let temporary_store = TemporaryStore::new(
-        //     InMemoryStorage::new(Vec::new()),
-        //     InputObjects::new(vec![]),
-        //     genesis_digest,
-        //     protocol_config,
-        // );
-
-
         let transaction_data = &certificate.data().intent_message().value;
-        let mut proposal_map = None;
-
-        if transaction_data.is_end_of_epoch_tx() {
-            let proposal_map_result = self.get_bfc_system_proposal_state_map();
-            match proposal_map_result {
-                Ok(map) => { proposal_map = Some(map); }
-                Err(_) => {
-                    info!("No proposal map in epoch {:?}", epoch_store.epoch());
-                }
-            }
-        };
-
-        let (kind, signer, gas) = transaction_data.execution_parts();
-        //let mut gas_charger = GasCharger::new(tx_digest, gas, gas_status, protocol_config);
         let (kind, signer, gas_data) = transaction_data.execution_parts();
 
         #[allow(unused_mut)]
-        let (inner_temp_store, _, mut effects, timings, execution_error_opt) =
+            let (inner_temp_store, _, mut effects, timings, execution_error_opt) =
             epoch_store.executor().execute_transaction_to_effects(
                 self.get_backing_store().as_ref(),
                 protocol_config,
@@ -1813,10 +1791,9 @@ impl AuthorityState {
             }
         }
 
-
         fail_point_if!("cp_execution_nondeterminism", || {
-        #[cfg(msim)]
-        self.create_fail_state(certificate, epoch_store, &mut effects);
+            #[cfg(msim)]
+            self.create_fail_state(certificate, epoch_store, &mut effects);
         });
 
         // index certificate
@@ -1846,12 +1823,22 @@ impl AuthorityState {
             );
         }
 
-        Ok((inner_temp_store, proposal_map, effects,transaction_outputs, timings, execution_error_opt.err()))
-        //Ok(( execution_error_opt.err()))
+        Ok((transaction_outputs, timings, execution_error_opt.err()))
     }
 
-    pub async fn prepare_certificate_for_benchmark(
+    /// prepare_certificate validates the transaction input, and executes the certificate,
+    /// returning effects, output objects, events, etc.
+    ///
+    /// It reads state from the db (both owned and shared locks), but it has no side effects.
+    ///
+    /// It can be generally understood that a failure of prepare_certificate indicates a
+    /// non-transient error, e.g. the transaction input is somehow invalid, the correct
+    /// locks are not held, etc. However, this is not entirely true, as a transient db read error
+    /// may also cause this function to fail.
+    #[instrument(level = "trace", skip_all)]
+    async fn prepare_certificate(
         &self,
+        _execution_guard: &ExecutionLockReadGuard<'_>,
         certificate: &VerifiedExecutableTransaction,
         input_objects: InputObjects,
         epoch_store: &Arc<AuthorityPerEpochStore>,
@@ -1859,25 +1846,121 @@ impl AuthorityState {
         InnerTemporaryStore,
         Option<VecMap<u64, ProposalStatus>>,
         TransactionEffects,
-        TransactionOutputs,
         Option<ExecutionError>,
     )> {
+        let _scope = monitored_scope("Execution::prepare_certificate");
+        let _metrics_guard = self.metrics.prepare_certificate_latency.start_timer();
+        let prepare_certificate_start_time = tokio::time::Instant::now();
+
+        // TODO: We need to move this to a more appropriate place to avoid redundant checks.
+        let tx_data = certificate.data().transaction_data();
+        tx_data.validity_check(epoch_store.protocol_config())?;
+        // The cost of partially re-auditing a transaction before execution is tolerated.
+        let (stable_rate, base_point) = if !tx_data.is_system_txn() {
+            self.get_stable_rate_and_base_points(tx_data.gas()).await?
+        } else {
+            (None, None)
+        };
+        let (gas_status, input_objects) = sui_transaction_checks::check_certificate_input(
+            certificate,
+            input_objects,
+            epoch_store.protocol_config(),
+            epoch_store.reference_gas_price(),
+            stable_rate,
+            base_point,
+        )?;
+
+        let owned_object_refs = input_objects.inner().filter_owned_objects();
+        self.check_owned_locks(&owned_object_refs)?;
+        let tx_digest = *certificate.digest();
+        let protocol_config = epoch_store.protocol_config();
+
+        //todo : add temporary store
+        // let temporary_store = TemporaryStore::new(
+        //     InMemoryStorage::new(Vec::new()),
+        //     InputObjects::new(vec![]),
+        //     genesis_digest,
+        //     protocol_config,
+        // );
+
+
+        let transaction_data = &certificate.data().intent_message().value;
+        let mut proposal_map = None;
+
+        if transaction_data.is_end_of_epoch_tx() {
+            let proposal_map_result = self.get_bfc_system_proposal_state_map();
+            match proposal_map_result {
+                Ok(map) => { proposal_map = Some(map); }
+                Err(_) => {
+                    info!("No proposal map in epoch {:?}", epoch_store.epoch());
+                }
+            }
+        };
+
+        let (kind, signer, gas) = transaction_data.execution_parts();
+        //let mut gas_charger = GasCharger::new(tx_digest, gas, gas_status, protocol_config);
+
+        #[allow(unused_mut)]
+            let (inner_temp_store, _, mut effects, _timings, execution_error_opt) =
+            epoch_store.executor().execute_transaction_to_effects(
+                self.get_backing_store().as_ref(),
+                protocol_config,
+                self.metrics.limits_metrics.clone(),
+                self.config
+                    .expensive_safety_check_config
+                    .enable_deep_per_tx_sui_conservation_check(),
+                self.config.certificate_deny_config.certificate_deny_set(),
+                &epoch_store.epoch_start_config().epoch_data().epoch_id(),
+                epoch_store
+                    .epoch_start_config()
+                    .epoch_data()
+                    .epoch_start_timestamp(),
+                input_objects,
+                gas,
+                gas_status,
+                kind,
+                signer,
+                tx_digest,
+                &mut None,
+
+            );
+
+
+        fail_point_if!("cp_execution_nondeterminism", || {
+        #[cfg(msim)]
+        self.create_fail_state(certificate, epoch_store, &mut effects);
+        });
+
+        let elapsed = prepare_certificate_start_time.elapsed().as_micros() as f64;
+        if elapsed > 0.0 {
+            self.metrics
+                .prepare_cert_gas_latency_ratio
+                .observe(effects.gas_cost_summary().computation_cost as f64 / elapsed);
+        }
+
+        Ok((inner_temp_store, proposal_map, effects, execution_error_opt.err()))
+    }
+
+    pub async fn prepare_certificate_for_benchmark(
+        &self,
+        certificate: &VerifiedExecutableTransaction,
+        input_objects: InputObjects,
+        epoch_store: &Arc<AuthorityPerEpochStore>,
+    ) -> SuiResult<(TransactionOutputs, Option<ExecutionError>)> {
         let lock = RwLock::new(epoch_store.epoch());
         let execution_guard = lock.try_read().unwrap();
 
 
 
 
-        let (tempStore, proposal_status_map, effects,
-            transaction_outputs, _timings, execution_error_opt) = self.execute_certificate(
+        let (transaction_outputs, _timings, execution_error_opt) = self.execute_certificate(
             &execution_guard,
             certificate,
             input_objects,
             None,
             epoch_store,
         )?;
-        Ok((tempStore, proposal_status_map, effects,
-            transaction_outputs, execution_error_opt))
+        Ok((transaction_outputs, execution_error_opt))
     }
 
     #[instrument(skip_all)]
@@ -1992,7 +2075,7 @@ impl AuthorityState {
             )
         } else {
             let (stable_rate, base_point) = if !transaction.is_system_txn() {
-                self.get_stable_rate_and_base_points(transaction.gas()).await?
+                (None, None)
             } else {
                 (None, None)
             };
@@ -5444,26 +5527,6 @@ impl AuthorityState {
                 )
             };
 
-        //if proposal fail , empty and next_epoch_system_packages,
-        // and if the next_protocol_version is update + 1, roll back next
-        // next_epoch_protocol_version
-
-        let version = epoch_store.protocol_version().as_u64();
-        let next_bfc_p_version = self.bfc_get_next_avail_protocol_version(version);
-        //let proposal_result = self.get_proposal_state(next_bfc_p_version).await;
-        info!("===========protocol: {:?} detecting next version:{:?}", version, next_bfc_p_version);
-        info!("===========system package size {:?}", next_epoch_system_packages.len());
-
-        // if cfg!(feature="bfc_skip_dao_update") {
-        //     info!("===========msim test skip ========");
-        // } else if proposal_result == false {
-        //     info!("=========skip system package update, proposal fail=======",);
-        //     next_epoch_system_packages.clear();
-        //     next_epoch_protocol_version = epoch_store.protocol_version();
-        // } else {
-        //     info!("======= system package update, proposal success=======");
-        // };
-
         // since system packages are created during the current epoch, they should abide by the
         // rules of the current epoch, including the current epoch's max Move binary format version
         let config = epoch_store.protocol_config();
@@ -5471,34 +5534,32 @@ impl AuthorityState {
         let Some(next_epoch_system_package_bytes) = self
             .get_system_package_bytes(next_epoch_system_packages.clone(), &binary_config)
             .await
-        else {
-            error!(
+            else {
+                error!(
                 "upgraded system packages {:?} are not locally available, cannot create \
                 ChangeEpochTx. validator binary must be upgraded to the correct version!",
                 next_epoch_system_packages
             );
-            // the checkpoint builder will keep retrying forever when it hits this error.
-            // Eventually, one of two things will happen:
-            // - The operator will upgrade this binary to one that has the new packages locally,
-            //   and this function will succeed.
-            // - The final checkpoint will be certified by other validators, we will receive it via
-            //   state sync, and execute it. This will upgrade the framework packages, reconfigure,
-            //   and most likely shut down in the new epoch (this validator likely doesn't support
-            //   the new protocol version, or else it should have had the packages.)
-            return Err(anyhow!(
+                // the checkpoint builder will keep retrying forever when it hits this error.
+                // Eventually, one of two things will happen:
+                // - The operator will upgrade this binary to one that has the new packages locally,
+                //   and this function will succeed.
+                // - The final checkpoint will be certified by other validators, we will receive it via
+                //   state sync, and execute it. This will upgrade the framework packages, reconfigure,
+                //   and most likely shut down in the new epoch (this validator likely doesn't support
+                //   the new protocol version, or else it should have had the packages.)
+                return Err(anyhow!(
                 "missing system packages: cannot form ChangeEpochTx"
             ));
-        };
+            };
 
         let epoch_duration_ms = epoch_store.epoch_start_state().epoch_duration_ms();
 
+
         let tx = if epoch_store
             .protocol_config()
-            .end_of_epoch_transaction_supported() && epoch_store
-            .protocol_config()
-            .bfc_authenticator_state_supported()
+            .end_of_epoch_transaction_supported()
         {
-            //println!("===========end_of_epoch_transaction_supported: EndOfEpochTransactionKind======= running with new txns pushed");
             txns.push(EndOfEpochTransactionKind::new_change_epoch(
                 next_epoch,
                 next_epoch_protocol_version,
@@ -5514,8 +5575,6 @@ impl AuthorityState {
 
             VerifiedTransaction::new_end_of_epoch_transaction(txns)
         } else {
-            //println!("===========end_of_epoch_transaction_supported: using new_change_epoch======= running with new txns pushed");
-
             VerifiedTransaction::new_change_epoch(
                 next_epoch,
                 next_epoch_protocol_version,
@@ -5542,11 +5601,10 @@ impl AuthorityState {
             ?next_epoch,
             ?next_epoch_protocol_version,
             ?next_epoch_system_packages,
-            computation_cost=?bfc_gas_cost_summary.computation_cost,
-            storage_cost=?bfc_gas_cost_summary.storage_cost,
-            storage_rebate=?bfc_gas_cost_summary.storage_rebate,
-            non_refundable_storage_fee=?bfc_gas_cost_summary.non_refundable_storage_fee,
-            stable_gas_cost_summarys=?stable_gas_cost_summarys,
+            ?bfc_gas_cost_summary.computation_cost,
+            ?bfc_gas_cost_summary.storage_cost,
+            ?bfc_gas_cost_summary.storage_rebate,
+            ?bfc_gas_cost_summary.non_refundable_storage_fee,
             ?tx_digest,
             "Creating advance epoch transaction"
         );
@@ -5578,16 +5636,6 @@ impl AuthorityState {
         let input_objects =
             self.read_objects_for_execution(&tx_lock, &executable_tx, epoch_store)?;
 
-        let (temporary_store, proposal_map, effects, _) = self
-            .prepare_certificate(&execution_guard, &executable_tx, input_objects, epoch_store).await?;
-
-
-        if let Some(new_proposal_map) = proposal_map {
-            let mut tmp = self.proposal_state_map.lock();
-            tmp.contents = new_proposal_map.contents;
-        }
-
-        //let system_obj = temporary_store.get_sui_system_state_object();
         let (transaction_outputs, _timings, _execution_error_opt) = self.execute_certificate(
             &execution_guard,
             &executable_tx,
@@ -5610,9 +5658,6 @@ impl AuthorityState {
             effects.summary_for_debug()
         );
         epoch_store.record_checkpoint_builder_is_safe_mode_metric(system_obj.safe_mode());
-
-        //println!("===========epoch_store.record_checkpoint_builder_is_safe_mode_metric ====={:?}", system_obj.safe_mode());
-
         // The change epoch transaction cannot fail to execute.
         assert!(effects.status().is_ok());
         Ok((system_obj, effects))

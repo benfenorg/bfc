@@ -378,10 +378,8 @@ impl SharedObjectCongestionTracker {
                 }
             }
         }
+
         let cap = (number_of_move_call + number_of_move_input) as u64
-            * self
-            .gas_budget_based_txn_cost_cap_factor
-            .expect("cap factor must be set if TotalGasBudgetWithCap mode is used.");
             * self.params.gas_budget_based_txn_cost_cap_factor();
 
         // Apply absolute cap if configured.
