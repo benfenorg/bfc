@@ -127,7 +127,7 @@ fn process_sui_event(
                     txn_sender: ev.sender.to_vec(),
                     status: TokenTransferStatus::Deposited,
                     gas_usage: tx.effects.gas_cost_summary().net_gas_usage(),
-                    data_source: BridgeDataSource::Sui,
+                    data_source: BridgeDataSource::SUI,
                     is_finalized: true,
                     data: Some(TokenTransferData {
                         destination_chain: move_event.target_chain,

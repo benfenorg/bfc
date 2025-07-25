@@ -243,8 +243,6 @@ fn get_config(network: &str) -> (&str, &str) {
             "https://faucet.devnet.sui.io/v2/gas",
             "https://rpc.devnet.sui.io:443",
         ),
-        "localnet" => ("http://127.0.0.1:9123/v2/gas", "http://127.0.0.1:9000"),
-        // TODO 9123 when using sui-test-validator, 5003 when using bfc start
         "localnet" => ("http://127.0.0.1:9123/gas", "http://127.0.0.1:9000"),
         _ => panic!("Invalid network"),
     }

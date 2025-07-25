@@ -156,51 +156,9 @@ impl GovernanceAction {
     }
 }
 
-#[derive(Clone)]
-pub(crate) enum TokenTransferStatus {
-    Deposited,
-    Approved,
-    Claimed,
-}
 
-impl Display for TokenTransferStatus {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let str = match self {
-            TokenTransferStatus::Deposited => "Deposited",
-            TokenTransferStatus::Approved => "Approved",
-            TokenTransferStatus::Claimed => "Claimed",
-        };
-        write!(f, "{str}")
-    }
-}
 
-#[derive(Clone, Display)]
-pub(crate) enum GovernanceActionType {
-    UpdateCommitteeBlocklist,
-    EmergencyOperation,
-    UpdateBridgeLimit,
-    UpdateTokenPrices,
-    UpgradeEVMContract,
-    AddSuiTokens,
-    AddEVMTokens,
-    UpdateSingleTransferLimit,
-}
 
-#[derive(Clone)]
-enum BridgeDataSource {
-    Sui,
-    Eth,
-}
-
-impl Display for BridgeDataSource {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let str = match self {
-            BridgeDataSource::Eth => "ETH",
-            BridgeDataSource::Sui => "SUI",
-        };
-        write!(f, "{str}")
-    }
-}
 
 pub async fn create_sui_indexer(
     pool: PgPool,

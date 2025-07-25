@@ -15,7 +15,6 @@ use crate::{
     mvr_resolver::MvrResolver,
     sp,
 };
-use crate::client_commands::SuiClientCommandResult;
 use super::{ast::ProgramMetadata, lexer::Lexer, parser::ProgramParser};
 use anyhow::{anyhow, ensure, Error};
 use clap::{arg, Args, ValueHint};
@@ -23,7 +22,6 @@ use move_core_types::account_address::AccountAddress;
 use serde::Serialize;
 use sui_json_rpc_types::{SuiExecutionStatus, SuiGasCostSummary, SuiTransactionBlockEffectsAPI};
 use std::collections::BTreeMap;
-use sui_json_rpc_types::{SuiExecutionStatus, SuiTransactionBlockEffectsAPI};
 use sui_keys::keystore::AccountKeystore;
 use sui_sdk::{wallet_context::WalletContext, SuiClient};
 use sui_types::{
@@ -31,7 +29,6 @@ use sui_types::{
     digests::TransactionDigest,
     gas::GasCostSummary,
     move_package::MovePackage,
-    transaction::{ProgrammableTransaction, TransactionKind},
     transaction::{
         ProgrammableTransaction, TransactionKind,
     },

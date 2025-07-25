@@ -707,7 +707,7 @@ impl DataMapper<RawEthData, ProcessedTxnData> for EthDataMapper {
                     );
                     processed_txn_data.push(ProcessedTxnData::GovernanceAction(GovernanceAction {
                         nonce: Some(f.nonce),
-                        data_source: BridgeDataSource::Eth,
+                        data_source: BridgeDataSource::ETH,
                         tx_digest: txn_hash.clone(),
                         sender: txn_sender.clone(),
                         timestamp_ms,

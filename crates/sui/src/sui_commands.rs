@@ -1,8 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::client_commands::SuiClientCommands;
-use crate::console::start_console;
+use crate::client_commands::{implicit_deps_for_protocol_version, pkg_tree_shake, SuiClientCommands};
 use crate::fire_drill::{run_fire_drill, FireDrill};
 use crate::genesis_ceremony::{run, Ceremony};
 use crate::keytool::KeyToolCommand;
@@ -12,7 +11,7 @@ use clap::*;
 use colored::Colorize;
 use fastcrypto::traits::{EncodeDecodeBase64, KeyPair};
 use move_analyzer::analyzer;
-use move_package::BuildConfig;
+use sui_move_build::BuildConfig as SuiBuildConfig;
 use rand::rngs::OsRng;
 use std::io::{stderr, stdout, Write};
 use std::net::{AddrParseError, IpAddr, Ipv4Addr, SocketAddr};
@@ -20,7 +19,8 @@ use std::num::NonZeroUsize;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::{fs, io};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
+use std::ops::Deref;
 use sui_config::node::{DEFAULT_COMMISSION_RATE, Genesis};
 use sui_bridge::config::BridgeCommitteeConfig;
 use sui_bridge::metrics::BridgeMetrics;
@@ -28,14 +28,16 @@ use sui_bridge::sui_client::SuiBridgeClient;
 use sui_bridge::sui_transaction_builder::build_committee_register_transaction;
 use sui_config::p2p::SeedPeer;
 use sui_genesis_builder::Builder;
-use sui_swarm_config::genesis_config::{ValidatorGenesisConfig};
+use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, DEFAULT_NUMBER_OF_AUTHORITIES};
 
 use camino::Utf8PathBuf;
+use move_command_line_common::files::MOVE_COMPILED_EXTENSION;
+use serde_json::json;
 use sui_config::{sui_config_dir, Config, PersistedConfig, FULL_NODE_DB_PATH, SUI_CLIENT_CONFIG, SUI_FULLNODE_CONFIG, SUI_NETWORK_CONFIG, local_ip_utils};
 use sui_config::{
     SUI_BENCHMARK_GENESIS_GAS_KEYSTORE_FILENAME, SUI_GENESIS_FILENAME, SUI_KEYSTORE_FILENAME, genesis_blob_exists,
 };
-use sui_faucet::{create_wallet_context, start_faucet, AppState, FaucetConfig, SimpleFaucet};
+use sui_faucet::{create_wallet_context, start_faucet, AppState, FaucetConfig, LocalFaucet};
 use sui_indexer::test_utils::{
     start_indexer_jsonrpc_for_testing, start_indexer_writer_for_testing,
 };
@@ -53,7 +55,8 @@ use sui_graphql_rpc::{
 use sui_keys::keypair_file::read_key;
 use sui_keys::keystore::{AccountKeystore, FileBasedKeystore, Keystore};
 use sui_move::{self, execute_move_command};
-use sui_move_build::SuiPackageHooks;
+use move_package::BuildConfig;
+use sui_move_build::{check_invalid_dependencies, check_unpublished_dependencies, implicit_deps, SuiPackageHooks};
 use sui_sdk::sui_client_config::{SuiClientConfig, SuiEnv};
 use sui_sdk::wallet_context::WalletContext;
 use sui_swarm::memory::Swarm;
@@ -63,12 +66,13 @@ use sui_swarm_config::network_config_builder::ConfigBuilder;
 use sui_swarm_config::node_config_builder::FullnodeConfigBuilder;
 use sui_types::crypto::{AuthorityKeyPair, NetworkKeyPair, SignatureScheme, SuiKeyPair, ToFromBytes};
 use sui_types::multiaddr::Multiaddr;
-use sui_types::base_types::SuiAddress;
+use sui_types::base_types::{ObjectID, SuiAddress};
 use tempfile::tempdir;
 use tracing;
 use tracing::info;
 use sui_keys::keypair_file::{read_authority_keypair_from_file, read_keypair_from_file, read_network_keypair_from_file};
-
+use sui_move::manage_package::resolve_lock_file_path;
+use sui_package_management::system_package_versions::latest_system_packages;
 
 const DEFAULT_EPOCH_DURATION_MS: u64 = 60_000;
 
@@ -343,13 +347,7 @@ pub enum SuiCommand {
         #[clap(subcommand)]
         cmd: KeyToolCommand,
     },
-    /// Start Bfc interactive console.
-    #[clap(name = "console")]
-    Console {
-        /// Sets the file storing the state of our user accounts (an empty one will be created if missing)
-        #[clap(long = "client.config")]
-        config: Option<PathBuf>,
-    },
+
     /// Client for interacting with the Bfc network.
     /// Client for interacting with the Sui network.
     #[clap(name = "client")]
@@ -530,17 +528,7 @@ impl SuiCommand {
                 cmd.execute(&mut keystore).await?.print(!json);
                 Ok(())
             }
-            SuiCommand::Console { config } => {
-                let config = config.unwrap_or(sui_config_dir()?.join(SUI_CLIENT_CONFIG));
-                prompt_if_no_config(&config, false).await?;
-                let context = WalletContext::new(&config, None, None)?;
-                if let Ok(client) = context.get_client().await {
-                    if let Err(e) = client.check_api_version() {
-                        eprintln!("{}", format!("[warning] {e}").yellow().bold());
-                    }
-                }
-                start_console(context, &mut stdout(), &mut stderr()).await
-            }
+
             SuiCommand::Client {
                 config,
                 cmd,
@@ -885,7 +873,7 @@ async fn start(
             if config.is_file()
                 & &config
                 .extension()
-                .is_some_and(|e| e == "yml" | | e == "yaml") =>
+                .is_some_and(|e| e == "yml" || e == "yaml") =>
                 {
                     if committee_size.is_some() {
                         eprintln!(
@@ -1179,7 +1167,7 @@ pub async fn genesis(
             if is_compatible {
                 for file in files {
                     let path = file.path();
-                    if path != client_path & &path != keystore_path {
+                    if path != client_path && path != keystore_path {
                         if path.is_file() {
                             fs::remove_file(path)
                         } else {
@@ -1200,7 +1188,7 @@ pub async fn genesis(
                         .context(format!("Cannot create Bfc config dir {:?}", sui_config_dir))
                 })?;
             }
-        } else if files.len() != 2 || !client_path.exists() | | !keystore_path.exists() {
+        } else if files.len() != 2 || !client_path.exists() || !keystore_path.exists() {
             bail!("Cannot run genesis with non-empty Bfc config directory {}, please use the --force/-f option to remove the existing configuration", sui_config_dir.to_str().unwrap());
         }
     }
@@ -1450,7 +1438,7 @@ pub async fn genesis_private(
             if is_compatible {
                 for file in files {
                     let path = file.path();
-                    if path != client_path & &path != keystore_path {
+                    if path != client_path && path != keystore_path {
                         if path.is_file() {
                             fs::remove_file(path)
                         } else {
@@ -1471,7 +1459,7 @@ pub async fn genesis_private(
                         .context(format!("Cannot create Bfc config dir {:?}", sui_config_dir))
                 })?;
             }
-        } else if files.len() != 2 || !client_path.exists() | | !keystore_path.exists() {
+        } else if files.len() != 2 || !client_path.exists() || !keystore_path.exists() {
             bail!("Cannot run genesis with non-empty Bfc config directory {}, please use the --force/-f option to remove the existing configuration", sui_config_dir.to_str().unwrap());
         }
     }
@@ -1762,7 +1750,7 @@ async fn prompt_if_no_config(
                     );
                 }
                 if accept_defaults
-                    | | matches!(read_line(), Ok(line) if line.trim().to_lowercase() == "y")
+                    || matches!(read_line(), Ok(line) if line.trim().to_lowercase() == "y")
                 {
                     let url = if accept_defaults {
                         String::new()

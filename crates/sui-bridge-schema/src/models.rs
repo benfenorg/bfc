@@ -149,6 +149,8 @@ pub enum GovernanceActionType {
     UpgradeEVMContract,
     AddSuiTokens,
     AddEVMTokens,
+    UpdateSingleTransferLimit,
+
 }
 
 impl FromSql<Text, Pg> for GovernanceActionType {
