@@ -41,8 +41,6 @@ use typed_store::{
     rocks::{DBBatch, DBMap},
     TypedStoreError,
 };
-use sui_types::base_types_bfc::bfc_address_util::objects_id_to_bfc_address;
-
 use super::authority_store_tables::LiveObject;
 use super::{authority_store_tables::AuthorityPerpetualTables, *};
 use mysten_common::sync::notify_read::NotifyRead;

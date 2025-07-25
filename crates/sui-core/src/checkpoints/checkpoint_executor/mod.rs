@@ -23,9 +23,6 @@ use mysten_common::{debug_fatal, fatal};
 use parking_lot::Mutex;
 use std::{sync::Arc, time::Instant};
 use std::collections::HashMap;
-use std::path::PathBuf;
-use std::time::Duration;
-use futures::stream::FuturesOrdered;
 use itertools::izip;
 use sui_types::crypto::RandomnessRound;
 use sui_types::inner_temporary_store::PackageStoreWithFallback;
@@ -45,7 +42,6 @@ use sui_types::{
     transaction::VerifiedTransaction,
 };
 use tap::{TapFallible, TapOptional};
-use tokio::time::timeout;
 use tracing::{debug, error, info, instrument, trace, warn};
 
 use crate::authority::authority_per_epoch_store::AuthorityPerEpochStore;
@@ -68,11 +64,8 @@ pub(crate) mod utils;
 
 
 use metrics::CheckpointExecutorMetrics;
-use mysten_metrics::spawn_monitored_task;
 use sui_types::base_types::ExecutionDigests;
-use sui_types::error::SuiResult;
 use utils::*;
-use crate::execution_scheduler::transaction_manager::TransactionManager;
 
 const CHECKPOINT_PROGRESS_LOG_COUNT_INTERVAL: u64 = 5000;
 

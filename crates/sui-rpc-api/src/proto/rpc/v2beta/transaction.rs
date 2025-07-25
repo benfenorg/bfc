@@ -1,12 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use sui_sdk_types::TransactionKind;
 use super::Transaction;
 use crate::message::{MessageField, MessageFields, MessageMerge};
 use crate::proto::TryFromProtoError;
 use tap::Pipe;
-use sui_types::gas::GasCostSummaryAdjusted;
 
 //
 // Transaction

@@ -14,7 +14,7 @@ use crate::utils::get_eth_contract_addresses;
 use anyhow::anyhow;
 use ethers::providers::Middleware;
 use ethers::types::Address as EthAddress;
-use futures::{future, StreamExt};
+use futures::{StreamExt};
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;

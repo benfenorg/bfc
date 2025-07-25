@@ -26,7 +26,6 @@ use sui_json_rpc_types::{
 use sui_json_rpc_types::SuiGasCostSummary;
 use sui_sdk::{SuiClient, SuiClientBuilder};
 use sui_types::effects::{TransactionEffectsAPI, TransactionEvents};
-use sui_types::gas::GasCostSummary;
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::quorum_driver_types::EffectsFinalityInfo;
 use sui_types::quorum_driver_types::FinalizedEffects;

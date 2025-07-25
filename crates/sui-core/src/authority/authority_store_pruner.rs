@@ -35,7 +35,6 @@ use sui_types::{
 use tokio::sync::oneshot::{self, Sender};
 use tokio::time::Instant;
 use tracing::{debug, error, info, warn};
-use sui_storage::mutex_table::RwLockTable;
 use typed_store::rocksdb::compaction_filter::Decision;
 use typed_store::rocksdb::LiveFile;
 use typed_store::{Map, TypedStoreError};

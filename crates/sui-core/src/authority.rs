@@ -92,7 +92,6 @@ use sui_types::committee::{EpochId, ProtocolVersion};
 use sui_types::crypto::{default_hash, AuthoritySignInfo, Signer};
 use sui_types::deny_list_v1::check_coin_deny_list_v1;
 use sui_types::digests::ChainIdentifier;
-use sui_types::digests::TransactionEventsDigest;
 use sui_types::dynamic_field::{DynamicFieldInfo, DynamicFieldName};
 use sui_types::effects::{
     InputSharedObject, SignedTransactionEffects, TransactionEffects, TransactionEffectsAPI,
@@ -905,7 +904,7 @@ impl AuthorityState {
         self.checkpoint_store.get_epoch_state_commitments(epoch)
     }
 
-    async fn handle_transaction_deny_checks(
+    fn handle_transaction_deny_checks(
         &self,
         transaction: &VerifiedTransaction,
         epoch_store: &Arc<AuthorityPerEpochStore>,
@@ -961,7 +960,7 @@ impl AuthorityState {
         )?;
 
         let (stable_rate, base_point) = if !transaction.is_system_tx() {
-            self.get_stable_rate_and_base_points(transaction.gas()).await?
+            self.get_stable_rate_and_base_points(transaction.gas())?
         } else {
             (None, None)
         };
@@ -1012,7 +1011,7 @@ impl AuthorityState {
         let _execution_lock = self.execution_lock_for_signing()?;
 
         let checked_input_objects =
-            self.handle_transaction_deny_checks(&transaction, epoch_store).await?;
+            self.handle_transaction_deny_checks(&transaction, epoch_store)?;
 
         let owned_objects = checked_input_objects.inner().filter_owned_objects();
 
@@ -1500,7 +1499,7 @@ impl AuthorityState {
         // guard and rely on the client to retry the tx (if it was transient).
 
 
-        let (transaction_outputs, timings, execution_error_opt) = match self.execute_certificate(
+        let (_proposal, transaction_outputs, timings, execution_error_opt) = match self.execute_certificate(
             &execution_guard,
             certificate,
             input_objects,
@@ -1875,7 +1874,7 @@ impl AuthorityState {
         tx_data.validity_check(epoch_store.protocol_config())?;
         // The cost of partially re-auditing a transaction before execution is tolerated.
         let (stable_rate, base_point) = if !tx_data.is_system_txn() {
-            self.get_stable_rate_and_base_points(tx_data.gas()).await?
+            self.get_stable_rate_and_base_points(tx_data.gas())?
         } else {
             (None, None)
         };
@@ -1971,7 +1970,7 @@ impl AuthorityState {
 
 
 
-        let (proposal_map, transaction_outputs, _timings, execution_error_opt) = self.execute_certificate(
+        let (_proposal_map, transaction_outputs, _timings, execution_error_opt) = self.execute_certificate(
             &execution_guard,
             certificate,
             input_objects,
@@ -2093,7 +2092,7 @@ impl AuthorityState {
             )
         } else {
             let (stable_rate, base_point) = if !transaction.is_system_txn() {
-                self.get_stable_rate_and_base_points(transaction.gas()).await
+                self.get_stable_rate_and_base_points(transaction.gas())?
             } else {
                 (None, None)
             };
@@ -2490,7 +2489,7 @@ impl AuthorityState {
                 )?
             } else {
                 let (stable_rate, base_point) = if !transaction.is_system_txn() {
-                    self.get_stable_rate_and_base_points(transaction.gas()).await?
+                    self.get_stable_rate_and_base_points(transaction.gas())?
                 } else {
                     (None, None)
                 };
@@ -3777,13 +3776,16 @@ impl AuthorityState {
             .compute_object_reference())
     }
 
-    pub async fn get_stable_rate_and_base_points(&self, gas_ref: &[ObjectRef]) -> SuiResult<(Option<u64>, Option<u64>)> {
+    pub fn get_stable_rate_and_base_points(&self, gas_ref: &[ObjectRef]) -> SuiResult<(Option<u64>, Option<u64>)> {
+        use tokio::runtime::Runtime;
+
         if gas_ref.is_empty() {
             return Ok((None, None)); //dry run /dev inspect
         }
 
-        let gas = self.get_object(&gas_ref[0].0).await
-            .ok_or_else(|| SuiError::UserInputError { error: UserInputError::ObjectNotFound { object_id: gas_ref[0].0, version: None } })?;
+        let rt = Runtime::new().unwrap();
+        let gas =  rt.block_on( self.get_object(&gas_ref[0].0) ).ok_or_else(
+            || SuiError::UserInputError { error: UserInputError::ObjectNotFound { object_id: gas_ref[0].0, version: None } })?;
 
         if gas.is_gas_coin() {
             return Ok((None, None)); // bfc gas

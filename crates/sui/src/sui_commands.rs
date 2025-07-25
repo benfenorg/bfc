@@ -13,7 +13,7 @@ use fastcrypto::traits::{EncodeDecodeBase64, KeyPair};
 use move_analyzer::analyzer;
 use sui_move_build::BuildConfig as SuiBuildConfig;
 use rand::rngs::OsRng;
-use std::io::{stderr, stdout, Write};
+use std::io::{stdout, Write};
 use std::net::{AddrParseError, IpAddr, Ipv4Addr, SocketAddr};
 use std::num::NonZeroUsize;
 use std::path::{Path, PathBuf};

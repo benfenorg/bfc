@@ -12,7 +12,7 @@ use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_types::{Balance, CoinPage, SuiCoinMetadata};
 use sui_open_rpc::Module;
 use sui_types::balance::Supply;
-use sui_types::base_types::{ObjectID, SuiAddress};
+use sui_types::base_types::{SuiAddress};
 
 pub(crate) struct CoinReadApi {
     fullnode: HttpClient,

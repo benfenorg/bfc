@@ -84,8 +84,6 @@ use typed_store::DBMapUtils;
 use typed_store::{Map};
 use typed_store::{
     rocks::{default_db_options, DBBatch, DBMap, DBOptions, MetricConf},
-    traits::{TableSummary},
-    TypedStoreError,
 };
 
 use super::authority_store_tables::ENV_VAR_LOCKS_BLOCK_CACHE_SIZE;
