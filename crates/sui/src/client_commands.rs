@@ -2029,8 +2029,6 @@ fn check_dep_verification_flags(
     }
 }
 
-fn compile_package_simple(
-    build_config: MoveBuildConfig,
 /// Process the `--skip-dependency-verification` and `--verify-dependencies` flags for a publish or
 /// upgrade command. Prints deprecation warnings as appropriate and returns true if the
 /// dependencies should be verified
