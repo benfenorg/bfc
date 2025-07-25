@@ -173,36 +173,48 @@ impl BridgeOrchestratorTables {
         self.pending_actions
             .safe_iter()
             .collect::<Result<HashMap<_, _>, _>>()
-            .expect("failed to get all pending actions")
-        self.pending_actions.unbounded_iter().filter(
-            |(_, action)| {
-                // readme： filter pending actions by tx_hash
-                if let BridgeAction::ExternalDepositStartBridgeAction(ref external_action) = action {
-                    let tx_hash = &external_action.sui_bridge_event.tx_hash;
-                    // hard code fix for some bug
-                    // 2025-05-19T08:31:54.571195Z ERROR sui_bridge::btc_query: Invalid txn_id len != 64: "abb26e297b0d347834a99b9fdf43d40c828532740b4c643b607192a83dd86340#result-2"
-                    if tx_hash == "abb26e297b0d347834a99b9fdf43d40c828532740b4c643b607192a83dd86340#result-2" {
-                        info!( "filter pending actions by tx_hash for hard code fix bug, sui_hash {} tx_hash: {}",
-                        &external_action.sui_tx_digest, tx_hash);
-                        // TODO: delete it from pending_actions storage
+            .expect("failed to get all pending actions");
 
-                        return false
+        self.pending_actions.safe_iter().filter_map(
+            |result| {
+                match result {
+                    Ok((digest, action)) => {
+                        // 在这里使用 digest 和 action
+                        if let BridgeAction::ExternalDepositStartBridgeAction(ref external_action) = action {
+                            let tx_hash = &external_action.sui_bridge_event.tx_hash;
+                            if tx_hash == "abb26e297b0d347834a99b9fdf43d40c828532740b4c643b607192a83dd86340#result-2" {
+                                info!("filter pending actions by tx_hash for hard code fix bug, sui_hash {} tx_hash: {}",
+                        &external_action.sui_tx_digest, tx_hash);
+                                return None; // 过滤掉这个元素
+                            }
+                        }
+                        info!("[DEBUG] pending_actions: {:#?}", action);
+                        Some((digest, action)) // 保留这个元素
+                    }
+                    Err(e) => {
+                        // 处理错误情况
+                        eprintln!("Error reading from storage: {:?}", e);
+                        None
                     }
                 }
-
-                info!("[DEBUG] pending_actions: {:#?}", action);
-
-                true
-            },
+            }
         ).collect()
     }
 
     pub fn get_all_pending_actions_4_aml(&self) -> HashMap<BridgeActionDigest, BridgeAction> {
-        self.pending_aml_checked_actions.unbounded_iter().filter(
-            |(_, action)| {
-                info!("[DEBUG]  get_all_pending_actions_4_aml: {:#?}", action);
-                true
-            },
+        self.pending_aml_checked_actions.safe_iter().filter_map(
+            |result| {
+                match result {
+                    Ok((digest, action)) => {
+                        info!("[DEBUG]  get_all_pending_actions_4_aml: {:#?}", action);
+                        Some((digest, action))
+                    }
+                    Err(e) => {
+                        eprintln!("Error reading from storage: {:?}", e);
+                        None
+                    }
+                }
+            }
         ).collect()
     }
 

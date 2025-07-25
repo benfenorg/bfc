@@ -317,7 +317,8 @@ pub fn owner_to_owner_info(owner: &Owner) -> (OwnerType, Option<String>, Option<
             Some(initial_shared_version.value() as i64),
         ),
         Owner::Immutable => (OwnerType::Immutable, None, None),
-        Owner::ConsensusV2 { .. } => todo!(),
+        //Owner::ConsensusV2 { .. } => todo!(),
+        Owner::ConsensusAddressOwner { .. } => todo!(),
     }
 }
 

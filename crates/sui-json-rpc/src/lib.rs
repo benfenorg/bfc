@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::env;
+//use std::env;
 use std::net::SocketAddr;
 //use axum::response::IntoResponse;
 use std::sync::Arc;
@@ -13,8 +13,6 @@ use jsonrpsee::RpcModule;
 use metrics::Metrics;
 use metrics::MetricsLayer;
 use prometheus::Registry;
-use std::net::SocketAddr;
-use std::sync::Arc;
 use std::time::Duration;
 use sui_core::traffic_controller::metrics::TrafficControllerMetrics;
 use sui_core::traffic_controller::TrafficController;

@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::fmt::{Display, Formatter};
 use crate::config::IndexerConfig;
 use crate::eth_bridge_indexer::{
     EthDataMapper, EthFinalizedSyncDatasource, EthSubscriptionDatasource,
@@ -13,6 +14,7 @@ use ethers::providers::{Http, Provider};
 use ethers::types::Address as EthAddress;
 use std::str::FromStr;
 use std::sync::Arc;
+use strum_macros::Display;
 use sui_bridge::eth_client::EthClient;
 use sui_bridge::metered_eth_provider::MeteredEthHttpProvier;
 use sui_bridge::metrics::BridgeMetrics;

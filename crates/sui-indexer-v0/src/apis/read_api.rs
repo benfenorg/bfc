@@ -24,6 +24,11 @@ use crate::store::IndexerStore;
 use crate::types::SuiTransactionBlockResponseWithOptions;
 use sui_types::dao::DaoRPC;
 use crate::utils::object_deal;
+use sui_json_rpc_types::ZkLoginIntentScope;
+use sui_types::base_types::SuiAddress;
+use sui_json_rpc_types::ZkLoginVerifyResult;
+
+
 
 pub(crate) struct ReadApi<S> {
     fullnode: HttpClient,
@@ -458,6 +463,16 @@ where
                 None::<()>
             )
         })
+    }
+
+    async fn verify_zklogin_signature(
+        &self,
+        _bytes: String,
+        _signature: String,
+        _intent_scope: ZkLoginIntentScope,
+        _author: SuiAddress,
+    ) -> RpcResult<ZkLoginVerifyResult> {
+        Err(jsonrpsee::types::error::ErrorCode::MethodNotFound.into())
     }
 }
 

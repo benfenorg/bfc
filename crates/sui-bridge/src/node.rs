@@ -193,8 +193,6 @@ async fn start_watchdog(
     .await
     .unwrap_or_else(|e| panic!("Failed to create eth vault balance: {}", e));
 
-        .await
-        .unwrap_or_else(|e| panic!("Failed to create eth vault balance: {}", e));
     let usdt_vault_balance = EthereumVaultBalance::new(
         eth_provider.clone(),
         vault_address,

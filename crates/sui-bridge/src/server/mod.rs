@@ -49,8 +49,6 @@ pub const PING_PATH: &str = "/ping";
 pub const METRICS_KEY_PATH: &str = "/metrics_pub_key";
 
 // Important: for BridgeActions, the paths need to match the ones in bridge_client.rs
-pub const ETH_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/eth/sui/{tx_hash}/{event_index}";
-pub const SUI_TO_ETH_TX_PATH: &str = "/sign/bridge_tx/sui/eth/{tx_digest}/{event_index}";
 pub const ETH_TO_SUI_TX_PATH: &str =
     "/sign/bridge_tx/eth/sui/:tx_hash/:event_index/:fast_path_selector";
 pub const EVM_TO_SUI_TX_PATH: &str =

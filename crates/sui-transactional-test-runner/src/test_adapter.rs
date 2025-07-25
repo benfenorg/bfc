@@ -1263,7 +1263,7 @@ impl MoveTestAdapter<'_> for SuiTestAdapter {
                         let objects = objects.clone();
                         b.iter(|| async {
                             self.executor
-                                .prepare_txn(tx.clone(), objects.clone()).await
+                                .prepare_txn(tx.clone(), objects.clone())
                                 .unwrap();
                         })
                     });

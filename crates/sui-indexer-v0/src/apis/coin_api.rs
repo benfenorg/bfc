@@ -32,7 +32,7 @@ impl CoinReadApiServer for CoinReadApi {
         &self,
         owner: SuiAddress,
         coin_type: Option<String>,
-        cursor: Option<ObjectID>,
+        cursor: Option<String>,
         limit: Option<usize>,
     ) -> RpcResult<CoinPage> {
         self.fullnode
@@ -49,7 +49,7 @@ impl CoinReadApiServer for CoinReadApi {
     async fn get_all_coins(
         &self,
         owner: SuiAddress,
-        cursor: Option<ObjectID>,
+        cursor: Option<String>,
         limit: Option<usize>,
     ) -> RpcResult<CoinPage> {
         self.fullnode.get_all_coins(owner, cursor, limit).await.map_err(|e| {

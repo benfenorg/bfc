@@ -47,7 +47,6 @@ use sui_types::{
     sui_system_state::SuiSystemStateTrait,
 };
 use sui_types::{
-    effects::{TransactionEffectsAPI, TransactionEvents},
     execution_status::ExecutionFailureStatus,
 };
 use tokio::time::sleep;

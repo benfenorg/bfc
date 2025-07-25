@@ -47,7 +47,7 @@ fn process_checkpoint_data(checkpoint_data: &CheckpointData) -> CheckpointEntry 
         sequence_number,
         network_total_transactions,
         previous_digest,
-        epoch_rolling_gas_cost_summary,
+        epoch_rolling_bfc_gas_cost_summary,
         timestamp_ms,
         end_of_epoch_data,
         ..
@@ -60,7 +60,7 @@ fn process_checkpoint_data(checkpoint_data: &CheckpointData) -> CheckpointEntry 
         let mut total_transactions: u64 = 0;
         let mut total_successful_transaction_blocks: u64 = 0;
         let mut total_successful_transactions: u64 = 0;
-        for checkpoint_transaction in checkpoint_data.transactions {
+        for checkpoint_transaction in &checkpoint_data.transactions {
             let txn_data = checkpoint_transaction.transaction.transaction_data();
             let cmds = txn_data.kind().num_commands() as u64;
             total_transactions += cmds;
@@ -69,28 +69,6 @@ fn process_checkpoint_data(checkpoint_data: &CheckpointData) -> CheckpointEntry 
                 total_successful_transactions += cmds;
             }
         }
-
-        let checkpoint_entry = CheckpointEntry {
-            sequence_number: *sequence_number,
-            checkpoint_digest: summary.digest().base58_encode(),
-            previous_checkpoint_digest: previous_digest.map(|d| d.base58_encode()),
-            epoch: *epoch,
-            end_of_epoch: end_of_epoch_data.is_some(),
-            total_gas_cost,
-            computation_cost: epoch_rolling_bfc_gas_cost_summary.computation_cost,
-            storage_cost: epoch_rolling_bfc_gas_cost_summary.storage_cost,
-            storage_rebate: epoch_rolling_bfc_gas_cost_summary.storage_rebate,
-            non_refundable_storage_fee: epoch_rolling_bfc_gas_cost_summary.non_refundable_storage_fee,
-            total_transaction_blocks,
-            total_transactions,
-            total_successful_transaction_blocks,
-            total_successful_transactions,
-            network_total_transaction: *network_total_transactions,
-            timestamp_ms: *timestamp_ms,
-            validator_signature: summary.auth_sig().signature.encode_base64(),
-        };
-        let mut state = self.state.lock().await;
-        state.checkpoints.push(checkpoint_entry);
     CheckpointEntry {
         sequence_number: *sequence_number,
         checkpoint_digest: checkpoint_data.checkpoint_summary.digest().base58_encode(),
@@ -98,10 +76,10 @@ fn process_checkpoint_data(checkpoint_data: &CheckpointData) -> CheckpointEntry 
         epoch: *epoch,
         end_of_epoch: end_of_epoch_data.is_some(),
         total_gas_cost,
-        computation_cost: epoch_rolling_gas_cost_summary.computation_cost,
-        storage_cost: epoch_rolling_gas_cost_summary.storage_cost,
-        storage_rebate: epoch_rolling_gas_cost_summary.storage_rebate,
-        non_refundable_storage_fee: epoch_rolling_gas_cost_summary.non_refundable_storage_fee,
+        computation_cost: epoch_rolling_bfc_gas_cost_summary.computation_cost,
+        storage_cost: epoch_rolling_bfc_gas_cost_summary.storage_cost,
+        storage_rebate: epoch_rolling_bfc_gas_cost_summary.storage_rebate,
+        non_refundable_storage_fee: epoch_rolling_bfc_gas_cost_summary.non_refundable_storage_fee,
         total_transaction_blocks,
         total_transactions,
         total_successful_transaction_blocks,

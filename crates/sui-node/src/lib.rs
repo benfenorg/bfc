@@ -48,7 +48,6 @@ use sui_json_rpc_api::JsonRpcMetrics;
 use sui_network::randomness;
 use sui_rpc_api::RpcMetrics;
 use sui_rpc_api::subscription::SubscriptionService;
-use sui_rpc_api::RpcMetrics;
 use sui_rpc_api::ServerVersion;
 use sui_types::base_types::ConciseableName;
 use sui_types::crypto::RandomnessRound;
@@ -1937,10 +1936,6 @@ impl SuiNode {
                 //         .await;
                 // }
 
-                // No other components should be holding a strong reference to state accumulator
-                // at this point. Confirm here before we swap in the new accumulator.
-                let accumulator_metrics = Arc::into_inner(accumulator)
-                    .expect("Accumulator should have no other references at this point")
                 // No other components should be holding a strong reference to state hasher
                 // at this point. Confirm here before we swap in the new hasher.
                 let global_state_hasher_metrics = Arc::into_inner(hasher)

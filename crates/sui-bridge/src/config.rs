@@ -14,7 +14,6 @@ use crate::utils::get_eth_contract_addresses;
 use anyhow::anyhow;
 use ethers::providers::Middleware;
 use ethers::types::Address as EthAddress;
-use futures::StreamExt;
 use futures::{future, StreamExt};
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
@@ -342,6 +341,8 @@ impl BridgeNodeConfig {
                 config_address,
                 _weth_address,
                 _usdt_address,
+                _wbtc_address,
+                _lbtc_address,
             ) = get_eth_contract_addresses(bridge_proxy_address, &provider).await?;
             let config = EthBridgeConfig::new(config_address, provider.clone());
 

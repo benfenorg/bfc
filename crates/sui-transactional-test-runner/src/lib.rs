@@ -77,7 +77,7 @@ pub trait TransactionalAdapter: Send + Sync + ReadStore {
 
     async fn read_input_objects(&self, transaction: Transaction) -> SuiResult<InputObjects>;
 
-    async fn prepare_txn(
+    fn prepare_txn(
         &self,
         transaction: Transaction,
         input_objects: InputObjects,
@@ -402,7 +402,7 @@ impl TransactionalAdapter for Simulacrum<StdRng, PersistedStore> {
         unimplemented!("read_input_objects not supported in simulator mode")
     }
 
-    async fn prepare_txn(
+    fn prepare_txn(
         &self,
         _transaction: Transaction,
         _input_objects: InputObjects,

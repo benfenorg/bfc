@@ -1941,7 +1941,7 @@ impl AuthorityState {
         Ok((inner_temp_store, proposal_map, effects, execution_error_opt.err()))
     }
 
-    pub async fn prepare_certificate_for_benchmark(
+    pub fn prepare_certificate_for_benchmark(
         &self,
         certificate: &VerifiedExecutableTransaction,
         input_objects: InputObjects,

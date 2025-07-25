@@ -1492,6 +1492,8 @@ where
         self.safe_iter().next().is_none()
     }
 
+
+
     fn safe_iter(&'a self) -> DbIterator<'a, (K, V)> {
         match &self.db.storage {
             Storage::Rocks(db) => {

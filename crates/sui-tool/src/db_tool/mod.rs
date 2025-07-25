@@ -122,8 +122,8 @@ pub struct PrintCheckpointOptions {
 #[command(rename_all = "kebab-case")]
 pub struct PrintCheckpointContentOptions {
     #[arg(
-    long,
-    help = "The checkpoint content digest (NOT the checkpoint digest)"
+        long,
+        help = "The checkpoint content digest (NOT the checkpoint digest)"
     )]
     digest: CheckpointContentsDigest,
 }
@@ -342,13 +342,7 @@ pub fn print_checkpoint_content(
     Ok(())
 }
 
-/// Force removes a transaction and its outputs, if no other dependent transaction has executed yet.
-/// Usually this should be paired with rewind_checkpoint_execution() to re-execute the removed
-/// transaction, to repair corrupted database.
-/// Dry run with: cargo run --package sui-tool -- db-tool --db-path /opt/bfc/db/authorities_db/live remove-transaction --digest xxxx
-/// Add --confirm to actually remove the transaction.
 
-pub fn reset_db_to_genesis(path: &Path) -> anyhow::Result<()> {
 pub async fn reset_db_to_genesis(path: &Path) -> anyhow::Result<()> {
     // Follow the below steps to test:
     //
@@ -383,7 +377,7 @@ pub async fn reset_db_to_genesis(path: &Path) -> anyhow::Result<()> {
         path.join("store").join("perpetual"),
         std::time::Duration::from_secs(60),
     )
-    .await?;
+        .await?;
 
     let checkpoint_db = CheckpointStore::new(&path.join("checkpoints"));
     checkpoint_db.reset_db_for_execution_since_genesis()?;
@@ -402,9 +396,9 @@ pub fn rewind_checkpoint_execution(
     let checkpoint_db = CheckpointStore::new(&path.join("checkpoints"));
     let Some(checkpoint) =
         checkpoint_db.get_checkpoint_by_sequence_number(checkpoint_sequence_number)?
-        else {
-            bail!("Checkpoint {checkpoint_sequence_number} not found!");
-        };
+    else {
+        bail!("Checkpoint {checkpoint_sequence_number} not found!");
+    };
     if epoch != checkpoint.epoch() {
         bail!(
             "Checkpoint {checkpoint_sequence_number} is in epoch {} not {epoch}!",
@@ -482,16 +476,16 @@ pub fn set_checkpoint_watermark(
 
     if let Some(highest_verified) = options.highest_verified {
         let Some(checkpoint) = checkpoint_db.get_checkpoint_by_sequence_number(highest_verified)?
-            else {
-                bail!("Checkpoint {highest_verified} not found");
-            };
+        else {
+            bail!("Checkpoint {highest_verified} not found");
+        };
         checkpoint_db.update_highest_verified_checkpoint(&checkpoint)?;
     }
     if let Some(highest_synced) = options.highest_synced {
         let Some(checkpoint) = checkpoint_db.get_checkpoint_by_sequence_number(highest_synced)?
-            else {
-                bail!("Checkpoint {highest_synced} not found");
-            };
+        else {
+            bail!("Checkpoint {highest_synced} not found");
+        };
         checkpoint_db.update_highest_synced_checkpoint(&checkpoint)?;
     }
     Ok(())
