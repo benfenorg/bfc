@@ -989,8 +989,8 @@ mod checked {
                 // deposit to outer stable coin treasury
                 let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
                 builder.programmable_move_call(
-                    SUI_FRAMEWORK_PACKAGE_ID,
-                    BALANCE_MODULE_NAME.to_owned(),
+                    BFC_SYSTEM_PACKAGE_ID,
+                    BFC_SYSTEM_MODULE_NAME.to_owned(),
                     BALANCE_DEPOSIT_STABLE_GAS_COIN_FUNCTION_NAME.to_owned(),
                     vec![type_tag.clone()],
                     vec![system_obj, rewards],

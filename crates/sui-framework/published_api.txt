@@ -5404,6 +5404,9 @@ create_bfc_system_modify_cap
 get_extra_fields
 	public(package) fun
 	0xc8::bfc_system_state_inner
+deposit_stable_gas_coin
+	public(package) fun
+	0xc8::bfc_system_state_inner
 in_external_stable_gas_coin_list
 	public(package) fun
 	0xc8::bfc_system_state_inner
@@ -5444,6 +5447,9 @@ inner_stablecoin_to_bfc
 	fun
 	0xc8::bfc_system
 inner_withdraw_balance
+	fun
+	0xc8::bfc_system
+deposit_stable_gas_coin
 	fun
 	0xc8::bfc_system
 request_gas_balance

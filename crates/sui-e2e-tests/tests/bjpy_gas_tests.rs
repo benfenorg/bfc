@@ -241,6 +241,187 @@ async fn sim_test_with_new_stable_coin_gas() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+
+#[sim_test]
+async fn sim_test_with_new_stable_coin_gas_check_gas_deposit() -> Result<(), anyhow::Error> {
+    let mut test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(6000)
+        .with_num_validators(5)
+        // .with_all_vault_init()
+        .build()
+        .await;
+    let mut http_client = test_cluster.rpc_client().clone();
+    let address = test_cluster.get_address_0();
+    let (package, change_objs) =
+        publish_coin::do_publish(&mut test_cluster, "tests/test_coin_code").await?;
+
+    let mut coin_type: String = "".to_string();
+    for ele in change_objs {
+        if let ObjectChange::Created { object_type, .. } = ele {
+            if object_type.module.as_str() == "coin" {
+                coin_type = object_type.type_params.get(0).unwrap().to_string();
+                println!("object_type is {:?}", coin_type);
+                break;
+            }
+        }
+    }
+    assert!(!coin_type.is_empty());
+
+    publish_coin::do_mint(&mut test_cluster, package).await;
+    publish_coin::do_mint(&mut test_cluster, package).await;
+    auth::auth_setup(
+        &mut test_cluster,
+        &mut http_client,
+        address,
+        "MINT-OTHER-STABLECOIN-POLLY",
+    )
+        .await?;
+
+    test_cluster.wait_for_epoch(Some(2)).await;
+    let filter = format!(
+        "{}{}{}",
+        "0x2::coin::Coin<", package, "::test_coin::TEST_COIN>"
+    );
+
+    let objects = get_owned_objects(filter.as_str(), &mut http_client, address).await?;
+    println!("objects is {:?}", objects);
+    assert_eq!(objects.len(), 2);
+
+    println!("coin_type is {:?}", coin_type);
+    let response =
+        test_move_call_add_external_stable_gas_coin(&mut test_cluster, coin_type.replace("0x", ""))
+            .await;
+    assert!(response.is_ok());
+    test_cluster.wait_for_epoch(Some(3)).await;
+
+    let (package, _) =
+        publish_coin::do_publish(&mut test_cluster, "tests/test_oracle_price").await?;
+
+    test_cluster.wait_for_epoch(Some(4)).await;
+    init_oracele_with_new_test_coin(&mut test_cluster, coin_type.replace("0x", ""), package).await;
+    // wait to get oracle price and call bfc_round_v2
+    test_cluster.wait_for_epoch(Some(10)).await;
+
+    let data = get_allow_stable_gas_coins_rate_map();
+    for ele in &data {
+        println!("allow stable is {:?}", ele);
+    }
+    assert!(data.contains_key(&coin_type.replace("0x", "")));
+
+    // Query extra_fields in bfc system
+    let mut old_extra_fields_size = 0;
+    test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap()
+        .with(|node| {
+            let _state = node
+                .state()
+                .get_bfc_system_state_object_for_testing()
+                .unwrap();
+            let _extra_fields = _state.get_extra_fields();
+            if let Some(extra_fields) = _extra_fields {
+                println!("Extra fields size: {}", extra_fields.size);
+                old_extra_fields_size = extra_fields.size;
+            } else {
+                println!("Extra fields not available (BFC system state V1)");
+            }
+    });
+
+    // // case 1 : transfer_sui
+    let objects = get_owned_objects(filter.as_str(), &mut http_client.clone(), address).await?;
+    let gas_object = objects.first().unwrap().object().unwrap();
+    println!("transfer_sui gas_object: {:?}", gas_object.to_string());
+    let context = &test_cluster.wallet;
+    let tx = test_cluster.wallet.sign_transaction(
+        &TestTransactionBuilder::new(address, gas_object.object_ref(), context.get_reference_gas_price().await.unwrap())
+            .transfer_sui(None, address)
+            .build(),
+    );
+    let resp = test_cluster.execute_transaction(tx).await;
+    println!("transfer_sui resp: {:?}", resp);
+    assert!(resp.status_ok().unwrap());
+
+    let response = test_move_call_new_test_coin_pool(
+        &mut test_cluster,
+        package,
+        vec![TypeTag::from_str(&*coin_type)?],
+    )
+        .await;
+    assert!(response.is_ok());
+
+    let pool_id = response.unwrap();
+
+    // case 2 : call move function
+    let response = test_move_call_use_new_test_coin(
+        &mut test_cluster,
+        package,
+        vec![TypeTag::from_str(&*coin_type)?],
+        pool_id,
+    )
+    .await;
+    assert!(response.is_ok());
+
+    test_cluster.wait_for_epoch(Some(12)).await;
+    // Query extra_fields in bfc system
+    let mut new_extra_fields_size = 0;
+    test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap()
+        .with(|node| {
+            let _state = node
+                .state()
+                .get_bfc_system_state_object_for_testing()
+                .unwrap();
+
+            // Query extra_fields from BFC system state
+            let _extra_fields = _state.get_extra_fields();
+            println!("=============extra_fields: {:?}", &_extra_fields);
+
+            // Check if extra_fields exists (only available in V2)
+            if let Some(extra_fields) = _extra_fields {
+                println!("Extra fields size: {}", extra_fields.size);
+                new_extra_fields_size = extra_fields.size;
+                // You can add more specific checks here based on what you expect in extra_fields
+            } else {
+                println!("Extra fields not available (BFC system state V1)");
+            }
+
+            // print detail in extra_fields
+            if let Some(extra_fields) = _extra_fields {
+                use sui_types::dynamic_field::get_dynamic_field_from_store;
+                use sui_types::base_types::ObjectID;
+                let parent_id: ObjectID = extra_fields.id.id.bytes;
+                let state = node.state();
+                let object_store = state.get_object_store();
+                let object_store_ref = object_store.as_ref();
+                for i in 0..extra_fields.size {
+                    let value: Result<String, _> = get_dynamic_field_from_store(object_store_ref, parent_id, &i);
+                    match value {
+                        Ok(v) => println!("Bag[{}] = {:?}", i, v),
+                        Err(e) => println!("Bag[{}] read failed: {:?}", i, e),
+                    }
+                }
+            }
+           
+
+        });
+
+        println!("old_extra_fields_size is {:?}, new_extra_fields_size is {:?}", old_extra_fields_size, new_extra_fields_size);
+        assert!(new_extra_fields_size > old_extra_fields_size,
+            "Extra fields size should increase after adding a new stable gas coin"
+        );
+
+    Ok(())
+}
+
 async fn get_bjpy(test_cluster: &TestCluster, http_client: &mut HttpClient, address: SuiAddress) -> Result<(), Error> {
     stable::mint_stable_coin(25_000_000_000,test_cluster, http_client, address,"0xc8::bjpy::BJPY").await?;
     Ok(())
@@ -718,31 +899,32 @@ async fn test_move_call_new_test_coin_pool(test_cluster: &mut TestCluster, packa
             ],
         )
         .build();
-    tracing::error!("txn_data is {:?}",txn_data);
+    tracing::info!("txn_data is {:?}",txn_data);
     let tx = context.sign_transaction(&txn_data);
     let resp = test_cluster.wallet.execute_transaction_may_fail(tx).await;
-    tracing::error!("test_move_call_use_new_test_coin resp: {:#?}", resp);
+    tracing::info!("test_move_call_use_new_test_coin resp: {:#?}", resp);
 
     if  resp.is_err() {
         println!("test_move_call_use_new_test_coin resp: {:#?}", resp);
         return Err(resp.unwrap_err());
     }
 
-    let mut result_vec =  Vec::with_capacity(2);
+    let mut oracle_price: Option<ObjectRef> = None;
+    let mut global: Option<ObjectRef> = None;
     for ele in  resp?.object_changes.unwrap() {
         if let ObjectChange::Created { object_id, version,digest,object_type,.. } = ele {
             if object_type.name == Identifier::from_str("TestOraclePrice").unwrap(){
-                result_vec.insert(0,(object_id,version,digest));
+                oracle_price = Some((object_id,version,digest));
             }
             if object_type.name == Identifier::from_str("Global").unwrap(){
-                result_vec.insert(1,(object_id,version,digest));
+                global = Some((object_id,version,digest));
             }
         }
     }
-    if result_vec.len() != 2 {
+    if oracle_price.is_none() || global.is_none() {
         Err(anyhow!("not found"))
-    }else {
-        Ok((result_vec[0],result_vec[1]))
+    } else {
+        Ok((oracle_price.unwrap(), global.unwrap()))
     }
 
 }
