@@ -1267,6 +1267,12 @@ async fn sim_test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         function: "transfer".to_string(),
         type_args: vec![],
         args: args.to_vec(),
+        payment: PaymentArgs::default(),
+        gas_data: GasDataArgs {
+            gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_GENERIC),
+            ..Default::default()
+        },
+        processing: TxProcessingArgs::default(),
         //serialize_unsigned_transaction: false,
         //serialize_signed_transaction: false,
     }
