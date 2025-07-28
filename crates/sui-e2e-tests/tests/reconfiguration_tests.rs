@@ -27,16 +27,15 @@ use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder, GenesisConfig};
-use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_transfer_sui_transaction_with_gas_coins};
+use sui_test_transaction_builder::{make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, make_transfer_sui_transaction_with_gas_coins};
 use sui_types::base_types::{ObjectID,SuiAddress};
 use move_core_types::parser::parse_struct_tag;
 use sui_types::sui_serde::BigInt;
 use sui_test_transaction_builder::make_transfer_sui_transaction_with_gas_coins_budget;
 
-use sui_protocol_config::ProtocolVersion;
 use sui_protocol_config::{Chain, ProtocolConfig};
 use sui_swarm_config::genesis_config::{
-    AccountConfig, ValidatorGenesisConfig, ValidatorGenesisConfigBuilder, DEFAULT_GAS_AMOUNT,
+    AccountConfig, DEFAULT_GAS_AMOUNT,
 };
 use sui_test_transaction_builder::{make_transfer_sui_transaction, TestTransactionBuilder};
 use sui_types::base_types::SuiAddress;
@@ -656,8 +655,7 @@ async fn sim_reconfig_with_revert_end_to_end_test() {
 
 // This test just starts up a cluster that reconfigures itself under 0 load.
 #[sim_test]
-async fn sim_test_passive_reconfig() {
-    //telemetry_subscribers::init_for_testing();
+//telemetry_subscribers::init_for_testing();
 async fn test_passive_reconfig() {
     do_test_passive_reconfig(None).await;
 }

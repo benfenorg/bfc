@@ -1163,6 +1163,12 @@ async fn sim_test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         function: "rebalance".to_string(),
         type_args: vec![],
         args,
+        gas_data: GasDataArgs {
+            gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_GENERIC),
+            ..Default::default()
+        },
+        payment: PaymentArgs::default(),
+        processing: TxProcessingArgs::default(),
     }
         .execute(context)
         .await?;
@@ -1177,9 +1183,12 @@ async fn sim_test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         skip_dependency_verification: false,
         with_unpublished_dependencies: false,
         verify_deps: true,
-        //serialize_unsigned_transaction: false,
-        //serialize_signed_transaction: false,
-        //lint: false,
+        gas_data: GasDataArgs {
+            gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_GENERIC),
+            ..Default::default()
+        },
+        payment: PaymentArgs::default(),
+        processing: TxProcessingArgs::default(),
     }
         .execute(context)
         .await?;
@@ -1221,6 +1230,12 @@ async fn sim_test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         function: "create".to_string(),
         type_args: vec![],
         args,
+        gas_data: GasDataArgs {
+            gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_GENERIC),
+            ..Default::default()
+        },
+        payment: PaymentArgs::default(),
+        processing: TxProcessingArgs::default(),
         //serialize_unsigned_transaction: false,
         //serialize_signed_transaction: false,
     }
@@ -4712,7 +4727,7 @@ async fn test_transfer_sponsored() -> Result<(), anyhow::Error> {
     // A0 sends O1 to A1
     let transfer = SuiClientCommands::TransferBfc {
         to: KeyIdentity::Address(a1),
-        sui_coin_object_id: o[1],
+        bfc_coin_object_id: o[1],
         amount: None,
         gas_data: GasDataArgs {
             gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
