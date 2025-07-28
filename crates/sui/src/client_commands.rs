@@ -1318,8 +1318,8 @@ impl SuiClientCommands {
                     context,
                     None,
                     None,
-                    //Some(object_id),
-                    None,
+                    Some(object_id),
+                    //None,
                     opts,
                 )
                 .await?
