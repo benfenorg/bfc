@@ -2,7 +2,7 @@
 source: crates/sui-protocol-config/src/lib.rs
 expression: "ProtocolConfig::get_for_version(cur, *chain_id)"
 ---
-version: 73
+version: 74
 feature_flags:
   package_upgrades: true
   commit_root_state_digest: true
@@ -49,7 +49,7 @@ feature_flags:
   per_object_congestion_control_mode: TotalGasBudgetWithCap
   consensus_choice: Mysticeti
   consensus_network: Tonic
-  zklogin_max_epoch_upper_bound_delta: 30
+  zklogin_max_epoch_upper_bound_delta: 365
   mysticeti_leader_scoring_and_schedule: true
   reshare_at_same_initial_version: true
   resolve_abort_locations_to_package_id: true
@@ -70,6 +70,9 @@ feature_flags:
   consensus_smart_ancestor_selection: true
   consensus_round_prober_probe_accepted_rounds: true
   native_charging_v2: true
+  convert_type_argument_error: true
+  variant_nodes: true
+  consensus_zstd_compression: true
 max_tx_size_bytes: 131072
 max_input_objects: 2048
 max_size_written_objects: 5000000
@@ -103,8 +106,8 @@ binary_friend_decls: 100
 max_move_object_size: 256000
 max_move_package_size: 102400
 max_publish_or_upgrade_per_ptb: 5
-max_tx_gas: 50000000000
-max_gas_price: 100000
+max_tx_gas: 50000000000000
+max_gas_price: 50000000000
 max_gas_computation_bucket: 5000000
 gas_rounding_step: 1000
 max_loop_depth: 5
@@ -337,11 +340,14 @@ bfc_system_state_open: 1
 max_accumulated_txn_cost_per_object_in_narwhal_commit: 40
 max_deferral_rounds_for_congestion_control: 10
 max_txn_cost_overage_per_object_in_commit: 18446744073709551615
+allowed_txn_cost_overage_burst_per_object_in_commit: 370000000
 min_checkpoint_interval_ms: 200
 checkpoint_summary_version_specific_data: 1
 max_soft_bundle_size: 5
 bridge_should_try_to_finalize_committee: true
-max_accumulated_txn_cost_per_object_in_mysticeti_commit: 18500000
-max_accumulated_randomness_txn_cost_per_object_in_mysticeti_commit: 3700000
+max_accumulated_txn_cost_per_object_in_mysticeti_commit: 37000000
+max_accumulated_randomness_txn_cost_per_object_in_mysticeti_commit: 7400000
 gas_budget_based_txn_cost_cap_factor: 400000
 gas_budget_based_txn_cost_absolute_cap_commit_count: 50
+sip_45_consensus_amplification_threshold: 5
+use_object_per_epoch_marker_table_v2: true

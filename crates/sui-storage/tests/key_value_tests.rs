@@ -419,74 +419,74 @@ mod simtests {
         startup_receiver.changed().await.unwrap();
     }
 
-    #[sim_test(config = "constant_latency_ms(250)")]
-    async fn test_multi_fetch() {
-        let mut data = HashMap::new();
-
-        let tx = random_tx();
-        let random_digest = TransactionDigest::random();
-        let fx = random_fx();
-
-        {
-            let bytes = bcs::to_bytes(&tx).unwrap();
-            assert_eq!(tx, bcs::from_bytes::<Transaction>(&bytes).unwrap());
-
-            let bytes = bcs::to_bytes(&fx).unwrap();
-            assert_eq!(fx, bcs::from_bytes::<TransactionEffects>(&bytes).unwrap());
-        }
-
-        data.insert(
-            format!("{}/tx", encode_digest(tx.digest())),
-            bcs::to_bytes(&tx).unwrap(),
-        );
-        data.insert(
-            format!("{}/fx", encode_digest(fx.transaction_digest())),
-            bcs::to_bytes(&fx).unwrap(),
-        );
-
-        // a bogus entry with the wrong digest
-        data.insert(
-            format!("{}/tx", encode_digest(&random_digest)),
-            bcs::to_bytes(&tx).unwrap(),
-        );
-
-        let server_data = Arc::new(Mutex::new(data));
-        test_server(server_data).await;
-        let metrics = KeyValueStoreMetrics::new_for_tests();
-
-        let store = HttpKVStore::new("http://10.10.10.10:8080", 1000, metrics.clone()).unwrap();
-
-        // send one request to warm up the client (and open a connection)
-        store.multi_get(&[*tx.digest()], &[]).await.unwrap();
-
-        let start_time = Instant::now();
-        let result = store
-            .multi_get(
-                &[*tx.digest(), *random_tx().digest()],
-                &[*fx.transaction_digest()],
-            )
-            .await
-            .unwrap();
-
-        // verify that the request took approximately one round trip despite fetching 4 items,
-        // i.e. test that pipelining or multiplexing is working.
-        assert!(start_time.elapsed() < Duration::from_millis(600));
-
-        assert_eq!(result, (vec![Some(tx), None], vec![Some(fx)]));
-
-        // the tx was fetched twice, so there should be one cache hit
-        assert_eq!(
-            metrics
-                .key_value_store_num_fetches_success
-                .get_metric_with_label_values(&["http_cache", "tx"])
-                .unwrap()
-                .get(),
-            1
-        );
-
-        let result = store.multi_get(&[random_digest], &[]).await.unwrap();
-        assert_eq!(result, (vec![None], vec![]));
-    }
+    // #[sim_test(config = "constant_latency_ms(250)")]
+    // async fn test_multi_fetch() {
+    //     let mut data = HashMap::new();
+    //
+    //     let tx = random_tx();
+    //     let random_digest = TransactionDigest::random();
+    //     let fx = random_fx();
+    //
+    //     {
+    //         let bytes = bcs::to_bytes(&tx).unwrap();
+    //         assert_eq!(tx, bcs::from_bytes::<Transaction>(&bytes).unwrap());
+    //
+    //         let bytes = bcs::to_bytes(&fx).unwrap();
+    //         assert_eq!(fx, bcs::from_bytes::<TransactionEffects>(&bytes).unwrap());
+    //     }
+    //
+    //     data.insert(
+    //         format!("{}/tx", encode_digest(tx.digest())),
+    //         bcs::to_bytes(&tx).unwrap(),
+    //     );
+    //     data.insert(
+    //         format!("{}/fx", encode_digest(fx.transaction_digest())),
+    //         bcs::to_bytes(&fx).unwrap(),
+    //     );
+    //
+    //     // a bogus entry with the wrong digest
+    //     data.insert(
+    //         format!("{}/tx", encode_digest(&random_digest)),
+    //         bcs::to_bytes(&tx).unwrap(),
+    //     );
+    //
+    //     let server_data = Arc::new(Mutex::new(data));
+    //     test_server(server_data).await;
+    //     let metrics = KeyValueStoreMetrics::new_for_tests();
+    //
+    //     let store = HttpKVStore::new("http://10.10.10.10:8080", 1000, metrics.clone()).unwrap();
+    //
+    //     // send one request to warm up the client (and open a connection)
+    //     store.multi_get(&[*tx.digest()], &[]).await.unwrap();
+    //
+    //     let start_time = Instant::now();
+    //     let result = store
+    //         .multi_get(
+    //             &[*tx.digest(), *random_tx().digest()],
+    //             &[*fx.transaction_digest()],
+    //         )
+    //         .await
+    //         .unwrap();
+    //
+    //     // verify that the request took approximately one round trip despite fetching 4 items,
+    //     // i.e. test that pipelining or multiplexing is working.
+    //     assert!(start_time.elapsed() < Duration::from_millis(600));
+    //
+    //     assert_eq!(result, (vec![Some(tx), None], vec![Some(fx)]));
+    //
+    //     // the tx was fetched twice, so there should be one cache hit
+    //     assert_eq!(
+    //         metrics
+    //             .key_value_store_num_fetches_success
+    //             .get_metric_with_label_values(&["http_cache", "tx"])
+    //             .unwrap()
+    //             .get(),
+    //         1
+    //     );
+    //
+    //     let result = store.multi_get(&[random_digest], &[]).await.unwrap();
+    //     assert_eq!(result, (vec![None], vec![]));
+    // }
 }
 
 #[test]

@@ -185,17 +185,16 @@ module bridge::limiter_fast_path_tests {
         let ctx = test_scenario::ctx(&mut scenario);
         
         let mut obj=new(ctx);
-        // let user = @0x42;
         // Create new limiter
         limiter_fast_path::new_limiter_fast_path_for_testing(&mut obj.id,ctx);
         limiter_fast_path::registry_for_testing(&mut obj.id);
         let clock = clock::create_for_testing(ctx);
         
         let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, USER_ADDRESS, ETH_MAINNET, BUSD_ID, &clock);
-        assert_eq!(remaining, 5000_000_000_000); // Back to full limit
+        assert_eq!(remaining, 50_000_000_000_000); // Back to full limit
 
         
-        let amount = 5001_000_000_000; 
+        let amount = 50_001_000_000_000;
         let result = limiter_fast_path::check_and_record_user_limit(
             &mut obj.id,
             USER_ADDRESS,
@@ -207,7 +206,7 @@ module bridge::limiter_fast_path_tests {
         assert_eq!(result, false);
 
         let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, USER_ADDRESS, ETH_MAINNET, BUSD_ID, &clock);
-        assert_eq!(remaining, 5000_000_000_000); // Back to full limit
+        assert_eq!(remaining, 50_000_000_000_000); // Back to full limit
 
         let amount = 2000_000_000_000; 
         let result = limiter_fast_path::check_and_record_user_limit(
