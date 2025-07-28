@@ -50,10 +50,8 @@ use sui_types::sui_system_state::{
     get_validator_from_table, sui_system_state_summary::get_validator_by_pool_id,
     SuiSystemStateTrait,
 };
-use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall,
-                             ProgrammableTransaction, TransactionDataAPI,
-                             TransactionExpiration, TransactionKind,
-                             TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
+use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall, ProgrammableTransaction,
+                             TransactionDataAPI, TransactionExpiration, TransactionKind, TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
 use tracing::{error, info};

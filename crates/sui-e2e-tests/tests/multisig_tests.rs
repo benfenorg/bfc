@@ -41,7 +41,6 @@ use sui_types::{
     utils::{keys, load_test_vectors, make_upgraded_multisig_tx},
     zk_login_authenticator::ZkLoginAuthenticator,
 };
-use sui_types::crypto::SignatureScheme;
 use sui_types::utils::make_ed25519sig;
 use test_cluster::{TestCluster, TestClusterBuilder};
 use url::Url;

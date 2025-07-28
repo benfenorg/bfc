@@ -12,7 +12,7 @@ use sui_json_rpc_api::{
     CoinReadApiClient, GovernanceReadApiClient, IndexerApiClient, ReadApiClient,
     TransactionBuilderClient, WriteApiClient,
 };
-use sui_json_rpc_types::{ObjectChange, SuiTransactionBlockEffects};
+use sui_json_rpc_types::{ObjectChange, SuiTransactionBlockEffects, ZkLoginIntentScope};
 //use sui_json_rpc_types::ObjectChange;
 use sui_json_rpc_types::ObjectsPage;
 use sui_json_rpc_types::{
@@ -20,7 +20,6 @@ use sui_json_rpc_types::{
     SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffectsAPI,
     SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, TransactionBlockBytes,
 };
-use sui_json_rpc_types::{ObjectChange, ZkLoginIntentScope};
 use sui_macros::sim_test;
 use sui_move_build::BuildConfig;
 use sui_simulator::fastcrypto::encoding::{Base64, Encoding};
