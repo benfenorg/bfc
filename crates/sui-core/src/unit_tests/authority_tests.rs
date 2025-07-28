@@ -28,11 +28,9 @@ use std::fs;
 use std::str::FromStr;
 use std::{convert::TryInto, env};
 
-use sui_json_rpc_types::{SuiArgument, SuiExecutionResult, SuiExecutionStatus, SuiGasCostSummary, SuiTransactionBlockEffectsAPI, SuiTypeTag};
-
 use sui_json_rpc_types::{
     SuiArgument, SuiExecutionResult, SuiExecutionStatus, SuiTransactionBlockEffectsAPI,
-    SuiTransactionBlockEffectsV1, SuiTypeTag,
+    SuiTransactionBlockEffectsV1, SuiTypeTag, SuiGasCostSummary
 };
 use sui_macros::sim_test;
 use sui_move_build::BuildConfig;

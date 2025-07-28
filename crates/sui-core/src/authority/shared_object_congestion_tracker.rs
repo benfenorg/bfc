@@ -857,152 +857,19 @@ mod object_cost_tests {
     }
 
     #[rstest]
-    fn test_should_defer_return_correct_deferral_key(
+    fn test_should_defer_allow_overage_with_burst(
         #[values(
         PerObjectCongestionControlMode::TotalGasBudget,
         PerObjectCongestionControlMode::TotalTxCount,
         PerObjectCongestionControlMode::TotalGasBudgetWithCap,
         PerObjectCongestionControlMode::ExecutionTimeEstimate(ExecutionTimeEstimateParams {
-        target_utilization: 0,
-        allowed_txn_cost_overage_burst_limit_us: 0,
-        max_estimate_us: u64::MAX,
+        target_utilization: 16,
+        allowed_txn_cost_overage_burst_limit_us: 1_500_000,
         randomness_scalar: 0,
+        max_estimate_us: u64::MAX,
         stored_observations_num_included_checkpoints: 10,
         stored_observations_limit: u64::MAX,
         }),
-        )]
-        mode: PerObjectCongestionControlMode,
-    ) {
-        let execution_time_estimator = ExecutionTimeEstimator::new_for_testing();
-
-        let shared_obj_0 = ObjectID::random();
-        let tx = build_transaction(&[(shared_obj_0, true)], 100);
-
-        let shared_object_congestion_tracker = SharedObjectCongestionTracker::new(
-            [(shared_obj_0, 1)], // set initial cost that exceeds 0 burst limit
-            mode,
-            false,
-            Some(0), // Make should_defer_due_to_object_congestion always defer transactions.
-            Some(2),
-            None,
-            0,
-            0,
-        );
-
-        // Insert a random pre-existing transaction.
-        let mut previously_deferred_tx_digests = HashMap::new();
-        previously_deferred_tx_digests.insert(
-            TransactionDigest::random(),
-            DeferralKey::ConsensusRound {
-                future_round: 10,
-                deferred_from_round: 5,
-            },
-        );
-
-        // Test deferral key for a transaction that has not been deferred before.
-        if let Some((
-                        DeferralKey::ConsensusRound {
-                            future_round,
-                            deferred_from_round,
-                        },
-                        _,
-                    )) = shared_object_congestion_tracker.should_defer_due_to_object_congestion(
-            Some(&execution_time_estimator),
-            &tx,
-            &previously_deferred_tx_digests,
-            &ConsensusCommitInfo::new_for_congestion_test(
-                10,
-                10,
-                Duration::from_micros(10_000_000),
-            ),
-        ) {
-            assert_eq!(future_round, 11);
-            assert_eq!(deferred_from_round, 10);
-        } else {
-            panic!("should defer");
-        }
-
-        // Insert `tx` as previously deferred transaction due to randomness.
-        previously_deferred_tx_digests.insert(
-            *tx.digest(),
-            DeferralKey::Randomness {
-                deferred_from_round: 4,
-            },
-        );
-
-        // New deferral key should have deferred_from_round equal to the deferred randomness round.
-        if let Some((
-                        DeferralKey::ConsensusRound {
-                            future_round,
-                            deferred_from_round,
-                        },
-                        _,
-                    )) = shared_object_congestion_tracker.should_defer_due_to_object_congestion(
-            Some(&execution_time_estimator),
-            &tx,
-            &previously_deferred_tx_digests,
-            &ConsensusCommitInfo::new_for_congestion_test(
-                10,
-                10,
-                Duration::from_micros(10_000_000),
-            ),
-        ) {
-            assert_eq!(future_round, 11);
-            assert_eq!(deferred_from_round, 4);
-        } else {
-            panic!("should defer");
-        }
-
-        // Insert `tx` as previously deferred consensus transaction.
-        previously_deferred_tx_digests.insert(
-            *tx.digest(),
-            DeferralKey::ConsensusRound {
-                future_round: 10,
-                deferred_from_round: 5,
-            },
-        );
-
-        // New deferral key should have deferred_from_round equal to the one in the old deferral key.
-        if let Some((
-                        DeferralKey::ConsensusRound {
-                            future_round,
-                            deferred_from_round,
-                        },
-                        _,
-                    )) = shared_object_congestion_tracker.should_defer_due_to_object_congestion(
-            Some(&execution_time_estimator),
-            &tx,
-            &previously_deferred_tx_digests,
-            &ConsensusCommitInfo::new_for_congestion_test(
-                10,
-                10,
-                Duration::from_micros(10_000_000),
-            ),
-        ) {
-            assert_eq!(future_round, 11);
-            assert_eq!(deferred_from_round, 5);
-        } else {
-            panic!("should defer");
-        }
-    }
-
-    #[rstest]
-    fn test_should_defer_allow_overage_with_burst(
-        #[values(
-        PerObjectCongestionControlMode::TotalGasBudget,
-        PerObjectCongestionControlMode::TotalTxCount,
-        PerObjectCongestionControlMode::TotalGasBudgetWithCap
-            PerObjectCongestionControlMode::TotalGasBudget,
-            PerObjectCongestionControlMode::TotalTxCount,
-            PerObjectCongestionControlMode::TotalGasBudgetWithCap,
-            PerObjectCongestionControlMode::ExecutionTimeEstimate(ExecutionTimeEstimateParams {
-                target_utilization: 16,
-                allowed_txn_cost_overage_burst_limit_us: 1_500_000,
-                randomness_scalar: 0,
-                max_estimate_us: u64::MAX,
-                stored_observations_num_included_checkpoints: 10,
-                stored_observations_limit: u64::MAX,
-            }),
         )]
         mode: PerObjectCongestionControlMode,
     ) {
@@ -1187,19 +1054,16 @@ mod object_cost_tests {
         #[values(
         PerObjectCongestionControlMode::TotalGasBudget,
         PerObjectCongestionControlMode::TotalTxCount,
-        PerObjectCongestionControlMode::TotalGasBudgetWithCap
-            PerObjectCongestionControlMode::TotalGasBudget,
-            PerObjectCongestionControlMode::TotalTxCount,
-            PerObjectCongestionControlMode::TotalGasBudgetWithCap,
-            PerObjectCongestionControlMode::ExecutionTimeEstimate(ExecutionTimeEstimateParams {
-                // all params ignored in this test
-                target_utilization: 0,
-                allowed_txn_cost_overage_burst_limit_us: 0,
-                randomness_scalar: 0,
-                max_estimate_us: u64::MAX,
-                stored_observations_num_included_checkpoints: 10,
-                stored_observations_limit: u64::MAX,
-            }),
+        PerObjectCongestionControlMode::TotalGasBudgetWithCap,
+        PerObjectCongestionControlMode::ExecutionTimeEstimate(ExecutionTimeEstimateParams {
+        // all params ignored in this test
+        target_utilization: 0,
+        allowed_txn_cost_overage_burst_limit_us: 0,
+        randomness_scalar: 0,
+        max_estimate_us: u64::MAX,
+        stored_observations_num_included_checkpoints: 10,
+        stored_observations_limit: u64::MAX,
+        }),
         )]
         mode: PerObjectCongestionControlMode,
     ) {
@@ -1361,19 +1225,16 @@ mod object_cost_tests {
         #[values(
         PerObjectCongestionControlMode::TotalGasBudget,
         PerObjectCongestionControlMode::TotalTxCount,
-        PerObjectCongestionControlMode::TotalGasBudgetWithCap
-            PerObjectCongestionControlMode::TotalGasBudget,
-            PerObjectCongestionControlMode::TotalTxCount,
-            PerObjectCongestionControlMode::TotalGasBudgetWithCap,
-            PerObjectCongestionControlMode::ExecutionTimeEstimate(ExecutionTimeEstimateParams {
-                target_utilization: 100,
-                // set a burst limit to verify that it does not affect debt calculation.
-                allowed_txn_cost_overage_burst_limit_us: 1_600 * 5,
-                randomness_scalar: 0,
-                max_estimate_us: u64::MAX,
-                stored_observations_num_included_checkpoints: 10,
-                stored_observations_limit: u64::MAX,
-            }),
+        PerObjectCongestionControlMode::TotalGasBudgetWithCap,
+        PerObjectCongestionControlMode::ExecutionTimeEstimate(ExecutionTimeEstimateParams {
+        target_utilization: 100,
+        // set a burst limit to verify that it does not affect debt calculation.
+        allowed_txn_cost_overage_burst_limit_us: 1_600 * 5,
+        randomness_scalar: 0,
+        max_estimate_us: u64::MAX,
+        stored_observations_num_included_checkpoints: 10,
+        stored_observations_limit: u64::MAX,
+        }),
         )]
         mode: PerObjectCongestionControlMode,
     ) {

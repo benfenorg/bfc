@@ -339,6 +339,7 @@ mod tests {
             &contents,
             None,
             GasCostSummary::default(),
+            Default::default(),
             None,
             0,
             Vec::new(),
