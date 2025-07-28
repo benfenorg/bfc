@@ -50,8 +50,7 @@ use sui_types::sui_system_state::{
     get_validator_from_table, sui_system_state_summary::get_validator_by_pool_id,
     SuiSystemStateTrait,
 };
-use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall, ProgrammableTransaction,
-                             TransactionDataAPI, TransactionExpiration, TransactionKind, TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
+use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall, ProgrammableTransaction, TransactionDataAPI, TransactionExpiration, TransactionKind, TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
 use tracing::{error, info};
@@ -62,7 +61,7 @@ use serde_json::json;
 use sui_types::balance::Balance;
 use sui_types::dao::DaoRPC;
 use chrono::Utc;
-use sui::client_commands::{OptsWithGas, SuiClientCommandResult, SuiClientCommands};
+use sui::client_commands::{SuiClientCommandResult, SuiClientCommands};
 use sui_json_rpc_api::ReadApiClient;
 use sui_json_rpc_api::IndexerApiClient;
 use sui_json_rpc_api::WriteApiClient;
@@ -416,23 +415,23 @@ async fn set_oracle_address(test_cluster: &mut TestCluster, oracle_address: Stri
 //     // Ok((cap, package.object_id()))
 // }
 
-#[allow(unused)]
-async fn do_publish_inner(rgp: u64, context: &mut WalletContext, gas_obj_id: &ObjectID) -> Result<SuiClientCommandResult, Error> {
-    let mut package_path = PathBuf::from("tests/test_oracle_price/");
-    package_path.push("sources");
-    let build_config = BuildConfig::new_for_testing().config;
-    let resp = SuiClientCommands::Publish {
-        package_path: package_path.clone(),
-        build_config,
-        skip_dependency_verification: false,
-        with_unpublished_dependencies: false,
-        opts: OptsWithGas::for_testing(Some(*gas_obj_id), rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH),
-        verify_deps: true,
-    }
-        .execute(context)
-        .await?;
-    Ok(resp)
-}
+// #[allow(unused)]
+// async fn do_publish_inner(rgp: u64, context: &mut WalletContext, gas_obj_id: &ObjectID) -> Result<SuiClientCommandResult, Error> {
+//     let mut package_path = PathBuf::from("tests/test_oracle_price/");
+//     package_path.push("sources");
+//     let build_config = BuildConfig::new_for_testing().config;
+//     let resp = SuiClientCommands::Publish {
+//         package_path: package_path.clone(),
+//         build_config,
+//         skip_dependency_verification: false,
+//         with_unpublished_dependencies: false,
+//         opts: OptsWithGas::for_testing(Some(*gas_obj_id), rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH),
+//         verify_deps: true,
+//     }
+//         .execute(context)
+//         .await?;
+//     Ok(resp)
+// }
 
 
 #[sim_test]
