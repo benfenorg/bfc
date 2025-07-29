@@ -1245,24 +1245,18 @@ pub mod type_argument_error {
         }
     }
 }
-/// Summary of gas charges.
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct GasCostSummary {
     #[prost(uint64, optional, tag = "1")]
     pub base_point: ::core::option::Option<u64>,
     #[prost(uint64, optional, tag = "2")]
     pub rate: ::core::option::Option<u64>,
-    /// Cost of computation/execution.
     #[prost(uint64, optional, tag = "3")]
     pub computation_cost: ::core::option::Option<u64>,
-    /// Storage cost, it's the sum of all storage cost for all objects created or mutated.
     #[prost(uint64, optional, tag = "4")]
     pub storage_cost: ::core::option::Option<u64>,
-    /// The amount of storage cost refunded to the user for all objects deleted or mutated in the
-    /// transaction.
     #[prost(uint64, optional, tag = "5")]
     pub storage_rebate: ::core::option::Option<u64>,
-    /// The fee for the rebate. The portion of the storage rebate kept by the system.
     #[prost(uint64, optional, tag = "6")]
     pub non_refundable_storage_fee: ::core::option::Option<u64>,
 }
@@ -2072,9 +2066,9 @@ pub mod ledger_service_server {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
                                 <T as LedgerService>::batch_get_transactions(
-                                    &inner,
-                                    request,
-                                )
+                                        &inner,
+                                        request,
+                                    )
                                     .await
                             };
                             Box::pin(fut)
@@ -3070,21 +3064,6 @@ pub struct ChangeEpoch {
     #[prost(message, repeated, tag = "10")]
     pub system_packages: ::prost::alloc::vec::Vec<SystemPackage>,
 }
-
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct TaggedGasCostSummary {
-    #[prost(message, optional, tag = "1")]
-    pub tag: ::core::option::Option<::prost::alloc::string::String>,
-    #[prost(message, optional, tag = "2")]
-    pub summary: ::core::option::Option<GasCostSummaryAdjusted>,
-}
-#[derive(Clone, Copy, PartialEq, ::prost::Message)]
-pub struct GasCostSummaryAdjusted {
-    #[prost(message, optional, tag = "1")]
-    pub gas_by_bfc: ::core::option::Option<GasCostSummary>,
-    #[prost(message, optional, tag = "2")]
-    pub gas_by_stable: ::core::option::Option<GasCostSummary>,
-}
 /// System package.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct SystemPackage {
@@ -3243,6 +3222,20 @@ pub struct Jwk {
     /// Algorithm parameter, <https://datatracker.ietf.org/doc/html/rfc7517#section-4.4.>
     #[prost(string, optional, tag = "4")]
     pub alg: ::core::option::Option<::prost::alloc::string::String>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct TaggedGasCostSummary {
+    #[prost(string, optional, tag = "1")]
+    pub tag: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(message, optional, tag = "2")]
+    pub summary: ::core::option::Option<GasCostSummaryAdjusted>,
+}
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct GasCostSummaryAdjusted {
+    #[prost(message, optional, tag = "1")]
+    pub gas_by_bfc: ::core::option::Option<GasCostSummary>,
+    #[prost(message, optional, tag = "2")]
+    pub gas_by_stable: ::core::option::Option<GasCostSummary>,
 }
 /// Set of operations run at the end of the epoch to close out the current epoch
 /// and start the next one.
@@ -3678,9 +3671,9 @@ pub mod transaction_execution_service_server {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
                                 <T as TransactionExecutionService>::execute_transaction(
-                                    &inner,
-                                    request,
-                                )
+                                        &inner,
+                                        request,
+                                    )
                                     .await
                             };
                             Box::pin(fut)

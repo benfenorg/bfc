@@ -1,0 +1,34 @@
+---
+source: crates/sui/tests/shell_tests.rs
+assertion_line: 77
+description: tests/shell_tests/summaries/summarize_yaml.sh
+---
+----- script -----
+# Copyright (c) Mysten Labs, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+sui move summary --path data/move_package -o yaml
+ls -1 data/move_package/package_summaries
+ls -1 data/move_package/package_summaries/move_package
+ls -1 data/move_package/package_summaries/sui
+ls -1 data/move_package/package_summaries/std
+# NB: No root_package_metadata for source packages as these are not generated w.r.t. a specific network.
+cat data/move_package/package_summaries/root_package_metadata.yaml
+# This will contain the address mapping for the package from the literal value
+# of the address to the named value of the address (which is what the source
+# package metadata/move_package uses for storage).
+cat data/move_package/package_summaries/address_mapping.yaml
+
+----- results -----
+success: false
+exit_code: 1
+----- stdout -----
+
+----- stderr -----
+summarize_yaml.sh: line 4: sui: command not found
+ls: data/move_package/package_summaries: No such file or directory
+ls: data/move_package/package_summaries/move_package: No such file or directory
+ls: data/move_package/package_summaries/sui: No such file or directory
+ls: data/move_package/package_summaries/std: No such file or directory
+cat: data/move_package/package_summaries/root_package_metadata.yaml: No such file or directory
+cat: data/move_package/package_summaries/address_mapping.yaml: No such file or directory

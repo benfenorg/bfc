@@ -91,26 +91,22 @@ module sui_system::voting_power {
 
 
 
-/// Create the initial voting power of each validator, set using their stake, but capped using threshold.
-/// We also perform insertion sort while creating the voting power list, by maintaining the list in
-/// descending order using voting power.
-/// Anything beyond the threshold is added to the remaining_power, which is also returned.
-fun init_voting_power_info(
-    validators: &vector<Validator>,
-    threshold: u64,
-    total_stake: u64,
-): (vector<VotingPowerInfoV2>, u64) {
-    let mut total_power = 0;
-    let mut result = vector[];
-    validators.length().do!(|i| {
-        let stake = validators[i].total_stake();
-        let voting_power = derive_raw_voting_power(stake, total_stake).min(threshold);
-        insert(&mut result, VotingPowerInfoV2 { validator_index: i, voting_power, stake });
-        total_power = total_power + voting_power;
-    });
-
-    (result, TOTAL_VOTING_POWER - total_power)
-}
+// fun init_voting_power_info(
+//     validators: &vector<Validator>,
+//     threshold: u64,
+//     total_stake: u64,
+// ): (vector<VotingPowerInfoV2>, u64) {
+//     let mut total_power = 0;
+//     let mut result = vector[];
+//     validators.length().do!(|i| {
+//         let stake = validators[i].total_stake();
+//         let voting_power = derive_raw_voting_power(stake, total_stake).min(threshold);
+//         insert(&mut result, VotingPowerInfoV2 { validator_index: i, voting_power, stake });
+//         total_power = total_power + voting_power;
+//     });
+//
+//     (result, TOTAL_VOTING_POWER - total_power)
+// }
 
     /// Sum up the total stake of all validators.
     fun total_stake(validators: &vector<Validator>, stable_rate: VecMap<ascii::String, u64>): u64 {
