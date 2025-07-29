@@ -461,7 +461,7 @@ module bridge::bridge {
         let amount_after_fee=token_amount-fee;
         let route = chain_ids::get_route(inner.chain_id, target_chain);
         let amount_in_usd = inner.treasury.calculate_amount_in_usd<T>(amount_after_fee);
-        assert!(amount_in_usd < limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
+        assert!(amount_in_usd <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
         // create bridge message
         let message = message::create_token_bridge_message_v2(
             inner.chain_id,
@@ -1520,7 +1520,7 @@ module bridge::bridge {
         let amount_after_fee=amount-fee;
         let route = chain_ids::get_route(inner.chain_id, target_chain);
         let amount_in_usd = inner.treasury.calculate_amount_in_usd<T>(amount_after_fee);
-        assert!(amount_in_usd < limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
+        assert!(amount_in_usd <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
         inner.treasury.burn(token);
 
         // emit event
@@ -1885,7 +1885,7 @@ module bridge::bridge {
         );
 
         let amount = token_payload.token_amount_in();
-        assert!(amount < inner.limiter.get_mint_busd_max_limit(), EInvalidMintAmount);
+        assert!(amount <= inner.limiter.get_mint_busd_max_limit(), EInvalidMintAmount);
         // Make sure transfer is within limit.
         if (!inner
             .limiter
