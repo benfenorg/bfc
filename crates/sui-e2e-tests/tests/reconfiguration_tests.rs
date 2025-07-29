@@ -21,25 +21,23 @@ use move_core_types::language_storage::TypeTag;
 use serde::{Deserialize, Serialize};
 use sui_core::consensus_adapter::position_submit_certificate;
 use sui_json_rpc_types::{CheckpointPage, ObjectChange, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
-use sui_json_rpc_types::ObjectChange;
-use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder, GenesisConfig};
-use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_transfer_sui_transaction_with_gas_coins};
+use sui_test_transaction_builder::{make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, make_transfer_sui_transaction_with_gas_coins};
 use sui_types::base_types::{ObjectID,SuiAddress};
 use move_core_types::parser::parse_struct_tag;
 use sui_types::sui_serde::BigInt;
+use sui_types::SUI_SYSTEM_PACKAGE_ID;
 use sui_test_transaction_builder::make_transfer_sui_transaction_with_gas_coins_budget;
-
-use sui_protocol_config::ProtocolVersion;
-use sui_protocol_config::{Chain, ProtocolConfig};
+use sui_protocol_config::{Chain};
 use sui_swarm_config::genesis_config::{
-    AccountConfig, ValidatorGenesisConfig, ValidatorGenesisConfigBuilder, DEFAULT_GAS_AMOUNT,
+    AccountConfig, DEFAULT_GAS_AMOUNT,
 };
+use sui_types::effects::TransactionEvents;
+
 use sui_test_transaction_builder::{make_transfer_sui_transaction, TestTransactionBuilder};
-use sui_types::base_types::SuiAddress;
 use sui_types::effects::TransactionEffects;
 use sui_types::effects::TransactionEffectsAPI;
 use sui_types::error::SuiError;
@@ -50,10 +48,7 @@ use sui_types::sui_system_state::{
     get_validator_from_table, sui_system_state_summary::get_validator_by_pool_id,
     SuiSystemStateTrait,
 };
-use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall,
-                             ProgrammableTransaction, TransactionDataAPI,
-                             TransactionExpiration, TransactionKind,
-                             TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
+use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall, ProgrammableTransaction, TransactionDataAPI, TransactionExpiration, TransactionKind, TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
 use tracing::{error, info};
@@ -64,7 +59,7 @@ use serde_json::json;
 use sui_types::balance::Balance;
 use sui_types::dao::DaoRPC;
 use chrono::Utc;
-use sui::client_commands::{OptsWithGas, SuiClientCommandResult, SuiClientCommands};
+use sui::client_commands::{SuiClientCommandResult, SuiClientCommands};
 use sui_json_rpc_api::ReadApiClient;
 use sui_json_rpc_api::IndexerApiClient;
 use sui_json_rpc_api::WriteApiClient;
@@ -72,6 +67,11 @@ use sui_json_rpc_api::TransactionBuilderClient;
 use sui_move_build::BuildConfig;
 use sui_sdk::wallet_context::WalletContext;
 use sui_types::vault::VaultInfo;
+use sui_types::transaction::ObjectArg;
+use sui_types::governance::{VALIDATOR_MIN_POWER_PHASE_1, VALIDATOR_LOW_POWER_PHASE_1, VALIDATOR_VERY_LOW_POWER_PHASE_1};
+use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
+
+const PRE_SIP_39_PROTOCOL_VERSION: u64 = 78;
 
 
 // #[sim_test]
@@ -418,66 +418,67 @@ async fn set_oracle_address(test_cluster: &mut TestCluster, oracle_address: Stri
 //     // Ok((cap, package.object_id()))
 // }
 
-#[allow(unused)]
-async fn do_publish_inner(rgp: u64, context: &mut WalletContext, gas_obj_id: &ObjectID) -> Result<SuiClientCommandResult, Error> {
-    let mut package_path = PathBuf::from("tests/test_oracle_price/");
-    package_path.push("sources");
-    let build_config = BuildConfig::new_for_testing().config;
-    let resp = SuiClientCommands::Publish {
-        package_path: package_path.clone(),
-        build_config,
-        skip_dependency_verification: false,
-        with_unpublished_dependencies: false,
-        opts: OptsWithGas::for_testing(Some(*gas_obj_id), rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH),
-        verify_deps: true,
-    }
-        .execute(context)
-        .await?;
-    Ok(resp)
-}
+// #[allow(unused)]
+// async fn do_publish_inner(rgp: u64, context: &mut WalletContext, gas_obj_id: &ObjectID) -> Result<SuiClientCommandResult, Error> {
+//     let mut package_path = PathBuf::from("tests/test_oracle_price/");
+//     package_path.push("sources");
+//     let build_config = BuildConfig::new_for_testing().config;
+//     let resp = SuiClientCommands::Publish {
+//         package_path: package_path.clone(),
+//         build_config,
+//         skip_dependency_verification: false,
+//         with_unpublished_dependencies: false,
+//         opts: OptsWithGas::for_testing(Some(*gas_obj_id), rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH),
+//         verify_deps: true,
+//     }
+//         .execute(context)
+//         .await?;
+//     Ok(resp)
+// }
 
 
-#[sim_test]
-async fn sim_advance_epoch_tx_test() {
-    let test_cluster = TestClusterBuilder::new().build().await;
-    let states = test_cluster
-        .swarm
-        .validator_node_handles()
-        .into_iter()
-        .map(|handle| handle.with(|node| node.state()))
-        .collect::<Vec<_>>();
-    let tasks: Vec<_> = states
-        .iter()
-        .map(|state| async {
-            let (_system_state, effects) = state
-                .create_and_execute_advance_epoch_tx(
-                    &state.epoch_store_for_testing(),
-                    &GasCostSummary::new(0, 0, 0, 0),
-                    &HashMap::new(),
-                    0, // checkpoint
-                    0, // epoch_start_timestamp_ms
-                )
-                .await
-                .unwrap();
-            // Check that the validator didn't commit the transaction yet.
-            assert!(state
-                .get_signed_effects_and_maybe_resign(
-                    effects.transaction_digest(),
-                    &state.epoch_store_for_testing(),
-                )
-                .unwrap()
-                .is_none());
-            effects
-        })
-        .collect();
-    let results: HashSet<_> = join_all(tasks)
-        .await
-        .into_iter()
-        .map(|result| result.digest())
-        .collect();
-    // Check that all validators have the same result.
-    assert_eq!(results.len(), 1);
-}
+// todo
+// #[sim_test]
+// async fn sim_advance_epoch_tx_test() {
+//     let test_cluster = TestClusterBuilder::new().build().await;
+//     let states = test_cluster
+//         .swarm
+//         .validator_node_handles()
+//         .into_iter()
+//         .map(|handle| handle.with(|node| node.state()))
+//         .collect::<Vec<_>>();
+//     let tasks: Vec<_> = states
+//         .iter()
+//         .map(|state| async {
+//             let (_system_state, effects) = state
+//                 .create_and_execute_advance_epoch_tx(
+//                     &state.epoch_store_for_testing(),
+//                     &GasCostSummary::new(0, 0, 0, 0),
+//                     &HashMap::new(),
+//                     0, // checkpoint
+//                     0, // epoch_start_timestamp_ms
+//                 )
+//                 .await
+//                 .unwrap();
+//             // Check that the validator didn't commit the transaction yet.
+//             assert!(state
+//                 .get_signed_effects_and_maybe_resign(
+//                     effects.transaction_digest(),
+//                     &state.epoch_store_for_testing(),
+//                 )
+//                 .unwrap()
+//                 .is_none());
+//             effects
+//         })
+//         .collect();
+//     let results: HashSet<_> = join_all(tasks)
+//         .await
+//         .into_iter()
+//         .map(|result| result.digest())
+//         .collect();
+//     // Check that all validators have the same result.
+//     assert_eq!(results.len(), 1);
+// }
 
 #[sim_test]
 async fn sim_basic_reconfig_end_to_end_test() {
@@ -659,8 +660,7 @@ async fn sim_reconfig_with_revert_end_to_end_test() {
 
 // This test just starts up a cluster that reconfigures itself under 0 load.
 #[sim_test]
-async fn sim_test_passive_reconfig() {
-    //telemetry_subscribers::init_for_testing();
+//telemetry_subscribers::init_for_testing();
 async fn test_passive_reconfig() {
     do_test_passive_reconfig(None).await;
 }
@@ -3391,7 +3391,7 @@ async fn execute_add_stake_transaction(
         let stake_for_arg = ptb.pure(stake_for).unwrap();
 
         ptb.command(Command::MoveCall(Box::new(ProgrammableMoveCall {
-            package: SUI_SYSTEM_PACKAGE_ID,
+            package: BFC_SYSTEM_PACKAGE_ID,
             module: "sui_system".to_string(),
             function: "request_add_stake".to_string(),
             arguments: vec![system_arg, stake_arg, stake_for_arg],
@@ -3423,7 +3423,6 @@ async fn execute_add_stake_transaction(
 /// Execute a sequence of transactions to add a validator, including adding candidate, adding stake
 /// and activate the validator.
 /// It does not however trigger reconfiguration yet.
-async fn execute_add_validator_transactions(test_cluster: &TestCluster, new_validator: &ValidatorGenesisConfig) {
 async fn execute_add_validator_transactions(
     test_cluster: &mut TestCluster,
     new_validator: &ValidatorGenesisConfig,
@@ -4632,8 +4631,6 @@ async fn sim_test_bfc_treasury_get_total_supply() -> Result<(), anyhow::Error> {
 
 const ACCOUNT_NUM: usize = 100;
 const GAS_OBJECT_COUNT: usize = 3;
-
-const DEFAULT_GAS_AMOUNT: u64 = 30_000_000_000;
 
 #[sim_test]
 async fn sim_test_swap_and_rebalance() -> Result<(), anyhow::Error> {

@@ -1095,8 +1095,6 @@ async fn sim_test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
         function: "create".to_string(),
         type_args: vec![],
         args,
-        opts: OptsWithGas::for_testing(None, 10*rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS),
-        gas_price: Some(9999),
         payment: PaymentArgs::default(),
         gas_data: GasDataArgs {
             gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS),
@@ -1165,8 +1163,12 @@ async fn sim_test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         function: "rebalance".to_string(),
         type_args: vec![],
         args,
-        opts: OptsWithGas::for_testing(None, 1_000_000_000),
-        gas_price: None,
+        gas_data: GasDataArgs {
+            gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_GENERIC),
+            ..Default::default()
+        },
+        payment: PaymentArgs::default(),
+        processing: TxProcessingArgs::default(),
     }
         .execute(context)
         .await?;
@@ -1180,11 +1182,13 @@ async fn sim_test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         build_config,
         skip_dependency_verification: false,
         with_unpublished_dependencies: false,
-        opts: OptsWithGas::for_testing(Some(gas_object.id()), rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH),
         verify_deps: true,
-        //serialize_unsigned_transaction: false,
-        //serialize_signed_transaction: false,
-        //lint: false,
+        gas_data: GasDataArgs {
+            gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_GENERIC),
+            ..Default::default()
+        },
+        payment: PaymentArgs::default(),
+        processing: TxProcessingArgs::default(),
     }
         .execute(context)
         .await?;
@@ -1226,8 +1230,12 @@ async fn sim_test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         function: "create".to_string(),
         type_args: vec![],
         args,
-        opts: OptsWithGas::for_testing(None, rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS),
-        gas_price: None,
+        gas_data: GasDataArgs {
+            gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_GENERIC),
+            ..Default::default()
+        },
+        payment: PaymentArgs::default(),
+        processing: TxProcessingArgs::default(),
         //serialize_unsigned_transaction: false,
         //serialize_signed_transaction: false,
     }
@@ -1259,8 +1267,12 @@ async fn sim_test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         function: "transfer".to_string(),
         type_args: vec![],
         args: args.to_vec(),
-        opts: OptsWithGas::for_testing(Some(gas_object.id()), rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS),
-        gas_price: None,
+        payment: PaymentArgs::default(),
+        gas_data: GasDataArgs {
+            gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_GENERIC),
+            ..Default::default()
+        },
+        processing: TxProcessingArgs::default(),
         //serialize_unsigned_transaction: false,
         //serialize_signed_transaction: false,
     }
@@ -1862,8 +1874,6 @@ async fn sim_test_receive_argument_by_mut_ref() -> Result<(), anyhow::Error> {
         skip_dependency_verification: false,
         with_unpublished_dependencies: false,
         verify_deps: true,
-        opts: OptsWithGas::for_testing(Some(gas_obj_id), rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH),
-        verify_deps: true,
         payment: PaymentArgs {
             gas: vec![gas_obj_id],
         },
@@ -2004,7 +2014,6 @@ async fn sim_test_package_publish_command_with_unpublished_dependency_succeeds(
         package_path,
         build_config,
         skip_dependency_verification: false,
-        verify_deps: true,
         verify_deps: false,
         with_unpublished_dependencies,
         payment: PaymentArgs {
@@ -4722,9 +4731,9 @@ async fn test_transfer_sponsored() -> Result<(), anyhow::Error> {
     let context = &mut cluster.wallet;
 
     // A0 sends O1 to A1
-    let transfer = SuiClientCommands::TransferSui {
+    let transfer = SuiClientCommands::TransferBfc {
         to: KeyIdentity::Address(a1),
-        sui_coin_object_id: o[1],
+        bfc_coin_object_id: o[1],
         amount: None,
         gas_data: GasDataArgs {
             gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
@@ -5612,7 +5621,7 @@ async fn test_tree_shaking_package_system_deps() -> Result<(), anyhow::Error> {
 
     // sui move build --dump-bytecode-as-base64 should also yield a json with no dependencies
     let package_path = test.package_path("J");
-    let binary_path = env!("CARGO_BIN_EXE_sui");
+    let binary_path = "bfc";
     let cmd = std::process::Command::new(binary_path)
         .arg("move")
         .arg("build")

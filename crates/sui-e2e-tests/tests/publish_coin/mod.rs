@@ -2,7 +2,7 @@
 use std::path::PathBuf;
 use anyhow::Error;
 use jsonrpsee::http_client::HttpClient;
-use sui::client_commands::{OptsWithGas, SuiClientCommandResult, SuiClientCommands};
+use sui::client_commands::{SuiClientCommandResult, SuiClientCommands};
 use sui_json_rpc_api::IndexerApiClient;
 use sui_json_rpc_types::{ObjectChange, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery};
 use sui_move_build::BuildConfig;
@@ -11,6 +11,7 @@ use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::{ObjectID, ObjectRef, ObjectType, SuiAddress};
 use sui_types::transaction::{Transaction, TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
 use test_cluster::TestCluster;
+use sui::client_commands::{PaymentArgs, GasDataArgs, TxProcessingArgs};
 
 #[allow(unused)]
 pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<(ObjectID, Vec<ObjectChange>), Error> {
@@ -75,8 +76,15 @@ async fn do_publish_inner(rgp: u64, context: &mut WalletContext, gas_obj_id: &Ob
         build_config,
         skip_dependency_verification: false,
         with_unpublished_dependencies: false,
-        opts: OptsWithGas::for_testing(Some(*gas_obj_id), rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH),
         verify_deps: true,
+        payment: PaymentArgs {
+            gas: vec![*gas_obj_id],
+        },
+        gas_data: GasDataArgs {
+            gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH),
+            ..Default::default()
+        },
+        processing: TxProcessingArgs::default(),
     }
         .execute(context)
         .await?;
