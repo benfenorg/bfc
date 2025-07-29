@@ -23,19 +23,21 @@ use sui_core::consensus_adapter::position_submit_certificate;
 use sui_json_rpc_types::{CheckpointPage, ObjectChange, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
+use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder, GenesisConfig};
 use sui_test_transaction_builder::{make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, make_transfer_sui_transaction_with_gas_coins};
-use sui_types::base_types::{ObjectID};
+use sui_types::base_types::{ObjectID,SuiAddress};
 use move_core_types::parser::parse_struct_tag;
 use sui_types::sui_serde::BigInt;
+use sui_types::SUI_SYSTEM_PACKAGE_ID;
 use sui_test_transaction_builder::make_transfer_sui_transaction_with_gas_coins_budget;
-
-use sui_protocol_config::{Chain, ProtocolConfig, ProtocolVersion};
+use sui_protocol_config::{Chain};
 use sui_swarm_config::genesis_config::{
-    AccountConfig
+    AccountConfig, DEFAULT_GAS_AMOUNT,
 };
+use sui_types::effects::TransactionEvents;
+
 use sui_test_transaction_builder::{make_transfer_sui_transaction, TestTransactionBuilder};
-use sui_types::base_types::SuiAddress;
 use sui_types::effects::TransactionEffects;
 use sui_types::effects::TransactionEffectsAPI;
 use sui_types::error::SuiError;
@@ -65,6 +67,11 @@ use sui_json_rpc_api::TransactionBuilderClient;
 use sui_move_build::BuildConfig;
 use sui_sdk::wallet_context::WalletContext;
 use sui_types::vault::VaultInfo;
+use sui_types::transaction::ObjectArg;
+use sui_types::governance::{VALIDATOR_MIN_POWER_PHASE_1, VALIDATOR_LOW_POWER_PHASE_1, VALIDATOR_VERY_LOW_POWER_PHASE_1};
+use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
+
+const PRE_SIP_39_PROTOCOL_VERSION: u64 = 78;
 
 
 // #[sim_test]
@@ -430,7 +437,48 @@ async fn set_oracle_address(test_cluster: &mut TestCluster, oracle_address: Stri
 // }
 
 
-
+// todo
+// #[sim_test]
+// async fn sim_advance_epoch_tx_test() {
+//     let test_cluster = TestClusterBuilder::new().build().await;
+//     let states = test_cluster
+//         .swarm
+//         .validator_node_handles()
+//         .into_iter()
+//         .map(|handle| handle.with(|node| node.state()))
+//         .collect::<Vec<_>>();
+//     let tasks: Vec<_> = states
+//         .iter()
+//         .map(|state| async {
+//             let (_system_state, effects) = state
+//                 .create_and_execute_advance_epoch_tx(
+//                     &state.epoch_store_for_testing(),
+//                     &GasCostSummary::new(0, 0, 0, 0),
+//                     &HashMap::new(),
+//                     0, // checkpoint
+//                     0, // epoch_start_timestamp_ms
+//                 )
+//                 .await
+//                 .unwrap();
+//             // Check that the validator didn't commit the transaction yet.
+//             assert!(state
+//                 .get_signed_effects_and_maybe_resign(
+//                     effects.transaction_digest(),
+//                     &state.epoch_store_for_testing(),
+//                 )
+//                 .unwrap()
+//                 .is_none());
+//             effects
+//         })
+//         .collect();
+//     let results: HashSet<_> = join_all(tasks)
+//         .await
+//         .into_iter()
+//         .map(|result| result.digest())
+//         .collect();
+//     // Check that all validators have the same result.
+//     assert_eq!(results.len(), 1);
+// }
 
 #[sim_test]
 async fn sim_basic_reconfig_end_to_end_test() {
@@ -3343,7 +3391,7 @@ async fn execute_add_stake_transaction(
         let stake_for_arg = ptb.pure(stake_for).unwrap();
 
         ptb.command(Command::MoveCall(Box::new(ProgrammableMoveCall {
-            package: SUI_SYSTEM_PACKAGE_ID,
+            package: BFC_SYSTEM_PACKAGE_ID,
             module: "sui_system".to_string(),
             function: "request_add_stake".to_string(),
             arguments: vec![system_arg, stake_arg, stake_for_arg],
@@ -4583,8 +4631,6 @@ async fn sim_test_bfc_treasury_get_total_supply() -> Result<(), anyhow::Error> {
 
 const ACCOUNT_NUM: usize = 100;
 const GAS_OBJECT_COUNT: usize = 3;
-
-const DEFAULT_GAS_AMOUNT: u64 = 30_000_000_000;
 
 #[sim_test]
 async fn sim_test_swap_and_rebalance() -> Result<(), anyhow::Error> {
