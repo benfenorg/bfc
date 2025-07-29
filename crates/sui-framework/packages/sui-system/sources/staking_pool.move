@@ -319,7 +319,7 @@ module sui_system::staking_pool {
     /// Returns values are amount of pool tokens withdrawn and withdrawn principal portion of SUI.
     public(package) fun withdraw_from_principal(
         pool: &StakingPool,
-        staked_sui: StakedSui,
+        staked_sui: StakedBfc,
     ): (u64, Balance<BFC>) {
         // Check that the stake information matches the pool.
         assert!(staked_sui.pool_id == object::id(pool), EWrongPool);

@@ -10,6 +10,8 @@ use sui_system::validator;
 use std::ascii;
 use sui_system::validator_cap::{Self, UnverifiedValidatorOperationCap, ValidatorOperationCap};
 use sui_system::stable_pool::{ PoolStableTokenExchangeRate, pool_id as stable_pool_id};
+
+
 use sui_system::staking_pool::{
     Self,
     PoolTokenExchangeRate,
@@ -53,26 +55,6 @@ use sui_system::stable_pool::StakedStable;
 use sui_system::stable_pool;
 
 
-use sui::bag::{Self, Bag};
-use sui::balance::Balance;
-use sui::event;
-use sui::priority_queue as pq;
-use sui::sui::SUI;
-use sui::table::{Self, Table};
-use sui::table_vec::{Self, TableVec};
-use sui::vec_map::{Self, VecMap};
-use sui::vec_set::VecSet;
-use sui_system::staking_pool::{
-    PoolTokenExchangeRate,
-    StakedSui,
-    pool_id,
-    FungibleStakedSui,
-    fungible_staked_sui_pool_id
-};
-use sui_system::validator::{Validator, staking_pool_id, sui_address};
-use sui_system::validator_cap::{UnverifiedValidatorOperationCap, ValidatorOperationCap};
-use sui_system::validator_wrapper::ValidatorWrapper;
-use sui_system::voting_power;
 
 // Errors
 const ENonValidatorInReportRecords: u64 = 0;
@@ -92,6 +74,10 @@ const ENotAPendingValidator: u64 = 12;
 const EValidatorSetEmpty: u64 = 13;
 const EInvalidCap: u64 = 101;
 
+
+//define the rate of BUSD exchange, must used to init method
+const INIT_STABLE_EXCHANGE_RATE: u64 = 10;
+
 // same as in sui_system
 const ACTIVE_VALIDATOR_ONLY: u8 = 1;
 const ACTIVE_OR_PENDING_VALIDATOR: u8 = 2;
@@ -101,6 +87,8 @@ const BASIS_POINT_DENOMINATOR: u64 = 10000;
 const MIN_STAKING_THRESHOLD: u64 = 1_000_000_000; // 1 SUI
 
 const PHASE_LENGTH: u64 = 14; // phases are 14 days = 14 epochs
+
+
 
 public struct ValidatorSet has store {
     /// Total amount of stake from all active validators at the beginning of the epoch.
@@ -147,35 +135,6 @@ public struct ValidatorSet has store {
     extra_fields: Bag,
 }
 
-public struct ValidatorSet has store {
-    /// Total amount of stake from all active validators at the beginning of the epoch.
-    /// Written only once per epoch, in `advance_epoch` function.
-    total_stake: u64,
-    /// The current list of active validators.
-    active_validators: vector<Validator>,
-    /// List of new validator candidates added during the current epoch.
-    /// They will be processed at the end of the epoch.
-    pending_active_validators: TableVec<Validator>,
-    /// Removal requests from the validators. Each element is an index
-    /// pointing to `active_validators`.
-    pending_removals: vector<u64>,
-    /// Mappings from staking pool's ID to the sui address of a validator.
-    staking_pool_mappings: Table<ID, address>,
-    /// Mapping from a staking pool ID to the inactive validator that has that pool as its staking pool.
-    /// When a validator is deactivated the validator is removed from `active_validators` it
-    /// is added to this table so that stakers can continue to withdraw their stake from it.
-    inactive_validators: Table<ID, ValidatorWrapper>,
-    /// Table storing preactive/candidate validators, mapping their addresses to their `Validator ` structs.
-    /// When an address calls `request_add_validator_candidate`, they get added to this table and become a preactive
-    /// validator.
-    /// When the candidate has met the min stake requirement, they can call `request_add_validator` to
-    /// officially add them to the active validator set `active_validators` next epoch.
-    validator_candidates: Table<address, ValidatorWrapper>,
-    /// Table storing the number of epochs during which a validator's stake has been below the low stake threshold.
-    at_risk_validators: VecMap<address, u64>,
-    /// Any extra fields that's not defined statically.
-    extra_fields: Bag,
-}
 
 #[allow(unused_field)]
 /// Event containing staking and rewards related information of
@@ -210,20 +169,6 @@ public struct ValidatorEpochInfoEventV2 has copy, drop {
     tallying_rule_global_score: u64,
 }
 
-/// V2 of ValidatorEpochInfoEvent containing more information about the validator.
-public struct ValidatorEpochInfoEventV2 has copy, drop {
-    epoch: u64,
-    validator_address: address,
-    reference_gas_survey_quote: u64,
-    stake: u64,
-    voting_power: u64,
-    commission_rate: u64,
-    pool_staking_reward: u64,
-    storage_fund_staking_reward: u64,
-    pool_token_exchange_rate: PoolTokenExchangeRate,
-    tallying_rule_reporters: vector<address>,
-    tallying_rule_global_score: u64,
-}
 
 /// Event emitted every time a new validator joins the committee.
 /// The epoch value corresponds to the first epoch this change takes place.
@@ -242,34 +187,9 @@ public struct ValidatorLeaveEvent has copy, drop {
     is_voluntary: bool,
 }
 
-// same as in sui_system
-const ACTIVE_VALIDATOR_ONLY: u8 = 1;
-const ACTIVE_OR_PENDING_VALIDATOR: u8 = 2;
-const ANY_VALIDATOR: u8 = 3;
 
-const BASIS_POINT_DENOMINATOR: u128 = 10000;
-const MIN_STAKING_THRESHOLD: u64 = 1_000_000_000; // 1 SUI
 
-//define the rate of BUSD exchange, must used to init method
-const INIT_STABLE_EXCHANGE_RATE: u64 = 10;
-// Errors
-const ENonValidatorInReportRecords: u64 = 0;
-#[allow(unused_const)]
-const EInvalidStakeAdjustmentAmount: u64 = 1;
-const EDuplicateValidator: u64 = 2;
-const ENoPoolFound: u64 = 3;
-const ENotAValidator: u64 = 4;
-const EMinJoiningStakeNotReached: u64 = 5;
-const EAlreadyValidatorCandidate: u64 = 6;
-const EValidatorNotCandidate: u64 = 7;
-const ENotValidatorCandidate: u64 = 8;
-const ENotActiveOrPendingValidator: u64 = 9;
-const EStakingBelowThreshold: u64 = 10;
-const EValidatorAlreadyRemoved: u64 = 11;
-const ENotAPendingValidator: u64 = 12;
-const EValidatorSetEmpty: u64 = 13;
 
-const EInvalidCap: u64 = 101;
 
 /// Key for the `extra_fields` bag to store the start epoch of allowing admission
 /// of new validators based on a minimum voting power rather than a minimum stake.
@@ -891,18 +811,18 @@ fun update_validator_positions_and_calculate_total_stake(
     let pending_total_stake = calculate_total_stakes(&pending_active_validators);
     let initial_total_stake = calculate_total_stakes(&self.active_validators) + pending_total_stake;
     let (
-    min_joining_voting_power_threshold,
-    low_voting_power_threshold,
-    very_low_voting_power_threshold,
+        min_joining_voting_power_threshold,
+        low_voting_power_threshold,
+        very_low_voting_power_threshold,
     ) = self.get_voting_power_thresholds(ctx);
     // Iterate through all the active validators, record their low stake status, and kick them out if the condition is met.
     let mut total_removed_stake = 0; // amount of stake to remove due to departed_validators
     let mut i = self.active_validators.length();
     while (i > 0) {
-    i = i - 1;
-    let validator_ref = &self.active_validators[i];
-    let validator_address = validator_ref.sui_address();
-    let validator_stake = validator_ref.total_stake();
+        i = i - 1;
+        let validator_ref = &self.active_validators[i];
+        let validator_address = validator_ref.sui_address();
+        let validator_stake = validator_ref.total_stake();
 
     // calculate the voting power for this validator in the next epoch if no validators are removed
     // if one of more low stake validators are removed, it's possible this validator will have higher voting power--that's ok.
