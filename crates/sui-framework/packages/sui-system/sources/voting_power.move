@@ -42,7 +42,7 @@ module sui_system::voting_power {
     const EVotingPowerOverThreshold: u64 = 3;
     const EInvalidVotingPower: u64 = 4;
 
-    public(package) fun set_voting_power(validators: &mut vector<Validator>, stable_rate: VecMap<ascii::String, u64>, total_stake: u64) {
+    public(package) fun set_voting_power(validators: &mut vector<Validator>, stable_rate: VecMap<ascii::String, u64>) {
         // If threshold_pct is too small, it's possible that even when all validators reach the threshold we still don't
         // have 100%. So we bound the threshold_pct to be always enough to find a solution.
         let total_voting_power = TOTAL_VOTING_POWER;
@@ -51,7 +51,7 @@ module sui_system::voting_power {
         let (mut info_list, remaining_power) = init_voting_power_info(
             validators,
             threshold,
-            total_stake,
+            stable_rate,
         );
         adjust_voting_power(&mut info_list, threshold, remaining_power);
         update_voting_power(validators, info_list);

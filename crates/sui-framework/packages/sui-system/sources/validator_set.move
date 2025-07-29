@@ -484,27 +484,11 @@ public(package) fun request_add_stake(
     ctx: &mut TxContext,
 ): StakedBfc {
     let sui_amount = stake.value();
-    assert!(sui_amount > = MIN_STAKING_THRESHOLD, EStakingBelowThreshold);
+    assert!(sui_amount >= MIN_STAKING_THRESHOLD, EStakingBelowThreshold);
     let validator = get_candidate_or_active_validator_mut(self, validator_address);
     validator.request_add_stake(stake, ctx.sender(), ctx)
 }
 
-/// Called by `sui_system`, to add a new stake to the validator.
-/// This request is added to the validator's staking pool's pending stake entries, processed at the end
-/// of the epoch.
-/// Aborts in case the staking amount is smaller than MIN_STAKING_THRESHOLD
-public(package) fun request_add_stake(
-    self: &mut ValidatorSet,
-    validator_address: address,
-    stake: Balance<SUI>,
-    ctx: &mut TxContext,
-): StakedSui {
-    let sui_amount = stake.value();
-    assert!(sui_amount > = MIN_STAKING_THRESHOLD, EStakingBelowThreshold);
-    self
-        .get_candidate_or_active_validator_mut(validator_address)
-        .request_add_stake(stake, ctx.sender(), ctx)
-}
 
 public(package) fun request_add_stable_stake<STABLE>(
     self: &mut ValidatorSet,
@@ -545,29 +529,7 @@ public(package) fun request_withdraw_stake(
     validator.request_withdraw_stake(staked_sui, ctx)
 }
 
-/// Called by `sui_system`, to withdraw some share of a stake from the validator. The share to withdraw
-/// is denoted by `principal_withdraw_amount`. One of two things occurs in this function:
-/// 1. If the `staked_sui` is staked with an active validator, the request is added to the validator's
-///    staking pool's pending stake withdraw entries, processed at the end of the epoch.
-/// 2. If the `staked_sui` was staked with a validator that is no longer active,
-///    the stake and any rewards corresponding to it will be immediately processed.
-public(package) fun request_withdraw_stake(
-    self: &mut ValidatorSet,
-    staked_sui: StakedSui,
-    ctx: &TxContext,
-): Balance<SUI> {
-    let staking_pool_id = staked_sui.pool_id();
-    let validator = if (self.staking_pool_mappings.contains(staking_pool_id)) {
-        // This is an active validator.
-        let validator_address = self.staking_pool_mappings[staked_sui.pool_id()];
-        self.get_candidate_or_active_validator_mut(validator_address)
-    } else {
-        // This is an inactive pool.
-        assert!(self.inactive_validators.contains(staking_pool_id), ENoPoolFound);
-        self.inactive_validators[staking_pool_id].load_validator_maybe_upgrade()
-    };
-    validator.request_withdraw_stake(staked_sui, ctx)
-}
+
 
 #[allow(unused_mut_parameter)]
 public(package) fun request_withdraw_stable_stake<STABLE>(

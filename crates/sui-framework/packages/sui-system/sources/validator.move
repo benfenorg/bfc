@@ -81,8 +81,7 @@ module sui_system::validator {
     const EGasPriceHigherThanThreshold: u64 = 102;
 
     const EInvalidCoinType: u64 = 103;
-    // TODO: potentially move this value to onchain config.
-    const MAX_COMMISSION_RATE: u64 = 2_000;
+
     // Max rate is 20%, which is 2000 base points
     // TODO: potentially move this value to onchain config.
     const MAX_COMMISSION_RATE: u64 = 2_000; // Max rate is 20%, which is 2000 base points
@@ -483,7 +482,7 @@ public(package) fun convert_to_fungible_staked_sui(
     /// Request to withdraw stake from the validator's staking pool, processed at the end of the epoch.
     public(package) fun request_withdraw_stake(
         self: &mut Validator,
-        staked_sui: StakedSui,
+        staked_sui: StakedBfc,
         ctx: &TxContext,
     ): Balance<BFC> {
         let principal_amount = staked_sui.amount();

@@ -468,7 +468,7 @@ public fun stake_with_and_take(
     runner: &mut TestRunner,
     validator: address,
     amount: u64,
-): StakedSui {
+): StakedBfc {
     let TestRunner { scenario, sender, .. } = runner;
     let staked_sui;
     scenario.next_tx(*sender);

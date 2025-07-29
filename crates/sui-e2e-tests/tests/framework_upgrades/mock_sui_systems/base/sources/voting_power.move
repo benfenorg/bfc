@@ -8,7 +8,6 @@ module sui_system::voting_power {
     use sui_system::validator;
 
 
-
     #[allow(unused_field)]
     /// Deprecated. Use VotingPowerInfoV2 instead.
     public struct VotingPowerInfo has drop {
@@ -54,7 +53,10 @@ module sui_system::voting_power {
             TOTAL_VOTING_POWER,
             std::u64::max(MAX_VOTING_POWER, std::u64::divide_and_round_up(TOTAL_VOTING_POWER, validators.length())),
         );
-        let (mut info_list, remaining_power) = init_voting_power_info(validators, threshold, stable_rate);
+        let( mut
+        info_list,
+        remaining_power) =
+        init_voting_power_info(validators, threshold, stable_rate);
 
         adjust_voting_power(&mut info_list, threshold, remaining_power);
         update_voting_power(validators, info_list);
@@ -96,7 +98,7 @@ module sui_system::voting_power {
     fun total_stake(validators: &vector<Validator>, stable_rate: VecMap<ascii::String, u64>): u64 {
         let mut i = 0;
         let len = validators.length();
-        let mut total_stake =0 ;
+        let mut total_stake = 0 ;
         while (i < len) {
             total_stake = total_stake +
                 validator::total_stake_with_all_stable(vector::borrow(validators, i), stable_rate);
@@ -118,22 +120,22 @@ module sui_system::voting_power {
 
     /// Distribute remaining_power to validators that are not capped at threshold.
     fun adjust_voting_power(info_list: &mut vector<VotingPowerInfoV2>, threshold: u64, mut remaining_power: u64) {
-        let mut i = 0;
-        let len = vector::length(info_list);
-        while (i < len && remaining_power > 0) {
-            let v = vector::borrow_mut(info_list, i);
-            // planned is the amount of extra power we want to distribute to this validator.
-            let planned = remaining_power.divide_and_round_up(len - i);
-            // target is the targeting power this validator will reach, capped by threshold.
-            let target = threshold.min(v.voting_power + planned);
-            // actual is the actual amount of power we will be distributing to this validator.
-            let actual = remaining_power.min(target - v.voting_power);
-            v.voting_power = v.voting_power + actual;
-            assert!(v.voting_power <= threshold, EVotingPowerOverThreshold);
-            remaining_power = remaining_power - actual;
-            i = i + 1;
-        };
-        assert!(remaining_power == 0, ETotalPowerMismatch);
+    let mut i = 0;
+    let len = vector::length(info_list);
+    while (i < len && remaining_power > 0) {
+    let v = vector::borrow_mut(info_list, i);
+    // planned is the amount of extra power we want to distribute to this validator.
+    let planned = remaining_power.divide_and_round_up(len - i);
+    // target is the targeting power this validator will reach, capped by threshold.
+    let target = threshold.min(v.voting_power + planned);
+    // actual is the actual amount of power we will be distributing to this validator.
+    let actual = remaining_power.min(target - v.voting_power);
+    v.voting_power = v.voting_power + actual;
+    assert!(v.voting_power < = threshold, EVotingPowerOverThreshold);
+    remaining_power = remaining_power - actual;
+    i = i + 1;
+    };
+    assert!(remaining_power == 0, ETotalPowerMismatch);
     }
 
     /// Update validators with the decided voting power.
@@ -199,3 +201,4 @@ module sui_system::voting_power {
         QUORUM_THRESHOLD
     }
 }
+

@@ -223,16 +223,16 @@ module sui_system::genesis {
         sui_supply.destroy_zero();
     }
 
-    fun activate_validators(validators: &mut vector<Validator>) {
-        // Activate all genesis validators
-        let count = validators.length();
-        let mut i = 0;
-        while (i < count) {
-            let validator =  &mut validators[i];
-            validator.activate(0);
-            validator::activate_stable(validator, 0);
-            i = i + 1;
-        };
-
-    }
+    // fun activate_validators(validators: &mut vector<Validator>) {
+    //     // Activate all genesis validators
+    //     let count = validators.length();
+    //     let mut i = 0;
+    //     while (i < count) {
+    //         let validator =  &mut validators[i];
+    //         validator.activate(0);
+    //         validator::activate_stable(validator, 0);
+    //         i = i + 1;
+    //     };
+    //
+    // }
 }
