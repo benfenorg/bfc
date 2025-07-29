@@ -165,7 +165,7 @@ use crate::subscription_handler::SubscriptionHandler;
 use crate::transaction_input_loader::TransactionInputLoader;
 
 #[cfg(msim)]
-pub use crate::checkpoints::checkpoint_executor::{
+pub use crate::checkpoints::checkpoint_executor::utils::{
     init_checkpoint_timeout_config, CheckpointTimeoutConfig,
 };
 
