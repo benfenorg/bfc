@@ -3418,7 +3418,6 @@ async fn execute_add_stake_transaction(
 /// Execute a sequence of transactions to add a validator, including adding candidate, adding stake
 /// and activate the validator.
 /// It does not however trigger reconfiguration yet.
-async fn execute_add_validator_transactions(test_cluster: &TestCluster, new_validator: &ValidatorGenesisConfig) {
 async fn execute_add_validator_transactions(
     test_cluster: &mut TestCluster,
     new_validator: &ValidatorGenesisConfig,

@@ -5621,7 +5621,7 @@ async fn test_tree_shaking_package_system_deps() -> Result<(), anyhow::Error> {
 
     // sui move build --dump-bytecode-as-base64 should also yield a json with no dependencies
     let package_path = test.package_path("J");
-    let binary_path = env!("CARGO_BIN_EXE_sui");
+    let binary_path = "bfc";
     let cmd = std::process::Command::new(binary_path)
         .arg("move")
         .arg("build")
