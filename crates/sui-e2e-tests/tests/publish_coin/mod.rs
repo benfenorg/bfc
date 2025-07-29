@@ -11,7 +11,8 @@ use sui_types::base_types::{ObjectID, ObjectRef, ObjectType, SuiAddress};
 use sui_types::transaction::{Transaction, TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
 use test_cluster::TestCluster;
 use sui::client_commands::{GasDataArgs, PaymentArgs, TxProcessingArgs};
-
+use sui::client_commands::SuiClientCommands;
+use sui::client_commands::SuiClientCommandResult;
 #[allow(unused)]
 pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<(ObjectID, Vec<ObjectChange>), Error> {
     let address = test_cluster.get_address_0();

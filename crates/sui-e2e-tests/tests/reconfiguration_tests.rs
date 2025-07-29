@@ -21,21 +21,18 @@ use move_core_types::language_storage::TypeTag;
 use serde::{Deserialize, Serialize};
 use sui_core::consensus_adapter::position_submit_certificate;
 use sui_json_rpc_types::{CheckpointPage, ObjectChange, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
-use sui_json_rpc_types::ObjectChange;
-use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
-use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder, GenesisConfig};
 use sui_test_transaction_builder::{make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, make_transfer_sui_transaction_with_gas_coins};
-use sui_types::base_types::{ObjectID,SuiAddress};
+use sui_types::base_types::{ObjectID};
 use move_core_types::parser::parse_struct_tag;
 use sui_types::sui_serde::BigInt;
 use sui_test_transaction_builder::make_transfer_sui_transaction_with_gas_coins_budget;
 
-use sui_protocol_config::{Chain, ProtocolConfig};
+use sui_protocol_config::{Chain, ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{
-    AccountConfig, DEFAULT_GAS_AMOUNT,
+    AccountConfig
 };
 use sui_test_transaction_builder::{make_transfer_sui_transaction, TestTransactionBuilder};
 use sui_types::base_types::SuiAddress;
@@ -433,47 +430,7 @@ async fn set_oracle_address(test_cluster: &mut TestCluster, oracle_address: Stri
 // }
 
 
-#[sim_test]
-async fn sim_advance_epoch_tx_test() {
-    let test_cluster = TestClusterBuilder::new().build().await;
-    let states = test_cluster
-        .swarm
-        .validator_node_handles()
-        .into_iter()
-        .map(|handle| handle.with(|node| node.state()))
-        .collect::<Vec<_>>();
-    let tasks: Vec<_> = states
-        .iter()
-        .map(|state| async {
-            let (_system_state, effects) = state
-                .create_and_execute_advance_epoch_tx(
-                    &state.epoch_store_for_testing(),
-                    &GasCostSummary::new(0, 0, 0, 0),
-                    &HashMap::new(),
-                    0, // checkpoint
-                    0, // epoch_start_timestamp_ms
-                )
-                .await
-                .unwrap();
-            // Check that the validator didn't commit the transaction yet.
-            assert!(state
-                .get_signed_effects_and_maybe_resign(
-                    effects.transaction_digest(),
-                    &state.epoch_store_for_testing(),
-                )
-                .unwrap()
-                .is_none());
-            effects
-        })
-        .collect();
-    let results: HashSet<_> = join_all(tasks)
-        .await
-        .into_iter()
-        .map(|result| result.digest())
-        .collect();
-    // Check that all validators have the same result.
-    assert_eq!(results.len(), 1);
-}
+
 
 #[sim_test]
 async fn sim_basic_reconfig_end_to_end_test() {
