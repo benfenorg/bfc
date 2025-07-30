@@ -355,6 +355,19 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit() -> Result<(), any
         .await;
     assert!(response.is_ok());
 
+    // Test calling the Move contract method to get balance
+    let balance_result = test_move_call_get_deposited_balance(&mut test_cluster, coin_type.clone()).await;
+    match &balance_result {
+        Ok(balance) => {
+            println!("Got balance from Move contract: {}", balance);
+            assert!(*balance > 0);
+        } 
+        Err(e) => println!("Failed to get balance from Move contract: {:?}", e),
+    }
+    // assert balance_result balance > 0
+    let old_gas_balance = balance_result.unwrap();
+    assert!(old_gas_balance > 0);
+
     let pool_id = response.unwrap();
 
     // case 2 : call move function
@@ -474,7 +487,11 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit() -> Result<(), any
     }
 
     // assert balance_result balance > 0
-    assert!(balance_result.unwrap() > 0);
+    let new_gas_balance = balance_result.unwrap();
+    assert!(new_gas_balance > 0);
+
+    println!("old_gas_balance is {:?}, new_gas_balance is {:?}", old_gas_balance, new_gas_balance);
+    assert!(new_gas_balance > old_gas_balance);
 
     Ok(())
 }
