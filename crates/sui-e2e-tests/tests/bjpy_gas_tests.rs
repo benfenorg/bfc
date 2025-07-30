@@ -9,6 +9,7 @@ use std::time::Duration;
 use std::vec;
 use anyhow::{anyhow, Error};
 use chrono::Utc;
+use fastcrypto::encoding::Base64;
 use jsonrpsee::http_client::HttpClient;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::TypeTag;
@@ -21,7 +22,8 @@ use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 use sui_types::stable_coin::stable::checked::get_allow_stable_gas_coins_rate_map;
 use sui_types::sui_serde::BigInt;
-use sui_types::transaction::{CallArg, ObjectArg};
+use sui_types::transaction::{CallArg, ObjectArg, TransactionKind};
+use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use test_cluster::{TestCluster, TestClusterBuilder};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use sui_types::{parse_sui_struct_tag, BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID};
@@ -394,22 +396,64 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit() -> Result<(), any
                 println!("Extra fields not available (BFC system state V1)");
             }
 
-            // print detail in extra_fields
-            if let Some(extra_fields) = _extra_fields {
-                use sui_types::dynamic_field::get_dynamic_field_from_store;
-                use sui_types::base_types::ObjectID;
-                let parent_id: ObjectID = extra_fields.id.id.bytes;
-                let state = node.state();
-                let object_store = state.get_object_store();
-                let object_store_ref = object_store.as_ref();
-                for i in 0..extra_fields.size {
-                    let value: Result<String, _> = get_dynamic_field_from_store(object_store_ref, parent_id, &i);
-                    match value {
-                        Ok(v) => println!("Bag[{}] = {:?}", i, v),
-                        Err(e) => println!("Bag[{}] read failed: {:?}", i, e),
-                    }
-                }
-            }
+            // // print detail in extra_fields
+            // if let Some(extra_fields) = _extra_fields {
+            //     use sui_types::dynamic_field::get_dynamic_field_from_store;
+            //     use sui_types::base_types::ObjectID;
+            //     use sui_types::balance::Balance;
+            //     let parent_id: ObjectID = extra_fields.id.id.bytes;
+            //     let state = node.state();
+            //     let object_store = state.get_object_store();
+            //     let object_store_ref = object_store.as_ref();
+                
+            //     // Try to read known keys from extra_fields
+            //     let known_keys = vec![
+            //         ("ExternalStableCoinList", "ExternalStableCoinList".as_bytes().to_vec()),
+            //         ("ToDeleteExternalStableCoinList", "ToDeleteExternalStableCoinList".as_bytes().to_vec()),
+            //     ];
+                
+            //     for (key_name, key_bytes) in known_keys {
+            //         let value_result: Result<Vec<String>, _> = get_dynamic_field_from_store(object_store_ref, parent_id, &key_bytes);
+            //         match value_result {
+            //             Ok(v) => println!("Bag[{:?}] = {:?}", key_name, v),
+            //             Err(_) => {}, // Silently ignore missing keys
+            //         }
+            //     }
+
+            //     // use coin_type without 0x prefix
+            //     let coin_type_no_0x = coin_type.replace("0x", "");
+            //     let stable_coin_types = vec![
+            //         coin_type_no_0x.as_str(),  
+            //         coin_type.as_str(),  
+            //     ];
+                
+            //     for coin_type_str in stable_coin_types {
+            //         // Try reading balance using the full coin type name as key (converted to Vec<u8>)
+            //         let key_bytes = coin_type_str.as_bytes().to_vec();
+            //         let balance_result: Result<Balance, _> = get_dynamic_field_from_store(object_store_ref, parent_id, &key_bytes);
+            //         match balance_result {
+            //             Ok(balance) => println!("StableCoin[{}] balance = {}", coin_type_str, balance.value()),
+            //             Err(e) => {
+            //                  println!("Failed to get balance for stable coin type: {}, error: {:?}", coin_type_str, e);
+            //             },
+            //         }
+            //     }
+                
+            //     // Also try calling the Move contract method to read balance
+            //     // Call the BFC system to get balance using Move contract method
+            //     let bfc_state = node.state().get_bfc_system_state_object_for_testing().unwrap();
+                
+            //     // Try with the full coin type string
+            //     println!("Trying to read balance using Move contract method with coin_type: {}", coin_type);
+            //     // Note: We can't directly call the Move method from here, but we know the key exists
+            //     // if ExternalStableCoinList contains the coin type
+                
+            //     // Let's also try to check if the key exists in extra_fields directly
+            //     let coin_type_key = coin_type.clone();
+            //     let key_bytes = coin_type_key.as_bytes().to_vec();
+            //     println!("Checking if key exists in extra_fields: {:?}", String::from_utf8_lossy(&key_bytes));
+                
+            // }
            
 
         });
@@ -418,6 +462,19 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit() -> Result<(), any
         assert!(new_extra_fields_size > old_extra_fields_size,
             "Extra fields size should increase after adding a new stable gas coin"
         );
+
+    // Test calling the Move contract method to get balance
+    let balance_result = test_move_call_get_deposited_balance(&mut test_cluster, coin_type).await;
+    match &balance_result {
+        Ok(balance) => {
+            println!("Got balance from Move contract: {}", balance);
+            assert!(*balance > 0);
+        } 
+        Err(e) => println!("Failed to get balance from Move contract: {:?}", e),
+    }
+
+    // assert balance_result balance > 0
+    assert!(balance_result.unwrap() > 0);
 
     Ok(())
 }
@@ -1009,4 +1066,55 @@ async fn test_move_call_delete_external_stable_gas_coin(test_cluster: &mut TestC
 
     assert!(resp.status_ok().unwrap());
     Ok(())
+}
+
+async fn test_move_call_get_deposited_balance(
+    test_cluster: &mut TestCluster,
+    coin_type: String
+) -> Result<u64, Error> {
+    let address = test_cluster.get_address_0();
+    let mut gases = test_cluster.rpc_client().clone().get_all_coins(address, None, None)
+        .await
+        .unwrap();
+
+    let mut gas: Option<ObjectRef> = None;
+    gases.data.retain(|e| {
+        if e.coin_type.contains("BFC") {
+            gas = Some(e.object_ref());
+            false
+        } else {
+            true
+        }
+    });
+    assert!(gas.is_some());
+
+    let pt = {
+        let mut builder = ProgrammableTransactionBuilder::new();
+        builder.move_call(
+            BFC_SYSTEM_PACKAGE_ID,
+            Identifier::new("bfc_system").unwrap(),
+            Identifier::new("get_deposited_stable_gas_coin_balance").unwrap(),
+            vec![TypeTag::from_str(&coin_type)?],
+            vec![CallArg::BFC_SYSTEM_MUT],
+        )?;
+        builder.finish()
+    };
+    
+    let txn = TransactionKind::programmable(pt);
+    let response = test_cluster
+        .rpc_client()
+        .dev_inspect_transaction_block(
+            address,
+            Base64::from_bytes(&bcs::to_bytes(&txn).unwrap()),
+            None,
+            None,
+            None,
+        )
+        .await
+        .unwrap();
+
+    let results = response.results.unwrap();
+    let return_value = &results.first().unwrap().return_values.first().unwrap().0;
+    let balance: u64 = bcs::from_bytes(return_value).unwrap();
+    Ok(balance)
 }

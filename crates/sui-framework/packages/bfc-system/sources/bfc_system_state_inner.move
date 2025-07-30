@@ -1030,7 +1030,6 @@ module bfc_system::bfc_system_state_inner {
         }
     }
 
-    #[test_only]
     public fun get_deposited_stable_gas_coin_balance<StableCoinType>(
         self: &BfcSystemStateInnerV2
     ): u64 {

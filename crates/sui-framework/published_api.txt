@@ -5407,6 +5407,9 @@ get_extra_fields
 deposit_stable_gas_coin
 	public(package) fun
 	0xc8::bfc_system_state_inner
+get_deposited_stable_gas_coin_balance
+	public fun
+	0xc8::bfc_system_state_inner
 in_external_stable_gas_coin_list
 	public(package) fun
 	0xc8::bfc_system_state_inner
@@ -5451,6 +5454,9 @@ inner_withdraw_balance
 	0xc8::bfc_system
 deposit_stable_gas_coin
 	fun
+	0xc8::bfc_system
+get_deposited_stable_gas_coin_balance
+	public fun
 	0xc8::bfc_system
 request_gas_balance
 	public fun
