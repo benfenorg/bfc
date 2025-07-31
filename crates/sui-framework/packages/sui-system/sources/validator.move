@@ -7,6 +7,8 @@ module sui_system::validator {
 
     use sui::bfc::BFC;
     use sui_system::validator_cap::{Self, ValidatorOperationCap};
+public use fun sui_system::validator_wrapper::create_v1 as Validator.wrap_v1;
+
     use sui_system::staking_pool::{Self, PoolTokenExchangeRate, FungibleStakedSui,  StakingPool, StakedBfc};
     use std::string::String;
     use std::ascii;
@@ -43,8 +45,6 @@ module sui_system::validator {
     const MAX_U64: u128 = 18446744073709551615;
 
 
-    /// Validator trying to set gas price higher than threshold.
-    const EGasPriceHigherThanThreshold: u64 = 102;
 
 
     /// Invalid proof_of_possession field in ValidatorMetadata
@@ -930,10 +930,7 @@ public fun stake_amount(self: &Validator): u64 {
         stable_pool::rewards_pool(get_stable_pool<STABLE>(&self.stable_pools))
     }
 
-    /// Return the total amount staked with this validator
-    public fun total_stake(self: &Validator): u64 {
-        stake_amount(self)
-    }
+
 /// Return the total amount staked with this validator
 public fun total_stake(self: &Validator): u64 {
     self.staking_pool.sui_balance()
@@ -990,10 +987,7 @@ public fun total_stake(self: &Validator): u64 {
         }
     }
 
-    /// Return the voting power of this validator.
-    public fun voting_power(self: &Validator): u64 {
-        self.voting_power
-    }
+
 /// Return the voting power of this validator.
 public fun voting_power(self: &Validator): u64 {
     self.voting_power
@@ -1015,9 +1009,7 @@ public fun pending_stake_amount(self: &Validator): u64 {
     public fun pending_stake_withdraw_amount(self: &Validator): u64 {
         self.staking_pool.pending_stake_withdraw_amount()
     }
-public fun pending_stake_withdraw_amount(self: &Validator): u64 {
-    self.staking_pool.pending_stake_withdraw_amount()
-}
+
 
     public fun pending_stake_withdraw_stable_amount<STABLE>(self: &Validator): u64 {
         stable_pool::pending_stake_withdraw_amount(get_stable_pool<STABLE>(&self.stable_pools))
@@ -1026,9 +1018,6 @@ public fun pending_stake_withdraw_amount(self: &Validator): u64 {
     public fun gas_price(self: &Validator): u64 {
         self.gas_price
     }
-public fun gas_price(self: &Validator): u64 {
-    self.gas_price
-}
 
 public fun commission_rate(self: &Validator): u64 {
     self.commission_rate
@@ -1060,9 +1049,7 @@ public fun pool_token_exchange_rate_at_epoch(self: &Validator, epoch: u64): Pool
         vec_rate
     }
 
-    public fun staking_pool_id(self: &Validator): ID {
-        object::id(&self.staking_pool)
-    }
+
 public fun staking_pool_id(self: &Validator): ID {
     object::id(&self.staking_pool)
 }
@@ -1098,50 +1085,14 @@ public fun staking_pool_id(self: &Validator): ID {
     }
 
 
-    // MUSTFIX: We need to check this when updating metadata as well.
-    public fun is_duplicate(self: &Validator, other: &Validator): bool {
-         self.metadata.sui_address == other.metadata.sui_address
-            || self.metadata.name == other.metadata.name
-            || self.metadata.net_address == other.metadata.net_address
-            || self.metadata.p2p_address == other.metadata.p2p_address
-            || self.metadata.protocol_pubkey_bytes == other.metadata.protocol_pubkey_bytes
-            || self.metadata.network_pubkey_bytes == other.metadata.network_pubkey_bytes
-            || self.metadata.network_pubkey_bytes == other.metadata.worker_pubkey_bytes
-            || self.metadata.worker_pubkey_bytes == other.metadata.worker_pubkey_bytes
-            || self.metadata.worker_pubkey_bytes == other.metadata.network_pubkey_bytes
-            // All next epoch parameters.
-            || is_equal_some(&self.metadata.next_epoch_net_address, &other.metadata.next_epoch_net_address)
-            || is_equal_some(&self.metadata.next_epoch_p2p_address, &other.metadata.next_epoch_p2p_address)
-            || is_equal_some(&self.metadata.next_epoch_protocol_pubkey_bytes, &other.metadata.next_epoch_protocol_pubkey_bytes)
-            || is_equal_some(&self.metadata.next_epoch_network_pubkey_bytes, &other.metadata.next_epoch_network_pubkey_bytes)
-            || is_equal_some(&self.metadata.next_epoch_network_pubkey_bytes, &other.metadata.next_epoch_worker_pubkey_bytes)
-            || is_equal_some(&self.metadata.next_epoch_worker_pubkey_bytes, &other.metadata.next_epoch_worker_pubkey_bytes)
-            || is_equal_some(&self.metadata.next_epoch_worker_pubkey_bytes, &other.metadata.next_epoch_network_pubkey_bytes)
-            // My next epoch parameters with other current epoch parameters.
-            || is_equal_some_and_value(&self.metadata.next_epoch_net_address, &other.metadata.net_address)
-            || is_equal_some_and_value(&self.metadata.next_epoch_p2p_address, &other.metadata.p2p_address)
-            || is_equal_some_and_value(&self.metadata.next_epoch_protocol_pubkey_bytes, &other.metadata.protocol_pubkey_bytes)
-            || is_equal_some_and_value(&self.metadata.next_epoch_network_pubkey_bytes, &other.metadata.network_pubkey_bytes)
-            || is_equal_some_and_value(&self.metadata.next_epoch_network_pubkey_bytes, &other.metadata.worker_pubkey_bytes)
-            || is_equal_some_and_value(&self.metadata.next_epoch_worker_pubkey_bytes, &other.metadata.worker_pubkey_bytes)
-            || is_equal_some_and_value(&self.metadata.next_epoch_worker_pubkey_bytes, &other.metadata.network_pubkey_bytes)
-            // Other next epoch parameters with my current epoch parameters.
-            || is_equal_some_and_value(&other.metadata.next_epoch_net_address, &self.metadata.net_address)
-            || is_equal_some_and_value(&other.metadata.next_epoch_p2p_address, &self.metadata.p2p_address)
-            || is_equal_some_and_value(&other.metadata.next_epoch_protocol_pubkey_bytes, &self.metadata.protocol_pubkey_bytes)
-            || is_equal_some_and_value(&other.metadata.next_epoch_network_pubkey_bytes, &self.metadata.network_pubkey_bytes)
-            || is_equal_some_and_value(&other.metadata.next_epoch_network_pubkey_bytes, &self.metadata.worker_pubkey_bytes)
-            || is_equal_some_and_value(&other.metadata.next_epoch_worker_pubkey_bytes, &self.metadata.worker_pubkey_bytes)
-            || is_equal_some_and_value(&other.metadata.next_epoch_worker_pubkey_bytes, &self.metadata.network_pubkey_bytes)
-    }
 
-    fun is_equal_some_and_value<T>(a: &Option<T>, b: &T): bool {
+fun is_equal_some_and_value<T>(a: &Option<T>, b: &T): bool {
         if (a.is_none()) {
             false
         } else {
             a.borrow() == b
         }
-    }
+}
 // MUSTFIX: We need to check this when updating metadata as well.
 public fun is_duplicate(self: &Validator, other: &Validator): bool {
     let self = &self.metadata;

@@ -1259,17 +1259,19 @@ fun process_pending_removals(
 /// Remove `validator` from `self` and return the amount of stake that was removed
 fun process_validator_departure(
     self: &mut ValidatorSet,
-mut validator: Validator,
-validator_report_records: &mut VecMap<address, VecSet<address>>,
-is_voluntary: bool,
-ctx: &mut TxContext, ): u64
+    mut validator: Validator,
+    validator_report_records: &mut VecMap<address, VecSet<address>>,
+    is_voluntary: bool,
+    ctx: &mut TxContext, ): u64
 {
 let new_epoch = ctx.epoch() + 1;
 let validator_address = validator.sui_address();
 let validator_pool_id = validator.staking_pool_id();
-
-// Remove the validator from our tables.
-table::remove(&mut self.staking_pool_mappings, validator_pool_id);
+    // Remove the validator from our tables.
+    self.staking_pool_mappings.remove(validator_pool_id);
+    if (self.at_risk_validators.contains(&validator_address)) {
+        self.at_risk_validators.remove(&validator_address);
+    };
 // Remove the validator's stable staking pool from m our tables.
 let id_vec = all_stable_pool_id(&validator);
 let id_len = vector::length(&id_vec);
@@ -1280,14 +1282,7 @@ table::remove(&mut self.stable_pool_mappings, *id);
 j = j + 1;
 };
 
-if (self.at_risk_validators.contains(&validator_address)) {
-self.at_risk_validators.remove(&validator_address);
-};
-// Remove the validator from our tables.
-self.staking_pool_mappings.remove(validator_pool_id);
-if (self.at_risk_validators.contains(&validator_address)) {
-self.at_risk_validators.remove(&validator_address);
-};
+
 
 clean_report_records_leaving_validator(validator_report_records, validator_address);
 
@@ -1298,48 +1293,34 @@ staking_pool_id: validator.staking_pool_id(),
 is_voluntary,
 });
 
-// Deactivate the validator and its staking pool
-validator.deactivate(new_epoch);
-validator::deactivate_stable<BUSD>(&mut validator, new_epoch);
-validator::deactivate_stable<BJPY>(&mut validator, new_epoch);
-validator::deactivate_stable<BARS>(&mut validator, new_epoch);
-validator::deactivate_stable<BEUR>(&mut validator, new_epoch);
-validator::deactivate_stable<BKRW>(&mut validator, new_epoch);
-validator::deactivate_stable<BAUD>(&mut validator, new_epoch);
-validator::deactivate_stable<BBRL>(&mut validator, new_epoch);
-validator::deactivate_stable<BCAD>(&mut validator, new_epoch);
-validator::deactivate_stable<BGBP>(&mut validator, new_epoch);
-validator::deactivate_stable<BIDR>(&mut validator, new_epoch);
-validator::deactivate_stable<BMXN>(&mut validator, new_epoch);
-validator::deactivate_stable<BINR>(&mut validator, new_epoch);
-validator::deactivate_stable<BRUB>(&mut validator, new_epoch);
-validator::deactivate_stable<BSAR>(&mut validator, new_epoch);
-validator::deactivate_stable<BTRY>(&mut validator, new_epoch);
-validator::deactivate_stable<BZAR>(&mut validator, new_epoch);
-validator::deactivate_stable<MGG>(&mut validator, new_epoch);
-self.inactive_validators.add(
-// Deactivate the validator and its staking pool
-let removed_stake = validator.total_stake();
-validator.deactivate(new_epoch);
-self
-.inactive_validators
-.add(
-validator_pool_id,
-validator.wrap_v1(ctx),
-);
-let mut j = 0;
-while (j < id_len) {
-let id = vector::borrow(&id_vec, j);
-table::add(
-&mut self.inactive_validators_pool_mappings,
-*id,
-validator_pool_id,
-);
-j = j + 1;
-};
+    // Deactivate the validator and its staking pool
+    validator.deactivate(new_epoch);
+    validator::deactivate_stable<BUSD>(&mut validator, new_epoch);
+    validator::deactivate_stable<BJPY>(&mut validator, new_epoch);
+    validator::deactivate_stable<BARS>(&mut validator, new_epoch);
+    validator::deactivate_stable<BEUR>(&mut validator, new_epoch);
+    validator::deactivate_stable<BKRW>(&mut validator, new_epoch);
+    validator::deactivate_stable<BAUD>(&mut validator, new_epoch);
+    validator::deactivate_stable<BBRL>(&mut validator, new_epoch);
+    validator::deactivate_stable<BCAD>(&mut validator, new_epoch);
+    validator::deactivate_stable<BGBP>(&mut validator, new_epoch);
+    validator::deactivate_stable<BIDR>(&mut validator, new_epoch);
+    validator::deactivate_stable<BMXN>(&mut validator, new_epoch);
+    validator::deactivate_stable<BINR>(&mut validator, new_epoch);
+    validator::deactivate_stable<BRUB>(&mut validator, new_epoch);
+    validator::deactivate_stable<BSAR>(&mut validator, new_epoch);
+    validator::deactivate_stable<BTRY>(&mut validator, new_epoch);
+    validator::deactivate_stable<BZAR>(&mut validator, new_epoch);
+    validator::deactivate_stable<MGG>(&mut validator, new_epoch);
 
-}
-removed_stake
+    // Deactivate the validator and its staking pool
+    let removed_stake = validator.total_stake();
+
+    self.inactive_validators.add(
+        validator_pool_id,
+        validator.wrap_v1(ctx),
+    );
+    removed_stake
 }
 
 fun clean_report_records_leaving_validator(
@@ -1438,7 +1419,7 @@ validators.do_mut!(|v| v.process_pending_stakes_and_withdraws(ctx))
 }
 
 /// Calculate the total active validator stake.
-fun calculate_total_stakes(validators: &vector<Validator>, stable_rate: VecMap<ascii::String, u64>): u64 {
+public(package) fun calculate_total_stakes(validators: &vector<Validator>, stable_rate: VecMap<ascii::String, u64>): u64 {
     let mut stake = 0;
     let length = vector::length(validators);
     let mut i = 0;
@@ -1790,44 +1771,44 @@ tallying_rule_global_score,
 
 /// Sum up the total stake of a given list of validator addresses.
 public fun sum_voting_power_by_addresses(vs: &vector<Validator>, addresses: &vector<address>): u64 {
-let mut sum = 0;
-addresses.do_ref!(|addr| {
-let validator = get_validator_ref(vs, *addr);
-sum = sum + validator.voting_power();
-});
-sum
+    let mut sum = 0;
+    addresses.do_ref!(|addr| {
+    let validator = get_validator_ref(vs, *addr);
+        sum = sum + validator.voting_power();
+    });
+    sum
 }
 
 /// Return the active validators in `self`
 public fun active_validators(self: &ValidatorSet): &vector<Validator> {
-&self.active_validators
+    &self.active_validators
 }
 
 /// Returns true if the `addr` is a validator candidate.
 public fun is_validator_candidate(self: &ValidatorSet, addr: address): bool {
-self.validator_candidates.contains(addr)
+    self.validator_candidates.contains(addr)
 }
 
 /// Returns true if `addr` is an active validator
 public (package) fun is_active_validator(self: &ValidatorSet, addr: address): bool {
-self.active_validators.any!(|v| v.sui_address() == addr)
+    self.active_validators.any!(|v| v.sui_address() == addr)
 }
 
 /// Returns true if the staking pool identified by `staking_pool_id` is of an inactive validator.
 public fun is_inactive_validator(self: &ValidatorSet, staking_pool_id: ID): bool {
-self.inactive_validators.contains(staking_pool_id)
+    self.inactive_validators.contains(staking_pool_id)
 }
 
 /// Return true if `addr` is currently an at-risk validator below the minimum stake for removal
 public (package) fun is_at_risk_validator(self: &ValidatorSet, addr: address): bool {
-self.at_risk_validators.contains(&addr)
+    self.at_risk_validators.contains(&addr)
 }
 
 public (package) fun active_validator_addresses(self: &ValidatorSet): vector<address> {
-let vs = &self.active_validators;
-let mut res = vector[];
-vs.do_ref!(|v| res.push_back(v.sui_address()));
-res
+    let vs = &self.active_validators;
+    let mut res = vector[];
+    vs.do_ref!(|v| res.push_back(v.sui_address()));
+    res
 }
 
 macro fun mul_div($a: u64, $b: u64, $c: u64): u64 {
@@ -1836,14 +1817,14 @@ macro fun mul_div($a: u64, $b: u64, $c: u64): u64 {
 
 #[test_only]
 public fun find_for_testing(self: &ValidatorSet, validator_address: address): &Validator {
-self.get_candidate_or_active_validator(validator_address)
+    self.get_candidate_or_active_validator(validator_address)
 }
 
 #[test_only]
 fun get_candidate_or_active_validator(self: &ValidatorSet, validator_address: address): &Validator {
-if (self.validator_candidates.contains(validator_address)) {
-self.validator_candidates[validator_address].get_inner_validator_ref()
-} else {
-get_validator(&self.active_validators, validator_address)
-}
+    if (self.validator_candidates.contains(validator_address)) {
+        self.validator_candidates[validator_address].get_inner_validator_ref()
+    } else {
+        get_validator(&self.active_validators, validator_address)
+    }
 }
