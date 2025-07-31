@@ -1421,9 +1421,12 @@ impl TransactionKind {
     pub fn shared_input_objects(&self) -> impl Iterator<Item = SharedInputObject> + '_ {
         match &self {
             Self::ChangeEpoch(_) => {
-                Either::Left(Either::Left(iter::once(SharedInputObject::SUI_SYSTEM_OBJ)))
+                Either::Right(Either::Right(vec![
+                    SharedInputObject::SUI_SYSTEM_OBJ,
+                    SharedInputObject::BFC_SYSTEM_OBJ,
+                    SharedInputObject::SUI_CLOCK_OBJ,
+                ].into_iter()))
             }
-
             Self::ConsensusCommitPrologue(_)
             | Self::ConsensusCommitPrologueV2(_)
             | Self::ConsensusCommitPrologueV3(_) => {
@@ -1453,7 +1456,7 @@ impl TransactionKind {
             Self::ProgrammableTransaction(pt) => {
                 Either::Right(Either::Left(pt.shared_input_objects()))
             }
-            _ => Either::Right(Either::Right(iter::empty())),
+            _ => Either::Right(Either::Right(vec![].into_iter())),
         }
     }
 
