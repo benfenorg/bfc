@@ -807,10 +807,7 @@ public(package) fun process_pending_stakes_and_withdraws(self: &mut Validator, c
         // assert!(stable_stake_amount<STABLE>(self) == self.next_epoch_stable_stake, EInvalidStakeAmount);
     }
 
-    /// Returns true if the validator is preactive.
-    public fun is_preactive(self: &Validator): bool {
-        self.staking_pool.is_preactive()
-    }
+
 /// Returns true if the validator is preactive.
 public fun is_preactive(self: &Validator): bool {
     self.staking_pool.is_preactive()
@@ -1456,19 +1453,6 @@ public(package) fun get_staking_pool_ref(self: &Validator): &StakingPool {
         pool_key = type_name::into_string(type_name::get<MGG>());
         bag::add<ascii::String, StablePool<MGG>>(&mut stable_pools, pool_key,stable_pool::new<MGG>(ctx));
 
-/// Create a new validator from the given `ValidatorMetadata`, called by both `new` and `new_for_testing`.
-fun new_from_metadata(
-    metadata: ValidatorMetadata,
-    gas_price: u64,
-    commission_rate: u64,
-    ctx: &mut TxContext,
-): Validator {
-    let sui_address = metadata.sui_address;
-    let staking_pool = staking_pool::new(ctx);
-    let operation_cap_id = validator_cap::new_unverified_validator_operation_cap_and_transfer(
-        sui_address,
-        ctx,
-    );
 
         let operation_cap_id = validator_cap::new_unverified_validator_operation_cap_and_transfer(sui_address, ctx);
         Validator {
@@ -1489,21 +1473,7 @@ fun new_from_metadata(
             extra_fields: bag::new(ctx),
         }
     }
-    Validator {
-        metadata,
-        // Initialize the voting power to be 0.
-        // At the epoch change where this validator is actually added to the
-        // active validator set, the voting power will be updated accordingly.
-        voting_power: 0,
-        operation_cap_id,
-        gas_price,
-        staking_pool,
-        commission_rate,
-        next_epoch_stake: 0,
-        next_epoch_gas_price: gas_price,
-        next_epoch_commission_rate: commission_rate,
-        extra_fields: bag::new(ctx),
-    }
+
 }
 
     // CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.
@@ -1573,7 +1543,7 @@ public(package) fun new_for_testing(
     p2p_address: vector<u8>,
     primary_address: vector<u8>,
     worker_address: vector<u8>,
-    initial_stake_option: Option<Balance<SUI>>,
+    initial_stake_option: Option<Balance<BFC>>,
     gas_price: u64,
     commission_rate: u64,
     is_active_at_genesis: bool,

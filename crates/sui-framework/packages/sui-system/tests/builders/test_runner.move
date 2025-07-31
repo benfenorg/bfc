@@ -88,7 +88,7 @@ public fun build(builder: TestRunnerBuilder): TestRunner {
 
     // create stake subsidy
     let stake_subsidy = stake_subsidy::create(
-        balance::create_for_testing<SUI>(sui_supply_amount.destroy_or!(1000) * MIST_PER_SUI), // sui_supply
+        balance::create_for_testing<BFC>(sui_supply_amount.destroy_or!(1000) * MIST_PER_SUI), // sui_supply
         0, // stake subsidy initial distribution amount
         10, // stake_subsidy_period_length
         0, // stake_subsidy_decrease_rate
@@ -107,7 +107,7 @@ public fun build(builder: TestRunnerBuilder): TestRunner {
     sui_system::create(
         object::new(scenario.ctx()), // it doesn't matter what ID sui system state has in tests
         validators,
-        balance::create_for_testing<SUI>(storage_fund_amount.destroy_or!(0) * MIST_PER_SUI), // storage_fund
+        balance::create_for_testing<BFC>(storage_fund_amount.destroy_or!(0) * MIST_PER_SUI), // storage_fund
         protocol_version.destroy_or!(1), // protocol version
         0, // chain_start_timestamp_ms
         system_parameters,
@@ -327,7 +327,7 @@ public fun keep<T: key + store>(runner: &TestRunner, object: T) {
 public fun sender(runner: &mut TestRunner): address { runner.sender }
 
 /// Mint a SUI balance for testing.
-public fun mint(amount: u64): Balance<SUI> {
+public fun mint(amount: u64): Balance<BFC> {
     balance::create_for_testing(amount * MIST_PER_SUI)
 }
 
@@ -399,7 +399,7 @@ public macro fun system_tx(
 public fun advance_epoch(
     runner: &mut TestRunner,
     options: Option<AdvanceEpochOptions>,
-): Balance<SUI> {
+): Balance<BFC> {
     let sender = runner.sender;
     runner.set_sender(@0);
     let storage_rebate_balance;
@@ -564,8 +564,8 @@ public fun sui_balance(runner: &mut TestRunner): u64 {
     let sender = runner.sender;
     let scenario = runner.scenario_mut();
     scenario.next_tx(sender);
-    scenario.ids_for_sender<Coin<SUI>>().fold!(0, |mut sum, coin_id| {
-        let coin = scenario.take_from_sender_by_id<Coin<SUI>>(coin_id);
+    scenario.ids_for_sender<Coin<BFC>>().fold!(0, |mut sum, coin_id| {
+        let coin = scenario.take_from_sender_by_id<Coin<BFC>>(coin_id);
         sum = sum + coin.value();
         scenario.return_to_sender(coin);
         sum

@@ -4,8 +4,8 @@
 module sui_system::sui_system_state_inner {
     use sui::balance::{Self, Balance};
     use sui::coin::Coin;
-    use sui_system::staking_pool::{StakedSui, FungibleStakedSui};
-    use sui::sui::SUI;
+    use sui_system::staking_pool::{StakedBfc, FungibleStakedSui};
+    use sui::bfc::BFC;
     use sui_system::validator::{Self, Validator};
     use sui_system::validator_set::{Self, ValidatorSet};
     use sui_system::validator_cap::{UnverifiedValidatorOperationCap, ValidatorOperationCap};
@@ -26,6 +26,7 @@ module sui_system::sui_system_state_inner {
 
     const SYSTEM_STATE_VERSION_V1: u64 = 1;
 
+    const EXTRA_FIELD_EXECUTION_TIME_ESTIMATES_KEY: u64 = 0;
     /// A list of system config parameters.
     public struct SystemParameters has store {
         /// The duration of an epoch, in milliseconds.

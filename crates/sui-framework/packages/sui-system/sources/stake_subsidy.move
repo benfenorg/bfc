@@ -9,7 +9,6 @@ module sui_system::stake_subsidy {
 
 const ESubsidyDecreaseRateTooLarge: u64 = 0;
 
-const BASIS_POINT_DENOMINATOR: u128 = 100_00;
 
     public struct StakeSubsidy has store {
         /// Balance of SUI set aside for stake subsidies that will be drawn down over time.
