@@ -376,7 +376,7 @@ public(package) fun request_add_validator(self: &mut ValidatorSet, min_joining_s
         EDuplicateValidator
     );
     assert!(validator.is_preactive(), EValidatorNotCandidate);
-    assert!(validator.total_stake_amount() > = min_joining_stake_amount, EMinJoiningStakeNotReached);
+    assert!(validator.total_stake_amount() >= min_joining_stake_amount, EMinJoiningStakeNotReached);
 
     self.pending_active_validators.push_back(validator);
 }

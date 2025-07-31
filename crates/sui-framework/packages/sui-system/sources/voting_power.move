@@ -8,7 +8,6 @@ module sui_system::voting_power {
     use sui_system::validator;
 
 
-
     #[allow(unused_field)]
     /// Deprecated. Use VotingPowerInfoV2 instead.
     public struct VotingPowerInfo has drop {
@@ -48,7 +47,11 @@ module sui_system::voting_power {
         let total_voting_power = TOTAL_VOTING_POWER;
         let average_voting_power = total_voting_power.divide_and_round_up(validators.length());
         let threshold = total_voting_power.min(MAX_VOTING_POWER.max(average_voting_power));
-        let (mut info_list, remaining_power) = init_voting_power_info(
+        let
+        ( mut
+        info_list,
+        remaining_power) =
+        init_voting_power_info(
             validators,
             threshold,
             stable_rate,
@@ -90,29 +93,28 @@ module sui_system::voting_power {
     }
 
 
-
-// fun init_voting_power_info(
-//     validators: &vector<Validator>,
-//     threshold: u64,
-//     total_stake: u64,
-// ): (vector<VotingPowerInfoV2>, u64) {
-//     let mut total_power = 0;
-//     let mut result = vector[];
-//     validators.length().do!(|i| {
-//         let stake = validators[i].total_stake();
-//         let voting_power = derive_raw_voting_power(stake, total_stake).min(threshold);
-//         insert(&mut result, VotingPowerInfoV2 { validator_index: i, voting_power, stake });
-//         total_power = total_power + voting_power;
-//     });
-//
-//     (result, TOTAL_VOTING_POWER - total_power)
-// }
+    // fun init_voting_power_info(
+    //     validators: &vector<Validator>,
+    //     threshold: u64,
+    //     total_stake: u64,
+    // ): (vector<VotingPowerInfoV2>, u64) {
+    //     let mut total_power = 0;
+    //     let mut result = vector[];
+    //     validators.length().do!(|i| {
+    //         let stake = validators[i].total_stake();
+    //         let voting_power = derive_raw_voting_power(stake, total_stake).min(threshold);
+    //         insert(&mut result, VotingPowerInfoV2 { validator_index: i, voting_power, stake });
+    //         total_power = total_power + voting_power;
+    //     });
+    //
+    //     (result, TOTAL_VOTING_POWER - total_power)
+    // }
 
     /// Sum up the total stake of all validators.
     fun total_stake(validators: &vector<Validator>, stable_rate: VecMap<ascii::String, u64>): u64 {
         let mut i = 0;
         let len = validators.length();
-        let mut total_stake =0 ;
+        let mut total_stake = 0 ;
         while (i < len) {
             total_stake = total_stake +
                 validator::total_stake_with_all_stable(vector::borrow(validators, i), stable_rate);
@@ -120,9 +122,10 @@ module sui_system::voting_power {
         };
         total_stake
     }
-public(package) fun derive_raw_voting_power(stake: u64, total_stake: u64): u64 {
-    ((stake as u128 * (TOTAL_VOTING_POWER as u128) / (total_stake as u128)) as u64)
-}
+
+    public(package) fun derive_raw_voting_power(stake: u64, total_stake: u64): u64 {
+        ((stake as u128 * (TOTAL_VOTING_POWER as u128) / (total_stake as u128)) as u64)
+    }
 
     /// Insert `new_info` to `info_list` as part of insertion sort, such that `info_list` is always sorted
     /// using stake, in descending order.
@@ -136,30 +139,30 @@ public(package) fun derive_raw_voting_power(stake: u64, total_stake: u64): u64 {
     fun adjust_voting_power(
         info_list: &mut vector<VotingPowerInfoV2>,
         threshold: u64,
-        mut remaining_power: u64,
+    mut remaining_power: u64,
     ) {
-        let mut i = 0;
-        let len = info_list.length();
-        while (i < len && remaining_power > 0) {
-        let v = &mut info_list[i];
-        // planned is the amount of extra power we want to distribute to this validator.
-        let planned = remaining_power.divide_and_round_up(len - i);
-        // target is the targeting power this validator will reach, capped by threshold.
-        let target = threshold.min(v.voting_power + planned);
-        // actual is the actual amount of power we will be distributing to this validator.
-        let actual = remaining_power.min(target - v.voting_power);
-        v.voting_power = v.voting_power + actual;
-        assert!(v.voting_power <= threshold, EVotingPowerOverThreshold);
-        remaining_power = remaining_power - actual;
-        i = i + 1;
-        };
-        assert!(remaining_power == 0, ETotalPowerMismatch);
+    let mut i = 0;
+    let len = info_list.length();
+    while (i < len && remaining_power > 0) {
+    let v = &mut info_list[i];
+    // planned is the amount of extra power we want to distribute to this validator.
+    let planned = remaining_power.divide_and_round_up(len - i);
+    // target is the targeting power this validator will reach, capped by threshold.
+    let target = threshold.min(v.voting_power + planned);
+    // actual is the actual amount of power we will be distributing to this validator.
+    let actual = remaining_power.min(target - v.voting_power);
+    v.voting_power = v.voting_power + actual;
+    assert!(v.voting_power <= threshold, EVotingPowerOverThreshold);
+    remaining_power = remaining_power - actual;
+    i = i + 1;
+    };
+    assert!(remaining_power == 0, ETotalPowerMismatch);
     }
 
     /// Update validators with the decided voting power.
     fun update_voting_power(validators: &mut vector<Validator>, info_list: vector<VotingPowerInfoV2>) {
         info_list.destroy!(|VotingPowerInfoV2 { validator_index, voting_power, .. }| {
-            validators[validator_index].set_voting_power(voting_power);
+        validators[validator_index].set_voting_power(voting_power);
         });
     }
 
@@ -202,12 +205,13 @@ public(package) fun derive_raw_voting_power(stake: u64, total_stake: u64): u64 {
         }
     }
 
-/// Return the (constant) total voting power
-public fun total_voting_power(): u64 {
-    TOTAL_VOTING_POWER
-}
+    /// Return the (constant) total voting power
+    public fun total_voting_power(): u64 {
+        TOTAL_VOTING_POWER
+    }
 
-/// Return the (constant) quorum threshold
-public fun quorum_threshold(): u64 {
-    QUORUM_THRESHOLD
+    /// Return the (constant) quorum threshold
+    public fun quorum_threshold(): u64 {
+        QUORUM_THRESHOLD
+    }
 }
