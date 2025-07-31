@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module sui_system::sui_system_state_inner {
+    use std::ascii;
     use sui::balance::{Self, Balance};
-    use sui::coin::Coin;
+    use sui::coin::{Self,Coin};
     use sui_system::staking_pool::{StakedBfc, FungibleStakedSui};
     use sui::bfc::BFC;
     use sui_system::validator::{Self, Validator};

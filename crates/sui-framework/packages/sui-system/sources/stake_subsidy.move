@@ -7,7 +7,6 @@ module sui_system::stake_subsidy {
     use sui::bag::Bag;
     use sui::bag;
 
-const ESubsidyDecreaseRateTooLarge: u64 = 0;
 
 
     public struct StakeSubsidy has store {

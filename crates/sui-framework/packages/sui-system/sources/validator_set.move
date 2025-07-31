@@ -867,10 +867,6 @@ public fun validator_total_stake_amount_with_stable(
     validator::total_stake_with_all_stable(validator, stable_rate)
 }
 
-public fun validator_total_stake_amount(self: &ValidatorSet, validator_address: address): u64 {
-    let validator = get_validator_ref(&self.active_validators, validator_address);
-    validator.total_stake()
-}
 
 public fun validator_stake_amount(self: &ValidatorSet, validator_address: address): u64 {
     let validator = get_validator_ref(&self.active_validators, validator_address);
@@ -887,10 +883,7 @@ public fun validator_voting_power(self: &ValidatorSet, validator_address: addres
     validator.voting_power()
 }
 
-public fun validator_voting_power(self: &ValidatorSet, validator_address: address): u64 {
-    let validator = get_validator_ref(&self.active_validators, validator_address);
-    validator.voting_power()
-}
+
 
 public fun validator_staking_pool_id(self: &ValidatorSet, validator_address: address): ID {
     let validator = get_validator_ref(&self.active_validators, validator_address);
@@ -923,15 +916,7 @@ public fun validator_address_by_pool_id(self: &mut ValidatorSet, pool_id: &ID): 
     }
 }
 
-public fun validator_address_by_pool_id(self: &mut ValidatorSet, pool_id: &ID): address {
-    // If the pool id is recorded in the mapping, then it must be either candidate or active.
-    if (self.staking_pool_mappings.contains(*pool_id)) {
-        self.staking_pool_mappings[*pool_id]
-    } else {
-        // otherwise it's inactive
-        self.inactive_validators[*pool_id].load_validator_maybe_upgrade().sui_address()
-    }
-}
+
 
 public(package) fun pool_exchange_rates(
     self: &mut ValidatorSet,
