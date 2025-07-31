@@ -236,29 +236,7 @@ public(package) fun new(init_active_validators: vector<Validator>, ctx: &mut TxC
     validators
 }
 
-public(package) fun new(
-    init_active_validators: vector<Validator>,
-    ctx: &mut TxContext,
-): ValidatorSet {
-    let total_stake = calculate_total_stakes(&init_active_validators);
-    let mut staking_pool_mappings = table::new(ctx);
-    init_active_validators.do_ref!(|v| {
-    staking_pool_mappings.add(v.staking_pool_id(), v.sui_address());
-    });
-    let mut validators = ValidatorSet {
-    total_stake,
-    active_validators: init_active_validators,
-    pending_active_validators: table_vec::empty(ctx),
-    pending_removals: vector[],
-    staking_pool_mappings,
-    inactive_validators: table::new(ctx),
-    validator_candidates: table::new(ctx),
-    at_risk_validators: vec_map::empty(),
-    extra_fields: bag::new(ctx),
-    };
-    voting_power::set_voting_power(&mut validators.active_validators, total_stake);
-    validators
-}
+
 
 // ==== functions to add or remove validators ====
 
@@ -578,23 +556,7 @@ public(package) fun convert_to_fungible_staked_sui(
 
     validator.convert_to_fungible_staked_sui(staked_sui, ctx)
 }
-// public (package) fun convert_to_fungible_staked_sui(
-//     self: &mut ValidatorSet,
-//     staked_sui: StakedSui,
-//     ctx: &mut TxContext,
-// ): FungibleStakedSui {
-//     let staking_pool_id = staked_sui.pool_id();
-//     let validator = if (self.staking_pool_mappings.contains(staking_pool_id)) {
-//         // This is an active validator.
-//         let validator_address = self.staking_pool_mappings[staking_pool_id];
-//         self.get_candidate_or_active_validator_mut(validator_address)
-//     } else {
-//         // This is an inactive pool.
-//         assert!(self.inactive_validators.contains(staking_pool_id), ENoPoolFound);
-//         self.inactive_validators[staking_pool_id].load_validator_maybe_upgrade()
-//     };
-//     validator.convert_to_fungible_staked_sui(staked_sui, ctx)
-// }
+
 
 
 public(package) fun redeem_fungible_staked_sui(
@@ -797,7 +759,7 @@ fun update_validator_positions_and_calculate_total_stake(
     if (voting_power > = low_voting_power_threshold) {
     // The validator is safe. We remove their entry from the at_risk map if there exists one.
     if (self.at_risk_validators.contains(&validator_address)) {
-    self.at_risk_validators.remove(&validator_address);
+        self.at_risk_validators.remove(&validator_address);
     }
     // SIP-39: as soon as the validator’s voting power falls to VERY_LOW_VOTING_POWER_THRESHOLD,
     //      they are on probation and must acquire sufficient stake to recover to voting power
@@ -805,11 +767,11 @@ fun update_validator_positions_and_calculate_total_stake(
     // The stake is a bit below the threshold so we increment the entry of the validator in the map.
     let new_low_stake_period = if (self.at_risk_validators.contains(&validator_address)) {
     let num_epochs = &mut self.at_risk_validators[&validator_address];
-    *num_epochs = *num_epochs + 1;
-    *num_epochs
+        *num_epochs = *num_epochs + 1;
+        *num_epochs
     } else {
-    self.at_risk_validators.insert(validator_address, 1);
-    1
+        self.at_risk_validators.insert(validator_address, 1);
+        1
     };
 
     // If the grace period has passed, the validator has to leave us.
@@ -1283,14 +1245,14 @@ fun process_pending_removals(
 ) {
     sort_removal_list(&mut self.pending_removals);
     self.pending_removals.length().do!(|_| {
-    let index = self.pending_removals.pop_back();
-    let validator = self.active_validators.remove(index);
-    self.process_validator_departure(
-    validator,
-    validator_report_records,
-    true, // the validator removes itself voluntarily
-    ctx,
-    );
+        let index = self.pending_removals.pop_back();
+        let validator = self.active_validators.remove(index);
+        self.process_validator_departure(
+            validator,
+            validator_report_records,
+            true, // the validator removes itself voluntarily
+            ctx,
+        );
     });
 }
 
@@ -1477,26 +1439,21 @@ validators.do_mut!(|v| v.process_pending_stakes_and_withdraws(ctx))
 
 /// Calculate the total active validator stake.
 fun calculate_total_stakes(validators: &vector<Validator>, stable_rate: VecMap<ascii::String, u64>): u64 {
-let mut stake = 0;
-let length = vector::length(validators);
-let mut i = 0;
-while (i < length) {
-let v = &validators[i];
-stake = stake + v.total_stake_with_all_stable(stable_rate);
-i = i + 1;
-};
-stake
+    let mut stake = 0;
+    let length = vector::length(validators);
+    let mut i = 0;
+    while (i < length) {
+        let v = &validators[i];
+        stake = stake + v.total_stake_with_all_stable(stable_rate);
+        i = i + 1;
+    };
+    stake
 }
-/// Calculate the total active validator stake.
-public (package) fun calculate_total_stakes(validators: &vector<Validator>): u64 {
-let mut stake = 0;
-validators.do_ref!(|v| stake = stake + v.total_stake());
-stake
-}
+
 
 /// Process the pending stake changes for each validator.
 fun adjust_stake_and_gas_price(validators: &mut vector<Validator>) {
-validators.do_mut!(|v| v.adjust_stake_and_gas_price())
+    validators.do_mut!(|v| v.adjust_stake_and_gas_price())
 }
 
 /// Compute both the individual reward adjustments and total reward adjustment for staking rewards

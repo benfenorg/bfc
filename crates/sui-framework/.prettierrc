@@ -1,7 +1,9 @@
+
 {
-    "printWidth": 100,
-    "wrapComments": false,
-    "useModuleLabel": true,
-    "autoGroupImports": "module",
-    "tabWidth": 4
+    "prettierMove.tabWidth": 4,
+    "prettierMove.printWidth": 100,
+    "prettierMove.useModuleLabel": true,
+    "prettierMove.autoGroupImports": "module",
+    "prettierMove.enableErrorDebug": false,
+    "prettierMove.wrapComments": false
 }
