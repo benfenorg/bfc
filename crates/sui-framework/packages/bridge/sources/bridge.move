@@ -52,7 +52,6 @@ module bridge::bridge {
 
     const MESSAGE_VERSION: u8 = 1;
     const MESSAGE_VERSION_V2: u8 = 2;
-const MESSAGE_VERSION: u8 = 1;
 
 // Transfer Status
 const TRANSFER_STATUS_PENDING: u8 = 0;
@@ -1748,18 +1747,7 @@ fun get_token_transfer_action_status(bridge: &Bridge, source_chain: u8, bridge_s
         TRANSFER_STATUS_PENDING
     }
 
-    #[allow(unused_function)]
-    fun get_token_transfer_action_signatures(
-        bridge: &Bridge,
-        source_chain: u8,
-        bridge_seq_num: u64,
-    ): Option<vector<vector<u8>>> {
-        let inner = load_inner(bridge);
-        let key = message::create_key(
-            source_chain,
-            message_types::token(),
-            bridge_seq_num
-        );
+
 #[allow(unused_function)]
 fun get_token_transfer_action_signatures(
     bridge: &Bridge,

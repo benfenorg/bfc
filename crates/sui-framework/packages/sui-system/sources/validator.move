@@ -758,11 +758,6 @@ public(package) fun request_set_gas_price(
         stable_pool::deposit_rewards<STABLE>(pool, reward, (stable_amount as u64));
     }
 
-/// Deposit stakes rewards into the validator's staking pool, called at the end of the epoch.
-public(package) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<SUI>) {
-    self.next_epoch_stake = self.next_epoch_stake + reward.value();
-    self.staking_pool.deposit_rewards(reward);
-}
 
 
 /// Process pending stakes and withdraws, called at the end of the epoch.
@@ -1078,13 +1073,6 @@ public fun staking_pool_id(self: &Validator): ID {
 
 
 
-fun is_equal_some_and_value<T>(a: &Option<T>, b: &T): bool {
-        if (a.is_none()) {
-            false
-        } else {
-            a.borrow() == b
-        }
-}
 // MUSTFIX: We need to check this when updating metadata as well.
 public fun is_duplicate(self: &Validator, other: &Validator): bool {
     let self = &self.metadata;

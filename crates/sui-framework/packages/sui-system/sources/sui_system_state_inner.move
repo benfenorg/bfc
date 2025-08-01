@@ -944,23 +944,16 @@ module sui_system::sui_system_state_inner {
         let computation_charge_u128 = (computation_charge as u128);
 
         let storage_fund_reward_amount = (storage_fund_balance as u128) * computation_charge_u128 / total_stake_u128;
-        let mut storage_fund_reward = balance::split(&mut computation_reward, (storage_fund_reward_amount as u64));
+        let mut storage_fund_reward = computation_reward.split(storage_fund_reward_amount as u64);
         let storage_fund_reinvestment_amount =
-            storage_fund_reward_amount * (storage_fund_reinvest_rate as u128) / BASIS_POINT_DENOMINATOR;
-        let storage_fund_reinvestment = balance::split(
-            &mut storage_fund_reward,
-            (storage_fund_reinvestment_amount as u64),
+                mul_div!(
+                storage_fund_reward_amount as u64,
+                storage_fund_reinvest_rate,
+                BASIS_POINT_DENOMINATOR as u64,
         );
-
-    let mut storage_fund_reward = computation_reward.split(storage_fund_reward_amount as u64);
-    let storage_fund_reinvestment_amount = mul_div!(
-        storage_fund_reward_amount as u64,
-        storage_fund_reinvest_rate,
-        BASIS_POINT_DENOMINATOR as u64,
-    );
-    let storage_fund_reinvestment = storage_fund_reward.split(
-        storage_fund_reinvestment_amount,
-    );
+        let storage_fund_reinvestment = storage_fund_reward.split(
+            storage_fund_reinvestment_amount,
+        );
 
         self.epoch = self.epoch + 1;
         // Sanity check to make sure we are advancing to the right epoch.
@@ -969,14 +962,13 @@ module sui_system::sui_system_state_inner {
         let computation_reward_amount_before_distribution = balance::value(&computation_reward);
         let storage_fund_reward_amount_before_distribution = balance::value(&storage_fund_reward);
 
+
         validator_set::advance_epoch(
             &mut self.validators,
             &mut computation_reward,
             &mut storage_fund_reward,
             &mut self.validator_report_records,
             reward_slashing_rate,
-            self.parameters.validator_low_stake_threshold,
-            self.parameters.validator_very_low_stake_threshold,
             self.parameters.validator_low_stake_grace_period,
             stable_rate,
             ctx,

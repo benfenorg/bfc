@@ -567,8 +567,6 @@ public(package) fun advance_epoch(
     storage_fund_reward: &mut Balance<BFC>,
     validator_report_records: &mut VecMap<address, VecSet<address>>,
     reward_slashing_rate: u64,
-    low_stake_threshold: u64,
-    very_low_stake_threshold: u64,
     low_stake_grace_period: u64,
     stable_rate: VecMap<ascii::String, u64>,
     ctx: &mut TxContext,
@@ -672,7 +670,7 @@ public(package) fun advance_epoch(
         ctx,
     );
     self.total_stake = new_total_stake;
-    voting_power::set_voting_power(&mut self.active_validators, new_total_stake);
+    voting_power::set_voting_power(&mut self.active_validators, stable_rate);
 
     // At this point, self.active_validators are updated for next epoch.
     // Now we process the staged validator metadata.
@@ -830,7 +828,7 @@ public fun total_stake(self: &ValidatorSet): u64 {
 
 public fun validator_total_stake_amount(self: &ValidatorSet, validator_address: address): u64 {
     let validator = get_validator_ref(&self.active_validators, validator_address);
-    validator.total_stake_amount()
+    validator.total_stake()
 }
 
 public fun validator_total_stake_amount_with_stable(
@@ -1288,7 +1286,24 @@ fun clean_report_records_leaving_validator(
     }
 }
 
-
+/// Sort all the pending removal indexes.
+fun sort_removal_list(withdraw_list: &mut vector<u64>) {
+    let length = withdraw_list.length();
+    let mut i = 1;
+    while (i < length) {
+        let cur = withdraw_list[i];
+        let mut j = i;
+        while (j > 0) {
+            j = j - 1;
+            if (withdraw_list[j] > cur) {
+                withdraw_list.swap(j, j + 1);
+            } else {
+                break
+            };
+        };
+        i = i + 1;
+    };
+}
 
 /// Process all active validators' pending stake deposits and withdraws.
 fun process_pending_stakes_and_withdraws(
