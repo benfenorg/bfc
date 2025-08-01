@@ -33,7 +33,8 @@ module sui_system::voting_power_tests {
 
 fun check(stakes: vector<u64>, voting_power: vector<u64>, ctx: &mut TxContext) {
     let mut validators = create_validators_with_stakes(stakes, ctx);
-    let total_stake = validator_set::calculate_total_stakes(&validators);
+    let rate_map = rate_vec_map();
+    let total_stake = validator_set::calculate_total_stakes(&validators, rate_map);
     voting_power::set_voting_power(&mut validators, total_stake);
 
     // get the voting powers of the validators

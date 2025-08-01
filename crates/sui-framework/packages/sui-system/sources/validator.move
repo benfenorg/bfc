@@ -483,7 +483,7 @@ public(package) fun convert_to_fungible_staked_sui(
     public(package) fun request_withdraw_stake(
         self: &mut Validator,
         staked_sui: StakedBfc,
-        ctx: &TxContext,
+        ctx: &mut TxContext,
     ): Balance<BFC> {
         let principal_amount = staked_sui.amount();
         let stake_activation_epoch = staked_sui.activation_epoch();
@@ -764,12 +764,7 @@ public(package) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<
     self.staking_pool.deposit_rewards(reward);
 }
 
-    /// Process pending stakes and withdraws, called at the end of the epoch.
-    public(package) fun process_pending_stakes_and_withdraws(self: &mut Validator, ctx: &mut TxContext) {
-        self.staking_pool.process_pending_stakes_and_withdraws(ctx);
-        // TODO: bring this assertion back when we are ready.
-        // assert!(stake_amount(self) == self.next_epoch_stake, EInvalidStakeAmount);
-    }
+
 /// Process pending stakes and withdraws, called at the end of the epoch.
 public(package) fun process_pending_stakes_and_withdraws(self: &mut Validator, ctx: &TxContext) {
     self.staking_pool.process_pending_stakes_and_withdraws(ctx);
@@ -1474,55 +1469,9 @@ public(package) fun get_staking_pool_ref(self: &Validator): &StakingPool {
         }
     }
 
-}
 
-    // CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.
-    // Creates a validator - bypassing the proof of possession check and other metadata
-    // validation in the process.
-    // Note: `proof_of_possession` MUST be a valid signature using sui_address and
-    // protocol_pubkey_bytes. To produce a valid PoP, run [fn test_proof_of_possession].
-    #[test_only]
-    public(package) fun new_for_testing(
-        sui_address: address,
-        protocol_pubkey_bytes: vector<u8>,
-        network_pubkey_bytes: vector<u8>,
-        worker_pubkey_bytes: vector<u8>,
-        proof_of_possession: vector<u8>,
-        name: vector<u8>,
-        description: vector<u8>,
-        image_url: vector<u8>,
-        project_url: vector<u8>,
-        net_address: vector<u8>,
-        p2p_address: vector<u8>,
-        primary_address: vector<u8>,
-        worker_address: vector<u8>,
-        mut initial_stake_option: Option<Balance<BFC>>,
-        gas_price: u64,
-        commission_rate: u64,
-        is_active_at_genesis: bool,
-        ctx: &mut TxContext
-    ): Validator {
-        let mut validator = new_from_metadata(
-            new_metadata(
-                sui_address,
-                protocol_pubkey_bytes,
-                network_pubkey_bytes,
-                worker_pubkey_bytes,
-                proof_of_possession,
-                name.to_ascii_string().to_string(),
-                description.to_ascii_string().to_string(),
-                url::new_unsafe_from_bytes(image_url),
-                url::new_unsafe_from_bytes(project_url),
-                net_address.to_ascii_string().to_string(),
-                p2p_address.to_ascii_string().to_string(),
-                primary_address.to_ascii_string().to_string(),
-                worker_address.to_ascii_string().to_string(),
-                bag::new(ctx),
-            ),
-            gas_price,
-            commission_rate,
-            ctx
-        );
+
+
 // CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.
 // Creates a validator - bypassing the proof of possession check and other metadata
 // validation in the process.

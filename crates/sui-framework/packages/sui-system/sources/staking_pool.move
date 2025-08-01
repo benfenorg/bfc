@@ -451,6 +451,8 @@ module sui_system::staking_pool {
     /// Allows calling `.amount()` on `StakedSui` to invoke `staked_sui_amount`
     public use fun staked_sui_amount as StakedBfc.amount;
 
+    public use fun stake_activation_epoch as StakedBfc.activation_epoch;
+
     public fun stake_activation_epoch(staked_bfc: &StakedBfc): u64 {
         staked_bfc.stake_activation_epoch
     }

@@ -696,6 +696,7 @@ public(package) fun advance_epoch(
     let new_total_stake = self.update_validator_positions_and_calculate_total_stake(
         low_stake_grace_period,
         validator_report_records,
+        stable_rate,
         ctx,
     );
     self.total_stake = new_total_stake;
@@ -710,6 +711,7 @@ fun update_validator_positions_and_calculate_total_stake(
     self: &mut ValidatorSet,
     low_stake_grace_period: u64,
     validator_report_records: &mut VecMap<address, VecSet<address>>,
+    stable_rate: VecMap<ascii::String, u64>,
     ctx: &mut TxContext,
 ): u64 {
     // take all pending validators out of the tablevec and put them in a local vector
@@ -719,8 +721,8 @@ fun update_validator_positions_and_calculate_total_stake(
     );
 
     // Note: we count the total stake of pending validators as well!
-    let pending_total_stake = calculate_total_stakes(&pending_active_validators);
-    let initial_total_stake = calculate_total_stakes(&self.active_validators) + pending_total_stake;
+    let pending_total_stake = calculate_total_stakes(&pending_active_validators, stable_rate);
+    let initial_total_stake = calculate_total_stakes(&self.active_validators, stable_rate) + pending_total_stake;
     let (
         min_joining_voting_power_threshold,
         low_voting_power_threshold,

@@ -19,6 +19,9 @@ module sui_system::sui_system_state_inner {
     use sui::table::Table;
     use sui::bag::Bag;
     use sui::bag;
+    use sui_system::stable_pool;
+    use sui_system::stable_pool::{StakedStable, PoolStableTokenExchangeRate};
+
 
     // same as in validator_set
     const ACTIVE_VALIDATOR_ONLY: u8 = 1;
@@ -951,9 +954,9 @@ module sui_system::sui_system_state_inner {
 
     let mut storage_fund_reward = computation_reward.split(storage_fund_reward_amount as u64);
     let storage_fund_reinvestment_amount = mul_div!(
-        storage_fund_reward_amount,
+        storage_fund_reward_amount as u64,
         storage_fund_reinvest_rate,
-        BASIS_POINT_DENOMINATOR,
+        BASIS_POINT_DENOMINATOR as u64,
     );
     let storage_fund_reinvestment = storage_fund_reward.split(
         storage_fund_reinvestment_amount,
