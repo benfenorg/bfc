@@ -354,39 +354,11 @@ public(package) fun request_add_validator(self: &mut ValidatorSet, min_joining_s
         EDuplicateValidator
     );
     assert!(validator.is_preactive(), EValidatorNotCandidate);
-    assert!(validator.total_stake_amount() >= min_joining_stake_amount, EMinJoiningStakeNotReached);
+    assert!(validator.total_stake() >= min_joining_stake_amount, EMinJoiningStakeNotReached);
 
     self.pending_active_validators.push_back(validator);
 }
 
-public(package) fun request_add_validator(self: &mut ValidatorSet, ctx: &TxContext) {
-    let validator_address = ctx.sender();
-    assert!(self.validator_candidates.contains(validator_address), ENotValidatorCandidate);
-    let validator = self.validator_candidates.remove(validator_address).destroy();
-    assert!(
-        !self.is_duplicate_with_active_validator(&validator)
-            && !self.is_duplicate_with_pending_validator(&validator),
-        EDuplicateValidator,
-    );
-    assert!(validator.is_preactive(), EValidatorNotCandidate);
-    assert!(self.can_join(validator.total_stake(), ctx), EMinJoiningStakeNotReached);
-
-    self.pending_active_validators.push_back(validator);
-}
-
-/// Return `true` if a  candidate validator with `stake` will have sufficeint voting power to join the validator set
-fun can_join(self: &ValidatorSet, stake: u64, ctx: &TxContext): bool {
-    let (min_joining_voting_power, _, _) = self.get_voting_power_thresholds(ctx);
-
-    // if the validator will have at least `min_joining_voting_power` after joining, they can join.
-    // this formula comes from SIP-39: https://github.com/sui-foundation/sips/blob/main/sips/sip-39.md
-    let future_total_stake = self.total_stake + stake;
-    let future_validator_voting_power = voting_power::derive_raw_voting_power(
-        stake,
-        future_total_stake,
-    );
-    future_validator_voting_power >= min_joining_voting_power
-}
 
 /// return (min, low, very low voting power) thresholds
 fun get_voting_power_thresholds(self: &ValidatorSet, ctx: &TxContext): (u64, u64, u64) {

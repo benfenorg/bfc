@@ -587,7 +587,7 @@ public(package) fun request_set_gas_price(
         let all_stable_total_stake = get_stable_staking_total(self, &mut stable_total_stake, stable_rate);
         if (all_stable_total_stake > 0) {
             //distribute for bfc pool
-            let bfc_total_stake = stake_amount(self);
+            let bfc_total_stake = total_stake(self);
             let all_total_stake = all_stable_total_stake + bfc_total_stake;
             let bfc_dis_reward = (total_reward as u128) * (bfc_total_stake as u128) / (all_total_stake as u128);
             staking_pool::deposit_rewards(&mut self.staking_pool, balance::split(&mut reward, (bfc_dis_reward as u64)));
@@ -766,7 +766,7 @@ public(package) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<
 
 
 /// Process pending stakes and withdraws, called at the end of the epoch.
-public(package) fun process_pending_stakes_and_withdraws(self: &mut Validator, ctx: &TxContext) {
+public(package) fun process_pending_stakes_and_withdraws(self: &mut Validator, ctx: &mut TxContext) {
     self.staking_pool.process_pending_stakes_and_withdraws(ctx);
     // TODO: bring this assertion back when we are ready.
     // assert!(stake_amount(self) == self.next_epoch_stake, EInvalidStakeAmount);
