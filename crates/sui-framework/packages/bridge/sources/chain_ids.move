@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-module bridge::chain_ids {
+module bridge::chain_ids;
 
 // Chain IDs
 const SUI_MAINNET: u8 = 0;
@@ -527,7 +527,7 @@ fun test_chains_ok() {
         }
     }
 #[test]
-fun test_routes() {
+    fun test_routes() {
     let valid_routes = vector[
         BridgeRoute { source: SUI_MAINNET, destination: ETH_MAINNET },
         BridgeRoute { source: ETH_MAINNET, destination: SUI_MAINNET },
@@ -703,7 +703,9 @@ fun test_routes() {
     fun test_routes_err_base_4() {
         get_route(BaseMainnet, SUI_TESTNET);
     }
-#[test, expected_failure(abort_code = EInvalidBridgeRoute)]
-fun test_routes_err_eth_4() {
-    get_route(ETH_MAINNET, SUI_TESTNET);
+
+    #[test, expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_eth_4() {
+        get_route(ETH_MAINNET, SUI_TESTNET);
+    }
 }
