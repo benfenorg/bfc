@@ -19,7 +19,7 @@ const CLIFF_TIME: u64 = 1_000;
 
 fun test_setup(): ts::Scenario {
     let mut ts = ts::begin(CONTROLLER_ADDR);
-    let coins = coin::mint_for_testing<SUI>(FULLY_VESTED_AMOUNT, ts.ctx());
+    let coins = coin::mint_for_testing<BFC>(FULLY_VESTED_AMOUNT, ts.ctx());
     let now = clock::create_for_testing(ts.ctx());
     let wallet = new_wallet(coins, &now, CLIFF_TIME, ts.ctx());
     transfer::public_transfer(wallet, OWNER_ADDR);
@@ -31,7 +31,7 @@ fun test_setup(): ts::Scenario {
 #[expected_failure(abort_code = cliff::EInvalidCliffTime)]
 fun test_invalid_cliff_time() {
     let mut ts = ts::begin(CONTROLLER_ADDR);
-    let coins = coin::mint_for_testing<SUI>(FULLY_VESTED_AMOUNT, ts.ctx());
+    let coins = coin::mint_for_testing<BFC>(FULLY_VESTED_AMOUNT, ts.ctx());
     let now = clock::create_for_testing(ts.ctx());
     let wallet = new_wallet(coins, &now, 0, ts.ctx());
     transfer::public_transfer(wallet, OWNER_ADDR);
@@ -44,7 +44,7 @@ fun test_cliff_vesting() {
     let mut ts = test_setup();
     ts.next_tx(OWNER_ADDR);
     let mut now = clock::create_for_testing(ts.ctx());
-    let mut wallet = ts.take_from_sender<Wallet<SUI>>();
+    let mut wallet = ts.take_from_sender<Wallet<BFC>>();
 
     // check zero vested
     assert!(wallet.claimable(&now) == 0);

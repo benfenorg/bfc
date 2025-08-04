@@ -170,7 +170,7 @@ module sui::balance_tests {
 
     #[test]
     fun test_balance() {
-        let balance = balance::zero<SUI>();
+        let balance = balance::zero<BFC>();
         let another = balance::create_for_testing(1000);
 
         balance::join(&mut balance, another);

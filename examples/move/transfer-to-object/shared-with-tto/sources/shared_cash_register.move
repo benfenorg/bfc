@@ -87,7 +87,7 @@ public fun process_payment(
     register: &mut CashRegister,
     payment_ticket: Receiving<IdentifiedPayment>,
     ctx: &TxContext,
-): Coin<SUI> {
+): Coin<BFC> {
     let sender = tx_context::sender(ctx);
     assert!(
         vec_set::contains(&register.authorized_individuals, &sender) || sender == register.register_owner,
@@ -103,7 +103,7 @@ public fun process_tip(
     register: &mut CashRegister,
     earmarked_ticket: Receiving<EarmarkedPayment>,
     ctx: &TxContext,
-): Coin<SUI> {
+): Coin<BFC> {
     let payment: IdentifiedPayment = identified_payment::receive(
         &mut register.id,
         earmarked_ticket,

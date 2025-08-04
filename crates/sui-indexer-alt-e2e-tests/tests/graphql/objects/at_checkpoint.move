@@ -10,7 +10,7 @@ module P::M {
 
   public struct Wrapper has key, store {
     id: UID,
-    coin: Coin<SUI>,
+    coin: Coin<BFC>,
   }
 
   public fun wrap(coin: Coin<SUI>, ctx: &mut TxContext): Wrapper {

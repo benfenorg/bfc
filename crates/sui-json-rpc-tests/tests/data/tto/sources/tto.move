@@ -12,7 +12,7 @@ module tto::M1 {
         id: UID,
     }
 
-    public fun start(coin: Coin<SUI>, ctx: &mut TxContext) {
+    public fun start(coin: Coin<BFC>, ctx: &mut TxContext) {
         let a = A { id: object::new(ctx) };
         let a_address = object::id_address(&a);
 

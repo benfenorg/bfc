@@ -24,7 +24,7 @@ use sui::sui::SUI;
 
 public struct PaymentProcessed has copy, drop { payment_id: u64, amount: u64 }
 
-public fun process_payment(payment: IdentifiedPayment): Coin<SUI> {
+public fun process_payment(payment: IdentifiedPayment): Coin<BFC> {
     let (payment_id, coin) = identified_payment::unpack(payment);
     event::emit(PaymentProcessed { payment_id, amount: coin::value(&coin) });
     coin

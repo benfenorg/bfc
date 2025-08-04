@@ -1148,7 +1148,7 @@ public(package) fun active_validator_addresses(self: &SuiSystemStateInnerV2): ve
 }
 
 #[allow(lint(self_transfer))]
-/// Extract required Balance from vector of Coin<SUI>, transfer the remainder back to sender.
+/// Extract required Balance from vector of Coin<BFC>, transfer the remainder back to sender.
 fun extract_coin_balance(
     mut coins: vector<Coin<BFC>>,
     amount: Option<u64>,

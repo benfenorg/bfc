@@ -34,7 +34,7 @@ public fun get_policy(ctx: &mut TxContext): (TransferPolicy<Asset>, TransferPoli
 }
 
 /// Prepare: Get Sui
-public fun get_sui(amount: u64, ctx: &mut TxContext): Coin<SUI> {
+public fun get_sui(amount: u64, ctx: &mut TxContext): Coin<BFC> {
     coin::mint_for_testing(amount, ctx)
 }
 

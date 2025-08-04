@@ -19,7 +19,7 @@ fun test_setup(): ts::Scenario {
     let mut ts = ts::begin(CONTROLLED_ADDR);
     let _setup = ts.next_tx(CONTROLLED_ADDR);
     {
-        let coins = coin::mint_for_testing<SUI>(FULLY_VESTED_AMOUNT, ts.ctx());
+        let coins = coin::mint_for_testing<BFC>(FULLY_VESTED_AMOUNT, ts.ctx());
         new_wallet(coins, OWNER_ADDR, CONTROLLED_ADDR, ts.ctx());
     };
     ts
@@ -30,7 +30,7 @@ fun test_setup(): ts::Scenario {
 fun test_owner_is_controller() {
     let mut ts = ts::begin(OWNER_ADDR);
     ts.next_tx(OWNER_ADDR);
-    let coins = coin::mint_for_testing<SUI>(FULLY_VESTED_AMOUNT, ts.ctx());
+    let coins = coin::mint_for_testing<BFC>(FULLY_VESTED_AMOUNT, ts.ctx());
     new_wallet(coins, OWNER_ADDR, OWNER_ADDR, ts.ctx());
     ts::end(ts);
 }
@@ -40,7 +40,7 @@ fun test_owner_is_controller() {
 fun test_claim_by_unauthorized_owner() {
     let mut ts = test_setup();
     ts.next_tx(CONTROLLED_ADDR);
-    let mut wallet = ts.take_shared<Wallet<SUI>>();
+    let mut wallet = ts.take_shared<Wallet<BFC>>();
     let coins = wallet.claim(ts.ctx());
     transfer::public_transfer(coins, CONTROLLED_ADDR);
     ts::return_shared(wallet);
@@ -52,7 +52,7 @@ fun test_claim_by_unauthorized_owner() {
 fun test_new_milestone_by_unathorized_controller() {
     let mut ts = test_setup();
     ts.next_tx(OWNER_ADDR);
-    let mut wallet = ts.take_shared<Wallet<SUI>>();
+    let mut wallet = ts.take_shared<Wallet<BFC>>();
     wallet.update_milestone_percentage(50, ts.ctx());
     ts::return_shared(wallet);
     ts::end(ts);

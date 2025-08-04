@@ -27,7 +27,7 @@ fun test_setup(
     back_percentage: u8,
 ): ts::Scenario {
     let mut ts = ts::begin(CONTROLLER_ADDR);
-    let coins = coin::mint_for_testing<SUI>(FULLY_VESTED_AMOUNT, ts.ctx());
+    let coins = coin::mint_for_testing<BFC>(FULLY_VESTED_AMOUNT, ts.ctx());
     let now = clock::create_for_testing(ts.ctx());
     let wallet = new_wallet(
         coins,

@@ -20,7 +20,7 @@ const START_TIME: u64 = 1;
 
 fun test_setup(): ts::Scenario {
     let mut ts = ts::begin(CONTROLLER_ADDR);
-    let coins = coin::mint_for_testing<SUI>(FULLY_VESTED_AMOUNT, ts.ctx());
+    let coins = coin::mint_for_testing<BFC>(FULLY_VESTED_AMOUNT, ts.ctx());
     let now = clock::create_for_testing(ts.ctx());
     let wallet = new_wallet(coins, &now, START_TIME, VESTING_DURATION, ts.ctx());
     transfer::public_transfer(wallet, OWNER_ADDR);

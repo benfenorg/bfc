@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-/// Coin<SUI> is the token used to pay for gas in Sui.
+/// Coin<BFC> is the token used to pay for gas in Sui.
 /// It has 9 decimals, and the smallest unit (10^-9) is called "mist".
 module sui::sui {
     use std::option;
@@ -32,7 +32,7 @@ module sui::sui {
     #[allow(unused_function)]
     /// Register the `SUI` Coin to acquire its `Supply`.
     /// This should be called only once during genesis creation.
-    fun new(ctx: &mut TxContext): Balance<SUI> {
+    fun new(ctx: &mut TxContext): Balance<BFC> {
         assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
         assert!(tx_context::epoch(ctx) == 0, EAlreadyMinted);
 
@@ -53,7 +53,7 @@ module sui::sui {
         total_sui
     }
 
-    public entry fun transfer(c: coin::Coin<SUI>, recipient: address) {
+    public entry fun transfer(c: coin::Coin<BFC>, recipient: address) {
         transfer::public_transfer(c, recipient)
     }
 }

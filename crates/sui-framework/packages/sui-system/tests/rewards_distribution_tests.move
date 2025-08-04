@@ -261,7 +261,7 @@ fun stake_rewards() {
     // unstake 600 principal SUI
     runner.set_sender(STAKER_ADDR_2).unstake(0);
 
-    // additional 600 SUI of principal and 46 SUI of rewards withdrawn to Coin<SUI>
+    // additional 600 SUI of principal and 46 SUI of rewards withdrawn to Coin<BFC>
     // For this stake, the staking exchange rate is 100 : 140 and the unstaking
     // exchange rate is 528 : 750 -ish so the total sui withdraw will be:
     // (600 * 100 / 140) * 750 / 528 = ~608. Together with the 120 SUI we already have,

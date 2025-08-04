@@ -36,7 +36,7 @@ public fun unset<T>(policy: &mut TransferPolicy<T>, cap: &TransferPolicyCap<T>) 
 public fun pay<T>(
     policy: &mut TransferPolicy<T>,
     request: &mut TransferRequest<T>,
-    coin: Coin<SUI>,
+    coin: Coin<BFC>,
 ) {
     let paid = request.paid();
     let config: &Commission = policy::get_rule(Rule {}, policy);

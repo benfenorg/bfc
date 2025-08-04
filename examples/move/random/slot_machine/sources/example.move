@@ -25,11 +25,11 @@ public struct Game has key {
     id: UID,
     creator: address,
     epoch: u64,
-    balance: Balance<SUI>,
+    balance: Balance<BFC>,
 }
 
 /// Create a new game with a given initial reward for the current epoch.
-public fun create(reward: Coin<SUI>, ctx: &mut TxContext) {
+public fun create(reward: Coin<BFC>, ctx: &mut TxContext) {
     let amount = reward.value();
     assert!(amount > 0, EInvalidAmount);
     transfer::share_object(Game {
@@ -41,7 +41,7 @@ public fun create(reward: Coin<SUI>, ctx: &mut TxContext) {
 }
 
 /// Creator can withdraw remaining balance if the game is over.
-public fun close(game: Game, ctx: &mut TxContext): Coin<SUI> {
+public fun close(game: Game, ctx: &mut TxContext): Coin<BFC> {
     assert!(ctx.epoch() > game.epoch, EInvalidEpoch);
     assert!(ctx.sender() == game.creator, EInvalidSender);
     let Game { id, creator: _, epoch: _, balance } = game;
@@ -52,7 +52,7 @@ public fun close(game: Game, ctx: &mut TxContext): Coin<SUI> {
 /// Play one turn of the game.
 ///
 /// The function consumes the same amount of gas independently of the random outcome.
-entry fun play(game: &mut Game, r: &Random, coin: &mut Coin<SUI>, ctx: &mut TxContext) {
+entry fun play(game: &mut Game, r: &Random, coin: &mut Coin<BFC>, ctx: &mut TxContext) {
     assert!(ctx.epoch() == game.epoch, EInvalidEpoch);
     assert!(coin.value() > 0, EInvalidAmount);
 

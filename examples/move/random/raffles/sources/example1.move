@@ -31,7 +31,7 @@ public struct Game has key {
     participants: u32,
     end_time: u64,
     winner: Option<u32>,
-    balance: Balance<SUI>,
+    balance: Balance<BFC>,
 }
 
 /// Ticket represents a participant in a single game.
@@ -71,7 +71,7 @@ entry fun determine_winner(game: &mut Game, r: &Random, clock: &Clock, ctx: &mut
 /// Anyone can play and receive a ticket.
 public fun buy_ticket(
     game: &mut Game,
-    coin: Coin<SUI>,
+    coin: Coin<BFC>,
     clock: &Clock,
     ctx: &mut TxContext,
 ): Ticket {
@@ -89,7 +89,7 @@ public fun buy_ticket(
 }
 
 /// The winner can take the prize.
-public fun redeem(ticket: Ticket, game: Game, ctx: &mut TxContext): Coin<SUI> {
+public fun redeem(ticket: Ticket, game: Game, ctx: &mut TxContext): Coin<BFC> {
     assert!(object::id(&game) == ticket.game_id, EGameMismatch);
     assert!(game.winner.contains(&ticket.participant_index), ENotWinner);
     destroy_ticket(ticket);
