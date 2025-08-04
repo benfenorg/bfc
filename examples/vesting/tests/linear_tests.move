@@ -6,7 +6,7 @@ module vesting::linear_tests;
 
 use sui::clock;
 use sui::coin;
-use sui::sui::SUI;
+use sui::bfc::BFC;
 use sui::test_scenario as ts;
 use vesting::linear::{Self, new_wallet, Wallet};
 

@@ -4,7 +4,7 @@
 module usdc_usage::example;
 
 use sui::coin::Coin;
-use sui::sui::SUI;
+use sui::bfc::BFC;
 use usdc::usdc::USDC;
 
 public struct Sword has key, store {

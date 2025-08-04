@@ -5,7 +5,7 @@
 module vesting::milestone_tests;
 
 use sui::coin;
-use sui::sui::SUI;
+use sui::bfc::BFC;
 use sui::test_scenario as ts;
 use vesting::milestone::{Self, new_wallet, Wallet};
 

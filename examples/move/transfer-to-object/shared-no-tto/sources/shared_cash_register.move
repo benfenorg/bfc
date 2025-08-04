@@ -7,7 +7,7 @@ use common::identified_payment::{Self, IdentifiedPayment};
 use std::string::String;
 use sui::coin::Coin;
 use sui::dynamic_field;
-use sui::sui::SUI;
+use sui::bfc::BFC;
 use sui::vec_set::{Self, VecSet};
 
 const EInvalidOwner: u64 = 0;

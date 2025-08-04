@@ -7,7 +7,7 @@ module examples::coffee;
 
 use sui::balance::{Self, Balance};
 use sui::coin::{Self, TreasuryCap, Coin};
-use sui::sui::SUI;
+use sui::bfc::BFC;
 use sui::token::{Self, Token};
 use sui::tx_context::sender;
 

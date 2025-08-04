@@ -6,7 +6,7 @@
 //# publish
 module P::M {
   use sui::coin::Coin;
-  use sui::sui::SUI;
+  use sui::bfc::BFC;
 
   public struct Wrapper has key, store {
     id: UID,

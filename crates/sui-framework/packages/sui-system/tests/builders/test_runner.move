@@ -8,7 +8,7 @@ module sui_system::test_runner;
 
 use sui::balance::{Self, Balance};
 use sui::coin::{Self, Coin};
-use sui::sui::SUI;
+use sui::bfc::BFC;
 use sui::test_scenario::{Self, Scenario};
 use sui_system::stake_subsidy;
 use sui_system::staking_pool::StakedSui;

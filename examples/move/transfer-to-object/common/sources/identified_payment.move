@@ -7,7 +7,7 @@ module common::identified_payment;
 use sui::coin::{Self, Coin};
 use sui::dynamic_field;
 use sui::event;
-use sui::sui::SUI;
+use sui::bfc::BFC;
 use sui::transfer::Receiving;
 
 const ENotEarmarkedForSender: u64 = 0;

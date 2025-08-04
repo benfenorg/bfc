@@ -10,7 +10,7 @@ module sui::kiosk_tests;
 
 use sui::coin;
 use sui::kiosk_test_utils::{Self as test, Asset};
-use sui::sui::SUI;
+use sui::bfc::BFC;
 
 const AMT: u64 = 10_000;
 

@@ -616,11 +616,7 @@ module sui_system::validator_set_tests {
     scenario_val.end();
 }
 
-    #[test]
-    fun test_add_candidate_then_remove() {
-        let mut scenario_val = test_scenario::begin(@0x0);
-        let scenario = &mut scenario_val;
-        let ctx = test_scenario::ctx(scenario);
+
 #[test]
 fun add_candidate_then_remove() {
     let mut scenario_val = test_scenario::begin(@0x0);
@@ -675,16 +671,6 @@ fun add_candidate_then_remove() {
     scenario_val.end();
 }
 
-    #[test]
-    fun test_low_stake_departure() {
-        let mut scenario_val = test_scenario::begin(@0x0);
-        let scenario = &mut scenario_val;
-        let ctx = test_scenario::ctx(scenario);
-        // Create 4 validators.
-        let v1 = create_validator(@0x1, 1, 1, true, ctx); // 100 SUI of stake
-        let v2 = create_validator(@0x2, 4, 1, true, ctx); // 400 SUI of stake
-        let v3 = create_validator(@0x3, 10, 1, true, ctx); // 1000 SUI of stake
-        let v4 = create_validator(@0x4, 4, 1, true, ctx); // 400 SUI of stake
 #[test]
 #[expected_failure(abort_code = validator_set::ENotAValidator)]
 fun request_add_then_pull_stake() {
@@ -900,40 +886,6 @@ fun low_voting_power_recovery() {
     scenario_val.end();
 }
 
-        let mut scenario_val = test_scenario::begin(@0x1);
-        let scenario = &mut scenario_val;
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x1, @0x2, @0x3, @0x4]);
-
-        advance_epoch_with_low_stake_params(
-            &mut validator_set, 500, 200, 3, scenario
-        );
-
-        // v1 is kicked out because their stake 100 is less than the very low stake threshold
-        // which is 200.
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x2, @0x3, @0x4]);
-
-        advance_epoch_with_low_stake_params(
-            &mut validator_set, 500, 200, 3, scenario
-        );
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x2, @0x3, @0x4]);
-
-        advance_epoch_with_low_stake_params(
-            &mut validator_set, 500, 200, 3, scenario
-        );
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x2, @0x3, @0x4]);
-
-        // Add some stake to @0x4 to get her out of the danger zone.
-        test_scenario::next_tx(scenario, @0x42);
-        {
-            let ctx = test_scenario::ctx(scenario);
-            let stake = validator_set::request_add_stake(
-                &mut validator_set,
-                @0x4,
-                balance::create_for_testing(500 * MIST_PER_SUI),
-                ctx,
-            );
-            transfer::public_transfer(stake, @0x42);
-        };
 #[test]
 fun add_then_increase_stake_of_others() {
     let mut scenario_val = test_scenario::begin(@0x0);
@@ -1196,10 +1148,7 @@ fun create_validator_with_initial_stake(
     validator
 }
 
-    fun hint_to_ascii(hint: u8): vector<u8> {
-        let ascii_bytes = vector[hint / 100 + 65, hint % 100 / 10 + 65, hint % 10 + 65];
-        ascii::into_bytes(ascii::string(ascii_bytes))
-    }
+
 fun hint_to_ascii(hint: u8): vector<u8> {
     let ascii_bytes = vector[hint / 100 + 65, hint % 100 / 10 + 65, hint % 10 + 65];
     ascii_bytes.to_ascii_string().into_bytes()

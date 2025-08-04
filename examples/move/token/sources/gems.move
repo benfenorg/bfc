@@ -31,7 +31,7 @@ module examples::gem {
     use std::string::{Self, String};
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin, TreasuryCap};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::token::{Self, Token, ActionRequest};
     use sui::tx_context::sender;
 

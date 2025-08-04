@@ -15,7 +15,7 @@ use sui::coin::{Self, Coin};
 use sui::kiosk::{Kiosk, KioskOwnerCap};
 use sui::kiosk_extension;
 use sui::package::Publisher;
-use sui::sui::SUI;
+use sui::bfc::BFC;
 use sui::transfer_policy::{Self, TransferPolicy, TransferPolicyCap, has_rule};
 
 // === Imports ===

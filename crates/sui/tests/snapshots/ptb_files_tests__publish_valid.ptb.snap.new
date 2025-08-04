@@ -1,0 +1,24 @@
+---
+source: crates/sui/tests/ptb_files_tests.rs
+assertion_line: 98
+expression: "results.join(\"\\n\")"
+---
+ === PREVIEW === 
+╭────────────────────────────────────────────╮
+│ PTB Preview                                │
+├─────────┬──────────────────────────────────┤
+│ command │ values                           │
+├─────────┼──────────────────────────────────┤
+│ publish │ tests/ptb_files/publish/test_pkg │
+╰─────────┴──────────────────────────────────╯
+ === BUILDING PTB ERRORS === 
+  × Error when processing PTB
+   ╭────
+ 1 │ --publish tests/ptb_files/publish/test_pkg 
+   · ─────────────────────┬────────────────────
+   ·                      ╰─┤ Failed to build Move modules: Failed to resolve dependencies for package 'test_pkg'
+   ·                        │ 
+   ·                        │ Caused by:
+   ·                        │     0: Fetching 'BfcSystem'
+   ·                        │     1: Failed to reset to latest Git state 'a5738a8f25f8-dirty' for package 'BfcSystem', to skip set --skip-fetch-latest-git-deps | Exit status: exit status: 128.
+   ╰────

@@ -11,7 +11,7 @@ use sui::clock::Clock;
 use sui::coin::{Self, Coin};
 use sui::dynamic_field as df;
 use sui::object_table::{Self, ObjectTable};
-use sui::sui::SUI;
+use sui::bfc::BFC;
 
 const EInvalidPermission: u64 = 1;
 const ENotEnoughBalance: u64 = 2;

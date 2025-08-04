@@ -14,7 +14,7 @@ use sui::balance::{Self, Balance};
 use sui::clock::Clock;
 use sui::coin::{Self, Coin};
 use sui::random::{Random, new_generator};
-use sui::sui::SUI;
+use sui::bfc::BFC;
 
 /// Error codes
 const EGameInProgress: u64 = 0;

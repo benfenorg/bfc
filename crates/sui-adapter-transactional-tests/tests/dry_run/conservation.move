@@ -8,7 +8,7 @@
 //# publish
 
 module test::m {
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::coin::Coin;
 
     public fun transfer_back(c: Coin<BFC>, ctx: &mut TxContext) {

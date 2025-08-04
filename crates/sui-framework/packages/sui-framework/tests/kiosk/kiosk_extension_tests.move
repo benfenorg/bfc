@@ -7,7 +7,6 @@ module sui::kiosk_marketplace_ext {
     use sui::coin::Coin;
     use sui::kiosk::{Self, KioskOwnerCap, Kiosk, PurchaseCap};
     use sui::kiosk_extension as ext;
-    use sui::sui::SUI;
     use sui::transfer_policy::{Self as policy, TransferPolicy, TransferRequest};
 
     /// Trying to access an owner-only action.

@@ -6,7 +6,7 @@ module vesting::hybrid_tests;
 
 use sui::clock;
 use sui::coin;
-use sui::sui::SUI;
+use sui::bfc::BFC;
 use sui::test_scenario as ts;
 use vesting::hybrid::{new_wallet, Wallet};
 

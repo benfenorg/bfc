@@ -7,7 +7,7 @@
 module sui::fixed_commission;
 
 use sui::coin::Coin;
-use sui::sui::SUI;
+use sui::bfc::BFC;
 use sui::transfer_policy::{Self as policy, TransferPolicy, TransferRequest, TransferPolicyCap};
 
 /// Expected amount does not match the passed one.

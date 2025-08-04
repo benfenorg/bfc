@@ -1074,11 +1074,7 @@ fun add_preactive_remove_post_active() {
         test_scenario::end(scenario_val);
     }
 
-    #[test]
-    fun test_add_preactive_candidate_drop_out() {
-        set_up_sui_system_state();
-        let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
-        let scenario = &mut scenario_val;
+
 #[test]
 fun add_remove_stake_preactive_candidate() {
     let mut runner = test_runner::new().validators_initial_stake(100).validators_count(2).build();
@@ -1120,6 +1116,7 @@ fun add_remove_stake_preactive_candidate() {
 
     runner.finish();
 }
+
 
 #[test]
 // Scenario:

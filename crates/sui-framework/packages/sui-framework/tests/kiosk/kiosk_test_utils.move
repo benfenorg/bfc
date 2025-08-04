@@ -7,7 +7,7 @@ module sui::kiosk_test_utils;
 use sui::coin::{Self, Coin};
 use sui::kiosk::{Self, Kiosk, KioskOwnerCap};
 use sui::package::{Self, Publisher};
-use sui::sui::SUI;
+use sui::bfc::BFC;
 use sui::transfer_policy::{Self as policy, TransferPolicy, TransferPolicyCap};
 
 public struct OTW has drop {}

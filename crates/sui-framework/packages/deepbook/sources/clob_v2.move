@@ -9,7 +9,7 @@ module deepbook::clob_v2 {
     use sui::coin::{Self, Coin};
     use sui::event;
     use sui::linked_table::{Self, LinkedTable};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::table::{Self, Table, contains, borrow_mut};
 
     use deepbook::critbit::{Self, CritbitTree, borrow_mut_leaf_by_index, remove_leaf_by_index, borrow_leaf_by_index, borrow_leaf_by_key, find_leaf};
