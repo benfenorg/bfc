@@ -44,9 +44,11 @@ title: Module `bridge::limiter_fast_path`
 <b>use</b> <a href="../sui/event.md#sui_event">sui::event</a>;
 <b>use</b> <a href="../sui/hex.md#sui_hex">sui::hex</a>;
 <b>use</b> <a href="../sui/object.md#sui_object">sui::object</a>;
+<b>use</b> <a href="../sui/party.md#sui_party">sui::party</a>;
 <b>use</b> <a href="../sui/table.md#sui_table">sui::table</a>;
 <b>use</b> <a href="../sui/transfer.md#sui_transfer">sui::transfer</a>;
 <b>use</b> <a href="../sui/tx_context.md#sui_tx_context">sui::tx_context</a>;
+<b>use</b> <a href="../sui/vec_map.md#sui_vec_map">sui::vec_map</a>;
 </code></pre>
 
 
@@ -326,11 +328,20 @@ title: Module `bridge::limiter_fast_path`
 ## Constants
 
 
-<a name="bridge_limiter_fast_path_DEFAULT_TIME_WINDOW_HOURS"></a>
+<a name="bridge_limiter_fast_path_KEY"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_DEFAULT_TIME_WINDOW_HOURS">DEFAULT_TIME_WINDOW_HOURS</a>: u64 = 24;
+<pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_KEY">KEY</a>: vector&lt;u8&gt; = vector[108, 105, 109, 105, 116, 101, 114, 95, 102, 97, 115, 116, 95, 112, 97, 116, 104];
+</code></pre>
+
+
+
+<a name="bridge_limiter_fast_path_ELimiterFastPathRegistryAlreadyExists"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_ELimiterFastPathRegistryAlreadyExists">ELimiterFastPathRegistryAlreadyExists</a>: u64 = 0;
 </code></pre>
 
 
@@ -353,47 +364,11 @@ title: Module `bridge::limiter_fast_path`
 
 
 
-<a name="bridge_limiter_fast_path_ELimiterFastPathRegistryAlreadyExists"></a>
+<a name="bridge_limiter_fast_path_USER_LIMIT_5K_IN_BUSD"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_ELimiterFastPathRegistryAlreadyExists">ELimiterFastPathRegistryAlreadyExists</a>: u64 = 0;
-</code></pre>
-
-
-
-<a name="bridge_limiter_fast_path_KEY"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_KEY">KEY</a>: vector&lt;u8&gt; = vector[108, 105, 109, 105, 116, 101, 114, 95, 102, 97, 115, 116, 95, 112, 97, 116, 104];
-</code></pre>
-
-
-
-<a name="bridge_limiter_fast_path_TOKEN_ID_BUSD"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a>: u64 = 5;
-</code></pre>
-
-
-
-<a name="bridge_limiter_fast_path_USER_LIMIT_100_IN_BUSD"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_100_IN_BUSD">USER_LIMIT_100_IN_BUSD</a>: u64 = 100000000000;
-</code></pre>
-
-
-
-<a name="bridge_limiter_fast_path_USER_LIMIT_10_IN_BUSD"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_10_IN_BUSD">USER_LIMIT_10_IN_BUSD</a>: u64 = 10000000000;
+<pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_5K_IN_BUSD">USER_LIMIT_5K_IN_BUSD</a>: u64 = 5000000000000;
 </code></pre>
 
 
@@ -407,6 +382,15 @@ title: Module `bridge::limiter_fast_path`
 
 
 
+<a name="bridge_limiter_fast_path_USER_LIMIT_100_IN_BUSD"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_100_IN_BUSD">USER_LIMIT_100_IN_BUSD</a>: u64 = 100000000000;
+</code></pre>
+
+
+
 <a name="bridge_limiter_fast_path_USER_LIMIT_50_IN_BUSD"></a>
 
 
@@ -416,11 +400,29 @@ title: Module `bridge::limiter_fast_path`
 
 
 
-<a name="bridge_limiter_fast_path_USER_LIMIT_5K_IN_BUSD"></a>
+<a name="bridge_limiter_fast_path_USER_LIMIT_10_IN_BUSD"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_5K_IN_BUSD">USER_LIMIT_5K_IN_BUSD</a>: u64 = 5000000000000;
+<pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_10_IN_BUSD">USER_LIMIT_10_IN_BUSD</a>: u64 = 10000000000;
+</code></pre>
+
+
+
+<a name="bridge_limiter_fast_path_DEFAULT_TIME_WINDOW_HOURS"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_DEFAULT_TIME_WINDOW_HOURS">DEFAULT_TIME_WINDOW_HOURS</a>: u64 = 24;
+</code></pre>
+
+
+
+<a name="bridge_limiter_fast_path_TOKEN_ID_BUSD"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a>: u64 = 5;
 </code></pre>
 
 

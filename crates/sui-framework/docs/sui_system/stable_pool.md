@@ -64,11 +64,13 @@ title: Module `sui_system::stable_pool`
 <b>use</b> <a href="../sui/event.md#sui_event">sui::event</a>;
 <b>use</b> <a href="../sui/hex.md#sui_hex">sui::hex</a>;
 <b>use</b> <a href="../sui/object.md#sui_object">sui::object</a>;
+<b>use</b> <a href="../sui/party.md#sui_party">sui::party</a>;
 <b>use</b> <a href="../sui/table.md#sui_table">sui::table</a>;
 <b>use</b> <a href="../sui/transfer.md#sui_transfer">sui::transfer</a>;
 <b>use</b> <a href="../sui/tx_context.md#sui_tx_context">sui::tx_context</a>;
 <b>use</b> <a href="../sui/types.md#sui_types">sui::types</a>;
 <b>use</b> <a href="../sui/url.md#sui_url">sui::url</a>;
+<b>use</b> <a href="../sui/vec_map.md#sui_vec_map">sui::vec_map</a>;
 <b>use</b> <a href="../sui/vec_set.md#sui_vec_set">sui::vec_set</a>;
 </code></pre>
 
@@ -249,56 +251,12 @@ A self-custodial object holding the staked SUI tokens.
 ## Constants
 
 
-<a name="sui_system_stable_pool_EActivationOfInactivePool"></a>
+<a name="sui_system_stable_pool_MIN_STAKING_THRESHOLD"></a>
+
+StakedSui objects cannot be split to below this amount.
 
 
-
-<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EActivationOfInactivePool">EActivationOfInactivePool</a>: u64 = 16;
-</code></pre>
-
-
-
-<a name="sui_system_stable_pool_EDeactivationOfInactivePool"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EDeactivationOfInactivePool">EDeactivationOfInactivePool</a>: u64 = 11;
-</code></pre>
-
-
-
-<a name="sui_system_stable_pool_EDelegationOfZeroSui"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EDelegationOfZeroSui">EDelegationOfZeroSui</a>: u64 = 17;
-</code></pre>
-
-
-
-<a name="sui_system_stable_pool_EDelegationToInactivePool"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EDelegationToInactivePool">EDelegationToInactivePool</a>: u64 = 10;
-</code></pre>
-
-
-
-<a name="sui_system_stable_pool_EDestroyNonzeroBalance"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EDestroyNonzeroBalance">EDestroyNonzeroBalance</a>: u64 = 5;
-</code></pre>
-
-
-
-<a name="sui_system_stable_pool_EIncompatibleStakedSui"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EIncompatibleStakedSui">EIncompatibleStakedSui</a>: u64 = 12;
+<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_MIN_STAKING_THRESHOLD">MIN_STAKING_THRESHOLD</a>: u64 = 1000000000;
 </code></pre>
 
 
@@ -312,11 +270,20 @@ A self-custodial object holding the staked SUI tokens.
 
 
 
-<a name="sui_system_stable_pool_EInsufficientRewardsPoolBalance"></a>
+<a name="sui_system_stable_pool_EWrongPool"></a>
 
 
 
-<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EInsufficientRewardsPoolBalance">EInsufficientRewardsPoolBalance</a>: u64 = 4;
+<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EWrongPool">EWrongPool</a>: u64 = 1;
+</code></pre>
+
+
+
+<a name="sui_system_stable_pool_EWithdrawAmountCannotBeZero"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EWithdrawAmountCannotBeZero">EWithdrawAmountCannotBeZero</a>: u64 = 2;
 </code></pre>
 
 
@@ -330,11 +297,92 @@ A self-custodial object holding the staked SUI tokens.
 
 
 
+<a name="sui_system_stable_pool_EInsufficientRewardsPoolBalance"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EInsufficientRewardsPoolBalance">EInsufficientRewardsPoolBalance</a>: u64 = 4;
+</code></pre>
+
+
+
+<a name="sui_system_stable_pool_EDestroyNonzeroBalance"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EDestroyNonzeroBalance">EDestroyNonzeroBalance</a>: u64 = 5;
+</code></pre>
+
+
+
+<a name="sui_system_stable_pool_ETokenTimeLockIsSome"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_ETokenTimeLockIsSome">ETokenTimeLockIsSome</a>: u64 = 6;
+</code></pre>
+
+
+
+<a name="sui_system_stable_pool_EWrongDelegation"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EWrongDelegation">EWrongDelegation</a>: u64 = 7;
+</code></pre>
+
+
+
 <a name="sui_system_stable_pool_EPendingDelegationDoesNotExist"></a>
 
 
 
 <pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EPendingDelegationDoesNotExist">EPendingDelegationDoesNotExist</a>: u64 = 8;
+</code></pre>
+
+
+
+<a name="sui_system_stable_pool_ETokenBalancesDoNotMatchExchangeRate"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_ETokenBalancesDoNotMatchExchangeRate">ETokenBalancesDoNotMatchExchangeRate</a>: u64 = 9;
+</code></pre>
+
+
+
+<a name="sui_system_stable_pool_EDelegationToInactivePool"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EDelegationToInactivePool">EDelegationToInactivePool</a>: u64 = 10;
+</code></pre>
+
+
+
+<a name="sui_system_stable_pool_EDeactivationOfInactivePool"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EDeactivationOfInactivePool">EDeactivationOfInactivePool</a>: u64 = 11;
+</code></pre>
+
+
+
+<a name="sui_system_stable_pool_EIncompatibleStakedSui"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EIncompatibleStakedSui">EIncompatibleStakedSui</a>: u64 = 12;
+</code></pre>
+
+
+
+<a name="sui_system_stable_pool_EWithdrawalInSameEpoch"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EWithdrawalInSameEpoch">EWithdrawalInSameEpoch</a>: u64 = 13;
 </code></pre>
 
 
@@ -357,75 +405,29 @@ A self-custodial object holding the staked SUI tokens.
 
 
 
+<a name="sui_system_stable_pool_EActivationOfInactivePool"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EActivationOfInactivePool">EActivationOfInactivePool</a>: u64 = 16;
+</code></pre>
+
+
+
+<a name="sui_system_stable_pool_EDelegationOfZeroSui"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EDelegationOfZeroSui">EDelegationOfZeroSui</a>: u64 = 17;
+</code></pre>
+
+
+
 <a name="sui_system_stable_pool_EStakedSuiBelowThreshold"></a>
 
 
 
 <pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EStakedSuiBelowThreshold">EStakedSuiBelowThreshold</a>: u64 = 18;
-</code></pre>
-
-
-
-<a name="sui_system_stable_pool_ETokenBalancesDoNotMatchExchangeRate"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_ETokenBalancesDoNotMatchExchangeRate">ETokenBalancesDoNotMatchExchangeRate</a>: u64 = 9;
-</code></pre>
-
-
-
-<a name="sui_system_stable_pool_ETokenTimeLockIsSome"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_ETokenTimeLockIsSome">ETokenTimeLockIsSome</a>: u64 = 6;
-</code></pre>
-
-
-
-<a name="sui_system_stable_pool_EWithdrawAmountCannotBeZero"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EWithdrawAmountCannotBeZero">EWithdrawAmountCannotBeZero</a>: u64 = 2;
-</code></pre>
-
-
-
-<a name="sui_system_stable_pool_EWithdrawalInSameEpoch"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EWithdrawalInSameEpoch">EWithdrawalInSameEpoch</a>: u64 = 13;
-</code></pre>
-
-
-
-<a name="sui_system_stable_pool_EWrongDelegation"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EWrongDelegation">EWrongDelegation</a>: u64 = 7;
-</code></pre>
-
-
-
-<a name="sui_system_stable_pool_EWrongPool"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EWrongPool">EWrongPool</a>: u64 = 1;
-</code></pre>
-
-
-
-<a name="sui_system_stable_pool_MIN_STAKING_THRESHOLD"></a>
-
-StakedSui objects cannot be split to below this amount.
-
-
-<pre><code><b>const</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_MIN_STAKING_THRESHOLD">MIN_STAKING_THRESHOLD</a>: u64 = 1000000000;
 </code></pre>
 
 

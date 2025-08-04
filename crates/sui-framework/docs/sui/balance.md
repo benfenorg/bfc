@@ -25,7 +25,9 @@ custom coins with <code><a href="../sui/balance.md#sui_balance_Supply">Supply</a
 -  [Function `destroy_supply`](#sui_balance_destroy_supply)
 
 
-<pre><code><b>use</b> <a href="../sui/tx_context.md#sui_tx_context">sui::tx_context</a>;
+<pre><code><b>use</b> <a href="../std/option.md#std_option">std::option</a>;
+<b>use</b> <a href="../std/vector.md#std_vector">std::vector</a>;
+<b>use</b> <a href="../sui/tx_context.md#sui_tx_context">sui::tx_context</a>;
 </code></pre>
 
 
@@ -127,16 +129,6 @@ Sender is not @0x0 the system address.
 
 
 <pre><code><b>const</b> <a href="../sui/balance.md#sui_balance_ENotSystemAddress">ENotSystemAddress</a>: u64 = 3;
-</code></pre>
-
-
-
-<a name="sui_balance_ENotSUI"></a>
-
-System operation performed for a coin other than SUI
-
-
-<pre><code><b>const</b> <a href="../sui/balance.md#sui_balance_ENotSUI">ENotSUI</a>: u64 = 4;
 </code></pre>
 
 

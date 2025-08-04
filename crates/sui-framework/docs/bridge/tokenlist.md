@@ -142,56 +142,11 @@ including those that can be transferred from or to the Benfen chain.
 ## Constants
 
 
-<a name="bridge_tokenlist_EBridgeCenterTokenLisAlreadyExists"></a>
+<a name="bridge_tokenlist_TOKEN_ID_SUI"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_EBridgeCenterTokenLisAlreadyExists">EBridgeCenterTokenLisAlreadyExists</a>: u64 = 2;
-</code></pre>
-
-
-
-<a name="bridge_tokenlist_EBridgeTokenListRegistryAlreadyExists"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_EBridgeTokenListRegistryAlreadyExists">EBridgeTokenListRegistryAlreadyExists</a>: u64 = 1;
-</code></pre>
-
-
-
-<a name="bridge_tokenlist_EChainIDAndTokenIDNotExist"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_EChainIDAndTokenIDNotExist">EChainIDAndTokenIDNotExist</a>: u64 = 0;
-</code></pre>
-
-
-
-<a name="bridge_tokenlist_KEY"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_KEY">KEY</a>: vector&lt;u8&gt; = vector[98, 114, 105, 100, 103, 101, 95, 116, 111, 107, 101, 110, 95, 108, 105, 115, 116];
-</code></pre>
-
-
-
-<a name="bridge_tokenlist_TOKEN_ID_APTOS"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_APTOS">TOKEN_ID_APTOS</a>: u64 = 11;
-</code></pre>
-
-
-
-<a name="bridge_tokenlist_TOKEN_ID_BNB"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_BNB">TOKEN_ID_BNB</a>: u64 = 6;
+<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_SUI">TOKEN_ID_SUI</a>: u64 = 0;
 </code></pre>
 
 
@@ -205,24 +160,6 @@ including those that can be transferred from or to the Benfen chain.
 
 
 
-<a name="bridge_tokenlist_TOKEN_ID_BUSD"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a>: u64 = 5;
-</code></pre>
-
-
-
-<a name="bridge_tokenlist_TOKEN_ID_DOGE"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_DOGE">TOKEN_ID_DOGE</a>: u64 = 9;
-</code></pre>
-
-
-
 <a name="bridge_tokenlist_TOKEN_ID_ETH"></a>
 
 
@@ -232,11 +169,38 @@ including those that can be transferred from or to the Benfen chain.
 
 
 
-<a name="bridge_tokenlist_TOKEN_ID_LTC"></a>
+<a name="bridge_tokenlist_TOKEN_ID_USDC"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_LTC">TOKEN_ID_LTC</a>: u64 = 10;
+<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>: u64 = 3;
+</code></pre>
+
+
+
+<a name="bridge_tokenlist_TOKEN_ID_USDT"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>: u64 = 4;
+</code></pre>
+
+
+
+<a name="bridge_tokenlist_TOKEN_ID_BUSD"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a>: u64 = 5;
+</code></pre>
+
+
+
+<a name="bridge_tokenlist_TOKEN_ID_BNB"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_BNB">TOKEN_ID_BNB</a>: u64 = 6;
 </code></pre>
 
 
@@ -259,29 +223,65 @@ including those that can be transferred from or to the Benfen chain.
 
 
 
-<a name="bridge_tokenlist_TOKEN_ID_SUI"></a>
+<a name="bridge_tokenlist_TOKEN_ID_DOGE"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_SUI">TOKEN_ID_SUI</a>: u64 = 0;
+<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_DOGE">TOKEN_ID_DOGE</a>: u64 = 9;
 </code></pre>
 
 
 
-<a name="bridge_tokenlist_TOKEN_ID_USDC"></a>
+<a name="bridge_tokenlist_TOKEN_ID_LTC"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>: u64 = 3;
+<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_LTC">TOKEN_ID_LTC</a>: u64 = 10;
 </code></pre>
 
 
 
-<a name="bridge_tokenlist_TOKEN_ID_USDT"></a>
+<a name="bridge_tokenlist_TOKEN_ID_APTOS"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>: u64 = 4;
+<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_APTOS">TOKEN_ID_APTOS</a>: u64 = 11;
+</code></pre>
+
+
+
+<a name="bridge_tokenlist_KEY"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_KEY">KEY</a>: vector&lt;u8&gt; = vector[98, 114, 105, 100, 103, 101, 95, 116, 111, 107, 101, 110, 95, 108, 105, 115, 116];
+</code></pre>
+
+
+
+<a name="bridge_tokenlist_EChainIDAndTokenIDNotExist"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_EChainIDAndTokenIDNotExist">EChainIDAndTokenIDNotExist</a>: u64 = 0;
+</code></pre>
+
+
+
+<a name="bridge_tokenlist_EBridgeTokenListRegistryAlreadyExists"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_EBridgeTokenListRegistryAlreadyExists">EBridgeTokenListRegistryAlreadyExists</a>: u64 = 1;
+</code></pre>
+
+
+
+<a name="bridge_tokenlist_EBridgeCenterTokenLisAlreadyExists"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_EBridgeCenterTokenLisAlreadyExists">EBridgeCenterTokenLisAlreadyExists</a>: u64 = 2;
 </code></pre>
 
 

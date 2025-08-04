@@ -56,11 +56,13 @@ title: Module `bridge::bridge_fee`
 <b>use</b> <a href="../sui/event.md#sui_event">sui::event</a>;
 <b>use</b> <a href="../sui/hex.md#sui_hex">sui::hex</a>;
 <b>use</b> <a href="../sui/object.md#sui_object">sui::object</a>;
+<b>use</b> <a href="../sui/party.md#sui_party">sui::party</a>;
 <b>use</b> <a href="../sui/table.md#sui_table">sui::table</a>;
 <b>use</b> <a href="../sui/transfer.md#sui_transfer">sui::transfer</a>;
 <b>use</b> <a href="../sui/tx_context.md#sui_tx_context">sui::tx_context</a>;
 <b>use</b> <a href="../sui/types.md#sui_types">sui::types</a>;
 <b>use</b> <a href="../sui/url.md#sui_url">sui::url</a>;
+<b>use</b> <a href="../sui/vec_map.md#sui_vec_map">sui::vec_map</a>;
 <b>use</b> <a href="../sui/vec_set.md#sui_vec_set">sui::vec_set</a>;
 </code></pre>
 
@@ -187,11 +189,11 @@ Fee information struct supports fixed and percentage fee modes.
 ## Constants
 
 
-<a name="bridge_bridge_fee_EBridgeFeeChainIDAndTokenIDNotExpect"></a>
+<a name="bridge_bridge_fee_KEY"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_EBridgeFeeChainIDAndTokenIDNotExpect">EBridgeFeeChainIDAndTokenIDNotExpect</a>: u64 = 3;
+<pre><code><b>const</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_KEY">KEY</a>: vector&lt;u8&gt; = vector[98, 114, 105, 100, 103, 101, 95, 102, 101, 101];
 </code></pre>
 
 
@@ -205,20 +207,20 @@ Fee information struct supports fixed and percentage fee modes.
 
 
 
-<a name="bridge_bridge_fee_EBridgeFeeSettingWrong"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_EBridgeFeeSettingWrong">EBridgeFeeSettingWrong</a>: u64 = 4;
-</code></pre>
-
-
-
 <a name="bridge_bridge_fee_EBridgeFeeTypeNotSupport"></a>
 
 
 
 <pre><code><b>const</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_EBridgeFeeTypeNotSupport">EBridgeFeeTypeNotSupport</a>: u64 = 1;
+</code></pre>
+
+
+
+<a name="bridge_bridge_fee_EBridgeFeeChainIDAndTokenIDNotExpect"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_EBridgeFeeChainIDAndTokenIDNotExpect">EBridgeFeeChainIDAndTokenIDNotExpect</a>: u64 = 3;
 </code></pre>
 
 
@@ -232,6 +234,15 @@ Fee information struct supports fixed and percentage fee modes.
 
 
 
+<a name="bridge_bridge_fee_EBridgeFeeSettingWrong"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_EBridgeFeeSettingWrong">EBridgeFeeSettingWrong</a>: u64 = 4;
+</code></pre>
+
+
+
 <a name="bridge_bridge_fee_FEE_RATE_PRECISION"></a>
 
 Fee rates are expressed in millionths (1e6 precision)
@@ -239,15 +250,6 @@ e.g. 1% = 10000; 0.01% = 100; 0.0001% = 1
 
 
 <pre><code><b>const</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_FEE_RATE_PRECISION">FEE_RATE_PRECISION</a>: u64 = 1000000;
-</code></pre>
-
-
-
-<a name="bridge_bridge_fee_KEY"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_KEY">KEY</a>: vector&lt;u8&gt; = vector[98, 114, 105, 100, 103, 101, 95, 102, 101, 101];
 </code></pre>
 
 
