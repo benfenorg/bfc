@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 #[allow(unused_field,unused_function,unused_const,unused_use)]
 module bridge::bridge;
-    use sui::address;
+
+use sui::address;
     use std::ascii;
     use std::type_name;
     use sui::clock::Clock;
@@ -346,6 +347,44 @@ public struct Bridge has key {
         transfer::share_object(bridge);
     }
 
+
+fun load_inner(bridge: &Bridge): &BridgeInner {
+    let version = bridge.inner.version();
+
+    // TODO: Replace this with a lazy update function when we add a new version of the inner object.
+    assert!(version == CURRENT_VERSION, EWrongInnerVersion);
+    let inner: &BridgeInner = bridge.inner.load_value();
+    assert!(inner.bridge_version == version, EWrongInnerVersion);
+    inner
+}
+
+    fun load_inner_mut(bridge: &mut Bridge): &mut BridgeInner {
+        let version = bridge.inner.version();
+        // TODO: Replace this with a lazy update function when we add a new version of the inner object.
+        assert!(version == CURRENT_VERSION, EWrongInnerVersion);
+        let inner: &mut BridgeInner = bridge.inner.load_value_mut();
+        assert!(inner.bridge_version == version, EWrongInnerVersion);
+        inner
+    }
+
+    fun load_inner_mut_and_uid(bridge: &mut Bridge): (&mut BridgeInner ,&mut UID){
+        let version = bridge.inner.version();
+        // TODO: Replace this with a lazy update function when we add a new version of the inner object.
+        assert!(version == CURRENT_VERSION, EWrongInnerVersion);
+        let inner: &mut BridgeInner = bridge.inner.load_value_mut();
+        assert!(inner.bridge_version == version, EWrongInnerVersion);
+        (inner,&mut bridge.id)
+    }
+
+    fun load_inner_and_uid(bridge: &Bridge): (&BridgeInner ,&UID){
+        let version = bridge.inner.version();
+        // TODO: Replace this with a lazy update function when we add a new version of the inner object.
+        assert!(version == CURRENT_VERSION, EWrongInnerVersion);
+        let inner = bridge.inner.load_value<BridgeInner>();
+        assert!(inner.bridge_version == version, EWrongInnerVersion);
+        (inner,&bridge.id)
+    }
+
     #[allow(unused_function)]
     fun init_bridge_committee(
         bridge: &mut Bridge,
@@ -448,8 +487,8 @@ public fun send_token<T>(
     assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
     assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
 
-        let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::token());
-        let token_id = inner.treasury.token_id<T>();
+    let bridge_seq_num =  inner.get_current_seq_num_and_increment(message_types::token());
+    let token_id = inner.treasury.token_id<T>();
         let token_amount = token.balance().value();
         assert!(token_amount > 0, ETokenValueIsZero);
         assert!(token_id != 5, EUseSendBusd);
@@ -476,16 +515,6 @@ public fun send_token<T>(
             hex::decode(b""),
             0u16, // event_idx
         );
-    // create bridge message
-    let message = message::create_token_bridge_message(
-        inner.chain_id,
-        bridge_seq_num,
-        address::to_bytes(ctx.sender()),
-        target_chain,
-        target_address,
-        token_id,
-        token_amount,
-    );
 
         // burn / escrow token, unsupported coins will fail in this step
         inner.treasury.burn(token);
@@ -514,6 +543,8 @@ public fun send_token<T>(
             },
         );
     }
+    
+    
 
     public fun send_busd<T>(
         bridge: &mut Bridge,
@@ -1555,9 +1586,7 @@ public fun execute_system_message(
         );
     }
 
-    //////////////////////////////////////////////////////
-    // DevInspect Functions for Read
-    //
+
 //////////////////////////////////////////////////////
 // DevInspect Functions for Read
 //
@@ -1718,42 +1747,6 @@ fun get_token_transfer_action_signatures(
 // Internal functions
 //
 
-fun load_inner(bridge: &Bridge): &BridgeInner {
-    let version = bridge.inner.version();
-
-    // TODO: Replace this with a lazy update function when we add a new version of the inner object.
-    assert!(version == CURRENT_VERSION, EWrongInnerVersion);
-    let inner: &BridgeInner = bridge.inner.load_value();
-    assert!(inner.bridge_version == version, EWrongInnerVersion);
-    inner
-}
-
-    fun load_inner_mut(bridge: &mut Bridge): &mut BridgeInner {
-        let version = bridge.inner.version();
-        // TODO: Replace this with a lazy update function when we add a new version of the inner object.
-        assert!(version == CURRENT_VERSION, EWrongInnerVersion);
-        let inner: &mut BridgeInner = bridge.inner.load_value_mut();
-        assert!(inner.bridge_version == version, EWrongInnerVersion);
-        inner
-    }
-
-    fun load_inner_mut_and_uid(bridge: &mut Bridge): (&mut BridgeInner ,&mut UID){
-        let version = bridge.inner.version();
-        // TODO: Replace this with a lazy update function when we add a new version of the inner object.
-        assert!(version == CURRENT_VERSION, EWrongInnerVersion);
-        let inner: &mut BridgeInner = bridge.inner.load_value_mut();
-        assert!(inner.bridge_version == version, EWrongInnerVersion);
-        (inner,&mut bridge.id)
-    }
-
-    fun load_inner_and_uid(bridge: &Bridge): (&BridgeInner ,&UID){
-        let version = bridge.inner.version();
-        // TODO: Replace this with a lazy update function when we add a new version of the inner object.
-        assert!(version == CURRENT_VERSION, EWrongInnerVersion);
-        let inner = bridge.inner.load_value<BridgeInner>();
-        assert!(inner.bridge_version == version, EWrongInnerVersion);
-        (inner,&bridge.id)
-    }
 
 
 // Claim token from approved bridge message

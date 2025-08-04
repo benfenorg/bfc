@@ -5,46 +5,39 @@ module sui_system::genesis;
 
 use sui::balance::{Self, Balance};
 use sui::bfc::{Self, BFC};
+use sui_system::stake_subsidy;
 use sui_system::sui_system;
+use sui_system::sui_system_state_inner;
 use sui_system::validator::{Self, Validator};
 use sui_system::validator_set;
-use sui_system::sui_system_state_inner;
-use sui_system::stake_subsidy;
 
-public struct GenesisValidatorMetadata has drop, copy {
+public struct GenesisValidatorMetadata has copy, drop {
     name: vector<u8>,
     description: vector<u8>,
     image_url: vector<u8>,
     project_url: vector<u8>,
-
     sui_address: address,
-
     gas_price: u64,
     commission_rate: u64,
-
     protocol_public_key: vector<u8>,
     proof_of_possession: vector<u8>,
-
     network_public_key: vector<u8>,
     worker_public_key: vector<u8>,
-
     network_address: vector<u8>,
     p2p_address: vector<u8>,
     primary_address: vector<u8>,
     worker_address: vector<u8>,
 }
 
-public struct GenesisChainParameters has drop, copy {
+public struct GenesisChainParameters has copy, drop {
     protocol_version: u64,
     chain_start_timestamp_ms: u64,
     epoch_duration_ms: u64,
-
     // Stake Subsidy parameters
     stake_subsidy_start_epoch: u64,
     stake_subsidy_initial_distribution_amount: u64,
     stake_subsidy_period_length: u64,
     stake_subsidy_decrease_rate: u16,
-
     // Validator committee parameters
     max_validator_count: u64,
     min_validator_joining_stake: u64,
@@ -61,7 +54,6 @@ public struct TokenDistributionSchedule {
 public struct TokenAllocation {
     recipient_address: address,
     amount_mist: u64,
-
     /// Indicates if this allocation should be staked at genesis and with which validator
     staked_with_validator: Option<address>,
 }
@@ -85,7 +77,6 @@ fun create(
     token_distribution_schedule: TokenDistributionSchedule,
     ctx: &mut TxContext,
 ) {
-
     // Ensure this is only called at genesis
     assert!(ctx.epoch() == 0, ENotCalledAtGenesis);
 
@@ -135,94 +126,84 @@ fun create(
             EDuplicateValidator,
         );
 
-            validators.push_back(validator);
-        });
+        validators.push_back(validator);
+    });
 
-        let TokenDistributionSchedule {
-            stake_subsidy_fund_mist,
-            allocations,
-        } = token_distribution_schedule;
+    let TokenDistributionSchedule {
+        stake_subsidy_fund_mist,
+        allocations,
+    } = token_distribution_schedule;
 
-        let subsidy_fund = sui_supply.split(stake_subsidy_fund_mist);
-        let storage_fund = balance::zero();
+    let subsidy_fund = sui_supply.split(stake_subsidy_fund_mist);
+    let storage_fund = balance::zero();
 
-        // Allocate tokens and staking operations
-        allocate_tokens(sui_supply, allocations, &mut validators, ctx);
+    // Allocate tokens and staking operations
+    allocate_tokens(sui_supply, allocations, &mut validators, ctx);
 
-        // Activate all validators
-        validators.do_mut!(|validator| validator.activate(0));
+    // Activate all validators
+    validators.do_mut!(|validator| validator.activate(0));
 
-        let system_parameters = sui_system_state_inner::create_system_parameters(
-            genesis_chain_parameters.epoch_duration_ms,
-            genesis_chain_parameters.stake_subsidy_start_epoch,
+    let system_parameters = sui_system_state_inner::create_system_parameters(
+        genesis_chain_parameters.epoch_duration_ms,
+        genesis_chain_parameters.stake_subsidy_start_epoch,
         // Validator committee parameters
-            genesis_chain_parameters.max_validator_count,
-            genesis_chain_parameters.min_validator_joining_stake,
-            genesis_chain_parameters.validator_low_stake_threshold,
-            genesis_chain_parameters.validator_very_low_stake_threshold,
-            genesis_chain_parameters.validator_low_stake_grace_period,
-            ctx,
-        );
+        genesis_chain_parameters.max_validator_count,
+        genesis_chain_parameters.min_validator_joining_stake,
+        genesis_chain_parameters.validator_low_stake_threshold,
+        genesis_chain_parameters.validator_very_low_stake_threshold,
+        genesis_chain_parameters.validator_low_stake_grace_period,
+        ctx,
+    );
 
-        let stake_subsidy = stake_subsidy::create(
-            subsidy_fund,
-            genesis_chain_parameters.stake_subsidy_initial_distribution_amount,
-            genesis_chain_parameters.stake_subsidy_period_length,
-            genesis_chain_parameters.stake_subsidy_decrease_rate,
-            ctx,
-        );
+    let stake_subsidy = stake_subsidy::create(
+        subsidy_fund,
+        genesis_chain_parameters.stake_subsidy_initial_distribution_amount,
+        genesis_chain_parameters.stake_subsidy_period_length,
+        genesis_chain_parameters.stake_subsidy_decrease_rate,
+        ctx,
+    );
 
-        sui_system::create(
-            sui_system_state_id,
-            bfc_system_state_id,
-            validators,
-            storage_fund,
-            genesis_chain_parameters.protocol_version,
-            genesis_chain_parameters.chain_start_timestamp_ms,
-            system_parameters,
-            stake_subsidy,
-            ctx,
-        );
-    }
-
+    sui_system::create(
+        sui_system_state_id,
+        bfc_system_state_id,
+        validators,
+        storage_fund,
+        genesis_chain_parameters.protocol_version,
+        genesis_chain_parameters.chain_start_timestamp_ms,
+        system_parameters,
+        stake_subsidy,
+        ctx,
+    );
+}
 
 fun allocate_tokens(
     mut sui_supply: Balance<BFC>,
     mut allocations: vector<TokenAllocation>,
     validators: &mut vector<Validator>,
     ctx: &mut TxContext,
-) {
+) { while (!allocations.is_empty()) {
+        let TokenAllocation {
+            recipient_address,
+            amount_mist,
+            staked_with_validator,
+        } = allocations.pop_back();
 
-        while (!allocations.is_empty()) {
-            let TokenAllocation {
+        let allocation_balance = sui_supply.split(amount_mist);
+
+        if (staked_with_validator.is_some()) {
+            let validator_address = staked_with_validator.destroy_some();
+            let validator = validator_set::get_validator_mut(validators, validator_address);
+            validator.request_add_stake_at_genesis(
+                allocation_balance,
                 recipient_address,
-                amount_mist,
-                staked_with_validator,
-            } = allocations.pop_back();
-
-            let allocation_balance = sui_supply.split(amount_mist);
-
-            if (staked_with_validator.is_some()) {
-                let validator_address = staked_with_validator.destroy_some();
-                let validator = validator_set::get_validator_mut(validators, validator_address);
-                validator.request_add_stake_at_genesis(
-                    allocation_balance,
-                    recipient_address,
-                    ctx
-                );
-            } else {
-                bfc::transfer(
-                    allocation_balance.into_coin(ctx),
-                    recipient_address,
-                );
-            };
+                ctx,
+            );
+        } else {
+            bfc::transfer(
+                allocation_balance.into_coin(ctx),
+                recipient_address,
+            );
         };
-        allocations.destroy_empty();
-
-        // Provided allocations must fully allocate the sui_supply and there
-        // should be none left at this point.
-        sui_supply.destroy_zero();
-}
-
-
-
+    }; allocations.destroy_empty();  // Provided allocations must fully allocate the sui_supply and there
+    // should be none left at this point.
+    sui_supply.destroy_zero(); }
