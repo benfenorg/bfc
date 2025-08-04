@@ -22,16 +22,18 @@ use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 use sui_types::stable_coin::stable::checked::get_allow_stable_gas_coins_rate_map;
 use sui_types::sui_serde::BigInt;
-use sui_types::transaction::{CallArg, ObjectArg, TransactionKind};
+use sui_types::transaction::{CallArg, ObjectArg, TransactionKind, TransactionData, GasData, TEST_ONLY_GAS_UNIT_FOR_TRANSFER, TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS, Command, ProgrammableMoveCall};
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use test_cluster::{TestCluster, TestClusterBuilder};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use sui_types::{parse_sui_struct_tag, BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID};
+use sui_types::utils::to_sender_signed_transaction_with_multi_signers;
 use serde_json::json;
 use sui_json_rpc_api::{CoinReadApiClient, IndexerApiClient, WriteApiClient};
 use sui_json_rpc_api::TransactionBuilderClient;
 use tokio::time::sleep;
 use tracing::error;
+use sui_keys::keystore::AccountKeystore;
 //use sui_network::tonic::codegen::StdError;
 
 #[sim_test]
@@ -492,6 +494,548 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit() -> Result<(), any
 
     println!("old_gas_balance is {:?}, new_gas_balance is {:?}", old_gas_balance, new_gas_balance);
     assert!(new_gas_balance > old_gas_balance);
+
+    Ok(())
+}
+
+#[sim_test]
+async fn sim_test_with_new_stable_coin_gas_check_gas_deposit_sponsored() -> Result<(), anyhow::Error> {
+    let mut test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(6000)
+        .with_num_validators(5)
+        // .with_all_vault_init()
+        .build()
+        .await;
+    let mut http_client = test_cluster.rpc_client().clone();
+    let sender = test_cluster.get_address_0();
+    let sponsor = test_cluster.get_address_1();
+    let (package, change_objs) =
+        publish_coin::do_publish(&mut test_cluster, "tests/test_coin_code").await?;
+
+    let mut coin_type: String = "".to_string();
+    for ele in change_objs {
+        if let ObjectChange::Created { object_type, .. } = ele {
+            if object_type.module.as_str() == "coin" {
+                coin_type = object_type.type_params.get(0).unwrap().to_string();
+                println!("object_type is {:?}", coin_type);
+                break;
+            }
+        }
+    }
+    assert!(!coin_type.is_empty());
+
+    publish_coin::do_mint(&mut test_cluster, package).await;
+    publish_coin::do_mint(&mut test_cluster, package).await;
+    auth::auth_setup(
+        &mut test_cluster,
+        &mut http_client,
+        sender,
+        "MINT-OTHER-STABLECOIN-POLLY",
+    )
+        .await?;
+
+    test_cluster.wait_for_epoch(Some(2)).await;
+    let filter = format!(
+        "{}{}{}",
+        "0x2::coin::Coin<", package, "::test_coin::TEST_COIN>"
+    );
+
+    let objects = get_owned_objects(filter.as_str(), &mut http_client, sender).await?;
+    println!("objects is {:?}", objects);
+    assert_eq!(objects.len(), 2);
+
+    println!("coin_type is {:?}", coin_type);
+    let response =
+        test_move_call_add_external_stable_gas_coin(&mut test_cluster, coin_type.replace("0x", ""))
+            .await;
+    assert!(response.is_ok());
+    test_cluster.wait_for_epoch(Some(3)).await;
+
+    let (package, _) =
+        publish_coin::do_publish(&mut test_cluster, "tests/test_oracle_price").await?;
+
+    test_cluster.wait_for_epoch(Some(4)).await;
+    init_oracele_with_new_test_coin(&mut test_cluster, coin_type.replace("0x", ""), package).await;
+    // wait to get oracle price and call bfc_round_v2
+    test_cluster.wait_for_epoch(Some(10)).await;
+
+    let data = get_allow_stable_gas_coins_rate_map();
+    for ele in &data {
+        println!("allow stable is {:?}", ele);
+    }
+    assert!(data.contains_key(&coin_type.replace("0x", "")));
+
+    // Query extra_fields in bfc system
+    let mut old_extra_fields_size = 0;
+    test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap()
+        .with(|node| {
+            let _state = node
+                .state()
+                .get_bfc_system_state_object_for_testing()
+                .unwrap();
+            let _extra_fields = _state.get_extra_fields();
+            if let Some(extra_fields) = _extra_fields {
+                println!("Extra fields size: {}", extra_fields.size);
+                old_extra_fields_size = extra_fields.size;
+            } else {
+                println!("Extra fields not available (BFC system state V1)");
+            }
+    });
+
+    // Create sponsored transaction for transfer_sui
+    let objects = get_owned_objects(filter.as_str(), &mut http_client.clone(), sender).await?;
+    let sender_object = objects.first().unwrap().object().unwrap();
+    
+    // Get BFC coins from sponsor for gas payment (not test coins)
+    let sponsor_bfc_objects = do_get_owned_objects_with_filter(
+        "0x2::coin::Coin<0x2::bfc::BFC>",
+        &mut http_client,
+        sponsor,
+    ).await?;
+    
+    if sponsor_bfc_objects.is_empty() {
+        return Err(anyhow::anyhow!("Sponsor has no BFC coins for gas payment"));
+    }
+    
+    let sponsor_gas_object = sponsor_bfc_objects.first().unwrap().object().unwrap();
+    
+    println!("Sponsored transfer sender_object: {:?}", sender_object.to_string());
+    println!("Sponsored transfer sponsor_gas_object: {:?}", sponsor_gas_object.to_string());
+    
+    let context = &test_cluster.wallet;
+    let rgp = context.get_reference_gas_price().await.unwrap();
+    
+    // Create sponsored transfer transaction
+    let pt = {
+        let mut builder = ProgrammableTransactionBuilder::new();
+        builder.transfer_object(sender, sender_object.object_ref()).unwrap();
+        builder.finish()
+    };
+    let kind = TransactionKind::programmable(pt);
+    
+    let tx_data = TransactionData::new_with_gas_data(
+        kind,
+        sender, // transaction sender
+        GasData {
+            payment: vec![sponsor_gas_object.object_ref()], // sponsor pays gas with BFC
+            owner: sponsor, // sponsor owns the gas
+            price: rgp,
+            budget: rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
+        },
+    );
+    
+    // Sign with both sender and sponsor using the correct multi-signer pattern
+    let sponsored_tx = to_sender_signed_transaction_with_multi_signers(
+        tx_data,
+        vec![
+            context.config.keystore.get_key(&sender).unwrap(),
+            context.config.keystore.get_key(&sponsor).unwrap(),
+        ],
+    );
+    let resp = test_cluster.execute_transaction(sponsored_tx).await;
+    println!("Sponsored transfer_sui resp: {:?}", resp);
+    assert!(resp.status_ok().unwrap());
+
+    let response = test_move_call_new_test_coin_pool_sponsored(
+        &mut test_cluster,
+        package,
+        vec![TypeTag::from_str(&*coin_type)?],
+        sender,
+        sponsor,
+    )
+        .await;
+    assert!(response.is_ok());
+
+    // Test calling the Move contract method to get balance
+    let balance_result = test_move_call_get_deposited_balance(&mut test_cluster, coin_type.clone()).await;
+    match &balance_result {
+        Ok(balance) => {
+            println!("Got balance from Move contract: {}", balance);
+            assert!(*balance == 0);
+        } 
+        Err(e) => println!("Failed to get balance from Move contract: {:?}", e),
+    }
+    let old_gas_balance = balance_result.unwrap();
+    assert!(old_gas_balance == 0);
+
+    let pool_id = response.unwrap();
+
+    // Sponsored move function call
+    let response = test_move_call_use_new_test_coin_sponsored(
+        &mut test_cluster,
+        package,
+        vec![TypeTag::from_str(&*coin_type)?],
+        pool_id,
+        sender,
+        sponsor,
+    )
+    .await;
+    assert!(response.is_ok());
+
+    test_cluster.wait_for_epoch(Some(12)).await;
+    // Query extra_fields in bfc system
+    let mut new_extra_fields_size = 0;
+    test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap()
+        .with(|node| {
+            let _state = node
+                .state()
+                .get_bfc_system_state_object_for_testing()
+                .unwrap();
+
+            // Query extra_fields from BFC system state
+            let _extra_fields = _state.get_extra_fields();
+            println!("=============extra_fields: {:?}", &_extra_fields);
+
+            // Check if extra_fields exists (only available in V2)
+            if let Some(extra_fields) = _extra_fields {
+                println!("Extra fields size: {}", extra_fields.size);
+                new_extra_fields_size = extra_fields.size;
+            } else {
+                println!("Extra fields not available (BFC system state V1)");
+            }
+        });
+
+        println!("old_extra_fields_size is {:?}, new_extra_fields_size is {:?}", old_extra_fields_size, new_extra_fields_size);
+        // assert!(new_extra_fields_size > old_extra_fields_size,
+        //     "Extra fields size should increase after adding a new stable gas coin"
+        // );
+
+    // Test calling the Move contract method to get balance
+    let balance_result = test_move_call_get_deposited_balance(&mut test_cluster, coin_type).await;
+    match &balance_result {
+        Ok(balance) => {
+            println!("Got balance from Move contract: {}", balance);
+            assert!(*balance == 0);
+        } 
+        Err(e) => println!("Failed to get balance from Move contract: {:?}", e),
+    }
+
+    let new_gas_balance = balance_result.unwrap();
+    assert!(new_gas_balance == 0);
+
+    println!("old_gas_balance is {:?}, new_gas_balance is {:?}", old_gas_balance, new_gas_balance);
+    assert!(new_gas_balance == old_gas_balance);
+
+    Ok(())
+}
+
+#[sim_test]
+async fn sim_test_with_new_stable_coin_gas_check_gas_deposit_sponsored_test_coin() -> Result<(), anyhow::Error> {
+    let mut test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(6000)
+        .with_num_validators(5)
+        // .with_all_vault_init()
+        .build()
+        .await;
+    let mut http_client = test_cluster.rpc_client().clone();
+    let sender = test_cluster.get_address_0();
+    let sponsor = test_cluster.get_address_1();
+    let (test_coin_package, change_objs) =
+        publish_coin::do_publish(&mut test_cluster, "tests/test_coin_code").await?;
+
+    let mut coin_type: String = "".to_string();
+    for ele in change_objs {
+        if let ObjectChange::Created { object_type, .. } = ele {
+            if object_type.module.as_str() == "coin" {
+                coin_type = object_type.type_params.get(0).unwrap().to_string();
+                println!("object_type is {:?}", coin_type);
+                break;
+            }
+        }
+    }
+    assert!(!coin_type.is_empty());
+
+    publish_coin::do_mint(&mut test_cluster, test_coin_package).await;
+    publish_coin::do_mint(&mut test_cluster, test_coin_package).await;
+    auth::auth_setup(
+        &mut test_cluster,
+        &mut http_client,
+        sender,
+        "MINT-OTHER-STABLECOIN-POLLY",
+    )
+        .await?;
+
+    test_cluster.wait_for_epoch(Some(2)).await;
+    let filter = format!(
+        "{}{}{}",
+        "0x2::coin::Coin<", test_coin_package, "::test_coin::TEST_COIN>"
+    );
+
+    let objects = get_owned_objects(filter.as_str(), &mut http_client, sender).await?;
+    println!("objects is {:?}", objects);
+    assert_eq!(objects.len(), 2);
+
+    println!("coin_type is {:?}", coin_type);
+    let response =
+        test_move_call_add_external_stable_gas_coin(&mut test_cluster, coin_type.replace("0x", ""))
+            .await;
+    assert!(response.is_ok());
+    test_cluster.wait_for_epoch(Some(3)).await;
+
+    let (oracle_package, _) =
+        publish_coin::do_publish(&mut test_cluster, "tests/test_oracle_price").await?;
+
+    test_cluster.wait_for_epoch(Some(4)).await;
+    init_oracele_with_new_test_coin(&mut test_cluster, coin_type.replace("0x", ""), oracle_package).await;
+    // wait to get oracle price and call bfc_round_v2
+    test_cluster.wait_for_epoch(Some(10)).await;
+
+    let data = get_allow_stable_gas_coins_rate_map();
+    for ele in &data {
+        println!("allow stable is {:?}", ele);
+    }
+    assert!(data.contains_key(&coin_type.replace("0x", "")));
+
+    // Query extra_fields in bfc system
+    let mut old_extra_fields_size = 0;
+    test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap()
+        .with(|node| {
+            let _state = node
+                .state()
+                .get_bfc_system_state_object_for_testing()
+                .unwrap();
+            let _extra_fields = _state.get_extra_fields();
+            if let Some(extra_fields) = _extra_fields {
+                println!("Extra fields size: {}", extra_fields.size);
+                old_extra_fields_size = extra_fields.size;
+            } else {
+                println!("Extra fields not available (BFC system state V1)");
+            }
+    });
+
+    // Mint test coins for sender
+    publish_coin::do_mint(&mut test_cluster, test_coin_package).await;
+    publish_coin::do_mint(&mut test_cluster, test_coin_package).await;
+    
+    // For this test, we need the sponsor to have test coins for gas payment
+    // Since do_mint only works for address_0, we'll transfer some test coins from sender to sponsor
+    let sender_test_objects = get_owned_objects(filter.as_str(), &mut http_client.clone(), sender).await?;
+    println!("Sender has {} test coin objects", sender_test_objects.len());
+    assert!(sender_test_objects.len() >= 2, "Need at least 2 test coins to transfer to sponsor");
+    
+    // Transfer TWO test coins from sender to sponsor for gas payment (we need multiple for multiple transactions)
+    let test_coin_to_transfer1 = sender_test_objects.get(0).unwrap().object().unwrap();
+    let test_coin_to_transfer2 = sender_test_objects.get(1).unwrap().object().unwrap();
+    let context = &test_cluster.wallet;
+    
+    // Transfer first test coin
+    let transfer_gas1 = context
+        .get_one_gas_object_owned_by_address(sender)
+        .await
+        .unwrap()
+        .unwrap();
+    
+    let rgp = context.get_reference_gas_price().await.unwrap();
+    let pt1 = {
+        let mut builder = ProgrammableTransactionBuilder::new();
+        builder.transfer_object(sponsor, test_coin_to_transfer1.object_ref()).unwrap();
+        builder.finish()
+    };
+    let kind1 = TransactionKind::programmable(pt1);
+    
+    let tx_data1 = TransactionData::new_with_gas_data(
+        kind1,
+        sender,
+        GasData {
+            payment: vec![transfer_gas1],
+            owner: sender,
+            price: rgp,
+            budget: rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
+        },
+    );
+    
+    let transfer_tx1 = context.sign_transaction(&tx_data1);
+    let transfer_resp1 = test_cluster.execute_transaction(transfer_tx1).await;
+    println!("Transfer first test coin to sponsor resp: {:?}", transfer_resp1.status_ok());
+    assert!(transfer_resp1.status_ok().unwrap());
+    
+    // Transfer second test coin
+    let transfer_gas2 = context
+        .get_one_gas_object_owned_by_address(sender)
+        .await
+        .unwrap()
+        .unwrap();
+    
+    let pt2 = {
+        let mut builder = ProgrammableTransactionBuilder::new();
+        builder.transfer_object(sponsor, test_coin_to_transfer2.object_ref()).unwrap();
+        builder.finish()
+    };
+    let kind2 = TransactionKind::programmable(pt2);
+    
+    let tx_data2 = TransactionData::new_with_gas_data(
+        kind2,
+        sender,
+        GasData {
+            payment: vec![transfer_gas2],
+            owner: sender,
+            price: rgp,
+            budget: rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
+        },
+    );
+    
+    let transfer_tx2 = context.sign_transaction(&tx_data2);
+    let transfer_resp2 = test_cluster.execute_transaction(transfer_tx2).await;
+    println!("Transfer second test coin to sponsor resp: {:?}", transfer_resp2.status_ok());
+    assert!(transfer_resp2.status_ok().unwrap());
+    
+    // Use swap to get BUSD for sponsor
+    let mut sponsor_http_client = test_cluster.rpc_client().clone();
+    swap_bfc_to_stablecoin(&test_cluster, &mut sponsor_http_client, sponsor, 100000000000).await?;
+
+    // Create sponsored transaction using Test Coin as gas payment (not BFC)
+    let objects = get_owned_objects(filter.as_str(), &mut http_client.clone(), sender).await?;
+    let sender_object = objects.first().unwrap().object().unwrap();
+    
+    // Get Test coins from sponsor for gas payment (this is the key difference)
+    let sponsor_test_objects = get_owned_objects(filter.as_str(), &mut http_client, sponsor).await?;
+    
+    if sponsor_test_objects.is_empty() {
+        return Err(anyhow::anyhow!("Sponsor has no Test coins for gas payment"));
+    }
+    
+    let sponsor_gas_object = sponsor_test_objects.first().unwrap().object().unwrap();
+    
+    println!("Sponsored transfer sender_object: {:?}", sender_object.to_string());
+    println!("Sponsored transfer sponsor_gas_object (TEST_COIN): {:?}", sponsor_gas_object.to_string());
+    
+    // Create sponsored transfer transaction using Test Coin as gas
+    let pt = {
+        let mut builder = ProgrammableTransactionBuilder::new();
+        builder.transfer_object(sender, sender_object.object_ref()).unwrap();
+        builder.finish()
+    };
+    let kind = TransactionKind::programmable(pt);
+    
+    let tx_data = TransactionData::new_with_gas_data(
+        kind,
+        sender, // transaction sender
+        GasData {
+            payment: vec![sponsor_gas_object.object_ref()], // sponsor pays gas with Test Coins
+            owner: sponsor, // sponsor owns the gas
+            price: rgp,
+            budget: rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
+        },
+    );
+    
+    // Sign with both sender and sponsor using the correct multi-signer pattern
+    let sponsored_tx = to_sender_signed_transaction_with_multi_signers(
+        tx_data,
+        vec![
+            context.config.keystore.get_key(&sender).unwrap(),
+            context.config.keystore.get_key(&sponsor).unwrap(),
+        ],
+    );
+    let resp = test_cluster.execute_transaction(sponsored_tx).await;
+    println!("Sponsored transfer with Test Coin gas resp: {:?}", resp);
+    assert!(resp.status_ok().unwrap());
+
+    let response = test_move_call_new_test_coin_pool_sponsored(
+        &mut test_cluster,
+        oracle_package,
+        vec![TypeTag::from_str(&*coin_type)?],
+        sender,
+        sponsor,
+    )
+        .await;
+    assert!(response.is_ok());
+
+    // Test calling the Move contract method to get balance
+    let balance_result = test_move_call_get_deposited_balance(&mut test_cluster, coin_type.clone()).await;
+    match &balance_result {
+        Ok(balance) => {
+            println!("Got balance from Move contract: {}", balance);
+            assert!(*balance > 0);
+        } 
+        Err(e) => println!("Failed to get balance from Move contract: {:?}", e),
+    }
+    let old_gas_balance = balance_result.unwrap();
+    assert!(old_gas_balance > 0);
+
+    let pool_id = response.unwrap();
+
+    // Sponsored move function call using Test Coin as gas (the key difference)
+    let response = test_move_call_use_new_test_coin_sponsored_with_test_coin_gas(
+        &mut test_cluster,
+        oracle_package, // Use oracle_package for Move contract call
+        vec![TypeTag::from_str(&*coin_type)?],
+        pool_id,
+        sender,
+        sponsor,
+    )
+    .await;
+    println!("Response from use_new_test_coin_sponsored_with_test_coin_gas: {:?}", response);
+    assert!(response.is_ok());
+
+    test_cluster.wait_for_epoch(Some(12)).await;
+    // Query extra_fields in bfc system
+    let mut new_extra_fields_size = 0;
+    test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap()
+        .with(|node| {
+            let _state = node
+                .state()
+                .get_bfc_system_state_object_for_testing()
+                .unwrap();
+
+            // Query extra_fields from BFC system state
+            let _extra_fields = _state.get_extra_fields();
+            println!("=============extra_fields: {:?}", &_extra_fields);
+
+            // Check if extra_fields exists (only available in V2)
+            if let Some(extra_fields) = _extra_fields {
+                println!("Extra fields size: {}", extra_fields.size);
+                new_extra_fields_size = extra_fields.size;
+            } else {
+                println!("Extra fields not available (BFC system state V1)");
+            }
+        });
+
+        println!("old_extra_fields_size is {:?}, new_extra_fields_size is {:?}", old_extra_fields_size, new_extra_fields_size);
+        // Test coin gas deposit functionality in sponsored transactions
+
+    println!("coin_type is {:?}", coin_type);
+    // Test calling the Move contract method to get balance after using test coin as gas
+    let balance_result = test_move_call_get_deposited_balance(&mut test_cluster, coin_type).await;
+    match &balance_result {
+        Ok(balance) => {
+            println!("Got balance from Move contract after test coin gas usage: {}", balance);
+            // With test coin as gas, balance should increase due to deposited gas fees
+            assert!(*balance > old_gas_balance);
+        } 
+        Err(e) => println!("Failed to get balance from Move contract: {:?}", e),
+    }
+
+    let new_gas_balance = balance_result.unwrap();
+    assert!(new_gas_balance > old_gas_balance);
+
+    println!("old_gas_balance is {:?}, new_gas_balance is {:?}", old_gas_balance, new_gas_balance);
+    // Key assertion: Test coin gas deposit should increase the balance
+    assert!(new_gas_balance > old_gas_balance, 
+        "Expected gas balance to increase after using test coin as gas in sponsored transaction");
 
     Ok(())
 }
@@ -1134,4 +1678,349 @@ async fn test_move_call_get_deposited_balance(
     let return_value = &results.first().unwrap().return_values.first().unwrap().0;
     let balance: u64 = bcs::from_bytes(return_value).unwrap();
     Ok(balance)
+}
+
+async fn test_move_call_new_test_coin_pool_sponsored(
+    test_cluster: &mut TestCluster, 
+    package: ObjectID, 
+    mut type_args: Vec<TypeTag>,
+    sender: SuiAddress,
+    sponsor: SuiAddress,
+) -> Result<(ObjectRef,ObjectRef), Error> {
+    let context = &test_cluster.wallet;
+
+    let mut  http_client = test_cluster.rpc_client().clone();
+    swap_bfc_to_stablecoin(&test_cluster, &mut http_client, sender, 100000000000).await?;
+
+    let gases = test_cluster.rpc_client().clone().get_all_coins(sender, None, None)
+        .await
+        .unwrap();
+
+    let mut gas: Option<ObjectRef> = None;
+    gases.data.iter().for_each(|e| {
+        if e.coin_type.contains("BFC") {
+            gas = Some(e.object_ref());
+        }
+    });
+
+    assert!(gas.is_some());
+
+    let mut coin: Option<ObjectRef> = None;
+    gases.data.iter().for_each(|e| {
+        if e.coin_type.contains("BUSD") {
+            coin = Some(e.object_ref());
+        }
+    });
+
+    assert!(coin.is_some());
+
+    // Get sponsor gas - use BFC coins for gas payment
+    let sponsor_bfc_objects = do_get_owned_objects_with_filter(
+        "0x2::coin::Coin<0x2::bfc::BFC>",
+        test_cluster.rpc_client(),
+        sponsor,
+    ).await?;
+
+    if sponsor_bfc_objects.is_empty() {
+        return Err(anyhow::anyhow!("Sponsor has no BFC coins for gas payment"));
+    }
+
+    let sponsor_gas = sponsor_bfc_objects.first().unwrap().object().unwrap().object_ref();
+
+    type_args.insert(0,TypeTag::from_str("0xc8::busd::BUSD")?);
+
+    let rgp = context.get_reference_gas_price().await.unwrap();
+    
+    // Build the programmable transaction directly
+    let pt = {
+        let mut builder = ProgrammableTransactionBuilder::new();
+        
+        // Add the BUSD coin as input - builder.input returns Argument
+        let coin_input = builder.input(CallArg::Object(ObjectArg::ImmOrOwnedObject(coin.unwrap()))).unwrap();
+        
+        // Call the move function with the coin directly
+        builder.command(Command::MoveCall(Box::new(
+            ProgrammableMoveCall {
+                package,
+                module: Identifier::new("test_oracle").unwrap().to_string(),
+                function: Identifier::new("new_pool").unwrap().to_string(),
+                type_arguments: type_args.into_iter().map(|t| t.into()).collect(),
+                arguments: vec![
+                    coin_input,
+                ],
+            },
+        )));
+        
+        builder.finish()
+    };
+
+    let kind = TransactionKind::programmable(pt);
+
+    // Create sponsored transaction
+    let tx_data = TransactionData::new_with_gas_data(
+        kind,
+        sender,
+        GasData {
+            payment: vec![sponsor_gas],
+            owner: sponsor,
+            price: rgp,
+            budget: rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
+        },
+    );
+
+    // Sign with both sender and sponsor using the correct multi-signer pattern
+    let sponsored_tx = to_sender_signed_transaction_with_multi_signers(
+        tx_data,
+        vec![
+            context.config.keystore.get_key(&sender).unwrap(),
+            context.config.keystore.get_key(&sponsor).unwrap(),
+        ],
+    );
+    let resp = test_cluster.execute_transaction(sponsored_tx).await;
+    tracing::info!("test_move_call_new_test_coin_pool_sponsored resp: {:#?}", resp);
+
+    if  resp.status_ok().is_none() || !resp.status_ok().unwrap() {
+        println!("test_move_call_new_test_coin_pool_sponsored resp: {:#?}", resp);
+        return Err(anyhow::anyhow!("Transaction failed"));
+    }
+
+    let mut oracle_price: Option<ObjectRef> = None;
+    let mut global: Option<ObjectRef> = None;
+    for ele in  resp.object_changes.unwrap() {
+        if let ObjectChange::Created { object_id, version,digest,object_type,.. } = ele {
+            if object_type.name == Identifier::from_str("TestOraclePrice").unwrap(){
+                oracle_price = Some((object_id,version,digest));
+            }
+            if object_type.name == Identifier::from_str("Global").unwrap(){
+                global = Some((object_id,version,digest));
+            }
+        }
+    }
+    if oracle_price.is_none() || global.is_none() {
+        Err(anyhow!("not found"))
+    } else {
+        Ok((oracle_price.unwrap(), global.unwrap()))
+    }
+}
+
+async fn test_move_call_use_new_test_coin_sponsored(
+    test_cluster: &mut TestCluster, 
+    package: ObjectID, 
+    mut type_args: Vec<TypeTag>, 
+    pool_id: (ObjectRef,ObjectRef),
+    sender: SuiAddress,
+    sponsor: SuiAddress,
+) -> Result<(), Error> {
+    let context = &test_cluster.wallet;
+    let mut gases = test_cluster.rpc_client().clone().get_all_coins(sender, None, None)
+        .await
+        .unwrap();
+
+    let mut gas: Option<ObjectRef> = None;
+    gases.data.retain(|e| {
+        if e.coin_type.contains("test_coin::TEST_COIN") {
+            gas = Some(e.object_ref());
+            false
+        } else {
+            true
+        }
+    });
+
+    assert!(gas.is_some());
+
+    // Get sponsor gas - use BFC coins for gas payment
+    let sponsor_bfc_objects = do_get_owned_objects_with_filter(
+        "0x2::coin::Coin<0x2::bfc::BFC>",
+        test_cluster.rpc_client(),
+        sponsor,
+    ).await?;
+
+    if sponsor_bfc_objects.is_empty() {
+        return Err(anyhow::anyhow!("Sponsor has no BFC coins for gas payment"));
+    }
+
+    let sponsor_gas = sponsor_bfc_objects.first().unwrap().object().unwrap().object_ref();
+
+    type_args.insert(0,TypeTag::from_str("0xc8::busd::BUSD")?);
+
+    let rgp = context.get_reference_gas_price().await.unwrap();
+    
+    // Build the programmable transaction directly instead of using TestTransactionBuilder
+    let pt = {
+        let mut builder = ProgrammableTransactionBuilder::new();
+        
+        // Add the test coin as input (not split from gas coin)
+        let test_coin_input = builder.input(CallArg::Object(ObjectArg::ImmOrOwnedObject(gas.unwrap()))).unwrap();
+        
+        // Add shared object input
+        let shared_object_input = builder.input(CallArg::Object(ObjectArg::SharedObject{
+            id: pool_id.0.0,
+            initial_shared_version: pool_id.0.1,
+            mutable: true,
+        })).unwrap();
+        
+        // Add owned object input
+        let owned_object_input = builder.input(CallArg::Object(ObjectArg::ImmOrOwnedObject(pool_id.1))).unwrap();
+        
+        // Call the move function with the test coin directly (no splitting)
+        builder.command(Command::MoveCall(Box::new(
+            ProgrammableMoveCall {
+                package,
+                module: Identifier::new("test_oracle").unwrap().to_string(),
+                function: Identifier::new("stable_coin_test_swap").unwrap().to_string(),
+                type_arguments: type_args.into_iter().map(|t| t.into()).collect(),
+                arguments: vec![
+                    test_coin_input,
+                    shared_object_input,
+                    owned_object_input,
+                ],
+            },
+        )));
+        
+        builder.finish()
+    };
+
+    let kind = TransactionKind::programmable(pt);
+
+    // Create sponsored transaction
+    let tx_data = TransactionData::new_with_gas_data(
+        kind,
+        sender,
+        GasData {
+            payment: vec![sponsor_gas],
+            owner: sponsor,
+            price: rgp,
+            budget: rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
+        },
+    );
+
+    // Sign with both sender and sponsor using the correct multi-signer pattern
+    let sponsored_tx = to_sender_signed_transaction_with_multi_signers(
+        tx_data,
+        vec![
+            context.config.keystore.get_key(&sender).unwrap(),
+            context.config.keystore.get_key(&sponsor).unwrap(),
+        ],
+    );
+    let resp = test_cluster.execute_transaction(sponsored_tx).await;
+    tracing::error!("test_move_call_use_new_test_coin_sponsored resp: {:#?}", resp);
+
+    if  resp.status_ok().is_none() || !resp.status_ok().unwrap() {
+        println!("test_move_call_use_new_test_coin_sponsored resp: {:#?}", resp);
+        return Err(anyhow::anyhow!("Transaction failed"));
+    }
+
+    Ok(())
+}
+
+async fn test_move_call_use_new_test_coin_sponsored_with_test_coin_gas(
+    test_cluster: &mut TestCluster, 
+    package: ObjectID, 
+    mut type_args: Vec<TypeTag>, 
+    pool_id: (ObjectRef,ObjectRef),
+    sender: SuiAddress,
+    sponsor: SuiAddress,
+) -> Result<(), Error> {
+    let context = &test_cluster.wallet;
+    let mut gases = test_cluster.rpc_client().clone().get_all_coins(sender, None, None)
+        .await
+        .unwrap();
+
+    let mut gas: Option<ObjectRef> = None;
+    gases.data.retain(|e| {
+        if e.coin_type.contains("test_coin::TEST_COIN") {
+            gas = Some(e.object_ref());
+            false
+        } else {
+            true
+        }
+    });
+
+    assert!(gas.is_some());
+
+    // Get sponsor gas - use Test Coins for gas payment (not BFC)
+    let sponsor_gases = test_cluster.rpc_client().clone().get_all_coins(sponsor, None, None)
+        .await
+        .unwrap();
+    let mut sponsor_gas: Option<ObjectRef> = None;
+    sponsor_gases.data.iter().for_each(|e| {
+        if e.coin_type.contains("test_coin::TEST_COIN") && sponsor_gas.is_none() {
+            sponsor_gas = Some(e.object_ref());
+        }
+    });
+    if sponsor_gas.is_none() {
+        return Err(anyhow::anyhow!("Sponsor has no Test coins for gas payment"));
+    }
+    let sponsor_gas = sponsor_gas.unwrap();
+
+    type_args.insert(0,TypeTag::from_str("0xc8::busd::BUSD")?);
+
+    let rgp = context.get_reference_gas_price().await.unwrap();
+    
+    // Build the programmable transaction directly instead of using TestTransactionBuilder
+    let pt = {
+        let mut builder = ProgrammableTransactionBuilder::new();
+        
+        // Add the test coin as input (not split from gas coin)
+        let test_coin_input = builder.input(CallArg::Object(ObjectArg::ImmOrOwnedObject(gas.unwrap()))).unwrap();
+        
+        // Add shared object input
+        let shared_object_input = builder.input(CallArg::Object(ObjectArg::SharedObject{
+            id: pool_id.0.0,
+            initial_shared_version: pool_id.0.1,
+            mutable: true,
+        })).unwrap();
+        
+        // Add owned object input
+        let owned_object_input = builder.input(CallArg::Object(ObjectArg::ImmOrOwnedObject(pool_id.1))).unwrap();
+        
+        // Call the move function with the test coin directly (no splitting)
+        builder.command(Command::MoveCall(Box::new(
+            ProgrammableMoveCall {
+                package,
+                module: Identifier::new("test_oracle").unwrap().to_string(),
+                function: Identifier::new("stable_coin_test_swap").unwrap().to_string(),
+                type_arguments: type_args.into_iter().map(|t| t.into()).collect(),
+                arguments: vec![
+                    test_coin_input,
+                    shared_object_input,
+                    owned_object_input,
+                ],
+            },
+        )));
+        
+        builder.finish()
+    };
+
+    let kind = TransactionKind::programmable(pt);
+
+    // Create sponsored transaction using Test Coin as gas
+    let tx_data = TransactionData::new_with_gas_data(
+        kind,
+        sender,
+        GasData {
+            payment: vec![sponsor_gas],
+            owner: sponsor,
+            price: rgp,
+            budget: rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
+        },
+    );
+
+    // Sign with both sender and sponsor using the correct multi-signer pattern
+    let sponsored_tx = to_sender_signed_transaction_with_multi_signers(
+        tx_data,
+        vec![
+            context.config.keystore.get_key(&sender).unwrap(),
+            context.config.keystore.get_key(&sponsor).unwrap(),
+        ],
+    );
+    let resp = test_cluster.execute_transaction(sponsored_tx).await;
+    tracing::error!("test_move_call_use_new_test_coin_sponsored_with_test_coin_gas resp: {:#?}", resp);
+
+    if  resp.status_ok().is_none() || !resp.status_ok().unwrap() {
+        println!("test_move_call_use_new_test_coin_sponsored_with_test_coin_gas resp: {:#?}", resp);
+        return Err(anyhow::anyhow!("Transaction failed"));
+    }
+
+    Ok(())
 }
