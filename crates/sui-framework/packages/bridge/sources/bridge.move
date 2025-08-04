@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 #[allow(unused_field,unused_function,unused_const,unused_use)]
 module bridge::bridge;
-
 use sui::address;
     use std::ascii;
     use std::type_name;
@@ -385,6 +384,20 @@ fun load_inner(bridge: &Bridge): &BridgeInner {
         (inner,&bridge.id)
     }
 
+    // Verify seq number matches the next expected seq number for the message type,
+    // and increment it.
+    fun get_current_seq_num_and_increment(bridge: &mut BridgeInner, msg_type: u8): u64 {
+        if (!bridge.sequence_nums.contains(&msg_type)) {
+            bridge.sequence_nums.insert(msg_type, 1);
+            return 0
+        };
+
+        let entry = &mut bridge.sequence_nums[&msg_type];
+        let seq_num = *entry;
+        *entry = seq_num + 1;
+        seq_num
+    }
+
     #[allow(unused_function)]
     fun init_bridge_committee(
         bridge: &mut Bridge,
@@ -479,7 +492,7 @@ public fun send_token<T>(
     bridge: &mut Bridge,
     target_chain: u8,
     target_address: vector<u8>,
-    token: Coin<T>,
+    mut token:  Coin<T>,
     ctx: &mut TxContext,
 ) {
     let (inner,parent_id) = load_inner_mut_and_uid(bridge);
@@ -1004,6 +1017,93 @@ public fun send_token<T>(
     }
 
 
+
+
+
+// Claim token from approved bridge message
+// Returns Some(Coin) if coin can be claimed. If already claimed, return None
+fun claim_token_internal<T>(
+    bridge: &mut Bridge,
+    clock: &Clock,
+    source_chain: u8,
+    bridge_seq_num: u64,
+    ctx: &mut TxContext,
+): (Option<Coin<T>>, address) {
+    let (inner,parent_id) = load_inner_mut_and_uid(bridge);
+    assert!(!inner.paused, EBridgeUnavailable);
+
+    let is_busd = type_name::get<T>() == type_name::get<BUSD>();
+    assert!(!is_busd, EUseClaimBusd);
+    let key = message::create_key(source_chain, message_types::token(), bridge_seq_num);
+    assert!(inner.token_transfer_records.contains(key), EMessageNotFoundInRecords);
+
+
+
+    // retrieve approved bridge message
+    let record = &mut inner.token_transfer_records[key];
+    // ensure this is a token bridge message
+    assert!(&record.message.message_type() == message_types::token(), EUnexpectedMessageType);
+    // Ensure it's signed
+    assert!(record.verified_signatures.is_some(), EUnauthorisedClaim);
+
+    // extract token message
+    let token_payload = record.message.extract_token_bridge_in_payload();
+    // get owner address
+    let owner = address::from_bytes(token_payload.token_target_address_in());
+
+    // If already claimed, exit early
+    if (record.claimed) {
+        emit(TokenTransferAlreadyClaimed { message_key: key });
+        return (option::none(), owner)
+    };
+
+    let target_chain = token_payload.token_target_chain_in();
+    // ensure target chain matches bridge.chain_id
+    assert!(target_chain == inner.chain_id, EUnexpectedChainID);
+
+
+    // TODO: why do we check validity of the route here? what if inconsistency?
+    // Ensure route is valid
+    // TODO: add unit tests
+    // `get_route` abort if route is invalid
+    let route = chain_ids::get_route(source_chain, target_chain);
+    // check token type
+    assert!(
+        treasury::token_id<T>(&inner.treasury) == token_payload.token_type_in(),
+        EUnexpectedTokenType,
+    );
+
+    let amount = token_payload.token_amount_in();
+    let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_payload.token_type_in(),amount);
+    assert!(amount>fee,EInputAmountLteBridgeFee);
+
+    // Make sure transfer is within limit.
+    if (
+        !inner
+            .limiter
+            .check_and_record_sending_transfer<T>(
+                &inner.treasury,
+                clock,
+                route,
+                amount,
+            )
+    ) {
+        emit(TokenTransferLimitExceed { message_key: key });
+        return (option::none(), owner)
+    };
+
+    let mut token = inner.treasury.mint<T>(amount, ctx);
+    if (fee!=0){
+        let fee_coin=token.split<T>(fee, ctx);
+        bridge_fee::deposit_fee(parent_id, fee_coin);
+    };
+    // Record changes
+    record.claimed = true;
+    emit(TokenTransferClaimed { message_key: key });
+
+    (option::some(token), owner)
+}
+
 // This function can be called by anyone to claim and transfer the token to the recipient
 // If the token has already been claimed or hits limiter currently, it will return instead of aborting.
 public fun claim_and_transfer_token<T>(
@@ -1077,7 +1177,290 @@ public fun claim_and_transfer_token<T>(
         };
     }
 
+fun execute_emergency_op(inner: &mut BridgeInner, payload: EmergencyOp) {
+    let op = payload.emergency_op_type();
+    if (op == message::emergency_op_pause()) {
+        assert!(!inner.paused, EBridgeAlreadyPaused);
+        inner.paused = true;
+        emit(EmergencyOpEvent { frozen: true });
+    } else if (op == message::emergency_op_unpause()) {
+        assert!(inner.paused, EBridgeNotPaused);
+        inner.paused = false;
+        emit(EmergencyOpEvent { frozen: false });
+    } else {
+        abort EUnexpectedOperation
+    };
+}
+    fun execute_refund_admin_operate(inner: &mut BridgeInner, payload: message::RefundAdmin) {
+        let op = payload.refund_admin_op_type();
+        if (op == message::refund_admin_add()) {
+            let sui_address = payload.refund_admin_sui_address();
+            inner.add_refund_admin(sui_address);
+        } else if (op == message::refund_admin_remove()) {
+            let sui_address = payload.refund_admin_sui_address();
+            inner.remove_refund_admin(sui_address);
+        } else {
+            abort EUnexpectedOperation
+        };
+    }
 
+    fun add_refund_admin(inner: &mut BridgeInner, address: &String) {
+        if (!inner.refund_admins.contains(address)) {
+            inner.refund_admins.insert(*address);
+        }
+    }
+
+    fun remove_refund_admin(inner: &mut BridgeInner, address: &String) {
+        if (inner.refund_admins.contains(address)) {
+            inner.refund_admins.remove(address);
+        }
+    }
+
+
+fun execute_update_bridge_limit(inner: &mut BridgeInner, payload: UpdateBridgeLimit) {
+    let receiving_chain = payload.update_bridge_limit_payload_receiving_chain();
+    assert!(receiving_chain == inner.chain_id, EUnexpectedChainID);
+    let route = chain_ids::get_route(
+        payload.update_bridge_limit_payload_sending_chain(),
+        receiving_chain,
+    );
+
+    inner
+        .limiter
+        .update_route_limit(
+            &route,
+            payload.update_bridge_limit_payload_limit(),
+        )
+}
+
+fun execute_update_asset_price(inner: &mut BridgeInner, payload: UpdateAssetPrice) {
+    inner
+        .treasury
+        .update_asset_notional_price(
+            payload.update_asset_price_payload_token_id(),
+            payload.update_asset_price_payload_new_price(),
+        )
+}
+
+    fun execute_add_external_coin_admin(inner: &mut BridgeInner, payload: AddExternalCoinAdmin) {
+        inner.treasury.add_external_coin_admin(
+            payload.add_external_coin_admin_payload_coin_type(),
+            payload.add_external_coin_admin_payload_admin_address(),
+        )
+    }
+
+    fun execute_remove_external_coin_admin(inner: &mut BridgeInner, payload: RemoveExternalCoinAdmin) {
+        inner.treasury.remove_external_coin_admin(
+            payload.remove_external_coin_admin_payload_coin_type(),
+            payload.remove_external_coin_admin_payload_admin_address(),
+        )
+    }
+
+    fun execute_add_external_coin_target_payload(inner: &mut BridgeInner, payload: AddExternalCoinTarget) {
+        inner.treasury.add_external_coin_target(
+            payload.add_external_coin_target_payload_coin_type(),
+            payload.add_external_coin_target_payload_target_address(),
+        )
+    }
+
+    fun execute_remove_external_coin_target_payload(inner: &mut BridgeInner, payload: RemoveExternalCoinTarget) {
+        inner.treasury.remove_external_coin_target(
+            payload.remove_external_coin_target_payload_coin_type(),
+            payload.remove_external_coin_target_payload_target_address(),
+        )
+    }
+
+    fun execute_add_external_coin_witness(inner: &mut BridgeInner, payload: AddExternalCoinWitness) {
+        inner.treasury.add_external_coin_witness(
+            payload.add_external_coin_witness_payload_coin_type(),
+            payload.add_external_coin_witness_payload_witness_address(),
+        )
+    }
+
+    fun execute_remove_external_coin_witness(inner: &mut BridgeInner, payload: RemoveExternalCoinWitness) {
+        inner.treasury.remove_external_coin_witness(
+            payload.remove_external_coin_witness_payload_coin_type(),
+            payload.remove_external_coin_witness_payload_witness_address(),
+        )
+    }
+
+    fun execute_set_cross_in(parent_id: &mut UID,payload:SetCrossInBridgeFee,ctx: &mut TxContext){
+        let (chain_id,token_id,mode,amount)=payload.set_cross_in_bridge_fee_poyload();
+        bridge_fee::set_fee_in_cross_in(parent_id,chain_id as u64,token_id,mode,amount,ctx);
+    }
+    fun execute_set_cross_out(parent_id: &mut UID,payload:SetCrossOutBridgeFee,ctx: &mut TxContext){
+        let (chain_id,token_id,mode,amount)=payload.set_cross_out_bridge_fee_poyload();
+        bridge_fee::set_fee_in_cross_out(parent_id,chain_id as u64,token_id,mode,amount,ctx);
+    }
+
+    fun execute_withdraw_bridge_fee(payload: WithdrawBridgeFee,ctx: &mut TxContext){
+       let(recipient,coin_type,amount)=payload.withdraw_bridge_fee_polyload();
+       let cap=bridge_fee::create_withdraw_fee_cap(coin_type, amount, ctx);
+       transfer::public_transfer(cap,recipient);
+    }
+
+
+    fun execute_add_token_on_token_list(parent_id: &mut UID,payload: AddTokenOnTokenList,ctx: &mut TxContext){
+        let source_chain=payload.add_token_on_token_list_payload_from_chain_id();
+        let target_chain=payload.add_token_on_token_list_payload_to_chain_id();
+        let token_id=payload.add_token_on_token_list_payload_token_id();
+
+        if (target_chain==chain_ids::sui_mainnet() || target_chain==chain_ids::sui_testnet() || target_chain==chain_ids::sui_custom()) {
+            tokenlist::add_token_to_benfen(parent_id,source_chain as u64,token_id,ctx);
+        }else if (source_chain==chain_ids::sui_mainnet() || source_chain==chain_ids::sui_testnet() || source_chain==chain_ids::sui_custom())  {
+            tokenlist::add_token_from_benfen(parent_id,target_chain as u64,token_id,ctx);
+        }else{
+            abort EInvalidChainIDOnTokenList
+        }
+
+    }
+
+    fun execute_remove_token_on_token_list(parent_id: &mut UID,payload: RemoveTokenOnTokenList){
+        let source_chain=payload.remove_token_on_token_list_payload_from_chain_id();
+        let target_chain=payload.remove_token_on_token_list_payload_to_chain_id();
+        let token_id=payload.remove_token_on_token_list_payload_token_id();
+
+        if (target_chain==chain_ids::sui_mainnet() || target_chain==chain_ids::sui_testnet() || target_chain==chain_ids::sui_custom()) {
+            tokenlist::remove_token_to_benfen(parent_id,source_chain as u64,token_id);
+        }else if (source_chain==chain_ids::sui_mainnet() || source_chain==chain_ids::sui_testnet() || source_chain==chain_ids::sui_custom())  {
+            tokenlist::remove_token_from_benfen(parent_id,target_chain as u64,token_id);
+        }else{
+            abort EInvalidChainIDOnTokenList
+        }
+
+    }
+
+
+
+fun execute_add_tokens_on_sui(inner: &mut BridgeInner, payload: AddTokenOnSui) {
+    // FIXME: assert native_token to be false and add test
+    let native_token = payload.is_native();
+    let mut token_ids = payload.token_ids();
+    let mut token_type_names = payload.token_type_names();
+    let mut token_prices = payload.token_prices();
+
+    // Make sure token data is consistent
+    assert!(token_ids.length() == token_type_names.length(), EMalformedMessageError);
+    assert!(token_ids.length() == token_prices.length(), EMalformedMessageError);
+
+    while (token_ids.length() > 0) {
+        let token_id = token_ids.pop_back();
+        let token_type_name = token_type_names.pop_back();
+        let token_price = token_prices.pop_back();
+        inner.treasury.add_new_token(token_type_name, token_id, native_token, token_price)
+    }
+}
+
+    public fun get_available_claim_amount<T>(
+          bridge: &Bridge,
+          source_chain: u8,
+    ): u128 {
+        let inner = load_inner(bridge);
+        let route = chain_ids::get_route(source_chain, inner.chain_id);
+        inner.limiter.get_available_claim_amount<T>(&inner.treasury, route)
+    }
+
+
+   fun claim_stable_token_internal<T>(
+        bridge: &mut Bridge,
+        bfc_system_state: &mut BfcSystemState,
+        clock: &Clock,
+        source_chain: u8,
+        bridge_seq_num: u64,
+        cap: &BfcSystemModifyCap,
+        ctx: &mut TxContext,
+    ): (Option<Coin<T>>, address) {
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+
+        let key = message::create_key(source_chain, message_types::token(), bridge_seq_num);
+        assert!(inner.token_transfer_records.contains(key), EMessageNotFoundInRecords);
+
+        // retrieve approved bridge message
+        let record = &mut inner.token_transfer_records[key];
+        // ensure this is a token bridge message
+        assert!(
+            &record.message.message_type() == message_types::token(),
+            EUnexpectedMessageType,
+        );
+        // Ensure it's signed
+        assert!(record.verified_signatures.is_some(), EUnauthorisedClaim);
+
+        // extract token message
+        let token_payload = record.message.extract_token_bridge_in_payload();
+        // get owner address
+        let owner = address::from_bytes(token_payload.token_target_address_in());
+        // get token type
+        let token_id = token_payload.token_type_in();
+        assert!(token_id == 5, EOnlySupportBusd);
+
+        // If already claimed, exit early
+        if (record.claimed) {
+            emit(TokenTransferAlreadyClaimed { message_key: key });
+            return (option::none(), owner)
+        };
+
+        let target_chain = token_payload.token_target_chain_in();
+        // ensure target chain matches bridge.chain_id
+        assert!(target_chain == inner.chain_id, EUnexpectedChainID);
+
+        // `get_route` abort if route is invalid
+        let route = chain_ids::get_route(source_chain, target_chain);
+        // check token type
+        assert!(
+            treasury::token_id<T>(&inner.treasury) == token_payload.token_type_in(),
+            EUnexpectedTokenType,
+        );
+
+        let amount = token_payload.token_amount_in();
+        assert!(amount < inner.limiter.get_mint_busd_max_limit(), EInvalidMintAmount);
+        // Make sure transfer is within limit.
+        if (!inner
+            .limiter
+            .check_and_record_sending_transfer<T>(
+            &inner.treasury,
+            clock,
+            route,
+            amount,
+        )
+        ) {
+            emit(TokenTransferLimitExceed { message_key: key });
+            return (option::none(), owner)
+        };
+        let token_id=token_payload.token_type_in();
+        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,target_chain as u64,token_id,amount);
+        assert!(amount>fee,EInputAmountLteBridgeFee);
+        let amount_after_fee=amount-fee;
+        check_fast_path_limit(parent_id, clock, token_payload);
+        // claim from treasury
+        //transfer busd to owner
+        bfc_system_state.mint_stable_entry_to_address<BUSD>(amount_after_fee, cap, owner, ctx);
+        if (fee != 0){
+            let fee_coin=bfc_system_state.mint_stable<BUSD>(fee,cap, ctx);
+            bridge_fee::deposit_fee(parent_id, fee_coin);
+        };
+        record.claimed = true;
+        emit(TokenTransferClaimed { message_key: key });
+        (option::none(), owner)
+    }
+
+    fun check_fast_path_limit(
+        bridge_id: &mut UID,
+        clock: &Clock,
+        token_payload: TokenTransferInPayload,
+    ) {
+        //fast path checker
+        if (token_payload.token_fast_path_selector_in() != 2) { // 2 is finalized,0 and 1 is fast path
+            let amount = token_payload.token_amount_in();
+            let chain_id = token_payload.token_target_chain_in();
+            let token_id = token_payload.token_type_in();
+            let sender_address = token_payload.token_sender_address_in();
+            let remaining_limit = limiter_fast_path::check_and_record_user_limit(bridge_id, sender_address, chain_id, token_id, amount, clock);
+            assert!(remaining_limit, EFastPathLimitError);
+        };
+    }
+
+ 
 
 public fun execute_system_message(
     bridge: &mut Bridge,
@@ -1144,16 +1527,8 @@ public fun execute_system_message(
         };
     }
 
-}
 
-    public fun get_available_claim_amount<T>(
-          bridge: &Bridge,
-          source_chain: u8,
-    ): u128 {
-        let inner = load_inner(bridge);
-        let route = chain_ids::get_route(source_chain, inner.chain_id);
-        inner.limiter.get_available_claim_amount<T>(&inner.treasury, route)
-    }
+
 
     public fun pre_deposit_external_coin<T>(
         bridge: &mut Bridge,
@@ -1749,378 +2124,12 @@ fun get_token_transfer_action_signatures(
 
 
 
-// Claim token from approved bridge message
-// Returns Some(Coin) if coin can be claimed. If already claimed, return None
-fun claim_token_internal<T>(
-    bridge: &mut Bridge,
-    clock: &Clock,
-    source_chain: u8,
-    bridge_seq_num: u64,
-    ctx: &mut TxContext,
-): (Option<Coin<T>>, address) {
-    let (inner,parent_id) = load_inner_mut_and_uid(bridge);
-    assert!(!inner.paused, EBridgeUnavailable);
-
-    let is_busd = type_name::get<T>() == type_name::get<BUSD>();
-    assert!(!is_busd, EUseClaimBusd);
-    let key = message::create_key(source_chain, message_types::token(), bridge_seq_num);
-    assert!(inner.token_transfer_records.contains(key), EMessageNotFoundInRecords);
 
 
 
-    // retrieve approved bridge message
-    let record = &mut inner.token_transfer_records[key];
-    // ensure this is a token bridge message
-    assert!(&record.message.message_type() == message_types::token(), EUnexpectedMessageType);
-    // Ensure it's signed
-    assert!(record.verified_signatures.is_some(), EUnauthorisedClaim);
-
-    // extract token message
-    let token_payload = record.message.extract_token_bridge_in_payload();
-    // get owner address
-    let owner = address::from_bytes(token_payload.token_target_address_in());
-
-    // If already claimed, exit early
-    if (record.claimed) {
-        emit(TokenTransferAlreadyClaimed { message_key: key });
-        return (option::none(), owner)
-    };
-
-    let target_chain = token_payload.token_target_chain_in();
-    // ensure target chain matches bridge.chain_id
-    assert!(target_chain == inner.chain_id, EUnexpectedChainID);
-
-
-    // TODO: why do we check validity of the route here? what if inconsistency?
-    // Ensure route is valid
-    // TODO: add unit tests
-    // `get_route` abort if route is invalid
-    let route = chain_ids::get_route(source_chain, target_chain);
-    // check token type
-    assert!(
-        treasury::token_id<T>(&inner.treasury) == token_payload.token_type(),
-        EUnexpectedTokenType,
-    );
-
-    let amount = token_payload.token_amount_in();
-    let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_payload.token_type_in(),amount);
-    assert!(amount>fee,EInputAmountLteBridgeFee);
-
-    // Make sure transfer is within limit.
-    if (
-        !inner
-            .limiter
-            .check_and_record_sending_transfer<T>(
-                &inner.treasury,
-                clock,
-                route,
-                amount,
-            )
-    ) {
-        emit(TokenTransferLimitExceed { message_key: key });
-        return (option::none(), owner)
-    };
-
-    let mut token = inner.treasury.mint<T>(amount, ctx);
-    if (fee!=0){
-        let fee_coin=token.split<T>(fee, ctx);
-        bridge_fee::deposit_fee(parent_id, fee_coin);
-    };
-    // Record changes
-    record.claimed = true;
-    emit(TokenTransferClaimed { message_key: key });
-
-    (option::some(token), owner)
-}
-
-    fun check_fast_path_limit(
-        bridge_id: &mut UID,
-        clock: &Clock,
-        token_payload: TokenTransferInPayload,
-    ) {
-        //fast path checker
-        if (token_payload.token_fast_path_selector_in() != 2) { // 2 is finalized,0 and 1 is fast path
-            let amount = token_payload.token_amount_in();
-            let chain_id = token_payload.token_target_chain_in();
-            let token_id = token_payload.token_type_in();
-            let sender_address = token_payload.token_sender_address_in();
-            let remaining_limit = limiter_fast_path::check_and_record_user_limit(bridge_id, sender_address, chain_id, token_id, amount, clock);
-            assert!(remaining_limit, EFastPathLimitError);
-        };
-    }
-
-    fun claim_stable_token_internal<T>(
-        bridge: &mut Bridge,
-        bfc_system_state: &mut BfcSystemState,
-        clock: &Clock,
-        source_chain: u8,
-        bridge_seq_num: u64,
-        cap: &BfcSystemModifyCap,
-        ctx: &mut TxContext,
-    ): (Option<Coin<T>>, address) {
-        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
-        assert!(!inner.paused, EBridgeUnavailable);
-
-        let key = message::create_key(source_chain, message_types::token(), bridge_seq_num);
-        assert!(inner.token_transfer_records.contains(key), EMessageNotFoundInRecords);
-
-        // retrieve approved bridge message
-        let record = &mut inner.token_transfer_records[key];
-        // ensure this is a token bridge message
-        assert!(
-            &record.message.message_type() == message_types::token(),
-            EUnexpectedMessageType,
-        );
-        // Ensure it's signed
-        assert!(record.verified_signatures.is_some(), EUnauthorisedClaim);
-
-        // extract token message
-        let token_payload = record.message.extract_token_bridge_in_payload();
-        // get owner address
-        let owner = address::from_bytes(token_payload.token_target_address_in());
-        // get token type
-        let token_id = token_payload.token_type_in();
-        assert!(token_id == 5, EOnlySupportBusd);
-
-        // If already claimed, exit early
-        if (record.claimed) {
-            emit(TokenTransferAlreadyClaimed { message_key: key });
-            return (option::none(), owner)
-        };
-
-        let target_chain = token_payload.token_target_chain_in();
-        // ensure target chain matches bridge.chain_id
-        assert!(target_chain == inner.chain_id, EUnexpectedChainID);
-
-        // `get_route` abort if route is invalid
-        let route = chain_ids::get_route(source_chain, target_chain);
-        // check token type
-        assert!(
-            treasury::token_id<T>(&inner.treasury) == token_payload.token_type_in(),
-            EUnexpectedTokenType,
-        );
-
-        let amount = token_payload.token_amount_in();
-        assert!(amount < inner.limiter.get_mint_busd_max_limit(), EInvalidMintAmount);
-        // Make sure transfer is within limit.
-        if (!inner
-            .limiter
-            .check_and_record_sending_transfer<T>(
-            &inner.treasury,
-            clock,
-            route,
-            amount,
-        )
-        ) {
-            emit(TokenTransferLimitExceed { message_key: key });
-            return (option::none(), owner)
-        };
-        let token_id=token_payload.token_type_in();
-        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,target_chain as u64,token_id,amount);
-        assert!(amount>fee,EInputAmountLteBridgeFee);
-        let amount_after_fee=amount-fee;
-        check_fast_path_limit(parent_id, clock, token_payload);
-        // claim from treasury
-        //transfer busd to owner
-        bfc_system_state.mint_stable_entry_to_address<BUSD>(amount_after_fee, cap, owner, ctx);
-        if (fee != 0){
-            let fee_coin=bfc_system_state.mint_stable<BUSD>(fee,cap, ctx);
-            bridge_fee::deposit_fee(parent_id, fee_coin);
-        };
-        record.claimed = true;
-        emit(TokenTransferClaimed { message_key: key });
-        (option::none(), owner)
-    }
-
-
-fun execute_emergency_op(inner: &mut BridgeInner, payload: EmergencyOp) {
-    let op = payload.emergency_op_type();
-    if (op == message::emergency_op_pause()) {
-        assert!(!inner.paused, EBridgeAlreadyPaused);
-        inner.paused = true;
-        emit(EmergencyOpEvent { frozen: true });
-    } else if (op == message::emergency_op_unpause()) {
-        assert!(inner.paused, EBridgeNotPaused);
-        inner.paused = false;
-        emit(EmergencyOpEvent { frozen: false });
-    } else {
-        abort EUnexpectedOperation
-    };
-}
-
-    fun execute_refund_admin_operate(inner: &mut BridgeInner, payload: message::RefundAdmin) {
-        let op = payload.refund_admin_op_type();
-        if (op == message::refund_admin_add()) {
-            let sui_address = payload.refund_admin_sui_address();
-            inner.add_refund_admin(sui_address);
-        } else if (op == message::refund_admin_remove()) {
-            let sui_address = payload.refund_admin_sui_address();
-            inner.remove_refund_admin(sui_address);
-        } else {
-            abort EUnexpectedOperation
-        };
-    }
-
-    fun add_refund_admin(inner: &mut BridgeInner, address: &String) {
-        if (!inner.refund_admins.contains(address)) {
-            inner.refund_admins.insert(*address);
-        }
-    }
-
-    fun remove_refund_admin(inner: &mut BridgeInner, address: &String) {
-        if (inner.refund_admins.contains(address)) {
-            inner.refund_admins.remove(address);
-        }
-    }
-
-
-fun execute_update_bridge_limit(inner: &mut BridgeInner, payload: UpdateBridgeLimit) {
-    let receiving_chain = payload.update_bridge_limit_payload_receiving_chain();
-    assert!(receiving_chain == inner.chain_id, EUnexpectedChainID);
-    let route = chain_ids::get_route(
-        payload.update_bridge_limit_payload_sending_chain(),
-        receiving_chain,
-    );
-
-    inner
-        .limiter
-        .update_route_limit(
-            &route,
-            payload.update_bridge_limit_payload_limit(),
-        )
-}
-
-fun execute_update_asset_price(inner: &mut BridgeInner, payload: UpdateAssetPrice) {
-    inner
-        .treasury
-        .update_asset_notional_price(
-            payload.update_asset_price_payload_token_id(),
-            payload.update_asset_price_payload_new_price(),
-        )
-}
-
-    fun execute_add_external_coin_admin(inner: &mut BridgeInner, payload: AddExternalCoinAdmin) {
-        inner.treasury.add_external_coin_admin(
-            payload.add_external_coin_admin_payload_coin_type(),
-            payload.add_external_coin_admin_payload_admin_address(),
-        )
-    }
-
-    fun execute_remove_external_coin_admin(inner: &mut BridgeInner, payload: RemoveExternalCoinAdmin) {
-        inner.treasury.remove_external_coin_admin(
-            payload.remove_external_coin_admin_payload_coin_type(),
-            payload.remove_external_coin_admin_payload_admin_address(),
-        )
-    }
-
-    fun execute_add_external_coin_target_payload(inner: &mut BridgeInner, payload: AddExternalCoinTarget) {
-        inner.treasury.add_external_coin_target(
-            payload.add_external_coin_target_payload_coin_type(),
-            payload.add_external_coin_target_payload_target_address(),
-        )
-    }
-
-    fun execute_remove_external_coin_target_payload(inner: &mut BridgeInner, payload: RemoveExternalCoinTarget) {
-        inner.treasury.remove_external_coin_target(
-            payload.remove_external_coin_target_payload_coin_type(),
-            payload.remove_external_coin_target_payload_target_address(),
-        )
-    }
-
-    fun execute_add_external_coin_witness(inner: &mut BridgeInner, payload: AddExternalCoinWitness) {
-        inner.treasury.add_external_coin_witness(
-            payload.add_external_coin_witness_payload_coin_type(),
-            payload.add_external_coin_witness_payload_witness_address(),
-        )
-    }
-
-    fun execute_remove_external_coin_witness(inner: &mut BridgeInner, payload: RemoveExternalCoinWitness) {
-        inner.treasury.remove_external_coin_witness(
-            payload.remove_external_coin_witness_payload_coin_type(),
-            payload.remove_external_coin_witness_payload_witness_address(),
-        )
-    }
-
-    fun execute_set_cross_in(parent_id: &mut UID,payload:SetCrossInBridgeFee,ctx: &mut TxContext){
-        let (chain_id,token_id,mode,amount)=payload.set_cross_in_bridge_fee_poyload();
-        bridge_fee::set_fee_in_cross_in(parent_id,chain_id as u64,token_id,mode,amount,ctx);
-    }
-    fun execute_set_cross_out(parent_id: &mut UID,payload:SetCrossOutBridgeFee,ctx: &mut TxContext){
-        let (chain_id,token_id,mode,amount)=payload.set_cross_out_bridge_fee_poyload();
-        bridge_fee::set_fee_in_cross_out(parent_id,chain_id as u64,token_id,mode,amount,ctx);
-    }
-
-    fun execute_withdraw_bridge_fee(payload: WithdrawBridgeFee,ctx: &mut TxContext){
-       let(recipient,coin_type,amount)=payload.withdraw_bridge_fee_polyload();
-       let cap=bridge_fee::create_withdraw_fee_cap(coin_type, amount, ctx);
-       transfer::public_transfer(cap,recipient);
-    }
-
-
-    fun execute_add_token_on_token_list(parent_id: &mut UID,payload: AddTokenOnTokenList,ctx: &mut TxContext){
-        let source_chain=payload.add_token_on_token_list_payload_from_chain_id();
-        let target_chain=payload.add_token_on_token_list_payload_to_chain_id();
-        let token_id=payload.add_token_on_token_list_payload_token_id();
-
-        if (target_chain==chain_ids::sui_mainnet() || target_chain==chain_ids::sui_testnet() || target_chain==chain_ids::sui_custom()) {
-            tokenlist::add_token_to_benfen(parent_id,source_chain as u64,token_id,ctx);
-        }else if (source_chain==chain_ids::sui_mainnet() || source_chain==chain_ids::sui_testnet() || source_chain==chain_ids::sui_custom())  {
-            tokenlist::add_token_from_benfen(parent_id,target_chain as u64,token_id,ctx);
-        }else{
-            abort EInvalidChainIDOnTokenList
-        }
-
-    }
-
-    fun execute_remove_token_on_token_list(parent_id: &mut UID,payload: RemoveTokenOnTokenList){
-        let source_chain=payload.remove_token_on_token_list_payload_from_chain_id();
-        let target_chain=payload.remove_token_on_token_list_payload_to_chain_id();
-        let token_id=payload.remove_token_on_token_list_payload_token_id();
-
-        if (target_chain==chain_ids::sui_mainnet() || target_chain==chain_ids::sui_testnet() || target_chain==chain_ids::sui_custom()) {
-            tokenlist::remove_token_to_benfen(parent_id,source_chain as u64,token_id);
-        }else if (source_chain==chain_ids::sui_mainnet() || source_chain==chain_ids::sui_testnet() || source_chain==chain_ids::sui_custom())  {
-            tokenlist::remove_token_from_benfen(parent_id,target_chain as u64,token_id);
-        }else{
-            abort EInvalidChainIDOnTokenList
-        }
-
-    }
 
 
 
-fun execute_add_tokens_on_sui(inner: &mut BridgeInner, payload: AddTokenOnSui) {
-    // FIXME: assert native_token to be false and add test
-    let native_token = payload.is_native();
-    let mut token_ids = payload.token_ids();
-    let mut token_type_names = payload.token_type_names();
-    let mut token_prices = payload.token_prices();
-
-    // Make sure token data is consistent
-    assert!(token_ids.length() == token_type_names.length(), EMalformedMessageError);
-    assert!(token_ids.length() == token_prices.length(), EMalformedMessageError);
-
-    while (token_ids.length() > 0) {
-        let token_id = token_ids.pop_back();
-        let token_type_name = token_type_names.pop_back();
-        let token_price = token_prices.pop_back();
-        inner.treasury.add_new_token(token_type_name, token_id, native_token, token_price)
-    }
-}
-
-// Verify seq number matches the next expected seq number for the message type,
-// and increment it.
-fun get_current_seq_num_and_increment(bridge: &mut BridgeInner, msg_type: u8): u64 {
-    if (!bridge.sequence_nums.contains(&msg_type)) {
-        bridge.sequence_nums.insert(msg_type, 1);
-        return 0
-    };
-
-    let entry = &mut bridge.sequence_nums[&msg_type];
-    let seq_num = *entry;
-    *entry = seq_num + 1;
-    seq_num
-}
 
 #[allow(unused_function)]
 fun get_parsed_token_transfer_message(
@@ -2676,3 +2685,4 @@ public fun unwrap_deposited_event(
 public fun unwrap_emergency_op_event(event: EmergencyOpEvent): bool {
     event.frozen
 }
+
