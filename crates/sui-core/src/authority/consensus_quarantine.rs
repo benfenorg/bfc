@@ -231,6 +231,7 @@ impl ConsensusCommitOutput {
                 .epoch_start_config()
                 .use_version_assignment_tables_v3()
             {
+                error!("dbmap3 write2");
                 batch.insert_batch(
                     &tables.assigned_shared_object_versions_v3,
                     assigned_versions,
