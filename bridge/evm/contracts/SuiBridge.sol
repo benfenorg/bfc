@@ -81,6 +81,9 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             tokenTransferPayload.amount
         );
 
+        // mark message as processed
+        isTransferProcessed[message.nonce] = true;
+
         _transferTokensFromVault(
             message.chainID,
             tokenTransferPayload.tokenID,
@@ -88,8 +91,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             erc20AdjustedAmount
         );
 
-        // mark message as processed
-        isTransferProcessed[message.nonce] = true;
+       
 
         emit TokensClaimed(
             message.chainID,

@@ -106,6 +106,17 @@ contract BridgeLimiter is IBridgeLimiter, CommitteeUpgradeable, OwnableUpgradeab
         return ((total - windowAmount) * (10 ** decimals)) / tokenPrice;
     }
 
+    function getSingleTransferLimit(uint64 tokenID)public view returns (uint256){
+        require(committee.config().isTokenSupported(tokenID), "BridgeLimiter: tokenID not supported");
+        uint256 tokenPrice = committee.config().tokenPriceOf(tokenID);
+        address tokenAddress = committee.config().tokenAddressOf(tokenID);
+        uint8 decimals = IERC20Metadata(tokenAddress).decimals();
+        require(tokenPrice > 0, "BridgeLimiter: Invalid token price");
+        uint256 limit = maxUSDLimit*(10 ** decimals)/tokenPrice;
+        require(limit > 0, "BridgeLimiter: Invalid limit");
+        return limit;
+    }
+
     /// @notice Calculates the given token amount in USD (8 decimal precision).
     /// @param tokenID The ID of the token.
     /// @param amount The amount of tokens.
