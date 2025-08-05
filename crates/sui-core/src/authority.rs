@@ -3768,6 +3768,10 @@ impl AuthorityState {
         self.get_object_store().get_object(object_id)
     }
 
+    pub fn get_object_synchronous(&self, object_id: &ObjectID) -> Option<Object> {
+        self.get_object_store().get_object(object_id)
+    }
+
     pub async fn get_sui_system_package_object_ref(&self) -> SuiResult<ObjectRef> {
         Ok(self
             .get_object(&SUI_SYSTEM_ADDRESS.into())
@@ -3783,9 +3787,8 @@ impl AuthorityState {
             return Ok((None, None)); //dry run /dev inspect
         }
 
-        let rt = Runtime::new().unwrap();
-        let gas =  rt.block_on( self.get_object(&gas_ref[0].0) ).ok_or_else(
-            || SuiError::UserInputError { error: UserInputError::ObjectNotFound { object_id: gas_ref[0].0, version: None } })?;
+        let gas = self.get_object_synchronous(&gas_ref[0].0)
+            .ok_or_else(|| SuiError::UserInputError{error:UserInputError::ObjectNotFound {object_id:gas_ref[0].0,version:None}})?;
 
         if gas.is_gas_coin() {
             return Ok((None, None)); // bfc gas
