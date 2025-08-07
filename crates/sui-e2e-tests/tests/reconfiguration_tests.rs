@@ -2734,7 +2734,9 @@ async fn safe_mode_reconfig_busd_staking_test() -> Result<(), anyhow::Error> {
         .await.unwrap().1.object_ref();
     let stake_tx = make_stable_staking_transaction(
         &test_cluster.wallet, validator_addr, vec![TypeTag::from_str("0xc8::busd::BUSD")?], address, gas, busd_data.object_ref()).await;
-    test_cluster.execute_transaction(stake_tx).await;
+    let resp = test_cluster.wallet.execute_transaction_may_fail(stake_tx).await;
+    println!("resp is {:?}", resp);
+    assert!(!resp.unwrap().status_ok().unwrap());
     // ...
 
     // Wait for regular epoch change to happen once. Migration from V1 to V2 should happen here.
@@ -4019,7 +4021,9 @@ async fn sim_test_busd_staking() -> Result<(), anyhow::Error> {
         busd_data.object_ref(),
     ).await;
 
-    test_cluster.execute_transaction(stake_tx).await;
+    let resp = test_cluster.wallet.execute_transaction_may_fail(stake_tx).await;
+    println!("resp is {:?}", resp);
+    assert!(!resp.unwrap().status_ok().unwrap());
 
     let _ = sleep(Duration::from_secs(10)).await;
 

@@ -70,6 +70,7 @@ module sui_system::sui_system {
 
     const ENotSystemAddress: u64 = 0;
     const EWrongInnerVersion: u64 = 1;
+    const EUnsupportedFeature: u64 = 2;
     // ==== functions that can only be called by genesis ====
 
     /// Create a new SuiSystemState object and make it shared.
@@ -241,13 +242,14 @@ module sui_system::sui_system {
 
     /// Add stake to a validator's stable pool.
     public entry fun request_add_stable_stake<STABLE>(
-        wrapper: &mut SuiSystemState,
-        stake: Coin<STABLE>,
-        validator_address: address,
-        ctx: &mut TxContext,
+        _wrapper: &mut SuiSystemState,
+        _stake: Coin<STABLE>,
+        _validator_address: address,
+        _ctx: &mut TxContext,
     ) {
-        let staked_sui = request_add_stable_stake_non_entry(wrapper, stake, validator_address, ctx);
-        transfer::public_transfer(staked_sui, tx_context::sender(ctx));
+        abort(EUnsupportedFeature)
+        // let staked_sui = request_add_stable_stake_non_entry(wrapper, stake, validator_address, ctx);
+        // transfer::public_transfer(staked_sui, tx_context::sender(ctx));
     }
 
     /// The non-entry version of `request_add_stable_stake`, which returns the staked SUI instead of transferring it to the sender.
