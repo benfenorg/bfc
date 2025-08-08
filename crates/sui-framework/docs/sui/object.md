@@ -24,6 +24,7 @@ Sui object identifiers
 -  [Function `uid_to_bytes`](#sui_object_uid_to_bytes)
 -  [Function `uid_to_address`](#sui_object_uid_to_address)
 -  [Function `new`](#sui_object_new)
+-  [Function `new_one`](#sui_object_new_one)
 -  [Function `delete`](#sui_object_delete)
 -  [Function `id`](#sui_object_id)
 -  [Function `borrow_id`](#sui_object_borrow_id)
@@ -611,6 +612,33 @@ This is the only way to create <code><a href="../sui/object.md#sui_object_UID">U
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui/object.md#sui_object_new">new</a>(ctx: &<b>mut</b> TxContext): <a href="../sui/object.md#sui_object_UID">UID</a> {
+    <a href="../sui/object.md#sui_object_UID">UID</a> {
+        <a href="../sui/object.md#sui_object_id">id</a>: <a href="../sui/object.md#sui_object_ID">ID</a> { bytes: ctx.fresh_object_address() },
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="sui_object_new_one"></a>
+
+## Function `new_one`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/object.md#sui_object_new_one">new_one</a>(ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): <a href="../sui/object.md#sui_object_UID">sui::object::UID</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/object.md#sui_object_new_one">new_one</a>(ctx: &<b>mut</b> TxContext): <a href="../sui/object.md#sui_object_UID">UID</a> {
+    <b>assert</b>!(@0x1 == @0x0, <a href="../sui/object.md#sui_object_ENotSystemAddress">ENotSystemAddress</a>);
     <a href="../sui/object.md#sui_object_UID">UID</a> {
         <a href="../sui/object.md#sui_object_id">id</a>: <a href="../sui/object.md#sui_object_ID">ID</a> { bytes: ctx.fresh_object_address() },
     }

@@ -59,13 +59,16 @@ public fun sponsor(_self: &TxContext): Option<address> {
     option_sponsor()
 }
 
+
 /// Create an `address` that has not been used. As it is an object address, it will never
 /// occur as the address for a user.
 /// In other words, the generated address is a globally unique object ID.
-public fun fresh_object_address(_ctx: &mut TxContext): address {
-    fresh_id()
+public fun fresh_object_address(ctx: &mut TxContext): address {
+        let ids_created = ctx.ids_created;
+        let id = derive_id(*&ctx.tx_hash, ids_created);
+        ctx.ids_created = ids_created + 1;
+        id
 }
-native fun fresh_id(): address;
 
 #[allow(unused_function)]
 /// Return the number of id's created by the current transaction.
