@@ -1564,9 +1564,6 @@ uid_to_address
 new
 	public fun
 	0x2::object
-new_one
-	public fun
-	0x2::object
 delete
 	public fun
 	0x2::object

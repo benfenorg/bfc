@@ -202,14 +202,6 @@ public fun new(ctx: &mut TxContext): UID {
     }
 }
 
-public fun new_one(ctx: &mut TxContext): UID {
-    assert!(@0x1 == @0x0, ENotSystemAddress);
-
-    UID {
-        id: ID { bytes: ctx.fresh_object_address() },
-    }
-}
-
 /// Delete the object and its `UID`. This is the only way to eliminate a `UID`.
 /// This exists to inform Sui of object deletions. When an object
 /// gets unpacked, the programmer will have to do something with its
