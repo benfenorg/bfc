@@ -1,9 +1,8 @@
-use rocksdb::{DB, Options, ColumnFamilyDescriptor};
+use rocksdb::{ColumnFamilyDescriptor, Options, DB};
 use std::sync::Arc;
 
 const DATA_COLUMN_FAMILY_V1: &str = "version1";
 const DATA_COLUMN_FAMILY_V2: &str = "version2";
-
 
 pub struct Database {
     pub db: Arc<DB>,
@@ -15,19 +14,16 @@ impl Database {
         let mut opts = Options::default();
         opts.create_if_missing(true);
         opts.create_missing_column_families(true);
-        
+
         let cfs = vec![
             ColumnFamilyDescriptor::new(DATA_COLUMN_FAMILY_V1, Options::default()),
             ColumnFamilyDescriptor::new(DATA_COLUMN_FAMILY_V2, Options::default()),
         ];
-        
+
         let db = Arc::new(DB::open_cf_descriptors(&opts, path, cfs)?);
         let cf1 = DATA_COLUMN_FAMILY_V1.to_string();
 
-        Ok(Self {
-            db,
-            cf1,
-        })
+        Ok(Self { db, cf1 })
     }
 
     pub fn put(&self, key: &[u8], value: &[u8]) -> Result<(), rocksdb::Error> {

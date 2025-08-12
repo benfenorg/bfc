@@ -1,0 +1,32 @@
+[package]
+name = "mpc-transmission"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "myapp"
+path = "src/main.rs"
+
+[features]
+default = []
+fuzzing = ["dep:arbitrary"]
+zeroize_memory = ["dep:zeroize"]
+
+[dependencies]
+sharks = "0.4"
+thiserror = "1.0"
+rand = "0.8"
+arbitrary = { version = "1.0", optional = true }
+zeroize = { version = "1.0", optional = true }
+hex = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tempfile = "3.20.0"
+env = "0.0.0"
+
+[dev-dependencies]
+proptest = "1.1.0"
+rand = "0.8.5"

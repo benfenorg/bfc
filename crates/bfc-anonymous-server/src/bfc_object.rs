@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use tracing::{info};
+use tracing::info;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -79,7 +79,13 @@ pub fn parse_response(response: &str) -> Option<String> {
         }
 
         // Successful response with object data
-        (None, Some(SuiObjectResponse { data: Some(obj), error: None })) => {
+        (
+            None,
+            Some(SuiObjectResponse {
+                data: Some(obj),
+                error: None,
+            }),
+        ) => {
             info!("Object ID: {}", obj.object_id);
             info!("Version: {}", obj.version);
             info!("Type: {}", obj.object_type);
@@ -89,7 +95,13 @@ pub fn parse_response(response: &str) -> Option<String> {
         }
 
         // Object-specific error (e.g., not found)
-        (None, Some(SuiObjectResponse { data: None, error: Some(obj_err) })) => {
+        (
+            None,
+            Some(SuiObjectResponse {
+                data: None,
+                error: Some(obj_err),
+            }),
+        ) => {
             info!("Object Error ({}): {}", obj_err.code, obj_err.message);
             return None;
         }
@@ -101,4 +113,3 @@ pub fn parse_response(response: &str) -> Option<String> {
         }
     }
 }
-
