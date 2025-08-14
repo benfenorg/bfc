@@ -52,6 +52,7 @@ module bridge::bridge {
 
     const MESSAGE_VERSION: u8 = 1;
     const MESSAGE_VERSION_V2: u8 = 2;
+    const MESSAGE_VERSION_V3: u8 = 3;
 
     // Transfer Status
     const TRANSFER_STATUS_PENDING: u8 = 0;
@@ -815,7 +816,7 @@ module bridge::bridge {
         inner.committee.verify_signatures(message, signatures);
 
         assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
-        assert!(message.message_version() == MESSAGE_VERSION, EUnexpectedMessageVersion);
+        assert!(message.message_version() == MESSAGE_VERSION_V3, EUnexpectedMessageVersion);
         let token_payload = message.extract_token_bridge_payload_v2();
         let target_chain = token_payload.token_target_chain_v2();
         assert!(

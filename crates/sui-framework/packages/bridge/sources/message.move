@@ -11,6 +11,7 @@ module bridge::message {
 
     const CURRENT_MESSAGE_VERSION: u8 = 1;
     const CURRENT_MESSAGE_VERSION_V2: u8 = 2;
+    const CURRENT_MESSAGE_VERSION_V3: u8 = 3;
     const ECDSA_ADDRESS_LENGTH: u64 = 20;
 
     const ETrailingBytes: u64 = 0;
@@ -782,7 +783,7 @@ module bridge::message {
         payload.append(reverse_bytes(bcs::to_bytes(&event_idx)));
         BridgeMessage {
             message_type: message_types::token(),
-            message_version: CURRENT_MESSAGE_VERSION,
+            message_version: CURRENT_MESSAGE_VERSION_V3,
             seq_num,
             source_chain,
             payload,
