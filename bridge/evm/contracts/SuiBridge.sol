@@ -66,42 +66,81 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
 
         IBridgeConfig config = committee.config();
 
-        BridgeUtils.TokenTransferPayload memory tokenTransferPayload =
+        
+        if (message.version==1){
+            BridgeUtils.TokenTransferPayload memory tokenTransferPayload =
             BridgeUtils.decodeTokenTransferPayload(message.payload);
 
-        // verify target chain ID is this chain ID
-        require(
-            tokenTransferPayload.targetChain == config.chainID(), "SuiBridge: Invalid target chain"
-        );
+            // verify target chain ID is this chain ID
+            require(
+                tokenTransferPayload.targetChain == config.chainID(), "SuiBridge: Invalid target chain"
+            );
 
-        // convert amount to ERC20 token decimals
-        uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
-            IERC20Metadata(config.tokenAddressOf(tokenTransferPayload.tokenID)).decimals(),
-            config.tokenSuiDecimalOf(tokenTransferPayload.tokenID),
-            tokenTransferPayload.amount
-        );
+            // convert amount to ERC20 token decimals
+            uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
+                IERC20Metadata(config.tokenAddressOf(tokenTransferPayload.tokenID)).decimals(),
+                config.tokenSuiDecimalOf(tokenTransferPayload.tokenID),
+                tokenTransferPayload.amount
+            );
 
-        // mark message as processed
-        isTransferProcessed[message.nonce] = true;
+            // mark message as processed
+            isTransferProcessed[message.nonce] = true;
 
-        _transferTokensFromVault(
-            message.chainID,
-            tokenTransferPayload.tokenID,
-            tokenTransferPayload.recipientAddress,
-            erc20AdjustedAmount
-        );
+            _transferTokensFromVault(
+                message.chainID,
+                tokenTransferPayload.tokenID,
+                tokenTransferPayload.recipientAddress,
+                erc20AdjustedAmount
+            );
 
-       
 
-        emit TokensClaimed(
-            message.chainID,
-            message.nonce,
-            config.chainID(),
-            tokenTransferPayload.tokenID,
-            erc20AdjustedAmount,
-            tokenTransferPayload.senderAddress,
-            tokenTransferPayload.recipientAddress
-        );
+            emit TokensClaimed(
+                message.chainID,
+                message.nonce,
+                config.chainID(),
+                tokenTransferPayload.tokenID,
+                erc20AdjustedAmount,
+                tokenTransferPayload.senderAddress,
+                tokenTransferPayload.recipientAddress
+            );
+        }else{
+
+            BridgeUtils.TokenTransferPayloadV2 memory tokenTransferPayload =
+            BridgeUtils.decodeTokenTransferPayloadV2(message.payload);
+
+            // verify target chain ID is this chain ID
+            require(
+                tokenTransferPayload.targetChain == config.chainID(), "SuiBridge: Invalid target chain"
+            );
+
+            // convert amount to ERC20 token decimals
+            uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
+                IERC20Metadata(config.tokenAddressOf(tokenTransferPayload.tokenID)).decimals(),
+                config.tokenSuiDecimalOf(tokenTransferPayload.tokenID),
+                tokenTransferPayload.amount
+            );
+
+            // mark message as processed
+            isTransferProcessed[message.nonce] = true;
+
+            _transferTokensFromVault(
+                message.chainID,
+                tokenTransferPayload.tokenID,
+                tokenTransferPayload.recipientAddress,
+                erc20AdjustedAmount
+            );
+
+
+            emit TokensClaimed(
+                message.chainID,
+                message.nonce,
+                config.chainID(),
+                tokenTransferPayload.tokenID,
+                erc20AdjustedAmount,
+                tokenTransferPayload.senderAddress,
+                tokenTransferPayload.recipientAddress
+            );
+        }
     }
 
     /// @notice Executes an emergency operation with the provided signatures and message.
