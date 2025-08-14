@@ -541,7 +541,8 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                             jsonrpc: "2.0".to_string(),
                             id: request.id,
                             result: Some(serde_json::json!({
-                                "result": value,
+                                "result1": value,
+                                "result2": 0,
                                 "operation": "anonymous_restore_value",
                                 "timestamp": chrono::Utc::now().timestamp()
                             })),
@@ -649,17 +650,18 @@ async fn handle_anonymous_compare(request: JsonRpcRequest) -> JsonRpcResponse {
                     Ok(value_a) => {
                         let value_b = compare_params.value3;
                         let comparison = if value_a > value_b {
-                            1
+                            "1"
                         } else if value_a < value_b {
-                            2
+                            "2"
                         } else {
-                            0
+                            "0"
                         };
                         JsonRpcResponse {
                             jsonrpc: "2.0".to_string(),
                             id: request.id,
                             result: Some(serde_json::json!({
-                                "result": comparison,
+                                "result1": comparison.to_string(),
+                                "result2": "0".to_string(),
                                 "operation": "anonymous_compare",
                                 "timestamp": chrono::Utc::now().timestamp()
                             })),

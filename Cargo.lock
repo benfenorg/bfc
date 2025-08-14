@@ -15247,6 +15247,7 @@ dependencies = [
  "fastcrypto",
  "fastcrypto-vdf",
  "fastcrypto-zkp",
+ "hex",
  "hmac 0.12.1",
  "indexmap 2.7.0",
  "move-binary-format",
