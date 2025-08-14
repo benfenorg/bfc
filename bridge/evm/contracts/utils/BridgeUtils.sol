@@ -340,7 +340,7 @@ library BridgeUtils {
     ///     bytes 56-63  : amount
     /// @param _payload The payload to be decoded.
     /// @return The decoded token transfer payload as a TokenTransferPayload struct.
-    function decodeTokenTransferPayload(bytes memory _payload)
+    function decodeTokenTransferPayloadV2(bytes memory _payload)
         internal
         pure
         returns (TokenTransferPayloadV2 memory)

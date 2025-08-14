@@ -253,6 +253,68 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         assert(IERC20(USDC).balanceOf(bridgerA) == 1_000_000);
     }
 
+    function testTransferUSDCWithValidSignaturesWithMessageVersionIsOne() public {
+        // Fill vault with USDC
+        changePrank(USDCWhale);
+        IERC20(USDC).transfer(address(vault), 100_000_000);
+        changePrank(deployer);
+
+
+        BridgeUtils.TokenTransferPayload memory payload = BridgeUtils.TokenTransferPayload({
+            senderAddressLength: 32,
+            senderAddress: abi.encode(0),
+            targetChain: chainID,
+            recipientAddressLength: 20,
+            recipientAddress: bridgerA,
+            tokenID: BridgeUtils.USDC,
+            // This is Sui amount (usdc decimal 9)
+            amount: 1_000_000_000,
+            txHash: new bytes(0),
+            eventIdx: 0
+        });
+
+        // // Create transfer payload
+        // uint8 senderAddressLength = 32;
+        // bytes memory senderAddress = abi.encode(0);
+        // uint8 targetChain = chainID;
+        // uint8 recipientAddressLength = 20;
+        // address recipientAddress = bridgerA;
+        // uint64 tokenID = BridgeUtils.USDC;
+        // uint64 amount = 1_000_000;
+        // bytes memory payload = abi.encodePacked(
+        //     senderAddressLength,
+        //     senderAddress,
+        //     targetChain,
+        //     recipientAddressLength,
+        //     recipientAddress,
+        //     tokenID,
+        //     amount
+        // );
+
+        // Create transfer message
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.TOKEN_TRANSFER,
+            version: 1,
+            nonce: 1,
+            chainID: 0,
+            payload: abi.encode(payload)
+        });
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+        assert(IERC20(USDC).balanceOf(bridgerA) == 0);
+        bridge.transferBridgedTokensWithSignatures(signatures, message);
+        assert(IERC20(USDC).balanceOf(bridgerA) == 1_000_000);
+    }
+
     function testExecuteEmergencyOpWithSignaturesInvalidOpCode() public {
         BridgeUtils.Message memory message = BridgeUtils.Message({
             messageType: BridgeUtils.EMERGENCY_OP,
