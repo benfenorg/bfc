@@ -992,7 +992,7 @@ mod tests {
         // Construct the expected bytes
         let prefix_bytes = BRIDGE_MESSAGE_PREFIX.to_vec(); // len: 18
         let message_type = vec![BridgeActionType::TokenTransfer as u8]; // len: 1
-        let message_version = vec![TOKEN_TRANSFER_MESSAGE_VERSION]; // len: 1
+        let message_version = vec![TOKEN_TRANSFER_MESSAGE_VERSION_V3]; // len: 1
         let nonce_bytes = nonce.to_be_bytes().to_vec(); // len: 8
         let source_chain_id_bytes = vec![sui_chain_id as u8]; // len: 1
 
@@ -1075,16 +1075,16 @@ mod tests {
         .to_bytes();
         assert_eq!(
             encoded_bytes,
-            Hex::decode("5355495f4252494447455f4d4553534147450001000000000000000a012000000000000000000000000000000000000000000000000000000000000000640b1400000000000000000000000000000000000000c800000000000000030000000000003039000000").unwrap(),
+            Hex::decode("5355495f4252494447455f4d4553534147450003000000000000000a012000000000000000000000000000000000000000000000000000000000000000640b1400000000000000000000000000000000000000c800000000000000030000000000003039000000").unwrap(),
         );
 
         let hash = Keccak256::digest(encoded_bytes).digest;
 
-        assert_eq!(Hex::encode(hash), "fbcf54f066ec2a22369e72efee9f4ddf4af17e0521d522d814ba15e7187d8890");
+        assert_eq!(Hex::encode(hash), "9465378e973a9a9f06b6d2f3abc9095fba8111ff5d01537801c6497b87f446d6");
 
         assert_eq!(
             hash.to_vec(),
-            Hex::decode("fbcf54f066ec2a22369e72efee9f4ddf4af17e0521d522d814ba15e7187d8890")
+            Hex::decode("9465378e973a9a9f06b6d2f3abc9095fba8111ff5d01537801c6497b87f446d6")
                 .unwrap(),
         );
         Ok(())
