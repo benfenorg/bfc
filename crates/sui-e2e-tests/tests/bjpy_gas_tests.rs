@@ -721,28 +721,29 @@ async fn test_move_call_new_test_coin_pool(test_cluster: &mut TestCluster, packa
     tracing::error!("txn_data is {:?}",txn_data);
     let tx = context.sign_transaction(&txn_data);
     let resp = test_cluster.wallet.execute_transaction_may_fail(tx).await;
-    tracing::error!("test_move_call_use_new_test_coin resp: {:#?}", resp);
+    tracing::info!("test_move_call_use_new_test_coin resp: {:#?}", resp);
 
     if  resp.is_err() {
         println!("test_move_call_use_new_test_coin resp: {:#?}", resp);
         return Err(resp.unwrap_err());
     }
 
-    let mut result_vec =  Vec::with_capacity(2);
+    let mut oracle_price: Option<ObjectRef> = None;
+    let mut global: Option<ObjectRef> = None;
     for ele in  resp?.object_changes.unwrap() {
         if let ObjectChange::Created { object_id, version,digest,object_type,.. } = ele {
             if object_type.name == Identifier::from_str("TestOraclePrice").unwrap(){
-                result_vec.insert(0,(object_id,version,digest));
+                oracle_price = Some((object_id,version,digest));
             }
             if object_type.name == Identifier::from_str("Global").unwrap(){
-                result_vec.insert(1,(object_id,version,digest));
+                global = Some((object_id,version,digest));
             }
         }
     }
-    if result_vec.len() != 2 {
+    if oracle_price.is_none() || global.is_none() {
         Err(anyhow!("not found"))
-    }else {
-        Ok((result_vec[0],result_vec[1]))
+    } else {
+        Ok((oracle_price.unwrap(), global.unwrap()))
     }
 
 }
