@@ -1576,7 +1576,6 @@ impl AuthorityPerEpochStore {
         // of this is that we restart at the end of the epoch and load about 160k keys into
         // memory.
         if self.epoch_start_config().use_version_assignment_tables_v3() {
-            error!("dbmap3 write");
             batch.delete_batch(
                 &tables.assigned_shared_object_versions_v3,
                 digests.iter().map(|d| TransactionKey::Digest(*d)),
@@ -1818,7 +1817,6 @@ impl AuthorityPerEpochStore {
         key: &TransactionKey,
     ) -> SuiResult<Option<Vec<(ConsensusObjectSequenceKey, SequenceNumber)>>> {
         if self.epoch_start_config().use_version_assignment_tables_v3() {
-            error!("dbmap3 read");
             Ok(self.tables()?.assigned_shared_object_versions_v3.get(key)?)
         } else {
             Ok(self
