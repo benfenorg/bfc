@@ -34,92 +34,6 @@ use sui_json_rpc_api::TransactionBuilderClient;
 use tokio::time::sleep;
 use tracing::error;
 use sui_keys::keystore::AccountKeystore;
-//use sui_network::tonic::codegen::StdError;
-
-#[sim_test]
-#[ignore]
-async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
-    // init
-    let mut test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(6000)
-        .with_num_validators(5)
-        .with_all_vault_init()
-        .build()
-        .await;
-
-    test_cluster.wait_for_epoch(Some(2)).await;
-    test_cluster
-    .swarm
-    .validator_nodes()
-    .next()
-    .unwrap()
-    .get_node_handle()
-    .unwrap()
-    .with(|node| {
-        let _state = node
-            .state()
-            .get_bfc_system_state_object_for_testing().unwrap();
-        let _oracle_address = _state.get_oracle_address();
-        assert!(_oracle_address.is_none());
-
-        //rate_map
-        let _rate_map = _state.get_rate_map();
-        // println!("=============rate_map: {:?}", &_rate_map);
-
-        let mut pass = false;
-        for entry in _rate_map.clone().contents.into_iter() {
-            if entry.key == "00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY" {
-                println!("bjpy before {:?}", entry.value);
-                pass = true;
-            }
-        }
-        assert!(pass);
-    });
-    let mut  http_client = test_cluster.rpc_client().clone();
-    let address = test_cluster.get_address_0();
-    // let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
-    let (package, _) = publish_coin::do_publish(&mut test_cluster,"tests/test_oracle_price").await?;
-    auth::auth_setup(&mut test_cluster, &mut http_client, address, "MINT-OTHER-STABLECOIN-POLLY").await?;
-    test_cluster.wait_for_epoch(Some(3)).await;
-    //add oracle price
-    get_bjpy(&test_cluster, &mut http_client, address).await?;
-    check_oracle_price(&mut test_cluster, package).await;
-    // wait to get oracle price and call bfc_round_v2
-    test_cluster.wait_for_epoch(Some(3)).await;
-
-    swap_bfc_to_stablecoin(&test_cluster, &mut http_client, address, 100000000000).await?;
-    swap_stablecoin_to_bfc_by_bjpy_gas(&test_cluster, &mut http_client, address, 100000).await?;
-
-    test_cluster
-    .swarm
-    .validator_nodes()
-    .next()
-    .unwrap()
-    .get_node_handle()
-    .unwrap()
-    .with(|node| {
-        let _state = node
-            .state()
-            .get_bfc_system_state_object_for_testing().unwrap();
-        let _oracle_address = _state.get_oracle_address();
-        assert!(_oracle_address.is_some());
-        // println!("=============oracle_address: {}", _oracle_address.unwrap());
-
-        //rate_map
-        let _rate_map = _state.get_rate_map();
-        // println!("=============rate_map: {:?}", &_rate_map);
-
-        let mut pass = false;
-        for entry in _rate_map.clone().contents.into_iter() {
-            if entry.key == "00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY" {
-                println!("bjpy after {:?}", entry.value);
-                pass = true;
-            }
-        }
-        assert!(pass);
-    });
-    Ok(())
-}
 
 #[sim_test]
 async fn sim_test_with_other_coin_gas() -> Result<(), anyhow::Error> {
@@ -171,7 +85,8 @@ async fn sim_test_with_new_stable_coin_gas() -> Result<(), anyhow::Error> {
 
     publish_coin::do_mint(&mut test_cluster, package).await;
     publish_coin::do_mint(&mut test_cluster, package).await;
-    auth::auth_setup(&mut test_cluster, &mut http_client, address, "MINT-OTHER-STABLECOIN-POLLY").await?;
+    auth::auth_setup(&mut test_cluster, &mut http_client, address, "MINT-BUSD-right_key").await?;
+    stable::mint_stable_coin(100000000000, &test_cluster, &http_client, address, "0xc8::busd::BUSD").await?;
 
     test_cluster.wait_for_epoch(Some(2)).await;
     let filter=format!("{}{}{}","0x2::coin::Coin<",package,"::test_coin::TEST_COIN>");
@@ -192,7 +107,7 @@ async fn sim_test_with_new_stable_coin_gas() -> Result<(), anyhow::Error> {
     test_cluster.wait_for_epoch(Some(4)).await;
     init_oracele_with_new_test_coin(&mut test_cluster, coin_type.replace("0x", ""), package).await;
     // wait to get oracle price and call bfc_round_v2
-    test_cluster.wait_for_epoch(Some(10)).await;
+    test_cluster.wait_for_epoch(Some(5)).await;
 
     let data = get_allow_stable_gas_coins_rate_map();
     for ele in &data {
@@ -277,9 +192,10 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit() -> Result<(), any
         &mut test_cluster,
         &mut http_client,
         address,
-        "MINT-OTHER-STABLECOIN-POLLY",
+        "MINT-BUSD-right_key",
     )
         .await?;
+    stable::mint_stable_coin(100000000000, &test_cluster, &http_client, address, "0xc8::busd::BUSD").await?;
 
     test_cluster.wait_for_epoch(Some(2)).await;
     let filter = format!(
@@ -304,7 +220,7 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit() -> Result<(), any
     test_cluster.wait_for_epoch(Some(4)).await;
     init_oracele_with_new_test_coin(&mut test_cluster, coin_type.replace("0x", ""), package).await;
     // wait to get oracle price and call bfc_round_v2
-    test_cluster.wait_for_epoch(Some(10)).await;
+    test_cluster.wait_for_epoch(Some(5)).await;
 
     let data = get_allow_stable_gas_coins_rate_map();
     for ele in &data {
@@ -382,7 +298,7 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit() -> Result<(), any
     .await;
     assert!(response.is_ok());
 
-    test_cluster.wait_for_epoch(Some(12)).await;
+    test_cluster.wait_for_epoch(Some(6)).await;
     // Query extra_fields in bfc system
     let mut new_extra_fields_size = 0;
     test_cluster
@@ -530,9 +446,11 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit_sponsored() -> Resu
         &mut test_cluster,
         &mut http_client,
         sender,
-        "MINT-OTHER-STABLECOIN-POLLY",
+        "MINT-BUSD-right_key",
     )
         .await?;
+
+    stable::mint_stable_coin(100000000000, &test_cluster, &http_client, sender, "0xc8::busd::BUSD").await?;
 
     test_cluster.wait_for_epoch(Some(2)).await;
     let filter = format!(
@@ -557,7 +475,7 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit_sponsored() -> Resu
     test_cluster.wait_for_epoch(Some(4)).await;
     init_oracele_with_new_test_coin(&mut test_cluster, coin_type.replace("0x", ""), package).await;
     // wait to get oracle price and call bfc_round_v2
-    test_cluster.wait_for_epoch(Some(10)).await;
+    test_cluster.wait_for_epoch(Some(5)).await;
 
     let data = get_allow_stable_gas_coins_rate_map();
     for ele in &data {
@@ -678,7 +596,7 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit_sponsored() -> Resu
     .await;
     assert!(response.is_ok());
 
-    test_cluster.wait_for_epoch(Some(12)).await;
+    test_cluster.wait_for_epoch(Some(6)).await;
     // Query extra_fields in bfc system
     let mut new_extra_fields_size = 0;
     test_cluster
@@ -763,9 +681,11 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit_sponsored_test_coin
         &mut test_cluster,
         &mut http_client,
         sender,
-        "MINT-OTHER-STABLECOIN-POLLY",
+        "MINT-BUSD-right_key",
     )
         .await?;
+
+    stable::mint_stable_coin(100000000000, &test_cluster, &http_client, sender, "0xc8::busd::BUSD").await?;
 
     test_cluster.wait_for_epoch(Some(2)).await;
     let filter = format!(
@@ -790,7 +710,7 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit_sponsored_test_coin
     test_cluster.wait_for_epoch(Some(4)).await;
     init_oracele_with_new_test_coin(&mut test_cluster, coin_type.replace("0x", ""), oracle_package).await;
     // wait to get oracle price and call bfc_round_v2
-    test_cluster.wait_for_epoch(Some(10)).await;
+    test_cluster.wait_for_epoch(Some(5)).await;
 
     let data = get_allow_stable_gas_coins_rate_map();
     for ele in &data {
@@ -897,9 +817,8 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit_sponsored_test_coin
     println!("Transfer second test coin to sponsor resp: {:?}", transfer_resp2.status_ok());
     assert!(transfer_resp2.status_ok().unwrap());
     
-    // Use swap to get BUSD for sponsor
-    let mut sponsor_http_client = test_cluster.rpc_client().clone();
-    swap_bfc_to_stablecoin(&test_cluster, &mut sponsor_http_client, sponsor, 100000000000).await?;
+    let sponsor_http_client = test_cluster.rpc_client().clone();
+    stable::mint_stable_coin_to_address(100000000000, &test_cluster, &sponsor_http_client, sender, "0xc8::busd::BUSD", sponsor).await?;
 
     // Create sponsored transaction using Test Coin as gas payment (not BFC)
     let objects = get_owned_objects(filter.as_str(), &mut http_client.clone(), sender).await?;
@@ -985,7 +904,7 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit_sponsored_test_coin
     println!("Response from use_new_test_coin_sponsored_with_test_coin_gas: {:?}", response);
     assert!(response.is_ok());
 
-    test_cluster.wait_for_epoch(Some(12)).await;
+    test_cluster.wait_for_epoch(Some(6)).await;
     // Query extra_fields in bfc system
     let mut new_extra_fields_size = 0;
     test_cluster
@@ -1040,176 +959,6 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit_sponsored_test_coin
     Ok(())
 }
 
-async fn get_bjpy(test_cluster: &TestCluster, http_client: &mut HttpClient, address: SuiAddress) -> Result<(), Error> {
-    stable::mint_stable_coin(25_000_000_000,test_cluster, http_client, address,"0xc8::bjpy::BJPY").await?;
-    Ok(())
-}
-
-async fn swap_bfc_to_stablecoin(
-    test_cluster: &TestCluster,
-    http_client: &mut HttpClient,
-    address: SuiAddress,
-    amount: u64,
-) -> Result<(), anyhow::Error> {
-    swap_bfc_to_stablecoin_with_tag(test_cluster, http_client, address, amount,
-                                    SuiTypeTag::new("0xc8::busd::BUSD".to_string())).await?;
-    Ok(())
-}
-
-async fn swap_bfc_to_stablecoin_with_tag(
-    test_cluster: &TestCluster,
-    http_client: &mut HttpClient,
-    address: SuiAddress,
-    amount: u64,
-    type_tag: SuiTypeTag,
-) -> Result<(), anyhow::Error> {
-    let objects = http_client
-        .get_owned_objects(address, Some(SuiObjectResponseQuery::new_with_filter(
-            SuiObjectDataFilter::StructType(
-                parse_struct_tag("0x2::coin::Coin<0x2::bfc::BFC>").unwrap(),
-            )
-        )), None, None).await?.data;
-    // api ： https://docs.sui.io/sui-api-ref#suix_getownedobjects
-    let coin = objects.first().unwrap().object().unwrap();
-
-    let bfc_system_address: SuiAddress = BFC_SYSTEM_STATE_OBJECT_ID.into();
-    let module = "bfc_system".to_string();
-    let package_id = BFC_SYSTEM_PACKAGE_ID;
-    let function = "swap_bfc_to_stablecoin".to_string();
-    let timestamp = Utc::now().timestamp() * 1000 + 600000;
-    let deadtime = timestamp.to_string();
-
-    let args = vec![
-        SuiJsonValue::from_str(&bfc_system_address.to_string())?,
-        SuiJsonValue::from_str(&coin.object_id.to_string())?,
-        SuiJsonValue::from_str(&SUI_CLOCK_OBJECT_ID.to_string())?,
-        SuiJsonValue::new(json!(amount.to_string()))?,
-        SuiJsonValue::new(json!("0"))?,
-        SuiJsonValue::new(json!(&deadtime))?,
-    ];
-
-    let transaction_bytes: TransactionBlockBytes = http_client
-        .move_call(
-            address,
-            package_id,
-            module,
-            function,
-            vec![type_tag],
-            args,
-            None,
-            10_000_00000.into(),
-            None,
-        )
-        .await?;
-
-    let tx = test_cluster
-        .wallet
-        .sign_transaction(&transaction_bytes.to_data()?);
-    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
-    let tx_response = http_client
-        .execute_transaction_block(
-            tx_bytes,
-            signatures,
-            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
-            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
-        )
-        .await?;
-    let effects = tx_response.effects.unwrap().clone();
-
-    match effects {
-        SuiTransactionBlockEffects::V1(_effects) => {
-            if _effects.status.is_err() {
-                error!("effects is {:?}",_effects);
-            }
-            assert!(_effects.status.is_ok());
-        }
-    };
-    Ok(())
-}
-
-async fn swap_stablecoin_to_bfc_by_bjpy_gas(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, amount: u64) -> Result<(), anyhow::Error> {
-    let bjpy_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::bjpy::BJPY>", http_client, address).await.unwrap();
-    let bjpy_coin = bjpy_response_vec.last().unwrap().object().unwrap();
-    let gas_budget = 25_000_000_000;
-    let split_coin_txn_bytes = http_client.split_coin(address, bjpy_coin.object_id, vec![BigInt::from(gas_budget)],
-                                                      None, BigInt::from(gas_budget)).await?.to_data()?;
-    let split_coin_txn = test_cluster.wallet.sign_transaction(&split_coin_txn_bytes);
-    let _response = test_cluster.wallet.execute_transaction_must_succeed(split_coin_txn).await;
-    let bjpy_response_vec = do_get_owned_objects_with_filter(
-        "0x2::coin::Coin<0xc8::bjpy::BJPY>",
-        http_client,
-        address,
-    ).await?;
-    assert_eq!(bjpy_response_vec.len(), 2);
-    let mut gas_id = None;
-    // let mut coin_id = None;
-    for bjpy_response in bjpy_response_vec {
-        let bjpy_data = bjpy_response.data.as_ref().unwrap();
-        let balance = get_balance(&bjpy_data);
-        if balance == gas_budget {
-            gas_id = Some(bjpy_data.object_id);
-        }
-    }
-    println!("gas_id is {:?}",gas_id);
-    assert!(gas_id.is_some());
-    //get busd
-    let busd_response_vec = do_get_owned_objects_with_filter(
-        "0x2::coin::Coin<0xc8::busd::BUSD>",
-        http_client,
-        address,
-    ).await?;
-    let busd_coin_id = busd_response_vec.first().unwrap().data.as_ref().unwrap().object_id;
-    println!("busd_coin_id is {:?}",busd_coin_id);
-
-    // let balance = get_balance(&gas);
-    // tracing::error!("balance is {:?} objid {:?}",balance,gas.object_id);
-    let bfc_system_address: SuiAddress = BFC_SYSTEM_STATE_OBJECT_ID.into();
-    let module = "bfc_system".to_string();
-    let package_id = BFC_SYSTEM_PACKAGE_ID;
-    let function = "swap_stablecoin_to_bfc".to_string();
-    let args = vec![
-        SuiJsonValue::from_str(&bfc_system_address.to_string())?,
-        SuiJsonValue::from_str(&busd_coin_id.to_string())?,
-        SuiJsonValue::from_str(&SUI_CLOCK_OBJECT_ID.to_string())?,
-        SuiJsonValue::new(json!(&amount.to_string()))?,
-        SuiJsonValue::new(json!("0"))?,
-        SuiJsonValue::new(json!("1709622441776884"))?,
-    ];
-    let transaction_bytes: TransactionBlockBytes = http_client
-        .move_call(
-            address,
-            package_id,
-            module,
-            function,
-            vec![SuiTypeTag::new("0xc8::busd::BUSD".to_string())],
-            args,
-            gas_id,
-            1_000_000_000.into(),
-            None,
-        )
-        .await?;
-    let tx = test_cluster
-        .wallet
-        .sign_transaction(&transaction_bytes.to_data()?);
-    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
-    let tx_response = http_client
-        .execute_transaction_block(
-            tx_bytes,
-            signatures,
-            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
-            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
-        )
-        .await?;
-    let effects = tx_response.effects.unwrap().clone();
-    println!("effects is {:?}",effects);
-    match effects {
-        SuiTransactionBlockEffects::V1(_effects) => {
-            assert!(_effects.status.is_ok());
-        }
-    };
-    Ok(())
-}
-
 async fn do_get_owned_objects_with_filter(filter_tag: &str, http_client: &HttpClient, address: SuiAddress) -> Result<Vec<SuiObjectResponse>, anyhow::Error> {
     let filter = SuiObjectDataFilter::StructType(parse_sui_struct_tag(filter_tag).unwrap());
     let data_option = SuiObjectDataOptions::new()
@@ -1230,18 +979,6 @@ async fn do_get_owned_objects_with_filter(filter_tag: &str, http_client: &HttpCl
         .await?
         .data;
     Ok(objects)
-}
-
-fn get_balance(busd_data: &SuiObjectData) -> u64 {
-    if let SuiParsedData::MoveObject(move_object) = busd_data.content.clone().unwrap() {
-        if let SuiMoveStruct::WithFields(data) = move_object.fields {
-            match data.get("balance").unwrap() {
-                SuiMoveValue::String(balance) => return balance.parse().unwrap(),
-                _ => return 0,
-            }
-        }
-    }
-    0
 }
 
 async fn get_owned_objects(filter_tag: &str, http_client: &HttpClient, address: SuiAddress) -> Result<Vec<SuiObjectResponse>, anyhow::Error> {
@@ -1280,49 +1017,6 @@ fn effect_success(effects: SuiTransactionBlockEffects) {
             }
         }
     };
-}
-
-async fn check_oracle_price(test_cluster: &mut TestCluster, package: ObjectID) {
-    let context = &test_cluster.wallet;
-    let address = test_cluster.get_address_0();
-    println!("address: {:?}", address);
-    let gas = context
-        .get_one_gas_object_owned_by_address(address)
-        .await
-        .unwrap()
-        .unwrap();
-    let tx = context.sign_transaction(
-        &TestTransactionBuilder::new(address, gas, context.get_reference_gas_price().await.unwrap())
-            .move_call(
-                package,
-                "test_oracle",
-                "oracle",
-                vec![],
-            )
-            .build(),
-    );
-    let resp = test_cluster.execute_transaction(tx).await;
-    println!("resp: {:#?}", resp.clone().object_changes.unwrap());
-
-    let oracle_id = resp.object_changes.unwrap().iter()
-        .find(|change| match change {
-            ObjectChange::Created {
-                object_type, ..
-            } => {
-                object_type.to_string().contains("dynamic_field")
-            }
-            _ => false,
-        }).unwrap().object_id();
-
-    set_oracle_address(test_cluster, oracle_id.clone().to_bfc_address()).await.unwrap();
-
-    let state = test_cluster.fullnode_handle.sui_node.state().clone();
-    let bfc_sys_state = state.get_bfc_system_state_object_for_testing().unwrap();
-
-    println!("bfc_sys_state.get_oracle_address(): {:#?}", &bfc_sys_state.get_oracle_address().unwrap());
-    let price = state.get_oracle_price_by_id(ObjectID::from(bfc_sys_state.get_oracle_address().unwrap())).unwrap();
-    println!("price: {:?}", price);
-    assert!(price.value.contents.len() > 0);
 }
 
 async fn set_oracle_address(test_cluster: &mut TestCluster, oracle_address: String) -> Result<(), Error> {
@@ -1478,10 +1172,6 @@ async fn test_move_call_use_new_test_coin(test_cluster: &mut TestCluster, packag
 async fn test_move_call_new_test_coin_pool(test_cluster: &mut TestCluster, package: ObjectID, mut type_args: Vec<TypeTag>,) -> Result<(ObjectRef,ObjectRef), Error> {
     let context = &test_cluster.wallet;
     let address = test_cluster.get_address_0();
-
-    let mut  http_client = test_cluster.rpc_client().clone();
-    swap_bfc_to_stablecoin(&test_cluster, &mut http_client, address, 100000000000).await?;
-
     let  gases = test_cluster.rpc_client().clone().get_all_coins(address, None, None)
         .await
         .unwrap();
@@ -1688,10 +1378,6 @@ async fn test_move_call_new_test_coin_pool_sponsored(
     sponsor: SuiAddress,
 ) -> Result<(ObjectRef,ObjectRef), Error> {
     let context = &test_cluster.wallet;
-
-    let mut  http_client = test_cluster.rpc_client().clone();
-    swap_bfc_to_stablecoin(&test_cluster, &mut http_client, sender, 100000000000).await?;
-
     let gases = test_cluster.rpc_client().clone().get_all_coins(sender, None, None)
         .await
         .unwrap();
