@@ -187,7 +187,6 @@ async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply,
         "bfcx_getAnonymousCompare" => handle_anonymous_compare(request).await,
         "bfcx_getAnonymousSplitValue" => handle_anonymous_split_value(request).await,
         "bfcx_getAnonymousRestoreValue" => handle_anonymous_restore_value(request).await,
-
         "bfcx_ping" => handle_ping(request).await,
         _ => JsonRpcResponse {
             jsonrpc: "2.0".to_string(),
@@ -242,6 +241,10 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
         Some(params) => match serde_json::from_value::<AnonymousAddParams>(params) {
             Ok(add_params) => {
+                println!("add_params.value1:{}", add_params.value1);
+                println!("add_params.value2:{}", add_params.value2);
+                println!("add_params.value3:{}", add_params.value3);
+                println!("add_params.value4:{}", add_params.value4);
                 let value1_share = recover_shares(add_params.value1, add_params.value2);
                 let value2_share = recover_shares(add_params.value3, add_params.value4);
                 if value1_share.is_err() || value2_share.is_err() {
@@ -496,25 +499,26 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                         objectid.as_bytes(),
                     )
                     .is_ok();
-                    if pass_verify_signature == true {
-                        match get_object_owneraddress(objectid.clone()).await {
-                            Ok(owner_address_value) => {
-                                let sui_address_from_send = public_key_bytes_to_sui_address(
-                                    restore_value_params.publickey.clone(),
-                                );
-                                let owner_address_from_send =
-                                    AccountAddress::from(sui_address_from_send);
-                                let evm_addr_from_system =
-                                    convert_to_evm_address(owner_address_value.clone());
-                                pass_verify_signature = evm_addr_from_system
-                                    == owner_address_from_send.to_hex_with_hex_head();
-                            }
-                            Err(error) => {
-                                info!("failed get owner address: {}", error);
-                                pass_verify_signature = false;
-                            }
-                        }
-                    }
+                    info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
+                    // if pass_verify_signature == true {
+                    //     match get_object_owneraddress(objectid.clone()).await {
+                    //         Ok(owner_address_value) => {
+                    //             let sui_address_from_send = public_key_bytes_to_sui_address(
+                    //                 restore_value_params.publickey.clone(),
+                    //             );
+                    //             let owner_address_from_send =
+                    //                 AccountAddress::from(sui_address_from_send);
+                    //             let evm_addr_from_system =
+                    //                 convert_to_evm_address(owner_address_value.clone());
+                    //             pass_verify_signature = evm_addr_from_system
+                    //                 == owner_address_from_send.to_hex_with_hex_head();
+                    //         }
+                    //         Err(error) => {
+                    //             info!("failed get owner address: {}", error);
+                    //             pass_verify_signature = false;
+                    //         }
+                    //     }
+                    // }
 
                     if pass_verify_signature == false {
                         return JsonRpcResponse {
@@ -531,8 +535,6 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
 
                     //todo,signature check,address.
                     // edd25519 signature check
-
-                    info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
 
                     let data1 = restore_value_params.value1;
                     let data2 = restore_value_params.value2;
