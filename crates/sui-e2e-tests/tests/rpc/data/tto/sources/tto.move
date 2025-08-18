@@ -20,7 +20,7 @@ module tto::M1 {
         transfer::public_transfer(coin, a_address);
     }
 
-    public entry fun receive(parent: &mut A, x: Receiving<Coin<SUI>>) {
+    public entry fun receive(parent: &mut A, x: Receiving<Coin<BFC>>) {
         let coin = transfer::public_receive(&mut parent.id, x);
         transfer::public_transfer(coin, @tto);
     }

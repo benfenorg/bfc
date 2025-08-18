@@ -33,7 +33,7 @@ fun test_immediate_vesting() {
     let mut ts = test_setup();
     ts.next_tx(OWNER_ADDR);
     let mut now = clock::create_for_testing(ts.ctx());
-    let mut wallet = ts.take_from_sender<Wallet<SUI>>();
+    let mut wallet = ts.take_from_sender<Wallet<BFC>>();
 
     // vest immediately
     now.set_for_testing(START_TIME);

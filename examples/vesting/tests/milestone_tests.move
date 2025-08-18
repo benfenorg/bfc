@@ -63,7 +63,7 @@ fun test_new_milestone_by_unathorized_controller() {
 fun test_new_invalid_milestone_percentage_range() {
     let mut ts = test_setup();
     ts.next_tx(CONTROLLED_ADDR);
-    let mut wallet = ts.take_shared<Wallet<SUI>>();
+    let mut wallet = ts.take_shared<Wallet<BFC>>();
     wallet.update_milestone_percentage(120, ts.ctx());
     ts::return_shared(wallet);
     ts::end(ts);
@@ -74,7 +74,7 @@ fun test_new_invalid_milestone_percentage_range() {
 fun test_new_invalid_milestone_percentage() {
     let mut ts = test_setup();
     ts.next_tx(CONTROLLED_ADDR);
-    let mut wallet = ts.take_shared<Wallet<SUI>>();
+    let mut wallet = ts.take_shared<Wallet<BFC>>();
     wallet.update_milestone_percentage(50, ts.ctx());
     wallet.update_milestone_percentage(30, ts.ctx());
     ts::return_shared(wallet);
@@ -87,7 +87,7 @@ fun test_milestone_based_vesting() {
 
     let _check_zero_vested = ts.next_tx(OWNER_ADDR);
     {
-        let wallet = ts.take_shared<Wallet<SUI>>();
+        let wallet = ts.take_shared<Wallet<BFC>>();
         assert!(wallet.claimable() == 0);
         assert!(wallet.balance() == FULLY_VESTED_AMOUNT);
         ts::return_shared(wallet);
@@ -95,13 +95,13 @@ fun test_milestone_based_vesting() {
 
     let _vest_half = ts.next_tx(CONTROLLED_ADDR);
     {
-        let mut wallet = ts.take_shared<Wallet<SUI>>();
+        let mut wallet = ts.take_shared<Wallet<BFC>>();
         wallet.update_milestone_percentage(50, ts.ctx());
         ts::return_shared(wallet);
     };
     let _check_half_vested = ts.next_tx(OWNER_ADDR);
     {
-        let mut wallet = ts.take_shared<Wallet<SUI>>();
+        let mut wallet = ts.take_shared<Wallet<BFC>>();
         assert!(wallet.claimable() == FULLY_VESTED_AMOUNT / 2);
         assert!(wallet.balance() == FULLY_VESTED_AMOUNT);
         let coins = wallet.claim(ts.ctx());
@@ -113,13 +113,13 @@ fun test_milestone_based_vesting() {
 
     let _vest_full = ts.next_tx(CONTROLLED_ADDR);
     {
-        let mut wallet = ts.take_shared<Wallet<SUI>>();
+        let mut wallet = ts.take_shared<Wallet<BFC>>();
         wallet.update_milestone_percentage(100, ts.ctx());
         ts::return_shared(wallet);
     };
     let _check_fully_vested = ts.next_tx(OWNER_ADDR);
     {
-        let mut wallet = ts.take_shared<Wallet<SUI>>();
+        let mut wallet = ts.take_shared<Wallet<BFC>>();
         assert!(wallet.claimable() == FULLY_VESTED_AMOUNT / 2);
         assert!(wallet.balance() == FULLY_VESTED_AMOUNT / 2);
         let coins = wallet.claim(ts.ctx());

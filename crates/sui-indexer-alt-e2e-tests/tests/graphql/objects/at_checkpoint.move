@@ -13,11 +13,11 @@ module P::M {
     coin: Coin<BFC>,
   }
 
-  public fun wrap(coin: Coin<SUI>, ctx: &mut TxContext): Wrapper {
+  public fun wrap(coin: Coin<BFC>, ctx: &mut TxContext): Wrapper {
     Wrapper { id: object::new(ctx), coin }
   }
 
-  public fun unwrap(wrapper: Wrapper): Coin<SUI> {
+  public fun unwrap(wrapper: Wrapper): Coin<BFC> {
     let Wrapper { id, coin } = wrapper;
     id.delete();
     coin

@@ -62,7 +62,7 @@ fun test_backloaded_vesting() {
     let mut ts = test_setup(START_FRONT, START_BACK, VESTING_DURATION, BACK_PERCENTAGE);
     ts.next_tx(OWNER_ADDR);
     let mut now = clock::create_for_testing(ts.ctx());
-    let mut wallet = ts.take_from_sender<Wallet<SUI>>();
+    let mut wallet = ts.take_from_sender<Wallet<BFC>>();
 
     // check zero vested
     now.set_for_testing(START_FRONT);
@@ -118,7 +118,7 @@ fun test_backloaded_claimable() {
     let mut ts = test_setup(START_FRONT, START_FRONT + 100, 200, BACK_PERCENTAGE);
     ts.next_tx(OWNER_ADDR);
     let mut now = clock::create_for_testing(ts.ctx());
-    let mut wallet = ts.take_from_sender<Wallet<SUI>>();
+    let mut wallet = ts.take_from_sender<Wallet<BFC>>();
     let first_duration_claimable = FULLY_VESTED_AMOUNT * (100 - BACK_PERCENTAGE as u64) / 100;
     let last_duration_claimable = FULLY_VESTED_AMOUNT * (BACK_PERCENTAGE as u64) / 100;
 

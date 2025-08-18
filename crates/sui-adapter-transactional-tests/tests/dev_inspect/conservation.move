@@ -11,7 +11,7 @@ module test::m {
     use sui::bfc::BFC;
     use sui::coin::Coin;
 
-    public fun transfer_back(c: Coin<SUI>, ctx: &mut TxContext) {
+    public fun transfer_back(c: Coin<BFC>, ctx: &mut TxContext) {
         sui::transfer::public_transfer(c, tx_context::sender(ctx))
     }
 }
