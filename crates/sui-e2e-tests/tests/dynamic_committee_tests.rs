@@ -437,7 +437,7 @@ mod remove_stake {
 }
 
 #[sim_test]
-async fn fuzz_dynamic_committee() {
+async fn sim_test_fuzz_dynamic_committee() {
     let num_operations = 20;
     let committee_size = 12;
 

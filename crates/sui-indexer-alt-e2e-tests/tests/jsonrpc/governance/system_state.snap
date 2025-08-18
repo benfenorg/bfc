@@ -309,11 +309,8 @@ Response: {
 task 8, lines 34-35:
 //# programmable --sender A --inputs object(0x5) object(2,1)
 //> 0: sui_system::sui_system::request_withdraw_stake(Input(0), Input(1))
-events: Event { package_id: sui_system, transaction_module: Identifier("sui_system"), sender: A, type_: StructTag { address: sui_system, module: Identifier("validator"), name: Identifier("UnstakingRequestEvent"), type_params: [] }, contents: [129, 8, 196, 80, 42, 47, 233, 211, 116, 149, 210, 252, 61, 149, 243, 43, 231, 29, 103, 67, 236, 101, 53, 111, 193, 107, 166, 74, 18, 104, 38, 10, 218, 131, 22, 109, 1, 175, 215, 221, 207, 138, 245, 248, 68, 244, 90, 170, 83, 244, 133, 72, 229, 17, 124, 35, 245, 162, 151, 140, 253, 66, 34, 68, 252, 204, 154, 66, 27, 187, 19, 193, 166, 106, 26, 169, 143, 10, 215, 80, 41, 237, 233, 72, 87, 119, 156, 105, 21, 180, 79, 148, 6, 139, 146, 30, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 202, 154, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] }
-created: object(8,0)
-mutated: 0x0000000000000000000000000000000000000000000000000000000000000005, object(0,0), object(2,0)
-deleted: object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 27550000,  storage_rebate: 27259452, non_refundable_storage_fee: 275348
+Error: Transaction Effects Status: INVARIANT VIOLATION.
+Debug of error: InvariantViolation at command Some(0)
 
 task 9, line 37:
 //# create-checkpoint
@@ -377,7 +374,7 @@ Response: {
         "operationCapId": "BFC9bd7b0171a6ad27347f63103c6c9834091a2d45e74a7b99e857d0084168c0ff9b7b2",
         "gasPrice": "100",
         "commissionRate": "200",
-        "nextEpochStake": "20000000001000000",
+        "nextEpochStake": "20000001001000000",
         "nextEpochGasPrice": "100",
         "nextEpochCommissionRate": "200",
         "stakingPoolId": "BFC8108c4502a2fe9d37495d2fc3d95f32be71d6743ec65356fc16ba64a1268260a5d4e",
@@ -393,8 +390,8 @@ Response: {
         "rewardsPool": "980000",
         "poolTokenBalance": "20000001000019999",
         "pendingStake": "0",
-        "pendingTotalSuiWithdraw": "1000000000",
-        "pendingPoolTokenWithdraw": "999999999",
+        "pendingTotalSuiWithdraw": "0",
+        "pendingPoolTokenWithdraw": "0",
         "exchangeRatesId": "BFCa501a4ad931815a8e2f506da8986ccd629baec0149570b40cf879e06a9860d11dc72",
         "exchangeRatesSize": "2"
       }
@@ -426,14 +423,14 @@ Response: {
     "epoch": "2",
     "protocolVersion": "70",
     "systemStateVersion": "2",
-    "storageFundTotalObjectStorageRebates": "27550000",
-    "storageFundNonRefundableBalance": "275348",
+    "storageFundTotalObjectStorageRebates": "27534800",
+    "storageFundNonRefundableBalance": "0",
     "referenceGasPrice": "100",
-    "safeMode": false,
-    "safeModeStorageRewards": "0",
-    "safeModeComputationRewards": "0",
-    "safeModeStorageRebates": "0",
-    "safeModeNonRefundableStorageFee": "0",
+    "safeMode": true,
+    "safeModeStorageRewards": "4278800",
+    "safeModeComputationRewards": "1000000",
+    "safeModeStorageRebates": "27259452",
+    "safeModeNonRefundableStorageFee": "275348",
     "epochStartTimestampMs": "1",
     "epochDurationMs": "300000",
     "stakeSubsidyStartEpoch": "0",
@@ -447,7 +444,7 @@ Response: {
     "stakeSubsidyCurrentDistributionAmount": "27000000000000",
     "stakeSubsidyPeriodLength": "10",
     "stakeSubsidyDecreaseRate": 0,
-    "totalStake": "20000000002000000",
+    "totalStake": "20000001001000000",
     "activeValidators": [
       {
         "suiAddress": "BFCda83166d01afd7ddcf8af5f844f45aaa53f48548e5117c23f5a2978cfd4222443a3d",
@@ -475,7 +472,7 @@ Response: {
         "operationCapId": "BFC9bd7b0171a6ad27347f63103c6c9834091a2d45e74a7b99e857d0084168c0ff9b7b2",
         "gasPrice": "100",
         "commissionRate": "200",
-        "nextEpochStake": "20000000002000000",
+        "nextEpochStake": "20000001001000000",
         "nextEpochGasPrice": "100",
         "nextEpochCommissionRate": "200",
         "stakingPoolId": "BFC8108c4502a2fe9d37495d2fc3d95f32be71d6743ec65356fc16ba64a1268260a5d4e",
@@ -487,14 +484,14 @@ Response: {
         },
         "stakingPoolActivationEpoch": "0",
         "stakingPoolDeactivationEpoch": null,
-        "stakingPoolSuiBalance": "20000000002000000",
-        "rewardsPool": "1960000",
-        "poolTokenBalance": "20000000000039999",
+        "stakingPoolSuiBalance": "20000001001000000",
+        "rewardsPool": "980000",
+        "poolTokenBalance": "20000001000019999",
         "pendingStake": "0",
         "pendingTotalSuiWithdraw": "0",
         "pendingPoolTokenWithdraw": "0",
         "exchangeRatesId": "BFCa501a4ad931815a8e2f506da8986ccd629baec0149570b40cf879e06a9860d11dc72",
-        "exchangeRatesSize": "3"
+        "exchangeRatesSize": "2"
       }
     ],
     "pendingActiveValidatorsId": "BFC9137b19908d07deceb6122f271cdf2b84fbc70ec72f31b873c121635849dfc5e27e6",

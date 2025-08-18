@@ -45,15 +45,15 @@ task 7, lines 29-45:
 Response: {
   "data": {
     "p1": {
-      "address": "0x390fe67f205a891d1610dc01af4932445d5c3cb5adb921501a8934999bcddf1c",
+      "address": "0x545caf62026e982a12c3778026a6c77d2f004c1322bc1ba2e9166a4737b48a20",
       "version": 1
     },
     "p2": {
-      "address": "0x1abef92f4c479406456a660f604a22c8df0a330df67d71d02ba7e3d4554ba498",
+      "address": "0x5fd79e9bfd8f3263bbe564550611a7c05c18b05c814c989374709d3077eb68df",
       "version": 2
     },
     "p3": {
-      "address": "0xb7a9aca96682c0c0e816bf1cf6132c025f713312d0cd5344ac8ff62123b7aa9d",
+      "address": "0x248c4d74e11c20844a9fa195505b6cdcd83ebebe7b4b0bbb49330db506ec74c8",
       "version": 3
     }
   }
@@ -64,15 +64,15 @@ task 8, lines 47-73:
 Response: {
   "data": {
     "p1": {
-      "address": "0x390fe67f205a891d1610dc01af4932445d5c3cb5adb921501a8934999bcddf1c",
+      "address": "0x545caf62026e982a12c3778026a6c77d2f004c1322bc1ba2e9166a4737b48a20",
       "version": 1
     },
     "p2": {
-      "address": "0x1abef92f4c479406456a660f604a22c8df0a330df67d71d02ba7e3d4554ba498",
+      "address": "0x5fd79e9bfd8f3263bbe564550611a7c05c18b05c814c989374709d3077eb68df",
       "version": 2
     },
     "p3": {
-      "address": "0xb7a9aca96682c0c0e816bf1cf6132c025f713312d0cd5344ac8ff62123b7aa9d",
+      "address": "0x248c4d74e11c20844a9fa195505b6cdcd83ebebe7b4b0bbb49330db506ec74c8",
       "version": 3
     },
     "p4": null
@@ -84,15 +84,15 @@ task 9, lines 75-96:
 Response: {
   "data": {
     "p1": {
-      "address": "0x390fe67f205a891d1610dc01af4932445d5c3cb5adb921501a8934999bcddf1c",
+      "address": "0x545caf62026e982a12c3778026a6c77d2f004c1322bc1ba2e9166a4737b48a20",
       "version": 1
     },
     "p2": {
-      "address": "0x1abef92f4c479406456a660f604a22c8df0a330df67d71d02ba7e3d4554ba498",
+      "address": "0x5fd79e9bfd8f3263bbe564550611a7c05c18b05c814c989374709d3077eb68df",
       "version": 2
     },
     "p3": {
-      "address": "0xb7a9aca96682c0c0e816bf1cf6132c025f713312d0cd5344ac8ff62123b7aa9d",
+      "address": "0x248c4d74e11c20844a9fa195505b6cdcd83ebebe7b4b0bbb49330db506ec74c8",
       "version": 3
     },
     "p4": null
@@ -117,7 +117,7 @@ Response: {
   "data": {
     "package": null,
     "object": {
-      "address": "0x0fc595d64d1658a280f345374cf80a28a1fd3cdfc93f578b079aafbe68683b3a",
+      "address": "0x659963a7ec4cc6e558db7ba411d3fda2660badaaf1ce063abda6ada3b186995f",
       "version": 5
     }
   }

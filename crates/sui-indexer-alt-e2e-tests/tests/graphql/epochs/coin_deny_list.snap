@@ -12,17 +12,13 @@ Epoch advanced: 0
 
 task 2, lines 8-49:
 //# publish --sender A
-created: object(2,0), object(2,1), object(2,2)
-mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 14181600,  storage_rebate: 0, non_refundable_storage_fee: 0
+Error: Transaction Effects Status: INVARIANT VIOLATION.
+Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: InvariantViolation, source: Some("Immutable fields for TxContext changed"), command: Some(0) } }
 
 task 3, lines 51-52:
 //# programmable --sender A --inputs object(0x403) object(2,0)
 //> P::coin::poke_deny_list(Input(0), Input(1))
-events: Event { package_id: P, transaction_module: Identifier("coin"), sender: A, type_: StructTag { address: sui, module: Identifier("deny_list"), name: Identifier("PerTypeConfigCreated"), type_params: [] }, contents: [0, 0, 0, 0, 0, 0, 0, 0, 76, 53, 52, 57, 53, 57, 56, 48, 55, 50, 48, 56, 49, 102, 51, 55, 101, 97, 97, 51, 98, 54, 51, 56, 50, 101, 98, 100, 99, 52, 54, 55, 54, 101, 97, 98, 102, 56, 52, 56, 99, 102, 56, 102, 53, 51, 54, 102, 50, 49, 102, 100, 49, 100, 101, 52, 48, 50, 100, 52, 98, 48, 48, 53, 102, 58, 58, 99, 111, 105, 110, 58, 58, 67, 79, 73, 78, 86, 80, 158, 91, 250, 128, 107, 243, 165, 85, 39, 118, 209, 13, 108, 209, 9, 48, 179, 170, 108, 234, 91, 52, 204, 248, 176, 166, 226, 213, 194, 190] }
-created: object(3,0), object(3,1), object(3,2)
-mutated: 0x0000000000000000000000000000000000000000000000000000000000000403, object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 12821200,  storage_rebate: 3521232, non_refundable_storage_fee: 35568
+Error: INVALID TEST. Unknown object, object(2,0)
 
 task 4, line 54:
 //# create-checkpoint
@@ -55,7 +51,7 @@ Response: {
     "e2": {
       "coinDenyList": {
         "address": "0x0000000000000000000000000000000000000000000000000000000000000403",
-        "version": 3
+        "version": 1
       }
     }
   }
