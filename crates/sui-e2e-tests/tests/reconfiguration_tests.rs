@@ -1059,7 +1059,7 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
 
     let objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let gas = objects.first().unwrap().object().unwrap();
-    let payment = objects.get(2).unwrap().object().unwrap();
+    let payment = objects.get(1).unwrap().object().unwrap();
     let function = "create_bfcdao_action".to_string();
     let propose_function = "propose".to_string();
     let arg = vec![
@@ -1077,7 +1077,7 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
 
     let objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let gas = objects.first().unwrap().object().unwrap();
-    let coin_obj = objects.get(2).unwrap().object().unwrap();
+    let coin_obj = objects.get(1).unwrap().object().unwrap();
 
     let arg = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
