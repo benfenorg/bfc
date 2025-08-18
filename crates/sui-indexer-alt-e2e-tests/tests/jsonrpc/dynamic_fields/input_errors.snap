@@ -10,7 +10,7 @@ task 1, lines 14-19:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 3625200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 3944400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 21:
 //# create-checkpoint
@@ -34,7 +34,7 @@ Response: {
   "id": 1,
   "error": {
     "code": -32602,
-    "message": "Invalid Params: Invalid type 0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a::M::Key<u64>: Package not found: 0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a"
+    "message": "Invalid Params: Invalid type 0xb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c85::M::Key<u64>: Package not found: 0xb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c85"
   }
 }
 
@@ -45,7 +45,7 @@ Response: {
   "id": 2,
   "error": {
     "code": -32602,
-    "message": "Invalid Params: Invalid type 0x24c71c206e1857249568d0e0dcafcf6bae30d7d791906b56f4a1e90785fdca62::N::Key<u64>: Module not found: 0x24c71c206e1857249568d0e0dcafcf6bae30d7d791906b56f4a1e90785fdca62::N"
+    "message": "Invalid Params: Invalid type 0x96a77ccfa4a6c20919c2521c1ded8c477215e73383b7247a9b715521d18c773a::N::Key<u64>: Module not found: 0x96a77ccfa4a6c20919c2521c1ded8c477215e73383b7247a9b715521d18c773a::N"
   }
 }
 
@@ -56,7 +56,7 @@ Response: {
   "id": 3,
   "error": {
     "code": -32602,
-    "message": "Invalid Params: Invalid type 0x24c71c206e1857249568d0e0dcafcf6bae30d7d791906b56f4a1e90785fdca62::M::DoesntExist<u64>: Datatype not found: 0x24c71c206e1857249568d0e0dcafcf6bae30d7d791906b56f4a1e90785fdca62::M::DoesntExist"
+    "message": "Invalid Params: Invalid type 0x96a77ccfa4a6c20919c2521c1ded8c477215e73383b7247a9b715521d18c773a::M::DoesntExist<u64>: Datatype not found: 0x96a77ccfa4a6c20919c2521c1ded8c477215e73383b7247a9b715521d18c773a::M::DoesntExist"
   }
 }
 
@@ -67,7 +67,7 @@ Response: {
   "id": 4,
   "error": {
     "code": -32602,
-    "message": "Invalid Params: Invalid type 0x24c71c206e1857249568d0e0dcafcf6bae30d7d791906b56f4a1e90785fdca62::M::Key<u64, u32>: Expected 1 type parameters, but got 2"
+    "message": "Invalid Params: Invalid type 0x96a77ccfa4a6c20919c2521c1ded8c477215e73383b7247a9b715521d18c773a::M::Key<u64, u32>: Expected 1 type parameters, but got 2"
   }
 }
 
@@ -89,6 +89,6 @@ Response: {
   "id": 6,
   "error": {
     "code": -32602,
-    "message": "Invalid Params: Could not serialize dynamic field name as 0x24c71c206e1857249568d0e0dcafcf6bae30d7d791906b56f4a1e90785fdca62::M::Key<u64>: Unable to convert hello, world to unsigned int."
+    "message": "Invalid Params: Could not serialize dynamic field name as 0x96a77ccfa4a6c20919c2521c1ded8c477215e73383b7247a9b715521d18c773a::M::Key<u64>: Unable to convert hello, world to unsigned int."
   }
 }

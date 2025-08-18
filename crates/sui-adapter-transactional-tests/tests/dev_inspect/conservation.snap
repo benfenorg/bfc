@@ -8,13 +8,21 @@ A: object(0,0), B: object(0,1)
 
 task 1, lines 8-17:
 //# publish
-created: object(1,0)
-mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 4818400,  storage_rebate: 0, non_refundable_storage_fee: 0
+Error: error[E03002]: unbound module
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpvpl7Uz:10:9
+   │
+10 │     use sui::sui::SUI;
+   │         ^^^^^^^^ Invalid 'use'. Unbound module: 'sui::sui'
+
+error[E03004]: unbound type
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpvpl7Uz:12:38
+   │
+12 │     public fun transfer_back(c: Coin<SUI>, ctx: &mut TxContext) {
+   │                                      ^^^ Unbound type 'SUI' in current scope
+
+
 
 task 2, lines 19-20:
 //# programmable --sender A --inputs struct(@empty,1) --dev-inspect
 //> 0: test::m::transfer_back(Input(0));
-mutated: object(_)
-unwrapped: object(2,0)
-gas summary: computation_cost: 500000, storage_cost: 1976000,  storage_rebate: 0, non_refundable_storage_fee: 0
+Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }

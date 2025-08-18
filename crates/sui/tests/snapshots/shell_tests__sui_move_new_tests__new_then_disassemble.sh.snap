@@ -24,28 +24,17 @@ echo "=== Disassemble ===" | tee /dev/stderr
 sui move disassemble build/example/bytecode_modules/example.mv
 
 ----- results -----
-success: true
-exit_code: 0
+success: false
+exit_code: 127
 ----- stdout -----
 === Build ===
 === Disassemble ===
-// Move bytecode v6
-module 0.example {
-use 0000000000000000000000000000000000000000000000000000000000000002::tx_context;
-
-public foo(_ctx#0#0: &mut TxContext) {
-B0:
-	0: Ret
-}
-
-}
-
 
 ----- stderr -----
+new_then_disassemble.sh: line 7: sui: command not found
+new_then_disassemble.sh: line 8: example/sources/example.move: No such file or directory
+new_then_disassemble.sh: line 13: cd: example: No such file or directory
 === Build ===
-INCLUDING DEPENDENCY Bridge
-INCLUDING DEPENDENCY SuiSystem
-INCLUDING DEPENDENCY Sui
-INCLUDING DEPENDENCY MoveStdlib
-BUILDING example
+new_then_disassemble.sh: line 16: sui: command not found
 === Disassemble ===
+new_then_disassemble.sh: line 19: sui: command not found

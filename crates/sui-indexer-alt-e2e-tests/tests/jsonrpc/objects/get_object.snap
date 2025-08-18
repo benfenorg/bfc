@@ -10,9 +10,8 @@ task 1, lines 15-17:
 //# programmable --sender A --inputs @A
 //> 0: sui::table::new<u64, sui::coin::Coin<sui::sui::SUI>>();
 //> 1: TransferObjects([Result(0)], Input(0))
-created: object(1,0)
-mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2979200,  storage_rebate: 0, non_refundable_storage_fee: 0
+Error: Transaction Effects Status: Move Bytecode Verification Error. Please run the Bytecode Verifier for more information.
+Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: VMVerificationOrDeserializationError, source: Some(VMError { major_status: LINKER_ERROR, sub_status: None, message: Some("Cannot find ModuleId { address: sui, name: Identifier(\"sui\") } in data cache"), exec_state: None, location: Undefined, indices: [], offsets: [] }), command: Some(0) } }
 
 task 2, lines 19-21:
 //# programmable --sender A --inputs 42 @A
@@ -20,7 +19,7 @@ task 2, lines 19-21:
 //> 1: TransferObjects([Result(0)], Input(1))
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, line 23:
 //# create-checkpoint
@@ -33,17 +32,17 @@ Response: {
   "id": 0,
   "result": {
     "data": {
-      "objectId": "0xa305393e33fd6731559f651b5718c817eb91aee862fd203bd85e46b08c456c5d",
+      "objectId": "BFCd351515562091dc3dcb91248ba746858d9bb5b21c35d7ecf0877d43721654be3be6a",
       "version": "3",
-      "digest": "7xrrTER6S874SBJBszf4CDxmF79DpGELaMbi9xnNx9yC",
+      "digest": "CruE9kL5j9rsR3udzz5UzYjNoCBg7eoW4ro4pEwTZyx9",
       "content": {
         "dataType": "moveObject",
-        "type": "0x2::coin::Coin<0x2::sui::SUI>",
+        "type": "0x2::coin::Coin<0x2::bfc::BFC>",
         "hasPublicTransfer": true,
         "fields": {
           "balance": "42",
           "id": {
-            "id": "0xa305393e33fd6731559f651b5718c817eb91aee862fd203bd85e46b08c456c5d"
+            "id": "BFCd351515562091dc3dcb91248ba746858d9bb5b21c35d7ecf0877d43721654be3be6a"
           }
         }
       }
@@ -56,7 +55,7 @@ task 5, lines 31-33:
 //> 0: SplitCoins(Input(0), [Input(1)]);
 //> 1: MergeCoins(Gas, [Result(0)])
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 1956240, non_refundable_storage_fee: 19760
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 2588256, non_refundable_storage_fee: 26144
 
 task 6, line 35:
 //# create-checkpoint
@@ -69,17 +68,17 @@ Response: {
   "id": 1,
   "result": {
     "data": {
-      "objectId": "0xa305393e33fd6731559f651b5718c817eb91aee862fd203bd85e46b08c456c5d",
+      "objectId": "BFCd351515562091dc3dcb91248ba746858d9bb5b21c35d7ecf0877d43721654be3be6a",
       "version": "4",
-      "digest": "4ChF24sgkRSajSk9i9mwjTKXgyJPnb2PMxiAdUoAZLKH",
+      "digest": "8Ds3TEjywppXaJe8hbMVpu1hmbd9dwAfptDaVoSbWNpb",
       "content": {
         "dataType": "moveObject",
-        "type": "0x2::coin::Coin<0x2::sui::SUI>",
+        "type": "0x2::coin::Coin<0x2::bfc::BFC>",
         "hasPublicTransfer": true,
         "fields": {
           "balance": "21",
           "id": {
-            "id": "0xa305393e33fd6731559f651b5718c817eb91aee862fd203bd85e46b08c456c5d"
+            "id": "BFCd351515562091dc3dcb91248ba746858d9bb5b21c35d7ecf0877d43721654be3be6a"
           }
         }
       }
@@ -90,10 +89,7 @@ Response: {
 task 8, lines 43-44:
 //# programmable --sender A --inputs object(1,0) 0 object(2,0)
 //> 0: sui::table::add<u64, sui::coin::Coin<sui::sui::SUI>>(Input(0), Input(1), Input(2));
-created: object(8,0)
-mutated: object(0,0), object(1,0)
-wrapped: object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 5335200,  storage_rebate: 3927528, non_refundable_storage_fee: 39672
+Error: INVALID TEST. Unknown object, object(1,0)
 
 task 9, line 46:
 //# create-checkpoint
@@ -105,9 +101,21 @@ Response: {
   "jsonrpc": "2.0",
   "id": 2,
   "result": {
-    "error": {
-      "code": "notExists",
-      "object_id": "0xa305393e33fd6731559f651b5718c817eb91aee862fd203bd85e46b08c456c5d"
+    "data": {
+      "objectId": "BFCd351515562091dc3dcb91248ba746858d9bb5b21c35d7ecf0877d43721654be3be6a",
+      "version": "4",
+      "digest": "8Ds3TEjywppXaJe8hbMVpu1hmbd9dwAfptDaVoSbWNpb",
+      "content": {
+        "dataType": "moveObject",
+        "type": "0x2::coin::Coin<0x2::bfc::BFC>",
+        "hasPublicTransfer": true,
+        "fields": {
+          "balance": "21",
+          "id": {
+            "id": "BFCd351515562091dc3dcb91248ba746858d9bb5b21c35d7ecf0877d43721654be3be6a"
+          }
+        }
+      }
     }
   }
 }
@@ -116,10 +124,7 @@ task 11, lines 54-56:
 //# programmable --sender A --inputs object(1,0) 0 @A
 //> 0: sui::table::remove<u64, sui::coin::Coin<sui::sui::SUI>>(Input(0), Input(1));
 //> 1: TransferObjects([Result(0)], Input(2))
-mutated: object(0,0), object(1,0)
-unwrapped: object(2,0)
-deleted: object(8,0)
-gas summary: computation_cost: 1000000, storage_cost: 3967200,  storage_rebate: 5281848, non_refundable_storage_fee: 53352
+Error: INVALID TEST. Unknown object, object(1,0)
 
 task 12, line 58:
 //# create-checkpoint
@@ -132,17 +137,17 @@ Response: {
   "id": 3,
   "result": {
     "data": {
-      "objectId": "0xa305393e33fd6731559f651b5718c817eb91aee862fd203bd85e46b08c456c5d",
-      "version": "6",
-      "digest": "EgjhvDZUPAmiGDmZZgqVWRyfjsAc88wua5jnTbjwidQ1",
+      "objectId": "BFCd351515562091dc3dcb91248ba746858d9bb5b21c35d7ecf0877d43721654be3be6a",
+      "version": "4",
+      "digest": "8Ds3TEjywppXaJe8hbMVpu1hmbd9dwAfptDaVoSbWNpb",
       "content": {
         "dataType": "moveObject",
-        "type": "0x2::coin::Coin<0x2::sui::SUI>",
+        "type": "0x2::coin::Coin<0x2::bfc::BFC>",
         "hasPublicTransfer": true,
         "fields": {
           "balance": "21",
           "id": {
-            "id": "0xa305393e33fd6731559f651b5718c817eb91aee862fd203bd85e46b08c456c5d"
+            "id": "BFCd351515562091dc3dcb91248ba746858d9bb5b21c35d7ecf0877d43721654be3be6a"
           }
         }
       }
@@ -155,7 +160,7 @@ task 14, lines 66-67:
 //> 0: MergeCoins(Gas, [Input(0)])
 mutated: object(0,0)
 deleted: object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 1956240, non_refundable_storage_fee: 19760
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 2588256, non_refundable_storage_fee: 26144
 
 task 15, line 69:
 //# create-checkpoint
@@ -169,7 +174,7 @@ Response: {
   "result": {
     "error": {
       "code": "notExists",
-      "object_id": "0xa305393e33fd6731559f651b5718c817eb91aee862fd203bd85e46b08c456c5d"
+      "object_id": "BFCd351515562091dc3dcb91248ba746858d9bb5b21c35d7ecf0877d43721654be3be6a"
     }
   }
 }
@@ -182,7 +187,7 @@ Response: {
   "result": {
     "error": {
       "code": "notExists",
-      "object_id": "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      "object_id": "BFC0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdefa8ae"
     }
   }
 }
@@ -191,13 +196,13 @@ task 18, lines 83-86:
 //# publish --sender A --upgradeable
 created: object(18,0), object(18,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 5092000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 5411200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 19, lines 88-91:
 //# upgrade --sender A --package P --upgrade-capability 18,1
 created: object(19,0)
 mutated: object(0,0), object(18,1)
-gas summary: computation_cost: 1000000, storage_cost: 5092000,  storage_rebate: 2595780, non_refundable_storage_fee: 26220
+gas summary: computation_cost: 1000000, storage_cost: 5958400,  storage_rebate: 2911788, non_refundable_storage_fee: 29412
 
 task 20, line 93:
 //# create-checkpoint
@@ -210,9 +215,9 @@ Response: {
   "id": 6,
   "result": {
     "data": {
-      "objectId": "0x97635b50b86bd37b2e62ca429ac51507e9c6d11a529bba357343e43996e27ec5",
+      "objectId": "BFC6e6e04c68ec7559704c6365fea0f2b6bbe6ac37144e265599065496864d462c56a1b",
       "version": "1",
-      "digest": "CHRVw1A4Sd53B8HYmHrd8Cc2zjRbP49eZcMsC5R3dbZJ",
+      "digest": "4VgMeuzbGcoLD9LaXqm2FxkZXBJervgGL8Ky3oZH6ivs",
       "type": "package"
     }
   }
@@ -225,9 +230,9 @@ Response: {
   "id": 7,
   "result": {
     "data": {
-      "objectId": "0x4e80d4d182115b280caf21c1b994c6c27bd14cf71af224a27daf3136acc4beed",
+      "objectId": "BFC9b96c5250d6dc69ba9560a21b3098bccb6449d4a1e97d0d836b493a77e687dade9b1",
       "version": "2",
-      "digest": "Ej7VAZ1KJhABmF12RRNHy8sH8WjncJ5mXK77GPGtuP8J",
+      "digest": "Affv7T59PrZXtGnizAULTxACZsTD2tzGyV2UAomQjkBs",
       "type": "package"
     }
   }

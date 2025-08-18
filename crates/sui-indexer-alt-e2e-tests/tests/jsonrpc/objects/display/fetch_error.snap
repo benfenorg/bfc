@@ -10,7 +10,7 @@ task 1, lines 10-19:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 4620800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 4940000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 21-23:
 //# programmable --sender A --inputs @A
@@ -18,7 +18,7 @@ task 2, lines 21-23:
 //> 1: TransferObjects([Result(0)], Input(0))
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2226800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2546000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, line 25:
 //# create-checkpoint
@@ -31,9 +31,9 @@ Response: {
   "id": 0,
   "result": {
     "data": {
-      "objectId": "0xb1d114770bfc9968a2ad3da9c6d5bcbf32e4bcf3d0bf3eba674df5d907a83e73",
+      "objectId": "BFC8e857331ffc45f83765150c01868c89c8b2e4a87ce2e9116b8a8b02fa99134c44927",
       "version": "1",
-      "digest": "Sgp59rDKZRKoSZ2ZJKKcc5YQ7MrhEHDxbZLqqFjywcq",
+      "digest": "2J9sq374E6khNX6k3DGmmfzH21wZSxZWKY2Ub5WCYk8T",
       "display": {
         "data": null,
         "error": {
@@ -52,14 +52,14 @@ Response: {
   "id": 1,
   "result": {
     "data": {
-      "objectId": "0x5736caa914301b5f6bc2734fdd6ef4c0097ebf6f0b346ec0ce1119f3a86c8c37",
+      "objectId": "BFC4e1b5bc7855ccafad02de2855c5333f69f9310f5efbbfaf6e05bf3412bfd32baa0c9",
       "version": "2",
-      "digest": "6pd5G7cgCu3ShFTxpyo7xJTsq5EwzbAnrmfNeR55roUH",
+      "digest": "4f8EbNSTgQN4GyeovVtzDp9VCciAeJUvTtB1GCrBdx1t",
       "display": {
         "data": null,
         "error": {
           "code": "displayError",
-          "error": "Display format not found for 0xb1d114770bfc9968a2ad3da9c6d5bcbf32e4bcf3d0bf3eba674df5d907a83e73::mod::Foo"
+          "error": "Display format not found for 0x8e857331ffc45f83765150c01868c89c8b2e4a87ce2e9116b8a8b02fa99134c4::mod::Foo"
         }
       }
     }

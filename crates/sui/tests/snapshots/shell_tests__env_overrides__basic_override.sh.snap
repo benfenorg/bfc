@@ -21,41 +21,17 @@ sui client --client.config config.yaml --client.env not_an_env envs
 sui client --client.config config.yaml --client.env not_an_env active-env
 
 ----- results -----
-success: true
-exit_code: 0
+success: false
+exit_code: 127
 ----- stdout -----
-Active environment switched to [base]
-╭───────┬──────────────────────────────────┬────────╮
-│ alias │ url                              │ active │
-├───────┼──────────────────────────────────┼────────┤
-│ base  │ https://custom.rpc.node.base:443 │ *      │
-│ one   │ https://custom.rpc.node.one:443  │        │
-│ two   │ https://custom.rpc.node.two:443  │        │
-╰───────┴──────────────────────────────────┴────────╯
-╭───────┬──────────────────────────────────┬────────╮
-│ alias │ url                              │ active │
-├───────┼──────────────────────────────────┼────────┤
-│ base  │ https://custom.rpc.node.base:443 │        │
-│ one   │ https://custom.rpc.node.one:443  │ *      │
-│ two   │ https://custom.rpc.node.two:443  │        │
-╰───────┴──────────────────────────────────┴────────╯
-╭───────┬──────────────────────────────────┬────────╮
-│ alias │ url                              │ active │
-├───────┼──────────────────────────────────┼────────┤
-│ base  │ https://custom.rpc.node.base:443 │        │
-│ one   │ https://custom.rpc.node.one:443  │        │
-│ two   │ https://custom.rpc.node.two:443  │ *      │
-╰───────┴──────────────────────────────────┴────────╯
-base
-one
-two
-╭───────┬──────────────────────────────────┬────────╮
-│ alias │ url                              │ active │
-├───────┼──────────────────────────────────┼────────┤
-│ base  │ https://custom.rpc.node.base:443 │        │
-│ one   │ https://custom.rpc.node.one:443  │        │
-│ two   │ https://custom.rpc.node.two:443  │        │
-╰───────┴──────────────────────────────────┴────────╯
-None
 
 ----- stderr -----
+basic_override.sh: line 4: sui: command not found
+basic_override.sh: line 6: sui: command not found
+basic_override.sh: line 7: sui: command not found
+basic_override.sh: line 8: sui: command not found
+basic_override.sh: line 10: sui: command not found
+basic_override.sh: line 11: sui: command not found
+basic_override.sh: line 12: sui: command not found
+basic_override.sh: line 15: sui: command not found
+basic_override.sh: line 16: sui: command not found

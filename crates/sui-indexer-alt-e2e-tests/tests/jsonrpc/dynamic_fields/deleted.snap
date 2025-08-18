@@ -12,7 +12,7 @@ task 1, lines 11-13:
 //> 1: TransferObjects([Result(0)], Input(0))
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2287600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2606800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 15:
 //# create-checkpoint
@@ -26,7 +26,7 @@ Response: {
   "result": {
     "error": {
       "code": "dynamicFieldNotFound",
-      "parent_object_id": "0xdd806f262555a167b932495c24765daccc1ba6ebee5e8a696155818e6b5e93ad"
+      "parent_object_id": "BFC1d39d3e9579f3a048c5f4954d91ce9c945c2da85f7aaea352d79a0f44fa768045d34"
     }
   }
 }
@@ -36,7 +36,7 @@ task 4, lines 23-24:
 //> 0: sui::bag::add<u64, u64>(Input(0), Input(1), Input(1))
 created: object(4,0)
 mutated: object(0,0), object(1,0)
-gas summary: computation_cost: 1000000, storage_cost: 3754400,  storage_rebate: 2264724, non_refundable_storage_fee: 22876
+gas summary: computation_cost: 1000000, storage_cost: 4073600,  storage_rebate: 2580732, non_refundable_storage_fee: 26068
 
 task 5, line 26:
 //# create-checkpoint
@@ -49,14 +49,14 @@ Response: {
   "id": 1,
   "result": {
     "data": {
-      "objectId": "0xd75efa771017d6658b663e6a9e6636f1667a9c599b3a21e7c6c8cd82e12d13c7",
+      "objectId": "BFCf7d3cf0d106364d36a8de10cccfb7fe690764437497b549013444ec99875daea8fbf",
       "version": "3",
-      "digest": "624wRp2tvzaqSZdxGqSbns87FAuATEGA6KGdvg2ncvgv",
+      "digest": "4VLSZ3DRpsvKekzmKWRRNMEkp11tk19LQ1Zn6R12kSvr",
       "type": "0x2::dynamic_field::Field<u64, u64>",
       "owner": {
-        "ObjectOwner": "0xdd806f262555a167b932495c24765daccc1ba6ebee5e8a696155818e6b5e93ad"
+        "ObjectOwner": "BFC1d39d3e9579f3a048c5f4954d91ce9c945c2da85f7aaea352d79a0f44fa768045d34"
       },
-      "previousTransaction": "ERcxEuSHy68ZKVaJNTMqcTgC5fwXrrFvvz6Gyg4x4YkB",
+      "previousTransaction": "9Gjg1SK1UshrckUsHHkUnkDttpMbFChK7dtJkUuFX9vL",
       "storageRebate": "1466800",
       "content": {
         "dataType": "moveObject",
@@ -64,7 +64,7 @@ Response: {
         "hasPublicTransfer": false,
         "fields": {
           "id": {
-            "id": "0xd75efa771017d6658b663e6a9e6636f1667a9c599b3a21e7c6c8cd82e12d13c7"
+            "id": "BFCf7d3cf0d106364d36a8de10cccfb7fe690764437497b549013444ec99875daea8fbf"
           },
           "name": "42",
           "value": "42"
@@ -79,7 +79,7 @@ task 7, lines 34-35:
 //> 0: sui::bag::remove<u64, u64>(Input(0), Input(1))
 mutated: object(0,0), object(1,0)
 deleted: object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 2287600,  storage_rebate: 3716856, non_refundable_storage_fee: 37544
+gas summary: computation_cost: 1000000, storage_cost: 2606800,  storage_rebate: 4032864, non_refundable_storage_fee: 40736
 
 task 8, line 37:
 //# create-checkpoint
@@ -93,7 +93,7 @@ Response: {
   "result": {
     "error": {
       "code": "dynamicFieldNotFound",
-      "parent_object_id": "0xdd806f262555a167b932495c24765daccc1ba6ebee5e8a696155818e6b5e93ad"
+      "parent_object_id": "BFC1d39d3e9579f3a048c5f4954d91ce9c945c2da85f7aaea352d79a0f44fa768045d34"
     }
   }
 }
@@ -104,7 +104,7 @@ task 10, lines 45-47:
 //> 1: TransferObjects([Result(0)], Input(0))
 created: object(10,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2386400,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2705600,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 11, line 49:
 //# create-checkpoint
@@ -118,7 +118,7 @@ Response: {
   "result": {
     "error": {
       "code": "dynamicFieldNotFound",
-      "parent_object_id": "0x5b6646bd3bd05c8879a35680bebf1e98b500577ebb5df1264e05982cd3c1cfe1"
+      "parent_object_id": "BFC045cf7129e805749db526e366c7e6d5089b024cad4c2570588b926ae2c47cf3fee37"
     }
   }
 }
@@ -127,9 +127,8 @@ task 13, lines 57-59:
 //# programmable --sender A --inputs object(10,0) 43
 //> 0: SplitCoins(Gas, [Input(1)]);
 //> 1: sui::object_bag::add<u64, sui::coin::Coin<sui::sui::SUI>>(Input(0), Input(1), Result(0))
-created: object(13,0), object(13,1)
-mutated: object(0,0), object(10,0)
-gas summary: computation_cost: 1000000, storage_cost: 5829200,  storage_rebate: 2362536, non_refundable_storage_fee: 23864
+Error: Transaction Effects Status: Move Bytecode Verification Error. Please run the Bytecode Verifier for more information.
+Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: VMVerificationOrDeserializationError, source: Some(VMError { major_status: LINKER_ERROR, sub_status: None, message: Some("Cannot find ModuleId { address: sui, name: Identifier(\"sui\") } in data cache"), exec_state: None, location: Undefined, indices: [], offsets: [] }), command: Some(1) } }
 
 task 14, line 61:
 //# create-checkpoint
@@ -141,27 +140,9 @@ Response: {
   "jsonrpc": "2.0",
   "id": 4,
   "result": {
-    "data": {
-      "objectId": "0x3ea375e25bbb343aff51cc660831991fa8439ba13b7f8f3c66f03d753e4781f7",
-      "version": "6",
-      "digest": "9umLoT7xLRAdnVEepn7UEfnu749rHtdg1M5sfAVUG4gZ",
-      "type": "0x2::coin::Coin<0x2::sui::SUI>",
-      "owner": {
-        "ObjectOwner": "0xc80cc03828dd161e38345cc2d379e8ed93fb0c01833ab546735549e61a71efed"
-      },
-      "previousTransaction": "3U83Emhm1vzUDaR62FyDvq8WwS6G7pbRhtwGhySAvnMe",
-      "storageRebate": "988000",
-      "content": {
-        "dataType": "moveObject",
-        "type": "0x2::coin::Coin<0x2::sui::SUI>",
-        "hasPublicTransfer": true,
-        "fields": {
-          "balance": "43",
-          "id": {
-            "id": "0x3ea375e25bbb343aff51cc660831991fa8439ba13b7f8f3c66f03d753e4781f7"
-          }
-        }
-      }
+    "error": {
+      "code": "dynamicFieldNotFound",
+      "parent_object_id": "BFC045cf7129e805749db526e366c7e6d5089b024cad4c2570588b926ae2c47cf3fee37"
     }
   }
 }
@@ -170,9 +151,8 @@ task 16, lines 69-71:
 //# programmable --sender A --inputs object(10,0) 43
 //> 0: sui::object_bag::remove<u64, sui::coin::Coin<sui::sui::SUI>>(Input(0), Input(1));
 //> 1: MergeCoins(Gas, [Result(0)])
-mutated: object(0,0), object(10,0)
-deleted: object(13,0), object(13,1)
-gas summary: computation_cost: 1000000, storage_cost: 2386400,  storage_rebate: 5770908, non_refundable_storage_fee: 58292
+Error: Transaction Effects Status: Move Bytecode Verification Error. Please run the Bytecode Verifier for more information.
+Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: VMVerificationOrDeserializationError, source: Some(VMError { major_status: LINKER_ERROR, sub_status: None, message: Some("Cannot find ModuleId { address: sui, name: Identifier(\"sui\") } in data cache"), exec_state: None, location: Undefined, indices: [], offsets: [] }), command: Some(0) } }
 
 task 17, line 73:
 //# create-checkpoint
@@ -186,7 +166,7 @@ Response: {
   "result": {
     "error": {
       "code": "dynamicFieldNotFound",
-      "parent_object_id": "0x5b6646bd3bd05c8879a35680bebf1e98b500577ebb5df1264e05982cd3c1cfe1"
+      "parent_object_id": "BFC045cf7129e805749db526e366c7e6d5089b024cad4c2570588b926ae2c47cf3fee37"
     }
   }
 }

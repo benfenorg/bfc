@@ -10,7 +10,7 @@ task 1, lines 11-20:
 //# publish
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 4696800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 5016000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 22-24:
 //# programmable --sender B --inputs @B
@@ -18,7 +18,7 @@ task 2, lines 22-24:
 //> 1: TransferObjects([Result(0)], Input(0))
 created: object(2,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 2211600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2530800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, lines 26-30:
 //# programmable --sender A --inputs @A
@@ -28,7 +28,7 @@ task 3, lines 26-30:
 //> 3: TransferObjects([Result(0), Result(1), Result(2)], Input(0))
 created: object(3,0), object(3,1), object(3,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 4658800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 4978000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 4, line 32:
 //# create-checkpoint
@@ -40,7 +40,7 @@ task 5, lines 34-36:
 //> 1: TransferObjects([Result(0)], Input(0))
 created: object(5,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2211600,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2530800,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 6, line 38:
 //# create-checkpoint
@@ -55,22 +55,22 @@ Response: {
     "data": [
       {
         "data": {
-          "objectId": "0x9a80dfcde4a045e027dceaa9f60cd0c170743fa029d775b8b77657432053ebe7",
+          "objectId": "BFC614291e6fef2e727b377ca79392b7feb51c157acafe1dea2003bfc2d5d1c79ff4710",
           "version": "2",
-          "digest": "EeN99ChrMgtWcwzfyXKmbePCRJdNqMUAEAynADFjRHLE",
-          "type": "0xb950fe2a124ab853efc3ee02166d1f5224b744789fdbdb16b4cc83bd25b1affa::M::O1<u64>"
+          "digest": "EaDi53Z4JZioZxZx8pdTGprF13DZaike3fhtDBM1eLGv",
+          "type": "0xa7032c6eda0016dc7046d1b7087d3c0843354de2526c464e1eb96c64d08fb6f1::M::O1<u64>"
         }
       },
       {
         "data": {
-          "objectId": "0x09bd57395cac88fc79d52fa7914d7f6127370b7d2de860ccb71929beb5d7c869",
+          "objectId": "BFC2ad7c518ea71250b8837b9b4e3074b5a62561be0b18b70f17c3102e3a486ae125fdc",
           "version": "2",
-          "digest": "2gZHNT6i7iNRoizwG812drn3fy6AETK1VygZmYcPyHgH",
-          "type": "0xb950fe2a124ab853efc3ee02166d1f5224b744789fdbdb16b4cc83bd25b1affa::M::O1<u64>"
+          "digest": "FvRChqepep97CwkuxU4JTA4nHEnAWsgTMHe9cKR49ae8",
+          "type": "0xa7032c6eda0016dc7046d1b7087d3c0843354de2526c464e1eb96c64d08fb6f1::M::O1<u64>"
         }
       }
     ],
-    "nextCursor": "IAm9VzlcrIj8edUvp5FNf2EnNwt9LehgzLcZKb6118hpAQAAAAAAAAA=",
+    "nextCursor": "ICrXxRjqcSULiDe5tOMHS1piVhvgsYtw8XwxAuOkhq4SAQAAAAAAAAA=",
     "hasNextPage": false
   }
 }
@@ -84,22 +84,22 @@ Response: {
     "data": [
       {
         "data": {
-          "objectId": "0xa1f7fd756f61d5ddfac12633b350fedb6114dba40e2a42c20053bd011d8fb79f",
+          "objectId": "BFC941572beb06cb11b50089970694f30a9792ba1ca5b196aa557c20735252567424e86",
           "version": "3",
-          "digest": "8DGH1AnMfXTs9ydGuR5RXhG1jF1PVD7kuAEewPYG8Zkr",
-          "type": "0xb950fe2a124ab853efc3ee02166d1f5224b744789fdbdb16b4cc83bd25b1affa::M::O1<u32>"
+          "digest": "9SYBjhhaFpqfygtmBb3x5RgqqMCAyLHJhUiJGEDHda8v",
+          "type": "0xa7032c6eda0016dc7046d1b7087d3c0843354de2526c464e1eb96c64d08fb6f1::M::O1<u32>"
         }
       },
       {
         "data": {
-          "objectId": "0xeaeae71b228562e9813ebed88f1c019c39d1a24a4b35717817b00d80aa3b04b5",
+          "objectId": "BFCea166f1d0ada08eec21039fb136b985236fd58370c8406855661cb8f92d55d6953a1",
           "version": "2",
-          "digest": "Ai86Kt6S54Q7CXvjEGWmmjSQpT9sE4bLFVDwEc5ctjmt",
-          "type": "0xb950fe2a124ab853efc3ee02166d1f5224b744789fdbdb16b4cc83bd25b1affa::M::O1<u32>"
+          "digest": "5eqLdY9dDz46MxEp1dwHGPNmUeeSXsejQcPLD8nexBqf",
+          "type": "0xa7032c6eda0016dc7046d1b7087d3c0843354de2526c464e1eb96c64d08fb6f1::M::O1<u32>"
         }
       }
     ],
-    "nextCursor": "IOrq5xsihWLpgT6+2I8cAZw50aJKSzVxeBewDYCqOwS1AQAAAAAAAAA=",
+    "nextCursor": "IOoWbx0K2gjuwhA5+xNrmFI2/Vg3DIQGhVZhy4+S1V1pAQAAAAAAAAA=",
     "hasNextPage": false
   }
 }
@@ -113,14 +113,14 @@ Response: {
     "data": [
       {
         "data": {
-          "objectId": "0xa1f7fd756f61d5ddfac12633b350fedb6114dba40e2a42c20053bd011d8fb79f",
+          "objectId": "BFC941572beb06cb11b50089970694f30a9792ba1ca5b196aa557c20735252567424e86",
           "version": "3",
-          "digest": "8DGH1AnMfXTs9ydGuR5RXhG1jF1PVD7kuAEewPYG8Zkr",
-          "type": "0xb950fe2a124ab853efc3ee02166d1f5224b744789fdbdb16b4cc83bd25b1affa::M::O1<u32>"
+          "digest": "9SYBjhhaFpqfygtmBb3x5RgqqMCAyLHJhUiJGEDHda8v",
+          "type": "0xa7032c6eda0016dc7046d1b7087d3c0843354de2526c464e1eb96c64d08fb6f1::M::O1<u32>"
         }
       }
     ],
-    "nextCursor": "IKH3/XVvYdXd+sEmM7NQ/tthFNukDipCwgBTvQEdj7efAgAAAAAAAAA=",
+    "nextCursor": "IJQVcr6wbLEbUAiZcGlPMKl5K6HKWxlqpVfCBzUlJWdCAgAAAAAAAAA=",
     "hasNextPage": true
   }
 }
@@ -134,14 +134,14 @@ Response: {
     "data": [
       {
         "data": {
-          "objectId": "0xeaeae71b228562e9813ebed88f1c019c39d1a24a4b35717817b00d80aa3b04b5",
+          "objectId": "BFCea166f1d0ada08eec21039fb136b985236fd58370c8406855661cb8f92d55d6953a1",
           "version": "2",
-          "digest": "Ai86Kt6S54Q7CXvjEGWmmjSQpT9sE4bLFVDwEc5ctjmt",
-          "type": "0xb950fe2a124ab853efc3ee02166d1f5224b744789fdbdb16b4cc83bd25b1affa::M::O1<u32>"
+          "digest": "5eqLdY9dDz46MxEp1dwHGPNmUeeSXsejQcPLD8nexBqf",
+          "type": "0xa7032c6eda0016dc7046d1b7087d3c0843354de2526c464e1eb96c64d08fb6f1::M::O1<u32>"
         }
       }
     ],
-    "nextCursor": "IOrq5xsihWLpgT6+2I8cAZw50aJKSzVxeBewDYCqOwS1AQAAAAAAAAA=",
+    "nextCursor": "IOoWbx0K2gjuwhA5+xNrmFI2/Vg3DIQGhVZhy4+S1V1pAQAAAAAAAAA=",
     "hasNextPage": false
   }
 }

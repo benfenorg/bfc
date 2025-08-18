@@ -12,21 +12,21 @@ task 1, lines 14-16:
 //> 1: TransferObjects([Result(0)], Input(1))
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 18-20:
 //# programmable --sender A --inputs 43 object(1,0)
 //> 0: SplitCoins(Gas, [Input(0)]);
 //> 1: MergeCoins(Input(1), [Result(0)])
 mutated: object(0,0), object(1,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 1956240, non_refundable_storage_fee: 19760
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 2588256, non_refundable_storage_fee: 26144
 
 task 3, lines 22-23:
 //# programmable --sender A --inputs object(1,0)
 //> 0: MergeCoins(Gas, [Input(0)])
 mutated: object(0,0)
 deleted: object(1,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 1956240, non_refundable_storage_fee: 19760
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 2588256, non_refundable_storage_fee: 26144
 
 task 4, line 25:
 //# create-checkpoint
@@ -40,7 +40,7 @@ Response: {
   "result": {
     "status": "VersionNotFound",
     "details": [
-      "0xc442f9431f789a6c80078a63e707de84c7815c3150e08f1e44be256bd05a2b81",
+      "BFC2a3e967326c63d8a42273a9814063c0988662cf021d1946fde3b1dc7a97b8cd9580d",
       1
     ]
   }
@@ -54,9 +54,9 @@ Response: {
   "result": {
     "status": "VersionFound",
     "details": {
-      "objectId": "0xc442f9431f789a6c80078a63e707de84c7815c3150e08f1e44be256bd05a2b81",
+      "objectId": "BFC2a3e967326c63d8a42273a9814063c0988662cf021d1946fde3b1dc7a97b8cd9580d",
       "version": "2",
-      "digest": "4wV3VBJGNaMCv9zfjSna8c4as6EkuYoqTHHjueS6S745"
+      "digest": "3gpjn4RCV3ZgWmQtCw2wu2siKkpUztg3fThZzN86BvEf"
     }
   }
 }
@@ -69,9 +69,9 @@ Response: {
   "result": {
     "status": "VersionFound",
     "details": {
-      "objectId": "0xc442f9431f789a6c80078a63e707de84c7815c3150e08f1e44be256bd05a2b81",
+      "objectId": "BFC2a3e967326c63d8a42273a9814063c0988662cf021d1946fde3b1dc7a97b8cd9580d",
       "version": "3",
-      "digest": "5p2rFja4CnVp4TWPg2VuRYpDS6d2AUSTQL5mfWBoiVjh"
+      "digest": "WzGCZk5rk6eCs3CdeGXZz4pY95GApGbr9n2ZHjhR8By"
     }
   }
 }
@@ -84,7 +84,7 @@ Response: {
   "result": {
     "status": "VersionNotFound",
     "details": [
-      "0xc442f9431f789a6c80078a63e707de84c7815c3150e08f1e44be256bd05a2b81",
+      "BFC2a3e967326c63d8a42273a9814063c0988662cf021d1946fde3b1dc7a97b8cd9580d",
       4
     ]
   }
@@ -98,7 +98,7 @@ Response: {
   "result": {
     "status": "VersionNotFound",
     "details": [
-      "0xc442f9431f789a6c80078a63e707de84c7815c3150e08f1e44be256bd05a2b81",
+      "BFC2a3e967326c63d8a42273a9814063c0988662cf021d1946fde3b1dc7a97b8cd9580d",
       1
     ]
   }
@@ -112,15 +112,15 @@ Response: {
   "result": {
     "status": "VersionFound",
     "details": {
-      "objectId": "0xc442f9431f789a6c80078a63e707de84c7815c3150e08f1e44be256bd05a2b81",
+      "objectId": "BFC2a3e967326c63d8a42273a9814063c0988662cf021d1946fde3b1dc7a97b8cd9580d",
       "version": "2",
-      "digest": "4wV3VBJGNaMCv9zfjSna8c4as6EkuYoqTHHjueS6S745",
-      "type": "0x2::coin::Coin<0x2::sui::SUI>",
+      "digest": "3gpjn4RCV3ZgWmQtCw2wu2siKkpUztg3fThZzN86BvEf",
+      "type": "0x2::coin::Coin<0x2::bfc::BFC>",
       "owner": {
-        "AddressOwner": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
+        "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
       },
-      "previousTransaction": "ABo3jemYqdBWMRYqsaCYUKnGDp64tR7jK2fH1mKCoJLk",
-      "storageRebate": "988000"
+      "previousTransaction": "A8tZbbgF9GkaApZktzdopjcfGxYAvE6edXgchCM3r6Kq",
+      "storageRebate": "1307200"
     }
   }
 }
@@ -133,7 +133,7 @@ Response: {
   "result": {
     "status": "VersionNotFound",
     "details": [
-      "0xc442f9431f789a6c80078a63e707de84c7815c3150e08f1e44be256bd05a2b81",
+      "BFC2a3e967326c63d8a42273a9814063c0988662cf021d1946fde3b1dc7a97b8cd9580d",
       4
     ]
   }

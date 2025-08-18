@@ -11,13 +11,13 @@ task 1, lines 6-8:
 //> 0: SplitCoins(Gas, [Input(0)]);
 //> 1: MergeCoins(Gas, [Result(0)])
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 10-52:
 //# publish
 created: object(2,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 7478400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7797600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, lines 54-56:
 //# programmable --sender A --inputs @A
@@ -25,7 +25,7 @@ task 3, lines 54-56:
 //> 1: TransferObjects([Result(0)], Input(0))
 created: object(3,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2234400,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2553600,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 4, lines 58-60:
 //# programmable --sender A --inputs @A
@@ -33,26 +33,26 @@ task 4, lines 58-60:
 //> 1: TransferObjects([Result(0)], Input(0))
 created: object(4,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2287600,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2606800,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 5, lines 62-63:
 //# programmable --sender A --inputs object(4,0)
 //> 0: P::M::inc(Input(0))
 mutated: object(0,0), object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 2287600,  storage_rebate: 2264724, non_refundable_storage_fee: 22876
+gas summary: computation_cost: 1000000, storage_cost: 2606800,  storage_rebate: 2580732, non_refundable_storage_fee: 26068
 
 task 6, lines 65-66:
 //# programmable --sender A --inputs object(3,0) object(4,0) @B
 //> 0: TransferObjects([Input(0), Input(1)], Input(2))
 mutated: object(0,0), object(3,0), object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 3534000,  storage_rebate: 3498660, non_refundable_storage_fee: 35340
+gas summary: computation_cost: 1000000, storage_cost: 3853200,  storage_rebate: 3814668, non_refundable_storage_fee: 38532
 
 task 7, lines 68-69:
 //# programmable --sender B --inputs object(3,0) object(4,0)
 //> 0: P::M::wrap(Input(0), Input(1))
 mutated: object(0,1), object(3,0)
 wrapped: object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 2538400,  storage_rebate: 2520540, non_refundable_storage_fee: 25460
+gas summary: computation_cost: 1000000, storage_cost: 2857600,  storage_rebate: 2520540, non_refundable_storage_fee: 25460
 
 task 8, lines 71-73:
 //# programmable --sender B --inputs object(3,0) @B
@@ -60,14 +60,14 @@ task 8, lines 71-73:
 //> 1: TransferObjects([Result(0)], Input(1))
 mutated: object(0,1), object(3,0)
 unwrapped: object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 3534000,  storage_rebate: 2513016, non_refundable_storage_fee: 25384
+gas summary: computation_cost: 1000000, storage_cost: 3853200,  storage_rebate: 2829024, non_refundable_storage_fee: 28576
 
 task 9, lines 75-76:
 //# programmable --sender B --inputs object(4,0)
 //> 0: P::M::burn(Input(0))
 mutated: object(0,1)
 deleted: object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 2264724, non_refundable_storage_fee: 22876
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 2580732, non_refundable_storage_fee: 26068
 
 task 10, line 78:
 //# create-checkpoint
@@ -83,16 +83,16 @@ Response: {
           {
             "cursor": "MA==",
             "node": {
-              "address": "0x2834d85dbfefdcd66f04811231ba818893793e83a895d53402fd99e132e36562",
+              "address": "0x4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185c",
               "inputState": {
-                "address": "0x2834d85dbfefdcd66f04811231ba818893793e83a895d53402fd99e132e36562",
+                "address": "0x4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185c",
                 "version": 1,
-                "digest": "q7zZtCD3hWzn8bDfuAfVs4Jz9xuXbaRoRmscfDLfRGc"
+                "digest": "E7HCZSQweuBdf1ytrfdNPKjCF3pEjpF5HnUJ99FDGB9A"
               },
               "outputState": {
-                "address": "0x2834d85dbfefdcd66f04811231ba818893793e83a895d53402fd99e132e36562",
+                "address": "0x4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185c",
                 "version": 2,
-                "digest": "DBLZ5969HRbYegmQ3a7yv15M5dMi67a7T76L2Fvfasui"
+                "digest": "4osooeoSvVhmx8BeVkA8D9iJXToqzdhyT5ad76RnhoMH"
               },
               "idCreated": false,
               "idDeleted": false
@@ -114,32 +114,32 @@ Response: {
           {
             "cursor": "MA==",
             "node": {
-              "address": "0x6d0b9758ab130cfb5c8c79dae3643aacb01a01ee013214ac1aefce0e61b2d54c",
-              "inputState": {
-                "address": "0x6d0b9758ab130cfb5c8c79dae3643aacb01a01ee013214ac1aefce0e61b2d54c",
-                "version": 1,
-                "digest": "2mjeTojYsejphc4rj8c7T8wTMyJV7K5TmCzDYqqfQPTL"
-              },
+              "address": "0xd511394b049f9d2a3b5a55026d8bfcbd94fe1adea3a76568e930e22363b4d22b",
+              "inputState": null,
               "outputState": {
-                "address": "0x6d0b9758ab130cfb5c8c79dae3643aacb01a01ee013214ac1aefce0e61b2d54c",
-                "version": 2,
-                "digest": "GZCWMoZ7gbS9wtUyPssdKDULvdnGbcdYMuCC5A4k4e1D"
+                "address": "0xd511394b049f9d2a3b5a55026d8bfcbd94fe1adea3a76568e930e22363b4d22b",
+                "version": 1,
+                "digest": "AwYRDyYYWvK5TzG46S6SjUumfaP5DSFyQja2s1L8Xhbp"
               },
-              "idCreated": false,
+              "idCreated": true,
               "idDeleted": false
             }
           },
           {
             "cursor": "MQ==",
             "node": {
-              "address": "0xb30300b293375c0c7a0e155cc164e6064d67679272418f229edeb39329821525",
-              "inputState": null,
-              "outputState": {
-                "address": "0xb30300b293375c0c7a0e155cc164e6064d67679272418f229edeb39329821525",
+              "address": "0xe66bcf4f13290d18ea52925faa01c54a36cc398046f9bc7e1b732a7fea46e50e",
+              "inputState": {
+                "address": "0xe66bcf4f13290d18ea52925faa01c54a36cc398046f9bc7e1b732a7fea46e50e",
                 "version": 1,
-                "digest": "AWqP7YqkFReiZThDXZPLhH9YgcTGZoD4tTmwEvCEH7Cy"
+                "digest": "679a5zaP4QqzmoCEvyB2siQT2yFKj1Pr7t91uujXKg4e"
               },
-              "idCreated": true,
+              "outputState": {
+                "address": "0xe66bcf4f13290d18ea52925faa01c54a36cc398046f9bc7e1b732a7fea46e50e",
+                "version": 2,
+                "digest": "F3dZrhMgGgGqsGL2PpCKCy18N6AU7RJhJoQ8QN6zxaJM"
+              },
+              "idCreated": false,
               "idDeleted": false
             }
           }
@@ -159,32 +159,32 @@ Response: {
           {
             "cursor": "MA==",
             "node": {
-              "address": "0x2834d85dbfefdcd66f04811231ba818893793e83a895d53402fd99e132e36562",
-              "inputState": {
-                "address": "0x2834d85dbfefdcd66f04811231ba818893793e83a895d53402fd99e132e36562",
-                "version": 2,
-                "digest": "DBLZ5969HRbYegmQ3a7yv15M5dMi67a7T76L2Fvfasui"
-              },
+              "address": "0x43d6b7d70554dd1b46d9e686e900c97d9769d31c64cb9b0354d0b499f3568c66",
+              "inputState": null,
               "outputState": {
-                "address": "0x2834d85dbfefdcd66f04811231ba818893793e83a895d53402fd99e132e36562",
+                "address": "0x43d6b7d70554dd1b46d9e686e900c97d9769d31c64cb9b0354d0b499f3568c66",
                 "version": 3,
-                "digest": "CitHoyozuik5koRomDZUJLvdEDXhtXQha4FH1XKmm6QC"
+                "digest": "75hdu9y3dRKo5XC3VjhBkhogDmprQ3D6z6EcEbRoM1dQ"
               },
-              "idCreated": false,
+              "idCreated": true,
               "idDeleted": false
             }
           },
           {
             "cursor": "MQ==",
             "node": {
-              "address": "0xedb916bf69bbf9c4cf5f83c231d17c3942fd4a3f6d509ff92ea0730f3f177154",
-              "inputState": null,
-              "outputState": {
-                "address": "0xedb916bf69bbf9c4cf5f83c231d17c3942fd4a3f6d509ff92ea0730f3f177154",
-                "version": 3,
-                "digest": "D9Nuvd8Yp9hPwxXAr7QHtAUv2CZZkpmWjcY26FArGYou"
+              "address": "0x4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185c",
+              "inputState": {
+                "address": "0x4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185c",
+                "version": 2,
+                "digest": "4osooeoSvVhmx8BeVkA8D9iJXToqzdhyT5ad76RnhoMH"
               },
-              "idCreated": true,
+              "outputState": {
+                "address": "0x4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185c",
+                "version": 3,
+                "digest": "DBSinjHqkuopXK2hHH8aaXFwGtuibDQUMdrxaNzNKVzU"
+              },
+              "idCreated": false,
               "idDeleted": false
             }
           }
@@ -197,16 +197,16 @@ Response: {
           {
             "cursor": "MA==",
             "node": {
-              "address": "0x2834d85dbfefdcd66f04811231ba818893793e83a895d53402fd99e132e36562",
+              "address": "0x4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185c",
               "inputState": {
-                "address": "0x2834d85dbfefdcd66f04811231ba818893793e83a895d53402fd99e132e36562",
+                "address": "0x4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185c",
                 "version": 3,
-                "digest": "CitHoyozuik5koRomDZUJLvdEDXhtXQha4FH1XKmm6QC"
+                "digest": "DBSinjHqkuopXK2hHH8aaXFwGtuibDQUMdrxaNzNKVzU"
               },
               "outputState": {
-                "address": "0x2834d85dbfefdcd66f04811231ba818893793e83a895d53402fd99e132e36562",
+                "address": "0x4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185c",
                 "version": 4,
-                "digest": "7VeypNWTehVtk6zK2r9dfokwbX3oCchkffMhseLfPGUN"
+                "digest": "9ZPmS3TxWboaLX5AhEDG7DDNcHpnRuo2HDuR5NEbiayB"
               },
               "idCreated": false,
               "idDeleted": false
@@ -215,12 +215,12 @@ Response: {
           {
             "cursor": "MQ==",
             "node": {
-              "address": "0x9d0d76f9448e14a746eaaf12746c32205cbfe54441266fc696474889c0bdd86d",
+              "address": "0xc7889fb07f5839dd1f5586542d6dab4d9721f76564419bf6870738041e254ee0",
               "inputState": null,
               "outputState": {
-                "address": "0x9d0d76f9448e14a746eaaf12746c32205cbfe54441266fc696474889c0bdd86d",
+                "address": "0xc7889fb07f5839dd1f5586542d6dab4d9721f76564419bf6870738041e254ee0",
                 "version": 4,
-                "digest": "YKkL3a8HH9ocupkHjzmptHw9D8wxZG69ecrucye1CWu"
+                "digest": "BfMhLrTBpsWQ9A2zGjgTGqtAeQn924Cuguyub4KqyYTp"
               },
               "idCreated": true,
               "idDeleted": false
@@ -242,16 +242,16 @@ Response: {
           {
             "cursor": "MA==",
             "node": {
-              "address": "0x2834d85dbfefdcd66f04811231ba818893793e83a895d53402fd99e132e36562",
+              "address": "0x4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185c",
               "inputState": {
-                "address": "0x2834d85dbfefdcd66f04811231ba818893793e83a895d53402fd99e132e36562",
+                "address": "0x4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185c",
                 "version": 4,
-                "digest": "7VeypNWTehVtk6zK2r9dfokwbX3oCchkffMhseLfPGUN"
+                "digest": "9ZPmS3TxWboaLX5AhEDG7DDNcHpnRuo2HDuR5NEbiayB"
               },
               "outputState": {
-                "address": "0x2834d85dbfefdcd66f04811231ba818893793e83a895d53402fd99e132e36562",
+                "address": "0x4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185c",
                 "version": 5,
-                "digest": "AiB4F5JdSw3TRzmCycu4Z5aqu2w8pMyffbm3CS8kTrLQ"
+                "digest": "9C6teRGKXNos3Hs3rNLY7xuzssE64HpqoW2FX1WhiSfb"
               },
               "idCreated": false,
               "idDeleted": false
@@ -260,16 +260,16 @@ Response: {
           {
             "cursor": "MQ==",
             "node": {
-              "address": "0x9d0d76f9448e14a746eaaf12746c32205cbfe54441266fc696474889c0bdd86d",
+              "address": "0xc7889fb07f5839dd1f5586542d6dab4d9721f76564419bf6870738041e254ee0",
               "inputState": {
-                "address": "0x9d0d76f9448e14a746eaaf12746c32205cbfe54441266fc696474889c0bdd86d",
+                "address": "0xc7889fb07f5839dd1f5586542d6dab4d9721f76564419bf6870738041e254ee0",
                 "version": 4,
-                "digest": "YKkL3a8HH9ocupkHjzmptHw9D8wxZG69ecrucye1CWu"
+                "digest": "BfMhLrTBpsWQ9A2zGjgTGqtAeQn924Cuguyub4KqyYTp"
               },
               "outputState": {
-                "address": "0x9d0d76f9448e14a746eaaf12746c32205cbfe54441266fc696474889c0bdd86d",
+                "address": "0xc7889fb07f5839dd1f5586542d6dab4d9721f76564419bf6870738041e254ee0",
                 "version": 5,
-                "digest": "EU8d5QTmoayNWFsbYzosXDSJ11KAPvoRUhqV9qTkvbZM"
+                "digest": "ApNymQTogc6csFiL1Yec2naMv3EBpwLZN4szeTKi1XFh"
               },
               "idCreated": false,
               "idDeleted": false
@@ -291,16 +291,16 @@ Response: {
           {
             "cursor": "MA==",
             "node": {
-              "address": "0x2834d85dbfefdcd66f04811231ba818893793e83a895d53402fd99e132e36562",
+              "address": "0x43d6b7d70554dd1b46d9e686e900c97d9769d31c64cb9b0354d0b499f3568c66",
               "inputState": {
-                "address": "0x2834d85dbfefdcd66f04811231ba818893793e83a895d53402fd99e132e36562",
-                "version": 5,
-                "digest": "AiB4F5JdSw3TRzmCycu4Z5aqu2w8pMyffbm3CS8kTrLQ"
+                "address": "0x43d6b7d70554dd1b46d9e686e900c97d9769d31c64cb9b0354d0b499f3568c66",
+                "version": 3,
+                "digest": "75hdu9y3dRKo5XC3VjhBkhogDmprQ3D6z6EcEbRoM1dQ"
               },
               "outputState": {
-                "address": "0x2834d85dbfefdcd66f04811231ba818893793e83a895d53402fd99e132e36562",
+                "address": "0x43d6b7d70554dd1b46d9e686e900c97d9769d31c64cb9b0354d0b499f3568c66",
                 "version": 6,
-                "digest": "9eEGPVacjx2hfTg4Wr8rGbwJWiMTXq1FV7aYcLRy7YEY"
+                "digest": "3QnC3nzYadtBnxcLaxsYe2UTeme5KjCNNBfjyT6ttLYL"
               },
               "idCreated": false,
               "idDeleted": false
@@ -309,16 +309,16 @@ Response: {
           {
             "cursor": "MQ==",
             "node": {
-              "address": "0x9d0d76f9448e14a746eaaf12746c32205cbfe54441266fc696474889c0bdd86d",
+              "address": "0x4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185c",
               "inputState": {
-                "address": "0x9d0d76f9448e14a746eaaf12746c32205cbfe54441266fc696474889c0bdd86d",
+                "address": "0x4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185c",
                 "version": 5,
-                "digest": "EU8d5QTmoayNWFsbYzosXDSJ11KAPvoRUhqV9qTkvbZM"
+                "digest": "9C6teRGKXNos3Hs3rNLY7xuzssE64HpqoW2FX1WhiSfb"
               },
               "outputState": {
-                "address": "0x9d0d76f9448e14a746eaaf12746c32205cbfe54441266fc696474889c0bdd86d",
+                "address": "0x4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185c",
                 "version": 6,
-                "digest": "Bxd5ycmy6eF95vRuiNMpcTZsAhKnVB14mVzFk9je6oqb"
+                "digest": "92R5RWgoCcjZUeLmFhMEthnRppk69Q2HKM4gHCeRjZNA"
               },
               "idCreated": false,
               "idDeleted": false
@@ -327,16 +327,16 @@ Response: {
           {
             "cursor": "Mg==",
             "node": {
-              "address": "0xedb916bf69bbf9c4cf5f83c231d17c3942fd4a3f6d509ff92ea0730f3f177154",
+              "address": "0xc7889fb07f5839dd1f5586542d6dab4d9721f76564419bf6870738041e254ee0",
               "inputState": {
-                "address": "0xedb916bf69bbf9c4cf5f83c231d17c3942fd4a3f6d509ff92ea0730f3f177154",
-                "version": 3,
-                "digest": "D9Nuvd8Yp9hPwxXAr7QHtAUv2CZZkpmWjcY26FArGYou"
+                "address": "0xc7889fb07f5839dd1f5586542d6dab4d9721f76564419bf6870738041e254ee0",
+                "version": 5,
+                "digest": "ApNymQTogc6csFiL1Yec2naMv3EBpwLZN4szeTKi1XFh"
               },
               "outputState": {
-                "address": "0xedb916bf69bbf9c4cf5f83c231d17c3942fd4a3f6d509ff92ea0730f3f177154",
+                "address": "0xc7889fb07f5839dd1f5586542d6dab4d9721f76564419bf6870738041e254ee0",
                 "version": 6,
-                "digest": "AD74G6p1YAFQMDTdRzS1p4a8EUrkmmfFC6ypTVcYY9Bu"
+                "digest": "G6fML14x6LBQGqHsJfh5fREaDXmQWMps22987Dti45Dm"
               },
               "idCreated": false,
               "idDeleted": false
@@ -358,13 +358,17 @@ Response: {
           {
             "cursor": "MA==",
             "node": {
-              "address": "0x9d0d76f9448e14a746eaaf12746c32205cbfe54441266fc696474889c0bdd86d",
+              "address": "0x43d6b7d70554dd1b46d9e686e900c97d9769d31c64cb9b0354d0b499f3568c66",
               "inputState": {
-                "address": "0x9d0d76f9448e14a746eaaf12746c32205cbfe54441266fc696474889c0bdd86d",
+                "address": "0x43d6b7d70554dd1b46d9e686e900c97d9769d31c64cb9b0354d0b499f3568c66",
                 "version": 6,
-                "digest": "Bxd5ycmy6eF95vRuiNMpcTZsAhKnVB14mVzFk9je6oqb"
+                "digest": "3QnC3nzYadtBnxcLaxsYe2UTeme5KjCNNBfjyT6ttLYL"
               },
-              "outputState": null,
+              "outputState": {
+                "address": "0x43d6b7d70554dd1b46d9e686e900c97d9769d31c64cb9b0354d0b499f3568c66",
+                "version": 7,
+                "digest": "6Pi2jwQnp83MouaFFxDYUq8xSMUpCDYwkMVrL2cKTkzx"
+              },
               "idCreated": false,
               "idDeleted": false
             }
@@ -372,17 +376,13 @@ Response: {
           {
             "cursor": "MQ==",
             "node": {
-              "address": "0xedb916bf69bbf9c4cf5f83c231d17c3942fd4a3f6d509ff92ea0730f3f177154",
+              "address": "0xc7889fb07f5839dd1f5586542d6dab4d9721f76564419bf6870738041e254ee0",
               "inputState": {
-                "address": "0xedb916bf69bbf9c4cf5f83c231d17c3942fd4a3f6d509ff92ea0730f3f177154",
+                "address": "0xc7889fb07f5839dd1f5586542d6dab4d9721f76564419bf6870738041e254ee0",
                 "version": 6,
-                "digest": "AD74G6p1YAFQMDTdRzS1p4a8EUrkmmfFC6ypTVcYY9Bu"
+                "digest": "G6fML14x6LBQGqHsJfh5fREaDXmQWMps22987Dti45Dm"
               },
-              "outputState": {
-                "address": "0xedb916bf69bbf9c4cf5f83c231d17c3942fd4a3f6d509ff92ea0730f3f177154",
-                "version": 7,
-                "digest": "FQN6VoKtccgfK4Xda6UJ45fF1jTRAJb6paED8BaGqcpf"
-              },
+              "outputState": null,
               "idCreated": false,
               "idDeleted": false
             }
@@ -390,16 +390,16 @@ Response: {
           {
             "cursor": "Mg==",
             "node": {
-              "address": "0xfdc25bc3b2d2b3664199d08f5275c3a6bb360b0629ab5784672f083149163417",
+              "address": "0xdd6d983778a0e79298ed16ff6a02366dc727aeca638205f40474aa5f62697072",
               "inputState": {
-                "address": "0xfdc25bc3b2d2b3664199d08f5275c3a6bb360b0629ab5784672f083149163417",
+                "address": "0xdd6d983778a0e79298ed16ff6a02366dc727aeca638205f40474aa5f62697072",
                 "version": 1,
-                "digest": "4hY6HbcSgDuyD5TcKhxom1cPPdPTQtcoNUStc8BYoZt5"
+                "digest": "6YAexDA4EhBSpg5wM3fpxGz9eVRERWKt4nMjPexwnFCr"
               },
               "outputState": {
-                "address": "0xfdc25bc3b2d2b3664199d08f5275c3a6bb360b0629ab5784672f083149163417",
+                "address": "0xdd6d983778a0e79298ed16ff6a02366dc727aeca638205f40474aa5f62697072",
                 "version": 7,
-                "digest": "23sXKQBrvQwvqfNiWERKC9R9N637fbegg7VKTQG3sfvg"
+                "digest": "7JdyrMDNoVcQAAjruo3KUeAMAyjcCnbKoRipRtnJKYPw"
               },
               "idCreated": false,
               "idDeleted": false
@@ -421,12 +421,16 @@ Response: {
           {
             "cursor": "MA==",
             "node": {
-              "address": "0x9d0d76f9448e14a746eaaf12746c32205cbfe54441266fc696474889c0bdd86d",
-              "inputState": null,
+              "address": "0x43d6b7d70554dd1b46d9e686e900c97d9769d31c64cb9b0354d0b499f3568c66",
+              "inputState": {
+                "address": "0x43d6b7d70554dd1b46d9e686e900c97d9769d31c64cb9b0354d0b499f3568c66",
+                "version": 7,
+                "digest": "6Pi2jwQnp83MouaFFxDYUq8xSMUpCDYwkMVrL2cKTkzx"
+              },
               "outputState": {
-                "address": "0x9d0d76f9448e14a746eaaf12746c32205cbfe54441266fc696474889c0bdd86d",
+                "address": "0x43d6b7d70554dd1b46d9e686e900c97d9769d31c64cb9b0354d0b499f3568c66",
                 "version": 8,
-                "digest": "6oKxXDAjCYHuEfNJ2kLDPZp1an5KQzagnAWVnRwNuN7z"
+                "digest": "7BwaDL7XFnwdgKYqfcjcS2ZdYY5kZwqXi212ZuvzgEiY"
               },
               "idCreated": false,
               "idDeleted": false
@@ -435,16 +439,12 @@ Response: {
           {
             "cursor": "MQ==",
             "node": {
-              "address": "0xedb916bf69bbf9c4cf5f83c231d17c3942fd4a3f6d509ff92ea0730f3f177154",
-              "inputState": {
-                "address": "0xedb916bf69bbf9c4cf5f83c231d17c3942fd4a3f6d509ff92ea0730f3f177154",
-                "version": 7,
-                "digest": "FQN6VoKtccgfK4Xda6UJ45fF1jTRAJb6paED8BaGqcpf"
-              },
+              "address": "0xc7889fb07f5839dd1f5586542d6dab4d9721f76564419bf6870738041e254ee0",
+              "inputState": null,
               "outputState": {
-                "address": "0xedb916bf69bbf9c4cf5f83c231d17c3942fd4a3f6d509ff92ea0730f3f177154",
+                "address": "0xc7889fb07f5839dd1f5586542d6dab4d9721f76564419bf6870738041e254ee0",
                 "version": 8,
-                "digest": "EDR5ehUtYXNazyx4TCuiGVuSXnYKu9dNBzwNYTrHKiMV"
+                "digest": "CwUci9RQszL2eCHDdRQeB9yMxYu3dfUf6WWo3mU14rbB"
               },
               "idCreated": false,
               "idDeleted": false
@@ -453,16 +453,16 @@ Response: {
           {
             "cursor": "Mg==",
             "node": {
-              "address": "0xfdc25bc3b2d2b3664199d08f5275c3a6bb360b0629ab5784672f083149163417",
+              "address": "0xdd6d983778a0e79298ed16ff6a02366dc727aeca638205f40474aa5f62697072",
               "inputState": {
-                "address": "0xfdc25bc3b2d2b3664199d08f5275c3a6bb360b0629ab5784672f083149163417",
+                "address": "0xdd6d983778a0e79298ed16ff6a02366dc727aeca638205f40474aa5f62697072",
                 "version": 7,
-                "digest": "23sXKQBrvQwvqfNiWERKC9R9N637fbegg7VKTQG3sfvg"
+                "digest": "7JdyrMDNoVcQAAjruo3KUeAMAyjcCnbKoRipRtnJKYPw"
               },
               "outputState": {
-                "address": "0xfdc25bc3b2d2b3664199d08f5275c3a6bb360b0629ab5784672f083149163417",
+                "address": "0xdd6d983778a0e79298ed16ff6a02366dc727aeca638205f40474aa5f62697072",
                 "version": 8,
-                "digest": "7JS9EV9aMqMGxrST7qH8nBd14ECmeca6WhorkPT5KHHv"
+                "digest": "8ZzwDwnG6KktrDSJpdEpoG97RoArvZS7aKN3446krmaJ"
               },
               "idCreated": false,
               "idDeleted": false
@@ -484,11 +484,11 @@ Response: {
           {
             "cursor": "MA==",
             "node": {
-              "address": "0x9d0d76f9448e14a746eaaf12746c32205cbfe54441266fc696474889c0bdd86d",
+              "address": "0xc7889fb07f5839dd1f5586542d6dab4d9721f76564419bf6870738041e254ee0",
               "inputState": {
-                "address": "0x9d0d76f9448e14a746eaaf12746c32205cbfe54441266fc696474889c0bdd86d",
+                "address": "0xc7889fb07f5839dd1f5586542d6dab4d9721f76564419bf6870738041e254ee0",
                 "version": 8,
-                "digest": "6oKxXDAjCYHuEfNJ2kLDPZp1an5KQzagnAWVnRwNuN7z"
+                "digest": "CwUci9RQszL2eCHDdRQeB9yMxYu3dfUf6WWo3mU14rbB"
               },
               "outputState": null,
               "idCreated": false,
@@ -498,16 +498,16 @@ Response: {
           {
             "cursor": "MQ==",
             "node": {
-              "address": "0xfdc25bc3b2d2b3664199d08f5275c3a6bb360b0629ab5784672f083149163417",
+              "address": "0xdd6d983778a0e79298ed16ff6a02366dc727aeca638205f40474aa5f62697072",
               "inputState": {
-                "address": "0xfdc25bc3b2d2b3664199d08f5275c3a6bb360b0629ab5784672f083149163417",
+                "address": "0xdd6d983778a0e79298ed16ff6a02366dc727aeca638205f40474aa5f62697072",
                 "version": 8,
-                "digest": "7JS9EV9aMqMGxrST7qH8nBd14ECmeca6WhorkPT5KHHv"
+                "digest": "8ZzwDwnG6KktrDSJpdEpoG97RoArvZS7aKN3446krmaJ"
               },
               "outputState": {
-                "address": "0xfdc25bc3b2d2b3664199d08f5275c3a6bb360b0629ab5784672f083149163417",
+                "address": "0xdd6d983778a0e79298ed16ff6a02366dc727aeca638205f40474aa5f62697072",
                 "version": 9,
-                "digest": "Aj831jZkr2GTg6tqc6dFfWo8axs6jCu4eUxsR33FTqXJ"
+                "digest": "81Fym13ddf5KqekPaBsF5GqNCiLhYQtx38CEsoHS2Jxg"
               },
               "idCreated": false,
               "idDeleted": false

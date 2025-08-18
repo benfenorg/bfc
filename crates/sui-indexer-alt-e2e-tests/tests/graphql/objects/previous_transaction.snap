@@ -12,7 +12,7 @@ task 1, lines 6-8:
 //> 1: TransferObjects([Result(0)], Input(1))
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 10:
 //# create-checkpoint
@@ -24,11 +24,11 @@ Response: {
   "data": {
     "object": {
       "previousTransaction": {
-        "digest": "ARwAbZ2EETkMxUDTEwx2BoL95cbqnLVmiRDVH53h6UHa"
+        "digest": "7uBeWBMSkGm4getWBhUF8cREAxptS3TN3ETpWbteAFiE"
       }
     },
     "transaction": {
-      "digest": "ARwAbZ2EETkMxUDTEwx2BoL95cbqnLVmiRDVH53h6UHa"
+      "digest": "7uBeWBMSkGm4getWBhUF8cREAxptS3TN3ETpWbteAFiE"
     }
   }
 }

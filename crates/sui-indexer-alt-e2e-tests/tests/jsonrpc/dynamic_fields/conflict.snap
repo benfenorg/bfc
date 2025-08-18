@@ -10,7 +10,7 @@ task 1, lines 13-38:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 6361200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6680400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 40-42:
 //# programmable --sender A --inputs @A
@@ -18,7 +18,7 @@ task 2, lines 40-42:
 //> 1: TransferObjects([Result(0)], Input(0))
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2226800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2546000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, lines 44-46:
 //# programmable --sender A --inputs object(2,0) 42 43 44
@@ -26,7 +26,7 @@ task 3, lines 44-46:
 //> 1: P::M::add_dof(Input(0), Input(1), Input(3))
 created: object(3,0), object(3,1), object(3,2)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 8002800,  storage_rebate: 2204532, non_refundable_storage_fee: 22268
+gas summary: computation_cost: 1000000, storage_cost: 8322000,  storage_rebate: 2520540, non_refundable_storage_fee: 25460
 
 task 4, line 48:
 //# create-checkpoint
@@ -39,29 +39,29 @@ Response: {
   "id": 0,
   "result": {
     "data": {
-      "objectId": "0x35eba5aca95acddb135c5f997cc7885ed5d63e05860e3ebc7484be7cbb6d92c1",
+      "objectId": "BFC181a3cc6039db117000bd37a83ef55455e99f2f074c71957cb40ebd73eaf1335c87e",
       "version": "3",
-      "digest": "3NQTrLzovzTr1LzMzRy1UrcvoutRzVeMX9M2XHrmxBpn",
-      "type": "0x2::dynamic_field::Field<u64, 0xa5886062a9b5f72f7f553d396edf2b56e313c4971d48835f8a4e716ab566f2ea::M::Value>",
+      "digest": "H8nfKApE3zsHWjukMmk6v51GAFZwKFBfh2QBUb4MYWHL",
+      "type": "0x2::dynamic_field::Field<u64, 0xf4c4efd362f0cad8b3b0a8c93b2d602b9c6ebf6b966f0263e0a7c210e97fb0fa::M::Value>",
       "owner": {
-        "ObjectOwner": "0x2dbba8d884604f3e64eb104163dbb8727216834e7d2dffd97ea3489cffb966dd"
+        "ObjectOwner": "BFCf874b5f058898bbda8aa4f39f0948a2ef1da249e3750f4483e237dda68dfb2bc113f"
       },
-      "previousTransaction": "EQPWaBGoN4Ez7ArpepVpMUHx82NqMQ393iAbf3JBYsc5",
+      "previousTransaction": "56CemjTNSLLYLPWDEdGopMmZQJwuFDM8M9n2iXn4xPRV",
       "storageRebate": "2021600",
       "content": {
         "dataType": "moveObject",
-        "type": "0x2::dynamic_field::Field<u64, 0xa5886062a9b5f72f7f553d396edf2b56e313c4971d48835f8a4e716ab566f2ea::M::Value>",
+        "type": "0x2::dynamic_field::Field<u64, 0xf4c4efd362f0cad8b3b0a8c93b2d602b9c6ebf6b966f0263e0a7c210e97fb0fa::M::Value>",
         "hasPublicTransfer": false,
         "fields": {
           "id": {
-            "id": "0x35eba5aca95acddb135c5f997cc7885ed5d63e05860e3ebc7484be7cbb6d92c1"
+            "id": "BFC181a3cc6039db117000bd37a83ef55455e99f2f074c71957cb40ebd73eaf1335c87e"
           },
           "name": "42",
           "value": {
-            "type": "0xa5886062a9b5f72f7f553d396edf2b56e313c4971d48835f8a4e716ab566f2ea::M::Value",
+            "type": "0xf4c4efd362f0cad8b3b0a8c93b2d602b9c6ebf6b966f0263e0a7c210e97fb0fa::M::Value",
             "fields": {
               "id": {
-                "id": "0x4864db6731a308f2c6272da29dcee6b9e39b56f6c3a9b0971a4d710d75f225bb"
+                "id": "BFCdedd24d141df782e9f370210fcc7b40aad0b92761d145ae06054305d46dcb4a75567"
               },
               "value": "43"
             }

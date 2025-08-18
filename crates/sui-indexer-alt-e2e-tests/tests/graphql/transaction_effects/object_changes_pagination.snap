@@ -14,7 +14,7 @@ task 1, lines 6-10:
 //> 3: TransferObjects([NestedResult(1,0), NestedResult(1,1), NestedResult(1,2), NestedResult(1,3)], Input(0))
 created: object(1,0), object(1,1), object(1,2), object(1,3), object(1,4), object(1,5), object(1,6), object(1,7)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 8892000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 11764800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 12:
 //# create-checkpoint
@@ -36,55 +36,55 @@ Response: {
           {
             "cursor": "MA==",
             "node": {
-              "address": "0x41401c6d9fb4dc7ce97bba175114620c86e83d4c50284159b1bb5b25ca68e323"
+              "address": "0x0219d8c6e311f23bed3d8d20dfbdf7ad178b1c0d29344af47210379d8902f25e"
             }
           },
           {
             "cursor": "MQ==",
             "node": {
-              "address": "0x546b22aa8fda6ae4b216a0017e15287a75d9f305fba100554d95eb499a05fdf4"
+              "address": "0x0846e1acb8f2838d492a610d35885ff43daa57d97f878880c4b6967a1a0f3268"
             }
           },
           {
             "cursor": "Mg==",
             "node": {
-              "address": "0x5704bc16bb3487190816e98f0e30ea71dec0687169be3f2424cc2aa8cfcb8be6"
+              "address": "0x4e665780c05e582364643db67c426609be581538b3b8c7546d27ee6a07261320"
             }
           },
           {
             "cursor": "Mw==",
             "node": {
-              "address": "0x62d15ced99a3fed86fd0021b741d0d4f0263a2893e9e6089f31a70f5bc3f578f"
+              "address": "0x505768efde17f61c23c6ec6e7e4bd2d95b3a271d01d75b47de5a539af066f3d9"
             }
           },
           {
             "cursor": "NA==",
             "node": {
-              "address": "0x72c725da2559afb940ee0d827bc5da1c575284ba6944a807d0134542adeb40ec"
+              "address": "0x5c0a3854c7d711d78262b514265d8a8f5b0739522a52beacc1c0083638b3b742"
             }
           },
           {
             "cursor": "NQ==",
             "node": {
-              "address": "0x80fff80603ac98cd51833e8f525f364b9957f5b271b0fe27c114952f6a487e0e"
+              "address": "0x628797f64aa118c5cabdc94e268df21a0f3282336e52098e8a4e5640979db28c"
             }
           },
           {
             "cursor": "Ng==",
             "node": {
-              "address": "0xb7cce18ebebedc9eb05a3096cdf5b5bd6792c0637e3f6f3755e310c942926372"
+              "address": "0xb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c85"
             }
           },
           {
             "cursor": "Nw==",
             "node": {
-              "address": "0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a"
+              "address": "0xc3a4cc78a91ae58a0365b5184dc4b35839e18f6fccfc0818eed3dcf8be242427"
             }
           },
           {
             "cursor": "OA==",
             "node": {
-              "address": "0xf9f11a1d45c51f067297c5f9bf8b79c3148ed6c079fba228ee51b247263b3cd3"
+              "address": "0xcd9d4e5700c836a91ee406e4d376b71eeed3885eebfcfd9e93c56410766a2941"
             }
           }
         ]
@@ -109,19 +109,19 @@ Response: {
           {
             "cursor": "MA==",
             "node": {
-              "address": "0x41401c6d9fb4dc7ce97bba175114620c86e83d4c50284159b1bb5b25ca68e323"
+              "address": "0x0219d8c6e311f23bed3d8d20dfbdf7ad178b1c0d29344af47210379d8902f25e"
             }
           },
           {
             "cursor": "MQ==",
             "node": {
-              "address": "0x546b22aa8fda6ae4b216a0017e15287a75d9f305fba100554d95eb499a05fdf4"
+              "address": "0x0846e1acb8f2838d492a610d35885ff43daa57d97f878880c4b6967a1a0f3268"
             }
           },
           {
             "cursor": "Mg==",
             "node": {
-              "address": "0x5704bc16bb3487190816e98f0e30ea71dec0687169be3f2424cc2aa8cfcb8be6"
+              "address": "0x4e665780c05e582364643db67c426609be581538b3b8c7546d27ee6a07261320"
             }
           }
         ]
@@ -146,19 +146,19 @@ Response: {
           {
             "cursor": "Ng==",
             "node": {
-              "address": "0xb7cce18ebebedc9eb05a3096cdf5b5bd6792c0637e3f6f3755e310c942926372"
+              "address": "0xb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c85"
             }
           },
           {
             "cursor": "Nw==",
             "node": {
-              "address": "0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a"
+              "address": "0xc3a4cc78a91ae58a0365b5184dc4b35839e18f6fccfc0818eed3dcf8be242427"
             }
           },
           {
             "cursor": "OA==",
             "node": {
-              "address": "0xf9f11a1d45c51f067297c5f9bf8b79c3148ed6c079fba228ee51b247263b3cd3"
+              "address": "0xcd9d4e5700c836a91ee406e4d376b71eeed3885eebfcfd9e93c56410766a2941"
             }
           }
         ]
@@ -183,19 +183,19 @@ Response: {
           {
             "cursor": "Mw==",
             "node": {
-              "address": "0x62d15ced99a3fed86fd0021b741d0d4f0263a2893e9e6089f31a70f5bc3f578f"
+              "address": "0x505768efde17f61c23c6ec6e7e4bd2d95b3a271d01d75b47de5a539af066f3d9"
             }
           },
           {
             "cursor": "NA==",
             "node": {
-              "address": "0x72c725da2559afb940ee0d827bc5da1c575284ba6944a807d0134542adeb40ec"
+              "address": "0x5c0a3854c7d711d78262b514265d8a8f5b0739522a52beacc1c0083638b3b742"
             }
           },
           {
             "cursor": "NQ==",
             "node": {
-              "address": "0x80fff80603ac98cd51833e8f525f364b9957f5b271b0fe27c114952f6a487e0e"
+              "address": "0x628797f64aa118c5cabdc94e268df21a0f3282336e52098e8a4e5640979db28c"
             }
           }
         ]
@@ -220,19 +220,19 @@ Response: {
           {
             "cursor": "Ng==",
             "node": {
-              "address": "0xb7cce18ebebedc9eb05a3096cdf5b5bd6792c0637e3f6f3755e310c942926372"
+              "address": "0xb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c85"
             }
           },
           {
             "cursor": "Nw==",
             "node": {
-              "address": "0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a"
+              "address": "0xc3a4cc78a91ae58a0365b5184dc4b35839e18f6fccfc0818eed3dcf8be242427"
             }
           },
           {
             "cursor": "OA==",
             "node": {
-              "address": "0xf9f11a1d45c51f067297c5f9bf8b79c3148ed6c079fba228ee51b247263b3cd3"
+              "address": "0xcd9d4e5700c836a91ee406e4d376b71eeed3885eebfcfd9e93c56410766a2941"
             }
           }
         ]
@@ -257,19 +257,19 @@ Response: {
           {
             "cursor": "Ng==",
             "node": {
-              "address": "0xb7cce18ebebedc9eb05a3096cdf5b5bd6792c0637e3f6f3755e310c942926372"
+              "address": "0xb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c85"
             }
           },
           {
             "cursor": "Nw==",
             "node": {
-              "address": "0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a"
+              "address": "0xc3a4cc78a91ae58a0365b5184dc4b35839e18f6fccfc0818eed3dcf8be242427"
             }
           },
           {
             "cursor": "OA==",
             "node": {
-              "address": "0xf9f11a1d45c51f067297c5f9bf8b79c3148ed6c079fba228ee51b247263b3cd3"
+              "address": "0xcd9d4e5700c836a91ee406e4d376b71eeed3885eebfcfd9e93c56410766a2941"
             }
           }
         ]
@@ -294,19 +294,19 @@ Response: {
           {
             "cursor": "Ng==",
             "node": {
-              "address": "0xb7cce18ebebedc9eb05a3096cdf5b5bd6792c0637e3f6f3755e310c942926372"
+              "address": "0xb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c85"
             }
           },
           {
             "cursor": "Nw==",
             "node": {
-              "address": "0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a"
+              "address": "0xc3a4cc78a91ae58a0365b5184dc4b35839e18f6fccfc0818eed3dcf8be242427"
             }
           },
           {
             "cursor": "OA==",
             "node": {
-              "address": "0xf9f11a1d45c51f067297c5f9bf8b79c3148ed6c079fba228ee51b247263b3cd3"
+              "address": "0xcd9d4e5700c836a91ee406e4d376b71eeed3885eebfcfd9e93c56410766a2941"
             }
           }
         ]
@@ -331,19 +331,19 @@ Response: {
           {
             "cursor": "Mg==",
             "node": {
-              "address": "0x5704bc16bb3487190816e98f0e30ea71dec0687169be3f2424cc2aa8cfcb8be6"
+              "address": "0x4e665780c05e582364643db67c426609be581538b3b8c7546d27ee6a07261320"
             }
           },
           {
             "cursor": "Mw==",
             "node": {
-              "address": "0x62d15ced99a3fed86fd0021b741d0d4f0263a2893e9e6089f31a70f5bc3f578f"
+              "address": "0x505768efde17f61c23c6ec6e7e4bd2d95b3a271d01d75b47de5a539af066f3d9"
             }
           },
           {
             "cursor": "NA==",
             "node": {
-              "address": "0x72c725da2559afb940ee0d827bc5da1c575284ba6944a807d0134542adeb40ec"
+              "address": "0x5c0a3854c7d711d78262b514265d8a8f5b0739522a52beacc1c0083638b3b742"
             }
           }
         ]
@@ -368,19 +368,19 @@ Response: {
           {
             "cursor": "MA==",
             "node": {
-              "address": "0x41401c6d9fb4dc7ce97bba175114620c86e83d4c50284159b1bb5b25ca68e323"
+              "address": "0x0219d8c6e311f23bed3d8d20dfbdf7ad178b1c0d29344af47210379d8902f25e"
             }
           },
           {
             "cursor": "MQ==",
             "node": {
-              "address": "0x546b22aa8fda6ae4b216a0017e15287a75d9f305fba100554d95eb499a05fdf4"
+              "address": "0x0846e1acb8f2838d492a610d35885ff43daa57d97f878880c4b6967a1a0f3268"
             }
           },
           {
             "cursor": "Mg==",
             "node": {
-              "address": "0x5704bc16bb3487190816e98f0e30ea71dec0687169be3f2424cc2aa8cfcb8be6"
+              "address": "0x4e665780c05e582364643db67c426609be581538b3b8c7546d27ee6a07261320"
             }
           }
         ]
@@ -405,13 +405,13 @@ Response: {
           {
             "cursor": "MA==",
             "node": {
-              "address": "0x41401c6d9fb4dc7ce97bba175114620c86e83d4c50284159b1bb5b25ca68e323"
+              "address": "0x0219d8c6e311f23bed3d8d20dfbdf7ad178b1c0d29344af47210379d8902f25e"
             }
           },
           {
             "cursor": "MQ==",
             "node": {
-              "address": "0x546b22aa8fda6ae4b216a0017e15287a75d9f305fba100554d95eb499a05fdf4"
+              "address": "0x0846e1acb8f2838d492a610d35885ff43daa57d97f878880c4b6967a1a0f3268"
             }
           }
         ]
@@ -436,13 +436,13 @@ Response: {
           {
             "cursor": "MA==",
             "node": {
-              "address": "0x41401c6d9fb4dc7ce97bba175114620c86e83d4c50284159b1bb5b25ca68e323"
+              "address": "0x0219d8c6e311f23bed3d8d20dfbdf7ad178b1c0d29344af47210379d8902f25e"
             }
           },
           {
             "cursor": "MQ==",
             "node": {
-              "address": "0x546b22aa8fda6ae4b216a0017e15287a75d9f305fba100554d95eb499a05fdf4"
+              "address": "0x0846e1acb8f2838d492a610d35885ff43daa57d97f878880c4b6967a1a0f3268"
             }
           }
         ]
@@ -467,19 +467,19 @@ Response: {
           {
             "cursor": "Mw==",
             "node": {
-              "address": "0x62d15ced99a3fed86fd0021b741d0d4f0263a2893e9e6089f31a70f5bc3f578f"
+              "address": "0x505768efde17f61c23c6ec6e7e4bd2d95b3a271d01d75b47de5a539af066f3d9"
             }
           },
           {
             "cursor": "NA==",
             "node": {
-              "address": "0x72c725da2559afb940ee0d827bc5da1c575284ba6944a807d0134542adeb40ec"
+              "address": "0x5c0a3854c7d711d78262b514265d8a8f5b0739522a52beacc1c0083638b3b742"
             }
           },
           {
             "cursor": "NQ==",
             "node": {
-              "address": "0x80fff80603ac98cd51833e8f525f364b9957f5b271b0fe27c114952f6a487e0e"
+              "address": "0x628797f64aa118c5cabdc94e268df21a0f3282336e52098e8a4e5640979db28c"
             }
           }
         ]
@@ -504,13 +504,13 @@ Response: {
           {
             "cursor": "Mw==",
             "node": {
-              "address": "0x62d15ced99a3fed86fd0021b741d0d4f0263a2893e9e6089f31a70f5bc3f578f"
+              "address": "0x505768efde17f61c23c6ec6e7e4bd2d95b3a271d01d75b47de5a539af066f3d9"
             }
           },
           {
             "cursor": "NA==",
             "node": {
-              "address": "0x72c725da2559afb940ee0d827bc5da1c575284ba6944a807d0134542adeb40ec"
+              "address": "0x5c0a3854c7d711d78262b514265d8a8f5b0739522a52beacc1c0083638b3b742"
             }
           }
         ]
@@ -535,13 +535,13 @@ Response: {
           {
             "cursor": "NA==",
             "node": {
-              "address": "0x72c725da2559afb940ee0d827bc5da1c575284ba6944a807d0134542adeb40ec"
+              "address": "0x5c0a3854c7d711d78262b514265d8a8f5b0739522a52beacc1c0083638b3b742"
             }
           },
           {
             "cursor": "NQ==",
             "node": {
-              "address": "0x80fff80603ac98cd51833e8f525f364b9957f5b271b0fe27c114952f6a487e0e"
+              "address": "0x628797f64aa118c5cabdc94e268df21a0f3282336e52098e8a4e5640979db28c"
             }
           }
         ]

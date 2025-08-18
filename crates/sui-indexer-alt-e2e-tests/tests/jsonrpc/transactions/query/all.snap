@@ -12,7 +12,7 @@ task 1, lines 16-18:
 //> 1: TransferObjects([Result(0)], Input(1))
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 20-22:
 //# programmable --sender A --inputs 34 @A
@@ -20,7 +20,7 @@ task 2, lines 20-22:
 //> 1: TransferObjects([Result(0)], Input(1))
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, lines 24-26:
 //# programmable --sender A --inputs 56 @A
@@ -28,7 +28,7 @@ task 3, lines 24-26:
 //> 1: TransferObjects([Result(0)], Input(1))
 created: object(3,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 4, lines 28-30:
 //# programmable --sender A --inputs 78 @A
@@ -36,7 +36,7 @@ task 4, lines 28-30:
 //> 1: TransferObjects([Result(0)], Input(1))
 created: object(4,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 5, lines 32-34:
 //# programmable --sender A --inputs 90 @A
@@ -44,7 +44,7 @@ task 5, lines 32-34:
 //> 1: TransferObjects([Result(0)], Input(1))
 created: object(5,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 6, line 36:
 //# create-checkpoint
@@ -58,32 +58,32 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "3FJ4fSrf7toVCANccxAbeJ5A1iSzwKLghCYcaz9atbCD",
+        "digest": "AWRfVMVLtVkYS2wJKKPGUWSRmvQ749mcyw3qFnh3ihgQ",
         "timestampMs": "0",
         "checkpoint": "0"
       },
       {
-        "digest": "Fx83wfghpUeiBQJ2C1Vt9WwY5rkGUWWgoXSCGfomqqnv",
+        "digest": "84XK2UKGkQhhaYV8ffoRwzFByVfT3btNLVD6sn9noJ4y",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "4tTfhF9TpbEbJ1efxQbc6A4DWVbBzUYwNhXgt7zsmJsc",
+        "digest": "78huEqV4bZHDP5f4ikxDyzX6bqHabMARPZV1wQqf1VfE",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "BULsDepy775taHDviboyivQdnoWkB5QMDYiM1kGcfbQ9",
+        "digest": "6ingaA2WANWqvHFDNcJffc9cBmKU6KYiWvNe4Bz4LZ5L",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "3H9FD5LGcHgFSQBfiziYa5f31b86iuQe9Cn5DVMenMAG",
+        "digest": "ARs4e29c1sAaQYHLi1QyyEAM1sdWHhhA6ux3pvgnoKzN",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "8p2kdvQUf3TKihDPyC62ggc79intjzNW7TnfaA7an9At",
+        "digest": "6rYHiFHpazkE4G7Db8ngjPKYyGXVcQ5oYx7EYQpJS3ax",
         "timestampMs": "0",
         "checkpoint": "1"
       }
@@ -101,17 +101,17 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "3FJ4fSrf7toVCANccxAbeJ5A1iSzwKLghCYcaz9atbCD",
+        "digest": "AWRfVMVLtVkYS2wJKKPGUWSRmvQ749mcyw3qFnh3ihgQ",
         "timestampMs": "0",
         "checkpoint": "0"
       },
       {
-        "digest": "Fx83wfghpUeiBQJ2C1Vt9WwY5rkGUWWgoXSCGfomqqnv",
+        "digest": "84XK2UKGkQhhaYV8ffoRwzFByVfT3btNLVD6sn9noJ4y",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "4tTfhF9TpbEbJ1efxQbc6A4DWVbBzUYwNhXgt7zsmJsc",
+        "digest": "78huEqV4bZHDP5f4ikxDyzX6bqHabMARPZV1wQqf1VfE",
         "timestampMs": "0",
         "checkpoint": "1"
       }
@@ -129,17 +129,17 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "BULsDepy775taHDviboyivQdnoWkB5QMDYiM1kGcfbQ9",
+        "digest": "6ingaA2WANWqvHFDNcJffc9cBmKU6KYiWvNe4Bz4LZ5L",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "3H9FD5LGcHgFSQBfiziYa5f31b86iuQe9Cn5DVMenMAG",
+        "digest": "ARs4e29c1sAaQYHLi1QyyEAM1sdWHhhA6ux3pvgnoKzN",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "8p2kdvQUf3TKihDPyC62ggc79intjzNW7TnfaA7an9At",
+        "digest": "6rYHiFHpazkE4G7Db8ngjPKYyGXVcQ5oYx7EYQpJS3ax",
         "timestampMs": "0",
         "checkpoint": "1"
       }
@@ -157,32 +157,32 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "8p2kdvQUf3TKihDPyC62ggc79intjzNW7TnfaA7an9At",
+        "digest": "6rYHiFHpazkE4G7Db8ngjPKYyGXVcQ5oYx7EYQpJS3ax",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "3H9FD5LGcHgFSQBfiziYa5f31b86iuQe9Cn5DVMenMAG",
+        "digest": "ARs4e29c1sAaQYHLi1QyyEAM1sdWHhhA6ux3pvgnoKzN",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "BULsDepy775taHDviboyivQdnoWkB5QMDYiM1kGcfbQ9",
+        "digest": "6ingaA2WANWqvHFDNcJffc9cBmKU6KYiWvNe4Bz4LZ5L",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "4tTfhF9TpbEbJ1efxQbc6A4DWVbBzUYwNhXgt7zsmJsc",
+        "digest": "78huEqV4bZHDP5f4ikxDyzX6bqHabMARPZV1wQqf1VfE",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "Fx83wfghpUeiBQJ2C1Vt9WwY5rkGUWWgoXSCGfomqqnv",
+        "digest": "84XK2UKGkQhhaYV8ffoRwzFByVfT3btNLVD6sn9noJ4y",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "3FJ4fSrf7toVCANccxAbeJ5A1iSzwKLghCYcaz9atbCD",
+        "digest": "AWRfVMVLtVkYS2wJKKPGUWSRmvQ749mcyw3qFnh3ihgQ",
         "timestampMs": "0",
         "checkpoint": "0"
       }
@@ -200,12 +200,12 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "4tTfhF9TpbEbJ1efxQbc6A4DWVbBzUYwNhXgt7zsmJsc",
+        "digest": "78huEqV4bZHDP5f4ikxDyzX6bqHabMARPZV1wQqf1VfE",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "Fx83wfghpUeiBQJ2C1Vt9WwY5rkGUWWgoXSCGfomqqnv",
+        "digest": "84XK2UKGkQhhaYV8ffoRwzFByVfT3btNLVD6sn9noJ4y",
         "timestampMs": "0",
         "checkpoint": "1"
       }
@@ -245,7 +245,7 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "4tTfhF9TpbEbJ1efxQbc6A4DWVbBzUYwNhXgt7zsmJsc",
+        "digest": "78huEqV4bZHDP5f4ikxDyzX6bqHabMARPZV1wQqf1VfE",
         "transaction": {
           "data": {
             "messageVersion": "v1",
@@ -288,29 +288,29 @@ Response: {
                 }
               ]
             },
-            "sender": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e",
+            "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
             "gasData": {
               "payment": [
                 {
-                  "objectId": "0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a",
+                  "objectId": "BFCb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c8503d3",
                   "version": 2,
-                  "digest": "HPfMHJxiZ7ozY7jppcCGe2MwZ2TCFCCcmugtNvUgRuts"
+                  "digest": "ETwerQiwQPMdnpo2Xeb4jDW9JvwGLatNAKMUEgooSw3A"
                 }
               ],
-              "owner": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e",
+              "owner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
               "price": "1000",
               "budget": "5000000000"
             }
           },
           "txSignatures": [
-            "APiQZonSLcnMfxma2YMk7AvdgkWSew2B3HWH98dbyf5Z67cR5ojet/acq516WO9rbD/hEJJMd51bgmjm3MOyTgN/UUY663bYjcm3XmNyULIgxJz1t5Z9vxfB+fp8WUoJKA=="
+            "AAhQELyiVhWDJtRvtzPIez8hI/4Kgh7UsU60an0FUrXFIHJSQFvGApuITdwFJ0xEsq9XxmCjIDZZh/iYfoFFrwN/UUY663bYjcm3XmNyULIgxJz1t5Z9vxfB+fp8WUoJKA=="
           ]
         },
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "BULsDepy775taHDviboyivQdnoWkB5QMDYiM1kGcfbQ9",
+        "digest": "6ingaA2WANWqvHFDNcJffc9cBmKU6KYiWvNe4Bz4LZ5L",
         "transaction": {
           "data": {
             "messageVersion": "v1",
@@ -353,22 +353,22 @@ Response: {
                 }
               ]
             },
-            "sender": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e",
+            "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
             "gasData": {
               "payment": [
                 {
-                  "objectId": "0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a",
+                  "objectId": "BFCb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c8503d3",
                   "version": 3,
-                  "digest": "CnQFnb8LS9rdRHjkWFo5GKnP5QBNkRAe6eoamKnxFWEQ"
+                  "digest": "Bsgb9ZJXVToWbE2PopjwAw1gNXifWFg6uBCfspSjAwFz"
                 }
               ],
-              "owner": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e",
+              "owner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
               "price": "1000",
               "budget": "5000000000"
             }
           },
           "txSignatures": [
-            "AEgcwTWMXQYfQwFRXqb3R26Z7LMv7ODaZHJ8zJd2LT88eg+2Y98zJwUUDxxmMj3tAadcwBgLTdcRFe6lzcO2jgl/UUY663bYjcm3XmNyULIgxJz1t5Z9vxfB+fp8WUoJKA=="
+            "AI4UgcyskSr16XN5QY8RyeBA+4doUoPBHUPEpUAcyIt73LKXej98Wclj5Ue8ZRM7yqfInQFCq4YDV1rq8dwHXAR/UUY663bYjcm3XmNyULIgxJz1t5Z9vxfB+fp8WUoJKA=="
           ]
         },
         "timestampMs": "0",

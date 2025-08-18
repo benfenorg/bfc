@@ -10,7 +10,7 @@ task 1, lines 9-19:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 3952000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 4271200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 21-23:
 //# programmable --sender A --inputs @A
@@ -18,7 +18,7 @@ task 2, lines 21-23:
 //> 1: TransferObjects([Result(0)], Input(0))
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2287600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2606800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, lines 25-28:
 //# programmable --sender A --inputs object(2,0) 42 43u32 44 45 46
@@ -27,7 +27,7 @@ task 3, lines 25-28:
 //> 2: sui::bag::add<P::M::Name, u64>(Input(0), Result(0), Input(5))
 created: object(3,0), object(3,1)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 5555600,  storage_rebate: 2264724, non_refundable_storage_fee: 22876
+gas summary: computation_cost: 1000000, storage_cost: 5874800,  storage_rebate: 2580732, non_refundable_storage_fee: 26068
 
 task 4, line 30:
 //# create-checkpoint
@@ -40,14 +40,14 @@ Response: {
   "id": 0,
   "result": {
     "data": {
-      "objectId": "0x63a370673b226e7c04b25f3ff9b43ccbdd64fc651433be4e9b9587ca552a9453",
+      "objectId": "BFC3d74fb067db2407ea05af98a04d6e9d5c2146f189656ee7cb27fccb1f8fd53e3195d",
       "version": "3",
-      "digest": "4A6FyhF6AGa5Na4xRFFpHEGzKKbneTQEiaG5KdtCWxke",
+      "digest": "FFNLBEwtcLbh8UZ6rxhSWUQJH9QWTDZ4mN7XwYk5WQpc",
       "type": "0x2::dynamic_field::Field<u64, u64>",
       "owner": {
-        "ObjectOwner": "0xdd806f262555a167b932495c24765daccc1ba6ebee5e8a696155818e6b5e93ad"
+        "ObjectOwner": "BFC1d39d3e9579f3a048c5f4954d91ce9c945c2da85f7aaea352d79a0f44fa768045d34"
       },
-      "previousTransaction": "FNqZuA72ZRmAJjGB9RUXedfGPwrZE7rxE4KfQjK6v7sa",
+      "previousTransaction": "82Dqk2apik1yhp8ErssTsvFgqeAm3Udi3cunNq1An2bA",
       "storageRebate": "1466800",
       "content": {
         "dataType": "moveObject",
@@ -55,7 +55,7 @@ Response: {
         "hasPublicTransfer": false,
         "fields": {
           "id": {
-            "id": "0x63a370673b226e7c04b25f3ff9b43ccbdd64fc651433be4e9b9587ca552a9453"
+            "id": "BFC3d74fb067db2407ea05af98a04d6e9d5c2146f189656ee7cb27fccb1f8fd53e3195d"
           },
           "name": "44",
           "value": "45"
@@ -72,25 +72,25 @@ Response: {
   "id": 1,
   "result": {
     "data": {
-      "objectId": "0xf391c82c30fb39e249bbcbf23559eb7b9aeddebb12d305f0d47b6eea74b7da9d",
+      "objectId": "BFC43a69630ad47f14cf381b1181ecae6f993af86f59fa9a9c9808a536f4227ccbfb291",
       "version": "3",
-      "digest": "EtHgUtfKhs7JokgVxayiP1ss1UNUP6GkwJtLkM62GsSy",
-      "type": "0x2::dynamic_field::Field<0x0c1b57d949b2d2e7ec682faefe0cd21dc2738675c1f00e756c0fb7e0eca77259::M::Name, u64>",
+      "digest": "3TMcb4RWLpRDNHcfXMXLBVAsBC9EXPEcVeVcoVW4igjk",
+      "type": "0x2::dynamic_field::Field<0xb176bd722f822dd7bb8a118ac53e84746046c53ff9152c7e24d1f60443239d13::M::Name, u64>",
       "owner": {
-        "ObjectOwner": "0xdd806f262555a167b932495c24765daccc1ba6ebee5e8a696155818e6b5e93ad"
+        "ObjectOwner": "BFC1d39d3e9579f3a048c5f4954d91ce9c945c2da85f7aaea352d79a0f44fa768045d34"
       },
-      "previousTransaction": "FNqZuA72ZRmAJjGB9RUXedfGPwrZE7rxE4KfQjK6v7sa",
+      "previousTransaction": "82Dqk2apik1yhp8ErssTsvFgqeAm3Udi3cunNq1An2bA",
       "storageRebate": "1801200",
       "content": {
         "dataType": "moveObject",
-        "type": "0x2::dynamic_field::Field<0x0c1b57d949b2d2e7ec682faefe0cd21dc2738675c1f00e756c0fb7e0eca77259::M::Name, u64>",
+        "type": "0x2::dynamic_field::Field<0xb176bd722f822dd7bb8a118ac53e84746046c53ff9152c7e24d1f60443239d13::M::Name, u64>",
         "hasPublicTransfer": false,
         "fields": {
           "id": {
-            "id": "0xf391c82c30fb39e249bbcbf23559eb7b9aeddebb12d305f0d47b6eea74b7da9d"
+            "id": "BFC43a69630ad47f14cf381b1181ecae6f993af86f59fa9a9c9808a536f4227ccbfb291"
           },
           "name": {
-            "type": "0x0c1b57d949b2d2e7ec682faefe0cd21dc2738675c1f00e756c0fb7e0eca77259::M::Name",
+            "type": "0xb176bd722f822dd7bb8a118ac53e84746046c53ff9152c7e24d1f60443239d13::M::Name",
             "fields": {
               "x": "42",
               "y": 43

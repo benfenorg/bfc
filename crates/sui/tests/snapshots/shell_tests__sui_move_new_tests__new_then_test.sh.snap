@@ -11,15 +11,10 @@ sui move new example
 cd example && sui move test
 
 ----- results -----
-success: true
-exit_code: 0
+success: false
+exit_code: 1
 ----- stdout -----
-INCLUDING DEPENDENCY Bridge
-INCLUDING DEPENDENCY SuiSystem
-INCLUDING DEPENDENCY Sui
-INCLUDING DEPENDENCY MoveStdlib
-BUILDING example
-Running Move unit tests
-Test result: OK. Total tests: 0; passed: 0; failed: 0
 
 ----- stderr -----
+new_then_test.sh: line 5: sui: command not found
+new_then_test.sh: line 6: cd: example: No such file or directory

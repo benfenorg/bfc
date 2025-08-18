@@ -8,10 +8,10 @@ A: object(0,0)
 
 task 1, lines 17-60:
 //# publish --sender A
-events: Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("DisplayCreated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [52, 5, 27, 26, 22, 176, 249, 50, 180, 56, 11, 112, 94, 112, 188, 180, 129, 91, 11, 17, 52, 211, 213, 78, 203, 246, 82, 163, 39, 37, 42, 152] }, Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("VersionUpdated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [52, 5, 27, 26, 22, 176, 249, 50, 180, 56, 11, 112, 94, 112, 188, 180, 129, 91, 11, 17, 52, 211, 213, 78, 203, 246, 82, 163, 39, 37, 42, 152, 1, 0, 1, 4, 100, 101, 101, 112, 56, 123, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 125] }
+events: Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("DisplayCreated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [232, 104, 238, 145, 245, 158, 226, 65, 226, 46, 228, 158, 242, 136, 11, 116, 134, 160, 15, 131, 148, 155, 143, 154, 189, 60, 176, 225, 129, 4, 28, 98] }, Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("VersionUpdated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [232, 104, 238, 145, 245, 158, 226, 65, 226, 46, 228, 158, 242, 136, 11, 116, 134, 160, 15, 131, 148, 155, 143, 154, 189, 60, 176, 225, 129, 4, 28, 98, 1, 0, 1, 4, 100, 101, 101, 112, 56, 123, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 125] }
 created: object(1,0), object(1,1), object(1,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 15306400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 15625600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 62-64:
 //# programmable --sender A --inputs 42u8 @A
@@ -19,7 +19,7 @@ task 2, lines 62-64:
 //> 1: TransferObjects([Result(0)], Input(1))
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2234400,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2553600,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, line 66:
 //# create-checkpoint
@@ -32,46 +32,46 @@ Response: {
   "id": 0,
   "result": {
     "data": {
-      "objectId": "0x689de358b32c288a312b86ebaf59420bec4aeab2d968cd9b546f2158d190e2cc",
+      "objectId": "BFC2d5a3bd7b48eaf3397da0707a596b6af39c8ee2153755e7fe83fae4835cee8f53fe7",
       "version": "3",
-      "digest": "Ewrpy6zKP2ZaiC5noiL774bXsb6EMPvhfi42FqDb641R",
+      "digest": "GJ7gdHbWXS1dN3dpdLz4ruGXzgMvMEBDqYMF9j2JRYc",
       "content": {
         "dataType": "moveObject",
-        "type": "0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Foo",
+        "type": "0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Foo",
         "hasPublicTransfer": true,
         "fields": {
           "deep": {
-            "type": "0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<u8>>>>>>>>>>>",
+            "type": "0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<u8>>>>>>>>>>>",
             "fields": {
               "deep": {
-                "type": "0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<u8>>>>>>>>>>",
+                "type": "0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<u8>>>>>>>>>>",
                 "fields": {
                   "deep": {
-                    "type": "0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<u8>>>>>>>>>",
+                    "type": "0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<u8>>>>>>>>>",
                     "fields": {
                       "deep": {
-                        "type": "0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<u8>>>>>>>>",
+                        "type": "0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<u8>>>>>>>>",
                         "fields": {
                           "deep": {
-                            "type": "0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<u8>>>>>>>",
+                            "type": "0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<u8>>>>>>>",
                             "fields": {
                               "deep": {
-                                "type": "0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<u8>>>>>>",
+                                "type": "0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<u8>>>>>>",
                                 "fields": {
                                   "deep": {
-                                    "type": "0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<u8>>>>>",
+                                    "type": "0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<u8>>>>>",
                                     "fields": {
                                       "deep": {
-                                        "type": "0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<u8>>>>",
+                                        "type": "0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<u8>>>>",
                                         "fields": {
                                           "deep": {
-                                            "type": "0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<u8>>>",
+                                            "type": "0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<u8>>>",
                                             "fields": {
                                               "deep": {
-                                                "type": "0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<u8>>",
+                                                "type": "0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<u8>>",
                                                 "fields": {
                                                   "deep": {
-                                                    "type": "0x6c6a5a00df9b355b187d4974276dfcde16ccd7a3b235fb0e3760484ea5b51e6f::mod::Deep<u8>",
+                                                    "type": "0x8b60184360b4a18659a008af2a811b3695463ee74f7977f19e717721d45ade4c::mod::Deep<u8>",
                                                     "fields": {
                                                       "deep": 42
                                                     }
@@ -97,7 +97,7 @@ Response: {
             }
           },
           "id": {
-            "id": "0x689de358b32c288a312b86ebaf59420bec4aeab2d968cd9b546f2158d190e2cc"
+            "id": "BFC2d5a3bd7b48eaf3397da0707a596b6af39c8ee2153755e7fe83fae4835cee8f53fe7"
           }
         }
       }
@@ -112,9 +112,9 @@ Response: {
   "id": 1,
   "result": {
     "data": {
-      "objectId": "0x689de358b32c288a312b86ebaf59420bec4aeab2d968cd9b546f2158d190e2cc",
+      "objectId": "BFC2d5a3bd7b48eaf3397da0707a596b6af39c8ee2153755e7fe83fae4835cee8f53fe7",
       "version": "3",
-      "digest": "Ewrpy6zKP2ZaiC5noiL774bXsb6EMPvhfi42FqDb641R",
+      "digest": "GJ7gdHbWXS1dN3dpdLz4ruGXzgMvMEBDqYMF9j2JRYc",
       "display": {
         "data": null,
         "error": {

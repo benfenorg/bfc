@@ -12,7 +12,7 @@ task 1, lines 9-11:
 //> 1: TransferObjects([Result(0)], Input(1))
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 13-15:
 //# programmable --sender A --inputs 43 @B
@@ -20,23 +20,21 @@ task 2, lines 13-15:
 //> 1: TransferObjects([Result(0)], Input(1))
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, lines 17-19:
 //# programmable --sender A --inputs 44
 //> 0: SplitCoins(Gas, [Input(0)]);
 //> 1: sui::transfer::public_share_object<sui::coin::Coin<sui::sui::SUI>>(Result(0))
-created: object(3,0)
-mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+Error: Transaction Effects Status: Move Bytecode Verification Error. Please run the Bytecode Verifier for more information.
+Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: VMVerificationOrDeserializationError, source: Some(VMError { major_status: LINKER_ERROR, sub_status: None, message: Some("Cannot find ModuleId { address: sui, name: Identifier(\"sui\") } in data cache"), exec_state: None, location: Undefined, indices: [], offsets: [] }), command: Some(1) } }
 
 task 4, lines 21-23:
 //# programmable --sender A --inputs 45
 //> 0: SplitCoins(Gas, [Input(0)]);
 //> 1: sui::transfer::public_freeze_object<sui::coin::Coin<sui::sui::SUI>>(Result(0))
-created: object(4,0)
-mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+Error: Transaction Effects Status: Move Bytecode Verification Error. Please run the Bytecode Verifier for more information.
+Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: VMVerificationOrDeserializationError, source: Some(VMError { major_status: LINKER_ERROR, sub_status: None, message: Some("Cannot find ModuleId { address: sui, name: Identifier(\"sui\") } in data cache"), exec_state: None, location: Undefined, indices: [], offsets: [] }), command: Some(1) } }
 
 task 5, lines 25-27:
 //# programmable --sender A --inputs @A
@@ -44,21 +42,21 @@ task 5, lines 25-27:
 //> 1: TransferObjects([Result(0)], Input(0))
 created: object(5,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2333200,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2652400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 6, lines 29-30:
 //# programmable --sender A --inputs object(5,0) 46 47
 //> 0: sui::table::add<u64, u64>(Input(0), Input(1), Input(2))
 created: object(6,0)
 mutated: object(0,0), object(5,0)
-gas summary: computation_cost: 1000000, storage_cost: 3800000,  storage_rebate: 2309868, non_refundable_storage_fee: 23332
+gas summary: computation_cost: 1000000, storage_cost: 4119200,  storage_rebate: 2625876, non_refundable_storage_fee: 26524
 
 task 7, lines 32-33:
 //# programmable --sender A --inputs object(5,0) 46
 //> 0: sui::table::remove<u64, u64>(Input(0), Input(1))
 mutated: object(0,0), object(5,0)
 deleted: object(6,0)
-gas summary: computation_cost: 1000000, storage_cost: 2333200,  storage_rebate: 3762000, non_refundable_storage_fee: 38000
+gas summary: computation_cost: 1000000, storage_cost: 2652400,  storage_rebate: 4078008, non_refundable_storage_fee: 41192
 
 task 8, line 35:
 //# create-checkpoint
@@ -66,178 +64,92 @@ Checkpoint created: 1
 
 task 9, lines 37-52:
 //# run-jsonrpc
-Response: {
-  "jsonrpc": "2.0",
-  "id": 0,
-  "result": [
-    {
-      "status": "VersionFound",
-      "details": {
-        "objectId": "0xc442f9431f789a6c80078a63e707de84c7815c3150e08f1e44be256bd05a2b81",
-        "version": "2",
-        "digest": "4wV3VBJGNaMCv9zfjSna8c4as6EkuYoqTHHjueS6S745"
-      }
-    },
-    {
-      "status": "VersionFound",
-      "details": {
-        "objectId": "0xf2945213c986e35d59aae258ef1b094e81ead5cc982b0d1519625bf3f81bee68",
-        "version": "3",
-        "digest": "9wMLcUMLvkbqNFyoPtUJ1GPuVuXVqpLA3GP2DHL2SyL6"
-      }
-    },
-    {
-      "status": "VersionFound",
-      "details": {
-        "objectId": "0x0918a1917bda4d05f1cb4db824532a63476c57d65c548930406fe02051f22819",
-        "version": "4",
-        "digest": "8pirmp97ym3pzSCabaPsoPYVPbKYQHfnPqEbCyk32Au2"
-      }
-    },
-    {
-      "status": "VersionFound",
-      "details": {
-        "objectId": "0xf079987ab8a34791ae4dd8b2d2a9af3485496a49b382b22239c4ca43902fe18a",
-        "version": "5",
-        "digest": "EEF6GF5DCZRZ4zxsubwzaQhYWysCdGJ63sLRLE15d9F"
-      }
-    },
-    {
-      "status": "VersionFound",
-      "details": {
-        "objectId": "0x2867eee076a7f41efb3dc507f27531c26319dfbf0c9a6d92f6d1fd0f8d9bdeeb",
-        "version": "6",
-        "digest": "EtpqCkaW8jrLkvbeL9Mgy3REUMX73FrGxEjGiFCz8TSm"
-      }
-    },
-    {
-      "status": "VersionFound",
-      "details": {
-        "objectId": "0x0dfe3bf8505600c374ecc59e9580d3504a37a14f65b53084ef86c5861f39cc3f",
-        "version": "7",
-        "digest": "9rcnz8P9Eie7KZPUjTWnmTzyUxsBMaJcb9G3ncuG4BiC"
-      }
-    },
-    {
-      "status": "VersionNotFound",
-      "details": [
-        "0x0dfe3bf8505600c374ecc59e9580d3504a37a14f65b53084ef86c5861f39cc3f",
-        8
-      ]
-    },
-    {
-      "status": "VersionNotFound",
-      "details": [
-        "0x0dfe3bf8505600c374ecc59e9580d3504a37a14f65b53084ef86c5861f39cc3f",
-        9
-      ]
-    }
-  ]
+Error: Unknown variable: obj_4_0
+Allowed variable mappings are {
+    "A": "@A",
+    "A_opt": "@A",
+    "B": "@B",
+    "B_opt": "@B",
+    "bfc_system": "0xc8",
+    "bfc_system_opt": "0xc8",
+    "bridge": "0xb",
+    "bridge_opt": "0xb",
+    "digest_1": "A8tZbbgF9GkaApZktzdopjcfGxYAvE6edXgchCM3r6Kq",
+    "digest_2": "EYXkxCN7Gcks8qYAL86T8GcVbTgXoqLf4teMENfn84We",
+    "digest_3": "8HQcBqquNGxTs3QYPTVkaeN7eF5rAExFga3ssyqyaquC",
+    "digest_4": "DpyUA9LTGDn8rRhiJXAiY4FfBgczMq9JoGtpV8usfG9Q",
+    "digest_5": "2TAhpU6ZP76CDfFqApm6U22fVTLpjgtK64esffqMMQf5",
+    "digest_6": "AfWWVcnjorTZxkXCxKYzBuzhkjZcQ7byryvcQBRF89R3",
+    "digest_7": "67Qci1SJMdyY1TpBfKdspecAzBZYr7EgF2rLq8QkbWTa",
+    "highest_checkpoint": "1",
+    "obj_0_0": "object(0,0)",
+    "obj_0_0_opt": "object(0,0)",
+    "obj_0_1": "object(0,1)",
+    "obj_0_1_opt": "object(0,1)",
+    "obj_0_2": "object(0,2)",
+    "obj_0_2_opt": "object(0,2)",
+    "obj_1_0": "object(1,0)",
+    "obj_1_0_opt": "object(1,0)",
+    "obj_2_0": "object(2,0)",
+    "obj_2_0_opt": "object(2,0)",
+    "obj_5_0": "object(5,0)",
+    "obj_5_0_opt": "object(5,0)",
+    "obj_6_0": "object(6,0)",
+    "obj_6_0_opt": "object(6,0)",
+    "std": "0x1",
+    "std_opt": "0x1",
+    "sui": "0x2",
+    "sui_opt": "0x2",
+    "sui_system": "0x3",
+    "sui_system_opt": "0x3",
+    "test": "0x0",
+    "test_opt": "0x0",
+    "validator_0": "0xfbc51a8acf096f86198d5fa470620ed6a20abc09b94ea891ef029a5de3f39713",
+    "validator_0_opt": "0xfbc51a8acf096f86198d5fa470620ed6a20abc09b94ea891ef029a5de3f39713",
 }
 
 task 10, lines 54-75:
 //# run-jsonrpc
-Response: {
-  "jsonrpc": "2.0",
-  "id": 1,
-  "result": [
-    {
-      "status": "VersionFound",
-      "details": {
-        "objectId": "0xc442f9431f789a6c80078a63e707de84c7815c3150e08f1e44be256bd05a2b81",
-        "version": "2",
-        "digest": "4wV3VBJGNaMCv9zfjSna8c4as6EkuYoqTHHjueS6S745",
-        "type": "0x2::coin::Coin<0x2::sui::SUI>",
-        "owner": {
-          "AddressOwner": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
-        },
-        "previousTransaction": "ABo3jemYqdBWMRYqsaCYUKnGDp64tR7jK2fH1mKCoJLk",
-        "storageRebate": "988000"
-      }
-    },
-    {
-      "status": "VersionFound",
-      "details": {
-        "objectId": "0xf2945213c986e35d59aae258ef1b094e81ead5cc982b0d1519625bf3f81bee68",
-        "version": "3",
-        "digest": "9wMLcUMLvkbqNFyoPtUJ1GPuVuXVqpLA3GP2DHL2SyL6",
-        "type": "0x2::coin::Coin<0x2::sui::SUI>",
-        "owner": {
-          "AddressOwner": "0xa7b032703878aa74c3126935789fd1d4d7e111d5911b09247d6963061c312b5a"
-        },
-        "previousTransaction": "DHGGkfgVSyMV4vZqbHe5jPcJLX5Wrp3m7d5mdLUn62dX",
-        "storageRebate": "988000"
-      }
-    },
-    {
-      "status": "VersionFound",
-      "details": {
-        "objectId": "0x0918a1917bda4d05f1cb4db824532a63476c57d65c548930406fe02051f22819",
-        "version": "4",
-        "digest": "8pirmp97ym3pzSCabaPsoPYVPbKYQHfnPqEbCyk32Au2",
-        "type": "0x2::coin::Coin<0x2::sui::SUI>",
-        "owner": {
-          "Shared": {
-            "initial_shared_version": 4
-          }
-        },
-        "previousTransaction": "FDCEMiaPqGUUFjB4sV1EMCFisw7W7WMJJ6nWTBwnoHcc",
-        "storageRebate": "988000"
-      }
-    },
-    {
-      "status": "VersionFound",
-      "details": {
-        "objectId": "0xf079987ab8a34791ae4dd8b2d2a9af3485496a49b382b22239c4ca43902fe18a",
-        "version": "5",
-        "digest": "EEF6GF5DCZRZ4zxsubwzaQhYWysCdGJ63sLRLE15d9F",
-        "type": "0x2::coin::Coin<0x2::sui::SUI>",
-        "owner": "Immutable",
-        "previousTransaction": "4ZmQdHopY1d8eg5zsTVciezKwhTbuQGaybXXBMWjs7ax",
-        "storageRebate": "988000"
-      }
-    },
-    {
-      "status": "VersionFound",
-      "details": {
-        "objectId": "0x2867eee076a7f41efb3dc507f27531c26319dfbf0c9a6d92f6d1fd0f8d9bdeeb",
-        "version": "6",
-        "digest": "EtpqCkaW8jrLkvbeL9Mgy3REUMX73FrGxEjGiFCz8TSm",
-        "type": "0x2::table::Table<u64, u64>",
-        "owner": {
-          "AddressOwner": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
-        },
-        "previousTransaction": "7DxXXvjVgFuqLXPRaZKAVm12cQWopxbVySBdNqmUCRVJ",
-        "storageRebate": "1345200"
-      }
-    },
-    {
-      "status": "VersionFound",
-      "details": {
-        "objectId": "0x0dfe3bf8505600c374ecc59e9580d3504a37a14f65b53084ef86c5861f39cc3f",
-        "version": "7",
-        "digest": "9rcnz8P9Eie7KZPUjTWnmTzyUxsBMaJcb9G3ncuG4BiC",
-        "type": "0x2::dynamic_field::Field<u64, u64>",
-        "owner": {
-          "ObjectOwner": "0x2867eee076a7f41efb3dc507f27531c26319dfbf0c9a6d92f6d1fd0f8d9bdeeb"
-        },
-        "previousTransaction": "6mXaEAhjYrN5QF4mBX1bLK2T8h4XtmYqqi3FNvtsd3TY",
-        "storageRebate": "1466800"
-      }
-    },
-    {
-      "status": "VersionNotFound",
-      "details": [
-        "0x0dfe3bf8505600c374ecc59e9580d3504a37a14f65b53084ef86c5861f39cc3f",
-        8
-      ]
-    },
-    {
-      "status": "VersionNotFound",
-      "details": [
-        "0x0dfe3bf8505600c374ecc59e9580d3504a37a14f65b53084ef86c5861f39cc3f",
-        9
-      ]
-    }
-  ]
+Error: Unknown variable: obj_3_0
+Allowed variable mappings are {
+    "A": "@A",
+    "A_opt": "@A",
+    "B": "@B",
+    "B_opt": "@B",
+    "bfc_system": "0xc8",
+    "bfc_system_opt": "0xc8",
+    "bridge": "0xb",
+    "bridge_opt": "0xb",
+    "digest_1": "A8tZbbgF9GkaApZktzdopjcfGxYAvE6edXgchCM3r6Kq",
+    "digest_2": "EYXkxCN7Gcks8qYAL86T8GcVbTgXoqLf4teMENfn84We",
+    "digest_3": "8HQcBqquNGxTs3QYPTVkaeN7eF5rAExFga3ssyqyaquC",
+    "digest_4": "DpyUA9LTGDn8rRhiJXAiY4FfBgczMq9JoGtpV8usfG9Q",
+    "digest_5": "2TAhpU6ZP76CDfFqApm6U22fVTLpjgtK64esffqMMQf5",
+    "digest_6": "AfWWVcnjorTZxkXCxKYzBuzhkjZcQ7byryvcQBRF89R3",
+    "digest_7": "67Qci1SJMdyY1TpBfKdspecAzBZYr7EgF2rLq8QkbWTa",
+    "highest_checkpoint": "1",
+    "obj_0_0": "object(0,0)",
+    "obj_0_0_opt": "object(0,0)",
+    "obj_0_1": "object(0,1)",
+    "obj_0_1_opt": "object(0,1)",
+    "obj_0_2": "object(0,2)",
+    "obj_0_2_opt": "object(0,2)",
+    "obj_1_0": "object(1,0)",
+    "obj_1_0_opt": "object(1,0)",
+    "obj_2_0": "object(2,0)",
+    "obj_2_0_opt": "object(2,0)",
+    "obj_5_0": "object(5,0)",
+    "obj_5_0_opt": "object(5,0)",
+    "obj_6_0": "object(6,0)",
+    "obj_6_0_opt": "object(6,0)",
+    "std": "0x1",
+    "std_opt": "0x1",
+    "sui": "0x2",
+    "sui_opt": "0x2",
+    "sui_system": "0x3",
+    "sui_system_opt": "0x3",
+    "test": "0x0",
+    "test_opt": "0x0",
+    "validator_0": "0xfbc51a8acf096f86198d5fa470620ed6a20abc09b94ea891ef029a5de3f39713",
+    "validator_0_opt": "0xfbc51a8acf096f86198d5fa470620ed6a20abc09b94ea891ef029a5de3f39713",
 }

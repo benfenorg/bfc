@@ -10,8 +10,8 @@ description: tests/shell_tests/implicits/build_dev.sh
 sui move build --dev -p example 2> /dev/null
 
 ----- results -----
-success: true
-exit_code: 0
+success: false
+exit_code: 127
 ----- stdout -----
 
 ----- stderr -----

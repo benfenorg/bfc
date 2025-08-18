@@ -11,14 +11,14 @@ task 1, lines 6-8:
 //> SplitCoins(Gas, [Input(0)]);
 //> MergeCoins(Gas, [Result(0)])
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 10-12:
 //# programmable --sender A --inputs 1
 //> SplitCoins(Gas, [Input(0)]);
 //> MergeCoins(Gas, [Result(0)])
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, line 14:
 //# create-checkpoint
@@ -29,14 +29,14 @@ task 4, lines 16-18:
 //> SplitCoins(Gas, [Input(0)]);
 //> MergeCoins(Gas, [Result(0)])
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 5, lines 20-22:
 //# programmable --sender A --inputs 1
 //> SplitCoins(Gas, [Input(0)]);
 //> MergeCoins(Gas, [Result(0)])
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 6, line 24:
 //# create-checkpoint
@@ -47,7 +47,7 @@ task 7, lines 26-28:
 //> SplitCoins(Gas, [Input(0)]);
 //> MergeCoins(Gas, [Result(0)])
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 8, line 30:
 //# create-checkpoint
@@ -68,49 +68,49 @@ Response: {
         {
           "cursor": "MQ==",
           "node": {
-            "address": "0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a",
+            "address": "0xb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c85",
             "version": 1,
-            "objectBcs": "AAEBAQAAAAAAAAAov/XpakpcD3NIJZx6v9/ZmUBcArnpwNDVnsZppTsQTHoAwG4x2RABAAD8zJpCG7sTwaZqGqmPCtdQKe3pSFd3nGkVtE+UBouSHiAhYMxtpUe8VbuLRSLzHY4j/iAX6Zq6YBhs7be1Cgf3GgAAAAAAAAAA"
+            "objectBcs": "AAEHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDYmZjA0JGQwABAQAAAAAAAAAotDc0kjsr4111CdRuCcyboEbRFpsXVlLI+rSNF0UAHIUAwG4x2RABAAD8zJpCG7sTwaZqGqmPCtdQKe3pSFd3nGkVtE+UBouSHiCNQum725g6k41t2SUa8ado8kQy0IdyByQJWnX24tyaVQAAAAAAAAAA"
           }
         },
         {
           "cursor": "Mg==",
           "node": {
-            "address": "0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a",
+            "address": "0xb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c85",
             "version": 2,
-            "objectBcs": "AAEBAgAAAAAAAAAov/XpakpcD3NIJZx6v9/ZmUBcArnpwNDVnsZppTsQTHpgalAx2RABAAD8zJpCG7sTwaZqGqmPCtdQKe3pSFd3nGkVtE+UBouSHiAJXmDaTN9/8Me8Ls9qOM7J6Xg4QCrKcwjLGSUh7RlNrGATDwAAAAAA"
+            "objectBcs": "AAEHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDYmZjA0JGQwABAgAAAAAAAAAotDc0kjsr4111CdRuCcyboEbRFpsXVlLI+rSNF0UAHIWAi0sx2RABAAD8zJpCG7sTwaZqGqmPCtdQKe3pSFd3nGkVtE+UBouSHiAN3P5Ya5FVqGYKMSKIoyzVY/r8AV/NNOid2eH4949ux0DyEwAAAAAA"
           }
         },
         {
           "cursor": "Mw==",
           "node": {
-            "address": "0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a",
+            "address": "0xb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c85",
             "version": 3,
-            "objectBcs": "AAEBAwAAAAAAAAAov/XpakpcD3NIJZx6v9/ZmUBcArnpwNDVnsZppTsQTHqIAUEx2RABAAD8zJpCG7sTwaZqGqmPCtdQKe3pSFd3nGkVtE+UBouSHiDWUsSOzQErUliOrDD0D+QXvoz1w3yXlmqqxLHIMOllUWATDwAAAAAA"
+            "objectBcs": "AAEHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDYmZjA0JGQwABAwAAAAAAAAAotDc0kjsr4111CdRuCcyboEbRFpsXVlLI+rSNF0UAHIUwFjwx2RABAAD8zJpCG7sTwaZqGqmPCtdQKe3pSFd3nGkVtE+UBouSHiDJ2e6SMec2UeTV3B37m1C4gHHqgXO1wDMr5EGrml1xVEDyEwAAAAAA"
           }
         },
         {
           "cursor": "NA==",
           "node": {
-            "address": "0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a",
+            "address": "0xb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c85",
             "version": 4,
-            "objectBcs": "AAEBBAAAAAAAAAAov/XpakpcD3NIJZx6v9/ZmUBcArnpwNDVnsZppTsQTHqwmDEx2RABAAD8zJpCG7sTwaZqGqmPCtdQKe3pSFd3nGkVtE+UBouSHiBEF4j2ubw/i05PSuc8wW+G5u+n+iAYppE65LNP6EWO0WATDwAAAAAA"
+            "objectBcs": "AAEHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDYmZjA0JGQwABBAAAAAAAAAAotDc0kjsr4111CdRuCcyboEbRFpsXVlLI+rSNF0UAHIXgoCwx2RABAAD8zJpCG7sTwaZqGqmPCtdQKe3pSFd3nGkVtE+UBouSHiBEDmHmlstPXsq3qks41MjuFBceuUWvcyhIJx9LbMTg0UDyEwAAAAAA"
           }
         },
         {
           "cursor": "NQ==",
           "node": {
-            "address": "0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a",
+            "address": "0xb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c85",
             "version": 5,
-            "objectBcs": "AAEBBQAAAAAAAAAov/XpakpcD3NIJZx6v9/ZmUBcArnpwNDVnsZppTsQTHrYLyIx2RABAAD8zJpCG7sTwaZqGqmPCtdQKe3pSFd3nGkVtE+UBouSHiBeBpKe2ojL1pdSppjgneSTpwq7wxmfLlWyw6UYAFXH9GATDwAAAAAA"
+            "objectBcs": "AAEHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDYmZjA0JGQwABBQAAAAAAAAAotDc0kjsr4111CdRuCcyboEbRFpsXVlLI+rSNF0UAHIWQKx0x2RABAAD8zJpCG7sTwaZqGqmPCtdQKe3pSFd3nGkVtE+UBouSHiAAMaIbNMvOrIgKkGNJsFaaz30Fi/Mns1wvQqllfJ+860DyEwAAAAAA"
           }
         },
         {
           "cursor": "Ng==",
           "node": {
-            "address": "0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a",
+            "address": "0xb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c85",
             "version": 6,
-            "objectBcs": "AAEBBgAAAAAAAAAov/XpakpcD3NIJZx6v9/ZmUBcArnpwNDVnsZppTsQTHoAxxIx2RABAAD8zJpCG7sTwaZqGqmPCtdQKe3pSFd3nGkVtE+UBouSHiD0+HVckKf75XBKr9/8sIyj8s7FsGEzAD4kjxYxM/vRaGATDwAAAAAA"
+            "objectBcs": "AAEHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDYmZjA0JGQwABBgAAAAAAAAAotDc0kjsr4111CdRuCcyboEbRFpsXVlLI+rSNF0UAHIVAtg0x2RABAAD8zJpCG7sTwaZqGqmPCtdQKe3pSFd3nGkVtE+UBouSHiDn6Yvt5XUmghGHDntzhm8fo82yibMJ/N731gXZEzRzB0DyEwAAAAAA"
           }
         }
       ]

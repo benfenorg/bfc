@@ -12,7 +12,7 @@ task 1, lines 9-11:
 //> 1: TransferObjects([Result(0)], Input(0))
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2287600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2606800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 13:
 //# create-checkpoint
@@ -26,7 +26,7 @@ Response: {
   "result": {
     "error": {
       "code": "dynamicFieldNotFound",
-      "parent_object_id": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      "parent_object_id": "BFC000000000000000000000000000000000000000000000000000000000000000060e0"
     }
   }
 }
@@ -39,7 +39,7 @@ Response: {
   "result": {
     "error": {
       "code": "dynamicFieldNotFound",
-      "parent_object_id": "0xdd806f262555a167b932495c24765daccc1ba6ebee5e8a696155818e6b5e93ad"
+      "parent_object_id": "BFC1d39d3e9579f3a048c5f4954d91ce9c945c2da85f7aaea352d79a0f44fa768045d34"
     }
   }
 }

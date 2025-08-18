@@ -19,7 +19,7 @@ task 4, lines 31-35:
 //# run-jsonrpc --show-headers
 Headers: {
     "access-control-allow-origin": "*",
-    "content-length": "40",
+    "content-length": "39",
     "content-type": "application/json; charset=utf-8",
     "vary": "origin, access-control-request-method, access-control-request-headers",
 }
@@ -27,5 +27,5 @@ Headers: {
 Response: {
   "jsonrpc": "2.0",
   "id": 0,
-  "result": "1000"
+  "result": "100"
 }

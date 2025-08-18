@@ -10,7 +10,7 @@ task 1, lines 14-52:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 7524000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7843200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 54-56:
 //# programmable --sender A --inputs @A
@@ -18,7 +18,7 @@ task 2, lines 54-56:
 //> 1: TransferObjects([Result(0)], Input(0))
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2234400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2553600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, lines 58-60:
 //# programmable --sender A --inputs object(2,0) 42 43u32 44
@@ -26,7 +26,7 @@ task 3, lines 58-60:
 //> 1: P::M::dfield<P::M::Name, u64>(Input(0), Result(0), Input(3))
 created: object(3,0)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 4035600,  storage_rebate: 2212056, non_refundable_storage_fee: 22344
+gas summary: computation_cost: 1000000, storage_cost: 4354800,  storage_rebate: 2528064, non_refundable_storage_fee: 25536
 
 task 4, line 62:
 //# create-checkpoint
@@ -38,14 +38,14 @@ task 5, lines 64-66:
 //> 1: TransferObjects([Result(0)], Input(0))
 created: object(5,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2234400,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2553600,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 6, lines 68-69:
 //# programmable --sender A --inputs object(2,0) 45 object(5,0)
 //> 0: P::M::ofield<u64, P::M::Object>(Input(0), Input(1), Input(2))
 created: object(6,0)
 mutated: object(0,0), object(2,0), object(5,0)
-gas summary: computation_cost: 1000000, storage_cost: 5935600,  storage_rebate: 3445992, non_refundable_storage_fee: 34808
+gas summary: computation_cost: 1000000, storage_cost: 6254800,  storage_rebate: 3762000, non_refundable_storage_fee: 38000
 
 task 7, line 71:
 //# create-checkpoint
@@ -56,7 +56,7 @@ task 8, lines 73-74:
 //> 0: P::M::dfield<u64, u64>(Input(0), Input(1), Input(2))
 created: object(8,0)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 3701200,  storage_rebate: 2212056, non_refundable_storage_fee: 22344
+gas summary: computation_cost: 1000000, storage_cost: 4020400,  storage_rebate: 2528064, non_refundable_storage_fee: 25536
 
 task 9, line 76:
 //# create-checkpoint
@@ -67,7 +67,7 @@ task 10, lines 78-79:
 //> 0: P::M::dfield<bool, u64>(Input(0), Input(1), Input(2))
 created: object(10,0)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 3648000,  storage_rebate: 2212056, non_refundable_storage_fee: 22344
+gas summary: computation_cost: 1000000, storage_cost: 3967200,  storage_rebate: 2528064, non_refundable_storage_fee: 25536
 
 task 11, line 81:
 //# create-checkpoint
@@ -78,7 +78,7 @@ task 12, lines 83-84:
 //> 0: P::M::dfield<bool, u64>(Input(0), Input(1), Input(2))
 created: object(12,0)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 3648000,  storage_rebate: 2212056, non_refundable_storage_fee: 22344
+gas summary: computation_cost: 1000000, storage_cost: 3967200,  storage_rebate: 2528064, non_refundable_storage_fee: 25536
 
 task 13, line 86:
 //# create-checkpoint
@@ -92,23 +92,23 @@ Response: {
   "result": [
     {
       "data": {
-        "objectId": "0xb133133c82302d383ea280b29cd5a7eda5129a297f6e06289ca089d01c5114c7",
+        "objectId": "BFC45094949a12db8adb4bb88a9508df6b63e22a08c23404cbb76bef4bf852200c950d5",
         "version": "3",
-        "digest": "D7N7M9cirpKm3QY1aLGDfHgBnz3bknFFtELm4wNiUXwi",
-        "type": "0x2::dynamic_field::Field<0x4827c77e5af9f6aac859515790dc77d123cfcc37c1d2e58213a91136395f4309::M::Name, u64>",
+        "digest": "2MbTrNgbjnP78EA3qBZrtdR8EYrozKowJDtagpUJW5Bv",
+        "type": "0x2::dynamic_field::Field<0x889d9ede17a5fc5c0fba678b0ac81a4417c0754979e5f672a5bb6a914d7162e5::M::Name, u64>",
         "owner": {
-          "ObjectOwner": "0xcbba4377978c35d56a021dd5a88d4f52da68f7f78857f971eff435d7d170d69e"
+          "ObjectOwner": "BFC88150bc88207ba0accf08d362e6614b73e7b9becde10fe95bc913cd06601b3cf1a76"
         },
         "content": {
           "dataType": "moveObject",
-          "type": "0x2::dynamic_field::Field<0x4827c77e5af9f6aac859515790dc77d123cfcc37c1d2e58213a91136395f4309::M::Name, u64>",
+          "type": "0x2::dynamic_field::Field<0x889d9ede17a5fc5c0fba678b0ac81a4417c0754979e5f672a5bb6a914d7162e5::M::Name, u64>",
           "hasPublicTransfer": false,
           "fields": {
             "id": {
-              "id": "0xb133133c82302d383ea280b29cd5a7eda5129a297f6e06289ca089d01c5114c7"
+              "id": "BFC45094949a12db8adb4bb88a9508df6b63e22a08c23404cbb76bef4bf852200c950d5"
             },
             "name": {
-              "type": "0x4827c77e5af9f6aac859515790dc77d123cfcc37c1d2e58213a91136395f4309::M::Name",
+              "type": "0x889d9ede17a5fc5c0fba678b0ac81a4417c0754979e5f672a5bb6a914d7162e5::M::Name",
               "fields": {
                 "x": "42",
                 "y": 43
@@ -121,20 +121,20 @@ Response: {
     },
     {
       "data": {
-        "objectId": "0x3f51b1510cbd5b3eb96dc7c1bc9625f0f16d7fbf17e9d657f37bfdd4cc89f7a4",
+        "objectId": "BFCcfea9910fd47502cce8caedca2d063eaa439faa92ec78916d2bd40aa954e5a0715ee",
         "version": "5",
-        "digest": "9fnALmoBZb4QTj5sajaXcnH3nBMoxxz9tSFoJv996Bd9",
-        "type": "0x4827c77e5af9f6aac859515790dc77d123cfcc37c1d2e58213a91136395f4309::M::Object",
+        "digest": "FW6UVmi1ACAQL6YrW8GufMkiPQN1qbtqJiRFFy9SgjCa",
+        "type": "0x889d9ede17a5fc5c0fba678b0ac81a4417c0754979e5f672a5bb6a914d7162e5::M::Object",
         "owner": {
-          "ObjectOwner": "0x8b8cd3efa32d3be412d3f8083b7cd3813d71cc49f0c4d440df1d7af55ad96e88"
+          "ObjectOwner": "BFC3609f725219b7a415f0c70507bce7658113955fe16e8a9da7d267be384c4c48ac1d5"
         },
         "content": {
           "dataType": "moveObject",
-          "type": "0x4827c77e5af9f6aac859515790dc77d123cfcc37c1d2e58213a91136395f4309::M::Object",
+          "type": "0x889d9ede17a5fc5c0fba678b0ac81a4417c0754979e5f672a5bb6a914d7162e5::M::Object",
           "hasPublicTransfer": true,
           "fields": {
             "id": {
-              "id": "0x3f51b1510cbd5b3eb96dc7c1bc9625f0f16d7fbf17e9d657f37bfdd4cc89f7a4"
+              "id": "BFCcfea9910fd47502cce8caedca2d063eaa439faa92ec78916d2bd40aa954e5a0715ee"
             }
           }
         }
@@ -142,12 +142,12 @@ Response: {
     },
     {
       "data": {
-        "objectId": "0x8b8cd3efa32d3be412d3f8083b7cd3813d71cc49f0c4d440df1d7af55ad96e88",
+        "objectId": "BFC3609f725219b7a415f0c70507bce7658113955fe16e8a9da7d267be384c4c48ac1d5",
         "version": "5",
-        "digest": "BuqZxJnbk1MqKDFs2Vo4W5jwaYxPDDWVTNELE13P9RzJ",
+        "digest": "2SQC2MoCB4TGfTEaFLF7JqMeB9wqu8uZXQJoVV2t5W3o",
         "type": "0x2::dynamic_field::Field<0x2::dynamic_object_field::Wrapper<u64>, 0x2::object::ID>",
         "owner": {
-          "ObjectOwner": "0xcbba4377978c35d56a021dd5a88d4f52da68f7f78857f971eff435d7d170d69e"
+          "ObjectOwner": "BFC88150bc88207ba0accf08d362e6614b73e7b9becde10fe95bc913cd06601b3cf1a76"
         },
         "content": {
           "dataType": "moveObject",
@@ -155,7 +155,7 @@ Response: {
           "hasPublicTransfer": false,
           "fields": {
             "id": {
-              "id": "0x8b8cd3efa32d3be412d3f8083b7cd3813d71cc49f0c4d440df1d7af55ad96e88"
+              "id": "BFC3609f725219b7a415f0c70507bce7658113955fe16e8a9da7d267be384c4c48ac1d5"
             },
             "name": {
               "type": "0x2::dynamic_object_field::Wrapper<u64>",
@@ -163,19 +163,19 @@ Response: {
                 "name": "45"
               }
             },
-            "value": "0x3f51b1510cbd5b3eb96dc7c1bc9625f0f16d7fbf17e9d657f37bfdd4cc89f7a4"
+            "value": "BFCcfea9910fd47502cce8caedca2d063eaa439faa92ec78916d2bd40aa954e5a0715ee"
           }
         }
       }
     },
     {
       "data": {
-        "objectId": "0x6edf674639c291337f17327eca3e2c066ab0a9cea980d10754fea09d92fd5051",
+        "objectId": "BFC81b3f0f50074987bf903314ee626de6894a6cc3ba6106f11832c9d599d9236cb1162",
         "version": "6",
-        "digest": "6jRrnFS4FJVtdXma1RG2iUcb8NXjsTcfbfbVHbeY4Bm3",
+        "digest": "FX6fX4CbtSwoSd8GJMdbPrvG8xVjN2ZxoTMmd2zMzBY3",
         "type": "0x2::dynamic_field::Field<u64, u64>",
         "owner": {
-          "ObjectOwner": "0xcbba4377978c35d56a021dd5a88d4f52da68f7f78857f971eff435d7d170d69e"
+          "ObjectOwner": "BFC88150bc88207ba0accf08d362e6614b73e7b9becde10fe95bc913cd06601b3cf1a76"
         },
         "content": {
           "dataType": "moveObject",
@@ -183,7 +183,7 @@ Response: {
           "hasPublicTransfer": false,
           "fields": {
             "id": {
-              "id": "0x6edf674639c291337f17327eca3e2c066ab0a9cea980d10754fea09d92fd5051"
+              "id": "BFC81b3f0f50074987bf903314ee626de6894a6cc3ba6106f11832c9d599d9236cb1162"
             },
             "name": "46",
             "value": "47"
@@ -193,12 +193,12 @@ Response: {
     },
     {
       "data": {
-        "objectId": "0xc0ab0b0596cf2b735ec2b08f2d4c93347b9a693e40e97ca0c0462e45c96538be",
+        "objectId": "BFCc1f24791f96ffc0c3d084ca6eb2b22d943dab5ef3fe59bdaca0834973fa157e1078c",
         "version": "7",
-        "digest": "5ZZDiZrs5KAALSdGRed1PZPJWzvarTAPVob2ALXkLNSc",
+        "digest": "6NnB9a4PvTxoJGPNqvqLa4hgXSkxuXxAzDeLhPbqTEKK",
         "type": "0x2::dynamic_field::Field<bool, u64>",
         "owner": {
-          "ObjectOwner": "0xcbba4377978c35d56a021dd5a88d4f52da68f7f78857f971eff435d7d170d69e"
+          "ObjectOwner": "BFC88150bc88207ba0accf08d362e6614b73e7b9becde10fe95bc913cd06601b3cf1a76"
         },
         "content": {
           "dataType": "moveObject",
@@ -206,7 +206,7 @@ Response: {
           "hasPublicTransfer": false,
           "fields": {
             "id": {
-              "id": "0xc0ab0b0596cf2b735ec2b08f2d4c93347b9a693e40e97ca0c0462e45c96538be"
+              "id": "BFCc1f24791f96ffc0c3d084ca6eb2b22d943dab5ef3fe59bdaca0834973fa157e1078c"
             },
             "name": true,
             "value": "48"
@@ -216,12 +216,12 @@ Response: {
     },
     {
       "data": {
-        "objectId": "0x442d04fc77ad9c2323cd0617b8ce2e40c87a9e99b028a512329bc49d0e2190cb",
+        "objectId": "BFC26f89ddee589bd7394abdc8dba057d052fc334e605e1e3d156511805a075903f1b52",
         "version": "8",
-        "digest": "AxgfrX2nKLG1YwFF9RKnXv97s8YupknWXxchWtJYGyiE",
+        "digest": "383DYBN32uZfWfXqK2EfboX1pQkBFH4NZaYZ2uRB1o3J",
         "type": "0x2::dynamic_field::Field<bool, u64>",
         "owner": {
-          "ObjectOwner": "0xcbba4377978c35d56a021dd5a88d4f52da68f7f78857f971eff435d7d170d69e"
+          "ObjectOwner": "BFC88150bc88207ba0accf08d362e6614b73e7b9becde10fe95bc913cd06601b3cf1a76"
         },
         "content": {
           "dataType": "moveObject",
@@ -229,7 +229,7 @@ Response: {
           "hasPublicTransfer": false,
           "fields": {
             "id": {
-              "id": "0x442d04fc77ad9c2323cd0617b8ce2e40c87a9e99b028a512329bc49d0e2190cb"
+              "id": "BFC26f89ddee589bd7394abdc8dba057d052fc334e605e1e3d156511805a075903f1b52"
             },
             "name": false,
             "value": "49"
@@ -256,9 +256,9 @@ Response: {
         "bcsName": "AA==",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0x442d04fc77ad9c2323cd0617b8ce2e40c87a9e99b028a512329bc49d0e2190cb",
+        "objectId": "BFC26f89ddee589bd7394abdc8dba057d052fc334e605e1e3d156511805a075903f1b52",
         "version": 8,
-        "digest": "AxgfrX2nKLG1YwFF9RKnXv97s8YupknWXxchWtJYGyiE"
+        "digest": "383DYBN32uZfWfXqK2EfboX1pQkBFH4NZaYZ2uRB1o3J"
       },
       {
         "name": {
@@ -269,9 +269,9 @@ Response: {
         "bcsName": "AQ==",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0xc0ab0b0596cf2b735ec2b08f2d4c93347b9a693e40e97ca0c0462e45c96538be",
+        "objectId": "BFCc1f24791f96ffc0c3d084ca6eb2b22d943dab5ef3fe59bdaca0834973fa157e1078c",
         "version": 7,
-        "digest": "5ZZDiZrs5KAALSdGRed1PZPJWzvarTAPVob2ALXkLNSc"
+        "digest": "6NnB9a4PvTxoJGPNqvqLa4hgXSkxuXxAzDeLhPbqTEKK"
       },
       {
         "name": {
@@ -282,9 +282,9 @@ Response: {
         "bcsName": "LgAAAAAAAAA=",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0x6edf674639c291337f17327eca3e2c066ab0a9cea980d10754fea09d92fd5051",
+        "objectId": "BFC81b3f0f50074987bf903314ee626de6894a6cc3ba6106f11832c9d599d9236cb1162",
         "version": 6,
-        "digest": "6jRrnFS4FJVtdXma1RG2iUcb8NXjsTcfbfbVHbeY4Bm3"
+        "digest": "FX6fX4CbtSwoSd8GJMdbPrvG8xVjN2ZxoTMmd2zMzBY3"
       },
       {
         "name": {
@@ -294,14 +294,14 @@ Response: {
         "bcsEncoding": "base64",
         "bcsName": "LQAAAAAAAAA=",
         "type": "DynamicObject",
-        "objectType": "0x4827c77e5af9f6aac859515790dc77d123cfcc37c1d2e58213a91136395f4309::M::Object",
-        "objectId": "0x3f51b1510cbd5b3eb96dc7c1bc9625f0f16d7fbf17e9d657f37bfdd4cc89f7a4",
+        "objectType": "0x889d9ede17a5fc5c0fba678b0ac81a4417c0754979e5f672a5bb6a914d7162e5::M::Object",
+        "objectId": "BFCcfea9910fd47502cce8caedca2d063eaa439faa92ec78916d2bd40aa954e5a0715ee",
         "version": 5,
-        "digest": "9fnALmoBZb4QTj5sajaXcnH3nBMoxxz9tSFoJv996Bd9"
+        "digest": "FW6UVmi1ACAQL6YrW8GufMkiPQN1qbtqJiRFFy9SgjCa"
       },
       {
         "name": {
-          "type": "0x4827c77e5af9f6aac859515790dc77d123cfcc37c1d2e58213a91136395f4309::M::Name",
+          "type": "0x889d9ede17a5fc5c0fba678b0ac81a4417c0754979e5f672a5bb6a914d7162e5::M::Name",
           "value": {
             "x": "42",
             "y": 43
@@ -311,12 +311,12 @@ Response: {
         "bcsName": "KgAAAAAAAAArAAAA",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0xb133133c82302d383ea280b29cd5a7eda5129a297f6e06289ca089d01c5114c7",
+        "objectId": "BFC45094949a12db8adb4bb88a9508df6b63e22a08c23404cbb76bef4bf852200c950d5",
         "version": 3,
-        "digest": "D7N7M9cirpKm3QY1aLGDfHgBnz3bknFFtELm4wNiUXwi"
+        "digest": "2MbTrNgbjnP78EA3qBZrtdR8EYrozKowJDtagpUJW5Bv"
       }
     ],
-    "nextCursor": "ILEzEzyCMC04PqKAspzVp+2lEpopf24GKJygidAcURTHAQAAAAAAAAA=",
+    "nextCursor": "IEUJSUmhLbittLuIqVCN9rY+IqCMI0BMu3a+9L+FIgDJAQAAAAAAAAA=",
     "hasNextPage": false
   }
 }
@@ -337,9 +337,9 @@ Response: {
         "bcsName": "AA==",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0x442d04fc77ad9c2323cd0617b8ce2e40c87a9e99b028a512329bc49d0e2190cb",
+        "objectId": "BFC26f89ddee589bd7394abdc8dba057d052fc334e605e1e3d156511805a075903f1b52",
         "version": 8,
-        "digest": "AxgfrX2nKLG1YwFF9RKnXv97s8YupknWXxchWtJYGyiE"
+        "digest": "383DYBN32uZfWfXqK2EfboX1pQkBFH4NZaYZ2uRB1o3J"
       },
       {
         "name": {
@@ -350,12 +350,12 @@ Response: {
         "bcsName": "AQ==",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0xc0ab0b0596cf2b735ec2b08f2d4c93347b9a693e40e97ca0c0462e45c96538be",
+        "objectId": "BFCc1f24791f96ffc0c3d084ca6eb2b22d943dab5ef3fe59bdaca0834973fa157e1078c",
         "version": 7,
-        "digest": "5ZZDiZrs5KAALSdGRed1PZPJWzvarTAPVob2ALXkLNSc"
+        "digest": "6NnB9a4PvTxoJGPNqvqLa4hgXSkxuXxAzDeLhPbqTEKK"
       }
     ],
-    "nextCursor": "IMCrCwWWzytzXsKwjy1MkzR7mmk+QOl8oMBGLkXJZTi+BAAAAAAAAAA=",
+    "nextCursor": "IMHyR5H5b/wMPQhMpusrItlD2rXvP+Wb2soINJc/oVfhBAAAAAAAAAA=",
     "hasNextPage": true
   }
 }
@@ -376,9 +376,9 @@ Response: {
         "bcsName": "LgAAAAAAAAA=",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0x6edf674639c291337f17327eca3e2c066ab0a9cea980d10754fea09d92fd5051",
+        "objectId": "BFC81b3f0f50074987bf903314ee626de6894a6cc3ba6106f11832c9d599d9236cb1162",
         "version": 6,
-        "digest": "6jRrnFS4FJVtdXma1RG2iUcb8NXjsTcfbfbVHbeY4Bm3"
+        "digest": "FX6fX4CbtSwoSd8GJMdbPrvG8xVjN2ZxoTMmd2zMzBY3"
       },
       {
         "name": {
@@ -388,13 +388,13 @@ Response: {
         "bcsEncoding": "base64",
         "bcsName": "LQAAAAAAAAA=",
         "type": "DynamicObject",
-        "objectType": "0x4827c77e5af9f6aac859515790dc77d123cfcc37c1d2e58213a91136395f4309::M::Object",
-        "objectId": "0x3f51b1510cbd5b3eb96dc7c1bc9625f0f16d7fbf17e9d657f37bfdd4cc89f7a4",
+        "objectType": "0x889d9ede17a5fc5c0fba678b0ac81a4417c0754979e5f672a5bb6a914d7162e5::M::Object",
+        "objectId": "BFCcfea9910fd47502cce8caedca2d063eaa439faa92ec78916d2bd40aa954e5a0715ee",
         "version": 5,
-        "digest": "9fnALmoBZb4QTj5sajaXcnH3nBMoxxz9tSFoJv996Bd9"
+        "digest": "FW6UVmi1ACAQL6YrW8GufMkiPQN1qbtqJiRFFy9SgjCa"
       }
     ],
-    "nextCursor": "IIuM0++jLTvkEtP4CDt804E9ccxJ8MTUQN8devVa2W6IAgAAAAAAAAA=",
+    "nextCursor": "IDYJ9yUhm3pBXwxwUHvOdlgROVX+Fuip2n0me+OExMSKAgAAAAAAAAA=",
     "hasNextPage": true
   }
 }
@@ -415,9 +415,9 @@ Response: {
         "bcsName": "LgAAAAAAAAA=",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0x6edf674639c291337f17327eca3e2c066ab0a9cea980d10754fea09d92fd5051",
+        "objectId": "BFC81b3f0f50074987bf903314ee626de6894a6cc3ba6106f11832c9d599d9236cb1162",
         "version": 6,
-        "digest": "6jRrnFS4FJVtdXma1RG2iUcb8NXjsTcfbfbVHbeY4Bm3"
+        "digest": "FX6fX4CbtSwoSd8GJMdbPrvG8xVjN2ZxoTMmd2zMzBY3"
       },
       {
         "name": {
@@ -427,14 +427,14 @@ Response: {
         "bcsEncoding": "base64",
         "bcsName": "LQAAAAAAAAA=",
         "type": "DynamicObject",
-        "objectType": "0x4827c77e5af9f6aac859515790dc77d123cfcc37c1d2e58213a91136395f4309::M::Object",
-        "objectId": "0x3f51b1510cbd5b3eb96dc7c1bc9625f0f16d7fbf17e9d657f37bfdd4cc89f7a4",
+        "objectType": "0x889d9ede17a5fc5c0fba678b0ac81a4417c0754979e5f672a5bb6a914d7162e5::M::Object",
+        "objectId": "BFCcfea9910fd47502cce8caedca2d063eaa439faa92ec78916d2bd40aa954e5a0715ee",
         "version": 5,
-        "digest": "9fnALmoBZb4QTj5sajaXcnH3nBMoxxz9tSFoJv996Bd9"
+        "digest": "FW6UVmi1ACAQL6YrW8GufMkiPQN1qbtqJiRFFy9SgjCa"
       },
       {
         "name": {
-          "type": "0x4827c77e5af9f6aac859515790dc77d123cfcc37c1d2e58213a91136395f4309::M::Name",
+          "type": "0x889d9ede17a5fc5c0fba678b0ac81a4417c0754979e5f672a5bb6a914d7162e5::M::Name",
           "value": {
             "x": "42",
             "y": 43
@@ -444,12 +444,12 @@ Response: {
         "bcsName": "KgAAAAAAAAArAAAA",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0xb133133c82302d383ea280b29cd5a7eda5129a297f6e06289ca089d01c5114c7",
+        "objectId": "BFC45094949a12db8adb4bb88a9508df6b63e22a08c23404cbb76bef4bf852200c950d5",
         "version": 3,
-        "digest": "D7N7M9cirpKm3QY1aLGDfHgBnz3bknFFtELm4wNiUXwi"
+        "digest": "2MbTrNgbjnP78EA3qBZrtdR8EYrozKowJDtagpUJW5Bv"
       }
     ],
-    "nextCursor": "ILEzEzyCMC04PqKAspzVp+2lEpopf24GKJygidAcURTHAQAAAAAAAAA=",
+    "nextCursor": "IEUJSUmhLbittLuIqVCN9rY+IqCMI0BMu3a+9L+FIgDJAQAAAAAAAAA=",
     "hasNextPage": false
   }
 }
@@ -459,7 +459,7 @@ task 19, lines 132-133:
 //> 0: P::M::dfield<u64, u64>(Input(0), Input(1), Input(2))
 created: object(19,0)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 3701200,  storage_rebate: 2212056, non_refundable_storage_fee: 22344
+gas summary: computation_cost: 1000000, storage_cost: 4020400,  storage_rebate: 2528064, non_refundable_storage_fee: 25536
 
 task 20, line 135:
 //# create-checkpoint
@@ -481,9 +481,9 @@ Response: {
         "bcsName": "MwAAAAAAAAA=",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0x0d938ff4a71eef5974b4f29db7c94c3e169f4545a3a62551785aa2e47e3a4264",
+        "objectId": "BFC3c78daa44fe25ad5af9a19f7f71f6892735f9044212a3771e2ad9339f4fadc28a1d6",
         "version": 9,
-        "digest": "GEdrbEKrkZtrqxXDzEfejiJ7RhixYZmqprtcrsi7gUcQ"
+        "digest": "GmaAhjbRoD9qj4Y7m98RZtvrsMToHZRQxzKXR9VhJ4be"
       },
       {
         "name": {
@@ -494,9 +494,9 @@ Response: {
         "bcsName": "AA==",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0x442d04fc77ad9c2323cd0617b8ce2e40c87a9e99b028a512329bc49d0e2190cb",
+        "objectId": "BFC26f89ddee589bd7394abdc8dba057d052fc334e605e1e3d156511805a075903f1b52",
         "version": 8,
-        "digest": "AxgfrX2nKLG1YwFF9RKnXv97s8YupknWXxchWtJYGyiE"
+        "digest": "383DYBN32uZfWfXqK2EfboX1pQkBFH4NZaYZ2uRB1o3J"
       },
       {
         "name": {
@@ -507,9 +507,9 @@ Response: {
         "bcsName": "AQ==",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0xc0ab0b0596cf2b735ec2b08f2d4c93347b9a693e40e97ca0c0462e45c96538be",
+        "objectId": "BFCc1f24791f96ffc0c3d084ca6eb2b22d943dab5ef3fe59bdaca0834973fa157e1078c",
         "version": 7,
-        "digest": "5ZZDiZrs5KAALSdGRed1PZPJWzvarTAPVob2ALXkLNSc"
+        "digest": "6NnB9a4PvTxoJGPNqvqLa4hgXSkxuXxAzDeLhPbqTEKK"
       },
       {
         "name": {
@@ -520,9 +520,9 @@ Response: {
         "bcsName": "LgAAAAAAAAA=",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0x6edf674639c291337f17327eca3e2c066ab0a9cea980d10754fea09d92fd5051",
+        "objectId": "BFC81b3f0f50074987bf903314ee626de6894a6cc3ba6106f11832c9d599d9236cb1162",
         "version": 6,
-        "digest": "6jRrnFS4FJVtdXma1RG2iUcb8NXjsTcfbfbVHbeY4Bm3"
+        "digest": "FX6fX4CbtSwoSd8GJMdbPrvG8xVjN2ZxoTMmd2zMzBY3"
       },
       {
         "name": {
@@ -532,14 +532,14 @@ Response: {
         "bcsEncoding": "base64",
         "bcsName": "LQAAAAAAAAA=",
         "type": "DynamicObject",
-        "objectType": "0x4827c77e5af9f6aac859515790dc77d123cfcc37c1d2e58213a91136395f4309::M::Object",
-        "objectId": "0x3f51b1510cbd5b3eb96dc7c1bc9625f0f16d7fbf17e9d657f37bfdd4cc89f7a4",
+        "objectType": "0x889d9ede17a5fc5c0fba678b0ac81a4417c0754979e5f672a5bb6a914d7162e5::M::Object",
+        "objectId": "BFCcfea9910fd47502cce8caedca2d063eaa439faa92ec78916d2bd40aa954e5a0715ee",
         "version": 5,
-        "digest": "9fnALmoBZb4QTj5sajaXcnH3nBMoxxz9tSFoJv996Bd9"
+        "digest": "FW6UVmi1ACAQL6YrW8GufMkiPQN1qbtqJiRFFy9SgjCa"
       },
       {
         "name": {
-          "type": "0x4827c77e5af9f6aac859515790dc77d123cfcc37c1d2e58213a91136395f4309::M::Name",
+          "type": "0x889d9ede17a5fc5c0fba678b0ac81a4417c0754979e5f672a5bb6a914d7162e5::M::Name",
           "value": {
             "x": "42",
             "y": 43
@@ -549,12 +549,12 @@ Response: {
         "bcsName": "KgAAAAAAAAArAAAA",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0xb133133c82302d383ea280b29cd5a7eda5129a297f6e06289ca089d01c5114c7",
+        "objectId": "BFC45094949a12db8adb4bb88a9508df6b63e22a08c23404cbb76bef4bf852200c950d5",
         "version": 3,
-        "digest": "D7N7M9cirpKm3QY1aLGDfHgBnz3bknFFtELm4wNiUXwi"
+        "digest": "2MbTrNgbjnP78EA3qBZrtdR8EYrozKowJDtagpUJW5Bv"
       }
     ],
-    "nextCursor": "ILEzEzyCMC04PqKAspzVp+2lEpopf24GKJygidAcURTHAQAAAAAAAAA=",
+    "nextCursor": "IEUJSUmhLbittLuIqVCN9rY+IqCMI0BMu3a+9L+FIgDJAQAAAAAAAAA=",
     "hasNextPage": false
   }
 }
@@ -564,7 +564,7 @@ task 22, lines 143-144:
 //> 0: P::M::dremove<bool, u64>(Input(0), Input(1))
 mutated: object(0,0), object(2,0)
 deleted: object(10,0)
-gas summary: computation_cost: 1000000, storage_cost: 2234400,  storage_rebate: 3611520, non_refundable_storage_fee: 36480
+gas summary: computation_cost: 1000000, storage_cost: 2553600,  storage_rebate: 3927528, non_refundable_storage_fee: 39672
 
 task 23, line 146:
 //# create-checkpoint
@@ -586,9 +586,9 @@ Response: {
         "bcsName": "MwAAAAAAAAA=",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0x0d938ff4a71eef5974b4f29db7c94c3e169f4545a3a62551785aa2e47e3a4264",
+        "objectId": "BFC3c78daa44fe25ad5af9a19f7f71f6892735f9044212a3771e2ad9339f4fadc28a1d6",
         "version": 9,
-        "digest": "GEdrbEKrkZtrqxXDzEfejiJ7RhixYZmqprtcrsi7gUcQ"
+        "digest": "GmaAhjbRoD9qj4Y7m98RZtvrsMToHZRQxzKXR9VhJ4be"
       },
       {
         "name": {
@@ -599,9 +599,9 @@ Response: {
         "bcsName": "AA==",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0x442d04fc77ad9c2323cd0617b8ce2e40c87a9e99b028a512329bc49d0e2190cb",
+        "objectId": "BFC26f89ddee589bd7394abdc8dba057d052fc334e605e1e3d156511805a075903f1b52",
         "version": 8,
-        "digest": "AxgfrX2nKLG1YwFF9RKnXv97s8YupknWXxchWtJYGyiE"
+        "digest": "383DYBN32uZfWfXqK2EfboX1pQkBFH4NZaYZ2uRB1o3J"
       },
       {
         "name": {
@@ -612,9 +612,9 @@ Response: {
         "bcsName": "LgAAAAAAAAA=",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0x6edf674639c291337f17327eca3e2c066ab0a9cea980d10754fea09d92fd5051",
+        "objectId": "BFC81b3f0f50074987bf903314ee626de6894a6cc3ba6106f11832c9d599d9236cb1162",
         "version": 6,
-        "digest": "6jRrnFS4FJVtdXma1RG2iUcb8NXjsTcfbfbVHbeY4Bm3"
+        "digest": "FX6fX4CbtSwoSd8GJMdbPrvG8xVjN2ZxoTMmd2zMzBY3"
       },
       {
         "name": {
@@ -624,14 +624,14 @@ Response: {
         "bcsEncoding": "base64",
         "bcsName": "LQAAAAAAAAA=",
         "type": "DynamicObject",
-        "objectType": "0x4827c77e5af9f6aac859515790dc77d123cfcc37c1d2e58213a91136395f4309::M::Object",
-        "objectId": "0x3f51b1510cbd5b3eb96dc7c1bc9625f0f16d7fbf17e9d657f37bfdd4cc89f7a4",
+        "objectType": "0x889d9ede17a5fc5c0fba678b0ac81a4417c0754979e5f672a5bb6a914d7162e5::M::Object",
+        "objectId": "BFCcfea9910fd47502cce8caedca2d063eaa439faa92ec78916d2bd40aa954e5a0715ee",
         "version": 5,
-        "digest": "9fnALmoBZb4QTj5sajaXcnH3nBMoxxz9tSFoJv996Bd9"
+        "digest": "FW6UVmi1ACAQL6YrW8GufMkiPQN1qbtqJiRFFy9SgjCa"
       },
       {
         "name": {
-          "type": "0x4827c77e5af9f6aac859515790dc77d123cfcc37c1d2e58213a91136395f4309::M::Name",
+          "type": "0x889d9ede17a5fc5c0fba678b0ac81a4417c0754979e5f672a5bb6a914d7162e5::M::Name",
           "value": {
             "x": "42",
             "y": 43
@@ -641,12 +641,12 @@ Response: {
         "bcsName": "KgAAAAAAAAArAAAA",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0xb133133c82302d383ea280b29cd5a7eda5129a297f6e06289ca089d01c5114c7",
+        "objectId": "BFC45094949a12db8adb4bb88a9508df6b63e22a08c23404cbb76bef4bf852200c950d5",
         "version": 3,
-        "digest": "D7N7M9cirpKm3QY1aLGDfHgBnz3bknFFtELm4wNiUXwi"
+        "digest": "2MbTrNgbjnP78EA3qBZrtdR8EYrozKowJDtagpUJW5Bv"
       }
     ],
-    "nextCursor": "ILEzEzyCMC04PqKAspzVp+2lEpopf24GKJygidAcURTHAQAAAAAAAAA=",
+    "nextCursor": "IEUJSUmhLbittLuIqVCN9rY+IqCMI0BMu3a+9L+FIgDJAQAAAAAAAAA=",
     "hasNextPage": false
   }
 }
@@ -655,7 +655,7 @@ task 25, lines 154-155:
 //# programmable --sender A --inputs object(2,0) false
 //> 0: P::M::dmodify<bool>(Input(0), Input(1))
 mutated: object(0,0), object(2,0), object(12,0)
-gas summary: computation_cost: 1000000, storage_cost: 3648000,  storage_rebate: 3611520, non_refundable_storage_fee: 36480
+gas summary: computation_cost: 1000000, storage_cost: 3967200,  storage_rebate: 3927528, non_refundable_storage_fee: 39672
 
 task 26, line 157:
 //# create-checkpoint
@@ -677,9 +677,9 @@ Response: {
         "bcsName": "MwAAAAAAAAA=",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0x0d938ff4a71eef5974b4f29db7c94c3e169f4545a3a62551785aa2e47e3a4264",
+        "objectId": "BFC3c78daa44fe25ad5af9a19f7f71f6892735f9044212a3771e2ad9339f4fadc28a1d6",
         "version": 9,
-        "digest": "GEdrbEKrkZtrqxXDzEfejiJ7RhixYZmqprtcrsi7gUcQ"
+        "digest": "GmaAhjbRoD9qj4Y7m98RZtvrsMToHZRQxzKXR9VhJ4be"
       },
       {
         "name": {
@@ -690,9 +690,9 @@ Response: {
         "bcsName": "AA==",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0x442d04fc77ad9c2323cd0617b8ce2e40c87a9e99b028a512329bc49d0e2190cb",
+        "objectId": "BFC26f89ddee589bd7394abdc8dba057d052fc334e605e1e3d156511805a075903f1b52",
         "version": 11,
-        "digest": "E7CbvH1EXV9NsebCaJ9Fiik98f3oKwByL7r2VWqoYjdG"
+        "digest": "7Zfguojuvv4k542mhqdEeti66d1RYCN86h5DwRV6UkpV"
       },
       {
         "name": {
@@ -703,9 +703,9 @@ Response: {
         "bcsName": "LgAAAAAAAAA=",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0x6edf674639c291337f17327eca3e2c066ab0a9cea980d10754fea09d92fd5051",
+        "objectId": "BFC81b3f0f50074987bf903314ee626de6894a6cc3ba6106f11832c9d599d9236cb1162",
         "version": 6,
-        "digest": "6jRrnFS4FJVtdXma1RG2iUcb8NXjsTcfbfbVHbeY4Bm3"
+        "digest": "FX6fX4CbtSwoSd8GJMdbPrvG8xVjN2ZxoTMmd2zMzBY3"
       },
       {
         "name": {
@@ -715,14 +715,14 @@ Response: {
         "bcsEncoding": "base64",
         "bcsName": "LQAAAAAAAAA=",
         "type": "DynamicObject",
-        "objectType": "0x4827c77e5af9f6aac859515790dc77d123cfcc37c1d2e58213a91136395f4309::M::Object",
-        "objectId": "0x3f51b1510cbd5b3eb96dc7c1bc9625f0f16d7fbf17e9d657f37bfdd4cc89f7a4",
+        "objectType": "0x889d9ede17a5fc5c0fba678b0ac81a4417c0754979e5f672a5bb6a914d7162e5::M::Object",
+        "objectId": "BFCcfea9910fd47502cce8caedca2d063eaa439faa92ec78916d2bd40aa954e5a0715ee",
         "version": 5,
-        "digest": "9fnALmoBZb4QTj5sajaXcnH3nBMoxxz9tSFoJv996Bd9"
+        "digest": "FW6UVmi1ACAQL6YrW8GufMkiPQN1qbtqJiRFFy9SgjCa"
       },
       {
         "name": {
-          "type": "0x4827c77e5af9f6aac859515790dc77d123cfcc37c1d2e58213a91136395f4309::M::Name",
+          "type": "0x889d9ede17a5fc5c0fba678b0ac81a4417c0754979e5f672a5bb6a914d7162e5::M::Name",
           "value": {
             "x": "42",
             "y": 43
@@ -732,12 +732,12 @@ Response: {
         "bcsName": "KgAAAAAAAAArAAAA",
         "type": "DynamicField",
         "objectType": "u64",
-        "objectId": "0xb133133c82302d383ea280b29cd5a7eda5129a297f6e06289ca089d01c5114c7",
+        "objectId": "BFC45094949a12db8adb4bb88a9508df6b63e22a08c23404cbb76bef4bf852200c950d5",
         "version": 3,
-        "digest": "D7N7M9cirpKm3QY1aLGDfHgBnz3bknFFtELm4wNiUXwi"
+        "digest": "2MbTrNgbjnP78EA3qBZrtdR8EYrozKowJDtagpUJW5Bv"
       }
     ],
-    "nextCursor": "ILEzEzyCMC04PqKAspzVp+2lEpopf24GKJygidAcURTHAQAAAAAAAAA=",
+    "nextCursor": "IEUJSUmhLbittLuIqVCN9rY+IqCMI0BMu3a+9L+FIgDJAQAAAAAAAAA=",
     "hasNextPage": false
   }
 }
@@ -750,12 +750,12 @@ Response: {
   "result": [
     {
       "data": {
-        "objectId": "0x442d04fc77ad9c2323cd0617b8ce2e40c87a9e99b028a512329bc49d0e2190cb",
+        "objectId": "BFC26f89ddee589bd7394abdc8dba057d052fc334e605e1e3d156511805a075903f1b52",
         "version": "11",
-        "digest": "E7CbvH1EXV9NsebCaJ9Fiik98f3oKwByL7r2VWqoYjdG",
+        "digest": "7Zfguojuvv4k542mhqdEeti66d1RYCN86h5DwRV6UkpV",
         "type": "0x2::dynamic_field::Field<bool, u64>",
         "owner": {
-          "ObjectOwner": "0xcbba4377978c35d56a021dd5a88d4f52da68f7f78857f971eff435d7d170d69e"
+          "ObjectOwner": "BFC88150bc88207ba0accf08d362e6614b73e7b9becde10fe95bc913cd06601b3cf1a76"
         },
         "content": {
           "dataType": "moveObject",
@@ -763,7 +763,7 @@ Response: {
           "hasPublicTransfer": false,
           "fields": {
             "id": {
-              "id": "0x442d04fc77ad9c2323cd0617b8ce2e40c87a9e99b028a512329bc49d0e2190cb"
+              "id": "BFC26f89ddee589bd7394abdc8dba057d052fc334e605e1e3d156511805a075903f1b52"
             },
             "name": false,
             "value": "50"
@@ -773,12 +773,12 @@ Response: {
     },
     {
       "data": {
-        "objectId": "0x0d938ff4a71eef5974b4f29db7c94c3e169f4545a3a62551785aa2e47e3a4264",
+        "objectId": "BFC3c78daa44fe25ad5af9a19f7f71f6892735f9044212a3771e2ad9339f4fadc28a1d6",
         "version": "9",
-        "digest": "GEdrbEKrkZtrqxXDzEfejiJ7RhixYZmqprtcrsi7gUcQ",
+        "digest": "GmaAhjbRoD9qj4Y7m98RZtvrsMToHZRQxzKXR9VhJ4be",
         "type": "0x2::dynamic_field::Field<u64, u64>",
         "owner": {
-          "ObjectOwner": "0xcbba4377978c35d56a021dd5a88d4f52da68f7f78857f971eff435d7d170d69e"
+          "ObjectOwner": "BFC88150bc88207ba0accf08d362e6614b73e7b9becde10fe95bc913cd06601b3cf1a76"
         },
         "content": {
           "dataType": "moveObject",
@@ -786,7 +786,7 @@ Response: {
           "hasPublicTransfer": false,
           "fields": {
             "id": {
-              "id": "0x0d938ff4a71eef5974b4f29db7c94c3e169f4545a3a62551785aa2e47e3a4264"
+              "id": "BFC3c78daa44fe25ad5af9a19f7f71f6892735f9044212a3771e2ad9339f4fadc28a1d6"
             },
             "name": "51",
             "value": "52"

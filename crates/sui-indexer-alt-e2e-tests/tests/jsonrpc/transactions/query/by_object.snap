@@ -12,7 +12,7 @@ task 1, lines 23-25:
 //> TransferObjects([Result(0)], Input(1))
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 27-29:
 //# programmable --sender A --inputs object(1,0) 41 @A
@@ -20,21 +20,21 @@ task 2, lines 27-29:
 //> TransferObjects([Result(0)], Input(2))
 created: object(2,0)
 mutated: object(0,0), object(1,0)
-gas summary: computation_cost: 1000000, storage_cost: 2964000,  storage_rebate: 1956240, non_refundable_storage_fee: 19760
+gas summary: computation_cost: 1000000, storage_cost: 3921600,  storage_rebate: 2588256, non_refundable_storage_fee: 26144
 
 task 3, lines 31-32:
 //# programmable --sender A --inputs object(2,0)
 //> MergeCoins(Gas, [Input(0)])
 mutated: object(0,0)
 deleted: object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 1956240, non_refundable_storage_fee: 19760
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 2588256, non_refundable_storage_fee: 26144
 
 task 4, lines 34-35:
 //# programmable --sender A --inputs object(1,0)
 //> MergeCoins(Gas, [Input(0)])
 mutated: object(0,0)
 deleted: object(1,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 1956240, non_refundable_storage_fee: 19760
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 2588256, non_refundable_storage_fee: 26144
 
 task 5, line 37:
 //# create-checkpoint
@@ -48,27 +48,27 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "3FJ4fSrf7toVCANccxAbeJ5A1iSzwKLghCYcaz9atbCD",
+        "digest": "AWRfVMVLtVkYS2wJKKPGUWSRmvQ749mcyw3qFnh3ihgQ",
         "timestampMs": "0",
         "checkpoint": "0"
       },
       {
-        "digest": "ARwAbZ2EETkMxUDTEwx2BoL95cbqnLVmiRDVH53h6UHa",
+        "digest": "7uBeWBMSkGm4getWBhUF8cREAxptS3TN3ETpWbteAFiE",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "Cs81ueNvP7Y63qibhhJXvEKhqXqVXsWRRuZKvxDJgd37",
+        "digest": "4QR7wNeKDmCM75ZH21SwzCovC7pFYLfZhf2xXsSfEByg",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "21AuR8T8joUdTFAM8rBUqMiqQG57CEvW9PBTWoUxZCEW",
+        "digest": "Does4kmsxe634byShebhcuM4ePX41apYcjTkAy2ibR7L",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "FNmBXaFzxKExTXCparbWdGXfFrj6cchG9Rx1uEeGw4vP",
+        "digest": "AND9jEWnSXtCEW26vbzajiCDynH93Xd85bQd7edDrKP",
         "timestampMs": "0",
         "checkpoint": "1"
       }
@@ -86,17 +86,17 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "ARwAbZ2EETkMxUDTEwx2BoL95cbqnLVmiRDVH53h6UHa",
+        "digest": "7uBeWBMSkGm4getWBhUF8cREAxptS3TN3ETpWbteAFiE",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "Cs81ueNvP7Y63qibhhJXvEKhqXqVXsWRRuZKvxDJgd37",
+        "digest": "4QR7wNeKDmCM75ZH21SwzCovC7pFYLfZhf2xXsSfEByg",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "FNmBXaFzxKExTXCparbWdGXfFrj6cchG9Rx1uEeGw4vP",
+        "digest": "AND9jEWnSXtCEW26vbzajiCDynH93Xd85bQd7edDrKP",
         "timestampMs": "0",
         "checkpoint": "1"
       }
@@ -114,12 +114,12 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "Cs81ueNvP7Y63qibhhJXvEKhqXqVXsWRRuZKvxDJgd37",
+        "digest": "4QR7wNeKDmCM75ZH21SwzCovC7pFYLfZhf2xXsSfEByg",
         "timestampMs": "0",
         "checkpoint": "1"
       },
       {
-        "digest": "21AuR8T8joUdTFAM8rBUqMiqQG57CEvW9PBTWoUxZCEW",
+        "digest": "Does4kmsxe634byShebhcuM4ePX41apYcjTkAy2ibR7L",
         "timestampMs": "0",
         "checkpoint": "1"
       }
@@ -137,7 +137,7 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "Cs81ueNvP7Y63qibhhJXvEKhqXqVXsWRRuZKvxDJgd37",
+        "digest": "4QR7wNeKDmCM75ZH21SwzCovC7pFYLfZhf2xXsSfEByg",
         "timestampMs": "0",
         "checkpoint": "1"
       }
@@ -155,7 +155,7 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "21AuR8T8joUdTFAM8rBUqMiqQG57CEvW9PBTWoUxZCEW",
+        "digest": "Does4kmsxe634byShebhcuM4ePX41apYcjTkAy2ibR7L",
         "timestampMs": "0",
         "checkpoint": "1"
       }
@@ -173,7 +173,7 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "FNmBXaFzxKExTXCparbWdGXfFrj6cchG9Rx1uEeGw4vP",
+        "digest": "AND9jEWnSXtCEW26vbzajiCDynH93Xd85bQd7edDrKP",
         "timestampMs": "0",
         "checkpoint": "1"
       }
@@ -191,7 +191,7 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "Cs81ueNvP7Y63qibhhJXvEKhqXqVXsWRRuZKvxDJgd37",
+        "digest": "4QR7wNeKDmCM75ZH21SwzCovC7pFYLfZhf2xXsSfEByg",
         "timestampMs": "0",
         "checkpoint": "1"
       }

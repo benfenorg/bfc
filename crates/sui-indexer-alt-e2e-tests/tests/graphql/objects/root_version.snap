@@ -10,7 +10,7 @@ task 1, lines 6-57:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 7888800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 8208000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 59-63:
 //# programmable --sender A --inputs @A
@@ -20,7 +20,7 @@ task 2, lines 59-63:
 //> 3: TransferObjects([Result(0), Result(1), Result(2)], Input(0))
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 4795600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 5114800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, lines 65-66:
 //# programmable --sender A --inputs object(2,0) 42 object(2,1)
@@ -28,14 +28,14 @@ task 3, lines 65-66:
 created: object(3,0)
 mutated: object(0,0), object(2,0)
 wrapped: object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 4248400,  storage_rebate: 3491136, non_refundable_storage_fee: 35264
+gas summary: computation_cost: 1000000, storage_cost: 4567600,  storage_rebate: 3807144, non_refundable_storage_fee: 38456
 
 task 4, lines 68-69:
 //# programmable --sender A --inputs object(2,0) 43 object(2,2)
 //> 0: P::M::add_dof(Input(0), Input(1), Input(2))
 created: object(4,0)
 mutated: object(0,0), object(2,0), object(2,2)
-gas summary: computation_cost: 1000000, storage_cost: 5981200,  storage_rebate: 3491136, non_refundable_storage_fee: 35264
+gas summary: computation_cost: 1000000, storage_cost: 6300400,  storage_rebate: 3807144, non_refundable_storage_fee: 38456
 
 task 5, line 71:
 //# create-checkpoint
@@ -82,13 +82,13 @@ task 9, lines 95-96:
 //# programmable --sender A --inputs object(2,0) 42
 //> 0: P::M::inc_df(Input(0), Input(1))
 mutated: object(0,0), object(2,0), object(3,0)
-gas summary: computation_cost: 1000000, storage_cost: 4248400,  storage_rebate: 4205916, non_refundable_storage_fee: 42484
+gas summary: computation_cost: 1000000, storage_cost: 4567600,  storage_rebate: 4521924, non_refundable_storage_fee: 45676
 
 task 10, lines 98-99:
 //# programmable --sender A --inputs object(2,0) 43
 //> 0: P::M::inc_dof(Input(0), Input(1))
 mutated: object(0,0), object(2,0), object(2,2)
-gas summary: computation_cost: 1000000, storage_cost: 3526400,  storage_rebate: 3491136, non_refundable_storage_fee: 35264
+gas summary: computation_cost: 1000000, storage_cost: 3845600,  storage_rebate: 3807144, non_refundable_storage_fee: 38456
 
 task 11, line 101:
 //# create-checkpoint
@@ -142,7 +142,7 @@ task 14, lines 139-140:
 //# programmable --sender A --inputs object(2,0)
 //> 0: P::M::inc(Input(0))
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2257200,  storage_rebate: 2234628, non_refundable_storage_fee: 22572
+gas summary: computation_cost: 1000000, storage_cost: 2576400,  storage_rebate: 2550636, non_refundable_storage_fee: 25764
 
 task 15, line 142:
 //# create-checkpoint
@@ -172,7 +172,7 @@ task 17, lines 154-156:
 mutated: object(0,0), object(2,0)
 unwrapped: object(2,1)
 deleted: object(3,0)
-gas summary: computation_cost: 1000000, storage_cost: 3526400,  storage_rebate: 4205916, non_refundable_storage_fee: 42484
+gas summary: computation_cost: 1000000, storage_cost: 3845600,  storage_rebate: 4521924, non_refundable_storage_fee: 45676
 
 task 18, lines 158-160:
 //# programmable --sender A --inputs object(2,0) 43 @A
@@ -180,7 +180,7 @@ task 18, lines 158-160:
 //> 1: TransferObjects([Result(0)], Input(2))
 mutated: object(0,0), object(2,0), object(2,2)
 deleted: object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 3526400,  storage_rebate: 5921388, non_refundable_storage_fee: 59812
+gas summary: computation_cost: 1000000, storage_cost: 3845600,  storage_rebate: 6237396, non_refundable_storage_fee: 63004
 
 task 19, line 162:
 //# create-checkpoint

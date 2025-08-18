@@ -1,5 +1,6 @@
 ---
 source: external-crates/move/crates/move-transactional-test-runner/src/framework.rs
+assertion_line: 809
 ---
 processed 25 tasks
 
@@ -9,13 +10,13 @@ A: object(0,0)
 task 1, lines 6-25:
 //# publish
 Error: error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmplEgsLC:14:30
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpn4kUV6:14:30
    │
 14 │   public fun wrap(coin: Coin<SUI>, ctx: &mut TxContext): Wrapper {
    │                              ^^^ Unbound type 'SUI' in current scope
 
 error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmplEgsLC:17:45
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpn4kUV6:17:45
    │
 17 │   public fun unwrap(wrapper: Wrapper): Coin<SUI> {
    │                                             ^^^ Unbound type 'SUI' in current scope

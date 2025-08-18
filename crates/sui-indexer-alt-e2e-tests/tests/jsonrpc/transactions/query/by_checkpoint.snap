@@ -16,7 +16,7 @@ task 2, lines 22-24:
 //> 1: TransferObjects([Result(0)], Input(1))
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, line 26:
 //# create-checkpoint
@@ -28,7 +28,7 @@ task 4, lines 28-30:
 //> 1: TransferObjects([Result(0)], Input(1))
 created: object(4,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 5, lines 32-34:
 //# programmable --sender A --inputs 44 @A
@@ -36,7 +36,7 @@ task 5, lines 32-34:
 //> 1: TransferObjects([Result(0)], Input(1))
 created: object(5,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 6, lines 36-38:
 //# programmable --sender A --inputs 45 @A
@@ -44,7 +44,7 @@ task 6, lines 36-38:
 //> 1: TransferObjects([Result(0)], Input(1))
 created: object(6,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 7, lines 40-42:
 //# programmable --sender A --inputs 46 @A
@@ -52,7 +52,7 @@ task 7, lines 40-42:
 //> 1: TransferObjects([Result(0)], Input(1))
 created: object(7,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 8, line 44:
 //# create-checkpoint
@@ -66,20 +66,23 @@ Response: {
   "result": {
     "epoch": "0",
     "sequenceNumber": "0",
-    "digest": "EznTSQyzQqRf8tuPhLWZDdhny9jgA7Rw81nWB486rW8C",
+    "digest": "3htkowtAbydMJEXQq2wnt1qQyTLFvzw4zxbtw8RSRgYa",
     "networkTotalTransactions": "1",
-    "epochRollingGasCostSummary": {
+    "epochRollingBfcGasCostSummary": {
+      "basePoint": 0,
+      "rate": 0,
       "computationCost": "0",
       "storageCost": "0",
       "storageRebate": "0",
       "nonRefundableStorageFee": "0"
     },
+    "epochRollingStableGasCostSummaryMap": [],
     "timestampMs": "0",
     "transactions": [
-      "3FJ4fSrf7toVCANccxAbeJ5A1iSzwKLghCYcaz9atbCD"
+      "AWRfVMVLtVkYS2wJKKPGUWSRmvQ749mcyw3qFnh3ihgQ"
     ],
     "checkpointCommitments": [],
-    "validatorSignature": "sqTHHfkSR11Z+F1hT87Kq6omvXa6VgddqwTlq7kkS20vBM0XEMQsqq+YjSLf31fZ"
+    "validatorSignature": "rg//8BLCMBrce350WjrJ0Gx/FzQ8km4AeZcv+w9j++LE7XbOEsTe/thRDpn46cJO"
   }
 }
 
@@ -91,19 +94,22 @@ Response: {
   "result": {
     "epoch": "0",
     "sequenceNumber": "1",
-    "digest": "6aWovQEKHwgzpsvJ1YxbamhB1fakCFiUYzvLor4kjbvX",
+    "digest": "4sqy121D2aykbL2BQsCA2oCRhF9A2picMyVr4j9kV9g5",
     "networkTotalTransactions": "1",
-    "previousDigest": "EznTSQyzQqRf8tuPhLWZDdhny9jgA7Rw81nWB486rW8C",
-    "epochRollingGasCostSummary": {
+    "previousDigest": "3htkowtAbydMJEXQq2wnt1qQyTLFvzw4zxbtw8RSRgYa",
+    "epochRollingBfcGasCostSummary": {
+      "basePoint": 0,
+      "rate": 0,
       "computationCost": "0",
       "storageCost": "0",
       "storageRebate": "0",
       "nonRefundableStorageFee": "0"
     },
+    "epochRollingStableGasCostSummaryMap": [],
     "timestampMs": "0",
     "transactions": [],
     "checkpointCommitments": [],
-    "validatorSignature": "tPLOYsvCtvGTc88SHy8jNbKrwpMVgH8hF/+UeA6r9lcUagr+kkAFNqcKWSDDZUFL"
+    "validatorSignature": "tgUUmXjpmJL1gViaV/MfCFjFk7Fx8wbS+B0CdSDS9GizgNFwpxJRX/mCzTvG4+hw"
   }
 }
 
@@ -115,21 +121,24 @@ Response: {
   "result": {
     "epoch": "0",
     "sequenceNumber": "2",
-    "digest": "FfreGpYDd5ep5o9r46SqjNuVTV5jjS3wEmfRtx26kwij",
+    "digest": "5kNVbz8MZEAz4GNyvXiDqNwmxR917kCpGs3VYiEjEA8d",
     "networkTotalTransactions": "2",
-    "previousDigest": "6aWovQEKHwgzpsvJ1YxbamhB1fakCFiUYzvLor4kjbvX",
-    "epochRollingGasCostSummary": {
+    "previousDigest": "4sqy121D2aykbL2BQsCA2oCRhF9A2picMyVr4j9kV9g5",
+    "epochRollingBfcGasCostSummary": {
+      "basePoint": 0,
+      "rate": 0,
       "computationCost": "1000000",
-      "storageCost": "1976000",
+      "storageCost": "2614400",
       "storageRebate": "0",
       "nonRefundableStorageFee": "0"
     },
+    "epochRollingStableGasCostSummaryMap": [],
     "timestampMs": "0",
     "transactions": [
-      "ARwAbZ2EETkMxUDTEwx2BoL95cbqnLVmiRDVH53h6UHa"
+      "7uBeWBMSkGm4getWBhUF8cREAxptS3TN3ETpWbteAFiE"
     ],
     "checkpointCommitments": [],
-    "validatorSignature": "gNKVscJg3dc2QOstRKLNMRY1UIlOCg0s3Lg8XoGkA0CvQBaf5LX1kMil/6SUCCk8"
+    "validatorSignature": "h/wGfpyGqJQWMR8XoUgOcwZDktWY3NLSSWCy4yzIx9NgpkD6uvwgCCrGkmRKQIw+"
   }
 }
 
@@ -141,24 +150,27 @@ Response: {
   "result": {
     "epoch": "0",
     "sequenceNumber": "3",
-    "digest": "85aWv9yRg9dXc7bbSFcymQALE6H9BdQghNNnJP8Xa4o4",
+    "digest": "B4W5UdiaVRU43tCq1p8TGG6wzG98E5piJtfJ5X9AuEWs",
     "networkTotalTransactions": "6",
-    "previousDigest": "FfreGpYDd5ep5o9r46SqjNuVTV5jjS3wEmfRtx26kwij",
-    "epochRollingGasCostSummary": {
+    "previousDigest": "5kNVbz8MZEAz4GNyvXiDqNwmxR917kCpGs3VYiEjEA8d",
+    "epochRollingBfcGasCostSummary": {
+      "basePoint": 0,
+      "rate": 0,
       "computationCost": "5000000",
-      "storageCost": "9880000",
-      "storageRebate": "3912480",
-      "nonRefundableStorageFee": "39520"
+      "storageCost": "13072000",
+      "storageRebate": "5176512",
+      "nonRefundableStorageFee": "52288"
     },
+    "epochRollingStableGasCostSummaryMap": [],
     "timestampMs": "0",
     "transactions": [
-      "63rb3kkmYLsb5THn4GV3VHp5sDZ5GffaY3TWo3jaFC78",
-      "4JBFZsv4ZykFeBPHbJsfdEmHjNTnsgNJL555ZiTGSbZA",
-      "FWb7SBiW1434mcyZwiMgP49uKPXDqrFJ78e62KeVdG7x",
-      "AtFjxXNoMNmELt3bspkiXsE2SR7GA7wHHFJSLyiumUYQ"
+      "9wK4frMeHrFfn73AnaNWyNfzSiYaCWJGZgvmYfvPAY6s",
+      "A8mKhEseMfVPsykfzTVny34NX6V1AA8JB77xEMqMxxAL",
+      "LqLPhrtL67GZzSaThK6N7iwipfK4U835VLXgwjgtxPd",
+      "3kixbpDJbCTWeeJUk4RzGzpaJ1Wex5jhZeJ9Lyi2SLNG"
     ],
     "checkpointCommitments": [],
-    "validatorSignature": "lHjBQsxvGAvjcs7EqDnr1PYkxU6ChRQLXw/nrs1iJnupnrdI3TDiCrfYFad+ZWcf"
+    "validatorSignature": "meUn4BuG3kbNqJIRbrpsPuS0mh263QfZKABLbCreQVUTg2hNJHtTQj6nyYOIUdDt"
   }
 }
 
@@ -182,7 +194,7 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "ARwAbZ2EETkMxUDTEwx2BoL95cbqnLVmiRDVH53h6UHa",
+        "digest": "7uBeWBMSkGm4getWBhUF8cREAxptS3TN3ETpWbteAFiE",
         "timestampMs": "0",
         "checkpoint": "2"
       }
@@ -200,22 +212,22 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "63rb3kkmYLsb5THn4GV3VHp5sDZ5GffaY3TWo3jaFC78",
+        "digest": "9wK4frMeHrFfn73AnaNWyNfzSiYaCWJGZgvmYfvPAY6s",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "4JBFZsv4ZykFeBPHbJsfdEmHjNTnsgNJL555ZiTGSbZA",
+        "digest": "A8mKhEseMfVPsykfzTVny34NX6V1AA8JB77xEMqMxxAL",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "FWb7SBiW1434mcyZwiMgP49uKPXDqrFJ78e62KeVdG7x",
+        "digest": "LqLPhrtL67GZzSaThK6N7iwipfK4U835VLXgwjgtxPd",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "AtFjxXNoMNmELt3bspkiXsE2SR7GA7wHHFJSLyiumUYQ",
+        "digest": "3kixbpDJbCTWeeJUk4RzGzpaJ1Wex5jhZeJ9Lyi2SLNG",
         "timestampMs": "0",
         "checkpoint": "3"
       }
@@ -245,7 +257,7 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "ARwAbZ2EETkMxUDTEwx2BoL95cbqnLVmiRDVH53h6UHa",
+        "digest": "7uBeWBMSkGm4getWBhUF8cREAxptS3TN3ETpWbteAFiE",
         "timestampMs": "0",
         "checkpoint": "2"
       }
@@ -263,22 +275,22 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "AtFjxXNoMNmELt3bspkiXsE2SR7GA7wHHFJSLyiumUYQ",
+        "digest": "3kixbpDJbCTWeeJUk4RzGzpaJ1Wex5jhZeJ9Lyi2SLNG",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "FWb7SBiW1434mcyZwiMgP49uKPXDqrFJ78e62KeVdG7x",
+        "digest": "LqLPhrtL67GZzSaThK6N7iwipfK4U835VLXgwjgtxPd",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "4JBFZsv4ZykFeBPHbJsfdEmHjNTnsgNJL555ZiTGSbZA",
+        "digest": "A8mKhEseMfVPsykfzTVny34NX6V1AA8JB77xEMqMxxAL",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "63rb3kkmYLsb5THn4GV3VHp5sDZ5GffaY3TWo3jaFC78",
+        "digest": "9wK4frMeHrFfn73AnaNWyNfzSiYaCWJGZgvmYfvPAY6s",
         "timestampMs": "0",
         "checkpoint": "3"
       }
@@ -308,7 +320,7 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "ARwAbZ2EETkMxUDTEwx2BoL95cbqnLVmiRDVH53h6UHa",
+        "digest": "7uBeWBMSkGm4getWBhUF8cREAxptS3TN3ETpWbteAFiE",
         "timestampMs": "0",
         "checkpoint": "2"
       }
@@ -326,12 +338,12 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "63rb3kkmYLsb5THn4GV3VHp5sDZ5GffaY3TWo3jaFC78",
+        "digest": "9wK4frMeHrFfn73AnaNWyNfzSiYaCWJGZgvmYfvPAY6s",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "4JBFZsv4ZykFeBPHbJsfdEmHjNTnsgNJL555ZiTGSbZA",
+        "digest": "A8mKhEseMfVPsykfzTVny34NX6V1AA8JB77xEMqMxxAL",
         "timestampMs": "0",
         "checkpoint": "3"
       }
@@ -361,7 +373,7 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "ARwAbZ2EETkMxUDTEwx2BoL95cbqnLVmiRDVH53h6UHa",
+        "digest": "7uBeWBMSkGm4getWBhUF8cREAxptS3TN3ETpWbteAFiE",
         "timestampMs": "0",
         "checkpoint": "2"
       }
@@ -379,12 +391,12 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "AtFjxXNoMNmELt3bspkiXsE2SR7GA7wHHFJSLyiumUYQ",
+        "digest": "3kixbpDJbCTWeeJUk4RzGzpaJ1Wex5jhZeJ9Lyi2SLNG",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "FWb7SBiW1434mcyZwiMgP49uKPXDqrFJ78e62KeVdG7x",
+        "digest": "LqLPhrtL67GZzSaThK6N7iwipfK4U835VLXgwjgtxPd",
         "timestampMs": "0",
         "checkpoint": "3"
       }
@@ -402,12 +414,12 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "FWb7SBiW1434mcyZwiMgP49uKPXDqrFJ78e62KeVdG7x",
+        "digest": "LqLPhrtL67GZzSaThK6N7iwipfK4U835VLXgwjgtxPd",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "AtFjxXNoMNmELt3bspkiXsE2SR7GA7wHHFJSLyiumUYQ",
+        "digest": "3kixbpDJbCTWeeJUk4RzGzpaJ1Wex5jhZeJ9Lyi2SLNG",
         "timestampMs": "0",
         "checkpoint": "3"
       }
@@ -425,7 +437,7 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "63rb3kkmYLsb5THn4GV3VHp5sDZ5GffaY3TWo3jaFC78",
+        "digest": "9wK4frMeHrFfn73AnaNWyNfzSiYaCWJGZgvmYfvPAY6s",
         "timestampMs": "0",
         "checkpoint": "3"
       }
@@ -443,12 +455,12 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "63rb3kkmYLsb5THn4GV3VHp5sDZ5GffaY3TWo3jaFC78",
+        "digest": "9wK4frMeHrFfn73AnaNWyNfzSiYaCWJGZgvmYfvPAY6s",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "4JBFZsv4ZykFeBPHbJsfdEmHjNTnsgNJL555ZiTGSbZA",
+        "digest": "A8mKhEseMfVPsykfzTVny34NX6V1AA8JB77xEMqMxxAL",
         "timestampMs": "0",
         "checkpoint": "3"
       }
@@ -490,12 +502,12 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "AtFjxXNoMNmELt3bspkiXsE2SR7GA7wHHFJSLyiumUYQ",
+        "digest": "3kixbpDJbCTWeeJUk4RzGzpaJ1Wex5jhZeJ9Lyi2SLNG",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "FWb7SBiW1434mcyZwiMgP49uKPXDqrFJ78e62KeVdG7x",
+        "digest": "LqLPhrtL67GZzSaThK6N7iwipfK4U835VLXgwjgtxPd",
         "timestampMs": "0",
         "checkpoint": "3"
       }

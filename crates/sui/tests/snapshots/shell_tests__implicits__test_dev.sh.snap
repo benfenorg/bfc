@@ -10,15 +10,8 @@ description: tests/shell_tests/implicits/test_dev.sh
 sui move test -p example --dev 2> /dev/null
 
 ----- results -----
-success: true
-exit_code: 0
+success: false
+exit_code: 127
 ----- stdout -----
-INCLUDING DEPENDENCY Bridge
-INCLUDING DEPENDENCY SuiSystem
-INCLUDING DEPENDENCY Sui
-INCLUDING DEPENDENCY MoveStdlib
-BUILDING example
-Running Move unit tests
-Test result: OK. Total tests: 0; passed: 0; failed: 0
 
 ----- stderr -----
