@@ -14,6 +14,7 @@ title: Module `sui::tx_context`
 -  [Function `native_epoch_timestamp_ms`](#sui_tx_context_native_epoch_timestamp_ms)
 -  [Function `sponsor`](#sui_tx_context_sponsor)
 -  [Function `fresh_object_address`](#sui_tx_context_fresh_object_address)
+-  [Function `fresh_id`](#sui_tx_context_fresh_id)
 -  [Function `ids_created`](#sui_tx_context_ids_created)
 -  [Function `native_ids_created`](#sui_tx_context_native_ids_created)
 -  [Function `native_gas_price`](#sui_tx_context_native_gas_price)
@@ -286,7 +287,7 @@ occur as the address for a user.
 In other words, the generated address is a globally unique object ID.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/tx_context.md#sui_tx_context_fresh_object_address">fresh_object_address</a>(ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): <b>address</b>
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/tx_context.md#sui_tx_context_fresh_object_address">fresh_object_address</a>(_ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): <b>address</b>
 </code></pre>
 
 
@@ -295,12 +296,31 @@ In other words, the generated address is a globally unique object ID.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/tx_context.md#sui_tx_context_fresh_object_address">fresh_object_address</a>(ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">TxContext</a>): <b>address</b> {
-        <b>let</b> <a href="../sui/tx_context.md#sui_tx_context_ids_created">ids_created</a> = ctx.<a href="../sui/tx_context.md#sui_tx_context_ids_created">ids_created</a>;
-        <b>let</b> id = <a href="../sui/tx_context.md#sui_tx_context_derive_id">derive_id</a>(*&ctx.tx_hash, <a href="../sui/tx_context.md#sui_tx_context_ids_created">ids_created</a>);
-        ctx.<a href="../sui/tx_context.md#sui_tx_context_ids_created">ids_created</a> = <a href="../sui/tx_context.md#sui_tx_context_ids_created">ids_created</a> + 1;
-        id
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/tx_context.md#sui_tx_context_fresh_object_address">fresh_object_address</a>(_ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">TxContext</a>): <b>address</b> {
+    <a href="../sui/tx_context.md#sui_tx_context_fresh_id">fresh_id</a>()
 }
+</code></pre>
+
+
+
+</details>
+
+<a name="sui_tx_context_fresh_id"></a>
+
+## Function `fresh_id`
+
+
+
+<pre><code><b>fun</b> <a href="../sui/tx_context.md#sui_tx_context_fresh_id">fresh_id</a>(): <b>address</b>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>native</b> <b>fun</b> <a href="../sui/tx_context.md#sui_tx_context_fresh_id">fresh_id</a>(): <b>address</b>;
 </code></pre>
 
 

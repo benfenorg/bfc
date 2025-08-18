@@ -1405,6 +1405,9 @@ sponsor
 fresh_object_address
 	public fun
 	0x2::tx_context
+fresh_id
+	fun
+	0x2::tx_context
 ids_created
 	fun
 	0x2::tx_context
