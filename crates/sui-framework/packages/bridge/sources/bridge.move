@@ -52,6 +52,7 @@ module bridge::bridge {
 
     const MESSAGE_VERSION: u8 = 1;
     const MESSAGE_VERSION_V2: u8 = 2;
+    const MESSAGE_VERSION_V3: u8 = 3;
 
     // Transfer Status
     const TRANSFER_STATUS_PENDING: u8 = 0;
@@ -461,7 +462,7 @@ module bridge::bridge {
         let amount_after_fee=token_amount-fee;
         let route = chain_ids::get_route(inner.chain_id, target_chain);
         let amount_in_usd = inner.treasury.calculate_amount_in_usd<T>(amount_after_fee);
-        assert!(amount_in_usd < limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
+        assert!(amount_in_usd <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
         // create bridge message
         let message = message::create_token_bridge_message_v2(
             inner.chain_id,
@@ -815,7 +816,7 @@ module bridge::bridge {
         inner.committee.verify_signatures(message, signatures);
 
         assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
-        assert!(message.message_version() == MESSAGE_VERSION, EUnexpectedMessageVersion);
+        assert!(message.message_version() == MESSAGE_VERSION_V3, EUnexpectedMessageVersion);
         let token_payload = message.extract_token_bridge_payload_v2();
         let target_chain = token_payload.token_target_chain_v2();
         assert!(
@@ -1520,7 +1521,7 @@ module bridge::bridge {
         let amount_after_fee=amount-fee;
         let route = chain_ids::get_route(inner.chain_id, target_chain);
         let amount_in_usd = inner.treasury.calculate_amount_in_usd<T>(amount_after_fee);
-        assert!(amount_in_usd < limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
+        assert!(amount_in_usd <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
         inner.treasury.burn(token);
 
         // emit event
@@ -1885,7 +1886,7 @@ module bridge::bridge {
         );
 
         let amount = token_payload.token_amount_in();
-        assert!(amount < inner.limiter.get_mint_busd_max_limit(), EInvalidMintAmount);
+        assert!(amount <= inner.limiter.get_mint_busd_max_limit(), EInvalidMintAmount);
         // Make sure transfer is within limit.
         if (!inner
             .limiter
@@ -1900,7 +1901,7 @@ module bridge::bridge {
             return (option::none(), owner)
         };
         let token_id=token_payload.token_type_in();
-        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,target_chain as u64,token_id,amount);
+        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_id,amount);
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let amount_after_fee=amount-fee;
         check_fast_path_limit(parent_id, clock, token_payload);

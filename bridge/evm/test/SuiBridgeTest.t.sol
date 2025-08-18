@@ -5,6 +5,8 @@ import "./BridgeBaseTest.t.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "../contracts/interfaces/ISuiBridge.sol";
 import "./mocks/MockSuiBridgeV2.sol";
+import {console2} from "forge-std/console2.sol";
+
 
 contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
     // This function is called before each unit test
@@ -236,6 +238,131 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             nonce: 1,
             chainID: 0,
             payload: payload
+        });
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+        assert(IERC20(USDC).balanceOf(bridgerA) == 0);
+        bridge.transferBridgedTokensWithSignatures(signatures, message);
+        assert(IERC20(USDC).balanceOf(bridgerA) == 1_000_000);
+    }
+
+    function testTransferUSDCWithValidSignaturesWithMessageVersionIsOne() public {
+        // Fill vault with USDC
+        changePrank(USDCWhale);
+        IERC20(USDC).transfer(address(vault), 100_000_000);
+        changePrank(deployer);
+
+          
+
+        // BridgeUtils.TokenTransferPayload memory payload = BridgeUtils.TokenTransferPayload({
+        //     senderAddressLength: 32,
+        //     senderAddress: abi.encode(hex"80ab1ee086210a3a37355300ca24672e81062fcdb5ced6618dab203f6a3b291c"),
+        //     targetChain: chainID,
+        //     recipientAddressLength: 20,
+        //     recipientAddress: bridgerA,
+        //     tokenID: BridgeUtils.USDC,
+        //     // This is Sui amount (usdc decimal 9)
+        //     amount: 1_000_000_000,
+        //     txHash: new bytes(0),
+        //     eventIdx: 0
+        // });
+
+        // console2.log("test1234",payload.senderAddressLength);
+
+
+
+        // // Create transfer payload
+        uint8 senderAddressLength = 32;
+        bytes memory senderAddress = hex"80ab1ee086210a3a37355300ca24672e81062fcdb5ced6618dab203f6a3b291c";
+        uint8 targetChain = chainID;
+        uint8 recipientAddressLength = 20;
+        address recipientAddress = bridgerA;
+        uint64 tokenID = BridgeUtils.USDC;
+        uint64 amount = 1_000_000;
+        uint8 eventidx=0;
+        bytes memory payloadPacked = abi.encodePacked(
+            senderAddressLength,
+            senderAddress,
+            targetChain,
+            recipientAddressLength,
+            recipientAddress,
+            tokenID,
+            amount,
+            new bytes(0),
+            eventidx
+        );
+
+        // console2.log("test1234",recipientAddressLength);
+
+        // Create transfer message
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.TOKEN_TRANSFER,
+            version: 1,
+            nonce: 1,
+            chainID: 0,
+            payload: payloadPacked
+        });
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+        assert(IERC20(USDC).balanceOf(bridgerA) == 0);
+        bridge.transferBridgedTokensWithSignatures(signatures, message);
+        assert(IERC20(USDC).balanceOf(bridgerA) == 1_000_000);
+    }
+
+    function testTransferUSDCWithValidSignaturesWithMessageVersionUpgrade() public {
+        // Fill vault with USDC
+        changePrank(USDCWhale);
+        IERC20(USDC).transfer(address(vault), 100_000_000);
+        changePrank(deployer);
+
+        // // Create transfer payload
+        uint8 senderAddressLength = 32;
+        bytes memory senderAddress = hex"80ab1ee086210a3a37355300ca24672e81062fcdb5ced6618dab203f6a3b291c";
+        uint8 targetChain = chainID;
+        uint8 recipientAddressLength = 20;
+        address recipientAddress = bridgerA;
+        uint64 tokenID = BridgeUtils.USDC;
+        uint64 amount = 1_000_000;
+        uint16 eventidx=0;
+        bytes memory payloadPacked = abi.encodePacked(
+            senderAddressLength,
+            senderAddress,
+            targetChain,
+            recipientAddressLength,
+            recipientAddress,
+            tokenID,
+            amount,
+            new bytes(0),
+            eventidx
+        );
+
+        // console2.log("test1234",recipientAddressLength);
+
+        // Create transfer message
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.TOKEN_TRANSFER,
+            version: 3,
+            nonce: 1,
+            chainID: 0,
+            payload: payloadPacked
         });
 
         bytes memory encodedMessage = BridgeUtils.encodeMessage(message);

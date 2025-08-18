@@ -1734,6 +1734,15 @@ title: Module `bridge::bridge`
 
 
 
+<a name="bridge_bridge_MESSAGE_VERSION_V3"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION_V3">MESSAGE_VERSION_V3</a>: u8 = 3;
+</code></pre>
+
+
+
 <a name="bridge_bridge_TOKEN_ID_USDC"></a>
 
 
@@ -2092,7 +2101,7 @@ title: Module `bridge::bridge`
     <b>let</b> amount_after_fee=token_amount-fee;
     <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(inner.chain_id, target_chain);
     <b>let</b> amount_in_usd = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.calculate_amount_in_usd&lt;T&gt;(amount_after_fee);
-    <b>assert</b>!(amount_in_usd &lt; <a href="../bridge/limiter.md#bridge_limiter_get_external_out_limit">limiter::get_external_out_limit</a>(parent_id, &route), <a href="../bridge/bridge.md#bridge_bridge_ETransferLimit">ETransferLimit</a>);
+    <b>assert</b>!(amount_in_usd &lt;= <a href="../bridge/limiter.md#bridge_limiter_get_external_out_limit">limiter::get_external_out_limit</a>(parent_id, &route), <a href="../bridge/bridge.md#bridge_bridge_ETransferLimit">ETransferLimit</a>);
     // <a href="../bridge/bridge.md#bridge_bridge_create">create</a> <a href="../bridge/bridge.md#bridge_bridge">bridge</a> <a href="../bridge/message.md#bridge_message">message</a>
     <b>let</b> <a href="../bridge/message.md#bridge_message">message</a> = <a href="../bridge/message.md#bridge_message_create_token_bridge_message_v2">message::create_token_bridge_message_v2</a>(
         inner.chain_id,
@@ -2585,7 +2594,7 @@ title: Module `bridge::bridge`
     // verify signatures
     inner.<a href="../bridge/committee.md#bridge_committee">committee</a>.verify_signatures(<a href="../bridge/message.md#bridge_message">message</a>, signatures);
     <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_type() == <a href="../bridge/message_types.md#bridge_message_types_token">message_types::token</a>(), <a href="../bridge/bridge.md#bridge_bridge_EMustBeTokenMessage">EMustBeTokenMessage</a>);
-    <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_version() == <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION">MESSAGE_VERSION</a>, <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedMessageVersion">EUnexpectedMessageVersion</a>);
+    <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_version() == <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION_V3">MESSAGE_VERSION_V3</a>, <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedMessageVersion">EUnexpectedMessageVersion</a>);
     <b>let</b> token_payload = <a href="../bridge/message.md#bridge_message">message</a>.extract_token_bridge_payload_v2();
     <b>let</b> target_chain = token_payload.token_target_chain_v2();
     <b>assert</b>!(
@@ -3526,7 +3535,7 @@ title: Module `bridge::bridge`
     <b>let</b> amount_after_fee=amount-fee;
     <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(inner.chain_id, target_chain);
     <b>let</b> amount_in_usd = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.calculate_amount_in_usd&lt;T&gt;(amount_after_fee);
-    <b>assert</b>!(amount_in_usd &lt; <a href="../bridge/limiter.md#bridge_limiter_get_external_out_limit">limiter::get_external_out_limit</a>(parent_id, &route), <a href="../bridge/bridge.md#bridge_bridge_ETransferLimit">ETransferLimit</a>);
+    <b>assert</b>!(amount_in_usd &lt;= <a href="../bridge/limiter.md#bridge_limiter_get_external_out_limit">limiter::get_external_out_limit</a>(parent_id, &route), <a href="../bridge/bridge.md#bridge_bridge_ETransferLimit">ETransferLimit</a>);
     inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.burn(token);
     // emit event
     emit(
@@ -4143,7 +4152,7 @@ title: Module `bridge::bridge`
         <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedTokenType">EUnexpectedTokenType</a>,
     );
     <b>let</b> amount = token_payload.token_amount_in();
-    <b>assert</b>!(amount &lt; inner.<a href="../bridge/limiter.md#bridge_limiter">limiter</a>.get_mint_busd_max_limit(), <a href="../bridge/bridge.md#bridge_bridge_EInvalidMintAmount">EInvalidMintAmount</a>);
+    <b>assert</b>!(amount &lt;= inner.<a href="../bridge/limiter.md#bridge_limiter">limiter</a>.get_mint_busd_max_limit(), <a href="../bridge/bridge.md#bridge_bridge_EInvalidMintAmount">EInvalidMintAmount</a>);
     // Make sure transfer is within limit.
     <b>if</b> (!inner
         .<a href="../bridge/limiter.md#bridge_limiter">limiter</a>
@@ -4158,7 +4167,7 @@ title: Module `bridge::bridge`
         <b>return</b> (option::none(), owner)
     };
     <b>let</b> token_id=token_payload.token_type_in();
-    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id,target_chain <b>as</b> u64,token_id,amount);
+    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id,source_chain <b>as</b> u64,token_id,amount);
     <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
     <b>let</b> amount_after_fee=amount-fee;
     <a href="../bridge/bridge.md#bridge_bridge_check_fast_path_limit">check_fast_path_limit</a>(parent_id, clock, token_payload);

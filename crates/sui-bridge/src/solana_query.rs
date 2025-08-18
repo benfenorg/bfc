@@ -19,7 +19,9 @@ struct JsonRpcRequest<T> {
 
 #[derive(Debug, Deserialize)]
 struct JsonRpcResponse<T> {
+    #[allow(dead_code)]
     jsonrpc: String,
+    #[allow(dead_code)]
     id: String,
     result: Option<T>,
 }
@@ -30,8 +32,10 @@ struct SolanaTransaction {
     transaction: Option<SolanaTransactionData>,
     #[serde(default)]
     meta: Option<SolanaTransactionMeta>,
+    #[allow(dead_code)]
     #[serde(default)]
     slot: Option<u64>,
+    #[allow(dead_code)]
     #[serde(default)]
     block_time: Option<u64>,
 }
@@ -40,6 +44,7 @@ struct SolanaTransaction {
 struct SolanaTransactionData {
     #[serde(rename = "message")]
     message: SolanaTransactionMessage,
+    #[allow(dead_code)]
     #[serde(rename = "signatures")]
     signatures: Vec<String>,
 }

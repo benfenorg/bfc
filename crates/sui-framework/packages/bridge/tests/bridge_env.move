@@ -94,6 +94,7 @@ module bridge::bridge_env {
     };
     use sui::hex;
     use bridge::limiter_fast_path;
+
     //
     // Token IDs
     //
@@ -745,7 +746,6 @@ module bridge::bridge_env {
         test_scenario::return_shared(bridge);
     }
 
-
     public fun fast_path_limit_update(
         env: &mut BridgeEnv,
         amount: u64
@@ -773,7 +773,7 @@ module bridge::bridge_env {
         test_scenario::return_shared(bridge);
     }
 
-    
+
     public fun remove_token_on_token_list(
         env: &mut BridgeEnv,
         source_chain: u8,

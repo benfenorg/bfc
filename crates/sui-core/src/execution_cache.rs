@@ -10,7 +10,7 @@ use crate::authority::AuthorityStore;
 use crate::state_accumulator::AccumulatorStore;
 use crate::transaction_outputs::TransactionOutputs;
 use mysten_common::fatal;
-use sui_types::bridge::Bridge;
+use sui_types::bridge::{Bridge, MoveTypeBridgeExternalLimiter};
 
 use futures::{future::BoxFuture, FutureExt};
 use prometheus::Registry;
@@ -364,6 +364,8 @@ pub trait ObjectCacheRead: Send + Sync {
     fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState>;
 
     fn get_bridge_object_unsafe(&self) -> SuiResult<Bridge>;
+    
+    fn get_bridge_limiter(&self) -> SuiResult<MoveTypeBridgeExternalLimiter>;
 
     // Marker methods
 

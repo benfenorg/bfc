@@ -286,7 +286,7 @@ mod tests {
         // println!("bbking sig2: {:?}", Hex::encode(sig2.signature.as_bytes()));
 
         let public_key_bytes =
-            Hex::decode("02b51258e9ed64283746451b6bc6d735d39f8d13a755344e94b9b1128941a11aa2")
+            Hex::decode("02f9a01de33c315a9d9c756f73d0b820d68fe6f1cb2cdcb12b12df13bde4fc1107")
                 .unwrap();
         let pubkey1 = BridgeAuthorityPublicKey::from_bytes(&public_key_bytes).unwrap();
         let authority1 = BridgeAuthority {
@@ -298,7 +298,7 @@ mod tests {
         };
 
         let public_key_bytes =
-            Hex::decode("030b0d82e4cfa544289496e8726861875c14942519c1c25e7f69eae23ae6f524c1")
+            Hex::decode("02c8e56487493abd7544636c40457546f679da8406b55bf7f99987dc82805cda8a")
                 .unwrap();
         let pubkey2 = BridgeAuthorityPublicKey::from_bytes(&public_key_bytes).unwrap();
         let authority2 = BridgeAuthority {
@@ -363,16 +363,15 @@ mod tests {
         let sig = BridgeAuthoritySignInfo {
             authority_pub_key: pubkey1,
             signature: BridgeAuthorityRecoverableSignature::from_bytes(
-                &Hex::decode("7d11253bc000a9826117b44691c30884c9480cabf21084b9e79461ee25f6fb682645d9ab7fd39489a5f0d5bcfddc1227a312bacdd813a294a227563c1dae2aa700").unwrap(),
+                &Hex::decode("506de17cbdb1d7abab560c0a7b4aee28431edff4fa1686e160d59f56e791bd2b34ea109d4f77b7f6a1719c47ef33781fa7c65f791d7e377ba5e1f9142713fa5000").unwrap(),
             ).unwrap(),
         };
-        // crate::crypto::BridgeAuthoritySignInfo::new(&action, &sig.authority_pub_key.).signature
-            
+
         sig.verify(&action, &committee).unwrap();
         let sig = BridgeAuthoritySignInfo {
             authority_pub_key: pubkey2.clone(),
             signature: BridgeAuthorityRecoverableSignature::from_bytes(
-                &Hex::decode("c6b2c8900d3c144a62453a0d0e479ea4f0b9bedc92e2e666d875ba16d33601721c1d0ec33c10cd31902e34563b04b27c74c5f2cb59cabbd7ad428aaf9a3ad91c01").unwrap(),
+                &Hex::decode("41c32db843524a59e04bb190f7b482046da8312c6d2f7371b0b6464c457db47a1f6c76409a777f016891fc4cce4fba690716ed1816158f117db323fae7be404800").unwrap(),
             ).unwrap(),
         };
         sig.verify(&action, &committee).unwrap();

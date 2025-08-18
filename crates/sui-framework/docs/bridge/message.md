@@ -1283,6 +1283,15 @@ title: Module `bridge::message`
 
 
 
+<a name="bridge_message_CURRENT_MESSAGE_VERSION_V3"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION_V3">CURRENT_MESSAGE_VERSION_V3</a>: u8 = 3;
+</code></pre>
+
+
+
 <a name="bridge_message_ECDSA_ADDRESS_LENGTH"></a>
 
 
@@ -2488,7 +2497,7 @@ Token Transfer Message Format:
     <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&event_idx)));
     <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a> {
         <a href="../bridge/message.md#bridge_message_message_type">message_type</a>: <a href="../bridge/message_types.md#bridge_message_types_token">message_types::token</a>(),
-        <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION_V3">CURRENT_MESSAGE_VERSION_V3</a>,
         <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>,
         <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>,
         <a href="../bridge/message.md#bridge_message_payload">payload</a>,

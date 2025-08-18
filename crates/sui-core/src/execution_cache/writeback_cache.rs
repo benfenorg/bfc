@@ -66,7 +66,7 @@ use sui_types::accumulator::Accumulator;
 use sui_types::base_types::{
     EpochId, FullObjectID, ObjectID, ObjectRef, SequenceNumber, VerifiedExecutionData,
 };
-use sui_types::bridge::{get_bridge, Bridge};
+use sui_types::bridge::{get_bridge, get_bridge_external_limiter, Bridge, MoveTypeBridgeExternalLimiter};
 use sui_types::digests::{
     ObjectDigest, TransactionDigest, TransactionEffectsDigest, TransactionEventsDigest,
 };
@@ -1710,6 +1710,9 @@ impl ObjectCacheRead for WritebackCache {
 
     fn get_bridge_object_unsafe(&self) -> SuiResult<Bridge> {
         get_bridge(self)
+    }
+    fn get_bridge_limiter(&self) -> SuiResult<MoveTypeBridgeExternalLimiter> {
+        get_bridge_external_limiter(self)
     }
 
     fn get_marker_value(

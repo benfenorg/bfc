@@ -407,20 +407,20 @@ title: Module `bridge::limiter_fast_path`
 
 
 
+<a name="bridge_limiter_fast_path_USER_LIMIT_50K_IN_BUSD"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_50K_IN_BUSD">USER_LIMIT_50K_IN_BUSD</a>: u64 = 50000000000000;
+</code></pre>
+
+
+
 <a name="bridge_limiter_fast_path_USER_LIMIT_50_IN_BUSD"></a>
 
 
 
 <pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_50_IN_BUSD">USER_LIMIT_50_IN_BUSD</a>: u64 = 50000000000;
-</code></pre>
-
-
-
-<a name="bridge_limiter_fast_path_USER_LIMIT_5K_IN_BUSD"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_5K_IN_BUSD">USER_LIMIT_5K_IN_BUSD</a>: u64 = 5000000000000;
 </code></pre>
 
 
@@ -532,31 +532,31 @@ title: Module `bridge::limiter_fast_path`
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_initial_limiter_fast_path">initial_limiter_fast_path</a>(parent_id: &<b>mut</b> UID) {
     //eth
-    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_5K_IN_BUSD">USER_LIMIT_5K_IN_BUSD</a>);
+    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_50K_IN_BUSD">USER_LIMIT_50K_IN_BUSD</a>);
     <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_50_IN_BUSD">USER_LIMIT_50_IN_BUSD</a>);
     <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_custom">chain_ids::eth_custom</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_100_IN_BUSD">USER_LIMIT_100_IN_BUSD</a>);
     //base
-    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_base_mainnet">chain_ids::base_mainnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_1K_IN_BUSD">USER_LIMIT_1K_IN_BUSD</a>);
+    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_base_mainnet">chain_ids::base_mainnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_50K_IN_BUSD">USER_LIMIT_50K_IN_BUSD</a>);
     <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_base_testnet">chain_ids::base_testnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_10_IN_BUSD">USER_LIMIT_10_IN_BUSD</a>);
     <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_base_custom">chain_ids::base_custom</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_100_IN_BUSD">USER_LIMIT_100_IN_BUSD</a>);
     //arb
-    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_arb_mainnet">chain_ids::arb_mainnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_1K_IN_BUSD">USER_LIMIT_1K_IN_BUSD</a>);
+    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_arb_mainnet">chain_ids::arb_mainnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_50K_IN_BUSD">USER_LIMIT_50K_IN_BUSD</a>);
     <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_arb_testnet">chain_ids::arb_testnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_10_IN_BUSD">USER_LIMIT_10_IN_BUSD</a>);
     <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_arb_custom">chain_ids::arb_custom</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_100_IN_BUSD">USER_LIMIT_100_IN_BUSD</a>);
     //op
-    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_op_mainnet">chain_ids::op_mainnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_1K_IN_BUSD">USER_LIMIT_1K_IN_BUSD</a>);
+    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_op_mainnet">chain_ids::op_mainnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_50K_IN_BUSD">USER_LIMIT_50K_IN_BUSD</a>);
     <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_op_testnet">chain_ids::op_testnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_10_IN_BUSD">USER_LIMIT_10_IN_BUSD</a>);
     <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_op_custom">chain_ids::op_custom</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_100_IN_BUSD">USER_LIMIT_100_IN_BUSD</a>);
     //pol
-    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_pol_mainnet">chain_ids::pol_mainnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_1K_IN_BUSD">USER_LIMIT_1K_IN_BUSD</a>);
+    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_pol_mainnet">chain_ids::pol_mainnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_50K_IN_BUSD">USER_LIMIT_50K_IN_BUSD</a>);
     <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_pol_testnet">chain_ids::pol_testnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_10_IN_BUSD">USER_LIMIT_10_IN_BUSD</a>);
     <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_pol_custom">chain_ids::pol_custom</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_100_IN_BUSD">USER_LIMIT_100_IN_BUSD</a>);
     //avax
-    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_mainnet">chain_ids::avax_mainnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_1K_IN_BUSD">USER_LIMIT_1K_IN_BUSD</a>);
+    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_mainnet">chain_ids::avax_mainnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_50K_IN_BUSD">USER_LIMIT_50K_IN_BUSD</a>);
     <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_testnet">chain_ids::avax_testnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_10_IN_BUSD">USER_LIMIT_10_IN_BUSD</a>);
     <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_custom">chain_ids::avax_custom</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_100_IN_BUSD">USER_LIMIT_100_IN_BUSD</a>);
     //bsc
-    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_1K_IN_BUSD">USER_LIMIT_1K_IN_BUSD</a>);
+    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_50K_IN_BUSD">USER_LIMIT_50K_IN_BUSD</a>);
     <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_10_IN_BUSD">USER_LIMIT_10_IN_BUSD</a>);
     <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">add_limiter</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_bsc_custom">chain_ids::bsc_custom</a>(), <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a> <b>as</b> u64, <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_USER_LIMIT_100_IN_BUSD">USER_LIMIT_100_IN_BUSD</a>);
 }

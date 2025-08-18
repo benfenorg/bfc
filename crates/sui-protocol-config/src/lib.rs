@@ -3279,6 +3279,7 @@ impl ProtocolConfig {
                     cfg.feature_flags.zklogin_max_epoch_upper_bound_delta = Some(365);
                 }
 
+
                 // Use this template when making changes:
                 //
                 //     // modify an existing constant.
