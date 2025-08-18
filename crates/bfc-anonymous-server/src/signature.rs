@@ -1,5 +1,5 @@
-use ed25519_dalek::{SigningKey, VerifyingKey, Signature, Signer, Verifier};
 use ed25519_dalek::SignatureError;
+use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use rand::rngs::OsRng;
 use thiserror::Error;
 
@@ -107,7 +107,8 @@ mod tests {
     #[tokio::test]
     async fn test_sign_and_verify() {
         let (public_key, signing_key) = generate_keypair();
-        let message : &str = "BFCf502f799165f3310907119d7b60e6dbf146914253901981125d1c1a4c7ec3b581c2e";
+        let message: &str =
+            "BFCf502f799165f3310907119d7b60e6dbf146914253901981125d1c1a4c7ec3b581c2e";
         let signature = sign_message(&signing_key, message.as_bytes());
 
         // Regular verification

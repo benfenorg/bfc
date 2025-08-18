@@ -34,3 +34,4 @@ dirs.workspace = true
 tokio = { workspace = true, features = ["full"] }
 reqwest = { version = "0.11", features = ["json", "blocking"] }
 serde_json = "1.0.128"
+hex = "0.4.3"

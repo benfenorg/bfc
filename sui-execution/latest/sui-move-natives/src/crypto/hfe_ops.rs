@@ -73,19 +73,27 @@ pub fn hfe_ops_add(
     info!("anonymous_privatekey{:?}", anonymous_privatekey.clone().unwrap());
     info!("anonymous_rpc{:?}", anonymous_rpc.clone());
     info!("enable-anonymous-rpc{:?}", enable_anonymous_rpc.clone().unwrap());
-    let number4 = pop_arg!(args, u64);
-    let number3 = pop_arg!(args, u64);
-    let number2 = pop_arg!(args, u64);
-    let number1 = pop_arg!(args, u64);
-    let cost = context.gas_used();
     if *enable_anonymous_rpc == Some(true) {
+        let number4 = pop_arg!(args, Vec<u8>);
+        let number3 = pop_arg!(args, Vec<u8>);
+        let number2 = pop_arg!(args, Vec<u8>);
+        let number1 = pop_arg!(args, Vec<u8>);
+        let cost = context.gas_used();
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
-        let result = client.add(number1, number2, number3, number4);
+        let result = client.add(hex::encode(number1), hex::encode(number2), hex::encode(number3), hex::encode(number4));
         Ok(NativeResult::ok(
             cost,
-            smallvec![Value::vector_u64(vec![result.value1, result.value2])]
+            smallvec![
+                Value::vector_u8(hex::decode(result.value1).unwrap()),
+                Value::vector_u8(hex::decode(result.value2).unwrap())
+            ]
         ))
     } else {
+        let number4 = pop_arg!(args, u64);
+        let number3 = pop_arg!(args, u64);
+        let number2 = pop_arg!(args, u64);
+        let number1 = pop_arg!(args, u64);
+        let cost = context.gas_used();
         let data1 = number1 + number2;
         let data2 = number3 + number4;
 
@@ -124,10 +132,6 @@ pub fn hfe_ops_minus(
         context,
         anonymous_compute_cost_params.anonymous_compute_cost_base
     );
-    let number4 = pop_arg!(args, u64);
-    let number3 = pop_arg!(args, u64);
-    let number2 = pop_arg!(args, u64);
-    let number1 = pop_arg!(args, u64);
 
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
     let anonymous_privatekey = &context
@@ -143,13 +147,26 @@ pub fn hfe_ops_minus(
     let cost = context.gas_used();
 
     if *enable_anonymous_rpc == Some(true) {
+        let number4 = pop_arg!(args, Vec<u8>);
+        let number3 = pop_arg!(args, Vec<u8>);
+        let number2 = pop_arg!(args, Vec<u8>);
+        let number1 = pop_arg!(args, Vec<u8>);
+
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
-        let result = client.minus(number1, number2, number3, number4);
+        let result = client.minus(hex::encode(number1), hex::encode(number2), hex::encode(number3), hex::encode(number4));
         Ok(NativeResult::ok(
             cost,
-            smallvec![Value::vector_u64(vec![result.value1, result.value2])]
+            smallvec![
+                Value::vector_u8(hex::decode(result.value1).unwrap()),
+                Value::vector_u8(hex::decode(result.value2).unwrap())
+            ]
         ))
     } else {
+        let number4 = pop_arg!(args, u64);
+        let number3 = pop_arg!(args, u64);
+        let number2 = pop_arg!(args, u64);
+        let number1 = pop_arg!(args, u64);
+
         let data1 = number1 + number2;
         let data2 = number3 + number4;
 
@@ -189,11 +206,6 @@ pub fn hfe_ops_multiplied(
         anonymous_compute_cost_params.anonymous_compute_cost_base
     );
 
-    let number4 = pop_arg!(args, u64);
-    let number3 = pop_arg!(args, u64);
-    let number2 = pop_arg!(args, u64);
-    let number1 = pop_arg!(args, u64);
-
     let cost = context.gas_used();
     let anonymous_privatekey = &context
         .extensions()
@@ -207,13 +219,26 @@ pub fn hfe_ops_multiplied(
         .clone();
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
     if *enable_anonymous_rpc == Some(true) {
+        let number4 = pop_arg!(args, Vec<u8>);
+        let number3 = pop_arg!(args, Vec<u8>);
+        let number2 = pop_arg!(args, Vec<u8>);
+        let number1 = pop_arg!(args, Vec<u8>);
+
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
-        let result = client.multiply(number1, number2, number3, number4);
+        let result = client.multiply(hex::encode(number1), hex::encode(number2), hex::encode(number3), hex::encode(number4));
         Ok(NativeResult::ok(
             cost,
-            smallvec![Value::vector_u64(vec![result.value1, result.value2])]
+            smallvec![
+                Value::vector_u8(hex::decode(result.value1).unwrap()),
+                Value::vector_u8(hex::decode(result.value2).unwrap())
+            ]
         ))
     } else {
+        let number4 = pop_arg!(args, u64);
+        let number3 = pop_arg!(args, u64);
+        let number2 = pop_arg!(args, u64);
+        let number1 = pop_arg!(args, u64);
+
         let data1 = number1 + number2;
         let data2 = number3 + number4;
 
@@ -275,7 +300,10 @@ pub fn hfe_ops_split_value(context: &mut NativeContext,
         let result = client.split_value(value);
         Ok(NativeResult::ok(
             cost,
-            smallvec![Value::vector_u64(vec![result.value1, result.value2])]
+            smallvec![
+                Value::vector_u8(hex::decode(result.value1).unwrap()),
+                Value::vector_u8(hex::decode(result.value2).unwrap())
+            ]
         ))
     } else {
         let value1 = value/2;
@@ -305,9 +333,6 @@ pub fn hfe_ops_compare_value(
     );
 
 
-    let number3 = pop_arg!(args, u64);
-    let number2 = pop_arg!(args, u64);
-    let number1 = pop_arg!(args, u64);
     let cost = context.gas_used();
 
     let anonymous_privatekey = &context
@@ -322,13 +347,21 @@ pub fn hfe_ops_compare_value(
         .clone();
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
     if *enable_anonymous_rpc == Some(true) {
+        let number3 = pop_arg!(args, u64);
+        let number2 = pop_arg!(args, Vec<u8>);
+        let number1 = pop_arg!(args, Vec<u8>);
+        
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
-        let result = client.compare_value(number1, number2, number3);
+        let result = client.compare_value(hex::encode(number1), hex::encode(number2), number3);
         Ok(NativeResult::ok(
             cost,
-            smallvec![Value::u8(result.value1.try_into().unwrap())],
+            smallvec![Value::u8(result.value1.parse::<u8>().unwrap())],
         ))
     } else {
+        let number3 = pop_arg!(args, u64);
+        let number2 = pop_arg!(args, u64);
+        let number1 = pop_arg!(args, u64);
+
         let data1 = number1 + number2;
         let data2 = number3;
         let mut result = 0;
@@ -403,8 +436,6 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
     let publickey = pop_arg!(args, Vec<u8>);
     let id = pop_arg!(args, AccountAddress);
     let signature= pop_arg!(args, Vec<u8>);
-    let value2 = pop_arg!(args, u64);
-    let value1 = pop_arg!(args, u64);
 
     let cost = context.gas_used();
 
@@ -421,13 +452,17 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
         .clone();
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
     if *enable_anonymous_rpc == Some(true) {
+        let value2 = pop_arg!(args, Vec<u8>);
+        let value1 = pop_arg!(args, Vec<u8>);
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
-        let result = client.restore_value(value1, value2, signature, id, publickey);
+        let result = client.restore_value(hex::encode(value1), hex::encode(value2), signature, id, publickey);
         Ok(NativeResult::ok(
             cost,
-            smallvec![Value::u64(result.value1)],
+            smallvec![Value::u64(result.value1.parse::<u64>().expect("Failed to parse number"))],
         ))
     } else {
+        let value2 = pop_arg!(args, u64);
+        let value1 = pop_arg!(args, u64);
         if value1.checked_add(value2) == None {
             return Ok(NativeResult::err(
                 cost,
@@ -522,8 +557,8 @@ fn derive_shard_key(shard_id: usize, key: Vec<u8>) -> Vec<u8> {
 struct AnonymousResult {
     success: bool,
     error: Option<String>,
-    value1: u64,
-    value2: u64,
+    value1: String,
+    value2: String,
 }
 
 struct AnonymousClient {
@@ -539,7 +574,7 @@ impl AnonymousClient {
         }
     }
 
-    pub fn add(&self, value1: u64, value2: u64, value3: u64, value4: u64) -> AnonymousResult {
+    pub fn add(&self, value1: String, value2: String, value3: String, value4: String) -> AnonymousResult {
         let params = json!({
             "value1": value1,
             "value2": value2,
@@ -550,27 +585,27 @@ impl AnonymousClient {
         match self.send_rpc_request("bfcx_getAnonymousAdd", params, 1) {
 
             Ok(response) => {
-                let result1 = response["result"]["result1"].as_u64().unwrap();
-                let result2 = response["result"]["result2"].as_u64().unwrap();
+                let result1 = response["result"]["result1"].as_str().unwrap();
+                let result2 = response["result"]["result2"].as_str().unwrap();
                 AnonymousResult {
                     success: true,
                     error: None,
-                    value1: result1,
-                    value2: result2,
+                    value1: result1.to_string(),
+                    value2: result2.to_string(),
                 }
             }
             Err(e) => {
                 AnonymousResult {
                     success: false,
                     error: Some(e.to_string()),
-                    value1: 0,
-                    value2: 0,
+                    value1: "0".to_string(),
+                    value2: "0".to_string(),
                 }
             },
         }
     }
 
-    pub fn minus(&self, value1: u64, value2: u64, value3: u64, value4: u64) -> AnonymousResult {
+    pub fn minus(&self, value1: String, value2: String, value3: String, value4: String) -> AnonymousResult {
         let params = json!({
             "value1": value1,
             "value2": value2,
@@ -580,25 +615,25 @@ impl AnonymousClient {
 
         match self.send_rpc_request("bfcx_getAnonymousMinus", params, 2) {
             Ok(response) => {
-                let result1 = response["result"]["result1"].as_u64().unwrap();
-                let result2 = response["result"]["result2"].as_u64().unwrap();
+                let result1 = response["result"]["result1"].as_str().unwrap();
+                let result2 = response["result"]["result2"].as_str().unwrap();
                 AnonymousResult {
                     success: true,
                     error: None,
-                    value1: result1,
-                    value2: result2,
+                    value1: result1.to_string(),
+                    value2: result2.to_string(),
                 }
             },
             Err(e) => AnonymousResult {
                 success: false,
                 error: Some(e.to_string()),
-                value1: 0,
-                value2: 0,
+                value1: "0".to_string(),
+                value2: "0".to_string(),
             },
         }
     }
 
-    pub fn restore_value(&self, value1: u64, value2: u64, signature : Vec<u8>, id: AccountAddress, publickey: Vec<u8>) -> AnonymousResult  {
+    pub fn restore_value(&self, value1: String, value2: String, signature : Vec<u8>, id: AccountAddress, publickey: Vec<u8>) -> AnonymousResult  {
         let params = json!({
             "value1": value1,
             "value2": value2,
@@ -614,15 +649,15 @@ impl AnonymousClient {
                 AnonymousResult {
                     success: true,
                     error: None,
-                    value1: result1,
-                    value2: 0,
+                    value1: result1.to_string(),
+                    value2: "0".to_string(),
                 }
             },
             Err(e) => AnonymousResult {
                 success: false,
                 error: Some(e.to_string()),
-                value1: 0,
-                value2: 0,
+                value1: "0".to_string(),
+                value2: "0".to_string(),
             },
         }
     }
@@ -635,25 +670,25 @@ impl AnonymousClient {
         match self.send_rpc_request("bfcx_getAnonymousSplitValue", params, 3) {
             Ok(response) => {
 
-                let result1 = response["result"]["result1"].as_u64().unwrap();
-                let result2 = response["result"]["result2"].as_u64().unwrap();
+                let result1 = response["result"]["result1"].as_str().unwrap();
+                let result2 = response["result"]["result2"].as_str().unwrap();
                 AnonymousResult {
                     success: true,
                     error: None,
-                    value1: result1,
-                    value2: result2
+                    value1: result1.to_string(),
+                    value2: result2.to_string()
                 }
             },
             Err(e) => AnonymousResult {
                 success: false,
                 error: Some(e.to_string()),
-                value1: 0,
-                value2: 0,
+                value1: "0".to_string(),
+                value2: "0".to_string(),
             },
         }
     }
 
-    pub fn compare_value(&self, value1: u64, value2: u64, value3: u64) -> AnonymousResult  {
+    pub fn compare_value(&self, value1: String, value2: String, value3: u64) -> AnonymousResult  {
         let params = json!({
             "value1": value1,
             "value2": value2,
@@ -662,24 +697,24 @@ impl AnonymousClient {
 
         match self.send_rpc_request("bfcx_getAnonymousCompare", params, 3) {
             Ok(response) => {
-                let result1 = response["result"]["result1"].as_u64().unwrap();
+                let result1 = response["result"]["result1"].as_str().unwrap();
                 AnonymousResult {
                     success: true,
                     error: None,
-                    value1: result1,
-                    value2: 0
+                    value1: result1.to_string(),
+                    value2: "0".to_string(),
                 }
             },
             Err(e) => AnonymousResult {
                 success: false,
                 error: Some(e.to_string()),
-                value1: 0,
-                value2: 0,
+                value1: "0".to_string(),
+                value2: "0".to_string(),
             },
         }
     }
 
-    pub fn multiply(&self, value1: u64, value2: u64, value3: u64, value4: u64) -> AnonymousResult  {
+    pub fn multiply(&self, value1: String, value2: String, value3: String, value4: String) -> AnonymousResult  {
         let params = json!({
             "value1": value1,
             "value2": value2,
@@ -690,20 +725,20 @@ impl AnonymousClient {
         match self.send_rpc_request("bfcx_getAnonymousMultiply", params, 3) {
             Ok(response) => {
 
-                let result1 = response["result"]["result1"].as_u64().unwrap();
-                let result2 = response["result"]["result2"].as_u64().unwrap();
+                let result1 = response["result"]["result1"].as_str().unwrap();
+                let result2 = response["result"]["result2"].as_str().unwrap();
                 AnonymousResult {
                     success: true,
                     error: None,
-                    value1: result1,
-                    value2: result2
+                    value1: result1.to_string(),
+                    value2: result2.to_string()
                 }
             },
             Err(e) => AnonymousResult {
                 success: false,
                 error: Some(e.to_string()),
-                value1: 0,
-                value2: 0,
+                value1: "0".to_string(),
+                value2: "0".to_string(),
             },
         }
     }
