@@ -10,12 +10,12 @@ task 1, lines 6-26:
 //# publish
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 6080000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6399200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 27-29:
 //# run test::sponsor::is_sponsored --sender A --args false
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, lines 30-32:
 //# run test::sponsor::is_sponsored --sender A --args true
@@ -37,7 +37,7 @@ task 6, lines 39-42:
 //> test::sponsor::is_sponsored(Input(0))
 // abort(101), sponsored transaction
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 7, lines 43-46:
 //# programmable --sender A --sponsor B --inputs false
@@ -57,4 +57,4 @@ task 9, lines 51-52:
 //# programmable --sender A --sponsor B --inputs @B
 //> test::sponsor::check_sponsor(Input(0))
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072

@@ -10,17 +10,17 @@ task 1, lines 6-42:
 //# publish
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 8177600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 8496800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 44-46:
 //# run ex::m::mint
 created: object(2,0), object(2,1), object(2,2), object(2,3), object(2,4), object(2,5)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 8375200,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 8694400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, lines 47-49:
 //# view-object 2,0
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCf049cd2e636bae3cac574db78d1ada898ee7565d8b2254181b41343fa2a2d3ed5038 )
 Version: 3
 Contents: ex::m::PubA {
     id: sui::object::UID {
@@ -44,7 +44,7 @@ Contents: ex::m::PubA {
 
 task 5, lines 53-55:
 //# view-object 2,2
-Owner: Account Address ( fake(2,0) )
+Owner: ConsensusAddressOwner( 3, fake(2,1) )
 Version: 3
 Contents: ex::m::PubB {
     id: sui::object::UID {
@@ -56,7 +56,7 @@ Contents: ex::m::PubB {
 
 task 6, lines 56-58:
 //# view-object 2,3
-Owner: Account Address ( fake(2,1) )
+Owner: ConsensusAddressOwner( 3, fake(2,0) )
 Version: 3
 Contents: ex::m::PubB {
     id: sui::object::UID {
@@ -68,7 +68,7 @@ Contents: ex::m::PubB {
 
 task 7, lines 59-61:
 //# view-object 2,4
-Owner: ConsensusAddressOwner( 3, fake(2,1) )
+Owner: Account Address ( BFC708862fa4b49519207aa6f4d76afe6027798796c61041e4844e7630d6f7844fc2c5d )
 Version: 3
 Contents: ex::m::PubB {
     id: sui::object::UID {
@@ -80,7 +80,7 @@ Contents: ex::m::PubB {
 
 task 8, lines 62-65:
 //# view-object 2,5
-Owner: ConsensusAddressOwner( 3, fake(2,0) )
+Owner: Account Address ( BFCe17636bd2dc277d1623ed0b8eac5269d4fc748e89672858e8fa10d58f38b4c3cd2ff )
 Version: 3
 Contents: ex::m::PubB {
     id: sui::object::UID {
@@ -92,13 +92,12 @@ Contents: ex::m::PubB {
 
 task 9, line 66:
 //# run ex::m::receiver --args object(2,0) receiving(2,2)
-mutated: object(0,2), object(2,0), object(2,2)
-gas summary: computation_cost: 1000000, storage_cost: 3450400,  storage_rebate: 3415896, non_refundable_storage_fee: 34504
+Error: Error checking transaction input objects: NotSharedObjectError
 
 task 10, lines 68-71:
 //# view-object 2,2
-Owner: Account Address ( _ )
-Version: 4
+Owner: ConsensusAddressOwner( 3, fake(2,1) )
+Version: 3
 Contents: ex::m::PubB {
     id: sui::object::UID {
         id: sui::object::ID {
@@ -109,13 +108,12 @@ Contents: ex::m::PubB {
 
 task 11, line 72:
 //# run ex::m::receiver --args object(2,1) receiving(2,3)
-mutated: object(0,2), object(2,1), object(2,3)
-gas summary: computation_cost: 1000000, storage_cost: 3450400,  storage_rebate: 3415896, non_refundable_storage_fee: 34504
+Error: Error checking transaction input objects: NotSharedObjectError
 
 task 12, lines 74-77:
 //# view-object 2,3
-Owner: Account Address ( _ )
-Version: 5
+Owner: ConsensusAddressOwner( 3, fake(2,0) )
+Version: 3
 Contents: ex::m::PubB {
     id: sui::object::UID {
         id: sui::object::ID {
@@ -126,8 +124,10 @@ Contents: ex::m::PubB {
 
 task 13, line 79:
 //# run ex::m::receiver --args object(2,0) receiving(2,5)
-Error: Error checking transaction input objects: NotSharedObjectError
+Error: Transaction Effects Status: Move Runtime Abort. Location: sui::transfer::receive_impl (function index 15) at offset 0, Abort Code: 3
+Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: MoveAbort(MoveLocation { module: ModuleId { address: sui, name: Identifier("transfer") }, function: 15, instruction: 0, function_name: Some("receive_impl") }, 3), source: Some(VMError { major_status: ABORTED, sub_status: Some(3), message: None, exec_state: None, location: Module(ModuleId { address: sui, name: Identifier("transfer") }), indices: [], offsets: [(FunctionDefinitionIndex(15), 0)] }), command: Some(0) } }
 
 task 14, line 81:
 //# run ex::m::receiver --args object(2,1) receiving(2,4)
-Error: Error checking transaction input objects: NotSharedObjectError
+Error: Transaction Effects Status: Move Runtime Abort. Location: sui::transfer::receive_impl (function index 15) at offset 0, Abort Code: 3
+Debug of error: MoveAbort(MoveLocation { module: ModuleId { address: sui, name: Identifier("transfer") }, function: 15, instruction: 0, function_name: Some("receive_impl") }, 3) at command Some(0)

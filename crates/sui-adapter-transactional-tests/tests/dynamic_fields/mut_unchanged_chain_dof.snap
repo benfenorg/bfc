@@ -10,17 +10,17 @@ task 1, lines 10-74:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 10852800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 11172000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 76:
 //# run test::m1::create --sender A
 created: object(2,0), object(2,1), object(2,2), object(2,3), object(2,4), object(2,5), object(2,6), object(2,7), object(2,8), object(2,9), object(2,10), object(2,11), object(2,12), object(2,13)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 26326400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 26645600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, line 78:
 //# view-object 2,8
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 2
 Contents: test::m1::GreatGrandParent {
     id: sui::object::UID {
@@ -45,29 +45,29 @@ Contents: test::m1::GreatGrandParent {
 task 5, line 84:
 //# run test::m1::borrow_mut --sender A --args object(2,8)
 mutated: object(0,0), object(2,8)
-gas summary: computation_cost: 1000000, storage_cost: 2318000,  storage_rebate: 2294820, non_refundable_storage_fee: 23180
+gas summary: computation_cost: 1000000, storage_cost: 2637200,  storage_rebate: 2610828, non_refundable_storage_fee: 26372
 
 task 6, line 86:
 //# run test::m1::borrow_mut --sender A --args object(2,9)
 mutated: object(0,0), object(2,9)
-gas summary: computation_cost: 1000000, storage_cost: 2318000,  storage_rebate: 2294820, non_refundable_storage_fee: 23180
+gas summary: computation_cost: 1000000, storage_cost: 2637200,  storage_rebate: 2610828, non_refundable_storage_fee: 26372
 
 task 7, line 88:
 //# run test::m1::add_remove --sender A --args object(2,8)
 mutated: object(0,0), object(2,8)
-gas summary: computation_cost: 1000000, storage_cost: 2318000,  storage_rebate: 2294820, non_refundable_storage_fee: 23180
+gas summary: computation_cost: 1000000, storage_cost: 2637200,  storage_rebate: 2610828, non_refundable_storage_fee: 26372
 
 task 8, line 90:
 //# run test::m1::add_remove --sender A --args object(2,9)
 mutated: object(0,0), object(2,9)
-gas summary: computation_cost: 1000000, storage_cost: 2318000,  storage_rebate: 2294820, non_refundable_storage_fee: 23180
+gas summary: computation_cost: 1000000, storage_cost: 2637200,  storage_rebate: 2610828, non_refundable_storage_fee: 26372
 
 task 9, line 92:
 //# run test::m1::write_back --sender A --args object(2,8)
 mutated: object(0,0), object(2,8)
-gas summary: computation_cost: 1000000, storage_cost: 2318000,  storage_rebate: 2294820, non_refundable_storage_fee: 23180
+gas summary: computation_cost: 1000000, storage_cost: 2637200,  storage_rebate: 2610828, non_refundable_storage_fee: 26372
 
 task 10, line 94:
 //# run test::m1::write_back --sender A --args object(2,9)
 mutated: object(0,0), object(2,9)
-gas summary: computation_cost: 1000000, storage_cost: 2318000,  storage_rebate: 2294820, non_refundable_storage_fee: 23180
+gas summary: computation_cost: 1000000, storage_cost: 2637200,  storage_rebate: 2610828, non_refundable_storage_fee: 26372

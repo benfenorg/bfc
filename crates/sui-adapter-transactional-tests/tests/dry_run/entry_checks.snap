@@ -10,7 +10,7 @@ task 1, lines 8-50:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 6771600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7090800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 51-55:
 //# programmable --sender A --inputs 0 --dry-run
@@ -42,7 +42,7 @@ task 5, lines 66-70:
 //> 1: test::m::entry_take_pure(Input(0));
 // Entry to entry
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 6, lines 71-73:
 //# programmable --sender A --dry-run

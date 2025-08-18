@@ -7,13 +7,13 @@ task 1, lines 6-20:
 //# publish
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 5198400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 5517600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 22-24:
 //# run ex::m::mint
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2219200,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2538400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, lines 25-29:
 //# programmable --inputs object(2,0) @0
