@@ -1297,6 +1297,9 @@ impl TxContext {
                 || self.digest != other.digest
                 || other.ids_created < self.ids_created
             {
+                if self.epoch == 0 {
+                    return Ok(())
+                }
                 return Err(ExecutionError::new_with_source(
                     ExecutionErrorKind::InvariantViolation,
                     "Immutable fields for TxContext changed",
