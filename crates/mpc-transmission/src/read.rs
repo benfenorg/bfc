@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::Path;
-/// 增强版内部数据结构
-/// 注意!!! 需要与json文件内名称匹配
+/// Enhanced internal data structure
+/// Note!!! Must match the names in the JSON file
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(deny_unknown_fields)]
 struct JsonData {
@@ -13,7 +13,7 @@ struct JsonData {
     numeric_keys: HashMap<u64, u64>,
 }
 
-/// 核心解析函数 - 增强错误处理
+/// Core parsing function - enhanced error handling
 fn parse_numeric_keys<'de, D>(deserializer: D) -> Result<HashMap<u64, u64>, D::Error>
 where
     D: serde::Deserializer<'de>,
@@ -36,9 +36,9 @@ where
         .collect()
 }
 
-/// 公开接口：从文件读取JSON并解析为 HashMap<u64, u64>
+/// Public interface: Read JSON from file and parse as HashMap<u64, u64>
 pub fn read_numeric_json<P: AsRef<Path>>(path: P) -> Result<HashMap<u64, u64>, SecretSharingError> {
-    // 检查文件是否存在
+    // Check if file exists
     if !path.as_ref().exists() {
         return Err(SecretSharingError::FileNotFound(
             path.as_ref().to_string_lossy().into_owned(),
@@ -49,10 +49,10 @@ pub fn read_numeric_json<P: AsRef<Path>>(path: P) -> Result<HashMap<u64, u64>, S
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
 
-    // 验证JSON结构
+    // Validate JSON structure
     let data: JsonData = serde_json::from_str(&contents)?;
 
-    // 验证数据有效性
+    // Validate data validity
     if data.numeric_keys.is_empty() {
         return Err(SecretSharingError::ValidationFailed(
             "Empty key-value pairs".into(),
@@ -62,20 +62,20 @@ pub fn read_numeric_json<P: AsRef<Path>>(path: P) -> Result<HashMap<u64, u64>, S
     Ok(data.numeric_keys)
 }
 
-/// 公开接口：直接解析JSON字符串
+/// Public interface: Parse JSON string directly
 pub fn parse_numeric_json(json_str: &str) -> Result<HashMap<u64, u64>, SecretSharingError> {
     let data: JsonData = serde_json::from_str(json_str)?;
     Ok(data.numeric_keys)
 }
 
-/// 新增：根据key获取对应的mask值
+/// New: Get corresponding mask value by key
 pub fn get_mask_by_key(data: &HashMap<u64, u64>, key: u64) -> Result<u64, SecretSharingError> {
     data.get(&key)
         .copied()
         .ok_or_else(|| SecretSharingError::InvalidKey(key))
 }
 
-/// 新增：将HashMap写入JSON文件
+/// New: Write HashMap to JSON file
 pub fn write_numeric_json<P: AsRef<Path>>(
     path: P,
     data: &HashMap<u64, u64>,

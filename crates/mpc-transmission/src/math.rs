@@ -1,13 +1,13 @@
 #[allow(unused_imports)]
 use crate::{SecretSharingError, Share, generate_shares_with_xor, recover_secret_with_xor};
 
-// 采用方案一 在计算过程中先恢复原始秘密, 再进行计算 输出u64计算结果
+// Using approach one: first recover the original secret during computation, then perform calculation, output u64 calculation result
 //
-// 加法运算
+// Addition operation
 pub fn add_shared_secrets(
     shares1: &[Share],
     shares2: &[Share],
-    threshold: usize, // 新增参数
+    threshold: usize, // New parameter
     mask1: u64,
     mask2: u64,
 ) -> Result<u64, SecretSharingError> {
@@ -16,7 +16,7 @@ pub fn add_shared_secrets(
     Ok(secret1.wrapping_add(secret2))
 }
 
-/// 减法运算
+/// Subtraction operation
 pub fn sub_shared_secrets(
     shares1: &[Share],
     shares2: &[Share],
@@ -29,7 +29,7 @@ pub fn sub_shared_secrets(
     Ok(secret1.wrapping_sub(secret2))
 }
 
-/// 乘法运算
+/// Multiplication operation
 pub fn mul_shared_secrets(
     shares1: &[Share],
     shares2: &[Share],
@@ -46,10 +46,10 @@ pub fn mul_shared_secrets(
 mod tests {
     use super::*;
 
-    // 测试用固定 mask（确保所有测试用例使用相同的 mask）
+    // Fixed mask for testing (ensure all test cases use the same mask)
     const TEST_MASK: u64 = 0x12345678ABCDEF00;
 
-    // 生成测试数据：两个秘密的分片 + 阈值
+    // Generate test data: shares of two secrets + threshold
     fn setup_test_secrets() -> (Vec<Share>, Vec<Share>, usize) {
         let threshold = 3;
         let total_shares = 5;
@@ -64,24 +64,24 @@ mod tests {
         (shares1, shares2, threshold)
     }
 
-    // 测试加法：secret1 + secret2
+    // Test addition: secret1 + secret2
     #[test]
     fn test_addition() {
         let (shares1, shares2, threshold) = setup_test_secrets();
 
         let result = add_shared_secrets(
-            &shares1[..threshold], // 取前 threshold 个分片
+            &shares1[..threshold], // Take first threshold shares
             &shares2[..threshold],
             threshold,
-            TEST_MASK, // shares1 的 mask
-            TEST_MASK, // shares2 的 mask
+            TEST_MASK, // mask for shares1
+            TEST_MASK, // mask for shares2
         )
         .unwrap();
 
         assert_eq!(result, 12345 + 67890);
     }
 
-    // 测试减法：secret1 - secret2（使用 wrapping_sub 处理无符号数）
+    // Test subtraction: secret1 - secret2 (using wrapping_sub to handle unsigned numbers)
     #[test]
     fn test_subtraction() {
         let (shares1, shares2, threshold) = setup_test_secrets();
@@ -98,7 +98,7 @@ mod tests {
         assert_eq!(result, 12345u64.wrapping_sub(67890));
     }
 
-    // 测试乘法：secret1 * secret2
+    // Test multiplication: secret1 * secret2
     #[test]
     fn test_multiplication() {
         let (shares1, shares2, threshold) = setup_test_secrets();
@@ -115,7 +115,7 @@ mod tests {
         assert_eq!(result, 12345 * 67890);
     }
 
-    // 测试边界条件（零、最大值等）
+    // Test edge cases (zero, maximum values, etc.)
     #[test]
     fn test_edge_cases() {
         let threshold = 2;
@@ -124,7 +124,7 @@ mod tests {
         let secret_one = 1;
         let secret_max = u64::MAX;
 
-        // 生成分片
+        // Generate shares
         let shares_zero =
             generate_shares_with_xor(secret_zero, threshold, total_shares, TEST_MASK).unwrap();
         let shares_one =
@@ -143,7 +143,7 @@ mod tests {
         .unwrap();
         assert_eq!(mul_result, 0);
 
-        // 1 - MAX = 2（wrapping_sub 结果）
+        // 1 - MAX = 2 (wrapping_sub result)
         let sub_result = sub_shared_secrets(
             &shares_one[..threshold],
             &shares_max[..threshold],
@@ -154,7 +154,7 @@ mod tests {
         .unwrap();
         assert_eq!(sub_result, 1u64.wrapping_sub(u64::MAX));
 
-        // MAX + 1 = 0（wrapping_add 结果）
+        // MAX + 1 = 0 (wrapping_add result)
         let add_result = add_shared_secrets(
             &shares_max[..threshold],
             &shares_one[..threshold],
@@ -166,15 +166,15 @@ mod tests {
         assert_eq!(add_result, 0);
     }
 
-    // 测试分片不足时返回错误
+    // Test error when insufficient shares
     #[test]
     fn test_insufficient_shares() {
         let (shares1, shares2, threshold) = setup_test_secrets();
 
-        // 提供的分片数 < threshold
+        // Provided shares < threshold
         assert!(
             add_shared_secrets(
-                &shares1[..threshold - 1], // 少一个分片
+                &shares1[..threshold - 1], // One share less
                 &shares2[..threshold],
                 threshold,
                 TEST_MASK,
