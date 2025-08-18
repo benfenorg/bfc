@@ -15,8 +15,7 @@ mod checked {
     use sui_types::gas_coin::GAS;
 
     use sui_types::balance::{
-        BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
-        BALANCE_MODULE_NAME,
+        BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DEPOSIT_STABLE_GAS_COIN_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME, BALANCE_MODULE_NAME
     };
     use sui_types::messages_checkpoint::CheckpointTimestamp;
     use sui_types::metrics::LimitsMetrics;
@@ -975,6 +974,28 @@ mod checked {
             // create rewards in stable coin
             let rewards_bfc;
             if STABLE::is_outer_gas_type(&type_tag,param.current_protocol_version.as_u64()) {
+                let stable_charge_arg = builder
+                    .input(CallArg::Pure(
+                        bcs::to_bytes(&calculate_add(
+                            gas_cost_summary.gas_by_stable.computation_cost, gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
+                    )).unwrap();
+                let rewards = builder.programmable_move_call(
+                    SUI_FRAMEWORK_PACKAGE_ID,
+                    BALANCE_MODULE_NAME.to_owned(),
+                    BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
+                    vec![type_tag.clone()],
+                    vec![stable_charge_arg],
+                );
+                // deposit to outer stable coin treasury
+                let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+                builder.programmable_move_call(
+                    BFC_SYSTEM_PACKAGE_ID,
+                    BFC_SYSTEM_MODULE_NAME.to_owned(),
+                    BALANCE_DEPOSIT_STABLE_GAS_COIN_FUNCTION_NAME.to_owned(),
+                    vec![type_tag.clone()],
+                    vec![system_obj, rewards],
+                );
+
                 //  withdraw bfc
                 let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
                 let bfc_charge_arg = builder

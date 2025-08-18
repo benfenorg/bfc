@@ -44,6 +44,7 @@ module bfc_system::bfc_system_tests {
     use bfc_system::bars;
     use bfc_system::baud;
     use bfc_system::bkrw;
+    use bfc_system::bkrw::BKRW;
 
     use bfc_system::bfc_system;
     use bfc_system::bfc_system::BfcSystemState;
@@ -1715,4 +1716,368 @@ module bfc_system::bfc_system_tests {
         tearDown(scenario_val);
     }
 
+    #[test]
+    fun test_deposit_stable_gas_coin_first_deposit() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+        
+        let extra_fields_before = bfc_system_state_inner::get_extra_fields(system_state_v2);
+        assert!(extra_fields_before.length() == 0, 1);
+        
+        // Verify initial balance is 0
+        let initial_balance = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        assert!(initial_balance == 0, 2);
+        
+        let busd_balance = balance::create_for_testing<BUSD>(1000);
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, busd_balance, _ctx);
+        
+        let extra_fields_after = bfc_system_state_inner::get_extra_fields(system_state_v2);
+        assert!(extra_fields_after.length() == 1, 3);
+        
+        // Verify deposited balance is correct
+        let final_balance = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        assert!(final_balance == 1000, 4);
+        
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_deposit_stable_gas_coin_multiple_types() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+        
+        let busd_balance = balance::create_for_testing<BUSD>(1000);
+        let bjpy_balance = balance::create_for_testing<BJPY>(2000);
+        
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, busd_balance, _ctx);
+        bfc_system_state_inner::deposit_stable_gas_coin<BJPY>(system_state_v2, bjpy_balance, _ctx);
+        
+        let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
+        assert!(extra_fields.length() == 2, 1);
+        
+        // Verify both coin types have correct balances
+        let busd_final_balance = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        let bjpy_final_balance = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BJPY>(system_state_v2);
+        assert!(busd_final_balance == 1000, 2);
+        assert!(bjpy_final_balance == 2000, 3);
+        
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_deposit_stable_gas_coin_same_type_accumulation() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+        
+        let busd_balance1 = balance::create_for_testing<BUSD>(1000);
+        let busd_balance2 = balance::create_for_testing<BUSD>(500);
+        
+        // First deposit
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, busd_balance1, _ctx);
+        let balance_after_first = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        assert!(balance_after_first == 1000, 1);
+        
+        // Second deposit - should accumulate
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, busd_balance2, _ctx);
+        let balance_after_second = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        assert!(balance_after_second == 1500, 2); // 1000 + 500
+        
+        let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
+        assert!(extra_fields.length() == 1, 3);
+        
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_deposit_stable_gas_coin_zero_balance() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+        
+        let zero_balance = balance::zero<BUSD>();
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, zero_balance, _ctx);
+        
+        let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
+        assert!(extra_fields.length() == 1, 1);
+        
+        // Verify zero deposit results in zero balance
+        let final_balance = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        assert!(final_balance == 0, 2);
+        
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_deposit_stable_gas_coin_busd_bjpy_only() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+        
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::create_for_testing<BUSD>(100), _ctx);
+        bfc_system_state_inner::deposit_stable_gas_coin<BJPY>(system_state_v2, balance::create_for_testing<BJPY>(200), _ctx);
+        
+        let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
+        assert!(extra_fields.length() == 2, 1);
+        
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_deposit_stable_gas_coin_large_amounts() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+        
+        let large_amount = 18446744073709551615u64;
+        let large_balance = balance::create_for_testing<BUSD>(large_amount);
+        
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, large_balance, _ctx);
+        
+        let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
+        assert!(extra_fields.length() == 1, 1);
+        
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_deposit_stable_gas_coin_mixed_operations() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+        
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::create_for_testing<BUSD>(1000), _ctx);
+        bfc_system_state_inner::deposit_stable_gas_coin<BJPY>(system_state_v2, balance::create_for_testing<BJPY>(2000), _ctx);
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::create_for_testing<BUSD>(500), _ctx);
+        bfc_system_state_inner::deposit_stable_gas_coin<BKRW>(system_state_v2, balance::create_for_testing<BKRW>(3000), _ctx);
+        bfc_system_state_inner::deposit_stable_gas_coin<BJPY>(system_state_v2, balance::create_for_testing<BJPY>(1000), _ctx);
+        
+        let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
+        assert!(extra_fields.length() == 3, 1);
+        
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_deposit_stable_gas_coin_balance_accumulation_busd() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+        
+        // First deposit: 1000 BUSD
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::create_for_testing<BUSD>(1000), _ctx);
+        let balance_after_first = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        assert!(balance_after_first == 1000, 1);
+        
+        // Second deposit: 500 BUSD, total should be 1500
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::create_for_testing<BUSD>(500), _ctx);
+        let balance_after_second = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        assert!(balance_after_second == 1500, 2); // 1000 + 500
+        
+        // Third deposit: 2000 BUSD, total should be 3500
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::create_for_testing<BUSD>(2000), _ctx);
+        let balance_after_third = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        assert!(balance_after_third == 3500, 3); // 1500 + 2000
+        
+        let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
+        assert!(extra_fields.length() == 1, 4);
+        
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_deposit_stable_gas_coin_balance_accumulation_multiple_coins() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+        
+        // BUSD deposits: 100 + 200 + 300 = 600 total
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::create_for_testing<BUSD>(100), _ctx);
+        let busd_balance_1 = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        assert!(busd_balance_1 == 100, 1);
+        
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::create_for_testing<BUSD>(200), _ctx);
+        let busd_balance_2 = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        assert!(busd_balance_2 == 300, 2); // 100 + 200
+        
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::create_for_testing<BUSD>(300), _ctx);
+        let busd_final_balance = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        assert!(busd_final_balance == 600, 3); // 300 + 300
+        
+        // BJPY deposits: 1000 + 500 + 750 = 2250 total
+        bfc_system_state_inner::deposit_stable_gas_coin<BJPY>(system_state_v2, balance::create_for_testing<BJPY>(1000), _ctx);
+        let bjpy_balance_1 = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BJPY>(system_state_v2);
+        assert!(bjpy_balance_1 == 1000, 4);
+        
+        bfc_system_state_inner::deposit_stable_gas_coin<BJPY>(system_state_v2, balance::create_for_testing<BJPY>(500), _ctx);
+        let bjpy_balance_2 = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BJPY>(system_state_v2);
+        assert!(bjpy_balance_2 == 1500, 5); // 1000 + 500
+        
+        bfc_system_state_inner::deposit_stable_gas_coin<BJPY>(system_state_v2, balance::create_for_testing<BJPY>(750), _ctx);
+        let bjpy_final_balance = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BJPY>(system_state_v2);
+        assert!(bjpy_final_balance == 2250, 6); // 1500 + 750
+        
+        // Verify final balances are correct and don't interfere with each other
+        let final_busd_balance = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        let final_bjpy_balance = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BJPY>(system_state_v2);
+        assert!(final_busd_balance == 600, 7);
+        assert!(final_bjpy_balance == 2250, 8);
+        
+        let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
+        assert!(extra_fields.length() == 2, 9);
+        
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_deposit_stable_gas_coin_sequential_deposits_same_coin() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+        
+        // Perform 5 sequential deposits of the same coin type
+        bfc_system_state_inner::deposit_stable_gas_coin<BJPY>(system_state_v2, balance::create_for_testing<BJPY>(1000), _ctx);
+        bfc_system_state_inner::deposit_stable_gas_coin<BJPY>(system_state_v2, balance::create_for_testing<BJPY>(2000), _ctx);
+        bfc_system_state_inner::deposit_stable_gas_coin<BJPY>(system_state_v2, balance::create_for_testing<BJPY>(3000), _ctx);
+        bfc_system_state_inner::deposit_stable_gas_coin<BJPY>(system_state_v2, balance::create_for_testing<BJPY>(4000), _ctx);
+        bfc_system_state_inner::deposit_stable_gas_coin<BJPY>(system_state_v2, balance::create_for_testing<BJPY>(5000), _ctx);
+        // Total should be: 1000 + 2000 + 3000 + 4000 + 5000 = 15000
+        
+        let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
+        assert!(extra_fields.length() == 1, 1);
+        
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_deposit_stable_gas_coin_with_zero_amounts() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+        
+        // Deposit non-zero amount first
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::create_for_testing<BUSD>(1000), _ctx);
+        let balance_after_first = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        assert!(balance_after_first == 1000, 1);
+        
+        // Then deposit zero amount - should not change the total
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::zero<BUSD>(), _ctx);
+        let balance_after_zero = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        assert!(balance_after_zero == 1000, 2); // Should remain 1000
+        
+        // Then deposit another non-zero amount
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::create_for_testing<BUSD>(500), _ctx);
+        let final_balance = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        assert!(final_balance == 1500, 3); // 1000 + 0 + 500 = 1500
+        
+        let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
+        assert!(extra_fields.length() == 1, 4);
+        
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_deposit_stable_gas_coin_interleaved_deposits() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+        
+        // Interleaved deposits of different coin types
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::create_for_testing<BUSD>(100), _ctx);
+        let busd_balance_1 = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        let bjpy_balance_1 = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BJPY>(system_state_v2);
+        assert!(busd_balance_1 == 100, 1);
+        assert!(bjpy_balance_1 == 0, 2);
+        
+        bfc_system_state_inner::deposit_stable_gas_coin<BJPY>(system_state_v2, balance::create_for_testing<BJPY>(200), _ctx);
+        let busd_balance_2 = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        let bjpy_balance_2 = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BJPY>(system_state_v2);
+        assert!(busd_balance_2 == 100, 3); // BUSD unchanged
+        assert!(bjpy_balance_2 == 200, 4);
+        
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::create_for_testing<BUSD>(300), _ctx);
+        let busd_balance_3 = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        let bjpy_balance_3 = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BJPY>(system_state_v2);
+        assert!(busd_balance_3 == 400, 5); // 100 + 300
+        assert!(bjpy_balance_3 == 200, 6); // BJPY unchanged
+        
+        bfc_system_state_inner::deposit_stable_gas_coin<BJPY>(system_state_v2, balance::create_for_testing<BJPY>(400), _ctx);
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::create_for_testing<BUSD>(500), _ctx);
+        bfc_system_state_inner::deposit_stable_gas_coin<BJPY>(system_state_v2, balance::create_for_testing<BJPY>(600), _ctx);
+        
+        // Final verification: BUSD total: 100 + 300 + 500 = 900, BJPY total: 200 + 400 + 600 = 1200
+        let final_busd_balance = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        let final_bjpy_balance = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BJPY>(system_state_v2);
+        assert!(final_busd_balance == 900, 7);
+        assert!(final_bjpy_balance == 1200, 8);
+        
+        let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
+        assert!(extra_fields.length() == 2, 9);
+        
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_deposit_stable_gas_coin_maximum_value_accumulation() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+        
+        // Test with large values that might approach u64 limits
+        let large_amount1 = 9223372036854775807u64; // Close to u64::MAX / 2
+        let large_amount2 = 1000000000000000000u64; // 1 * 10^18
+        
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::create_for_testing<BUSD>(large_amount1), _ctx);
+        bfc_system_state_inner::deposit_stable_gas_coin<BUSD>(system_state_v2, balance::create_for_testing<BUSD>(large_amount2), _ctx);
+        
+        let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
+        assert!(extra_fields.length() == 1, 1);
+
+        let final_balance = bfc_system_state_inner::get_deposited_stable_gas_coin_balance<BUSD>(system_state_v2);
+        assert!(final_balance == large_amount1 + large_amount2, 3); // Should equal the sum of both deposits
+
+        
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
 }

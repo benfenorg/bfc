@@ -9,7 +9,46 @@ use sui_sdk::json::SuiJsonValue;
 use sui_types::{base_types::SuiAddress, parse_sui_struct_tag, quorum_driver_types::ExecuteTransactionRequestType, BFC_SYSTEM_PACKAGE_ID};
 use test_cluster::TestCluster;
 
-
+#[allow(dead_code)]
+pub async fn mint_stable_coin_to_address(amount: u64, test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress,coint_type: &str,to_address: SuiAddress) -> Result<(), Error> {
+    let modify_cap_vec = get_owned_objects("0xc8::bfc_system_state_inner::BfcSystemModifyCap", http_client, address).await.unwrap();
+    let modify_cap = modify_cap_vec.first().unwrap().object().unwrap();
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let args = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::new(json!(amount.to_string()))?,
+        SuiJsonValue::from_str(&modify_cap.object_id.to_string())?,
+        SuiJsonValue::from_str(&to_address.to_string())?,
+    ];
+    let transaction_bytes: TransactionBlockBytes = http_client
+        .move_call(
+            address,
+            BFC_SYSTEM_PACKAGE_ID,
+            "bfc_system".to_string(),
+            "mint_stable_entry_to_address".to_string(),
+            vec![SuiTypeTag::new(coint_type.to_string())],
+            args,
+            None,
+            10_000_00000.into(),
+            None,
+        )
+        .await?;
+    let tx = test_cluster
+        .wallet
+        .sign_transaction(&transaction_bytes.to_data()?);
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+    let tx_response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+    let effects = tx_response.effects.unwrap().clone();
+    effect_success(effects);
+    Ok(())
+}
 
 #[allow(dead_code)]
 pub async fn mint_stable_coin(amount: u64, test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress,coint_type: &str) -> Result<(), Error> {

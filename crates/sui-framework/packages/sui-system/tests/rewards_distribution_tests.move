@@ -6,7 +6,7 @@ module sui_system::rewards_distribution_tests {
     use sui::balance;
     use std::type_name;
     use sui::test_scenario::{Self, Scenario};
-    use sui_system::sui_system::{Self, SuiSystemState, get_stable_rate};
+    use sui_system::sui_system::{Self, SuiSystemState, get_stable_rate, EUnsupportedFeature};
     use sui_system::validator_cap::UnverifiedValidatorOperationCap;
     use sui_system::governance_test_utils::{
         advance_epoch,
@@ -41,6 +41,7 @@ module sui_system::rewards_distribution_tests {
     const MIST_PER_SUI: u64 = 1_000_000_000;
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_validator_rewards() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -78,6 +79,7 @@ module sui_system::rewards_distribution_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_validator_rewards_with_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -175,6 +177,7 @@ module sui_system::rewards_distribution_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_stake_stable_rewards() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -237,6 +240,7 @@ module sui_system::rewards_distribution_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_stake_tiny_rewards_stable() {
         set_up_sui_system_state_with_big_amounts();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -296,6 +300,7 @@ module sui_system::rewards_distribution_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_validator_commission_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -382,6 +387,7 @@ module sui_system::rewards_distribution_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_rewards_slashing_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -478,6 +484,7 @@ module sui_system::rewards_distribution_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_entire_rewards_slashing_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -589,6 +596,7 @@ module sui_system::rewards_distribution_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_rewards_slashing_with_storage_fund_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -784,6 +792,7 @@ module sui_system::rewards_distribution_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_mul_rewards_withdraws_at_same_epoch_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
