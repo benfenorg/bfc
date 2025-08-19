@@ -4,9 +4,10 @@
 #[test_only]
 #[allow(unused_variable)]
 module sui_system::delegation_tests;
-
+use sui::coin;
 use std::unit_test::assert_eq;
 use sui::table::Table;
+use sui_system::sui_system::{Self, SuiSystemState};
 use sui_system::staking_pool::{Self, StakedBfc, PoolTokenExchangeRate};
 use sui_system::test_runner;
 use sui_system::validator_builder;
@@ -14,6 +15,9 @@ use sui_system::validator_set;
 use sui::test_scenario::{Self, Scenario};
 use sui_system::stable_pool;
 use sui_system::stable_pool::{StakedStable, PoolStableTokenExchangeRate};
+use sui::test_utils;
+use bfc_system::busd::BUSD;
+use sui::table;
 
     use sui_system::governance_test_utils::{
         Self,
@@ -192,12 +196,6 @@ fun add_remove_stake_flow() {
     // Stake 60 SUI to the validator.
     runner.set_sender(STAKER_ADDR_1).stake_with(VALIDATOR_ADDR_1, 60);
 
-        // Verify that these cannot be merged
-        scenario.next_tx(STAKER_ADDR_1);
-        {
-            let staked_sui_ids = scenario.ids_for_sender<StakedBfc>();
-            let mut part1 = scenario.take_from_sender_by_id<StakedBfc>(staked_sui_ids[0]);
-            let part2 = scenario.take_from_sender_by_id<StakedBfc>(staked_sui_ids[1]);
     // Check that the stake is NOT yet added to the validator.
     runner.system_tx!(|system, _| {
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 100 * MIST_PER_SUI);
@@ -543,10 +541,10 @@ fun remove_stake_post_active_flow(should_distribute_rewards: bool) {
             assert!(!system_state_mut_ref.validators().is_active_validator_by_sui_address(VALIDATOR_ADDR_1));
 
             let staked_sui = scenario.take_from_sender<StakedBfc>();
-            assert_eq(staked_sui.amount(), 100 * MIST_PER_SUI);
+            assert_eq!(staked_sui.amount(), 100 * MIST_PER_SUI);
 
             // Unstake from VALIDATOR_ADDR_1
-            assert_eq(total_sui_balance(STAKER_ADDR_1, scenario), 0);
+            assert_eq!(total_sui_balance(STAKER_ADDR_1, scenario), 0);
             let ctx = scenario.ctx();
             system_state_mut_ref.request_withdraw_stake(staked_sui, ctx);
     runner.set_sender(STAKER_ADDR_1);
@@ -605,10 +603,10 @@ fun earns_rewards_at_last_epoch() {
             let system_state_mut_ref = &mut system_state;
 
             let staked_sui = scenario.take_from_sender<StakedBfc>();
-            assert_eq(staked_sui.amount(), 100 * MIST_PER_SUI);
+            assert_eq!(staked_sui.amount(), 100 * MIST_PER_SUI);
 
             // Unstake from VALIDATOR_ADDR_1
-            assert_eq(total_sui_balance(STAKER_ADDR_1, scenario), 0);
+            assert_eq!(total_sui_balance(STAKER_ADDR_1, scenario), 0);
             let ctx = scenario.ctx();
             system_state_mut_ref.request_withdraw_stake(staked_sui, ctx);
     runner.set_sender(STAKER_ADDR_1);
@@ -662,20 +660,20 @@ fun earns_rewards_at_last_epoch() {
             let system_state_mut_ref = &mut system_state;
 
             let staked_sui = test_scenario::take_from_sender<StakedStable<BUSD>>(scenario);
-            assert_eq(stable_pool::staked_sui_amount(&staked_sui), 100 * MIST_PER_SUI);
+            assert_eq!(stable_pool::staked_sui_amount(&staked_sui), 100 * MIST_PER_SUI);
 
             // Unstake from VALIDATOR_ADDR_1
-            assert_eq(total_busd_balance(STAKER_ADDR_1, scenario), 0);
+            assert_eq!(total_busd_balance(STAKER_ADDR_1, scenario), 0);
             let ctx = test_scenario::ctx(scenario);
             sui_system::request_withdraw_stable_stake(system_state_mut_ref, staked_sui, ctx);
 
             // Make sure they have all of their stake.
-            assert_eq(total_busd_balance(STAKER_ADDR_1, scenario), 100 * MIST_PER_SUI);
+            assert_eq!(total_busd_balance(STAKER_ADDR_1, scenario), 100 * MIST_PER_SUI);
             test_scenario::return_shared(system_state);
         };
 
         // Validator unstakes now.
-        assert_eq(total_busd_balance(VALIDATOR_ADDR_1, scenario), 0);
+        assert_eq!(total_busd_balance(VALIDATOR_ADDR_1, scenario), 0);
         unstake(VALIDATOR_ADDR_1, 0, scenario);
         unstake(VALIDATOR_ADDR_1, 0, scenario);
 
@@ -805,7 +803,7 @@ fun add_preactive_remove_preactive() {
 
         // Unstake from the preactive validator. There should be no rewards earned.
         governance_test_utils::unstake_stable(STAKER_ADDR_1, 0, scenario);
-        assert_eq(total_busd_balance(STAKER_ADDR_1, scenario), 100 * MIST_PER_SUI);
+        assert_eq!(total_busd_balance(STAKER_ADDR_1, scenario), 100 * MIST_PER_SUI);
 
         test_scenario::end(scenario_val);
     }
@@ -974,13 +972,13 @@ fun add_preactive_remove_active() {
         advance_epoch(scenario);
         advance_epoch_with_reward_amounts(0, 85, scenario);
         unstake_stable(STAKER_ADDR_1, 0, scenario);
-        assert_eq(total_busd_balance(STAKER_ADDR_1, scenario), 100 * MIST_PER_SUI);
+        assert_eq!(total_busd_balance(STAKER_ADDR_1, scenario), 100 * MIST_PER_SUI);
         unstake_stable(STAKER_ADDR_3, 0, scenario);
-        assert_eq(total_busd_balance(STAKER_ADDR_3, scenario), 100 * MIST_PER_SUI);
+        assert_eq!(total_busd_balance(STAKER_ADDR_3, scenario), 100 * MIST_PER_SUI);
 
         advance_epoch_with_reward_amounts(0, 85, scenario);
         unstake_stable(STAKER_ADDR_2, 0, scenario);
-        assert_eq(total_busd_balance(STAKER_ADDR_2, scenario), 50 * MIST_PER_SUI);
+        assert_eq!(total_busd_balance(STAKER_ADDR_2, scenario), 50 * MIST_PER_SUI);
 
         test_scenario::end(scenario_val);
     }
@@ -1050,7 +1048,7 @@ fun add_preactive_remove_post_active() {
         advance_epoch(scenario);
 
         unstake_stable(STAKER_ADDR_1, 0, scenario);
-        assert_eq(total_busd_balance(STAKER_ADDR_1, scenario), 100 * MIST_PER_SUI);
+        assert_eq!(total_busd_balance(STAKER_ADDR_1, scenario), 100 * MIST_PER_SUI);
 
         test_scenario::end(scenario_val);
     }
@@ -1158,7 +1156,7 @@ fun add_preactive_candidate_drop_out() {
 
         // Unstake now and the staker should get no rewards.
         unstake_stable(STAKER_ADDR_1, 0, scenario);
-        assert_eq(total_busd_balance(STAKER_ADDR_1, scenario), 100 * MIST_PER_SUI);
+        assert_eq!(total_busd_balance(STAKER_ADDR_1, scenario), 100 * MIST_PER_SUI);
 
         test_scenario::end(scenario_val);
     }
@@ -1208,7 +1206,7 @@ fun add_preactive_candidate_drop_out() {
         advance_epoch_with_reward_amounts(0, 20, scenario);
         let mut system_state = scenario.take_shared<SuiSystemState>();
         let rates = system_state.pool_exchange_rates(&pool_id);
-        assert_eq(rates.length(), 3);
+        assert_eq!(rates.length(), 3);
         assert_exchange_rate_eq(rates, 0, 0, 0);     // no tokens at epoch 0
         assert_exchange_rate_eq(rates, 1, 200, 200); // 200 SUI of self + delegate stake at epoch 1
         assert_exchange_rate_eq(rates, 2, 210, 200); // 10 SUI of rewards at epoch 2
@@ -1305,7 +1303,7 @@ use fun assert_exchange_rate_eq as Table.assert_exchange_rate_eq;
         advance_epoch_with_reward_amounts(0, 20, scenario);
         let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let rates = sui_system::pool_exchange_stable_rates<BUSD>(&mut system_state, &pool_id);
-        assert_eq(table::length(rates), 3);
+        assert_eq!(table::length(rates), 3);
         assert_exchange_stable_rate_eq(rates, 0, 0, 0);     // no tokens at epoch 0
         assert_exchange_stable_rate_eq(rates, 1, 100, 100);
         assert_exchange_stable_rate_eq(rates, 2, 110, 100);
@@ -1317,15 +1315,17 @@ use fun assert_exchange_rate_eq as Table.assert_exchange_rate_eq;
         rates: &Table<u64, PoolTokenExchangeRate>, epoch: u64, sui_amount: u64, pool_token_amount: u64
     ) {
         let rate = &rates[epoch];
-        assert_eq(rate.sui_amount(), sui_amount * MIST_PER_SUI);
-        assert_eq(rate.pool_token_amount(), pool_token_amount * MIST_PER_SUI);
+        assert_eq!(rate.sui_amount(), sui_amount * MIST_PER_SUI);
+        assert_eq!(rate.pool_token_amount(), pool_token_amount * MIST_PER_SUI);
     }
+
+
 
     fun assert_exchange_stable_rate_eq(
         rates: &Table<u64, PoolStableTokenExchangeRate>, epoch: u64, sui_amount: u64, pool_token_amount: u64
     ) {
         let rate = table::borrow(rates, epoch);
-        assert_eq(stable_pool::pool_token_amount(rate), pool_token_amount * MIST_PER_SUI);
+        assert_eq!(stable_pool::pool_token_amount(rate), pool_token_amount * MIST_PER_SUI);
     }
 
     fun set_up_sui_system_state() {
@@ -1353,13 +1353,3 @@ use fun assert_exchange_rate_eq as Table.assert_exchange_rate_eq;
         create_sui_system_state_for_testing(validators, 300, 100, ctx);
         scenario_val.end();
     }
-fun assert_exchange_rate_eq(
-    rates: &Table<u64, PoolTokenExchangeRate>,
-    epoch: u64,
-    sui_amount: u64,
-    pool_token_amount: u64,
-) {
-    let rate = &rates[epoch];
-    assert_eq!(rate.sui_amount(), sui_amount * MIST_PER_SUI);
-    assert_eq!(rate.pool_token_amount(), pool_token_amount * MIST_PER_SUI);
-}
