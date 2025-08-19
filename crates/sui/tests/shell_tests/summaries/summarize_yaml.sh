@@ -1,7 +1,7 @@
 # Copyright (c) Mysten Labs, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-sui move summary --path data/move_package -o yaml
+bfc move summary --path data/move_package -o yaml
 ls -1 data/move_package/package_summaries
 ls -1 data/move_package/package_summaries/move_package
 ls -1 data/move_package/package_summaries/sui

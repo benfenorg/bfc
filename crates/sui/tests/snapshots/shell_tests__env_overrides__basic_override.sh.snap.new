@@ -1,0 +1,70 @@
+---
+source: crates/sui/tests/shell_tests.rs
+assertion_line: 77
+description: tests/shell_tests/env_overrides/basic_override.sh
+---
+----- script -----
+# Copyright (c) Mysten Labs, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+bfc client --client.config config.yaml switch --env base
+
+bfc client --client.config config.yaml envs
+bfc client --client.config config.yaml --client.env one envs
+bfc client --client.config config.yaml --client.env two envs
+
+bfc client --client.config config.yaml active-env
+bfc client --client.config config.yaml --client.env one active-env
+bfc client --client.config config.yaml --client.env two active-env
+
+# Unknown name -- Should give you None and nothing active
+bfc client --client.config config.yaml --client.env not_an_env envs
+bfc client --client.config config.yaml --client.env not_an_env active-env
+
+----- results -----
+success: true
+exit_code: 0
+----- stdout -----
+Active environment switched to [base]
+╭───────┬──────────────────────────────────┬────────╮
+│ alias │ url                              │ active │
+├───────┼──────────────────────────────────┼────────┤
+│ base  │ https://custom.rpc.node.base:443 │ *      │
+│ one   │ https://custom.rpc.node.one:443  │        │
+│ two   │ https://custom.rpc.node.two:443  │        │
+╰───────┴──────────────────────────────────┴────────╯base => https://custom.rpc.node.base:443 (active)
+one => https://custom.rpc.node.one:443
+two => https://custom.rpc.node.two:443
+╭───────┬──────────────────────────────────┬────────╮
+│ alias │ url                              │ active │
+├───────┼──────────────────────────────────┼────────┤
+│ base  │ https://custom.rpc.node.base:443 │        │
+│ one   │ https://custom.rpc.node.one:443  │ *      │
+│ two   │ https://custom.rpc.node.two:443  │        │
+╰───────┴──────────────────────────────────┴────────╯base => https://custom.rpc.node.base:443
+one => https://custom.rpc.node.one:443 (active)
+two => https://custom.rpc.node.two:443
+╭───────┬──────────────────────────────────┬────────╮
+│ alias │ url                              │ active │
+├───────┼──────────────────────────────────┼────────┤
+│ base  │ https://custom.rpc.node.base:443 │        │
+│ one   │ https://custom.rpc.node.one:443  │        │
+│ two   │ https://custom.rpc.node.two:443  │ *      │
+╰───────┴──────────────────────────────────┴────────╯base => https://custom.rpc.node.base:443
+one => https://custom.rpc.node.one:443
+two => https://custom.rpc.node.two:443 (active)
+base
+one
+two
+╭───────┬──────────────────────────────────┬────────╮
+│ alias │ url                              │ active │
+├───────┼──────────────────────────────────┼────────┤
+│ base  │ https://custom.rpc.node.base:443 │        │
+│ one   │ https://custom.rpc.node.one:443  │        │
+│ two   │ https://custom.rpc.node.two:443  │        │
+╰───────┴──────────────────────────────────┴────────╯base => https://custom.rpc.node.base:443
+one => https://custom.rpc.node.one:443
+two => https://custom.rpc.node.two:443
+None
+
+----- stderr -----

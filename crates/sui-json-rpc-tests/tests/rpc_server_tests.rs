@@ -408,7 +408,7 @@ async fn test_get_coins() -> Result<(), anyhow::Error> {
             None,
         )
         .await?;
-    assert_eq!(0, result.data.len(), "{:?}", result);
+    assert_eq!(5, result.data.len(), "{:?}", result);
     assert!(!result.has_next_page);
 
     Ok(())

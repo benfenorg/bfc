@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Default output format is JSON
-sui move summary --path data/move_package
+bfc move summary --path data/move_package
 ls -1 data/move_package/package_summaries
 ls -1 data/move_package/package_summaries/move_package
 ls -1 data/move_package/package_summaries/sui

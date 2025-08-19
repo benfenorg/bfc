@@ -3,5 +3,5 @@
 
 # tests that sui move new followed by sui move build succeeds
 
-sui move new example
-cd example && sui move build
+bfc move new example --skip-fetch-latest-git-deps
+cd example && bfc move build --skip-fetch-latest-git-deps
