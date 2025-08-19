@@ -11,7 +11,7 @@ use sui::coin::{Self, Coin};
 use sui::bfc::BFC;
 use sui::test_scenario::{Self, Scenario};
 use sui_system::stake_subsidy;
-use sui_system::staking_pool::StakedSui;
+use sui_system::staking_pool::StakedBfc;
 use sui_system::sui_system::{Self, SuiSystemState};
 use sui_system::sui_system_state_inner;
 use sui_system::validator::Validator;
@@ -488,7 +488,7 @@ public fun stake_with_and_take(
 public fun unstake(runner: &mut TestRunner, staked_sui_idx: u64) {
     let sender = runner.sender;
     runner.set_sender(sender);
-    let stake_sui_ids = runner.scenario.ids_for_sender<StakedSui>();
+    let stake_sui_ids = runner.scenario.ids_for_sender<StakedBfc>();
     let staked_sui = runner.scenario.take_from_sender_by_id(stake_sui_ids[staked_sui_idx]);
     runner.system_tx!(|system, ctx| {
         system.request_withdraw_stake(staked_sui, ctx);
@@ -580,8 +580,8 @@ public fun staking_rewards_balance(runner: &mut TestRunner): u64 {
     let current_epoch = scenario.ctx().epoch();
 
     scenario.next_tx(sender);
-    let total_balance = scenario.ids_for_sender<StakedSui>().fold!(0, |mut sum, staked_sui_id| {
-        let staked_sui = scenario.take_from_sender_by_id<StakedSui>(staked_sui_id);
+    let total_balance = scenario.ids_for_sender<StakedBfc>().fold!(0, |mut sum, staked_sui_id| {
+        let staked_sui = scenario.take_from_sender_by_id<StakedBfc>(staked_sui_id);
         let rewards = system.calculate_rewards(&staked_sui, current_epoch);
 
         sum = sum + rewards;

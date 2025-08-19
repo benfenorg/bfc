@@ -27,6 +27,9 @@ module sui_system::rewards_distribution_tests {
     use sui::vec_map;
     use bfc_system::busd::BUSD;
     use sui_system::governance_test_utils;
+    use sui_system::test_runner;
+    use sui_system::validator_builder;
+    use std::unit_test::assert_eq;
 
     const VALIDATOR_ADDR_1: address = @0x1;
     const VALIDATOR_ADDR_2: address = @0x2;
@@ -54,7 +57,6 @@ fun validator_rewards() {
 
     let opts = runner.advance_epoch_opts().computation_charge(100);
     runner.advance_epoch(option::some(opts)).destroy_for_testing();
-
         //get stable rate
         let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let stable_rate = get_stable_rate(&system_state);
@@ -62,8 +64,6 @@ fun validator_rewards() {
         let rate = vec_map::get(&stable_rate, &pool_key);
         test_scenario::return_shared(system_state);
 
-        // need to advance epoch so validator's staking starts counting
-        advance_epoch(scenario);
     // check rewards distribution, 1:2:3:4
     runner.system_tx!(|system, _| {
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 125 * MIST_PER_SUI);
@@ -74,21 +74,10 @@ fun validator_rewards() {
 
     runner.set_sender(VALIDATOR_ADDR_2).stake_with(VALIDATOR_ADDR_2, 720);
 
-        stake_with_stable(VALIDATOR_ADDR_2, VALIDATOR_ADDR_2, 720*MIST_PER_SUI/(*rate), scenario);
+    stake_with_stable(VALIDATOR_ADDR_2, VALIDATOR_ADDR_2, 720*MIST_PER_SUI/(*rate), scenario);
     let opts = runner.advance_epoch_opts().computation_charge(100);
     runner.advance_epoch(option::some(opts)).destroy_for_testing();
 
-        advance_epoch(scenario);
-        advance_epoch_with_reward_amounts(0, 100, scenario);
-        // Even though validator 2 has a lot more stake now, it should not get more rewards because
-        // the voting power is capped at 10%.
-        assert_validator_total_stake_amounts(
-            validator_addrs(),
-            vector[150 * MIST_PER_SUI, 969 * MIST_PER_SUI, 350 * MIST_PER_SUI, 450 * MIST_PER_SUI],
-            scenario
-        );
-        scenario_val.end();
-    }
     // check rewards distribution, given that validator 2 has 920 SUI of stake now
     runner.system_tx!(|system, _| {
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 150 * MIST_PER_SUI);
@@ -130,11 +119,7 @@ fun validator_rewards() {
         test_scenario::end(scenario_val);
     }
 
-    #[test]
-    fun test_stake_subsidy() {
-        set_up_sui_system_state_with_big_amounts();
-        let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
-        let scenario = &mut scenario_val;
+
 #[test]
 fun stake_subsidy() {
     let mut runner = test_runner::new()
@@ -174,11 +159,7 @@ fun stake_subsidy() {
         test_scenario::end(scenario_val);
     }
 
-    #[test]
-    fun test_stake_rewards() {
-        set_up_sui_system_state();
-        let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
-        let scenario = &mut scenario_val;
+
 #[test]
 fun stake_rewards() {
     let mut runner = test_runner::new()
@@ -309,11 +290,7 @@ fun stake_rewards() {
         test_scenario::end(scenario_val);
     }
 
-    #[test]
-    fun test_stake_tiny_rewards() {
-        set_up_sui_system_state_with_big_amounts();
-        let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
-        let scenario = &mut scenario_val;
+
 #[test]
 fun stake_tiny_rewards() {
     let mut runner = test_runner::new()
@@ -371,11 +348,7 @@ fun stake_tiny_rewards() {
         test_scenario::end(scenario_val);
     }
 
-    #[test]
-    fun test_validator_commission() {
-        set_up_sui_system_state();
-        let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
-        let scenario = &mut scenario_val;
+
 #[test]
 fun validator_commission() {
     let mut runner = test_runner::new()
@@ -512,13 +485,7 @@ fun validator_commission() {
         test_scenario::end(scenario_val);
     }
 
-    #[test]
-    fun test_rewards_slashing() {
-        set_up_sui_system_state();
-        let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
-        let scenario = &mut scenario_val;
 
-        advance_epoch(scenario);
 #[test]
 fun rewards_slashing() {
     let mut runner = test_runner::new()
@@ -619,11 +586,7 @@ fun rewards_slashing() {
         test_scenario::end(scenario_val);
     }
 
-    #[test]
-    fun test_entire_rewards_slashing() {
-        set_up_sui_system_state();
-        let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
-        let scenario = &mut scenario_val;
+
 #[test]
 fun entire_rewards_slashing() {
     let mut runner = test_runner::new()
@@ -745,11 +708,7 @@ fun entire_rewards_slashing() {
         ((reward as u128) * (a as u128) / ((a as u128) + (b as u128)) as u64)
     }
 
-    #[test]
-    fun test_rewards_slashing_with_storage_fund() {
-        set_up_sui_system_state();
-        let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
-        let scenario = &mut scenario_val;
+
 #[test]
 fun rewards_slashing_with_storage_fund() {
     let mut runner = test_runner::new()
@@ -863,13 +822,7 @@ fun rewards_slashing_with_storage_fund() {
         test_scenario::end(scenario_val);
     }
 
-    #[test]
-    fun test_everyone_slashed() {
-        // This test is to make sure that if everyone is slashed, our protocol works as expected without aborting
-        // and all rewards go to the storage fund.
-        set_up_sui_system_state();
-        let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
-        let scenario = &mut scenario_val;
+
 #[test]
 // This test is to make sure that if everyone is slashed, our protocol works as expected without aborting
 // and all rewards go to the storage fund.
@@ -959,11 +912,7 @@ fun everyone_slashed() {
         test_scenario::end(scenario_val);
     }
 
-    #[test]
-    fun test_mul_rewards_withdraws_at_same_epoch() {
-        set_up_sui_system_state();
-        let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
-        let scenario = &mut scenario_val;
+
 #[test]
 fun mul_rewards_withdraws_at_same_epoch() {
     let mut runner = test_runner::new()

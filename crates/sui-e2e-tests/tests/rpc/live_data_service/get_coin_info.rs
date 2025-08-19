@@ -16,7 +16,7 @@ async fn get_coin_info() {
         .await
         .unwrap();
 
-    let coin_type_sdk: TypeTag = "0x2::sui::SUI".parse().unwrap();
+    let coin_type_sdk: TypeTag = "0x2::bfc::BFC".parse().unwrap();
     let request = GetCoinInfoRequest {
         coin_type: Some(coin_type_sdk.to_string()),
     };
@@ -33,7 +33,7 @@ async fn get_coin_info() {
         .into_inner();
 
     assert_eq!(coin_type, Some(coin_type_sdk.to_string()));
-    assert_eq!(metadata.unwrap().symbol, Some("SUI".to_owned()));
+    assert_eq!(metadata.unwrap().symbol, Some("BFC".to_owned()));
     assert_eq!(
         treasury.unwrap().total_supply,
         Some(sui_types::gas_coin::TOTAL_SUPPLY_MIST)

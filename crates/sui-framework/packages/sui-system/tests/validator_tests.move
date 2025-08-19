@@ -18,6 +18,9 @@ module sui_system::validator_tests {
     use sui::bag;
     use sui::test_utils::assert_eq;
     use sui_system::stable_pool::StakedStable;
+    use sui_system::test_runner;
+    use sui_system::validator_builder;
+    use std::unit_test::assert_eq;
     //use std::debug::print;
 
     const VALID_NET_PUBKEY: vector<u8> = vector[171, 2, 39, 3, 139, 105, 166, 171, 153, 151, 102, 197, 151, 186, 140, 116, 114, 90, 213, 225, 20, 167, 60, 69, 203, 12, 180, 198, 9, 217, 117, 38];

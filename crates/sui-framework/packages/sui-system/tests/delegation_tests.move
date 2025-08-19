@@ -7,10 +7,13 @@ module sui_system::delegation_tests;
 
 use std::unit_test::assert_eq;
 use sui::table::Table;
-use sui_system::staking_pool::{Self, StakedSui, PoolTokenExchangeRate};
+use sui_system::staking_pool::{Self, StakedBfc, PoolTokenExchangeRate};
 use sui_system::test_runner;
 use sui_system::validator_builder;
 use sui_system::validator_set;
+use sui::test_scenario::{Self, Scenario};
+use sui_system::stable_pool;
+use sui_system::stable_pool::{StakedStable, PoolStableTokenExchangeRate};
 
     use sui_system::governance_test_utils::{
         Self,
@@ -50,32 +53,19 @@ fun split_join_staked_sui() {
 
     runner.set_sender(STAKER_ADDR_1).stake_with(VALIDATOR_ADDR_1, 60);
 
-        scenario.next_tx(STAKER_ADDR_1);
-        {
-            let mut staked_sui = scenario.take_from_sender<StakedBfc>();
-            let ctx = scenario.ctx();
-            staked_sui.split_to_sender(20 * MIST_PER_SUI, ctx);
-            scenario.return_to_sender(staked_sui);
-        };
-    runner.owned_tx!<StakedSui>(|mut stake| {
+
+    runner.owned_tx!<StakedBfc>(|mut stake| {
         stake.split_to_sender(20 * MIST_PER_SUI, runner.ctx());
         runner.keep(stake);
     });
 
-        // Verify the correctness of the split and send the join txn
-        scenario.next_tx(STAKER_ADDR_1);
-        {
-            let staked_sui_ids = scenario.ids_for_sender<StakedBfc>();
-            assert!(staked_sui_ids.length() == 2, 101); // staked sui split to 2 coins
 
-            let mut part1 = scenario.take_from_sender_by_id<StakedBfc>(staked_sui_ids[0]);
-            let part2 = scenario.take_from_sender_by_id<StakedBfc>(staked_sui_ids[1]);
     runner.scenario_fn!(|scenario| {
-        let ids = scenario.ids_for_sender<StakedSui>();
+        let ids = scenario.ids_for_sender<StakedBfc>();
         assert_eq!(ids.length(), 2);
 
-        let mut stake_1 = scenario.take_from_sender_by_id<StakedSui>(ids[0]);
-        let stake_2 = scenario.take_from_sender_by_id<StakedSui>(ids[1]);
+        let mut stake_1 = scenario.take_from_sender_by_id<StakedBfc>(ids[0]);
+        let stake_2 = scenario.take_from_sender_by_id<StakedBfc>(ids[1]);
 
         assert_eq!(stake_1.amount(), 20 * MIST_PER_SUI);
         assert_eq!(stake_2.amount(), 40 * MIST_PER_SUI);
@@ -84,7 +74,7 @@ fun split_join_staked_sui() {
         runner.keep(stake_1);
     });
 
-    runner.owned_tx!<StakedSui>(|stake| {
+    runner.owned_tx!<StakedBfc>(|stake| {
         assert_eq!(stake.amount(), 60 * MIST_PER_SUI);
         runner.keep(stake);
     });
@@ -104,9 +94,9 @@ fun join_different_epochs() {
 
     // aborts trying to join stakes with different epoch activations
     runner.scenario_fn!(|scenario| {
-        let staked_sui_ids = scenario.ids_for_sender<StakedSui>();
-        let mut part1 = scenario.take_from_sender_by_id<StakedSui>(staked_sui_ids[0]);
-        let part2 = scenario.take_from_sender_by_id<StakedSui>(staked_sui_ids[1]);
+        let staked_sui_ids = scenario.ids_for_sender<StakedBfc>();
+        let mut part1 = scenario.take_from_sender_by_id<StakedBfc>(staked_sui_ids[0]);
+        let part2 = scenario.take_from_sender_by_id<StakedBfc>(staked_sui_ids[1]);
 
         part1.join(part2);
     });
@@ -122,7 +112,7 @@ fun split_below_threshold() {
     // Stake 2 SUI to the validator.
     runner.set_sender(STAKER_ADDR_1).stake_with(VALIDATOR_ADDR_1, 2);
 
-    runner.owned_tx!<StakedSui>(|mut stake| {
+    runner.owned_tx!<StakedBfc>(|mut stake| {
         stake.split_to_sender(1 * MIST_PER_SUI + 1, runner.ctx());
     });
 
@@ -137,7 +127,7 @@ fun split_nonentry_below_threshold() {
     // Stake 2 SUI to the validator.
     runner.set_sender(STAKER_ADDR_1).stake_with(VALIDATOR_ADDR_1, 2);
 
-    runner.owned_tx!<StakedSui>(|mut stake| {
+    runner.owned_tx!<StakedBfc>(|mut stake| {
         stake.split_to_sender(1 * MIST_PER_SUI + 1, runner.ctx());
     });
 
@@ -182,16 +172,7 @@ fun split_nonentry_below_threshold() {
         test_scenario::end(scenario_val);
     }
 
-    #[test]
-    #[expected_failure(abort_code = staking_pool::EIncompatibleStakedSui)]
-    fun test_join_different_epochs() {
-        set_up_sui_system_state();
-        let mut scenario_val = test_scenario::begin(STAKER_ADDR_1);
-        let scenario = &mut scenario_val;
-        // Create two instances of staked sui w/ different epoch activations
-        stake_with(STAKER_ADDR_1, VALIDATOR_ADDR_1, 60, scenario);
-        advance_epoch(scenario);
-        stake_with(STAKER_ADDR_1, VALIDATOR_ADDR_1, 60, scenario);
+
 #[test]
 // Scenario:
 // 1. Stake 60 SUI to VALIDATOR_ADDR_1
@@ -228,7 +209,7 @@ fun add_remove_stake_flow() {
 
     // Withdraw the stake.
     runner.set_sender(STAKER_ADDR_1);
-    runner.owned_tx!<StakedSui>(|stake| {
+    runner.owned_tx!<StakedBfc>(|stake| {
         runner.system_tx!(|system, ctx| {
             assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 160 * MIST_PER_SUI);
             assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_2), 100 * MIST_PER_SUI);
@@ -569,7 +550,7 @@ fun remove_stake_post_active_flow(should_distribute_rewards: bool) {
             let ctx = scenario.ctx();
             system_state_mut_ref.request_withdraw_stake(staked_sui, ctx);
     runner.set_sender(STAKER_ADDR_1);
-    runner.owned_tx!<StakedSui>(|stake| {
+    runner.owned_tx!<StakedBfc>(|stake| {
         assert_eq!(stake.amount(), 100 * MIST_PER_SUI);
         runner.system_tx!(|system, ctx| {
             assert!(!system.validators().is_active_validator_by_sui_address(VALIDATOR_ADDR_1));
@@ -631,7 +612,7 @@ fun earns_rewards_at_last_epoch() {
             let ctx = scenario.ctx();
             system_state_mut_ref.request_withdraw_stake(staked_sui, ctx);
     runner.set_sender(STAKER_ADDR_1);
-    runner.owned_tx!<StakedSui>(|stake| {
+    runner.owned_tx!<StakedBfc>(|stake| {
         assert_eq!(stake.amount(), 100 * MIST_PER_SUI);
         runner.system_tx!(|system, ctx| {
             // Make sure stake withdrawal happens
@@ -1281,7 +1262,7 @@ fun staking_pool_exchange_rate_getter() {
 
     let pool_id;
 
-    runner.owned_tx!<StakedSui>(|stake| {
+    runner.owned_tx!<StakedBfc>(|stake| {
         pool_id = stake.pool_id();
         runner.keep(stake);
     });

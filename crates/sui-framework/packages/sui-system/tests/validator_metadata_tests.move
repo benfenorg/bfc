@@ -150,7 +150,7 @@ fun active_validator_update_metadata() {
             ctx,
         );
         transfer::public_transfer(staked_sui, @0x0);
-        system_state.request_add_validator_for_testing(ctx);
+        system_state.request_add_validator_for_testing(100000_000000000 as u64, ctx);
     };
 
     scenario.next_tx(new_validator_addr);
