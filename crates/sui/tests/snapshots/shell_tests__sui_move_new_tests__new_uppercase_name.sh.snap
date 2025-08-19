@@ -7,7 +7,7 @@ description: tests/shell_tests/sui_move_new_tests/new_uppercase_name.sh
 # SPDX-License-Identifier: Apache-2.0
 
 # test that `sui move new` works as expected with `<NAME>` containing uppercase letter(s)
-sui move new _Example_A
+bfc move new _Example_A
 echo ==== files in project ====
 ls -A _Example_A
 echo ==== files in sources ====
@@ -16,15 +16,17 @@ echo ==== files in tests =====
 ls -A _Example_A/tests
 
 ----- results -----
-success: false
-exit_code: 1
+success: true
+exit_code: 0
 ----- stdout -----
 ==== files in project ====
+.gitignore
+Move.toml
+sources
+tests
 ==== files in sources ====
+_example_a.move
 ==== files in tests =====
+_example_a_tests.move
 
 ----- stderr -----
-new_uppercase_name.sh: line 5: sui: command not found
-ls: _Example_A: No such file or directory
-ls: _Example_A/sources: No such file or directory
-ls: _Example_A/tests: No such file or directory

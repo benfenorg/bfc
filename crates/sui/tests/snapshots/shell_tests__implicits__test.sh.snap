@@ -7,11 +7,16 @@ description: tests/shell_tests/implicits/test.sh
 # SPDX-License-Identifier: Apache-2.0
 
 # checks that testing a package that implicitly depends on `Bridge` works
-sui move test -p example 2> /dev/null
+bfc move test -p example 2> /dev/null
 
 ----- results -----
 success: false
-exit_code: 127
+exit_code: 1
 ----- stdout -----
+Failed to resolve dependencies for package 'example'
+
+Caused by:
+    0: Fetching 'BfcSystem'
+    1: Failed to reset to latest Git state 'a4786abc9d4d' for package 'BfcSystem', to skip set --skip-fetch-latest-git-deps | Exit status: exit status: 128
 
 ----- stderr -----

@@ -9,7 +9,7 @@ description: tests/shell_tests/sui_move_new_tests/new_then_disassemble.sh
 # tests that sui move new followed by sui move disassemble succeeds
 
 
-sui move new example
+bfc move new example
 cat > example/sources/example.move <<EOF
 module example::example;
 
@@ -18,23 +18,30 @@ EOF
 cd example
 
 echo "=== Build ===" | tee /dev/stderr
-sui move build
+bfc move build
 
 echo "=== Disassemble ===" | tee /dev/stderr
-sui move disassemble build/example/bytecode_modules/example.mv
+bfc move disassemble build/example/bytecode_modules/example.mv
 
 ----- results -----
 success: false
-exit_code: 127
+exit_code: 101
 ----- stdout -----
 === Build ===
+Failed to build Move modules: Failed to resolve dependencies for package 'example'
+
+Caused by:
+    0: Fetching 'BfcSystem'
+    1: Failed to reset to latest Git state 'a4786abc9d4d' for package 'BfcSystem', to skip set --skip-fetch-latest-git-deps | Exit status: exit status: 128.
 === Disassemble ===
 
 ----- stderr -----
-new_then_disassemble.sh: line 7: sui: command not found
-new_then_disassemble.sh: line 8: example/sources/example.move: No such file or directory
-new_then_disassemble.sh: line 13: cd: example: No such file or directory
 === Build ===
-new_then_disassemble.sh: line 16: sui: command not found
+UPDATING GIT DEPENDENCY https://github.com/MystenLabs/sui.git
 === Disassemble ===
-new_then_disassemble.sh: line 19: sui: command not found
+
+thread 'main' panicked at crates/sui-move/src/disassemble.rs:62:9:
+Bad path to .mv file
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2025-08-19T03:15:51.608479Z ERROR telemetry_subscribers: panicked at crates/sui-move/src/disassemble.rs:62:9:
+Bad path to .mv file panic.file="crates/sui-move/src/disassemble.rs" panic.line=62 panic.column=9
