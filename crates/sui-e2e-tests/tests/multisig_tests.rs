@@ -1158,7 +1158,7 @@ async fn sim_test_zklogin_inside_multisig_feature_deny() {
 }
 
 #[sim_test]
-async fn test_multisig_passkey_feature_deny() {
+async fn sim_test_multisig_passkey_feature_deny() {
     // if feature disabled, fails to execute.
     let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
         config.set_accept_passkey_in_multisig_for_testing(false);
@@ -1182,7 +1182,7 @@ async fn test_multisig_passkey_feature_deny() {
 }
 
 #[sim_test]
-async fn test_multisig_passkey_scenarios() {
+async fn sim_test_multisig_passkey_scenarios() {
     let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
         config.set_accept_passkey_in_multisig_for_testing(true);
         config

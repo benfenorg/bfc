@@ -982,6 +982,8 @@ async fn test_dry_run_on_validator() {
 // in not being able to access the dynamic field object
 #[tokio::test]
 async fn test_dry_run_dev_inspect_dynamic_field_too_new() {
+    telemetry_subscribers::init_for_testing();
+
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let (validator, fullnode) = init_state_validator_with_fullnode().await;
@@ -1100,6 +1102,7 @@ async fn test_dry_run_dev_inspect_dynamic_field_too_new() {
     assert!(execution_error_source.is_some());
     assert_snapshot!(execution_error_source.unwrap());
 
+    info!("the effects is {:?} ", effects);
     match effects {
         SuiTransactionBlockEffects::V1(SuiTransactionBlockEffectsV1 { abort_error, .. }) => {
             assert!(abort_error.is_some());

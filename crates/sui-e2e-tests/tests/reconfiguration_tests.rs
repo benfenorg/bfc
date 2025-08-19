@@ -661,22 +661,22 @@ async fn sim_reconfig_with_revert_end_to_end_test() {
 // This test just starts up a cluster that reconfigures itself under 0 load.
 #[sim_test]
 //telemetry_subscribers::init_for_testing();
-async fn test_passive_reconfig() {
+async fn sim_test_passive_reconfig() {
     do_test_passive_reconfig(None).await;
 }
 
 #[sim_test]
-async fn test_passive_reconfig_mainnet_smoke_test() {
+async fn sim_test_passive_reconfig_mainnet_smoke_test() {
     do_test_passive_reconfig(Some(Chain::Mainnet)).await;
 }
 
 #[sim_test]
-async fn test_passive_reconfig_testnet_smoke_test() {
+async fn sim_test_passive_reconfig_testnet_smoke_test() {
     do_test_passive_reconfig(Some(Chain::Testnet)).await;
 }
 
 #[sim_test(check_determinism)]
-async fn test_passive_reconfig_determinism() {
+async fn sim_test_passive_reconfig_determinism() {
     do_test_passive_reconfig(None).await;
 }
 
