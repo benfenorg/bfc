@@ -6,6 +6,7 @@ use sui_macros::sim_test;
 use sui_rpc_api::Client;
 use sui_sdk_types::BalanceChange;
 use sui_sdk_types::ObjectId;
+use tracing::info;
 use sui_test_transaction_builder::make_transfer_sui_transaction;
 use sui_types::base_types::SuiAddress;
 use sui_types::effects::TransactionEffectsAPI;
@@ -69,16 +70,24 @@ async fn execute_transaction_transfer() {
 }
 
 #[sim_test]
-async fn get_full_checkpoint() {
+async fn sim_test_get_full_checkpoint() {
+    telemetry_subscribers::init_for_testing();
+
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let _transaction_digest = transfer_coin(&test_cluster.wallet).await;
 
-    let client = Client::new(test_cluster.rpc_url()).unwrap();
 
-    let latest = client.get_latest_checkpoint().await.unwrap().into_data();
-    let _ = client
-        .get_full_checkpoint(latest.sequence_number)
-        .await
-        .unwrap();
+    let client = Client::new(test_cluster.rpc_url()).unwrap();
+    info!("the rpc_url is {}", test_cluster.rpc_url());
+
+    let data = client.get_latest_checkpoint().await;
+    info!("latest checkpoint data: {:#?}", data);
+    
+    panic!("Uncomment the code below to test get_full_checkpoint");
+    //let latest = client.get_latest_checkpoint().await.unwrap().into_data();
+    // let _ = client
+    //     .get_full_checkpoint(latest.sequence_number)
+    //     .await
+    //     .unwrap();
 }

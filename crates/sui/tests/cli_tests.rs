@@ -2323,7 +2323,7 @@ async fn sim_test_package_publish_test_flag() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_package_publish_empty() -> Result<(), anyhow::Error> {
+async fn sim_test_package_publish_empty() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address = test_cluster.get_address_0();

@@ -589,12 +589,12 @@ ExecutionFailureStatus:
           - coin_type: STR
     37:
       ExecutionCancelledDueToRandomnessUnavailable: UNIT
-    37:
+    38:
       MoveVectorElemTooBig:
         STRUCT:
           - value_size: U64
           - max_scaled_size: U64
-    38:
+    39:
       MoveRawValueTooBig:
         STRUCT:
           - value_size: U64
