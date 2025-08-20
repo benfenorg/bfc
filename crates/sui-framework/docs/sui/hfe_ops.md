@@ -22,7 +22,7 @@ title: Module `sui::hfe_ops`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_add">hfe_ops_add</a>(input_1: u64, input_2: u64, input_3: u64, input_4: u64): vector&lt;u64&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_add">hfe_ops_add</a>(input_1: vector&lt;u8&gt;, input_2: vector&lt;u8&gt;, input_3: vector&lt;u8&gt;, input_4: vector&lt;u8&gt;): vector&lt;vector&lt;u8&gt;&gt;
 </code></pre>
 
 
@@ -32,11 +32,11 @@ title: Module `sui::hfe_ops`
 
 
 <pre><code><b>public</b> <b>native</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_add">hfe_ops_add</a>(
-    input_1: u64,
-    input_2: u64,
-    input_3: u64,
-    input_4: u64,
-): vector&lt;u64&gt;;
+    input_1: vector&lt;u8&gt;,
+    input_2: vector&lt;u8&gt;,
+    input_3: vector&lt;u8&gt;,
+    input_4: vector&lt;u8&gt;,
+): vector&lt;vector&lt;u8&gt;&gt;;
 </code></pre>
 
 
@@ -49,7 +49,7 @@ title: Module `sui::hfe_ops`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_minus">hfe_ops_minus</a>(input_1: u64, input_2: u64, input_3: u64, input_4: u64): vector&lt;u64&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_minus">hfe_ops_minus</a>(input_1: vector&lt;u8&gt;, input_2: vector&lt;u8&gt;, input_3: vector&lt;u8&gt;, input_4: vector&lt;u8&gt;): vector&lt;vector&lt;u8&gt;&gt;
 </code></pre>
 
 
@@ -59,11 +59,11 @@ title: Module `sui::hfe_ops`
 
 
 <pre><code><b>public</b> <b>native</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_minus">hfe_ops_minus</a>(
-    input_1: u64,
-    input_2: u64,
-    input_3: u64,
-    input_4: u64,
-): vector&lt;u64&gt;;
+    input_1: vector&lt;u8&gt;,
+    input_2: vector&lt;u8&gt;,
+    input_3: vector&lt;u8&gt;,
+    input_4: vector&lt;u8&gt;,
+): vector&lt;vector&lt;u8&gt;&gt;;
 </code></pre>
 
 
@@ -76,7 +76,7 @@ title: Module `sui::hfe_ops`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_multiplied">hfe_ops_multiplied</a>(input_1: u64, input_2: u64, input_3: u64, input_4: u64): vector&lt;u64&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_multiplied">hfe_ops_multiplied</a>(input_1: vector&lt;u8&gt;, input_2: vector&lt;u8&gt;, input_3: vector&lt;u8&gt;, input_4: vector&lt;u8&gt;): vector&lt;vector&lt;u8&gt;&gt;
 </code></pre>
 
 
@@ -86,11 +86,11 @@ title: Module `sui::hfe_ops`
 
 
 <pre><code><b>public</b> <b>native</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_multiplied">hfe_ops_multiplied</a>(
-    input_1: u64,
-    input_2: u64,
-    input_3: u64,
-    input_4: u64,
-): vector&lt;u64&gt;;
+    input_1: vector&lt;u8&gt;,
+    input_2: vector&lt;u8&gt;,
+    input_3: vector&lt;u8&gt;,
+    input_4: vector&lt;u8&gt;,
+): vector&lt;vector&lt;u8&gt;&gt;;
 </code></pre>
 
 
@@ -103,7 +103,7 @@ title: Module `sui::hfe_ops`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_compare_value">hfe_ops_compare_value</a>(input_1: u64, input_2: u64, input_3: u64): u8
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_compare_value">hfe_ops_compare_value</a>(input_1: vector&lt;u8&gt;, input_2: vector&lt;u8&gt;, input_3: u64): u8
 </code></pre>
 
 
@@ -113,8 +113,8 @@ title: Module `sui::hfe_ops`
 
 
 <pre><code><b>public</b> <b>native</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_compare_value">hfe_ops_compare_value</a>(
-    input_1: u64,
-    input_2: u64,
+    input_1: vector&lt;u8&gt;,
+    input_2: vector&lt;u8&gt;,
     input_3: u64,
 ): u8;
 </code></pre>
@@ -129,7 +129,7 @@ title: Module `sui::hfe_ops`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_split_value">hfe_ops_split_value</a>(value: u64): vector&lt;u64&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_split_value">hfe_ops_split_value</a>(value: u64): vector&lt;vector&lt;u8&gt;&gt;
 </code></pre>
 
 
@@ -140,7 +140,7 @@ title: Module `sui::hfe_ops`
 
 <pre><code><b>public</b> <b>native</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_split_value">hfe_ops_split_value</a>(
     value: u64,
-): vector&lt;u64&gt;;
+): vector&lt;vector&lt;u8&gt;&gt;;
 </code></pre>
 
 
@@ -153,7 +153,7 @@ title: Module `sui::hfe_ops`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_restore_value">hfe_ops_restore_value</a>(value1: u64, value2: u64, signature: vector&lt;u8&gt;, id: <b>address</b>, publickey: vector&lt;u8&gt;): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_restore_value">hfe_ops_restore_value</a>(value1: vector&lt;u8&gt;, value2: vector&lt;u8&gt;, signature: vector&lt;u8&gt;, id: <b>address</b>, publickey: vector&lt;u8&gt;): u64
 </code></pre>
 
 
@@ -163,8 +163,8 @@ title: Module `sui::hfe_ops`
 
 
 <pre><code><b>public</b> <b>native</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_restore_value">hfe_ops_restore_value</a>(
-    value1: u64,
-    value2: u64,
+    value1: vector&lt;u8&gt;,
+    value2: vector&lt;u8&gt;,
     signature: vector&lt;u8&gt;,
     id: <b>address</b>,
     publickey: vector&lt;u8&gt;,

@@ -17,6 +17,10 @@ pub mod field;
 pub mod math;
 pub mod read;
 
+const THRESHOLD: usize = 2;
+const TOTAL_SHARES: usize = 2;
+const MASK_SECRET: u64 = 1152921504606846976;
+
 #[derive(Debug, Error)]
 pub enum SecretSharingError {
     #[error("Invalid share data: {0}")]
@@ -173,6 +177,37 @@ pub fn generate_shares_u64(
 }
 
 /// Recover u64 secret
+pub fn split_value(value: u64) -> (String, String) {
+    let shares = generate_shares_with_xor(value, THRESHOLD, TOTAL_SHARES, MASK_SECRET).unwrap();
+    let value1: Vec<u8> = (&shares[0]).into();
+    let value2: Vec<u8> = (&shares[1]).into();
+    let hex_value1 = hex::encode(value1);
+    let hex_value2 = hex::encode(value2);
+    (hex_value1, hex_value2)
+}
+
+pub fn recover_value(value1: String, value2: String) -> Result<u64, SecretSharingError> {
+    let shares = recover_shares(value1, value2)?;
+    let value = recover_secret_with_xor(&shares[..THRESHOLD], THRESHOLD, MASK_SECRET)?;
+    Ok(value)
+}
+
+pub fn recover_shares(value1: String, value2: String) -> Result<Vec<Share>, SecretSharingError> {
+    let value1: Vec<u8> =
+        hex::decode(value1).map_err(|e| SecretSharingError::InvalidShare(e.to_string()))?;
+    let value2: Vec<u8> =
+        hex::decode(value2).map_err(|e| SecretSharingError::InvalidShare(e.to_string()))?;
+
+    let share1: Share = value1.as_slice().try_into().map_err(|_| {
+        SecretSharingError::InvalidShare("value1 convert to share failed".to_string())
+    })?;
+    let share2: Share = value2.as_slice().try_into().map_err(|_| {
+        SecretSharingError::InvalidShare("value2 convert to share failed".to_string())
+    })?;
+    Ok(vec![share1, share2])
+}
+
+/// 恢复u64秘密
 pub fn recover_secret_u64(shares: &[Share], threshold: usize) -> Result<u64, SecretSharingError> {
     // Parameter validation
     if threshold < 2 {

@@ -14,6 +14,9 @@ use move_vm_runtime::native_charge_gas_early_exit;
 use move_vm_runtime::native_functions::NativeContext;
 use smallvec::smallvec;
 use crate::NativesCostTable;
+use mpc_transmission::{recover_shares, split_value, recover_value};
+use mpc_transmission::math::{sub_shared_secrets, mul_shared_secrets, add_shared_secrets};
+
 use move_vm_types::{
     values::{VectorRef},
 };
@@ -37,8 +40,11 @@ pub struct AnonymousComputeCostParams {
 
 type HmacSha256 = Hmac<Sha256>;
 pub const ARITHMETIC_OVERFLOW_ERROR: u64 = 1;
+pub const INVALID_PARAMS_ERROR:  u64 = 2;
 
-
+const THRESHOLD: usize = 2;
+const TOTAL_SHARES: usize = 2;
+const MASK_SECRET: u64 = 1152921504606846976;
 
 pub fn hfe_ops_add(
     context: &mut NativeContext,
@@ -73,14 +79,20 @@ pub fn hfe_ops_add(
     info!("anonymous_privatekey{:?}", anonymous_privatekey.clone().unwrap());
     info!("anonymous_rpc{:?}", anonymous_rpc.clone());
     info!("enable-anonymous-rpc{:?}", enable_anonymous_rpc.clone().unwrap());
+
+    let number4 = pop_arg!(args, Vec<u8>);
+    let number3 = pop_arg!(args, Vec<u8>);
+    let number2 = pop_arg!(args, Vec<u8>);
+    let number1 = pop_arg!(args, Vec<u8>);
+    let num1 = String::from_utf8(number1).unwrap();
+    let num2 = String::from_utf8(number2).unwrap();
+    let num3 = String::from_utf8(number3).unwrap();
+    let num4 = String::from_utf8(number4).unwrap();
+
     if *enable_anonymous_rpc == Some(true) {
-        let number4 = pop_arg!(args, Vec<u8>);
-        let number3 = pop_arg!(args, Vec<u8>);
-        let number2 = pop_arg!(args, Vec<u8>);
-        let number1 = pop_arg!(args, Vec<u8>);
         let cost = context.gas_used();
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
-        let result = client.add(hex::encode(number1), hex::encode(number2), hex::encode(number3), hex::encode(number4));
+        let result = client.add(num1, num2, num3, num4);
         Ok(NativeResult::ok(
             cost,
             smallvec![
@@ -89,27 +101,36 @@ pub fn hfe_ops_add(
             ]
         ))
     } else {
-        let number4 = pop_arg!(args, u64);
-        let number3 = pop_arg!(args, u64);
-        let number2 = pop_arg!(args, u64);
-        let number1 = pop_arg!(args, u64);
         let cost = context.gas_used();
-        let data1 = number1 + number2;
-        let data2 = number3 + number4;
-
-        if data1.checked_add(data2) == None {
+        let value1_share = recover_shares(num1, num2);
+        let value2_share = recover_shares(num3, num4);
+        if value1_share.is_err() || value2_share.is_err() {
             return Ok(NativeResult::err(
                 cost,
-                ARITHMETIC_OVERFLOW_ERROR,
+                INVALID_PARAMS_ERROR,
             ));
         }
-        let result = data1 + data2;
-        let result1 = result / 2;
-        let result2 = result - result1;
-        Ok(NativeResult::ok(
-            cost,
-            smallvec![Value::vector_u64(vec![result1, result2])]
-        ))
+        match add_shared_secrets( &value1_share.unwrap()[..THRESHOLD],
+                                  &value2_share.unwrap()[..THRESHOLD],
+                                  THRESHOLD,
+                                  MASK_SECRET,
+                                  MASK_SECRET,
+        ){
+            Ok(result) => {
+                let (result1, result2) = split_value(result);
+
+                Ok(NativeResult::ok(
+                    cost,
+                    smallvec![Value::vector_u8(result1.into_bytes()),Value::vector_u8(result2.into_bytes())]
+                ))
+            }
+            Err(_e) => {
+                Ok(NativeResult::err(
+                    cost,
+                    ARITHMETIC_OVERFLOW_ERROR,
+                ))
+            }
+        }
     }
 }
 
@@ -145,48 +166,61 @@ pub fn hfe_ops_minus(
         .enable_anonymous_rpc
         .clone();
     let cost = context.gas_used();
+    let number4 = pop_arg!(args, Vec<u8>);
+    let number3 = pop_arg!(args, Vec<u8>);
+    let number2 = pop_arg!(args, Vec<u8>);
+    let number1 = pop_arg!(args, Vec<u8>);
+    let num1 = String::from_utf8(number1).unwrap();
+    let num2 = String::from_utf8(number2).unwrap();
+    let num3 = String::from_utf8(number3).unwrap();
+    let num4 = String::from_utf8(number4).unwrap();
 
     if *enable_anonymous_rpc == Some(true) {
-        let number4 = pop_arg!(args, Vec<u8>);
-        let number3 = pop_arg!(args, Vec<u8>);
-        let number2 = pop_arg!(args, Vec<u8>);
-        let number1 = pop_arg!(args, Vec<u8>);
-
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
-        let result = client.minus(hex::encode(number1), hex::encode(number2), hex::encode(number3), hex::encode(number4));
+        let result = client.minus(num1, num2, num3, num4);
         Ok(NativeResult::ok(
             cost,
             smallvec![
-                Value::vector_u8(hex::decode(result.value1).unwrap()),
-                Value::vector_u8(hex::decode(result.value2).unwrap())
+                Value::vector_u8(result.value1.into_bytes()),
+                Value::vector_u8(result.value2.into_bytes())
             ]
         ))
     } else {
-        let number4 = pop_arg!(args, u64);
-        let number3 = pop_arg!(args, u64);
-        let number2 = pop_arg!(args, u64);
-        let number1 = pop_arg!(args, u64);
+        let value1_share = recover_shares(num1, num2);
+        let value2_share = recover_shares(num3, num4);
 
-        let data1 = number1 + number2;
-        let data2 = number3 + number4;
-
-        if data1.checked_sub(data2) == None {
-            return Ok(NativeResult::err(
-                cost,
-                ARITHMETIC_OVERFLOW_ERROR,
-            ));
+        if value1_share.is_err() || value2_share.is_err() {
+                return Ok(NativeResult::err(
+                    cost,
+                    INVALID_PARAMS_ERROR,
+                ));
         }
-        let result = data1 - data2;
 
+        match sub_shared_secrets(
+            &value1_share.unwrap()[..THRESHOLD],
+            &value2_share.unwrap()[..THRESHOLD],
+            THRESHOLD,
+            MASK_SECRET,
+            MASK_SECRET,
+        ) {
+            Ok(result) => {
+                let (result1, result2) = split_value(result);
 
-        let result1 = result / 2;
-        let result2 = result - result1;
-        Ok(NativeResult::ok(
-            cost,
-            smallvec![Value::vector_u64(vec![result1, result2])]
-        ))
+                Ok(NativeResult::ok(
+                    cost,
+                    smallvec![Value::vector_u8(result1.into_bytes()),Value::vector_u8(result2.into_bytes())]
+                ))
+            }
+            Err(_e) => {
+               Ok(NativeResult::err(
+                    cost,
+                    ARITHMETIC_OVERFLOW_ERROR,
+                ))
+            }
+        }
     }
 }
+
 pub fn hfe_ops_multiplied(
     context: &mut NativeContext,
     ty_args: Vec<Type>,
@@ -218,45 +252,58 @@ pub fn hfe_ops_multiplied(
         .enable_anonymous_rpc
         .clone();
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
-    if *enable_anonymous_rpc == Some(true) {
-        let number4 = pop_arg!(args, Vec<u8>);
-        let number3 = pop_arg!(args, Vec<u8>);
-        let number2 = pop_arg!(args, Vec<u8>);
-        let number1 = pop_arg!(args, Vec<u8>);
+    let number4 = pop_arg!(args, Vec<u8>);
+    let number3 = pop_arg!(args, Vec<u8>);
+    let number2 = pop_arg!(args, Vec<u8>);
+    let number1 = pop_arg!(args, Vec<u8>);
+    let num1 = String::from_utf8(number1).unwrap();
+    let num2 = String::from_utf8(number2).unwrap();
+    let num3 = String::from_utf8(number3).unwrap();
+    let num4 = String::from_utf8(number4).unwrap();
 
+    if *enable_anonymous_rpc == Some(true) {
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
-        let result = client.multiply(hex::encode(number1), hex::encode(number2), hex::encode(number3), hex::encode(number4));
+        let result = client.multiply(num1, num2, num3, num4);
         Ok(NativeResult::ok(
             cost,
             smallvec![
-                Value::vector_u8(hex::decode(result.value1).unwrap()),
-                Value::vector_u8(hex::decode(result.value2).unwrap())
+                Value::vector_u8(result.value1.into_bytes()),
+                Value::vector_u8(result.value2.into_bytes())
             ]
         ))
     } else {
-        let number4 = pop_arg!(args, u64);
-        let number3 = pop_arg!(args, u64);
-        let number2 = pop_arg!(args, u64);
-        let number1 = pop_arg!(args, u64);
+        let value1_share =  recover_shares(num1, num2);
+        let value2_share =  recover_shares(num3, num4);
 
-        let data1 = number1 + number2;
-        let data2 = number3 + number4;
-
-        if data1.checked_mul(data2) == None {
+        if value1_share.is_err() || value2_share.is_err() {
             return Ok(NativeResult::err(
                 cost,
-                ARITHMETIC_OVERFLOW_ERROR,
+                INVALID_PARAMS_ERROR,
             ));
         }
 
-        let result = data1 * data2;
+        match mul_shared_secrets(
+            &value1_share.unwrap()[..THRESHOLD],
+            &value2_share.unwrap()[..THRESHOLD],
+            THRESHOLD,
+            MASK_SECRET,
+            MASK_SECRET,
+        ) {
+            Ok(result) => {
+                let (result1, result2) = split_value(result);
 
-        let result1 = result / 2;
-        let result2 = result - result1;
-        Ok(NativeResult::ok(
-            cost,
-            smallvec![Value::vector_u64(vec![result1, result2])]
-        ))
+                Ok(NativeResult::ok(
+                    cost,
+                    smallvec![Value::vector_u8(result1.into_bytes()),Value::vector_u8(result2.into_bytes())]
+                ))
+            }
+            Err(_e) => {
+                Ok(NativeResult::err(
+                    cost,
+                    ARITHMETIC_OVERFLOW_ERROR,
+                ))
+            }
+        }
     }
 
 
@@ -295,6 +342,7 @@ pub fn hfe_ops_split_value(context: &mut NativeContext,
         .enable_anonymous_rpc
         .clone();
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
+
     if *enable_anonymous_rpc == Some(true) {
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
         let result = client.split_value(value);
@@ -306,12 +354,11 @@ pub fn hfe_ops_split_value(context: &mut NativeContext,
             ]
         ))
     } else {
-        let value1 = value/2;
-        let value2 = value - value1;
+        let (result1, result2) = split_value(value);
 
         Ok(NativeResult::ok(
             cost,
-            smallvec![Value::vector_u64(vec![value1, value2])],
+            smallvec![Value::vector_u8(result1.into_bytes()),Value::vector_u8(result2.into_bytes())]
         ))
     }
 }
@@ -346,76 +393,46 @@ pub fn hfe_ops_compare_value(
         .enable_anonymous_rpc
         .clone();
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
+    let number3 = pop_arg!(args, u64);
+    let number2 = pop_arg!(args, Vec<u8>);
+    let number1 = pop_arg!(args, Vec<u8>);
+    let num1 = String::from_utf8(number1).unwrap();
+    let num2 = String::from_utf8(number2).unwrap();
+
     if *enable_anonymous_rpc == Some(true) {
-        let number3 = pop_arg!(args, u64);
-        let number2 = pop_arg!(args, Vec<u8>);
-        let number1 = pop_arg!(args, Vec<u8>);
-        
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
-        let result = client.compare_value(hex::encode(number1), hex::encode(number2), number3);
+        let result = client.compare_value(num1, num2, number3);
         Ok(NativeResult::ok(
             cost,
             smallvec![Value::u8(result.value1.parse::<u8>().unwrap())],
         ))
     } else {
-        let number3 = pop_arg!(args, u64);
-        let number2 = pop_arg!(args, u64);
-        let number1 = pop_arg!(args, u64);
-
-        let data1 = number1 + number2;
-        let data2 = number3;
-        let mut result = 0;
-        if data1 > data2 {
-            result = 1;
+        match recover_value(num1, num2) {
+            Ok(value_a) => {
+                let value_b = number3;
+                let comparison = if value_a > value_b {
+                    1
+                } else if value_a < value_b {
+                    2
+                } else {
+                    0
+                };
+                Ok(NativeResult::ok(
+                    cost,
+                    smallvec![Value::u8(comparison)],
+                ))
+            }
+            Err(_e) => {
+                Ok(NativeResult::err(
+                    cost,
+                    ARITHMETIC_OVERFLOW_ERROR,
+                ))
+            }
         }
-        if data1 < data2 {
-            result = 2;
-        }
-
-        Ok(NativeResult::ok(
-            cost,
-            smallvec![Value::u8(result)],
-        ))
     }
 }
 
-// pub fn hfe_ops_compare(
-//     context: &mut NativeContext,
-//     ty_args: Vec<Type>,
-//     mut args: VecDeque<Value>,
-// ) -> PartialVMResult<NativeResult>{
-//     let anonymous_compute_cost_params = &context
-//         .extensions()
-//         .get::<NativesCostTable>()
-//         .anonymous_compute_cost_params
-//         .clone();
-//     // Charge the base cost for this oper
-//     native_charge_gas_early_exit!(
-//         context,
-//         anonymous_compute_cost_params.anonymous_compute_cost_base
-//     );
-//     let number4 = pop_arg!(args, u64);
-//     let number3 = pop_arg!(args, u64);
-//     let number2 = pop_arg!(args, u64);
-//     let number1 = pop_arg!(args, u64);
-//
-//
-//     let data1 = number1 + number2;
-//     let data2 = number3 + number4;
-//     let mut result = 0;
-//     if data1 > data2 {
-//         result = 1;
-//     }
-//     if data1 < data2 {
-//         result = 2;
-//     }
-//
-//     let cost = context.gas_used();
-//     Ok(NativeResult::ok(
-//         cost,
-//         smallvec![Value::u8(result)],
-//     ))
-// }
+
 pub fn hfe_ops_restore_value(context: &mut NativeContext,
                               ty_args: Vec<Type>,
                               mut args: VecDeque<Value>) -> PartialVMResult<NativeResult> {
@@ -436,6 +453,8 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
     let publickey = pop_arg!(args, Vec<u8>);
     let id = pop_arg!(args, AccountAddress);
     let signature= pop_arg!(args, Vec<u8>);
+    let number2 = pop_arg!(args, Vec<u8>);
+    let number1 = pop_arg!(args, Vec<u8>);
 
     let cost = context.gas_used();
 
@@ -451,30 +470,32 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
         .enable_anonymous_rpc
         .clone();
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
+
+    let num1 = String::from_utf8(number1).unwrap();
+    let num2 = String::from_utf8(number2).unwrap();
+
     if *enable_anonymous_rpc == Some(true) {
-        let value2 = pop_arg!(args, Vec<u8>);
-        let value1 = pop_arg!(args, Vec<u8>);
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
-        let result = client.restore_value(hex::encode(value1), hex::encode(value2), signature, id, publickey);
+        let result = client.restore_value(num1, num2, signature, id, publickey);
         Ok(NativeResult::ok(
             cost,
             smallvec![Value::u64(result.value1.parse::<u64>().expect("Failed to parse number"))],
         ))
     } else {
-        let value2 = pop_arg!(args, u64);
-        let value1 = pop_arg!(args, u64);
-        if value1.checked_add(value2) == None {
-            return Ok(NativeResult::err(
-                cost,
-                ARITHMETIC_OVERFLOW_ERROR,
-            ));
+        match recover_value(num1, num2) {
+            Ok(value) => {
+                Ok(NativeResult::ok(
+                    cost,
+                    smallvec![Value::u64(value)],
+                ))
+            }
+            Err(_e) => {
+                Ok(NativeResult::err(
+                    cost,
+                    ARITHMETIC_OVERFLOW_ERROR,
+                ))
+            }
         }
-
-        let value = value1 + value2;
-        Ok(NativeResult::ok(
-            cost,
-            smallvec![Value::u64(value)],
-        ))
     }
 }
 

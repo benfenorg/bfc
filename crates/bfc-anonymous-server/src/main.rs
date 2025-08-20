@@ -15,9 +15,7 @@ use crate::utils::public_key_bytes_to_sui_address;
 use clap::Parser;
 use move_core_types::account_address::AccountAddress;
 use mpc_transmission::math::{add_shared_secrets, mul_shared_secrets, sub_shared_secrets};
-use mpc_transmission::{
-    generate_shares_with_xor, recover_secret_with_xor, SecretSharingError, Share,
-};
+use mpc_transmission::{recover_value,split_value, generate_shares_with_xor, recover_secret_with_xor, recover_shares, SecretSharingError, Share};
 use serde::{Deserialize, Serialize};
 use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 use tracing::{info, warn};
@@ -206,36 +204,6 @@ async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply,
 const THRESHOLD: usize = 2;
 const TOTAL_SHARES: usize = 2;
 const MASK_SECRET: u64 = 1152921504606846976;
-
-fn split_value(value: u64) -> (String, String) {
-    let shares = generate_shares_with_xor(value, THRESHOLD, TOTAL_SHARES, MASK_SECRET).unwrap();
-    let value1: Vec<u8> = (&shares[0]).into();
-    let value2: Vec<u8> = (&shares[1]).into();
-    let hex_value1 = hex::encode(value1);
-    let hex_value2 = hex::encode(value2);
-    (hex_value1, hex_value2)
-}
-
-fn recover_shares(value1: String, value2: String) -> Result<Vec<Share>, SecretSharingError> {
-    let value1: Vec<u8> =
-        hex::decode(value1).map_err(|e| SecretSharingError::InvalidShare(e.to_string()))?;
-    let value2: Vec<u8> =
-        hex::decode(value2).map_err(|e| SecretSharingError::InvalidShare(e.to_string()))?;
-
-    let share1: Share = value1.as_slice().try_into().map_err(|_| {
-        SecretSharingError::InvalidShare("value1 convert to share failed".to_string())
-    })?;
-    let share2: Share = value2.as_slice().try_into().map_err(|_| {
-        SecretSharingError::InvalidShare("value2 convert to share failed".to_string())
-    })?;
-    Ok(vec![share1, share2])
-}
-
-fn recover_value(value1: String, value2: String) -> Result<u64, SecretSharingError> {
-    let shares = recover_shares(value1, value2)?;
-    let value = recover_secret_with_xor(&shares[..THRESHOLD], THRESHOLD, MASK_SECRET)?;
-    Ok(value)
-}
 
 async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {

@@ -15320,6 +15320,7 @@ dependencies = [
  "move-stdlib-natives",
  "move-vm-runtime",
  "move-vm-types",
+ "mpc-transmission",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "reqwest 0.11.20",

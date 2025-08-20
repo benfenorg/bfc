@@ -22,6 +22,11 @@ const ENotEnough: u64 = 2;
 // System operation performed for a coin other than SUI
 //const ENotSUI: u64 = 4;
 
+const EAddOverFlow: u64 = 5;
+
+const ESplitValueFailed: u64 = 6;
+
+
 const DEFAULT_EQUIVALENT_RESULT_VALUE: u8 = 2;
 
 /// A Supply of T. Used for minting and burning.
@@ -39,8 +44,8 @@ const BALANCE_TYPE_SHARING: u32 = 1;
 /// d to store coins which don't need the key ability.
 public struct Anonymous_Balance<phantom T> has store {
     balance_type: u32,
-    value1: u64,
-    value2: u64,
+    value1: String,
+    value2: String,
     encode_data: String,
     version: u8,
 }
@@ -53,7 +58,7 @@ public fun get_anonymous_value<T>(
     publickey: vector<u8>
 ): u64 {
     //todo : use hfe_ops to get the value from value1 and value2
-    hfe_ops_restore_value(self.value1, self.value2, signatures, id, publickey)
+    hfe_ops_restore_value(string::into_bytes(self.value1), string::into_bytes(self.value2), signatures, id, publickey)
 }
 
 public fun convert_to_string( mut value: u64): vector<u8> {
@@ -83,14 +88,14 @@ public fun create_by_value<T>(value: u64): Anonymous_Balance<T> {
     let value1 = result[0];
     let value2 = result[1];
 
-    string::append_utf8(&mut encode_data, convert_to_string(value1));
+    string::append(&mut encode_data, string::utf8(value1));
     string::append_utf8(&mut encode_data, b",");
-    string::append_utf8(&mut encode_data, convert_to_string(value2));
+    string::append(&mut encode_data, string::utf8(value2));
 
 
     Anonymous_Balance {
-        value1: value1,
-        value2: value2,
+        value1: string::utf8(value1),
+        value2: string::utf8(value2),
         encode_data,
         balance_type: balance_type,
         version: version
@@ -102,11 +107,11 @@ public fun value<T>(self: &Anonymous_Balance<T>, signatures: vector<u8>, id: add
     self.get_anonymous_value(signatures, id, publickey)
 }
 
-public fun value1<T>(self: &Anonymous_Balance<T>): u64 {
+public fun value1<T>(self: &Anonymous_Balance<T>): String {
     self.value1
 }
 
-public fun value2<T>(self: &Anonymous_Balance<T>): u64 {
+public fun value2<T>(self: &Anonymous_Balance<T>): String {
     self.value2
 }
 
@@ -146,7 +151,7 @@ public fun decrease_supply<T>(
         value1: value1,
         value2: value2
     } = balance;
-    let value = hfe_ops_restore_value(value1, value2, signatures, id, publickey);
+    let value = hfe_ops_restore_value(string::into_bytes(value1), string::into_bytes(value2), signatures, id, publickey);
     assert!(self.value >= value, EOverflow);
     self.value = self.value - value;
     value
@@ -160,14 +165,14 @@ public fun zero<T>(): Anonymous_Balance<T> {
 fun update_encode_data<T>(self: &mut Anonymous_Balance<T>) {
     // Update the encode data based on the current value1 and value2
     let mut encode_data = string::utf8(b"");
-    string::append_utf8(&mut encode_data, convert_to_string(self.value1));
+    string::append(&mut encode_data, self.value1);
     string::append_utf8(&mut encode_data, b",");
-    string::append_utf8(&mut encode_data, convert_to_string(self.value2));
+    string::append(&mut encode_data, self.value2);
     self.encode_data = encode_data;
 }
 
 /// Join two balances together.
-public fun join<T>(self: &mut Anonymous_Balance<T>, balance: Anonymous_Balance<T>): (u64, u64) {
+public fun join<T>(self: &mut Anonymous_Balance<T>, balance: Anonymous_Balance<T>): (String, String) {
     let Anonymous_Balance {
         encode_data: _,
         version: _,
@@ -176,10 +181,11 @@ public fun join<T>(self: &mut Anonymous_Balance<T>, balance: Anonymous_Balance<T
         value2: value2
     } = balance;
 
-    let result = hfe_ops_add(self.value1, self.value2, value1, value2);
-    self.value1 = result[0];
-    self.value2 = result[1];
-
+    let val = hfe_ops_add(string::into_bytes(self.value1), string::into_bytes(self.value2),
+        string::into_bytes(value1), string::into_bytes(value2));
+    assert!(vector::length(&val) >= 2, EAddOverFlow);
+    self.value1 = string::utf8(val[0]);
+    self.value2 = string::utf8(val[1]);
 
     self.update_encode_data();
     (self.value1, self.value2)
@@ -187,13 +193,21 @@ public fun join<T>(self: &mut Anonymous_Balance<T>, balance: Anonymous_Balance<T
 
 /// Split a `Balance` and take a sub balance from it.
 public fun split<T>(self: &mut Anonymous_Balance<T>, value: u64): Anonymous_Balance<T> {
-    let compare_result: u8 = hfe_ops_compare_value(self.value1, self.value2, value);
+    let compare_result: u8 = hfe_ops_compare_value(string::into_bytes(self.value1), string::into_bytes(self.value2), value);
     assert!(compare_result != DEFAULT_EQUIVALENT_RESULT_VALUE, ENotEnough);
-    let value3 = value / 2;
-    let value4 = value - value3;
-    let result = hfe_ops_minus(self.value1, self.value2, value3, value4);
-    self.value1 = result[0];
-    self.value2 = result[1];
+    let result = hfe_ops_split_value(value);
+    assert!(vector::length(&result) >= 2, ESplitValueFailed);
+
+    let value3 = string::utf8(result[0]);
+    let value4 = string::utf8(result[1]);
+
+    let val = hfe_ops_minus(string::into_bytes(self.value1), string::into_bytes(self.value2),
+        string::into_bytes(value3), string::into_bytes(value4));
+
+    assert!(vector::length(&val) >= 2, ESplitValueFailed);
+
+    self.value1 = string::utf8(val[0]);
+    self.value2 = string::utf8(val[1]);
 
     self.update_encode_data();
 
@@ -208,7 +222,7 @@ public fun split<T>(self: &mut Anonymous_Balance<T>, value: u64): Anonymous_Bala
 
 /// Destroy a zero `Balance`.
 public fun destroy_zero<T>(balance: Anonymous_Balance<T>, signatures: vector<u8>, id: address, publickey: vector<u8>) {
-    let value = hfe_ops_restore_value(balance.value1, balance.value2, signatures, id, publickey);
+    let value = hfe_ops_restore_value(string::into_bytes(balance.value1), string::into_bytes(balance.value2), signatures, id, publickey);
     assert!(value == 0, ENonZero);
     let Anonymous_Balance {
         encode_data: _,
@@ -250,8 +264,7 @@ public fun create_supply_for_testing<T>(): Supply<T> {
     Supply { value: 0 }
 }
 
-#[test_only]
-/// Mint coins of any type for (obviously!) testing purposes only
-public fun compare_anoymous_coin(input1: u64, input2: u64, input3: u64): u8 {
-    hfe_ops_compare_value(input1, input2, input3)
-}
+//#[test_only]
+//public fun compare_anoymous_coin(input1: u64, input2: u64, input3: u64): u8 {
+//    hfe_ops_compare_value(input1, input2, input3)
+//}

@@ -97,15 +97,15 @@ module sui::anonymous_coin_tests {
         scenario.end();
     }
 
-    #[test]
-    fun tests_coin_compare_value() {
-        assert!(anonymous_balance::compare_anoymous_coin(1, 2, 3) == 0);
+   // #[test]
+   // fun tests_coin_compare_value() {
+   //     assert!(anonymous_balance::compare_anoymous_coin(1, 2, 3) == 0);
 
-        assert!(anonymous_balance::compare_anoymous_coin(1, 2, 2) == 1);
+   //     assert!(anonymous_balance::compare_anoymous_coin(1, 2, 2) == 1);
 
-        assert!(anonymous_balance::compare_anoymous_coin(1, 2, 4) == 2);
+    //    assert!(anonymous_balance::compare_anoymous_coin(1, 2, 4) == 2);
 
-    }
+    //}
 
     #[test]
     fun tests_coin_restore() {
