@@ -76,3 +76,8 @@ docs/content/references/framework/**
 lcov.info
 
 .sparse
+
+/crates/sui/tests/shell_tests/summaries/data/move_package/package_summaries/
+/crates/sui/tests/shell_tests/with_network/summaries/package_summaries/
+/crates/sui/tests/shell_tests/summaries/package_summaries/
+/crates/sui/tests/shell_tests/sui_move_new_tests/_Example_A/

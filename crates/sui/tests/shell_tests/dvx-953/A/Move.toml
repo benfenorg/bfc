@@ -3,6 +3,8 @@ name = "A"
 edition = "2024.beta"
 
 [dependencies]
+Sui = { local = "../../../../../sui-framework/packages/sui-framework" }
+
 B = { local = "../B", override = true }
 C = { local = "../C" }
 D = { local = "../D", override = true }

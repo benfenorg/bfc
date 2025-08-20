@@ -3,9 +3,9 @@
 
 # test that `sui move new` works as expected with `<NAME>` containing uppercase letter(s)
 bfc move new _Example_A
-echo ==== files in project ====
+#echo ==== files in project ====
 ls -A _Example_A
-echo ==== files in sources ====
+#echo ==== files in sources ====
 ls -A _Example_A/sources
-echo ==== files in tests =====
+#echo ==== files in tests =====
 ls -A _Example_A/tests
