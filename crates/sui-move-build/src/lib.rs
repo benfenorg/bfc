@@ -63,7 +63,11 @@ use sui_verifier::verifier as sui_bytecode_verifier;
 #[cfg(test)]
 #[path = "unit_tests/build_tests.rs"]
 mod build_tests;
-
+#[test]
+fn test_basic_move_build(){
+    use crate::test_utils::compile_basics_package;
+    let _ = compile_basics_package();
+}
 pub mod test_utils {
     use crate::{BuildConfig, CompiledPackage, SuiPackageHooks};
     use std::path::PathBuf;

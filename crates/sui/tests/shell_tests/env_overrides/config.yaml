@@ -1,7 +1,8 @@
+---
 keystore:
-  File: ~
+  File: "~"
 envs:
-  - alias: base 
+  - alias: base
     rpc: "https://custom.rpc.node.base:443"
     ws: ~
     basic_auth: ~
@@ -14,4 +15,4 @@ envs:
     ws: ~
     basic_auth: ~
 active_env: base
-active_address: "0x0000000000000000000000000000000000000000000000000000000000000000"
+active_address: BFC000000000000000000000000000000000000000000000000000000000000000060e0

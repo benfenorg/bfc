@@ -1,9 +1,3 @@
-/*
-/// Module: example
 module example::example;
-*/
 
-// For Move coding conventions, see
-// https://docs.sui.io/concepts/sui-move-concepts/conventions
-
-
+public fun foo(_ctx: &mut TxContext) {}

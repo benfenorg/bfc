@@ -3,9 +3,9 @@
 
 # basic test that bfc move new outputs correct files
 bfc move new example
-echo ==== files in project ====
+#echo ==== files in project ====
 ls -A example
-echo ==== files in sources ====
+#echo ==== files in sources ====
 ls -A example/sources
-echo ==== files in tests =====
+#echo ==== files in tests =====
 ls -A example/tests

@@ -2,5 +2,10 @@
 name = "example"
 edition = "2024.beta" # edition = "legacy" to use legacy (pre-2024) Move
 
+[dependencies]
+#Sui = { git="https://github.com/benfenorg/bfc" , subdir = "crates/sui-framework/packages/sui-framework", rev="develop_v1.23.0"}
+#Local = { local = "../path/to" }
+Sui = { local = "../../../../../sui-framework/packages/sui-framework" }
+#bridge = { local = "../../../../../sui-framework/packages/bridge" }
 [addresses]
 example = "0x0"
