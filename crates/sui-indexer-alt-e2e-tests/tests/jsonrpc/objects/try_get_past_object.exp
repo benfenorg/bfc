@@ -37,7 +37,7 @@ Response: {
   "result": {
     "status": "VersionNotFound",
     "details": [
-      "BFC63c41d4634cff8bec9b984c247a8477854148c6029b21a960b6ab4c9a36ccbcb9e40",
+      "BFC50d243c45f2ec77190fe38087f332ec9ca670648f94499f11da9aeeb29df36f452d2",
       1
     ]
   }
@@ -51,9 +51,9 @@ Response: {
   "result": {
     "status": "VersionFound",
     "details": {
-      "objectId": "BFC63c41d4634cff8bec9b984c247a8477854148c6029b21a960b6ab4c9a36ccbcb9e40",
+      "objectId": "BFC50d243c45f2ec77190fe38087f332ec9ca670648f94499f11da9aeeb29df36f452d2",
       "version": "2",
-      "digest": "3XD8vk945P5UT4DEpNrJhBQ9yeDRhLKJWg24R4EkVrSf"
+      "digest": "wacN3xeuJEYDKyJkca56hri2NmFvWQpcN7kNgF5bD2R"
     }
   }
 }
@@ -66,9 +66,9 @@ Response: {
   "result": {
     "status": "VersionFound",
     "details": {
-      "objectId": "BFC63c41d4634cff8bec9b984c247a8477854148c6029b21a960b6ab4c9a36ccbcb9e40",
+      "objectId": "BFC50d243c45f2ec77190fe38087f332ec9ca670648f94499f11da9aeeb29df36f452d2",
       "version": "3",
-      "digest": "DVQsEE9F2fPchA6xasWpJZVcZAVWFf8oqKQbGzHZMj3R"
+      "digest": "9t2PKnVrFzDk19U51Zg4RzefmkC6TtVhXNzU5Kcjroev"
     }
   }
 }
@@ -81,7 +81,7 @@ Response: {
   "result": {
     "status": "ObjectDeleted",
     "details": {
-      "objectId": "BFC63c41d4634cff8bec9b984c247a8477854148c6029b21a960b6ab4c9a36ccbcb9e40",
+      "objectId": "BFC50d243c45f2ec77190fe38087f332ec9ca670648f94499f11da9aeeb29df36f452d2",
       "version": 4,
       "digest": "7gyGAp71YXQRoxmFBaHxofQXAipvgHyBKPyxmdSJxyvz"
     }
@@ -96,7 +96,7 @@ Response: {
   "result": {
     "status": "VersionNotFound",
     "details": [
-      "BFC63c41d4634cff8bec9b984c247a8477854148c6029b21a960b6ab4c9a36ccbcb9e40",
+      "BFC50d243c45f2ec77190fe38087f332ec9ca670648f94499f11da9aeeb29df36f452d2",
       1
     ]
   }
@@ -110,14 +110,14 @@ Response: {
   "result": {
     "status": "VersionFound",
     "details": {
-      "objectId": "BFC63c41d4634cff8bec9b984c247a8477854148c6029b21a960b6ab4c9a36ccbcb9e40",
+      "objectId": "BFC50d243c45f2ec77190fe38087f332ec9ca670648f94499f11da9aeeb29df36f452d2",
       "version": "2",
-      "digest": "3XD8vk945P5UT4DEpNrJhBQ9yeDRhLKJWg24R4EkVrSf",
+      "digest": "wacN3xeuJEYDKyJkca56hri2NmFvWQpcN7kNgF5bD2R",
       "type": "0x2::coin::Coin<0x2::bfc::BFC>",
       "owner": {
         "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
       },
-      "previousTransaction": "8gKLc4fDzTpSrAStKpgcFvJVGjFZwrU8tj3cdSKQNNGp",
+      "previousTransaction": "8dtd3kmLDMu445UqkeQbsb7aUvaNs52NL2pD28CtBU7Z",
       "storageRebate": "1307200"
     }
   }
@@ -131,7 +131,7 @@ Response: {
   "result": {
     "status": "ObjectDeleted",
     "details": {
-      "objectId": "BFC63c41d4634cff8bec9b984c247a8477854148c6029b21a960b6ab4c9a36ccbcb9e40",
+      "objectId": "BFC50d243c45f2ec77190fe38087f332ec9ca670648f94499f11da9aeeb29df36f452d2",
       "version": 4,
       "digest": "7gyGAp71YXQRoxmFBaHxofQXAipvgHyBKPyxmdSJxyvz"
     }
