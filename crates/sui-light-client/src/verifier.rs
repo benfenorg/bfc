@@ -314,6 +314,16 @@ mod tests {
         Ok(())
     }
 
+    async fn read_full_checkpoint_from_json(checkpoint_path: &PathBuf) -> anyhow::Result<CheckpointData> {
+        let mut reader = fs::File::open(checkpoint_path.clone())?;
+        let mut json: String = String::new();
+        let _ = reader.read_to_string(&mut json);
+        let _rs: CheckpointData = serde_json::from_str(&json).unwrap();
+
+        serde_json::from_str(&json).map_err(|_| anyhow!("Unable to parse checkpoint file from json"))
+    }
+
+
     async fn read_data() -> (Committee, CheckpointData) {
         let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         d.push("test_files/20873329.yaml");
@@ -350,21 +360,57 @@ mod tests {
         (committee, full_checkpoint)
     }
 
+    async fn read_data_test_data(committee_seq_path1 :String, committee_seq_path2 :String) -> (Committee, CheckpointData) {
+        let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        d.push(format!("example_config/{}", committee_seq_path1));
+        let committee_checkpoint = read_full_checkpoint_from_json(&d).await.unwrap();
+
+        let prev_committee = committee_checkpoint
+            .checkpoint_summary
+            .end_of_epoch_data
+            .as_ref()
+            .ok_or(anyhow!("Expected checkpoint to be end-of-epoch"))
+            .unwrap()
+            .next_epoch_committee
+            .iter()
+            .cloned()
+            .collect();
+
+        // Make a committee object using this
+        let committee = Committee::new(
+            committee_checkpoint
+                .checkpoint_summary
+                .epoch()
+                .checked_add(1)
+                .unwrap(),
+            prev_committee,
+        );
+
+        let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        d.push(format!("example_config/{}", committee_seq_path2));
+        let full_checkpoint = read_full_checkpoint_from_json(&d).await.unwrap();
+
+        (committee, full_checkpoint)
+    }
+
     #[tokio::test]
     async fn test_checkpoint_all_good() {
-        let (committee, full_checkpoint) = read_data().await;
+        let (committee, full_checkpoint) = read_data_test_data("checkpoint_3051.json".to_string(),"checkpoint_3850.json".to_string()).await;
+
 
         extract_verified_effects_and_events(
             &full_checkpoint,
             &committee,
-            TransactionDigest::from_str("8RiKBwuAbtu8zNCtz8SrcfHyEUzto6zi6cMVA9t4WhWk").unwrap(),
+            TransactionDigest::from_str("2ehEojjxHERMh3TsiWvBAVNJ7Rd1T8DLcM1eDyFQJFBc").unwrap(),
         )
         .unwrap();
     }
 
     #[tokio::test]
     async fn test_checkpoint_bad_committee() {
-        let (mut committee, full_checkpoint) = read_data().await;
+        //let (mut committee, full_checkpoint) = read_data().await;
+        let (mut committee, full_checkpoint) = read_data_test_data("checkpoint_3051.json".to_string(), "checkpoint_3850.json".to_string()).await;
+
 
         // Change committee
         committee.epoch += 10;
@@ -372,26 +418,30 @@ mod tests {
         assert!(extract_verified_effects_and_events(
             &full_checkpoint,
             &committee,
-            TransactionDigest::from_str("8RiKBwuAbtu8zNCtz8SrcfHyEUzto6zi6cMVA9t4WhWk").unwrap(),
+            TransactionDigest::from_str("2ehEojjxHERMh3TsiWvBAVNJ7Rd1T8DLcM1eDyFQJFBc").unwrap(),
         )
         .is_err());
     }
 
     #[tokio::test]
     async fn test_checkpoint_no_transaction() {
-        let (committee, full_checkpoint) = read_data().await;
+        //let (committee, full_checkpoint) = read_data().await;
+        let (committee, full_checkpoint) = read_data_test_data("checkpoint_3051.json".to_string(),"checkpoint_3850.json".to_string()).await;
+
 
         assert!(extract_verified_effects_and_events(
             &full_checkpoint,
             &committee,
-            TransactionDigest::from_str("8RiKBwuAbtu8zNCtz8SrcfHyEUzto6zj6cMVA9t4WhWk").unwrap(),
+            TransactionDigest::from_str("2ehEojjxHERMh3TsiWvBAVNJ7Rd1T8DLcM1eDyFQJFBc").unwrap(),
         )
         .is_err());
     }
 
     #[tokio::test]
     async fn test_checkpoint_bad_contents() {
-        let (committee, mut full_checkpoint) = read_data().await;
+        //let (committee, mut full_checkpoint) = read_data().await;
+        let (committee, mut full_checkpoint) = read_data_test_data("checkpoint_3051.json".to_string(), "checkpoint_3850.json".to_string()).await;
+
 
         // Change contents
         let random_contents = FullCheckpointContents::random_for_testing();
@@ -400,16 +450,18 @@ mod tests {
         assert!(extract_verified_effects_and_events(
             &full_checkpoint,
             &committee,
-            TransactionDigest::from_str("8RiKBwuAbtu8zNCtz8SrcfHyEUzto6zj6cMVA9t4WhWk").unwrap(),
+            TransactionDigest::from_str("2ehEojjxHERMh3TsiWvBAVNJ7Rd1T8DLcM1eDyFQJFBc").unwrap(),
         )
         .is_err());
     }
 
     #[tokio::test]
     async fn test_checkpoint_bad_events() {
-        let (committee, mut full_checkpoint) = read_data().await;
+        //let (committee, mut full_checkpoint) = read_data().await;
+        let (committee, mut full_checkpoint) = read_data_test_data("checkpoint_3051.json".to_string(), "checkpoint_3850.json".to_string()).await;
 
-        let event = full_checkpoint.transactions[4]
+
+        let event = full_checkpoint.transactions[1]
             .events
             .as_ref()
             .unwrap()
@@ -425,7 +477,7 @@ mod tests {
         assert!(extract_verified_effects_and_events(
             &full_checkpoint,
             &committee,
-            TransactionDigest::from_str("8RiKBwuAbtu8zNCtz8SrcfHyEUzto6zj6cMVA9t4WhWk").unwrap(),
+            TransactionDigest::from_str("2ehEojjxHERMh3TsiWvBAVNJ7Rd1T8DLcM1eDyFQJFBc").unwrap(),
         )
         .is_err());
     }
