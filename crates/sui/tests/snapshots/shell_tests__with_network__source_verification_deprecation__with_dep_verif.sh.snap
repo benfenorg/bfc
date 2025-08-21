@@ -61,10 +61,10 @@ Caused by:
 === munge Move.toml files ===
 === publish dependency ===
 UPDATING GIT DEPENDENCY https://github.com/MystenLabs/sui.git
-jq: parse error: Invalid numeric literal at line 1, column 7
+parse error: Invalid numeric literal at line 1, column 7
 === publish package v0 (should NOT warn) ===
 UPDATING GIT DEPENDENCY https://github.com/MystenLabs/sui.git
-jq: parse error: Invalid numeric literal at line 1, column 7
+parse error: Invalid numeric literal at line 1, column 7
 === upgrade package (should NOT warn) ===
 error: invalid value 'example' for '--upgrade-capability <UPGRADE_CAPABILITY>': ObjectID hex literal must start with 0x
 

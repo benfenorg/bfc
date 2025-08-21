@@ -28,11 +28,9 @@ ignore2
 
 ==== files in example/ ====
 .gitignore
-Move.lock
 Move.toml
-build
 sources
 tests
 
 ----- stderr -----
-mkdir: example: File exists
+mkdir: cannot create directory ‘example’: File exists

@@ -20,9 +20,7 @@ success: true
 exit_code: 0
 ----- stdout -----
 .gitignore
-Move.lock
 Move.toml
-build
 sources
 tests
 example.move

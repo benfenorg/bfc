@@ -62,11 +62,11 @@ Caused by:
 === publish dependency ===
 [Note]: Dependency sources are no longer verified automatically during publication and upgrade. You can pass the `--verify-deps` option if you would like to verify them as part of publication or upgrade.
 UPDATING GIT DEPENDENCY https://github.com/MystenLabs/sui.git
-jq: parse error: Invalid numeric literal at line 1, column 7
+parse error: Invalid numeric literal at line 1, column 7
 === publish package v0 (should warn) ===
 [Note]: Dependency sources are no longer verified automatically during publication and upgrade. You can pass the `--verify-deps` option if you would like to verify them as part of publication or upgrade.
 UPDATING GIT DEPENDENCY https://github.com/MystenLabs/sui.git
-jq: parse error: Invalid numeric literal at line 1, column 7
+parse error: Invalid numeric literal at line 1, column 7
 === upgrade package (should warn) ===
 error: invalid value 'example' for '--upgrade-capability <UPGRADE_CAPABILITY>': ObjectID hex literal must start with 0x
 

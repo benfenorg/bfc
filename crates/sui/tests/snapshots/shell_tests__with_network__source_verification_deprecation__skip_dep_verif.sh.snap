@@ -57,11 +57,11 @@ exit_code: 0
 === publish dependency ===
 [Warning]: Dependency sources are no longer verified automatically during publication and upgrade, so the `--skip-dependency-verification` flag is no longer necessary.
 UPDATING GIT DEPENDENCY https://github.com/MystenLabs/sui.git
-jq: parse error: Invalid numeric literal at line 1, column 7
+parse error: Invalid numeric literal at line 1, column 7
 === publish package v0 (should NOT warn) ===
 [Warning]: Dependency sources are no longer verified automatically during publication and upgrade, so the `--skip-dependency-verification` flag is no longer necessary.
 UPDATING GIT DEPENDENCY https://github.com/MystenLabs/sui.git
-jq: parse error: Invalid numeric literal at line 1, column 7
+parse error: Invalid numeric literal at line 1, column 7
 === upgrade package (should NOT warn) ===
 error: invalid value 'example' for '--upgrade-capability <UPGRADE_CAPABILITY>': ObjectID hex literal must start with 0x
 
@@ -70,7 +70,7 @@ For more information, try '--help'.
 === try to publish with modified dep (should succeed) ===
 [Warning]: Dependency sources are no longer verified automatically during publication and upgrade, so the `--skip-dependency-verification` flag is no longer necessary.
 UPDATING GIT DEPENDENCY https://github.com/MystenLabs/sui.git
-jq: parse error: Invalid numeric literal at line 1, column 7
+parse error: Invalid numeric literal at line 1, column 7
 === try to upgrade with modified dep (should succeed) ===
 error: invalid value 'example' for '--upgrade-capability <UPGRADE_CAPABILITY>': ObjectID hex literal must start with 0x
 

@@ -54,12 +54,12 @@ group_ops.json
 hash.json
 hex.json
 hmac.json
-kiosk.json
 kiosk_extension.json
+kiosk.json
 linked_table.json
 math.json
-object.json
 object_bag.json
+object.json
 object_table.json
 package.json
 pay.json

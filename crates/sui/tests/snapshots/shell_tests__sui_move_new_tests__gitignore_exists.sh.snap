@@ -20,4 +20,4 @@ existing_ignore
 build/*
 
 ----- stderr -----
-mkdir: example: File exists
+mkdir: cannot create directory ‘example’: File exists
