@@ -1,6 +1,6 @@
 ---
 source: crates/sui/tests/shell_tests.rs
-description: tests/shell_tests/new_tests/gitignore_has_build.sh
+description: tests/shell_tests/sui_move_new_tests/gitignore_has_build.sh
 ---
 ----- script -----
 # Copyright (c) Mysten Labs, Inc.
@@ -21,14 +21,18 @@ ls -A example
 success: true
 exit_code: 0
 ----- stdout -----
+build/*
 ignore1
 build/*
 ignore2
 
 ==== files in example/ ====
 .gitignore
+Move.lock
 Move.toml
+build
 sources
 tests
 
 ----- stderr -----
+mkdir: example: File exists

@@ -24,24 +24,29 @@ echo "=== Disassemble ===" | tee /dev/stderr
 bfc move disassemble build/example/bytecode_modules/example.mv
 
 ----- results -----
-success: false
-exit_code: 101
+success: true
+exit_code: 0
 ----- stdout -----
 === Build ===
-Failed to build Move modules: Failed to resolve dependencies for package 'example'
-
-Caused by:
-    0: Fetching 'BfcSystem'
-    1: Failed to reset to latest Git state 'a4786abc9d4d' for package 'BfcSystem', to skip set --skip-fetch-latest-git-deps | Exit status: exit status: 128.
 === Disassemble ===
+// Move bytecode v6
+module 0.example {
+use 0000000000000000000000000000000000000000000000000000000000000002::tx_context;
+
+public foo(_ctx#0#0: &mut TxContext) {
+B0:
+	0: Ret
+}
+
+}
+
 
 ----- stderr -----
 === Build ===
-UPDATING GIT DEPENDENCY https://github.com/MystenLabs/sui.git
+[note] Dependencies on BfcSystem, Bridge, MoveStdlib, Sui, and SuiSystem are automatically added, but this feature is disabled for your package because you have explicitly included dependencies on Sui. Consider removing these dependencies from Move.toml.
+UPDATING GIT DEPENDENCY https://github.com/benfenorg/bfc.git
+INCLUDING DEPENDENCY Sui
+INCLUDING DEPENDENCY MoveStdlib
+BUILDING example
 === Disassemble ===
-
-thread 'main' panicked at crates/sui-move/src/disassemble.rs:62:9:
-Bad path to .mv file
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-2025-08-19T03:15:51.608479Z ERROR telemetry_subscribers: panicked at crates/sui-move/src/disassemble.rs:62:9:
-Bad path to .mv file panic.file="crates/sui-move/src/disassemble.rs" panic.line=62 panic.column=9
+[note] Dependencies on BfcSystem, Bridge, MoveStdlib, Sui, and SuiSystem are automatically added, but this feature is disabled for your package because you have explicitly included dependencies on Sui. Consider removing these dependencies from Move.toml.

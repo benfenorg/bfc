@@ -7,18 +7,21 @@ description: tests/shell_tests/with_network/summaries/summarize_json.sh
 # SPDX-License-Identifier: Apache-2.0
 
 # Default output format is JSON
-bfc move --client.config $CONFIG summary --package-id 0x2 --bytecode
+
+bfc client switch --env devnet
+bfc move summary --package-id 0x2 --bytecode
 ls -1 package_summaries
 ls -1 package_summaries/0x0000000000000000000000000000000000000000000000000000000000000002
 ls -1 package_summaries/0x0000000000000000000000000000000000000000000000000000000000000001
 cat package_summaries/root_package_metadata.json
 echo
 cat package_summaries/address_mapping.json
-
+bfc client switch --env localnet
 ----- results -----
 success: true
 exit_code: 0
 ----- stdout -----
+Active environment switched to [devnet]
 
 Summary generation successful. Summaries stored in 'package_summaries'
 0x0000000000000000000000000000000000000000000000000000000000000001
@@ -55,12 +58,10 @@ kiosk.json
 kiosk_extension.json
 linked_table.json
 math.json
-nitro_attestation.json
 object.json
 object_bag.json
 object_table.json
 package.json
-party.json
 pay.json
 poseidon.json
 priority_queue.json
@@ -84,7 +85,6 @@ address.json
 ascii.json
 bcs.json
 bit_vector.json
-bool.json
 debug.json
 fixed_point32.json
 hash.json
@@ -167,5 +167,8 @@ vector.json
 {
   "0x0000000000000000000000000000000000000000000000000000000000000001": "0x0000000000000000000000000000000000000000000000000000000000000001",
   "0x0000000000000000000000000000000000000000000000000000000000000002": "0x0000000000000000000000000000000000000000000000000000000000000002"
-}
+}Active environment switched to [localnet]
+
 ----- stderr -----
+[warning] Client/Server api version mismatch, client api version : 1.50.1, server api version : 1.23.0
+[warning] Client/Server api version mismatch, client api version : 1.50.1, server api version : 1.23.0

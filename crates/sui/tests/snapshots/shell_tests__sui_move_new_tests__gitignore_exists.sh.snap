@@ -1,6 +1,6 @@
 ---
 source: crates/sui/tests/shell_tests.rs
-description: tests/shell_tests/new_tests/gitignore_exists.sh
+description: tests/shell_tests/sui_move_new_tests/gitignore_exists.sh
 ---
 ----- script -----
 # Copyright (c) Mysten Labs, Inc.
@@ -20,3 +20,4 @@ existing_ignore
 build/*
 
 ----- stderr -----
+mkdir: example: File exists

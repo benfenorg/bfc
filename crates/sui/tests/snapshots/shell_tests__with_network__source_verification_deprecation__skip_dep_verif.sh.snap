@@ -57,7 +57,6 @@ exit_code: 0
 === publish dependency ===
 [Warning]: Dependency sources are no longer verified automatically during publication and upgrade, so the `--skip-dependency-verification` flag is no longer necessary.
 UPDATING GIT DEPENDENCY https://github.com/MystenLabs/sui.git
-致命错误：无法访问 'https://github.com/MystenLabs/sui.git/'：Failed to connect to github.com port 443 after 75003 ms: Couldn't connect to server
 jq: parse error: Invalid numeric literal at line 1, column 7
 === publish package v0 (should NOT warn) ===
 [Warning]: Dependency sources are no longer verified automatically during publication and upgrade, so the `--skip-dependency-verification` flag is no longer necessary.

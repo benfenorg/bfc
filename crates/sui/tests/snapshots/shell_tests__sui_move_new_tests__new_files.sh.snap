@@ -1,6 +1,6 @@
 ---
 source: crates/sui/tests/shell_tests.rs
-description: tests/shell_tests/new_tests/new_files.sh
+description: tests/shell_tests/sui_move_new_tests/new_files.sh
 ---
 ----- script -----
 # Copyright (c) Mysten Labs, Inc.
@@ -8,25 +8,24 @@ description: tests/shell_tests/new_tests/new_files.sh
 
 # basic test that bfc move new outputs correct files
 bfc move new example
-echo ==== files in project ====
+#echo ==== files in project ====
 ls -A example
-echo ==== files in sources ====
+#echo ==== files in sources ====
 ls -A example/sources
-echo ==== files in tests =====
+#echo ==== files in tests =====
 ls -A example/tests
 
 ----- results -----
 success: true
 exit_code: 0
 ----- stdout -----
-==== files in project ====
 .gitignore
+Move.lock
 Move.toml
+build
 sources
 tests
-==== files in sources ====
 example.move
-==== files in tests =====
 example_tests.move
 
 ----- stderr -----

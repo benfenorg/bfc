@@ -24,16 +24,15 @@ cat data/move_package/package_summaries/address_mapping.json
 success: false
 exit_code: 1
 ----- stdout -----
-UPDATING GIT DEPENDENCY https://github.com/MystenLabs/sui.git
 Failed to resolve dependencies for package 'move_package'
 
 Caused by:
-    0: Fetching 'BfcSystem'
-    1: Failed to reset to latest Git state 'a4786abc9d4d' for package 'BfcSystem', to skip set --skip-fetch-latest-git-deps | Exit status: exit status: 128
+    0: Parsing manifest for 'Sui'
+    1: No such file or directory (os error 2)
 
 
 ----- stderr -----
-致命错误：无法访问 'https://github.com/MystenLabs/sui.git/'：Failed to connect to github.com port 443 after 75003 ms: Couldn't connect to server
+[note] Dependencies on BfcSystem, Bridge, MoveStdlib, Sui, and SuiSystem are automatically added, but this feature is disabled for your package because you have explicitly included dependencies on Sui. Consider removing these dependencies from Move.toml.
 ls: data/move_package/package_summaries: No such file or directory
 ls: data/move_package/package_summaries/move_package: No such file or directory
 ls: data/move_package/package_summaries/sui: No such file or directory

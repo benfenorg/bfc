@@ -9,17 +9,18 @@ description: tests/shell_tests/sui_move_new_tests/new_then_build.sh
 # tests that sui move new followed by sui move build succeeds
 
 bfc move new example
+
+
 cd example && bfc move build
 
 ----- results -----
-success: false
-exit_code: 1
+success: true
+exit_code: 0
 ----- stdout -----
-Failed to build Move modules: Failed to resolve dependencies for package 'example'
-
-Caused by:
-    0: Fetching 'BfcSystem'
-    1: Failed to reset to latest Git state 'a4786abc9d4d' for package 'BfcSystem', to skip set --skip-fetch-latest-git-deps | Exit status: exit status: 128.
 
 ----- stderr -----
-UPDATING GIT DEPENDENCY https://github.com/MystenLabs/sui.git
+[note] Dependencies on BfcSystem, Bridge, MoveStdlib, Sui, and SuiSystem are automatically added, but this feature is disabled for your package because you have explicitly included dependencies on Sui. Consider removing these dependencies from Move.toml.
+UPDATING GIT DEPENDENCY https://github.com/benfenorg/bfc.git
+INCLUDING DEPENDENCY Sui
+INCLUDING DEPENDENCY MoveStdlib
+BUILDING example

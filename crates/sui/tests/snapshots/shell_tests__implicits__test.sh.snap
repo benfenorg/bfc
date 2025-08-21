@@ -16,7 +16,7 @@ exit_code: 1
 Failed to resolve dependencies for package 'example'
 
 Caused by:
-    0: Fetching 'BfcSystem'
-    1: Failed to reset to latest Git state 'a4786abc9d4d' for package 'BfcSystem', to skip set --skip-fetch-latest-git-deps | Exit status: exit status: 128
+    0: Parsing manifest for 'Sui'
+    1: No such file or directory (os error 2)
 
 ----- stderr -----
