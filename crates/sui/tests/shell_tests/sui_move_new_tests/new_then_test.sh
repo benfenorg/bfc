@@ -3,4 +3,5 @@
 
 # check that sui move new followed by sui move test succeeds
 bfc move new example
+
 cd example && bfc move test
