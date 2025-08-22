@@ -34,7 +34,6 @@ fun new(ctx: &mut TxContext): Anonymous_Balance<ABFC> {
     assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
     assert!(tx_context::epoch(ctx) == 0, EAlreadyMinted);
 
-
     let (treasury, metadata) = anonymous_coin::create_currency(
         ABFC {},
         9,
