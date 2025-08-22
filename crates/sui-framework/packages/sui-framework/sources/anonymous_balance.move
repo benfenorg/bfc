@@ -223,7 +223,7 @@ public fun destroy_zero<T>(balance: Anonymous_Balance<T>, signatures: vector<u8>
 
 
 /// Destroy a `Supply` preventing any further minting and burning.
-public(package) fun destroy_supply<T>(self: Supply<T>): u64 {
+public fun destroy_supply<T>(self: Supply<T>): u64 {
     let Supply { value } = self;
     value
 }

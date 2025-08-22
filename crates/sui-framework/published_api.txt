@@ -2132,7 +2132,7 @@ destroy_zero
 	public fun
 	0x2::anonymous_balance
 destroy_supply
-	public(package) fun
+	public fun
 	0x2::anonymous_balance
 Anonymous_Coin
 	public struct

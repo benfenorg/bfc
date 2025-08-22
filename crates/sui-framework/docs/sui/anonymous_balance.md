@@ -652,7 +652,7 @@ Destroy a zero <code>Balance</code>.
 Destroy a <code><a href="../sui/anonymous_balance.md#sui_anonymous_balance_Supply">Supply</a></code> preventing any further minting and burning.
 
 
-<pre><code><b>public</b>(<a href="../sui/package.md#sui_package">package</a>) <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_destroy_supply">destroy_supply</a>&lt;T&gt;(self: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Supply">sui::anonymous_balance::Supply</a>&lt;T&gt;): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_destroy_supply">destroy_supply</a>&lt;T&gt;(self: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Supply">sui::anonymous_balance::Supply</a>&lt;T&gt;): u64
 </code></pre>
 
 
@@ -661,7 +661,7 @@ Destroy a <code><a href="../sui/anonymous_balance.md#sui_anonymous_balance_Suppl
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<a href="../sui/package.md#sui_package">package</a>) <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_destroy_supply">destroy_supply</a>&lt;T&gt;(self: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Supply">Supply</a>&lt;T&gt;): u64 {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_destroy_supply">destroy_supply</a>&lt;T&gt;(self: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Supply">Supply</a>&lt;T&gt;): u64 {
     <b>let</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Supply">Supply</a> { <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value">value</a> } = self;
     <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value">value</a>
 }

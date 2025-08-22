@@ -1,7 +1,7 @@
 module anonymous_usd::anonymous_usd;
 
 
-use sui::coin;
+use sui::anonymous_coin;
 use sui::anonymous_balance::Anonymous_Balance;
 
 public struct ABUSD has drop {}
@@ -12,7 +12,7 @@ const TOTAL_SUPPLY_MIST: u64 = 1_000_000_000_000_000_000;
 
 #[allow(unused_function)]
 public fun new(ctx: &mut TxContext): Anonymous_Balance<ABUSD> {
-    let (treasury, metadata) = coin::create_currency(
+    let (treasury, metadata) = anonymous_coin::create_currency(
         ABUSD {},
         9,
         b"ABUSD",
@@ -29,7 +29,7 @@ public fun new(ctx: &mut TxContext): Anonymous_Balance<ABUSD> {
     total_anonymous_usd
 }
 
-public entry fun transfer(c: coin::Coin<ABUSD>, recipient: address) {
+public entry fun transfer(c: anonymous_coin::Coin<ABUSD>, recipient: address) {
     transfer::public_transfer(c, recipient)
 }
 
