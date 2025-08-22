@@ -438,7 +438,6 @@ mod tests {
         info!("Multiply Result recover to u64:{}", multiply_result);
         assert_eq!(multiply_result, 200);
 
-
         //test 20 > 5
         let compare_result = client
             .test_compare(

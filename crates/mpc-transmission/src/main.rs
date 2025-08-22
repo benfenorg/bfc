@@ -2,9 +2,10 @@ use std::env::args;
 
 #[allow(unused_imports)]
 use mpc_transmission::{
-    SecretSharingError, generate_shares_with_xor,
+    generate_shares_with_xor,
     math::{add_shared_secrets, mul_shared_secrets, sub_shared_secrets},
     read::{get_mask_by_key, read_numeric_json},
+    error::SecretSharingError,
 };
 
 fn main() -> Result<(), SecretSharingError> {
@@ -13,16 +14,17 @@ fn main() -> Result<(), SecretSharingError> {
     let total_shares = 10; // Total number of shares
 
     // 1. Get file path parameter or use default value
-    let file_path = args()
-        .nth(1)
-        .unwrap_or_else(|| "data.json".to_string());
+    let file_path = args().nth(1).unwrap_or_else(|| "data.json".to_string());
 
     // 2. Read JSON file
     println!("Loading mask file: {}", file_path);
     let mask_data = read_numeric_json(&file_path)?;
 
     // 3. Display all available keys
-    println!("Available mask keys: {:?}", mask_data.keys().collect::<Vec<_>>());
+    println!(
+        "Available mask keys: {:?}",
+        mask_data.keys().collect::<Vec<_>>()
+    );
 
     // 4. Get user input key (simplified as hardcoded here, can use std::io to read user input in practice)
     let selected_key = 2; // Example key
@@ -92,9 +94,21 @@ fn test_operations(
 
     // Verify results
     println!("Original values: a = {}, b = {}", a, b);
-    println!("Addition result: {} (expected: {})", add_result, a.wrapping_add(b));
-    println!("Subtraction result: {} (expected: {})", sub_result, a.wrapping_sub(b));
-    println!("Multiplication result: {} (expected: {})", mul_result, a.wrapping_mul(b));
+    println!(
+        "Addition result: {} (expected: {})",
+        add_result,
+        a.wrapping_add(b)
+    );
+    println!(
+        "Subtraction result: {} (expected: {})",
+        sub_result,
+        a.wrapping_sub(b)
+    );
+    println!(
+        "Multiplication result: {} (expected: {})",
+        mul_result,
+        a.wrapping_mul(b)
+    );
 
     assert_eq!(add_result, a.wrapping_add(b));
     assert_eq!(sub_result, a.wrapping_sub(b));

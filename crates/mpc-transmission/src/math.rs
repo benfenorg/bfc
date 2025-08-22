@@ -1,5 +1,5 @@
 #[allow(unused_imports)]
-use crate::{SecretSharingError, Share, generate_shares_with_xor, recover_secret_with_xor};
+use crate::{generate_shares_with_xor, recover_secret_with_xor, SecretSharingError, Share};
 
 // Using approach one: first recover the original secret during computation, then perform calculation, output u64 calculation result
 //
@@ -172,26 +172,22 @@ mod tests {
         let (shares1, shares2, threshold) = setup_test_secrets();
 
         // Provided shares < threshold
-        assert!(
-            add_shared_secrets(
-                &shares1[..threshold - 1], // One share less
-                &shares2[..threshold],
-                threshold,
-                TEST_MASK,
-                TEST_MASK,
-            )
-            .is_err()
-        );
+        assert!(add_shared_secrets(
+            &shares1[..threshold - 1], // One share less
+            &shares2[..threshold],
+            threshold,
+            TEST_MASK,
+            TEST_MASK,
+        )
+        .is_err());
 
-        assert!(
-            sub_shared_secrets(
-                &shares1[..threshold],
-                &shares2[..threshold - 1],
-                threshold,
-                TEST_MASK,
-                TEST_MASK,
-            )
-            .is_err()
-        );
+        assert!(sub_shared_secrets(
+            &shares1[..threshold],
+            &shares2[..threshold - 1],
+            threshold,
+            TEST_MASK,
+            TEST_MASK,
+        )
+        .is_err());
     }
 }
