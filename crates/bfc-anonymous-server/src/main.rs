@@ -468,25 +468,25 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                     )
                     .is_ok();
                     info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
-                    // if pass_verify_signature == true {
-                    //     match get_object_owneraddress(objectid.clone()).await {
-                    //         Ok(owner_address_value) => {
-                    //             let sui_address_from_send = public_key_bytes_to_sui_address(
-                    //                 restore_value_params.publickey.clone(),
-                    //             );
-                    //             let owner_address_from_send =
-                    //                 AccountAddress::from(sui_address_from_send);
-                    //             let evm_addr_from_system =
-                    //                 convert_to_evm_address(owner_address_value.clone());
-                    //             pass_verify_signature = evm_addr_from_system
-                    //                 == owner_address_from_send.to_hex_with_hex_head();
-                    //         }
-                    //         Err(error) => {
-                    //             info!("failed get owner address: {}", error);
-                    //             pass_verify_signature = false;
-                    //         }
-                    //     }
-                    // }
+                    if pass_verify_signature == true {
+                        match get_object_owneraddress(objectid.clone()).await {
+                            Ok(owner_address_value) => {
+                                let sui_address_from_send = public_key_bytes_to_sui_address(
+                                    restore_value_params.publickey.clone(),
+                                );
+                                let owner_address_from_send =
+                                    AccountAddress::from(sui_address_from_send);
+                                let evm_addr_from_system =
+                                    convert_to_evm_address(owner_address_value.clone());
+                                pass_verify_signature = evm_addr_from_system
+                                    == owner_address_from_send.to_hex_with_hex_head();
+                            }
+                            Err(error) => {
+                                info!("failed get owner address: {}", error);
+                                pass_verify_signature = false;
+                            }
+                        }
+                    }
 
                     if pass_verify_signature == false {
                         return JsonRpcResponse {
