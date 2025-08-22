@@ -357,6 +357,7 @@ mod tests {
             )
             .await;
         info!("Add Result recover to u64:{}", add_result);
+        assert_eq!(add_result, 30);
 
         //test 20 - 10
         let minus_result = client
@@ -395,6 +396,7 @@ mod tests {
             )
             .await;
         info!("Minus Result recover to u64:{}", minus_result);
+        assert_eq!(minus_result, 10);
 
         //test 20 * 10
         let multiply_result = client
@@ -420,6 +422,7 @@ mod tests {
             .response
             .unwrap();
         info!("Multiply Result: {:?}", multiply_result);
+
         let multiply_result = client
             .test_recover_with_signature(
                 multiply_result["result"]["result1"]
@@ -433,6 +436,8 @@ mod tests {
             )
             .await;
         info!("Multiply Result recover to u64:{}", multiply_result);
+        assert_eq!(multiply_result, 200);
+
 
         //test 20 > 5
         let compare_result = client
