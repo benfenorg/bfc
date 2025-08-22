@@ -97,8 +97,8 @@ pub fn hfe_ops_add(
         Ok(NativeResult::ok(
             cost,
             smallvec![
-                Value::vector_u8(hex::decode(result.value1).unwrap()),
-                Value::vector_u8(hex::decode(result.value2).unwrap())
+                Value::vector_u8(result.value1.into_bytes()),
+                Value::vector_u8(result.value2.into_bytes())
             ]
         ))
     } else {
@@ -357,8 +357,8 @@ pub fn hfe_ops_split_value(context: &mut NativeContext,
         Ok(NativeResult::ok(
             cost,
             smallvec![
-                Value::vector_u8(hex::decode(result.value1).unwrap()),
-                Value::vector_u8(hex::decode(result.value2).unwrap())
+                Value::vector_u8(result.value1.into_bytes()),
+                Value::vector_u8(result.value2.into_bytes())
             ]
         ))
     } else {
@@ -482,6 +482,7 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
     let num2 = String::from_utf8(number2).unwrap();
 
     if *enable_anonymous_rpc == Some(true) {
+        info!("hfe_ops_restore_value calculate in local");
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
         let result = client.restore_value(num1, num2, signature, id, publickey);
         Ok(NativeResult::ok(
@@ -489,6 +490,8 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
             smallvec![Value::u64(result.value1.parse::<u64>().expect("Failed to parse number"))],
         ))
     } else {
+        info!("hfe_ops_restore_value calculate in local num1{:?} num2{:?}", num1, num2);
+
         match recover_value(num1, num2) {
             Ok(value) => {
                 Ok(NativeResult::ok(
