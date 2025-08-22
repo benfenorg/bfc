@@ -4,28 +4,41 @@ module sui::hfe_ops_test {
     //use std::uq32_32::le;
     //use sui::hex;
     use sui::hfe_ops;
+    use sui:: anonymous_balance::{Self};
+
     #[test]
-    fun test_hfe_ops_add_call_rpc() {
-        let result = hfe_ops::hfe_ops_minus(b"2", b"3", b"4", b"5");
-     //   let data1 = result[0];
-     //   let data2 = result[1];
-     //   debug::print(&data1);
-     //   debug::print(&data2);
-       //assert!(&data1 == 7);
-       // assert!(&data2 == 7);
+    fun test_hfe_ops_add() {
+       let (value0, value1) = anonymous_balance::anoymous_coin_split_value(10);
+       let (value2, value3) = anonymous_balance::anoymous_coin_split_value(11);
+
+       let (result0, result1) = hfe_ops::hfe_ops_add(value0, value1, value2, value3);
+       assert!(anonymous_balance::compare_anoymous_coin(result0, result1, 21) == 0);
     }
 
-   // #[test]
-   // fun test_hfe_ops_split_value() {
-   //     let result = hfe_ops::hfe_ops_split_value(5);
-   //     let data1 = result[0];
-   //     let data2 = result[1];
-   //     debug::print(&data1);
-   //     debug::print(&data2);
-   //     assert!(&data1 == 2);
-   //     assert!(&data2 == 3);
-       // assert!(&data1 == 5);
-    //}
+    #[test]
+    fun test_hfe_ops_minus() {
+        let (value0, value1) = anonymous_balance::anoymous_coin_split_value(22);
+        let (value2, value3) = anonymous_balance::anoymous_coin_split_value(11);
+
+        let (result0, result1) = hfe_ops::hfe_ops_minus(value0, value1, value2, value3);
+        assert!(anonymous_balance::compare_anoymous_coin(result0, result1, 11) == 0);
+    }
+
+    #[test]
+    fun test_hfe_ops_multiplied() {
+         let (value0, value1) = anonymous_balance::anoymous_coin_split_value(22);
+         let (value2, value3) = anonymous_balance::anoymous_coin_split_value(10);
+
+         let (result0, result1) = hfe_ops::hfe_ops_multiplied(value0, value1, value2, value3);
+         assert!(anonymous_balance::compare_anoymous_coin(result0, result1, 220) == 0);
+    }
+
+    #[test]
+   fun test_hfe_ops_split_value() {
+        let (result0, result1) = hfe_ops::hfe_ops_split_value(5);
+        assert!(anonymous_balance::compare_anoymous_coin(result0, result1, 5) == 0);
+        assert!(anonymous_balance::compare_anoymous_coin(result0, result1, 10) == 2);
+   }
 
   //  #[test]
   //  fun test_hfe_ops_restore_value() {
@@ -37,13 +50,5 @@ module sui::hfe_ops_test {
   //      debug::print(&data1);
   //      assert!(&data1 == 9);
   //  }
-
-    // #[test]
-    // fun test_split_data() {
-    //
-    //     let pk1 = x"4f0adab8fe9f36875f6b7f28d9679c37ab2c96224e50224b5bda5add5b1ee7bb";
-    //     let result = hfe_ops::split_data(&pk1, 3, 1);
-    //     assert!(result.length() != 0);
-    // }
 }
 

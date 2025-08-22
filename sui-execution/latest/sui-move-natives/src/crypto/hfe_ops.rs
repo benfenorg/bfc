@@ -90,6 +90,7 @@ pub fn hfe_ops_add(
     let num4 = String::from_utf8(number4).unwrap();
 
     if *enable_anonymous_rpc == Some(true) {
+        info!("hfe_ops_add calculate in remote");
         let cost = context.gas_used();
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
         let result = client.add(num1, num2, num3, num4);
@@ -101,6 +102,7 @@ pub fn hfe_ops_add(
             ]
         ))
     } else {
+        info!("hfe_ops_add calculate in local");
         let cost = context.gas_used();
         let value1_share = recover_shares(num1, num2);
         let value2_share = recover_shares(num3, num4);
@@ -176,6 +178,7 @@ pub fn hfe_ops_minus(
     let num4 = String::from_utf8(number4).unwrap();
 
     if *enable_anonymous_rpc == Some(true) {
+        info!("hfe_ops_minus calculate in remote");
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
         let result = client.minus(num1, num2, num3, num4);
         Ok(NativeResult::ok(
@@ -186,6 +189,7 @@ pub fn hfe_ops_minus(
             ]
         ))
     } else {
+        info!("hfe_ops_minus calculate in local");
         let value1_share = recover_shares(num1, num2);
         let value2_share = recover_shares(num3, num4);
 
@@ -262,6 +266,8 @@ pub fn hfe_ops_multiplied(
     let num4 = String::from_utf8(number4).unwrap();
 
     if *enable_anonymous_rpc == Some(true) {
+        info!("hfe_ops_minus calculate in remote");
+
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
         let result = client.multiply(num1, num2, num3, num4);
         Ok(NativeResult::ok(
@@ -272,6 +278,8 @@ pub fn hfe_ops_multiplied(
             ]
         ))
     } else {
+        info!("hfe_ops_minus calculate in local");
+
         let value1_share =  recover_shares(num1, num2);
         let value2_share =  recover_shares(num3, num4);
 
@@ -355,10 +363,9 @@ pub fn hfe_ops_split_value(context: &mut NativeContext,
         ))
     } else {
         let (result1, result2) = split_value(value);
-
         Ok(NativeResult::ok(
             cost,
-            smallvec![Value::vector_u8(result1.into_bytes()),Value::vector_u8(result2.into_bytes())]
+            smallvec![Value::vector_u8(result1.into_bytes()), Value::vector_u8(result2.into_bytes())]
         ))
     }
 }

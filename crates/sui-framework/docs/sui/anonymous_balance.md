@@ -138,15 +138,6 @@ d to store coins which don't need the key ability.
 
 
 
-<a name="sui_anonymous_balance_EAddOverFlow"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_EAddOverFlow">EAddOverFlow</a>: u64 = 5;
-</code></pre>
-
-
-
 <a name="sui_anonymous_balance_ENonZero"></a>
 
 For when trying to destroy a non-zero balance.
@@ -173,15 +164,6 @@ For when an overflow is happening on Supply operations.
 
 
 <pre><code><b>const</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_EOverflow">EOverflow</a>: u64 = 1;
-</code></pre>
-
-
-
-<a name="sui_anonymous_balance_ESplitValueFailed"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_ESplitValueFailed">ESplitValueFailed</a>: u64 = 6;
 </code></pre>
 
 
@@ -271,9 +253,7 @@ string::utf8(buffer).into_bytes()
     //todo: <b>use</b> <a href="../sui/hfe_ops.md#sui_hfe_ops">hfe_ops</a> to <a href="../sui/anonymous_balance.md#sui_anonymous_balance_split">split</a> the <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value">value</a> into two parts
     // <b>let</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a> = <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value">value</a>/2;
     // <b>let</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a> = <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value">value</a> - <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>;
-    <b>let</b> result = hfe_ops_split_value(<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value">value</a>);
-    <b>let</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a> = result[0];
-    <b>let</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a> = result[1];
+    <b>let</b> (<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>)   = hfe_ops_split_value(<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value">value</a>);
     string::append(&<b>mut</b> encode_data, string::utf8(<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>));
     string::append_utf8(&<b>mut</b> encode_data, b",");
     string::append(&<b>mut</b> encode_data, string::utf8(<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>));
@@ -584,11 +564,10 @@ Join two balances together.
         <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>,
         <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>
     } = <a href="../sui/balance.md#sui_balance">balance</a>;
-    <b>let</b> val = hfe_ops_add(string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>), string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>),
+    <b>let</b> (val0, val1) = hfe_ops_add(string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>), string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>),
         string::into_bytes(<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>), string::into_bytes(<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>));
-    <b>assert</b>!(vector::length(&val) &gt;= 2, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_EAddOverFlow">EAddOverFlow</a>);
-    self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a> = string::utf8(val[0]);
-    self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a> = string::utf8(val[1]);
+    self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a> = string::utf8(val0);
+    self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a> = string::utf8(val1);
     self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_update_encode_data">update_encode_data</a>();
     (self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>)
 }
@@ -617,15 +596,13 @@ Split a <code>Balance</code> and take a sub balance from it.
 <pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_split">split</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value">value</a>: u64): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
     <b>let</b> compare_result: u8 = hfe_ops_compare_value(string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>), string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>), <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value">value</a>);
     <b>assert</b>!(compare_result != <a href="../sui/anonymous_balance.md#sui_anonymous_balance_DEFAULT_EQUIVALENT_RESULT_VALUE">DEFAULT_EQUIVALENT_RESULT_VALUE</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_ENotEnough">ENotEnough</a>);
-    <b>let</b> result = hfe_ops_split_value(<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value">value</a>);
-    <b>assert</b>!(vector::length(&result) &gt;= 2, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_ESplitValueFailed">ESplitValueFailed</a>);
-    <b>let</b> value3 = string::utf8(result[0]);
-    <b>let</b> value4 = string::utf8(result[1]);
-    <b>let</b> val = hfe_ops_minus(string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>), string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>),
+    <b>let</b> (result0, result1) = hfe_ops_split_value(<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value">value</a>);
+    <b>let</b> value3 = string::utf8(result0);
+    <b>let</b> value4 = string::utf8(result1);
+    <b>let</b> (val0, val1) = hfe_ops_minus(string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>), string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>),
         string::into_bytes(value3), string::into_bytes(value4));
-    <b>assert</b>!(vector::length(&val) &gt;= 2, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_ESplitValueFailed">ESplitValueFailed</a>);
-    self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a> = string::utf8(val[0]);
-    self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a> = string::utf8(val[1]);
+    self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a> = string::utf8(val0);
+    self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a> = string::utf8(val1);
     self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_update_encode_data">update_encode_data</a>();
     <a href="../sui/anonymous_balance.md#sui_anonymous_balance_create_by_value">create_by_value</a>(<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value">value</a>)
 }

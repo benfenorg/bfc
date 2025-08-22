@@ -22,11 +22,6 @@ const ENotEnough: u64 = 2;
 // System operation performed for a coin other than SUI
 //const ENotSUI: u64 = 4;
 
-const EAddOverFlow: u64 = 5;
-
-const ESplitValueFailed: u64 = 6;
-
-
 const DEFAULT_EQUIVALENT_RESULT_VALUE: u8 = 2;
 
 /// A Supply of T. Used for minting and burning.
@@ -84,10 +79,7 @@ public fun create_by_value<T>(value: u64): Anonymous_Balance<T> {
     // let value1 = value/2;
     // let value2 = value - value1;
 
-    let result = hfe_ops_split_value(value);
-    let value1 = result[0];
-    let value2 = result[1];
-
+    let (value1, value2)   = hfe_ops_split_value(value);
     string::append(&mut encode_data, string::utf8(value1));
     string::append_utf8(&mut encode_data, b",");
     string::append(&mut encode_data, string::utf8(value2));
@@ -181,11 +173,10 @@ public fun join<T>(self: &mut Anonymous_Balance<T>, balance: Anonymous_Balance<T
         value2: value2
     } = balance;
 
-    let val = hfe_ops_add(string::into_bytes(self.value1), string::into_bytes(self.value2),
+    let (val0, val1) = hfe_ops_add(string::into_bytes(self.value1), string::into_bytes(self.value2),
         string::into_bytes(value1), string::into_bytes(value2));
-    assert!(vector::length(&val) >= 2, EAddOverFlow);
-    self.value1 = string::utf8(val[0]);
-    self.value2 = string::utf8(val[1]);
+    self.value1 = string::utf8(val0);
+    self.value2 = string::utf8(val1);
 
     self.update_encode_data();
     (self.value1, self.value2)
@@ -195,19 +186,16 @@ public fun join<T>(self: &mut Anonymous_Balance<T>, balance: Anonymous_Balance<T
 public fun split<T>(self: &mut Anonymous_Balance<T>, value: u64): Anonymous_Balance<T> {
     let compare_result: u8 = hfe_ops_compare_value(string::into_bytes(self.value1), string::into_bytes(self.value2), value);
     assert!(compare_result != DEFAULT_EQUIVALENT_RESULT_VALUE, ENotEnough);
-    let result = hfe_ops_split_value(value);
-    assert!(vector::length(&result) >= 2, ESplitValueFailed);
+    let (result0, result1) = hfe_ops_split_value(value);
 
-    let value3 = string::utf8(result[0]);
-    let value4 = string::utf8(result[1]);
+    let value3 = string::utf8(result0);
+    let value4 = string::utf8(result1);
 
-    let val = hfe_ops_minus(string::into_bytes(self.value1), string::into_bytes(self.value2),
+    let (val0, val1) = hfe_ops_minus(string::into_bytes(self.value1), string::into_bytes(self.value2),
         string::into_bytes(value3), string::into_bytes(value4));
 
-    assert!(vector::length(&val) >= 2, ESplitValueFailed);
-
-    self.value1 = string::utf8(val[0]);
-    self.value2 = string::utf8(val[1]);
+    self.value1 = string::utf8(val0);
+    self.value2 = string::utf8(val1);
 
     self.update_encode_data();
 
@@ -264,7 +252,12 @@ public fun create_supply_for_testing<T>(): Supply<T> {
     Supply { value: 0 }
 }
 
-//#[test_only]
-//public fun compare_anoymous_coin(input1: u64, input2: u64, input3: u64): u8 {
-//    hfe_ops_compare_value(input1, input2, input3)
-//}
+#[test_only]
+public fun compare_anoymous_coin(input1: vector<u8>, input2: vector<u8>, input3: u64): u8 {
+    hfe_ops_compare_value(input1, input2, input3)
+}
+
+#[test_only]
+public fun anoymous_coin_split_value(input1: u64): (vector<u8>, vector<u8>) {
+    hfe_ops_split_value(input1)
+}
