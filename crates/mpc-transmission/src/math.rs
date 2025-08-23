@@ -13,7 +13,10 @@ pub fn add_shared_secrets(
 ) -> Result<u64, SecretSharingError> {
     let secret1 = recover_secret_with_xor(shares1, threshold, mask1)?;
     let secret2 = recover_secret_with_xor(shares2, threshold, mask2)?;
-    Ok(secret1.wrapping_add(secret2))
+    secret1.checked_add(secret2)
+        .ok_or_else(|| SecretSharingError::ArithmeticOverflow { 
+            operation: "addition".to_string() 
+        })
 }
 
 /// Subtraction operation
@@ -26,7 +29,10 @@ pub fn sub_shared_secrets(
 ) -> Result<u64, SecretSharingError> {
     let secret1 = recover_secret_with_xor(shares1, threshold, mask1)?;
     let secret2 = recover_secret_with_xor(shares2, threshold, mask2)?;
-    Ok(secret1.wrapping_sub(secret2))
+    secret1.checked_sub(secret2)
+        .ok_or_else(|| SecretSharingError::ArithmeticOverflow { 
+            operation: "subtraction".to_string() 
+        })
 }
 
 /// Multiplication operation
@@ -39,7 +45,10 @@ pub fn mul_shared_secrets(
 ) -> Result<u64, SecretSharingError> {
     let secret1 = recover_secret_with_xor(shares1, threshold, mask1)?;
     let secret2 = recover_secret_with_xor(shares2, threshold, mask2)?;
-    Ok(secret1.wrapping_mul(secret2))
+    secret1.checked_mul(secret2)
+        .ok_or_else(|| SecretSharingError::ArithmeticOverflow { 
+            operation: "multiplication".to_string() 
+        })
 }
 
 #[cfg(test)]
@@ -81,7 +90,7 @@ mod tests {
         assert_eq!(result, 12345 + 67890);
     }
 
-    // Test subtraction: secret1 - secret2 (using wrapping_sub to handle unsigned numbers)
+    // Test subtraction: secret1 - secret2 (should fail due to underflow)
     #[test]
     fn test_subtraction() {
         let (shares1, shares2, threshold) = setup_test_secrets();
@@ -92,10 +101,34 @@ mod tests {
             threshold,
             TEST_MASK,
             TEST_MASK,
+        );
+
+        // 12345 - 67890 should underflow, so this should return an error
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), SecretSharingError::ArithmeticOverflow { operation } if operation == "subtraction"));
+    }
+
+    // Test subtraction that doesn't overflow
+    #[test]
+    fn test_subtraction_no_overflow() {
+        let threshold = 2;
+        let total_shares = 3;
+        let secret_large = 1000;
+        let secret_small = 500;
+
+        let shares_large = generate_shares_with_xor(secret_large, threshold, total_shares, TEST_MASK).unwrap();
+        let shares_small = generate_shares_with_xor(secret_small, threshold, total_shares, TEST_MASK).unwrap();
+
+        let result = sub_shared_secrets(
+            &shares_large[..threshold],
+            &shares_small[..threshold],
+            threshold,
+            TEST_MASK,
+            TEST_MASK,
         )
         .unwrap();
 
-        assert_eq!(result, 12345u64.wrapping_sub(67890));
+        assert_eq!(result, 1000 - 500);
     }
 
     // Test multiplication: secret1 * secret2
@@ -132,7 +165,7 @@ mod tests {
         let shares_max =
             generate_shares_with_xor(secret_max, threshold, total_shares, TEST_MASK).unwrap();
 
-        // 0 * MAX = 0
+        // 0 * MAX = 0 (no overflow)
         let mul_result = mul_shared_secrets(
             &shares_zero[..threshold],
             &shares_max[..threshold],
@@ -143,27 +176,49 @@ mod tests {
         .unwrap();
         assert_eq!(mul_result, 0);
 
-        // 1 - MAX = 2 (wrapping_sub result)
+        // 1 - MAX should overflow (subtraction underflow)
         let sub_result = sub_shared_secrets(
             &shares_one[..threshold],
             &shares_max[..threshold],
             threshold,
             TEST_MASK,
             TEST_MASK,
-        )
-        .unwrap();
-        assert_eq!(sub_result, 1u64.wrapping_sub(u64::MAX));
+        );
+        assert!(sub_result.is_err());
+        assert!(matches!(sub_result.unwrap_err(), SecretSharingError::ArithmeticOverflow { operation } if operation == "subtraction"));
 
-        // MAX + 1 = 0 (wrapping_add result)
+        // MAX + 1 should overflow (addition overflow)
         let add_result = add_shared_secrets(
             &shares_max[..threshold],
             &shares_one[..threshold],
             threshold,
             TEST_MASK,
             TEST_MASK,
-        )
-        .unwrap();
-        assert_eq!(add_result, 0);
+        );
+        assert!(add_result.is_err());
+        assert!(matches!(add_result.unwrap_err(), SecretSharingError::ArithmeticOverflow { operation } if operation == "addition"));
+    }
+
+    // Test multiplication overflow
+    #[test]
+    fn test_multiplication_overflow() {
+        let threshold = 2;
+        let total_shares = 3;
+        let secret_large = u64::MAX / 2 + 1; // A large number that will cause overflow when multiplied by 2
+
+        let shares_large = generate_shares_with_xor(secret_large, threshold, total_shares, TEST_MASK).unwrap();
+        let shares_two = generate_shares_with_xor(2, threshold, total_shares, TEST_MASK).unwrap();
+
+        // This should overflow
+        let mul_result = mul_shared_secrets(
+            &shares_large[..threshold],
+            &shares_two[..threshold],
+            threshold,
+            TEST_MASK,
+            TEST_MASK,
+        );
+        assert!(mul_result.is_err());
+        assert!(matches!(mul_result.unwrap_err(), SecretSharingError::ArithmeticOverflow { operation } if operation == "multiplication"));
     }
 
     // Test error when insufficient shares

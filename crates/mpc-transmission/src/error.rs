@@ -39,4 +39,7 @@ pub enum SecretSharingError {
     FileNotFound(String),
     #[error("Data validation failed: {0}")]
     ValidationFailed(String),
+    
+    #[error("Arithmetic overflow: {operation} overflow occurred")]
+    ArithmeticOverflow { operation: String },
 }
