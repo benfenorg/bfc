@@ -11,8 +11,7 @@ use move_vm_runtime::native_charge_gas_early_exit;
 use move_vm_runtime::native_functions::NativeContext;
 use smallvec::smallvec;
 use crate::NativesCostTable;
-use mpc_transmission::math::{sub_shared_secrets, mul_shared_secrets, add_shared_secrets};
-use mpc_transmission::two_party_share::{recover_two_shares, recover_value, split_to_two_value};
+use mpc_transmission::two_party_share::{mul_two_shared_secrets, sub_two_shared_secrets, recover_two_shares, recover_value, split_to_two_value, add_two_shared_secrets};
 
 use move_vm_types::{
     loaded_data::runtime_types::Type, natives::function::NativeResult, pop_arg,values::Value
@@ -98,6 +97,8 @@ pub fn hfe_ops_add(
             ]
         ))
     } else {
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
+
         info!("hfe_ops_add calculate in local");
         let cost = context.gas_used();
         let value1_share = recover_two_shares(num1, num2);
@@ -108,17 +109,9 @@ pub fn hfe_ops_add(
                 INVALID_PARAMS_ERROR,
             ));
         }
-        match add_shared_secrets( &value1_share.unwrap()[..THRESHOLD],
-                                  &value2_share.unwrap()[..THRESHOLD],
-                                  THRESHOLD,
-                                  MASK_SECRET,
-                                  MASK_SECRET,
-        ){
+        match add_two_shared_secrets(value1_share.unwrap(), value2_share.unwrap(), mask){
             Ok(result) => {
-                let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
-
                 let (result1, result2) = split_to_two_value(result, mask);
-
                 Ok(NativeResult::ok(
                     cost,
                     smallvec![Value::vector_u8(result1.into_bytes()),Value::vector_u8(result2.into_bytes())]
@@ -199,12 +192,10 @@ pub fn hfe_ops_minus(
                 ));
         }
 
-        match sub_shared_secrets(
-            &value1_share.unwrap()[..THRESHOLD],
-            &value2_share.unwrap()[..THRESHOLD],
-            THRESHOLD,
-            MASK_SECRET,
-            MASK_SECRET,
+        match sub_two_shared_secrets(
+            value1_share.unwrap(),
+            value2_share.unwrap(),
+            mask
         ) {
             Ok(result) => {
                 let (result1, result2) = split_to_two_value(result, mask);
@@ -290,13 +281,7 @@ pub fn hfe_ops_multiplied(
             ));
         }
 
-        match mul_shared_secrets(
-            &value1_share.unwrap()[..THRESHOLD],
-            &value2_share.unwrap()[..THRESHOLD],
-            THRESHOLD,
-            MASK_SECRET,
-            MASK_SECRET,
-        ) {
+        match mul_two_shared_secrets(value1_share.unwrap(), value2_share.unwrap(), mask) {
             Ok(result) => {
                 let (result1, result2) = split_to_two_value(result, mask);
 
@@ -484,7 +469,7 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
     let num2 = String::from_utf8(number2).unwrap();
 
     if *enable_anonymous_rpc == Some(true) {
-        info!("hfe_ops_restore_value calculate in local");
+        info!("hfe_ops_restore_value calculate in remote");
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
         let result = client.restore_value(num1, num2, signature, id, publickey);
         Ok(NativeResult::ok(
@@ -492,7 +477,7 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
             smallvec![Value::u64(result.value1.parse::<u64>().expect("Failed to parse number"))],
         ))
     } else {
-        info!("hfe_ops_restore_value calculate in local num1{:?} num2{:?}", num1, num2);
+        info!("hfe_ops_restore_value calculate in local");
         let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
         match recover_value(num1, num2, mask) {
             Ok(value) => {
