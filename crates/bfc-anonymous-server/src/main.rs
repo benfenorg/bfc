@@ -10,12 +10,17 @@ use std::net::SocketAddr;
 
 use crate::bfc_object::parse_response;
 use crate::signature::verify_signature;
-use crate::utils::get_object_owneraddress;
+use crate::utils::{get_mask_secret_from_config, get_object_owneraddress};
 use crate::utils::public_key_bytes_to_sui_address;
 use clap::Parser;
 use move_core_types::account_address::AccountAddress;
-use mpc_transmission::math::{add_shared_secrets, mul_shared_secrets, sub_shared_secrets};
-use mpc_transmission::{recover_value,split_value, generate_shares_with_xor, recover_secret_with_xor, recover_shares, SecretSharingError, Share};
+use mpc_transmission::{
+    two_party_share::{
+        add_two_shared_secrets, mul_two_shared_secrets, recover_two_shares, recover_value,
+        split_to_two_value, sub_two_shared_secrets,
+    },
+    Share,
+};
 use serde::{Deserialize, Serialize};
 use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 use tracing::{info, warn};
@@ -183,7 +188,7 @@ async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply,
         "bfcx_getAnonymousMinus" => handle_anonymous_minus(request).await,
         "bfcx_getAnonymousMultiply" => handle_anonymous_multiply(request).await,
         "bfcx_getAnonymousCompare" => handle_anonymous_compare(request).await,
-        "bfcx_getAnonymousSplitValue" => handle_anonymous_split_value(request).await,
+        "bfcx_getAnonymousSplitValue" => handle_anonymous_split_to_two_value(request).await,
         "bfcx_getAnonymousRestoreValue" => handle_anonymous_restore_value(request).await,
         "bfcx_ping" => handle_ping(request).await,
         _ => JsonRpcResponse {
@@ -201,9 +206,6 @@ async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply,
     Ok(warp::reply::json(&response))
 }
 
-const THRESHOLD: usize = 2;
-const TOTAL_SHARES: usize = 2;
-const MASK_SECRET: u64 = 1152921504606846976;
 
 async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
@@ -213,8 +215,8 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
                 println!("add_params.value2:{}", add_params.value2);
                 println!("add_params.value3:{}", add_params.value3);
                 println!("add_params.value4:{}", add_params.value4);
-                let value1_share = recover_shares(add_params.value1, add_params.value2);
-                let value2_share = recover_shares(add_params.value3, add_params.value4);
+                let value1_share = recover_two_shares(add_params.value1, add_params.value2);
+                let value2_share = recover_two_shares(add_params.value3, add_params.value4);
                 if value1_share.is_err() || value2_share.is_err() {
                     return JsonRpcResponse {
                         jsonrpc: "2.0".to_string(),
@@ -228,15 +230,30 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
                     };
                 }
 
-                match add_shared_secrets(
-                    &value1_share.unwrap()[..THRESHOLD],
-                    &value2_share.unwrap()[..THRESHOLD],
-                    THRESHOLD,
-                    MASK_SECRET,
-                    MASK_SECRET,
+                let mask_secret = match get_mask_secret_from_config() {
+                    Ok(secret) => secret,
+                    Err(e) => {
+                        warn!("Failed to get mask secret from config: {}", e);
+                        return JsonRpcResponse {
+                            jsonrpc: "2.0".to_string(),
+                            id: request.id,
+                            result: None,
+                            error: Some(JsonRpcError {
+                                code: -32603,
+                                message: "Internal error: Failed to load configuration".to_string(),
+                                data: Some(serde_json::json!({"error": e.to_string()})),
+                            }),
+                        };
+                    }
+                };
+                
+                match add_two_shared_secrets(
+                    value1_share.unwrap(),
+                    value2_share.unwrap(),
+                    mask_secret,
                 ) {
                     Ok(result) => {
-                        let (result1, result2) = split_value(result);
+                        let (result1, result2) = split_to_two_value(result, mask_secret);
                         JsonRpcResponse {
                             jsonrpc: "2.0".to_string(),
                             id: request.id,
@@ -295,8 +312,8 @@ async fn handle_anonymous_minus(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
         Some(params) => match serde_json::from_value::<AnonymousMinusParams>(params) {
             Ok(minus_params) => {
-                let value1_share = recover_shares(minus_params.value1, minus_params.value2);
-                let value2_share = recover_shares(minus_params.value3, minus_params.value4);
+                let value1_share = recover_two_shares(minus_params.value1, minus_params.value2);
+                let value2_share = recover_two_shares(minus_params.value3, minus_params.value4);
                 if value1_share.is_err() || value2_share.is_err() {
                     return JsonRpcResponse {
                         jsonrpc: "2.0".to_string(),
@@ -309,15 +326,31 @@ async fn handle_anonymous_minus(request: JsonRpcRequest) -> JsonRpcResponse {
                         }),
                     };
                 }
-                match sub_shared_secrets(
-                    &value1_share.unwrap()[..THRESHOLD],
-                    &value2_share.unwrap()[..THRESHOLD],
-                    THRESHOLD,
-                    MASK_SECRET,
-                    MASK_SECRET,
+
+                let mask_secret = match get_mask_secret_from_config() {
+                    Ok(secret) => secret,
+                    Err(e) => {
+                        warn!("Failed to get mask secret from config: {}", e);
+                        return JsonRpcResponse {
+                            jsonrpc: "2.0".to_string(),
+                            id: request.id,
+                            result: None,
+                            error: Some(JsonRpcError {
+                                code: -32603,
+                                message: "Internal error: Failed to load configuration".to_string(),
+                                data: Some(serde_json::json!({"error": e.to_string()})),
+                            }),
+                        };
+                    }
+                };
+                
+                match sub_two_shared_secrets(
+                    value1_share.unwrap(),
+                    value2_share.unwrap(),
+                    mask_secret,
                 ) {
                     Ok(result) => {
-                        let (result1, result2) = split_value(result);
+                        let (result1, result2) = split_to_two_value(result, mask_secret);
                         JsonRpcResponse {
                             jsonrpc: "2.0".to_string(),
                             id: request.id,
@@ -376,8 +409,10 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
         Some(params) => match serde_json::from_value::<AnonymousMultiplyParams>(params) {
             Ok(multiply_params) => {
-                let value1_share = recover_shares(multiply_params.value1, multiply_params.value2);
-                let value2_share = recover_shares(multiply_params.value3, multiply_params.value4);
+                let value1_share =
+                    recover_two_shares(multiply_params.value1, multiply_params.value2);
+                let value2_share =
+                    recover_two_shares(multiply_params.value3, multiply_params.value4);
                 if value1_share.is_err() || value2_share.is_err() {
                     return JsonRpcResponse {
                         jsonrpc: "2.0".to_string(),
@@ -390,15 +425,30 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
                         }),
                     };
                 }
-                match mul_shared_secrets(
-                    &value1_share.unwrap()[..THRESHOLD],
-                    &value2_share.unwrap()[..THRESHOLD],
-                    THRESHOLD,
-                    MASK_SECRET,
-                    MASK_SECRET,
+                let mask_secret = match get_mask_secret_from_config() {
+                    Ok(secret) => secret,
+                    Err(e) => {
+                        warn!("Failed to get mask secret from config: {}", e);
+                        return JsonRpcResponse {
+                            jsonrpc: "2.0".to_string(),
+                            id: request.id,
+                            result: None,
+                            error: Some(JsonRpcError {
+                                code: -32603,
+                                message: "Internal error: Failed to load configuration".to_string(),
+                                data: Some(serde_json::json!({"error": e.to_string()})),
+                            }),
+                        };
+                    }
+                };
+                
+                match mul_two_shared_secrets(
+                    value1_share.unwrap(),
+                    value2_share.unwrap(),
+                    mask_secret,
                 ) {
                     Ok(result) => {
-                        let (result1, result2) = split_value(result);
+                        let (result1, result2) = split_to_two_value(result, mask_secret);
                         JsonRpcResponse {
                             jsonrpc: "2.0".to_string(),
                             id: request.id,
@@ -504,9 +554,26 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                     //todo,signature check,address.
                     // edd25519 signature check
 
+                    let mask_secret = match get_mask_secret_from_config() {
+                        Ok(secret) => secret,
+                        Err(e) => {
+                            warn!("Failed to get mask secret from config: {}", e);
+                            return JsonRpcResponse {
+                                jsonrpc: "2.0".to_string(),
+                                id: request.id,
+                                result: None,
+                                error: Some(JsonRpcError {
+                                    code: -32603,
+                                    message: "Internal error: Failed to load configuration".to_string(),
+                                    data: Some(serde_json::json!({"error": e.to_string()})),
+                                }),
+                            };
+                        }
+                    };
+                    
                     let data1 = restore_value_params.value1;
                     let data2 = restore_value_params.value2;
-                    match recover_value(data1, data2) {
+                    match recover_value(data1, data2, mask_secret) {
                         Ok(value) => JsonRpcResponse {
                             jsonrpc: "2.0".to_string(),
                             id: request.id,
@@ -567,19 +634,36 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
     }
 }
 
-async fn handle_anonymous_split_value(request: JsonRpcRequest) -> JsonRpcResponse {
+async fn handle_anonymous_split_to_two_value(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
         Some(params) => match serde_json::from_value::<AnonymousSplitValueParams>(params) {
-            Ok(split_value_params) => {
-                let value = split_value_params.value;
-                let (result1, result2) = split_value(value);
+            Ok(split_to_two_value_params) => {
+                let mask_secret = match get_mask_secret_from_config() {
+                    Ok(secret) => secret,
+                    Err(e) => {
+                        warn!("Failed to get mask secret from config: {}", e);
+                        return JsonRpcResponse {
+                            jsonrpc: "2.0".to_string(),
+                            id: request.id,
+                            result: None,
+                            error: Some(JsonRpcError {
+                                code: -32603,
+                                message: "Internal error: Failed to load configuration".to_string(),
+                                data: Some(serde_json::json!({"error": e.to_string()})),
+                            }),
+                        };
+                    }
+                };
+                
+                let value = split_to_two_value_params.value;
+                let (result1, result2) = split_to_two_value(value, mask_secret);
                 JsonRpcResponse {
                     jsonrpc: "2.0".to_string(),
                     id: request.id,
                     result: Some(serde_json::json!({
                         "result1": result1,
                         "result2": result2,
-                        "operation": "anonymous_split_value",
+                        "operation": "anonymous_split_to_two_value",
                         "timestamp": chrono::Utc::now().timestamp()
                     })),
                     error: None,
@@ -616,7 +700,24 @@ async fn handle_anonymous_compare(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
         Some(params) => match serde_json::from_value::<AnonymousCompareParams>(params) {
             Ok(compare_params) => {
-                match recover_value(compare_params.value1, compare_params.value2) {
+                let mask_secret = match get_mask_secret_from_config() {
+                    Ok(secret) => secret,
+                    Err(e) => {
+                        warn!("Failed to get mask secret from config: {}", e);
+                        return JsonRpcResponse {
+                            jsonrpc: "2.0".to_string(),
+                            id: request.id,
+                            result: None,
+                            error: Some(JsonRpcError {
+                                code: -32603,
+                                message: "Internal error: Failed to load configuration".to_string(),
+                                data: Some(serde_json::json!({"error": e.to_string()})),
+                            }),
+                        };
+                    }
+                };
+                
+                match recover_value(compare_params.value1, compare_params.value2, mask_secret) {
                     Ok(value_a) => {
                         let value_b = compare_params.value3;
                         let comparison = if value_a > value_b {
