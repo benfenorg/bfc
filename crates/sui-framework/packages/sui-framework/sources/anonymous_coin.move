@@ -28,7 +28,7 @@ module sui::anonymous_coin {
     //fun sui::anonymous_pay::divide_and_keep as Anonymous_Coin.divide_and_keep;
 
     // A type passed to create_supply is not a one-time witness.
-    //const EBadWitness: u64 = 0;
+    const EBadWitness: u64 = 0;
     // Invalid arguments are passed to a function.
     //const EInvalidArg: u64 = 1;
     // Trying to split a coin more times than its balance allows.
@@ -275,7 +275,7 @@ module sui::anonymous_coin {
     ): (TreasuryCap<T>, CoinMetadata<T>) {
         // Make sure there's only one instance of the type T
         //todo: open witness for ABFC
-        //assert!(sui::types::is_one_time_witness(&witness), EBadWitness);
+        assert!(sui::types::is_one_time_witness(&witness), EBadWitness);
 
         (
             TreasuryCap {

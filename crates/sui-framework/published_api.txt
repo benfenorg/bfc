@@ -1531,6 +1531,9 @@ transfer_impl
 receive_impl
 	fun
 	0x2::transfer
+is_one_time_witness
+	public fun
+	0x2::types
 VecSet
 	public struct
 	0x2::vec_set
@@ -1855,9 +1858,6 @@ create
 per_type_list
 	fun
 	0x2::deny_list
-is_one_time_witness
-	public fun
-	0x2::types
 Supply
 	public struct
 	0x2::balance

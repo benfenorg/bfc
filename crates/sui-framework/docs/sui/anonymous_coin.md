@@ -412,6 +412,15 @@ The index into the deny list vector for the <code><a href="../sui/coin.md#sui_co
 
 
 
+<a name="sui_anonymous_coin_EBadWitness"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_EBadWitness">EBadWitness</a>: u64 = 0;
+</code></pre>
+
+
+
 <a name="sui_anonymous_coin_EGlobalPauseNotAllowed"></a>
 
 
@@ -948,7 +957,7 @@ Destroy a coin with value zero
 ): (<a href="../sui/anonymous_coin.md#sui_anonymous_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;, <a href="../sui/anonymous_coin.md#sui_anonymous_coin_CoinMetadata">CoinMetadata</a>&lt;T&gt;) {
     // Make sure there's only one instance of the type T
     //todo: open witness <b>for</b> ABFC
-    //<b>assert</b>!(<a href="../sui/types.md#sui_types_is_one_time_witness">sui::types::is_one_time_witness</a>(&witness), EBadWitness);
+    <b>assert</b>!(<a href="../sui/types.md#sui_types_is_one_time_witness">sui::types::is_one_time_witness</a>(&witness), <a href="../sui/anonymous_coin.md#sui_anonymous_coin_EBadWitness">EBadWitness</a>);
     (
         <a href="../sui/anonymous_coin.md#sui_anonymous_coin_TreasuryCap">TreasuryCap</a> {
             id: <a href="../sui/object.md#sui_object_new">object::new</a>(ctx),
