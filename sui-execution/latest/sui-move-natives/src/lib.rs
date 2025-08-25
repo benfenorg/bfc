@@ -65,7 +65,6 @@ use sui_protocol_config::ProtocolConfig;
 use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
 use sui_types::{MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use transfer::TransferReceiveObjectInternalCostParams;
-use tracing::info;
 use crate::crypto::hfe_ops::AnonymousComputeCostParams;
 
 mod address;
@@ -189,9 +188,6 @@ impl NativesCostTable {
     pub fn from_protocol_config(protocol_config: &ProtocolConfig) -> NativesCostTable {
         let path = get_sui_config_directory().join("bfc_anonymous_config.yaml");
         let config = AnonymousPrivateKeyConfig::from_yaml_file(&path).unwrap_or(AnonymousPrivateKeyConfig::default());
-        info!("the anonymous_privatekey is {:?}", config.anonymous_privatekey,);
-        info!("the anonymous_rpc is {:?}", config.anonymous_rpc);
-
         Self {
             address_from_bytes_cost_params: AddressFromBytesCostParams {
                 address_from_bytes_cost_base: protocol_config.address_from_bytes_cost_base().into(),

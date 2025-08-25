@@ -10,7 +10,7 @@ use std::net::SocketAddr;
 
 use crate::bfc_object::parse_response;
 use crate::signature::verify_signature;
-use crate::utils::{get_mask_secret_from_config, get_object_owneraddress};
+use crate::utils::get_object_owneraddress;
 use crate::utils::public_key_bytes_to_sui_address;
 use clap::Parser;
 use move_core_types::account_address::AccountAddress;
@@ -19,8 +19,9 @@ use mpc_transmission::{
         add_two_shared_secrets, mul_two_shared_secrets, recover_two_shares, recover_value,
         split_to_two_value, sub_two_shared_secrets,
     },
-    Share,
 };
+use mpc_transmission::{get_mask_secret_from_config};
+
 use serde::{Deserialize, Serialize};
 use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 use tracing::{info, warn};

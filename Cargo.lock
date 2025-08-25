@@ -8602,7 +8602,9 @@ dependencies = [
 name = "mpc-transmission"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "arbitrary",
+ "dirs 4.0.0",
  "env",
  "hex",
  "proptest",
@@ -8610,6 +8612,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sharks",
+ "sui-config",
  "tempfile",
  "thiserror 1.0.69",
  "zeroize",
@@ -15306,6 +15309,7 @@ dependencies = [
 name = "sui-move-natives-latest"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "bcs",
  "better_any",
  "dirs 4.0.0",

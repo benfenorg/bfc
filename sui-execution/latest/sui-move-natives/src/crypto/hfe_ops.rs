@@ -4,22 +4,16 @@
  * native fun
 
  */
-use rand_chacha::ChaChaRng;
-use rand::Rng;
-use rand::SeedableRng;
 use hmac::{Hmac, Mac};
-use sha2::{Sha256, Digest};
+use sha2::Sha256;
 use move_binary_format::errors::PartialVMResult;
 use move_vm_runtime::native_charge_gas_early_exit;
 use move_vm_runtime::native_functions::NativeContext;
 use smallvec::smallvec;
 use crate::NativesCostTable;
-use mpc_transmission::{recover_shares, split_value, recover_value};
 use mpc_transmission::math::{sub_shared_secrets, mul_shared_secrets, add_shared_secrets};
+use mpc_transmission::two_party_share::{recover_two_shares, recover_value, split_to_two_value};
 
-use move_vm_types::{
-    values::{VectorRef},
-};
 use move_vm_types::{
     loaded_data::runtime_types::Type, natives::function::NativeResult, pop_arg,values::Value
 };
@@ -31,6 +25,7 @@ use move_core_types::gas_algebra::InternalGas;
 use serde_json::{json};
 use serde_json::Value as JsonValue;
 use tracing::info;
+use anyhow::anyhow;
 
 #[derive(Clone)]
 pub struct AnonymousComputeCostParams {
@@ -45,6 +40,7 @@ pub const INVALID_PARAMS_ERROR:  u64 = 2;
 const THRESHOLD: usize = 2;
 const TOTAL_SHARES: usize = 2;
 const MASK_SECRET: u64 = 1152921504606846976;
+
 
 pub fn hfe_ops_add(
     context: &mut NativeContext,
@@ -65,18 +61,18 @@ pub fn hfe_ops_add(
         anonymous_compute_cost.anonymous_compute_cost_base
     );
 
-    let anonymous_privatekey = &context
+    let anonymous_privatekey = context
         .extensions()
         .get::<NativesCostTable>()
         .anonymous_privatekey
-        .clone();
+        .clone().unwrap_or_default();
     let enable_anonymous_rpc = &context
         .extensions()
         .get::<NativesCostTable>()
         .enable_anonymous_rpc
         .clone();
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
-    info!("anonymous_privatekey{:?}", anonymous_privatekey.clone().unwrap());
+
     info!("anonymous_rpc{:?}", anonymous_rpc.clone());
     info!("enable-anonymous-rpc{:?}", enable_anonymous_rpc.clone().unwrap());
 
@@ -104,8 +100,8 @@ pub fn hfe_ops_add(
     } else {
         info!("hfe_ops_add calculate in local");
         let cost = context.gas_used();
-        let value1_share = recover_shares(num1, num2);
-        let value2_share = recover_shares(num3, num4);
+        let value1_share = recover_two_shares(num1, num2);
+        let value2_share = recover_two_shares(num3, num4);
         if value1_share.is_err() || value2_share.is_err() {
             return Ok(NativeResult::err(
                 cost,
@@ -119,7 +115,9 @@ pub fn hfe_ops_add(
                                   MASK_SECRET,
         ){
             Ok(result) => {
-                let (result1, result2) = split_value(result);
+                let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
+
+                let (result1, result2) = split_to_two_value(result, mask);
 
                 Ok(NativeResult::ok(
                     cost,
@@ -157,11 +155,11 @@ pub fn hfe_ops_minus(
     );
 
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
-    let anonymous_privatekey = &context
+    let anonymous_privatekey = context
         .extensions()
         .get::<NativesCostTable>()
         .anonymous_privatekey
-        .clone();
+        .clone().unwrap_or_default();
     let enable_anonymous_rpc = &context
         .extensions()
         .get::<NativesCostTable>()
@@ -189,9 +187,10 @@ pub fn hfe_ops_minus(
             ]
         ))
     } else {
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
         info!("hfe_ops_minus calculate in local");
-        let value1_share = recover_shares(num1, num2);
-        let value2_share = recover_shares(num3, num4);
+        let value1_share = recover_two_shares(num1, num2);
+        let value2_share = recover_two_shares(num3, num4);
 
         if value1_share.is_err() || value2_share.is_err() {
                 return Ok(NativeResult::err(
@@ -208,7 +207,7 @@ pub fn hfe_ops_minus(
             MASK_SECRET,
         ) {
             Ok(result) => {
-                let (result1, result2) = split_value(result);
+                let (result1, result2) = split_to_two_value(result, mask);
 
                 Ok(NativeResult::ok(
                     cost,
@@ -245,11 +244,11 @@ pub fn hfe_ops_multiplied(
     );
 
     let cost = context.gas_used();
-    let anonymous_privatekey = &context
+    let anonymous_privatekey = context
         .extensions()
         .get::<NativesCostTable>()
         .anonymous_privatekey
-        .clone();
+        .clone().unwrap_or_default();
     let enable_anonymous_rpc = &context
         .extensions()
         .get::<NativesCostTable>()
@@ -279,9 +278,10 @@ pub fn hfe_ops_multiplied(
         ))
     } else {
         info!("hfe_ops_minus calculate in local");
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
 
-        let value1_share =  recover_shares(num1, num2);
-        let value2_share =  recover_shares(num3, num4);
+        let value1_share =  recover_two_shares(num1, num2);
+        let value2_share =  recover_two_shares(num3, num4);
 
         if value1_share.is_err() || value2_share.is_err() {
             return Ok(NativeResult::err(
@@ -298,7 +298,7 @@ pub fn hfe_ops_multiplied(
             MASK_SECRET,
         ) {
             Ok(result) => {
-                let (result1, result2) = split_value(result);
+                let (result1, result2) = split_to_two_value(result, mask);
 
                 Ok(NativeResult::ok(
                     cost,
@@ -339,11 +339,11 @@ pub fn hfe_ops_split_value(context: &mut NativeContext,
     let cost = context.gas_used();
 
 
-    let anonymous_privatekey = &context
+    let anonymous_privatekey = context
         .extensions()
         .get::<NativesCostTable>()
         .anonymous_privatekey
-        .clone();
+        .clone().unwrap_or_default();
     let enable_anonymous_rpc = &context
         .extensions()
         .get::<NativesCostTable>()
@@ -362,7 +362,8 @@ pub fn hfe_ops_split_value(context: &mut NativeContext,
             ]
         ))
     } else {
-        let (result1, result2) = split_value(value);
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
+        let (result1, result2) = split_to_two_value(value, mask);
         Ok(NativeResult::ok(
             cost,
             smallvec![Value::vector_u8(result1.into_bytes()), Value::vector_u8(result2.into_bytes())]
@@ -389,11 +390,11 @@ pub fn hfe_ops_compare_value(
 
     let cost = context.gas_used();
 
-    let anonymous_privatekey = &context
+    let anonymous_privatekey = context
         .extensions()
         .get::<NativesCostTable>()
         .anonymous_privatekey
-        .clone();
+        .clone().unwrap_or_default();
     let enable_anonymous_rpc = &context
         .extensions()
         .get::<NativesCostTable>()
@@ -414,7 +415,8 @@ pub fn hfe_ops_compare_value(
             smallvec![Value::u8(result.value1.parse::<u8>().unwrap())],
         ))
     } else {
-        match recover_value(num1, num2) {
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
+        match recover_value(num1, num2, mask) {
             Ok(value_a) => {
                 let value_b = number3;
                 let comparison = if value_a > value_b {
@@ -466,11 +468,11 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
     let cost = context.gas_used();
 
 
-    let anonymous_privatekey = &context
+    let anonymous_privatekey = context
         .extensions()
         .get::<NativesCostTable>()
         .anonymous_privatekey
-        .clone();
+        .clone().unwrap_or_default();
     let enable_anonymous_rpc = &context
         .extensions()
         .get::<NativesCostTable>()
@@ -491,8 +493,8 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
         ))
     } else {
         info!("hfe_ops_restore_value calculate in local num1{:?} num2{:?}", num1, num2);
-
-        match recover_value(num1, num2) {
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
+        match recover_value(num1, num2, mask) {
             Ok(value) => {
                 Ok(NativeResult::ok(
                     cost,
@@ -843,4 +845,20 @@ fn test_get_anonymous_add() -> (){
             eprintln!("Error: {}", e);
         }
     }
+}
+
+pub fn get_mask_secret_from_anonymous_privatekey(private_key_str: String) -> Result<u64, Box<dyn std::error::Error>> {
+    // Parse the private key string to u64
+    // Handle both hex format (0x...) and decimal format
+    let mask_secret = if private_key_str.starts_with("0x") || private_key_str.starts_with("0X") {
+        // Parse as hexadecimal
+        u64::from_str_radix(&private_key_str[2..], 16)
+            .map_err(|e| anyhow!("Failed to parse private key as hex: {}", e))?
+    } else {
+        // Parse as decimal
+        private_key_str.parse::<u64>()
+            .map_err(|e| anyhow!("Failed to parse private key as decimal: {}", e))?
+    };
+
+    Ok(mask_secret)
 }

@@ -26,6 +26,7 @@ pub fn recover_value(
     Ok(value)
 }
 
+
 pub fn recover_two_shares(value1: String, value2: String) -> Result<Vec<Share>, SecretSharingError> {
     let value1: Vec<u8> =
         hex::decode(value1).map_err(|e| SecretSharingError::InvalidShare(e.to_string()))?;
