@@ -2,34 +2,37 @@ module anonymous_usd::anonymous_usd;
 
 
 use sui::anonymous_coin;
-use sui::anonymous_balance::Anonymous_Balance;
+//use sui::anonymous_balance::Anonymous_Balance;
+use sui::anonymous_coin::TreasuryCap;
 
-public struct ABUSD has drop {}
+public struct ANONYMOUS_USD has drop {}
 
 //spec module { pragma verify = false; }
 
-const TOTAL_SUPPLY_MIST: u64 = 1_000_000_000_000_000_000;
+//const TOTAL_SUPPLY_MIST: u64 = 1_000_000_000_000_000_000;
 
 #[allow(unused_function)]
-public fun new(ctx: &mut TxContext): Anonymous_Balance<ABUSD> {
+fun init(witness: ANONYMOUS_USD, ctx: &mut TxContext) {
     let (treasury, metadata) = anonymous_coin::create_currency(
-        ABUSD {},
+        witness,
         9,
-        b"ABUSD",
+        b"ANONYMOUS_USD",
         b"Benfen Anonymous USD",
         b"",
         option::none(),
         ctx
     );
     transfer::public_freeze_object(metadata);
-    //coin::treasury_into_supply(cap)
-    let mut supply = treasury.treasury_into_supply();
-    let total_anonymous_usd = supply.increase_supply(TOTAL_SUPPLY_MIST);
-    supply.destroy_supply();
-    total_anonymous_usd
+    transfer::public_transfer(treasury, tx_context::sender(ctx))
 }
 
-public entry fun transfer(c: coin::Coin<ABUSD>, recipient: address) {
+
+public entry fun mint(treasury_cap: &mut TreasuryCap<ANONYMOUS_USD>,  amount: u64,   ctx: &mut TxContext) {
+    let coin = anonymous_coin::mint<ANONYMOUS_USD>(treasury_cap, amount, ctx);
+    transfer::public_transfer(coin, tx_context::sender(ctx));
+}
+
+public entry fun transfer(c: anonymous_coin::Anonymous_Coin<ANONYMOUS_USD>, recipient: address) {
     transfer::public_transfer(c, recipient)
 }
 
