@@ -327,6 +327,18 @@ mod tests {
         let split_result_1 = client.test_split(10).await.response.unwrap();
         info!("Split 10 Result: {:?}", split_result_1);
 
+        info!("Split 20 Result repeat: {:?}", split_result_0);
+        let split_result_1_repeat = client.test_split(10).await.response.unwrap();
+        info!("Split 10 Result repeat: {:?}", split_result_1);
+
+        assert_eq!(split_result_0["result"]["result1"], split_result_0_repeat["result"]["result1"]);
+        assert_eq!(split_result_0["result"]["result2"], split_result_0_repeat["result"]["result2"]);
+
+        assert_eq!(split_result_1["result"]["result1"], split_result_1_repeat["result"]["result1"]);
+        assert_eq!(split_result_1["result"]["result2"], split_result_1_repeat["result"]["result2"]);
+
+
+
         //test 20 + 10
         let add_result = client
             .test_add(
