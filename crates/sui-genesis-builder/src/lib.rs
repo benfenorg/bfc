@@ -12,7 +12,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
-use tracing::{info, trace};
+//use tracing::{info, trace};
 use sui_config::genesis::{Genesis, GenesisCeremonyParameters,
                           GenesisChainParameters, TokenDistributionSchedule,
                           UnsignedGenesis, BfcSystemParameters,
@@ -60,6 +60,7 @@ use sui_types::{BRIDGE_ADDRESS, SUI_BRIDGE_OBJECT_ID};
 use sui_types::anonymous_status::ANONYMOUS_COIND_DEFAULT_ADDRESS;
 use validator_info::{GenesisValidatorInfo, GenesisValidatorMetadata, ValidatorInfo};
 use std::str::FromStr;
+use tracing::trace;
 
 pub mod validator_info;
 

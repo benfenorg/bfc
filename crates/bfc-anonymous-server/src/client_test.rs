@@ -5,6 +5,7 @@ use std::str::FromStr;
 use sui_types::base_types::SuiAddress;
 
 #[derive(Debug)]
+#[allow(unused)]
 pub(crate) struct TestResult {
     method: String,
     success: bool,
@@ -16,7 +17,7 @@ pub(crate) struct AnonymousClient {
     pub(crate) base_url: String,
     client: reqwest::Client,
 }
-
+#[allow(unused)]
 impl AnonymousClient {
     pub fn new(base_url: &str) -> Self {
         Self {

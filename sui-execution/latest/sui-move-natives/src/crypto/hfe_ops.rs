@@ -32,18 +32,19 @@ pub struct AnonymousComputeCostParams {
     pub anonymous_compute_cost_base: InternalGas,
 }
 
+
 type HmacSha256 = Hmac<Sha256>;
 pub const ARITHMETIC_OVERFLOW_ERROR: u64 = 1;
 pub const INVALID_PARAMS_ERROR:  u64 = 2;
 
-const THRESHOLD: usize = 2;
-const TOTAL_SHARES: usize = 2;
+//const THRESHOLD: usize = 2;
+//const TOTAL_SHARES: usize = 2;
 const MASK_SECRET: u64 = 1152921504606846976;
 
 
 pub fn hfe_ops_add(
     context: &mut NativeContext,
-    ty_args: Vec<Type>,
+    _ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult>{
 
@@ -129,7 +130,7 @@ pub fn hfe_ops_add(
 
 pub fn hfe_ops_minus(
     context: &mut NativeContext,
-    ty_args: Vec<Type>,
+    _ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult>{
 
@@ -217,7 +218,7 @@ pub fn hfe_ops_minus(
 
 pub fn hfe_ops_multiplied(
     context: &mut NativeContext,
-    ty_args: Vec<Type>,
+    _ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult>{
 
@@ -303,7 +304,7 @@ pub fn hfe_ops_multiplied(
 }
 
 pub fn hfe_ops_split_value(context: &mut NativeContext,
-                           ty_args: Vec<Type>,
+                           _ty_args: Vec<Type>,
                            mut args: VecDeque<Value>) -> PartialVMResult<NativeResult> {
 
     let anonymous_compute_cost_params = &context
@@ -358,7 +359,7 @@ pub fn hfe_ops_split_value(context: &mut NativeContext,
 
 pub fn hfe_ops_compare_value(
     context: &mut NativeContext,
-    ty_args: Vec<Type>,
+    _ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult>{
     let anonymous_compute_cost_params = &context
@@ -428,7 +429,7 @@ pub fn hfe_ops_compare_value(
 
 
 pub fn hfe_ops_restore_value(context: &mut NativeContext,
-                              ty_args: Vec<Type>,
+                             _ty_args: Vec<Type>,
                               mut args: VecDeque<Value>) -> PartialVMResult<NativeResult> {
 
     let anonymous_compute_cost_params = &context
@@ -572,6 +573,7 @@ fn derive_shard_key(shard_id: usize, key: Vec<u8>) -> Vec<u8> {
 }
 
 #[derive(Debug)]
+#[allow(unused)]
 struct AnonymousResult {
     success: bool,
     error: Option<String>,
@@ -787,6 +789,7 @@ impl AnonymousClient {
     }
 }
 
+#[allow(unused)]
 fn test_get_anonymous_add() -> (){
     let client = AnonymousClient::new("http://localhost:9010");
     let params: JsonValue = json!({

@@ -8,7 +8,7 @@ pub struct Database {
     pub db: Arc<DB>,
     pub cf1: String,
 }
-
+#[allow(unused)]
 impl Database {
     pub fn new(path: &str) -> Result<Self, Box<dyn std::error::Error>> {
         let mut opts = Options::default();
