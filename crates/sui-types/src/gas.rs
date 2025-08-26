@@ -474,7 +474,7 @@ pub fn calculate_stable_to_bfc_cost(cost: u64, rate: u64) -> u64 {
 
 #[cfg(test)]
 mod test{
-    use crate::gas::{calculate_bfc_to_stable_cost_with_base_point};
+    use crate::gas::{calculate_bfc_to_stable_cost_with_base_point, calculate_add};
     #[test]
     fn test_calculate_stable_rate() {
         let cost = 132240;
@@ -512,5 +512,47 @@ mod test{
 
         println!("result: {}", result);
 
+    }
+
+    #[test]
+    fn test_calculate_add_normal_cases() {
+        // 正常情况
+        assert_eq!(calculate_add(10, 20), 30);
+        assert_eq!(calculate_add(0, 100), 100);
+        assert_eq!(calculate_add(100, 0), 100);
+        assert_eq!(calculate_add(0, 0), 0);
+    }
+
+    #[test]
+    fn test_calculate_add_boundary_cases() {
+        // 边界情况
+        assert_eq!(calculate_add(u64::MAX - 1, 1), u64::MAX);
+        assert_eq!(calculate_add(1, u64::MAX - 1), u64::MAX);
+        assert_eq!(calculate_add(u64::MAX, 0), u64::MAX);
+        assert_eq!(calculate_add(0, u64::MAX), u64::MAX);
+    }
+
+    #[test]
+    fn test_calculate_add_overflow_cases() {
+        // 溢出情况 - 函数应该返回 base 值而不是 panic
+        assert_eq!(calculate_add(u64::MAX, 1), u64::MAX);
+        assert_eq!(calculate_add(u64::MAX, u64::MAX), u64::MAX);
+        assert_eq!(calculate_add(u64::MAX - 1, 2), u64::MAX - 1);
+        assert_eq!(calculate_add(u64::MAX / 2, u64::MAX / 2 + 2), u64::MAX / 2);
+    }
+
+    #[test]
+    fn test_calculate_add_large_numbers() {
+        // 大数值测试
+        let large_base = u64::MAX / 2;
+        let large_add = u64::MAX / 4;
+        let expected = large_base + large_add; // 这个不会溢出
+        assert_eq!(calculate_add(large_base, large_add), expected);
+        
+        // 接近溢出的情况
+        let near_max = u64::MAX - 100;
+        assert_eq!(calculate_add(near_max, 50), near_max + 50);
+        assert_eq!(calculate_add(near_max, 100), u64::MAX);
+        assert_eq!(calculate_add(near_max, 101), near_max); // 溢出，返回 base
     }
 }

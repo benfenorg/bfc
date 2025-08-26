@@ -241,6 +241,15 @@ the SuiSystemStateInner version, or vice versa.
 
 
 
+<a name="sui_system_sui_system_EUnsupportedFeature"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_EUnsupportedFeature">EUnsupportedFeature</a>: u64 = 2;
+</code></pre>
+
+
+
 <a name="sui_system_sui_system_EWrongInnerVersion"></a>
 
 
@@ -622,7 +631,7 @@ Add stake to a validator's staking pool.
 Add stake to a validator's stable pool.
 
 
-<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_request_add_stable_stake">request_add_stable_stake</a>&lt;STABLE&gt;(wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">sui_system::sui_system::SuiSystemState</a>, stake: <a href="../sui/coin.md#sui_coin_Coin">sui::coin::Coin</a>&lt;STABLE&gt;, validator_address: <b>address</b>, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_request_add_stable_stake">request_add_stable_stake</a>&lt;STABLE&gt;(_wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">sui_system::sui_system::SuiSystemState</a>, _stake: <a href="../sui/coin.md#sui_coin_Coin">sui::coin::Coin</a>&lt;STABLE&gt;, _validator_address: <b>address</b>, _ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -632,13 +641,14 @@ Add stake to a validator's stable pool.
 
 
 <pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_request_add_stable_stake">request_add_stable_stake</a>&lt;STABLE&gt;(
-    wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>,
-    stake: Coin&lt;STABLE&gt;,
-    validator_address: <b>address</b>,
-    ctx: &<b>mut</b> TxContext,
+    _wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>,
+    _stake: Coin&lt;STABLE&gt;,
+    _validator_address: <b>address</b>,
+    _ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> staked_sui = <a href="../sui_system/sui_system.md#sui_system_sui_system_request_add_stable_stake_non_entry">request_add_stable_stake_non_entry</a>(wrapper, stake, validator_address, ctx);
-    transfer::public_transfer(staked_sui, tx_context::sender(ctx));
+    <b>abort</b>(<a href="../sui_system/sui_system.md#sui_system_sui_system_EUnsupportedFeature">EUnsupportedFeature</a>)
+    // <b>let</b> staked_sui = <a href="../sui_system/sui_system.md#sui_system_sui_system_request_add_stable_stake_non_entry">request_add_stable_stake_non_entry</a>(wrapper, stake, validator_address, ctx);
+    // transfer::public_transfer(staked_sui, tx_context::sender(ctx));
 }
 </code></pre>
 

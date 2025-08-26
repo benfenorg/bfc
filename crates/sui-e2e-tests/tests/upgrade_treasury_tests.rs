@@ -582,6 +582,8 @@ async fn sim_test_mint_stable_with_success() -> Result<(), anyhow::Error> {
         .await?;
     let effects = tx_response.effects.unwrap().clone();
     effect_success(effects);
+    let objects = get_owned_objects("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
+    assert!(objects.len() >= 1, "Expected at least 1 BUSD coin object, but found {}", objects.len());
     Ok(())
 }
 

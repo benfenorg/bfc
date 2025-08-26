@@ -18,7 +18,7 @@ use tracing::{info, warn};
 
 /// The minimum and maximum protocol versions supported by this build.
 const MIN_PROTOCOL_VERSION: u64 = 1;
-const MAX_PROTOCOL_VERSION: u64 = 74;
+const MAX_PROTOCOL_VERSION: u64 = 75;
 
 // Record history of protocol version allocations here:
 //
@@ -3277,6 +3277,9 @@ impl ProtocolConfig {
                     cfg.allowed_txn_cost_overage_burst_per_object_in_commit = Some(370_000_000);
 
                     cfg.feature_flags.zklogin_max_epoch_upper_bound_delta = Some(365);
+                }
+                
+                75 => {
                 }
 
 

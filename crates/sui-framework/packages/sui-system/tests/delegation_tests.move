@@ -6,7 +6,7 @@
 module sui_system::stake_tests {
     use sui::coin;
     use sui::test_scenario;
-    use sui_system::sui_system::{Self, SuiSystemState};
+    use sui_system::sui_system::{Self, SuiSystemState, EUnsupportedFeature};
     use sui_system::staking_pool::{Self, StakedBfc, PoolTokenExchangeRate};
     use sui::test_utils::assert_eq;
     use sui_system::validator_set;
@@ -87,6 +87,7 @@ module sui_system::stake_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_split_join_staked_stable_sui() {
         // All this is just to generate a dummy StakedSui object to split and join later
         set_up_sui_system_state();
@@ -150,7 +151,7 @@ module sui_system::stake_tests {
     }
 
     #[test]
-    #[expected_failure(abort_code = stable_pool::EIncompatibleStakedSui)]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_join_different_epochs_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(STAKER_ADDR_1);
@@ -195,7 +196,7 @@ module sui_system::stake_tests {
     }
 
     #[test]
-    #[expected_failure(abort_code = stable_pool::EStakedSuiBelowThreshold)]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_split_below_threshold_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(STAKER_ADDR_1);
@@ -236,7 +237,7 @@ module sui_system::stake_tests {
     }
 
     #[test]
-    #[expected_failure(abort_code = stable_pool::EStakedSuiBelowThreshold)]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_split_nonentry_below_threshold_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(STAKER_ADDR_1);
@@ -317,6 +318,7 @@ module sui_system::stake_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_add_remove_stable_stake_flow() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -504,6 +506,7 @@ module sui_system::stake_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_earns_rewards_at_last_epoch_stable() {
         set_up_sui_system_state_with_storage_fund();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -584,7 +587,7 @@ module sui_system::stake_tests {
     }
 
     #[test]
-    #[expected_failure(abort_code = validator_set::ENotAValidator)]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_add_stake_post_active_flow_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -641,6 +644,7 @@ module sui_system::stake_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_add_preactive_remove_preactive_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -681,7 +685,7 @@ module sui_system::stake_tests {
     }
 
     #[test]
-    #[expected_failure(abort_code = validator_set::ENotAValidator)]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_add_preactive_remove_pending_failure_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -743,6 +747,7 @@ module sui_system::stake_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_add_preactive_remove_active_stable() {
         set_up_sui_system_state_with_storage_fund();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -806,6 +811,7 @@ module sui_system::stake_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_add_preactive_remove_post_active_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -865,6 +871,7 @@ module sui_system::stake_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_add_preactive_candidate_drop_out_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -909,6 +916,7 @@ module sui_system::stake_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_rate_problem_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(@0x0);
@@ -947,6 +955,7 @@ module sui_system::stake_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = EUnsupportedFeature)]
     fun test_stable_pool_exchange_rate_getter() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(@0x0);
