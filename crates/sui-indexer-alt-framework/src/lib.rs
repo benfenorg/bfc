@@ -181,7 +181,7 @@ impl Indexer {
             IndexerArgs::default(),
             ClientArgs {
                 remote_store_url: None,
-                local_ingestion_path: Some(tempdir().unwrap().into_path()),
+                local_ingestion_path: Some(tempdir().unwrap().keep()),
             },
             IngestionConfig::default(),
             migrations,

@@ -15,6 +15,7 @@ pub enum Ed25519Error {
     InvalidPublicKey(#[from] SignatureError),
 }
 
+#[allow(unused)]
 /// Generates a new Ed25519 keypair
 pub fn generate_keypair() -> (Vec<u8>, SigningKey) {
     let mut csprng = OsRng;
@@ -23,6 +24,7 @@ pub fn generate_keypair() -> (Vec<u8>, SigningKey) {
     (public_key, signing_key)
 }
 
+#[allow(unused)]
 /// Signs a message with a private key
 pub fn sign_message(signing_key: &SigningKey, message: &[u8]) -> Vec<u8> {
     signing_key.sign(message).to_bytes().to_vec()
@@ -62,7 +64,7 @@ pub fn verify_signature(
 
     Ok(())
 }
-
+#[allow(unused)]
 /// Verifies a signature using strict verification (recommended)
 pub fn verify_signature_strict(
     public_key: &[u8],

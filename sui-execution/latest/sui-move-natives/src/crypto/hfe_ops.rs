@@ -32,7 +32,7 @@ pub struct AnonymousComputeCostParams {
     pub anonymous_compute_cost_base: InternalGas,
 }
 
-
+#[allow(unused)]
 type HmacSha256 = Hmac<Sha256>;
 pub const ARITHMETIC_OVERFLOW_ERROR: u64 = 1;
 pub const INVALID_PARAMS_ERROR:  u64 = 2;
@@ -565,6 +565,7 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
 //     shards
 // }
 
+#[allow(unused)]
 fn derive_shard_key(shard_id: usize, key: Vec<u8>) -> Vec<u8> {
     let mut hmac = HmacSha256::new_from_slice(&key)
         .expect("HMAC can take key of any size");

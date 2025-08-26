@@ -1089,7 +1089,7 @@ mod tests {
     #[cfg(not(target_env = "msvc"))]
     #[tokio::test]
     async fn test_db_size_after_compaction() -> Result<(), anyhow::Error> {
-        let primary_path = tempfile::tempdir()?.into_path();
+        let primary_path = tempfile::tempdir()?.keep();
         let perpetual_db = Arc::new(AuthorityPerpetualTables::open(&primary_path, None));
         let total_unique_object_ids = 10_000;
         let num_versions_per_object = 10;
@@ -1260,7 +1260,7 @@ mod pprof_tests {
         // in it.
         let registry = Registry::default();
         let metrics = AuthorityStorePruningMetrics::new(&registry);
-        let primary_path = tempfile::tempdir()?.into_path();
+        let primary_path = tempfile::tempdir()?.keep();
         let perpetual_db = Arc::new(AuthorityPerpetualTables::open(&primary_path, None));
         let effects = insert_keys(&perpetual_db.objects)?;
         AuthorityStorePruner::prune_objects(
@@ -1297,7 +1297,7 @@ mod pprof_tests {
         // then does a bunch of get(). We open the db with `ignore_range_delete` set to true (default mode).
         // We then record a cpu profile of the `get()` calls and do not find any range fragmentation stack frame
         // in it.
-        let primary_path = tempfile::tempdir()?.into_path();
+        let primary_path = tempfile::tempdir()?.keep();
         let perpetual_db = Arc::new(AuthorityPerpetualTables::open(&primary_path, None));
         let effects = insert_keys(&perpetual_db.objects)?;
         let registry = Registry::default();
