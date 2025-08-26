@@ -12,14 +12,20 @@ use rand::random;
 
 // Re-export sharks crate
 use crate::error::SecretSharingError;
-pub use sharks::{Share, Sharks};
+pub use field::GF256;
+pub use share::Share;
+
+// Re-export two_party_share functions
+pub use two_party_share::{recover_two_shares, split_to_two_value, recover_value};
 
 // Local module declarations
 pub mod error;
-pub mod two_party_share;
 mod field;
 pub mod math;
+pub mod poly;
 pub mod read;
+pub mod share;
+pub mod two_party_share;
 
 /// Generate secret shares
 ///
@@ -53,12 +59,12 @@ pub fn generate_shares(
         ));
     }
 
-    // Create Shamir secret sharing instance
-    let sharks = Sharks(threshold as u8);
+    let polys: Vec<Vec<GF256>> = secret
+        .iter()
+        .map(|&byte| poly::random_polynomial(GF256(byte), threshold as u8))
+        .collect();
 
-    // Generate shares
-    let dealer = sharks.dealer(secret);
-    let shares: Vec<Share> = dealer.take(total_shares).collect();
+    let shares: Vec<Share> = poly::get_evaluator(polys).take(total_shares).collect();
 
     Ok(shares)
 }
@@ -89,11 +95,8 @@ pub fn recover_secret(shares: &[Share], threshold: usize) -> Result<Vec<u8>, Sec
         ));
     }
 
-    // Create recoverer and attempt recovery
-    let sharks = Sharks(threshold as u8);
-    sharks
-        .recover(shares)
-        .map_err(|e| SecretSharingError::RecoveryFailed(e.to_string()))
+    let recovered_bytes = poly::interpolate(shares);
+    Ok(recovered_bytes)
 }
 
 pub fn u64_to_bytes(value: u64) -> [u8; 8] {
@@ -129,9 +132,7 @@ pub fn generate_shares_u64(
     }
 
     let secret_bytes = u64_to_bytes(secret);
-    let sharks = Sharks(threshold as u8);
-    let dealer = sharks.dealer(&secret_bytes);
-    let shares = dealer.take(total_shares).collect();
+    let shares = generate_shares(&secret_bytes, threshold, total_shares)?;
 
     Ok(shares)
 }
@@ -152,10 +153,7 @@ pub fn recover_secret_u64(shares: &[Share], threshold: usize) -> Result<u64, Sec
         ));
     }
 
-    let sharks = Sharks(threshold as u8);
-    let bytes = sharks
-        .recover(shares)
-        .map_err(|e| SecretSharingError::RecoveryFailed(e.to_string()))?;
+    let bytes = recover_secret(shares, threshold)?;
 
     bytes_to_u64(&bytes).map_err(|e| SecretSharingError::RecoveryFailed(e.to_string()))
 }
