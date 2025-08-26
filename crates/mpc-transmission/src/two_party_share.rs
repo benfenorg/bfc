@@ -1,7 +1,7 @@
 use crate::error::SecretSharingError;
 use crate::math::{add_shared_secrets, mul_shared_secrets, sub_shared_secrets};
+use crate::share::Share;
 use crate::{generate_shares_with_xor, recover_secret_with_xor};
-use sharks::Share;
 
 const THRESHOLD: usize = 2;
 const TOTAL_SHARES: usize = 2;
@@ -26,8 +26,10 @@ pub fn recover_value(
     Ok(value)
 }
 
-
-pub fn recover_two_shares(value1: String, value2: String) -> Result<Vec<Share>, SecretSharingError> {
+pub fn recover_two_shares(
+    value1: String,
+    value2: String,
+) -> Result<Vec<Share>, SecretSharingError> {
     let value1: Vec<u8> =
         hex::decode(value1).map_err(|e| SecretSharingError::InvalidShare(e.to_string()))?;
     let value2: Vec<u8> =
