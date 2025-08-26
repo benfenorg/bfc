@@ -54,7 +54,7 @@ module sui::anonymous_coin_tests {
         let mut scenario = test_scenario::begin(TEST_ADDR);
         let ctx = scenario.ctx();
         let witness = COIN_TESTS{};
-        let (treasury, mut metadata) = anonymous_coin::create_currency(
+        let (treasury, mut metadata) = anonymous_coin::create_currency_for_testing(
 		witness,
 		6,
 		b"COIN_TESTS",
@@ -113,7 +113,7 @@ module sui::anonymous_coin_tests {
     fun tests_coin_restore() {
         let mut scenario = test_scenario::begin(TEST_ADDR);
         let witness = COIN_TESTS{};
-        let (mut treasury, metadata) = anonymous_coin::create_currency(
+        let (mut treasury, metadata) = anonymous_coin::create_currency_for_testing(
 		    witness,
 		    6,
 		    b"COIN_TESTS",
@@ -153,7 +153,7 @@ module sui::anonymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (treasury, mut deny_cap, metadata) = anonymous_coin::create_regulated_currency(
+        let (treasury, mut deny_cap, metadata) = anonymous_coin::create_regulated_currency_for_testing(
             witness,
             6,
             b"COIN_TESTS",
@@ -203,7 +203,7 @@ module sui::anonymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (treasury, mut deny_cap, metadata) = anonymous_coin::create_regulated_currency(
+        let (treasury, mut deny_cap, metadata) = anonymous_coin::create_regulated_currency_for_testing(
             witness,
             6,
             b"COIN_TESTS",
@@ -241,7 +241,7 @@ module sui::anonymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (treasury, mut deny_cap, metadata) = anonymous_coin::create_regulated_currency_v2(
+        let (treasury, mut deny_cap, metadata) = anonymous_coin::create_regulated_currency_v2_for_testing(
             witness,
             6,
             b"COIN_TESTS",
@@ -318,7 +318,7 @@ module sui::anonymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (treasury, mut deny_cap, metadata) = anonymous_coin::create_regulated_currency_v2(
+        let (treasury, mut deny_cap, metadata) = anonymous_coin::create_regulated_currency_v2_for_testing(
             witness,
             6,
             b"COIN_TESTS",
@@ -393,7 +393,7 @@ module sui::anonymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (treasury, mut deny_cap, metadata) = anonymous_coin::create_regulated_currency_v2(
+        let (treasury, mut deny_cap, metadata) = anonymous_coin::create_regulated_currency_v2_for_testing(
             witness,
             6,
             b"COIN_TESTS",
@@ -429,7 +429,7 @@ module sui::anonymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (_treasury, mut deny_cap, _metadata) = anonymous_coin::create_regulated_currency_v2(
+        let (_treasury, mut deny_cap, _metadata) = anonymous_coin::create_regulated_currency_v2_for_testing(
             witness,
             6,
             b"COIN_TESTS",
@@ -451,7 +451,7 @@ module sui::anonymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (_treasury, mut deny_cap, _metadata) = anonymous_coin::create_regulated_currency_v2(
+        let (_treasury, mut deny_cap, _metadata) = anonymous_coin::create_regulated_currency_v2_for_testing(
             witness,
             6,
             b"COIN_TESTS",
@@ -474,7 +474,7 @@ module sui::anonymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (treasury, mut deny_cap, metadata) = anonymous_coin::create_regulated_currency(
+        let (treasury, mut deny_cap, metadata) = anonymous_coin::create_regulated_currency_for_testing(
             witness,
             6,
             b"COIN_TESTS",
@@ -538,7 +538,7 @@ module sui::anonymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (treasury, mut deny_cap, metadata) = anonymous_coin::create_regulated_currency(
+        let (treasury, mut deny_cap, metadata) = anonymous_coin::create_regulated_currency_for_testing(
             witness,
             6,
             b"COIN_TESTS",
@@ -591,7 +591,7 @@ module sui::anonymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (treasury, mut deny_cap, metadata) = anonymous_coin::create_regulated_currency_v2(
+        let (treasury, mut deny_cap, metadata) = anonymous_coin::create_regulated_currency_v2_for_testing(
             witness,
             6,
             b"COIN_TESTS",

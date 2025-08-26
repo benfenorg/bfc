@@ -567,6 +567,94 @@ module sui::anonymous_coin {
         }
     }
 
+    #[test_only]
+    public fun create_currency_for_testing<T: drop>(
+        witness: T,
+        decimals: u8,
+        symbol: vector<u8>,
+        name: vector<u8>,
+        description: vector<u8>,
+        icon_url: Option<Url>,
+        ctx: &mut TxContext
+    ): (TreasuryCap<T>, CoinMetadata<T>) {
+        (
+            TreasuryCap {
+                id: object::new(ctx),
+                total_supply: anonymous_balance::create_supply(witness)
+            },
+            CoinMetadata {
+                id: object::new(ctx),
+                decimals,
+                name: string::utf8(name),
+                symbol: ascii::string(symbol),
+                description: string::utf8(description),
+                icon_url
+            }
+        )
+    }
+    
+    #[test_only]
+    public fun create_regulated_currency_for_testing<T: drop>(
+        witness: T,
+        decimals: u8,
+        symbol: vector<u8>,
+        name: vector<u8>,
+        description: vector<u8>,
+        icon_url: Option<Url>,
+        ctx: &mut TxContext
+    ): (TreasuryCap<T>, DenyCap<T>, CoinMetadata<T>) {
+        let (treasury_cap, metadata) = create_currency_for_testing(
+            witness,
+            decimals,
+            symbol,
+            name,
+            description,
+            icon_url,
+            ctx
+        );
+        let deny_cap = DenyCap {
+            id: object::new(ctx),
+        };
+        transfer::freeze_object(RegulatedCoinMetadata<T> {
+            id: object::new(ctx),
+            coin_metadata_object: object::id(&metadata),
+            deny_cap_object: object::id(&deny_cap),
+        });
+        (treasury_cap, deny_cap, metadata)
+    }
+
+    #[test_only]
+    public fun create_regulated_currency_v2_for_testing<T: drop>(
+        witness: T,
+        decimals: u8,
+        symbol: vector<u8>,
+        name: vector<u8>,
+        description: vector<u8>,
+        icon_url: Option<Url>,
+        allow_global_pause: bool,
+        ctx: &mut TxContext,
+    ): (TreasuryCap<T>, DenyCapV2<T>, CoinMetadata<T>) {
+        let (treasury_cap, metadata) = create_currency_for_testing(
+            witness,
+            decimals,
+            symbol,
+            name,
+            description,
+            icon_url,
+            ctx
+        );
+        let deny_cap = DenyCapV2 {
+            id: object::new(ctx),
+            allow_global_pause,
+        };
+        transfer::freeze_object(RegulatedCoinMetadata<T> {
+            id: object::new(ctx),
+            coin_metadata_object: object::id(&metadata),
+            deny_cap_object: object::id(&deny_cap),
+        });
+        (treasury_cap, deny_cap, metadata)
+    }
+
     // === Deprecated code ===
 
     // oops, wanted treasury: &TreasuryCap<T>
