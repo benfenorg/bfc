@@ -256,11 +256,11 @@ impl AnonymousClient {
 
     async fn test_recover_with_signature(&self, share1: String, share2: String) -> u64 {
         // test restore 20
-        let signature = "13c6801f5e1cb5e5d127829a05bd782d63d3556605c7c4453e33b82d7e10125bad9c493c747e89c8d5403e4efaab89fac7b5fc3700f43243897b1f9fcd21d700";
+        let signature = "0f31177f8ece16b2cfb8c1ba0b71f73252acaa6cfbbe13d36c3320617f05bc7f9a860f16c8b10c787455a01ca7bcca3469858aae4e369bc994ab64967f1fd20f";
         let publickey = "8496d3d932986b43bb64b5d5c7548d5c97a73aebf4301447f3746680b2114ae1";
 
         let object_id = SuiAddress::from_str(
-            "0x505ccdc4f485950744e587c9a26396600ecb047fab43c2c9c0c756eff4c14749",
+            "0xd4c2360f11b1608f3be0b8d89bc97ff3047378dbc34d0b3976f40e6392496fd5",
         )
         .unwrap()
         .to_string();
