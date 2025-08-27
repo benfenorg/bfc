@@ -14,12 +14,10 @@ use crate::utils::get_object_owneraddress;
 use crate::utils::public_key_bytes_to_sui_address;
 use clap::Parser;
 use move_core_types::account_address::AccountAddress;
-use mpc_transmission::{
-    two_party_share::{
-        add_two_shared_secrets, mul_two_shared_secrets, recover_two_shares, recover_value,
-        split_to_two_value, sub_two_shared_secrets,
-    },
-};
+use mpc_transmission::{get_sui_config_directory, two_party_share::{
+    add_two_shared_secrets, mul_two_shared_secrets, recover_two_shares, recover_value,
+    split_to_two_value, sub_two_shared_secrets,
+}};
 use mpc_transmission::{get_mask_secret_from_config};
 
 use serde::{Deserialize, Serialize};
@@ -109,11 +107,22 @@ struct AnonymousRestoreValueParams {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct AnonymousServer {}
+pub struct AnonymousServer {
+    config_pathString : String
+}
 impl AnonymousServer {
-    pub fn new() -> Self {
+    pub fn new(input_config:Option<String>) -> Self {
         // Initialize any necessary resources here
-        AnonymousServer {}
+        let mut config_path = input_config.unwrap_or("".to_string());
+        if config_path.len()==0 {
+            let default_sui_path = get_sui_config_directory();
+            config_path = default_sui_path.to_string_lossy().parse().unwrap();
+        }
+        info!("Starting BFC Anonymous Server using config path {}", config_path);
+
+        AnonymousServer {
+            config_pathString: config_path
+        }
     }
     pub async fn start(&self, addr: SocketAddr) -> anyhow::Result<()> {
         info!("Starting BFC Anonymous Server on {}", addr);
@@ -137,7 +146,7 @@ async fn main() -> anyhow::Result<()> {
 
     let args = Args::parse();
     let addr: SocketAddr = format!("{}:{}", args.host, args.port).parse()?;
-    let server = AnonymousServer::new();
+    let server = AnonymousServer::new(None);
     server.start(addr).await?;
 
     Ok(())
@@ -231,7 +240,7 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
                     };
                 }
 
-                let mask_secret = match get_mask_secret_from_config() {
+                let mask_secret = match get_mask_secret_from_config(None) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
@@ -328,7 +337,7 @@ async fn handle_anonymous_minus(request: JsonRpcRequest) -> JsonRpcResponse {
                     };
                 }
 
-                let mask_secret = match get_mask_secret_from_config() {
+                let mask_secret = match get_mask_secret_from_config(None) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
@@ -426,7 +435,7 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
                         }),
                     };
                 }
-                let mask_secret = match get_mask_secret_from_config() {
+                let mask_secret = match get_mask_secret_from_config(None) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
@@ -555,7 +564,7 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                     //todo,signature check,address.
                     // edd25519 signature check
 
-                    let mask_secret = match get_mask_secret_from_config() {
+                    let mask_secret = match get_mask_secret_from_config(None) {
                         Ok(secret) => secret,
                         Err(e) => {
                             warn!("Failed to get mask secret from config: {}", e);
@@ -639,7 +648,7 @@ async fn handle_anonymous_split_to_two_value(request: JsonRpcRequest) -> JsonRpc
     match request.params {
         Some(params) => match serde_json::from_value::<AnonymousSplitValueParams>(params) {
             Ok(split_to_two_value_params) => {
-                let mask_secret = match get_mask_secret_from_config() {
+                let mask_secret = match get_mask_secret_from_config(None) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
@@ -701,7 +710,7 @@ async fn handle_anonymous_compare(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
         Some(params) => match serde_json::from_value::<AnonymousCompareParams>(params) {
             Ok(compare_params) => {
-                let mask_secret = match get_mask_secret_from_config() {
+                let mask_secret = match get_mask_secret_from_config(None) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);

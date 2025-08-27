@@ -195,8 +195,13 @@ pub fn recover_secret_with_xor(
 /// # Returns
 /// - `Ok(u64)`: The parsed mask secret value
 /// - `Err`: If the config file doesn't exist, is invalid, or the private key cannot be parsed
-pub fn get_mask_secret_from_config() -> Result<u64, Box<dyn std::error::Error>> {
-    let path = get_sui_config_directory().join("bfc_anonymous_config.yaml");
+pub fn get_mask_secret_from_config(config_path: Option<String>) -> Result<u64, Box<dyn std::error::Error>> {
+    let config = config_path.unwrap_or("".parse().unwrap());
+    let pre_path = get_sui_config_directory();
+    let mut path = pre_path.join("bfc_anonymous_config.yaml");
+    if config.len() != 0 {
+        path = PathBuf::from(config).join("bfc_anonymous_config.yaml");
+    }
 
     // Load config file, return error if it doesn't exist or is invalid
     let config = AnonymousPrivateKeyConfig::from_yaml_file(&path)?;
