@@ -25,6 +25,8 @@ use serde_json::{json};
 use serde_json::Value as JsonValue;
 use tracing::info;
 use anyhow::anyhow;
+use attohttpc::post;
+
 
 #[derive(Clone)]
 pub struct AnonymousComputeCostParams {
@@ -362,6 +364,7 @@ pub fn hfe_ops_compare_value(
     _ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult>{
+    println!("hfe_ops_compare_value1");
     let anonymous_compute_cost_params = &context
         .extensions()
         .get::<NativesCostTable>()
@@ -388,14 +391,26 @@ pub fn hfe_ops_compare_value(
         .clone();
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
     let number3 = pop_arg!(args, u64);
+    println!("hfe_ops_compare_value2");
+
     let number2 = pop_arg!(args, Vec<u8>);
+    println!("hfe_ops_compare_value4");
+
     let number1 = pop_arg!(args, Vec<u8>);
+    println!("hfe_ops_compare_value5");
+
     let num1 = String::from_utf8(number1).unwrap();
     let num2 = String::from_utf8(number2).unwrap();
 
     if *enable_anonymous_rpc == Some(true) {
+        println!("hfe_ops_compare_value6");
+
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
+        println!("hfe_ops_compare_value7");
+
         let result = client.compare_value(num1, num2, number3);
+        println!("hfe_ops_compare_value8");
+
         Ok(NativeResult::ok(
             cost,
             smallvec![Value::u8(result.value1.parse::<u8>().unwrap())],
@@ -470,18 +485,21 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
     let num2 = String::from_utf8(number2).unwrap();
 
     if *enable_anonymous_rpc == Some(true) {
-        info!("hfe_ops_restore_value calculate in remote");
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
         let result = client.restore_value(num1, num2, signature, id, publickey);
+        let tmp = result.value1.parse::<u64>().expect("Failed to parse number");
+        info!("hfe_ops_restore_value calculate in remote restore {:?}", tmp);
+
         Ok(NativeResult::ok(
             cost,
             smallvec![Value::u64(result.value1.parse::<u64>().expect("Failed to parse number"))],
         ))
     } else {
-        info!("hfe_ops_restore_value calculate in local");
         let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
         match recover_value(num1, num2, mask) {
             Ok(value) => {
+                info!("hfe_ops_restore_value calculate in local restore{:?}", value);
+
                 Ok(NativeResult::ok(
                     cost,
                     smallvec![Value::u64(value)],
@@ -516,14 +534,12 @@ struct AnonymousResult {
 
 struct AnonymousClient {
     base_url: String,
-    client: reqwest::blocking::Client,
 }
 
 impl AnonymousClient {
     pub fn new(base_url: &str) -> Self {
         Self {
             base_url: base_url.to_string(),
-            client: reqwest::blocking::Client::new(),
         }
     }
 
@@ -535,7 +551,7 @@ impl AnonymousClient {
             "value4": value4
         });
 
-        match self.send_rpc_request("bfcx_getAnonymousAdd", params, 1) {
+        match self.atto_http_post("bfcx_getAnonymousAdd", params, 1) {
 
             Ok(response) => {
                 let result1 = response["result"]["result1"].as_str().unwrap();
@@ -566,7 +582,7 @@ impl AnonymousClient {
             "value4": value4,
         });
 
-        match self.send_rpc_request("bfcx_getAnonymousMinus", params, 2) {
+        match self.atto_http_post("bfcx_getAnonymousMinus", params, 2) {
             Ok(response) => {
                 let result1 = response["result"]["result1"].as_str().unwrap();
                 let result2 = response["result"]["result2"].as_str().unwrap();
@@ -595,7 +611,7 @@ impl AnonymousClient {
             "publickey": publickey,
         });
 
-        match self.send_rpc_request("bfcx_getAnonymousRestoreValue", params, 3) {
+        match self.atto_http_post("bfcx_getAnonymousRestoreValue", params, 3) {
             Ok(response) => {
 
                 let result1 = response["result"]["result1"].as_u64().unwrap();
@@ -620,7 +636,7 @@ impl AnonymousClient {
             "value": value1,
         });
 
-        match self.send_rpc_request("bfcx_getAnonymousSplitValue", params, 3) {
+        match self.atto_http_post("bfcx_getAnonymousSplitValue", params, 3) {
             Ok(response) => {
 
                 let result1 = response["result"]["result1"].as_str().unwrap();
@@ -648,7 +664,7 @@ impl AnonymousClient {
             "value3": value3,
         });
 
-        match self.send_rpc_request("bfcx_getAnonymousCompare", params, 3) {
+        match self.atto_http_post("bfcx_getAnonymousCompare", params, 3) {
             Ok(response) => {
                 let result1 = response["result"]["result1"].as_str().unwrap();
                 AnonymousResult {
@@ -675,7 +691,7 @@ impl AnonymousClient {
             "value4": value4,
         });
 
-        match self.send_rpc_request("bfcx_getAnonymousMultiply", params, 3) {
+        match self.atto_http_post("bfcx_getAnonymousMultiply", params, 3) {
             Ok(response) => {
 
                 let result1 = response["result"]["result1"].as_str().unwrap();
@@ -696,29 +712,34 @@ impl AnonymousClient {
         }
     }
 
-    fn send_rpc_request(
+    pub fn atto_http_post(
         &self,
         method: &str,
         params: JsonValue,
         id: u64,
     ) -> Result<JsonValue, Box<dyn Error>> {
-        let request_body = json!({
+        let data = json!({
             "jsonrpc": "2.0",
             "method": method,
             "params": params,
             "id": id
         });
 
-        let response = self
-            .client
-            .post(&format!("{}/rpc", self.base_url))
-            .header("Content-Type", "application/json")
-            .json(&request_body)
+        let resp = post(&format!("{}/rpc", self.base_url))
+            .json(&data)?
             .send()?;
 
-        let response_text = response.text()?;
-        let response_json: JsonValue = serde_json::from_str(&response_text)?;
-        Ok(response_json)
+
+
+        if resp.is_success() {
+            let response_json: serde_json::Value = resp.json()?; // 解析响应的 JSON
+            println!("Server responded with: {}", response_json);
+            Ok(response_json)
+
+        } else {
+            eprintln!("POST request failed with status: {}", resp.status());
+            Err(anyhow!("post request failed").into())
+        }
     }
 }
 
@@ -729,7 +750,7 @@ fn test_get_anonymous_add() -> (){
             "value1": 2,
             "value2": 3
         });
-    let response = client.send_rpc_request("bfcx_getAnonymousAdd", params.clone(), 1);
+    let response = client.atto_http_post("bfcx_getAnonymousAdd", params.clone(), 1);
     match response {
         Ok(value) => {
             println!("Response: {}", value);
@@ -738,7 +759,7 @@ fn test_get_anonymous_add() -> (){
             eprintln!("Error: {}", e);
         }
     }
-    let response = client.send_rpc_request("bfcx_getAnonymousMinus", params.clone(), 1);
+    let response = client.atto_http_post("bfcx_getAnonymousMinus", params.clone(), 1);
     match response {
         Ok(value) => {
             println!("Response: {}", value);
@@ -747,7 +768,7 @@ fn test_get_anonymous_add() -> (){
             eprintln!("Error: {}", e);
         }
     }
-    let response = client.send_rpc_request("bfcx_getAnonymousMultiplied", params.clone(), 1);
+    let response = client.atto_http_post("bfcx_getAnonymousMultiplied", params.clone(), 1);
     match response {
         Ok(value) => {
             println!("Response: {}", value);
@@ -757,7 +778,7 @@ fn test_get_anonymous_add() -> (){
         }
     }
 
-    let response = client.send_rpc_request("bfcx_getAnonymousCompare", params, 1);
+    let response = client.atto_http_post("bfcx_getAnonymousCompare", params, 1);
     match response {
         Ok(value) => {
             println!("Response: {}", value);

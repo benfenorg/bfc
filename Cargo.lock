@@ -1080,6 +1080,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "attohttpc"
+version = "0.28.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "07a9b245ba0739fc90935094c29adbaee3f977218b5fb95e822e261cda7f56a3"
+dependencies = [
+ "flate2",
+ "http 1.1.0",
+ "log",
+ "native-tls",
+ "serde",
+ "serde_json",
+ "url",
+]
+
+[[package]]
 name = "auto_impl"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -15311,6 +15326,7 @@ name = "sui-move-natives-latest"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "attohttpc",
  "bcs",
  "better_any",
  "dirs 4.0.0",
