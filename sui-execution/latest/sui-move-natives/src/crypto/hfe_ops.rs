@@ -364,7 +364,6 @@ pub fn hfe_ops_compare_value(
     _ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult>{
-    println!("hfe_ops_compare_value1");
     let anonymous_compute_cost_params = &context
         .extensions()
         .get::<NativesCostTable>()
@@ -391,25 +390,19 @@ pub fn hfe_ops_compare_value(
         .clone();
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
     let number3 = pop_arg!(args, u64);
-    println!("hfe_ops_compare_value2");
 
     let number2 = pop_arg!(args, Vec<u8>);
-    println!("hfe_ops_compare_value4");
 
     let number1 = pop_arg!(args, Vec<u8>);
-    println!("hfe_ops_compare_value5");
 
     let num1 = String::from_utf8(number1).unwrap();
     let num2 = String::from_utf8(number2).unwrap();
 
     if *enable_anonymous_rpc == Some(true) {
-        println!("hfe_ops_compare_value6");
 
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
-        println!("hfe_ops_compare_value7");
 
         let result = client.compare_value(num1, num2, number3);
-        println!("hfe_ops_compare_value8");
 
         Ok(NativeResult::ok(
             cost,
