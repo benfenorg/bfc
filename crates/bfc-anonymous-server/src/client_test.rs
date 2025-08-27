@@ -295,9 +295,18 @@ mod tests {
     use tracing_subscriber::fmt;
 
     #[tokio::test]
-    async fn test_client_creation() {
+    async fn test_client_without_server_auto_start() {
         let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
         assert_eq!(client.base_url, "http://localhost:9010");
+
+        let ping_result = client.test_ping().await.response.unwrap();
+        info!("Ping Result: {:?}", ping_result);
+
+        // test split first
+        let split_result_0 = client.test_split(20).await.response.unwrap();
+        info!("Split 20 Result: {:?}", split_result_0);
+        let split_result_1 = client.test_split(10).await.response.unwrap();
+        info!("Split 10 Result: {:?}", split_result_1);
     }
 
     #[tokio::test]
