@@ -480,8 +480,7 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
     if *enable_anonymous_rpc == Some(true) {
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
         let result = client.restore_value(num1, num2, signature, id, publickey);
-        let tmp = result.value1.parse::<u64>().expect("Failed to parse number");
-        info!("hfe_ops_restore_value calculate in remote restore {:?}", tmp);
+        info!("hfe_ops_restore_value calculate in remote restore");
 
         Ok(NativeResult::ok(
             cost,
@@ -491,7 +490,7 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
         let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
         match recover_value(num1, num2, mask) {
             Ok(value) => {
-                info!("hfe_ops_restore_value calculate in local restore{:?}", value);
+                info!("hfe_ops_restore_value calculate in local restore");
 
                 Ok(NativeResult::ok(
                     cost,
@@ -725,7 +724,7 @@ impl AnonymousClient {
 
 
         if resp.is_success() {
-            let response_json: serde_json::Value = resp.json()?; // 解析响应的 JSON
+            let response_json: serde_json::Value = resp.json()?;
             println!("Server responded with: {}", response_json);
             Ok(response_json)
 
