@@ -191,6 +191,7 @@ async fn sim_test_anonymous_coin_swap_in_exceed_boundary() -> Result<(), anyhow:
         arg,
     ).await?;
 
+    info!("========={:?}", result.effects.clone().unwrap());
     assert!(*result.effects.unwrap().status() !=  SuiExecutionStatus::Success);
     Ok(())
 }
