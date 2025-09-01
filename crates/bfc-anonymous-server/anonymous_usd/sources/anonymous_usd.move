@@ -37,17 +37,17 @@ public entry fun transfer(c: anonymous_coin::Anonymous_Coin<ANONYMOUS_USD>, reci
 }
 
 #[test_only]
-public fun new_for_test(ctx: &mut TxContext): Supply<ABUSD> {
-    let (cap, metadata) = coin::create_currency(
-        ABUSD {},
+public fun new_for_testing(ctx: &mut TxContext): TreasuryCap<ANONYMOUS_USD>{
+    let (treasury, metadata) = anonymous_coin::create_currency(
+        ANONYMOUS_USD {},
         9,
-        b"ABUSD",
-        b"Benfen Anonymous USD",
+        b"ANONYMOUS_USD",
+        b"ANONYMOUS_USD Anonymous USD",
         b"",
         option::none(),
         ctx
     );
     transfer::public_freeze_object(metadata);
-    coin::treasury_into_supply(cap)
+    treasury
 }
 
