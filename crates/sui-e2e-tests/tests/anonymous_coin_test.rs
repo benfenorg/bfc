@@ -574,6 +574,30 @@ async fn sim_test_anonymous_coin_restore() -> Result<(), anyhow::Error>{
 
 }
 
+
+#[sim_test]
+async fn sim_test_anonymous_usd_coin_create() -> Result<(), anyhow::Error>{
+
+    Ok(())
+}
+#[sim_test]
+async fn sim_test_anonymous_usd_coin_swap_in() -> Result<(), anyhow::Error>{
+    Ok(())
+}
+
+#[sim_test]
+async fn sim_test_anonymous_usd_coin_swap_out() -> Result<(), anyhow::Error>{
+
+    Ok(())
+}
+#[sim_test]
+async fn sim_test_anonymous_usd_coin_restore() -> Result<(), anyhow::Error>{
+    Ok(())
+}
+
+
+
+
 pub async fn do_move_call(http_client: &HttpClient, gas: &SuiObjectData,
                           address: SuiAddress, cluster: &TestCluster,
                           package_id: ObjectID, module: String,
