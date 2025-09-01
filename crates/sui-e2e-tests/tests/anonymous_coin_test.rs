@@ -480,7 +480,6 @@ async fn sim_test_anonymous_coin_swap_out_with_amount_exceed_boundary() -> Resul
 
 
     let mint_response = publish_coin::do_mint_anonymous(&mut test_cluster,package,300000000000000000).await;
-    let anonymous_coin = mint_response.effects.clone().unwrap().created().to_vec()[0].reference.object_id;
 
     let function = "swap_out_with_amount".to_string();
 

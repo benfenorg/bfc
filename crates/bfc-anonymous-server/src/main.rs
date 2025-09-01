@@ -111,7 +111,7 @@ struct AnonymousRestoreValueParams {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AnonymousServer {
-    config_pathString : String
+    config_path_string: String
 }
 impl AnonymousServer {
     pub fn new(input_config:Option<String>) -> Self {
@@ -124,7 +124,7 @@ impl AnonymousServer {
         info!("Starting BFC Anonymous Server using config path {}", config_path);
 
         AnonymousServer {
-            config_pathString: config_path
+            config_path_string: config_path
         }
     }
     pub async fn start(&self, addr: SocketAddr) -> anyhow::Result<()> {

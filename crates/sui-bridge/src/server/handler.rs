@@ -790,7 +790,6 @@ mod tests {
     use sui_json_rpc_types::{BcsEvent, SuiEvent};
     use sui_types::bridge::{BridgeChainId, TOKEN_ID_BTC, TOKEN_ID_USDC};
     use sui_types::{base_types::SuiAddress, crypto::get_key_pair};
-    use crate::test_utils::mock_latest_block;
 
     #[tokio::test]
     async fn test_sui_signer_with_cache() {

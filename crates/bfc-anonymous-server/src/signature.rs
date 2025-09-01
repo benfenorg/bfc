@@ -159,7 +159,7 @@ mod tests {
 
     #[test]
     fn test_invalid_signature() {
-        let (public_key, signing_key) = generate_keypair();
+        let (_public_key, signing_key) = generate_keypair();
         let message = b"Test message";
         let mut signature = sign_message(&signing_key, message);
 

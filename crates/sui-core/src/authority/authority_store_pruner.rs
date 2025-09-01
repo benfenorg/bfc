@@ -1034,24 +1034,24 @@ mod tests {
     // Tests pruning old version of live objects.
     #[tokio::test]
     async fn test_pruning_objects() {
-        let path = tempfile::tempdir().unwrap().into_path();
+        let path = tempfile::tempdir().unwrap().keep();
         let to_keep = run_pruner(&path, 3, 2, 1000, 0).await;
         assert_eq!(
             HashSet::from_iter(to_keep),
             get_keys_after_pruning(&path).unwrap()
         );
-        run_pruner(&tempfile::tempdir().unwrap().into_path(), 3, 2, 1000, 0).await;
+        run_pruner(&tempfile::tempdir().unwrap().keep(), 3, 2, 1000, 0).await;
     }
 
     // Tests pruning deleted objects (object tombstones).
     #[tokio::test]
     async fn test_pruning_tombstones() {
-        let path = tempfile::tempdir().unwrap().into_path();
+        let path = tempfile::tempdir().unwrap().keep();
         let to_keep = run_pruner(&path, 0, 0, 1000, 0).await;
         assert_eq!(to_keep.len(), 0);
         assert_eq!(get_keys_after_pruning(&path).unwrap().len(), 0);
 
-        let path = tempfile::tempdir().unwrap().into_path();
+        let path = tempfile::tempdir().unwrap().keep();
         let to_keep = run_pruner(&path, 3, 0, 1000, 0).await;
         assert_eq!(to_keep.len(), 0);
         assert_eq!(get_keys_after_pruning(&path).unwrap().len(), 0);
@@ -1059,7 +1059,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_ref_count_pruning() {
-        let path = tempfile::tempdir().unwrap().into_path();
+        let path = tempfile::tempdir().unwrap().keep();
         run_pruner(&path, 3, 2, 1000, 1).await;
         {
             let perpetual_db = AuthorityPerpetualTables::open(&path, None);
@@ -1068,7 +1068,7 @@ mod tests {
             assert_eq!(count, 1000);
         }
 
-        let path = tempfile::tempdir().unwrap().into_path();
+        let path = tempfile::tempdir().unwrap().keep();
         run_pruner(&path, 3, 0, 1000, 1).await;
         {
             let perpetual_db = AuthorityPerpetualTables::open(&path, None);

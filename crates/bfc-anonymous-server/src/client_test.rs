@@ -287,9 +287,7 @@ fn hex_to_bytes(hex: &str) -> Vec<u8> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::{AnonymousServer, Args};
-    use clap::Parser;
+    use crate::AnonymousServer;
     use std::net::SocketAddr;
     use tracing::info;
     use tracing_subscriber::fmt;
@@ -320,7 +318,7 @@ mod tests {
 
         info!("the address is {:?}", addr);
         let server = AnonymousServer::new(None);
-        let server_handle = tokio::spawn(async move {
+        let _server_handle = tokio::spawn(async move {
             if let Err(e) = server.start(addr).await {
                 eprintln!("Server error: {:?}", e);
             }
