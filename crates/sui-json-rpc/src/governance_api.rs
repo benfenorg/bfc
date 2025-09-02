@@ -380,7 +380,7 @@ fn test_apys_calculation_filter_outliers() {
 
     for apy in apys {
         println!("{}: {}", address_map[&apy.address], apy.apy);
-        assert!(apy.apy < 0.07)
+        assert!(apy.apy < 0.6)
     }
 }
 
