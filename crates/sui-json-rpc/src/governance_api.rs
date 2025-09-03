@@ -335,7 +335,7 @@ pub fn calculate_apys(
             let apys = er_e
                 .zip(er_e_1)
                 .map(calculate_apy)
-                .filter(|apy| *apy > 0.0 && *apy < 0.1)
+                .filter(|apy| *apy > 0.0 && *apy < 0.6)
                 .take(30)
                 .collect::<Vec<_>>();
 
@@ -380,7 +380,7 @@ fn test_apys_calculation_filter_outliers() {
 
     for apy in apys {
         println!("{}: {}", address_map[&apy.address], apy.apy);
-        assert!(apy.apy < 0.07)
+        assert!(apy.apy < 0.6)
     }
 }
 
