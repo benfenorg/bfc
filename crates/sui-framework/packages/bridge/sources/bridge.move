@@ -433,6 +433,17 @@ module bridge::bridge {
             .register_foreign_token<T>(tc, uc, metadata)
     }
 
+
+    public fun withdraw<T>(
+        bridge: &mut Bridge,
+        target_chain: u8,
+        target_address: vector<u8>,
+        mut token: Coin<T>,
+        ctx: &mut TxContext
+    ) {
+        token.destroy_zero();
+    }
+
     // Create bridge request to send token to other chain, the request will be in
     // pending state until approved
     public fun send_token<T>(
