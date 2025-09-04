@@ -28,7 +28,7 @@ use sui::anonymous_coin;
     }
 
     #[test]
-        fun test_anonymous_usd_transfer() {
+     fun test_anonymous_usd_transfer() {
             let mut scenario = test_scenario::begin(@0);
             let mut treasury = anonymous_usd::new_for_testing(scenario.ctx());
             anonymous_usd::mint(&mut treasury, 20000, scenario.ctx());
@@ -55,6 +55,6 @@ use sui::anonymous_coin;
 
             test_scenario::next_tx(&mut scenario, @0x0);
             scenario.end();
-        }
+     }
 }
 
