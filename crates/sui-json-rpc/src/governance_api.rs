@@ -405,7 +405,6 @@ async fn exchange_rates(
 
     let bfc_state = state.get_bfc_system_state()?;
     let busd_rate = bfc_state.get_rate_map().get(&"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD".to_string());
-    // dbg!(&busd_rate);
 
     // Get validator rate tables
     let mut tables = vec![];
@@ -550,18 +549,10 @@ async  fn fill_stable_exchange_rate(
 ) -> Result<(), SuiError> {
     if let Some(bag) = stable_pools {
         let bag_id = *bag.id.clone().object_id();
-        dbg!(&bag_id);
 
         let bag =  state.get_dynamic_fields(bag_id, None, 1)
             .map_err(|e| SuiError::DynamicFieldReadError(e.to_string()))?;
         let (busd_id, df) = bag.get(0).ok_or_else(|| SuiError::DynamicFieldReadError("bag is empty".to_string()))?;
-
-        // let base_name = "0000000000000000000000000000000000000000000000000000000000000003::stable_pool::StablePool";
-        // let busd_type_tag = TypeTag::from_str("0x00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD").unwrap();
-        // let name = DynamicFieldName {
-        //     type_:  TypeTag::from_str("0000000000000000000000000000000000000000000000000000000000000001::ascii::String").unwrap(),
-        //     value: serde_json::Value::String("0x00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD".to_string()),
-        // };
 
         let stable_pool_obj = state.get_object(&busd_id, &df.version).await
             .map_err(|e| SuiError::DynamicFieldReadError(e.to_string()))?;
@@ -569,11 +560,9 @@ async  fn fill_stable_exchange_rate(
         if let Some(move_object) = stable_pool_obj
             .data
             .try_as_move() {
-            // dbg!(&move_object);
             let result: StablePoolV1 = bcs::from_bytes::<Field<String, StablePoolV1>>(move_object.contents())
                 .map_err(|err| SuiError::DynamicFieldReadError(err.to_string()))?
                 .value;
-            // dbg!(&result.exchange_rates.id);
             if result.stable_balance < 1 {// skip empty stable pool
                 return Ok(());
             }
@@ -589,13 +578,11 @@ async  fn fill_stable_exchange_rate(
                     }
                 })?;
 
-                dbg!(&epoch);
                 let stable_exchange_rate: PoolStableTokenExchangeRate = get_dynamic_field_from_store(
                     &state.get_object_store().as_ref(),
                     result.exchange_rates.id,
                     &epoch,
                 )?;
-                dbg!(&stable_exchange_rate);
                 //insert into map
                 let key = format!("{}::{}", validator_address, epoch);
                 stable_exchange_rate_map.insert(key, stable_exchange_rate.clone());
