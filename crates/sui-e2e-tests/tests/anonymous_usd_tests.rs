@@ -123,60 +123,9 @@ async fn sim_test_mint_anonymous_usd() -> Result<(), anyhow::Error>{
         arg,
     ).await?;
     //
-    //assert!(*move_call_response.effects.unwrap().status() ==  SuiExecutionStatus::Success);
-    println!("wubin result {:?}", move_call_response);
-    panic!("the package id is {:?}", package);
+    assert!(*move_call_response.effects.unwrap().status() ==  SuiExecutionStatus::Success);
     Ok(())
 }
-
-pub async fn do_move_call_with_result(http_client: &HttpClient, gas: &SuiObjectData,
-                          address: SuiAddress, cluster: &TestCluster,
-                          package_id: ObjectID, module: String,
-                          function: String,
-                          type_argument: Vec<SuiTypeTag>,
-                          arg: Vec<SuiJsonValue>) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
-    let transaction_bytes: TransactionBlockBytes = http_client
-        .move_call(
-            address,
-            package_id,
-            module,
-            function,
-            type_argument,
-            arg,
-            Some(gas.object_id),
-            10_000_00000.into(),
-            None,
-        )
-        .await?;
-
-    let tx = cluster
-        .wallet
-        .sign_transaction(&transaction_bytes.to_data()?);
-    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
-
-    let pt = ProgrammableTransaction {
-        inputs: vec![
-            CallArg::Pure(test_object1_bytes.clone()),
-            CallArg::Pure(test_object1_bytes.clone()),
-        ],
-        commands: vec![Command::move_call(
-            object_basics.0,
-            Identifier::new("object_basics").unwrap(),
-            Identifier::new("add_ofield").unwrap(),
-            vec![],
-            vec![Argument::Input(0), Argument::Input(1)],
-        )],
-    };
-    let kind = TransactionKind::programmable(pt);
-
-    let tx_response = http_client
-        .dev_inspect_transaction_block(
-            address,pt, None, None, None
-        )
-        .await?;
-    Ok(tx_response)
-}
-
 
 pub async fn do_move_call(http_client: &HttpClient, gas: &SuiObjectData,
                           address: SuiAddress, cluster: &TestCluster,
