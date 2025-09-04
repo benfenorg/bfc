@@ -8,6 +8,8 @@ module bridge::message {
 
     use bridge::chain_ids;
     use bridge::message_types;
+    use std::u64;
+    use std::u8;
 
     const CURRENT_MESSAGE_VERSION: u8 = 1;
     const CURRENT_MESSAGE_VERSION_V2: u8 = 2;
@@ -97,6 +99,33 @@ module bridge::message {
         event_idx: u16,
     }
 
+    public struct TokenTransferOutPayloadV3 has drop {
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+        protocol_type: u64,// 0:aave, 1:compound, 2:curve 等等
+        protocol_version: u64,
+        action_type: u8, // 0:stake, 1:unstake
+    }
+
+    public struct TokenTransferInPayloadV3 has drop {
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+        fast_path_selector: u8,
+        protocol_type: u64,// 0:aave, 1:compound, 2:curve 等等
+        protocol_version: u64,
+        action_type: u8, // 0:stake, 1:unstake
+    }
+
     public struct TokenTransferInPayload has drop {
         sender_address: vector<u8>,
         target_chain: u8,
@@ -107,6 +136,8 @@ module bridge::message {
         event_idx: u16,
         fast_path_selector: u8,
     }
+
+    
 
     public struct EmergencyOp has drop {
         op_type: u8
