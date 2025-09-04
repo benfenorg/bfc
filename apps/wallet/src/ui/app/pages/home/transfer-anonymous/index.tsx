@@ -11,22 +11,20 @@ import { useDryRunTransaction } from '_src/ui/app/hooks/useDryRunTransaction';
 import { useSigner } from '_src/ui/app/hooks/useSigner';
 import BottomMenuLayout, { Content, Menu } from '_src/ui/app/shared/bottom-menu-layout';
 import { InputWithAction } from '_src/ui/app/shared/InputWithAction';
-import { type StructTag } from '@benfen/bfc.js/bcs/types';
 import { Transaction } from '@benfen/bfc.js/transactions';
-import { BFC_DECIMALS, isValidBenfenAddress, parseStructTag } from '@benfen/bfc.js/utils';
+import { BFC_DECIMALS, isValidBenfenAddress } from '@benfen/bfc.js/utils';
 import { useGetAllAnonymousCoins } from '@mysten/core';
+import { ABFC_TYPE } from '@mysten/core/src/utils/constants';
 import { ArrowRight16 } from '@mysten/icons';
 import { useMutation } from '@tanstack/react-query';
 import { BigNumber } from 'bignumber.js';
 import clsx from 'clsx';
 import { Field, Form, Formik } from 'formik';
-import { useMemo } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 
 const initialValues = {
-	coinType: '',
 	amount: '',
 	to: '',
 };
@@ -34,9 +32,6 @@ const initialValues = {
 type FormValues = typeof initialValues;
 
 const validationSchema = Yup.object({
-	coinType: Yup.string().test('required', 'Coin Type is a required field', (value) => {
-		return !!value;
-	}),
 	amount: Yup.mixed<BigNumber>()
 		.transform((_, original) => new BigNumber(original))
 		.test('required', `\${path} is a required field`, (value) => {
@@ -63,16 +58,6 @@ export const TransferAnonymous = () => {
 		activeAccount?.address,
 	);
 
-	const coinTypes = useMemo(() => {
-		const types = new Set<string>();
-		anonymousCoins?.forEach((coin) => {
-			const parsed = parseStructTag(coin.balance.type);
-			types.add((parsed.typeParams[0] as unknown as StructTag).name);
-		});
-
-		return Array.from(types);
-	}, [anonymousCoins]);
-
 	const { mutateAsync: transfer } = useMutation({
 		mutationKey: ['transfer-anonymous-coins'],
 		mutationFn: async (values: FormValues) => {
@@ -82,7 +67,7 @@ export const TransferAnonymous = () => {
 			if (others.length > 0) {
 				tx.moveCall({
 					target: `0x2::anonymous_pay::join_vec`,
-					typeArguments: ['0x2::abfc::ABFC'],
+					typeArguments: [ABFC_TYPE],
 					arguments: [
 						tx.object(primary.id.id),
 						tx.makeMoveVec({ elements: others.map((i) => tx.object(i.id.id)) }),
@@ -92,7 +77,7 @@ export const TransferAnonymous = () => {
 
 			tx.moveCall({
 				target: `0x2::anonymous_pay::split_and_transfer`,
-				typeArguments: ['0x2::abfc::ABFC'],
+				typeArguments: [ABFC_TYPE],
 				arguments: [tx.object(primary.id.id), tx.pure.u64(bn), tx.pure.address(values.to)],
 			});
 
@@ -142,23 +127,6 @@ export const TransferAnonymous = () => {
 								<BottomMenuLayout>
 									<Content>
 										<Form autoComplete={'off'} noValidate={true}>
-											<div className="mb-7 flex flex-col gap-2.5">
-												<div className="pl-1.5">
-													<Text variant="caption" color="steel" weight="semibold">
-														Select all Coins
-													</Text>
-												</div>
-												<div className="w-full flex relative items-center flex-col">
-													<Field as="select" name="coinType">
-														<option value={''} className={'hidden'}></option>
-														{coinTypes.map((i) => (
-															<option key={i} value={i}>
-																{i}
-															</option>
-														))}
-													</Field>
-												</div>
-											</div>
 											<div className="w-full flex flex-col flex-grow">
 												<div className="px-2 mb-2.5">
 													<Text variant="caption" color="steel" weight="semibold">
@@ -170,7 +138,7 @@ export const TransferAnonymous = () => {
 													type="numberInput"
 													name="amount"
 													placeholder="0.00"
-													suffix={` ${values.coinType}`}
+													suffix={` ABFC`}
 													allowNegative={false}
 													decimals
 													rounded="lg"

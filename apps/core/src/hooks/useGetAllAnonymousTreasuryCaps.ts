@@ -1,44 +1,37 @@
 // Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
-import { normalizeStructTag, parseStructTag } from '@benfen/bfc.js/utils';
 import { useQuery } from '@tanstack/react-query';
 
-import { ANONYMOUS_COIN_TYPE } from '../utils/constants';
+import { ANONYMOUS_COIN_TREASURY_CAP } from '../utils/constants';
 
-export type AnonymousCoinFields = {
-	balance: {
-		type: string;
-		fields: {
-			balance_type: {
-				type: string;
-				variant: string;
-			};
-			encode_data: string;
-			value1: string;
-			value2: string;
-			version: number;
-		};
-	};
+export type AnonymousTreasuryCapFields = {
 	id: {
 		id: string;
 	};
+	total_supply: {
+		type: string;
+		fields: {
+			value: string;
+		};
+	};
+	type: string;
 };
 
-export const useGetAllAnonymousCoins = (address?: string | null, typeFilter?: string) => {
+export const useGetAllAnonymousTreasuryCaps = (address?: string | null) => {
 	const client = useBenfenClient();
 
 	return useQuery({
-		queryKey: ['get-all-anonymous-coins', address, typeFilter],
+		queryKey: ['get-all-anonymous-treasury-caps', address],
 		queryFn: async () => {
-			const result: AnonymousCoinFields[] = [];
+			const result: AnonymousTreasuryCapFields[] = [];
 			let cursor: string | undefined | null = undefined;
 
 			for (;;) {
 				const data = await client.getOwnedObjects({
 					owner: address!,
 					filter: {
-						MatchAll: [{ StructType: ANONYMOUS_COIN_TYPE }],
+						MatchAll: [{ StructType: ANONYMOUS_COIN_TREASURY_CAP }],
 					},
 					options: {
 						showType: true,
@@ -50,22 +43,17 @@ export const useGetAllAnonymousCoins = (address?: string | null, typeFilter?: st
 				});
 				result.push(
 					...(data.data ?? [])
-						.filter((row) => {
-							if (!typeFilter) {
-								return true;
-							}
-							return (
-								normalizeStructTag(parseStructTag(row.data!.type!).typeParams[0]) === typeFilter
-							);
-						})
 						.map((row) => {
 							const content = row.data?.content;
 							if (content?.dataType === 'moveObject') {
-								return content.fields as AnonymousCoinFields;
+								return {
+									...content.fields,
+									type: content.type,
+								} as AnonymousTreasuryCapFields;
 							}
 							return undefined;
 						})
-						.filter((row): row is AnonymousCoinFields => !!row),
+						.filter((row): row is AnonymousTreasuryCapFields => !!row),
 				);
 
 				cursor = data.nextCursor;
