@@ -1288,17 +1288,31 @@ module bridge::message {
         protocol_version: u64,
         action_type: u8,
     ): BridgeMessage{
-        let mut payload = bcs::to_bytes(&sender_address);
-        payload.append(bcs::to_bytes(&target_chain));
-        payload.append(bcs::to_bytes(&target_address));
-        payload.append(bcs::to_bytes(&token_type));
-        payload.append(bcs::to_bytes(&amount));
-        payload.append(bcs::to_bytes(&tx_hash));
-        payload.append(bcs::to_bytes(&event_idx));
-        payload.append(bcs::to_bytes(&fast_path_selector));
-        payload.append(bcs::to_bytes(&protocol_type));
-        payload.append(bcs::to_bytes(&protocol_version));
-        payload.append(bcs::to_bytes(&action_type));
+        chain_ids::assert_valid_chain_id(source_chain);
+        chain_ids::assert_valid_chain_id(target_chain);
+
+        let mut payload = vector[];
+
+        // sender address should be less than 255 bytes so can fit into u8
+        payload.push_back((vector::length(&sender_address) as u8));
+        payload.append(sender_address);
+        payload.push_back(target_chain);
+        // target address should be less than 255 bytes so can fit into u8
+        payload.push_back((vector::length(&target_address) as u8));
+        payload.append(target_address);
+        // bcs serializes u64 as 8 bytes
+        payload.append(reverse_bytes(bcs::to_bytes(&token_type)));
+        payload.append(reverse_bytes(bcs::to_bytes(&amount)));
+
+        // tx_hash length prefix
+        payload.push_back((vector::length(&tx_hash) as u8));
+        payload.append(tx_hash);
+        payload.append(reverse_bytes(bcs::to_bytes(&event_idx)));
+        payload.push_back(fast_path_selector);
+        payload.append(reverse_bytes(bcs::to_bytes(&protocol_type)));
+        payload.append(reverse_bytes(bcs::to_bytes(&protocol_version)));
+        payload.push_back(action_type);
+
         BridgeMessage {
             message_type: message_types::defi(),
             message_version: CURRENT_MESSAGE_VERSION,
@@ -1595,15 +1609,15 @@ module bridge::message {
         self.amount
     }
 
-    public fun token_tx_hash_defi_in(self: &DefiTransferInPayload): vector<u8> {
+    public fun tx_hash_defi_in(self: &DefiTransferInPayload): vector<u8> {
         self.tx_hash
     }
 
-    public fun token_event_idx_defi_in(self: &DefiTransferInPayload): u16 {
+    public fun event_idx_defi_in(self: &DefiTransferInPayload): u16 {
         self.event_idx
     }
 
-    public fun token_fast_path_selector_defi_in(self: &DefiTransferInPayload): u8 {
+    public fun fast_path_selector_defi_in(self: &DefiTransferInPayload): u8 {
         self.fast_path_selector
     }
 
@@ -1980,6 +1994,35 @@ module bridge::message {
             amount,
             tx_hash,
             event_idx,
+            protocol_type,
+            protocol_version,
+            action_type,
+        }
+    }
+
+    #[test_only]
+    public(package) fun make_payload_4_defi_transfer_in(
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+        fast_path_selector: u8,
+        protocol_type: u64,// 0:aave, 1:compound, 2:curve 等等
+        protocol_version: u64,
+        action_type: u8, // 0:stake, 1:unstake
+    ): DefiTransferInPayload {
+        DefiTransferInPayload {
+            sender_address,
+            target_chain,
+            target_address,
+            token_type,
+            amount,
+            tx_hash,
+            event_idx,
+            fast_path_selector,
             protocol_type,
             protocol_version,
             action_type,
