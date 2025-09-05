@@ -99,7 +99,7 @@ module bridge::message {
         event_idx: u16,
     }
 
-    public struct TokenTransferOutPayloadV3 has drop {
+    public struct DefiTransferOutPayload has drop {
         sender_address: vector<u8>,
         target_chain: u8,
         target_address: vector<u8>,
@@ -112,7 +112,7 @@ module bridge::message {
         action_type: u8, // 0:stake, 1:unstake
     }
 
-    public struct TokenTransferInPayloadV3 has drop {
+    public struct DefiTransferInPayload has drop {
         sender_address: vector<u8>,
         target_chain: u8,
         target_address: vector<u8>,
