@@ -473,8 +473,8 @@ async fn exchange_rates(
                     let stable_rate = stable_exchange_rate.get(&key_).unwrap();
                     //update exchange_rate with stable rate
                     let busd_rate_ =  *busd_rate.unwrap();
-                    let sui_amount = (stable_rate.sui_amount() as u128 * busd_rate_ as u128 / 100_000_000u128) as u64;
-                    let pool_token_amount = (stable_rate.pool_token_amount() as u128 * busd_rate_ as u128 / 100_000_000u128) as u64;
+                    let sui_amount = (stable_rate.sui_amount() as u128 * busd_rate_ as u128 / 1_000_000_000u128) as u64;
+                    let pool_token_amount = (stable_rate.pool_token_amount() as u128 * busd_rate_ as u128 / 1_000_000_000u128) as u64;
                     let exchange_rate_new = PoolTokenExchangeRate::new(
                         //sui_amount
                         sui_amount,
