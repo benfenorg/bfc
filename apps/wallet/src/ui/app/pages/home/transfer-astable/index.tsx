@@ -3,6 +3,7 @@
 
 import { Button } from '_app/shared/ButtonUI';
 import { Text } from '_app/shared/text';
+import { AddressInput } from '_components/address-input';
 import Overlay from '_src/ui/app/components/overlay';
 import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
 import { useChainData } from '_src/ui/app/hooks';
@@ -10,80 +11,73 @@ import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
 import { useDryRunTransaction } from '_src/ui/app/hooks/useDryRunTransaction';
 import { useSigner } from '_src/ui/app/hooks/useSigner';
 import BottomMenuLayout, { Content, Menu } from '_src/ui/app/shared/bottom-menu-layout';
-import { InputWithAction } from '_src/ui/app/shared/InputWithAction';
 import { Transaction } from '@benfen/bfc.js/transactions';
-import { BFC_DECIMALS, BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
+import {
+	formatAddress,
+	isValidBenfenAddress,
+	normalizeStructTag,
+	parseStructTag,
+} from '@benfen/bfc.js/utils';
 import { useGetAllAnonymousCoins } from '@mysten/core';
 import { ABFC_TYPE } from '@mysten/core/src/utils/constants';
 import { ArrowRight16 } from '@mysten/icons';
 import { useMutation } from '@tanstack/react-query';
-import { BigNumber } from 'bignumber.js';
 import clsx from 'clsx';
 import { Field, Form, Formik } from 'formik';
+import { useMemo } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 
 const initialValues = {
-	amount: '',
-	swapOut: false,
+	id: '',
+	to: '',
 };
 
 type FormValues = typeof initialValues;
 
 const validationSchema = Yup.object({
-	amount: Yup.mixed<BigNumber>()
-		.transform((_, original) => new BigNumber(original))
-		.test('required', `\${path} is a required field`, (value) => {
-			return !!value;
-		})
-		.label('Amount'),
-	swapOut: Yup.boolean().required('Swap Out is a required field'),
+	id: Yup.string().test('required', 'coin id is a required field', (value) => {
+		return !!value;
+	}),
+	to: Yup.string()
+		.ensure()
+		.trim()
+		.required()
+		.test('is-sui-address', 'Invalid address. Please check again.', async (value) => {
+			return isValidBenfenAddress(value);
+		}),
 });
 
-export const SwapAnonymous = () => {
+export const TransferAstable = () => {
 	const navigate = useNavigate();
 
 	const activeAccount = useActiveAccount();
 	const dryrun = useDryRunTransaction();
 	const signer = useSigner(activeAccount);
 
-	const { ANONYMOUS_SWAP_POOL } = useChainData();
+	const { ANONYMOUS_STABLE_PKG } = useChainData();
 	const { data: anonymousCoins, refetch: refetchCoins } = useGetAllAnonymousCoins(
 		activeAccount?.address,
-		ABFC_TYPE,
 	);
 
-	const { mutateAsync: swapInOut } = useMutation({
-		mutationKey: ['swap-anonymous-in-out'],
+	const coins = useMemo(() => {
+		return anonymousCoins?.filter((coin) => {
+			const parsed = parseStructTag(coin.balance.type);
+			return normalizeStructTag(parsed.typeParams[0]) !== ABFC_TYPE;
+		});
+	}, [anonymousCoins]);
+
+	const { mutateAsync: transfer } = useMutation({
+		mutationKey: ['transfer-anonymous-astables'],
 		mutationFn: async (values: FormValues) => {
 			const tx = new Transaction();
-			const bn = new BigNumber(values.amount).shiftedBy(BFC_DECIMALS).toString();
-			if (values.swapOut) {
-				const [primary, ...others] = anonymousCoins!;
-				if (others.length > 0) {
-					tx.moveCall({
-						target: `0x2::anonymous_pay::join_vec`,
-						typeArguments: [ABFC_TYPE],
-						arguments: [
-							tx.object(primary.id.id),
-							tx.makeMoveVec({ elements: others.map((i) => tx.object(i.id.id)) }),
-						],
-					});
-				}
 
-				tx.moveCall({
-					target: `0x2::anonymous_coin::swap_out_with_amount`,
-					typeArguments: [ABFC_TYPE, BFC_TYPE_ARG],
-					arguments: [tx.object(primary.id.id), tx.pure.u64(bn), tx.object(ANONYMOUS_SWAP_POOL)],
-				});
-			} else {
-				tx.moveCall({
-					target: `0x2::anonymous_coin::swap_in`,
-					typeArguments: [ABFC_TYPE, BFC_TYPE_ARG],
-					arguments: [tx.splitCoins(tx.gas, [bn]), tx.object(ANONYMOUS_SWAP_POOL)],
-				});
-			}
+			tx.moveCall({
+				target: `${ANONYMOUS_STABLE_PKG}::anonymous_usd::transfer`,
+				typeArguments: [],
+				arguments: [tx.object(values.id), tx.pure.address(values.to)],
+			});
 
 			tx.setSenderIfNotSet(activeAccount!.address);
 			await dryrun(tx);
@@ -115,7 +109,7 @@ export const SwapAnonymous = () => {
 	});
 
 	return (
-		<Overlay showModal={true} title={'Swap Anonymous Coins'} closeOverlay={() => navigate('/')}>
+		<Overlay showModal={true} title={'Transfer Anonymous Coins'} closeOverlay={() => navigate('/')}>
 			<div className={clsx('flex flex-col w-full h-full')}>
 				<div className={clsx('mb-7 flex flex-col gap-2.5')}>
 					<Formik
@@ -124,36 +118,39 @@ export const SwapAnonymous = () => {
 						validateOnMount={true}
 						validateOnChange={true}
 						validationSchema={validationSchema}
-						onSubmit={(values) => swapInOut(values)}
+						onSubmit={(values) => transfer(values)}
 					>
-						{({ submitForm, isSubmitting, isValid }) => {
+						{({ submitForm, isSubmitting, isValid, values }) => {
 							return (
 								<BottomMenuLayout>
 									<Content>
 										<Form autoComplete={'off'} noValidate={true}>
-											<div className="w-full flex flex-col flex-grow">
-												<div className="px-2 mb-2.5">
+											<div className="mb-7 flex flex-col gap-2.5">
+												<div className="pl-1.5">
 													<Text variant="caption" color="steel" weight="semibold">
-														Select Coin Amount to Swap
+														Select Coin
 													</Text>
 												</div>
-
-												<InputWithAction
-													type="numberInput"
-													name="amount"
-													placeholder="0.00"
-													suffix={` BFC`}
-													allowNegative={false}
-													decimals
-													rounded="lg"
-													dark
-												/>
+												<div className="w-full flex relative items-center flex-col">
+													<Field as="select" name="id">
+														<option value={''} className={'hidden'}></option>
+														{coins?.map((i) => (
+															<option key={i.id.id} value={i.id.id}>
+																{formatAddress(i.id.id)}
+															</option>
+														))}
+													</Field>
+												</div>
 											</div>
 											<div className="w-full flex gap-2.5 flex-col mt-7.5">
-												<label className={clsx('flex items-center')}>
-													<Field type="checkbox" name="swapOut" />
-													Swap Out
-												</label>
+												<div className="px-2 tracking-wider">
+													<Text variant="caption" color="steel" weight="semibold">
+														Enter Recipient Address
+													</Text>
+												</div>
+												<div className="w-full flex relative items-center flex-col">
+													<Field component={AddressInput} name="to" placeholder="Enter Address" />
+												</div>
 											</div>
 										</Form>
 									</Content>
@@ -165,7 +162,7 @@ export const SwapAnonymous = () => {
 											loading={isSubmitting}
 											disabled={!isValid || isSubmitting}
 											size={'tall'}
-											text="Swap"
+											text="Transfer"
 											after={<ArrowRight16 />}
 										/>
 									</Menu>

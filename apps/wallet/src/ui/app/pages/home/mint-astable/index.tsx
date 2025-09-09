@@ -1,6 +1,9 @@
 // Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
+// Copyright (c) Benfen
+// SPDX-License-Identifier: Apache-2.0
+
 import { Button } from '_app/shared/ButtonUI';
 import { Text } from '_app/shared/text';
 import Overlay from '_src/ui/app/components/overlay';
@@ -12,9 +15,8 @@ import { useSigner } from '_src/ui/app/hooks/useSigner';
 import BottomMenuLayout, { Content, Menu } from '_src/ui/app/shared/bottom-menu-layout';
 import { InputWithAction } from '_src/ui/app/shared/InputWithAction';
 import { Transaction } from '@benfen/bfc.js/transactions';
-import { BFC_DECIMALS, BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
-import { useGetAllAnonymousCoins } from '@mysten/core';
-import { ABFC_TYPE } from '@mysten/core/src/utils/constants';
+import { BFC_DECIMALS } from '@benfen/bfc.js/utils';
+import { useGetAllAnonymousTreasuryCaps } from '@mysten/core';
 import { ArrowRight16 } from '@mysten/icons';
 import { useMutation } from '@tanstack/react-query';
 import { BigNumber } from 'bignumber.js';
@@ -25,65 +27,42 @@ import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 
 const initialValues = {
+	capId: '',
 	amount: '',
-	swapOut: false,
 };
 
 type FormValues = typeof initialValues;
 
 const validationSchema = Yup.object({
+	capId: Yup.string().required('Cap ID is a required field'),
 	amount: Yup.mixed<BigNumber>()
 		.transform((_, original) => new BigNumber(original))
 		.test('required', `\${path} is a required field`, (value) => {
 			return !!value;
 		})
 		.label('Amount'),
-	swapOut: Yup.boolean().required('Swap Out is a required field'),
 });
 
-export const SwapAnonymous = () => {
+export const MintAstable = () => {
 	const navigate = useNavigate();
 
 	const activeAccount = useActiveAccount();
 	const dryrun = useDryRunTransaction();
 	const signer = useSigner(activeAccount);
 
-	const { ANONYMOUS_SWAP_POOL } = useChainData();
-	const { data: anonymousCoins, refetch: refetchCoins } = useGetAllAnonymousCoins(
-		activeAccount?.address,
-		ABFC_TYPE,
-	);
+	const { ANONYMOUS_STABLE_PKG } = useChainData();
+	const { data: caps } = useGetAllAnonymousTreasuryCaps(activeAccount?.address);
 
-	const { mutateAsync: swapInOut } = useMutation({
-		mutationKey: ['swap-anonymous-in-out'],
+	const { mutateAsync: mint } = useMutation({
+		mutationKey: ['mint-astable'],
 		mutationFn: async (values: FormValues) => {
 			const tx = new Transaction();
 			const bn = new BigNumber(values.amount).shiftedBy(BFC_DECIMALS).toString();
-			if (values.swapOut) {
-				const [primary, ...others] = anonymousCoins!;
-				if (others.length > 0) {
-					tx.moveCall({
-						target: `0x2::anonymous_pay::join_vec`,
-						typeArguments: [ABFC_TYPE],
-						arguments: [
-							tx.object(primary.id.id),
-							tx.makeMoveVec({ elements: others.map((i) => tx.object(i.id.id)) }),
-						],
-					});
-				}
-
-				tx.moveCall({
-					target: `0x2::anonymous_coin::swap_out_with_amount`,
-					typeArguments: [ABFC_TYPE, BFC_TYPE_ARG],
-					arguments: [tx.object(primary.id.id), tx.pure.u64(bn), tx.object(ANONYMOUS_SWAP_POOL)],
-				});
-			} else {
-				tx.moveCall({
-					target: `0x2::anonymous_coin::swap_in`,
-					typeArguments: [ABFC_TYPE, BFC_TYPE_ARG],
-					arguments: [tx.splitCoins(tx.gas, [bn]), tx.object(ANONYMOUS_SWAP_POOL)],
-				});
-			}
+			tx.moveCall({
+				target: `${ANONYMOUS_STABLE_PKG}::anonymous_usd::mint`,
+				typeArguments: [],
+				arguments: [tx.object(values.capId), tx.pure.u64(bn)],
+			});
 
 			tx.setSenderIfNotSet(activeAccount!.address);
 			await dryrun(tx);
@@ -100,7 +79,6 @@ export const SwapAnonymous = () => {
 			const receiptUrl = `/receipt?txdigest=${encodeURIComponent(
 				response!.digest,
 			)}&from=transactions`;
-			refetchCoins();
 			return navigate(receiptUrl);
 		},
 		onError: (error) => {
@@ -124,7 +102,7 @@ export const SwapAnonymous = () => {
 						validateOnMount={true}
 						validateOnChange={true}
 						validationSchema={validationSchema}
-						onSubmit={(values) => swapInOut(values)}
+						onSubmit={(values) => mint(values)}
 					>
 						{({ submitForm, isSubmitting, isValid }) => {
 							return (
@@ -134,7 +112,21 @@ export const SwapAnonymous = () => {
 											<div className="w-full flex flex-col flex-grow">
 												<div className="px-2 mb-2.5">
 													<Text variant="caption" color="steel" weight="semibold">
-														Select Coin Amount to Swap
+														Select TreasureCap
+													</Text>
+												</div>
+
+												<Field as="select" name="capId">
+													<option value={''} className={'hidden'}></option>
+													{caps?.map((item) => (
+														<option key={item.id.id} value={item.id.id} label={item.id.id}></option>
+													))}
+												</Field>
+											</div>
+											<div className="w-full flex flex-col flex-grow mt-2.5">
+												<div className="px-2 mb-2.5">
+													<Text variant="caption" color="steel" weight="semibold">
+														Amount
 													</Text>
 												</div>
 
@@ -142,18 +134,11 @@ export const SwapAnonymous = () => {
 													type="numberInput"
 													name="amount"
 													placeholder="0.00"
-													suffix={` BFC`}
 													allowNegative={false}
 													decimals
 													rounded="lg"
 													dark
 												/>
-											</div>
-											<div className="w-full flex gap-2.5 flex-col mt-7.5">
-												<label className={clsx('flex items-center')}>
-													<Field type="checkbox" name="swapOut" />
-													Swap Out
-												</label>
 											</div>
 										</Form>
 									</Content>
@@ -165,7 +150,7 @@ export const SwapAnonymous = () => {
 											loading={isSubmitting}
 											disabled={!isValid || isSubmitting}
 											size={'tall'}
-											text="Swap"
+											text="Mint"
 											after={<ArrowRight16 />}
 										/>
 									</Menu>
