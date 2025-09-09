@@ -39,9 +39,10 @@ type HmacSha256 = Hmac<Sha256>;
 pub const ARITHMETIC_OVERFLOW_ERROR: u64 = 1;
 pub const INVALID_PARAMS_ERROR:  u64 = 2;
 
+pub const LOAD_MASK_SECRET_ERROR:  u64 = 3;
 //const THRESHOLD: usize = 2;
 //const TOTAL_SHARES: usize = 2;
-const MASK_SECRET: u64 = 1152921504606846976;
+
 
 
 pub fn hfe_ops_add(
@@ -86,10 +87,10 @@ pub fn hfe_ops_add(
     let num2 = String::from_utf8(number2).unwrap();
     let num3 = String::from_utf8(number3).unwrap();
     let num4 = String::from_utf8(number4).unwrap();
+    let cost = context.gas_used();
 
     if *enable_anonymous_rpc == Some(true) {
         info!("hfe_ops_add calculate in remote");
-        let cost = context.gas_used();
         let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
         let result = client.add(num1, num2, num3, num4);
         Ok(NativeResult::ok(
@@ -100,10 +101,16 @@ pub fn hfe_ops_add(
             ]
         ))
     } else {
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
-
         info!("hfe_ops_add calculate in local");
-        let cost = context.gas_used();
+        let mask_secret_result = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey);
+        if mask_secret_result.is_err() {
+            return Ok(NativeResult::err(
+                cost,
+                LOAD_MASK_SECRET_ERROR,
+            ));
+        }
+        let mask = mask_secret_result.unwrap();
+
         let value1_share = recover_two_shares(num1, num2);
         let value2_share = recover_two_shares(num3, num4);
         if value1_share.is_err() || value2_share.is_err() {
@@ -183,7 +190,15 @@ pub fn hfe_ops_minus(
             ]
         ))
     } else {
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
+        let mask_secret_result = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey);
+        if mask_secret_result.is_err() {
+            return Ok(NativeResult::err(
+                cost,
+                LOAD_MASK_SECRET_ERROR,
+            ));
+        }
+
+        let mask = mask_secret_result.unwrap();
         info!("hfe_ops_minus calculate in local");
         let value1_share = recover_two_shares(num1, num2);
         let value2_share = recover_two_shares(num3, num4);
@@ -272,7 +287,15 @@ pub fn hfe_ops_multiplied(
         ))
     } else {
         info!("hfe_ops_minus calculate in local");
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
+        let mask_secret_result = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey);
+        if mask_secret_result.is_err() {
+            return Ok(NativeResult::err(
+                cost,
+                LOAD_MASK_SECRET_ERROR,
+            ));
+        }
+
+        let mask = mask_secret_result.unwrap();
 
         let value1_share =  recover_two_shares(num1, num2);
         let value2_share =  recover_two_shares(num3, num4);
@@ -350,7 +373,15 @@ pub fn hfe_ops_split_value(context: &mut NativeContext,
             ]
         ))
     } else {
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
+        let mask_secret_result = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey);
+        if mask_secret_result.is_err() {
+            return Ok(NativeResult::err(
+                cost,
+                LOAD_MASK_SECRET_ERROR,
+            ));
+        }
+        let mask = mask_secret_result.unwrap();
+
         let (result1, result2) = split_to_two_value(value, mask);
         Ok(NativeResult::ok(
             cost,
@@ -409,7 +440,16 @@ pub fn hfe_ops_compare_value(
             smallvec![Value::u8(result.value1.parse::<u8>().unwrap())],
         ))
     } else {
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
+        let mask_secret_result = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey);
+        if mask_secret_result.is_err() {
+            return Ok(NativeResult::err(
+                cost,
+                LOAD_MASK_SECRET_ERROR,
+            ));
+        }
+
+        let mask = mask_secret_result.unwrap();
+
         match recover_value(num1, num2, mask) {
             Ok(value_a) => {
                 let value_b = number3;
@@ -487,7 +527,15 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
             smallvec![Value::u64(result.value1.parse::<u64>().expect("Failed to parse number"))],
         ))
     } else {
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
+        let mask_secret_result = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey);
+        if mask_secret_result.is_err() {
+            return Ok(NativeResult::err(
+                cost,
+                LOAD_MASK_SECRET_ERROR,
+            ));
+        }
+        let mask = mask_secret_result.unwrap();
+
         match recover_value(num1, num2, mask) {
             Ok(value) => {
                 info!("hfe_ops_restore_value calculate in local restore");
