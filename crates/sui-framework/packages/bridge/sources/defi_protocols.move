@@ -104,6 +104,19 @@ module bridge::defi_protocols {
         *self.token_id_map.borrow(config_key)
     }
 
+    //getter
+    public fun chain_id(self: &DefiProtocolInfo): u8 {
+        self.chain_id
+    }
+
+    public fun protocol_type(self: &DefiProtocolInfo): u64 {
+        self.protocol_type
+    }
+
+    public fun protocol_version(self: &DefiProtocolInfo): u64 {
+        self.protocol_version
+    }
+
     //////////////////////////////////////////////////////
     // Test functions
     //

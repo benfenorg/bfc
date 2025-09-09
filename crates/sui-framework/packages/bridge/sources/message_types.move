@@ -31,6 +31,8 @@ module bridge::message_types {
 
     public fun token(): u8 { TOKEN }
 
+    public fun defi(): u8 { DEFI }
+
     public fun committee_blocklist(): u8 { COMMITTEE_BLOCKLIST }
 
     public fun emergency_op(): u8 { EMERGENCY_OP }
@@ -83,10 +85,6 @@ module bridge::message_types {
 
     public fun fast_path_limit_update(): u8{
         UPDATE_BRIDGE_LIMIT_FAST_PATH
-    }
-
-    public fun defi(): u8{
-        DEFI
     }
 
 }

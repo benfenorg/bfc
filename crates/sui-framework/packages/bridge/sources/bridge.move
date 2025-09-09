@@ -44,6 +44,7 @@ module bridge::bridge {
     use bridge::limiter_fast_path;
     use bridge::message::TokenTransferInPayload;
     use sui::coin::split;
+    use bridge::defi_protocols;
 
 
     //  stable coin id
@@ -61,6 +62,10 @@ module bridge::bridge {
     const TRANSFER_STATUS_NOT_FOUND: u8 = 3;
 
     const EVM_ADDRESS_LENGTH: u64 = 20;
+
+    //defi
+    const STAKE: u8 = 0;
+    const UNSTAKE: u8 = 1;
 
     //////////////////////////////////////////////////////
     // Types
@@ -113,6 +118,22 @@ module bridge::bridge {
         amount_before_fee: u64,
         amount_after_fee: u64
     }
+
+    public struct DefiTransferOutEvent has copy, drop {
+        seq_num: u64,
+        source_chain: u8,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount_before_fee: u64,
+        amount_after_fee: u64,
+        protocol_type: u64,
+        protocol_version: u64,
+        action_type: u8,
+    }
+
+
 
     public struct TokenSendBackEvent has copy, drop {
         seq_num: u64,
@@ -192,6 +213,7 @@ module bridge::bridge {
     const EFastPathLimitError: u64 = 51;
     const EOnlySupportTokenTransferIn: u64 = 52;
     const ETransferLimit: u64 = 55;
+    const EInvalidProtocolChainID: u64 = 56;
 
     const CURRENT_VERSION: u64 = 1;
 
@@ -441,7 +463,73 @@ module bridge::bridge {
         mut token: Coin<T>,
         ctx: &mut TxContext
     ) {
-        token.destroy_zero();
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
+        assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+
+        let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::defi());
+        let token_id = inner.treasury.token_id<T>();
+        let token_amount = token.balance().value();
+        assert!(token_amount > 0, ETokenValueIsZero);
+        assert!(token_id != 5, EUseSendBusd);
+
+        assert!(tokenlist::is_supported_from_benfen(parent_id, target_chain as u64, token_id),EInvalidChainIDAndTokenIDExpect);
+        //deal the cross fee and limit1817.99
+        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,token_amount);
+        assert!(token_amount>fee,EInputAmountLteBridgeFee);
+        let fee_coin=token.split<T>(fee, ctx);
+        bridge_fee::deposit_fee(parent_id, fee_coin);
+        let amount_after_fee=token_amount-fee;
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        let amount_in_usd = inner.treasury.calculate_amount_in_usd<T>(amount_after_fee);
+        assert!(amount_in_usd <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
+        //get protocol info
+        let protocol_info = defi_protocols::get_protocol_info(parent_id, token_id);
+        assert!(protocol_info.chain_id() == target_chain, EInvalidProtocolChainID);
+        //todo: @fei deal the cross fee
+        
+        let message = message::create_defi_transfer_out_message(
+            inner.chain_id, 
+            bridge_seq_num, 
+            address::to_bytes(ctx.sender()), 
+            target_chain, 
+            target_address, 
+            token_id, 
+            token_amount, 
+            hex::decode(b""), 0u16, 
+            protocol_info.protocol_type(), 
+            protocol_info.protocol_version(), 
+            UNSTAKE
+        );
+        // burn / escrow token, unsupported coins will fail in this step
+        inner.treasury.burn(token);
+        // Store pending bridge request
+        inner.token_transfer_records.push_back(
+            message.key(),
+            BridgeRecord {
+                message,
+                verified_signatures: option::none(),
+                claimed: false,
+            },
+        );
+
+        // emit event
+        emit(
+            DefiTransferOutEvent {
+                seq_num: bridge_seq_num,
+                source_chain: inner.chain_id,
+                sender_address: address::to_bytes(ctx.sender()),
+                target_chain,
+                target_address,
+                token_type: token_id,
+                amount_before_fee: token_amount,
+                amount_after_fee: token_amount,
+                protocol_type: protocol_info.protocol_type(),
+                protocol_version: protocol_info.protocol_version(),
+                action_type: UNSTAKE,
+            },
+        );
     }
 
     // Create bridge request to send token to other chain, the request will be in
