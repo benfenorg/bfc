@@ -1051,7 +1051,6 @@ pub async fn genesis(
     with_faucet: bool,
     committee_size: Option<usize>,
 ) -> Result<(), anyhow::Error> {
-
     let sui_config_dir = &match working_dir {
         // if a directory is specified, it must exist (it
         // will not be created)
@@ -1065,9 +1064,6 @@ pub async fn genesis(
             config_path
         }
     };
-
-
-
 
     // if Bfc config dir is not empty then either clean it
     // up (if --force/-f option was specified or report an
@@ -1114,13 +1110,6 @@ pub async fn genesis(
             bail!("Cannot run genesis with non-empty Bfc config directory {}, please use the --force/-f option to remove the existing configuration", sui_config_dir.to_str().unwrap());
         }
     }
-
-    let mut annnoymous_config = AnonymousPrivateKeyConfig::new();
-    annnoymous_config.set_private_key("0x1111ffff0000".to_string());
-    annnoymous_config.set_fullnode_rpc_path("https://rpc-mainnet.benfen.org".to_string());
-    annnoymous_config.enable_anonymous_rpc(false);
-    annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010".parse()?, "http://127.0.0.1:9010".parse()?]);
-    annnoymous_config.save(sui_config_dir.join(BFC_ANNOYMOUS_CONFIG))?;
 
     let network_path = sui_config_dir.join(SUI_NETWORK_CONFIG);
     let genesis_path = sui_config_dir.join(SUI_GENESIS_FILENAME);
@@ -1280,8 +1269,6 @@ pub async fn genesis(
         }
     }
 
-
-
     let mut client_config = if client_path.exists() {
         PersistedConfig::read(&client_path)?
     } else {
@@ -1320,6 +1307,12 @@ pub async fn genesis(
     info!("Client config file is stored in {:?}.", client_path);
 
 
+    let mut annnoymous_config = AnonymousPrivateKeyConfig::new();
+    annnoymous_config.set_private_key("0x1111ffff0000".to_string());
+    annnoymous_config.set_fullnode_rpc_path("https://rpc-mainnet.benfen.org".to_string());
+    annnoymous_config.enable_anonymous_rpc(false);
+    annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010".parse()?, "http://127.0.0.1:9010".parse()?]);
+    annnoymous_config.save(sui_config_dir.join(BFC_ANNOYMOUS_CONFIG))?;
 
     Ok(())
 }
@@ -1403,8 +1396,6 @@ pub async fn genesis_private(
     annnoymous_config.enable_anonymous_rpc(false);
     annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010".parse()?, "http://127.0.0.1:9010".parse()?]);
     annnoymous_config.save(sui_config_dir.join(BFC_ANNOYMOUS_CONFIG))?;
-
-
     let network_path = sui_config_dir.join(SUI_NETWORK_CONFIG);
     let genesis_path = sui_config_dir.join(SUI_GENESIS_FILENAME);
 
@@ -1666,7 +1657,6 @@ pub async fn genesis_private(
 
     client_config.save(&client_path)?;
     info!("Client config file is stored in {:?}.", client_path);
-
 
     Ok(())
 }
