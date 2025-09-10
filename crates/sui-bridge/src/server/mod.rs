@@ -54,6 +54,7 @@ pub const ETH_TO_SUI_TX_PATH: &str =
 pub const EVM_TO_SUI_TX_PATH: &str =
     "/sign/bridge_tx/evm/:chain_id/sui/:tx_hash/:event_index/:fast_path_selector";
 pub const SUI_TO_ETH_TX_PATH: &str = "/sign/bridge_tx/sui/eth/:tx_digest/:event_index";
+pub const SUI_TO_ETH_DEFI_TX_PATH: &str = "/sign/bridge_tx/sui/eth/defi/:tx_digest/:event_index";
 pub const SUI_TO_EVM_TX_PATH: &str = "/sign/bridge_tx/sui/evm/:tx_digest/:event_index";
 pub const SUI_TO_ETH_SEND_BACK_TX_PATH: &str =
     "/sign/bridge_tx/sui/eth/send/back/:tx_digest/:event_index";
@@ -166,6 +167,7 @@ pub(crate) fn make_router(
         .route(ETH_TO_SUI_TX_PATH, get(handle_eth_tx_hash))
         .route(EVM_TO_SUI_TX_PATH, get(handle_evm_tx_hash))
         .route(SUI_TO_ETH_TX_PATH, get(handle_sui_tx_digest))
+        .route(SUI_TO_ETH_DEFI_TX_PATH, get(handle_sui_tx_digest))
         .route(SUI_TO_EVM_TX_PATH, get(handle_sui_tx_digest))
         .route(
             SUI_TO_ETH_SEND_BACK_TX_PATH,

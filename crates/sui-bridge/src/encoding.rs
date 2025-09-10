@@ -25,6 +25,7 @@ use crate::types::LimitUpdateAction;
 use crate::types::SingleTransferLimitUpdateAction;
 use crate::types::RefundAdminAction;
 use crate::types::SuiToEthBridgeAction;
+use crate::types::SuiToEthDefiBridgeAction;
 use crate::types::UpdateBridgeFeeOnCrossOutAction;
 use crate::types::UpdateBridgeFeeOnCrossInAction;
 use crate::types::WithdrawBridgeFeeAction;
@@ -37,6 +38,8 @@ use sui_types::base_types::SUI_ADDRESS_LENGTH;
 pub const TOKEN_TRANSFER_MESSAGE_VERSION: u8 = 1;
 pub const TOKEN_TRANSFER_MESSAGE_VERSION_V2: u8 = 2;
 pub const TOKEN_TRANSFER_MESSAGE_VERSION_V3: u8 = 3;
+pub const DEFI_TRANSFER_OUT_MESSAGE_VERSION: u8 = 1;
+pub const DEFI_TRANSFER_IN_MESSAGE_VERSION: u8 = 1;
 pub const COMMITTEE_BLOCKLIST_MESSAGE_VERSION: u8 = 1;
 pub const REFUND_ADMIN_MESSAGE_VERSION: u8 = 1;
 pub const FAST_PATH_LIMIT_UPDATE_MESSAGE_VERSION: u8 = 1;
@@ -122,6 +125,66 @@ impl BridgeMessageEncoding for SuiToEthBridgeAction {
 
         // Add event idx
         bytes.extend_from_slice(&e.event_idx.to_be_bytes());
+
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for SuiToEthDefiBridgeAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.sui_bridge_event;
+        // Add message type
+        bytes.push(BridgeActionType::DefiTransferOut as u8);
+        // Add message version
+        bytes.push(DEFI_TRANSFER_OUT_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&e.nonce.to_be_bytes());
+        // Add source chain id
+        bytes.push(e.sui_chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.sui_bridge_event;
+
+        // Add source address length
+        bytes.push(SUI_ADDRESS_LENGTH as u8);
+        // Add source address
+        bytes.extend_from_slice(&e.sui_address.to_vec());
+        // Add dest chain id
+        bytes.push(e.eth_chain_id as u8);
+        // Add dest address length
+        bytes.push(EthAddress::len_bytes() as u8);
+        // Add dest address
+        bytes.extend_from_slice(e.eth_address.as_bytes());
+
+        // Add token id
+        bytes.extend_from_slice(&e.token_id.to_be_bytes());
+
+        // Add token amount
+        bytes.extend_from_slice(&e.amount_sui_adjusted.to_be_bytes());
+
+        // Add tx hash
+        bytes.push(e.tx_hash.len() as u8);
+        bytes.extend_from_slice(&e.tx_hash.to_vec());
+
+        // Add event idx
+        bytes.extend_from_slice(&e.event_idx.to_be_bytes());
+
+        //add protocol type
+        bytes.extend_from_slice(&e.protocol_type.to_be_bytes());
+
+        //add protocol version
+        bytes.extend_from_slice(&e.protocol_version.to_be_bytes());
+
+        //add action type
+        bytes.push(e.action_type as u8);
 
         bytes
     }

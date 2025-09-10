@@ -65,6 +65,30 @@ library BridgeUtils {
     }
 
 
+    /// @dev A struct that represents a token transfer payload
+    /// @param senderAddressLength The length of the sender address in bytes
+    /// @param senderAddress The address of the sender on the source chain
+    /// @param targetChain The chain ID of the target chain
+    /// @param recipientAddressLength The length of the target address in bytes
+    /// @param recipientAddress The address of the recipient on the target chain
+    /// @param tokenID The ID of the token to be transferred
+    /// @param amount The amount of the token to be transferred    
+    struct TokenTransferPayloadV3 {
+        uint8 senderAddressLength;
+        bytes senderAddress;
+        uint8 targetChain;
+        uint8 recipientAddressLength;
+        address recipientAddress;
+        uint64 tokenID;
+        uint64 amount;
+        bytes txHash;   
+        uint16 eventIdx;
+        uint64 protocolType;
+        uint64 protocolVersion;
+        uint8 actionType;
+    }
+
+
 
     /// @dev A struct that represents a token transfer payload
     /// @param senderAddressLength The length of the sender address in bytes

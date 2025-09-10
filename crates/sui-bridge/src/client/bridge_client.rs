@@ -56,6 +56,10 @@ impl BridgeClient {
                 "sign/bridge_tx/sui/eth/{}/{}",
                 e.sui_tx_digest, e.sui_tx_event_index
             ),
+            BridgeAction::SuiToEthDefiBridgeAction(e) => format!(
+                "sign/bridge_tx/sui/eth/defi/{}/{}",
+                e.sui_tx_digest, e.sui_tx_event_index
+            ),
             BridgeAction::EthSendBackBridgeAction(e) =>{
                 if e.sui_bridge_event.eth_chain_id.is_eth_chain(){
                     format!(

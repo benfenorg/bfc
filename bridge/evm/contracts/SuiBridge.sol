@@ -10,6 +10,7 @@ import "./interfaces/ISuiBridge.sol";
 import "./interfaces/IBridgeVault.sol";
 import "./interfaces/IBridgeLimiter.sol";
 import "./interfaces/IBridgeConfig.sol";
+import "./interfaces/IInvest.sol";
 
 import "./interfaces/IArrow.sol";
 
@@ -27,7 +28,9 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
     IBridgeVault public vault;
     IBridgeLimiter public limiter;
 
-    uint8 constant SUI_ADDRESS_LENGTH = 32;
+    uint8 constant SUI_ADDRESS_LENGTH = 32; 
+
+    address investAddress;
 
     mapping (uint64 nonce => bool isProcessed) public isInvestProcessed;
 
@@ -110,7 +113,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 tokenTransferPayload.senderAddress,
                 tokenTransferPayload.recipientAddress
             );
-        }else{
+        }else if (message.version==3){
 
             BridgeUtils.TokenTransferPayloadV2 memory tokenTransferPayload =
             BridgeUtils.decodeTokenTransferPayloadV2(message.payload);
@@ -147,6 +150,81 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 tokenTransferPayload.senderAddress,
                 tokenTransferPayload.recipientAddress
             );
+        }else {
+            //invest 
+            BridgeUtils.TokenTransferPayloadV3 memory tokenTransferPayload =
+             BridgeUtils.decodeTokenTransferPayloadV3(message.payload);
+            // verify target chain ID is this chain ID
+            require(
+                tokenTransferPayload.targetChain == config.chainID(), "SuiBridge: Invalid target chain"
+            );
+
+            uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
+                IERC20Metadata(config.tokenAddressOf(tokenTransferPayload.tokenID)).decimals(),
+                config.tokenSuiDecimalOf(tokenTransferPayload.tokenID),
+                tokenTransferPayload.amount
+            );
+
+            if (tokenTransferPayload.actionType==0){
+                // mark message as processed
+                isTransferProcessed[message.nonce] = true;
+
+                // Transfer assets(USDT/USDC) from vault to investment contract
+                _transferTokensFromVault(
+                    message.chainID,
+                    tokenTransferPayload.tokenID,
+                    investAddress, //  Investment contract address
+                    erc20AdjustedAmount
+                );
+                // deposit 
+                IInvest(investAddress).deposit(
+                    tokenTransferPayload.protocolType,
+                    config.tokenAddressOf(tokenTransferPayload.tokenID),
+                    erc20AdjustedAmount,
+                    tokenTransferPayload.senderAddress
+                );
+
+                emit TokensClaimed(
+                    message.chainID,
+                    message.nonce,
+                    config.chainID(),
+                    tokenTransferPayload.tokenID,
+                    erc20AdjustedAmount,
+                    tokenTransferPayload.senderAddress,
+                    tokenTransferPayload.recipientAddress
+                );
+
+            }else if (tokenTransferPayload.actionType==1){
+                // mark message as processed
+                isTransferProcessed[message.nonce] = true;
+
+                // Transfer assets(LP Token) from vault to investment contract
+                _transferTokensFromVault(
+                    message.chainID,
+                    tokenTransferPayload.tokenID,
+                    investAddress, //  Investment contract address
+                    erc20AdjustedAmount
+                );
+                //withdraw
+                IInvest(investAddress).withdraw(
+                    tokenTransferPayload.protocolType,
+                    config.tokenAddressOf(tokenTransferPayload.tokenID),
+                    erc20AdjustedAmount,
+                    tokenTransferPayload.senderAddress
+                );
+
+                emit TokensClaimed(
+                    message.chainID,
+                    message.nonce,
+                    config.chainID(),
+                    tokenTransferPayload.tokenID,
+                    erc20AdjustedAmount,
+                    tokenTransferPayload.senderAddress,
+                    tokenTransferPayload.recipientAddress
+                );
+            }else{
+                revert("SuiBridge: invalid action type");
+            }
         }
     }
 
