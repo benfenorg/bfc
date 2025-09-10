@@ -41,7 +41,7 @@ pub const INVALID_PARAMS_ERROR:  u64 = 2;
 
 //const THRESHOLD: usize = 2;
 //const TOTAL_SHARES: usize = 2;
-const MASK_SECRET: u64 =  18769007017984;
+const MASK_SECRET: &str =  "0x1111ffff0000";
 
 
 pub fn hfe_ops_add(
@@ -100,7 +100,9 @@ pub fn hfe_ops_add(
             ]
         ))
     } else {
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
+            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
+
 
         info!("hfe_ops_add calculate in local");
         let cost = context.gas_used();
@@ -183,7 +185,9 @@ pub fn hfe_ops_minus(
             ]
         ))
     } else {
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
+            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
+
         info!("hfe_ops_minus calculate in local");
         let value1_share = recover_two_shares(num1, num2);
         let value2_share = recover_two_shares(num3, num4);
@@ -272,7 +276,8 @@ pub fn hfe_ops_multiplied(
         ))
     } else {
         info!("hfe_ops_minus calculate in local");
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
+            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
 
         let value1_share =  recover_two_shares(num1, num2);
         let value2_share =  recover_two_shares(num3, num4);
@@ -350,7 +355,9 @@ pub fn hfe_ops_split_value(context: &mut NativeContext,
             ]
         ))
     } else {
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
+            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
+
         let (result1, result2) = split_to_two_value(value, mask);
         Ok(NativeResult::ok(
             cost,
@@ -409,7 +416,9 @@ pub fn hfe_ops_compare_value(
             smallvec![Value::u8(result.value1.parse::<u8>().unwrap())],
         ))
     } else {
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
+            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
+
         match recover_value(num1, num2, mask) {
             Ok(value_a) => {
                 let value_b = number3;
@@ -487,7 +496,9 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
             smallvec![Value::u64(result.value1.parse::<u64>().expect("Failed to parse number"))],
         ))
     } else {
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey).unwrap_or(MASK_SECRET);
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
+            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
+
         match recover_value(num1, num2, mask) {
             Ok(value) => {
                 info!("hfe_ops_restore_value calculate in local restore");
