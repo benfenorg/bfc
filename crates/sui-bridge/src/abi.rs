@@ -130,6 +130,9 @@ impl EthBridgeEvent {
                             eth_bridge_event: bridge_event,
                         }))
                     }
+                    EthSuiBridgeEvents::TokensStakedFilter(_event) => None,
+                    EthSuiBridgeEvents::TokensUnStakedFilter(_event) => None,
+                    EthSuiBridgeEvents::UpdateInvestAddressFilter(_event) => None,
                     EthSuiBridgeEvents::TokensClaimedFilter(_event) => None,
                     EthSuiBridgeEvents::PausedFilter(_event) => None,
                     EthSuiBridgeEvents::UnpausedFilter(_event) => None,
@@ -157,6 +160,7 @@ impl EthBridgeEvent {
                 EthBridgeLimiterEvents::LimitUpdatedV2Filter(_event) => None,
             },
             EthBridgeEvent::EthBridgeConfigEvents(event) => match event {
+                EthBridgeConfigEvents::LpTokenAddedFilter(_event) => None,
                 EthBridgeConfigEvents::InitializedFilter(_event) => None,
                 EthBridgeConfigEvents::UpgradedFilter(_event) => None,
                 EthBridgeConfigEvents::TokenAddedFilter(_event) => None,
