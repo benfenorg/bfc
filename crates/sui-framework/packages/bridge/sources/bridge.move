@@ -54,6 +54,7 @@ module bridge::bridge {
     const MESSAGE_VERSION: u8 = 1;
     const MESSAGE_VERSION_V2: u8 = 2;
     const MESSAGE_VERSION_V3: u8 = 3;
+    const MESSAGE_VERSION_DEFI_OUT: u8 = 1;
 
     // Transfer Status
     const TRANSFER_STATUS_PENDING: u8 = 0;
@@ -214,6 +215,11 @@ module bridge::bridge {
     const EOnlySupportTokenTransferIn: u64 = 52;
     const ETransferLimit: u64 = 55;
     const EInvalidProtocolChainID: u64 = 56;
+
+    const EMustBeDefiMessage: u64 = 57;
+    const EOnlySupportDefiTransferOut: u64 = 58;
+    const EOnlySupportDefiTransferIn: u64 = 59;
+    
 
     const CURRENT_VERSION: u64 = 1;
 
@@ -1014,6 +1020,43 @@ module bridge::bridge {
             },
         );
 
+        emit(TokenTransferApproved { message_key });
+    }
+
+    public fun approve_defi_transfer_out(
+        bridge: &mut Bridge,
+        message: BridgeMessage,
+        signatures: vector<vector<u8>>,
+    ) {
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        // verify signatures
+        inner.committee.verify_signatures(message, signatures);
+
+        assert!(message.message_type() == message_types::defi(), EMustBeDefiMessage);
+        assert!(message.message_version() == MESSAGE_VERSION_DEFI_OUT, EUnexpectedMessageVersion);
+        let token_payload = message.extract_defi_transfer_out_payload();
+        let target_chain = token_payload.target_chain_defi_out();
+        assert!(
+            message.source_chain() == inner.chain_id || target_chain == inner.chain_id,
+            EUnexpectedChainID,
+        );
+
+        let message_key = message.key();
+        assert!(message.source_chain() != inner.chain_id, EOnlySupportDefiTransferOut);
+        let record = &mut inner.token_transfer_records[message_key];
+
+        assert!(record.message == message, EMalformedMessageError);
+        assert!(!record.claimed, EInvariantSuiInitializedTokenTransferShouldNotBeClaimed);
+
+        // If record already has verified signatures, it means the message has been approved
+        // Then we exit early.
+        if (record.verified_signatures.is_some()) {
+            emit(TokenTransferAlreadyApproved { message_key });
+            return
+        };
+        // Store approval
+        record.verified_signatures = option::some(signatures);
         emit(TokenTransferApproved { message_key });
     }
 

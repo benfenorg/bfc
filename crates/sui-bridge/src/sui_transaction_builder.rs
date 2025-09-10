@@ -394,6 +394,9 @@ fn build_token_bridge_approve_transaction(
         func_name_message,
         func_name_approve,
         fast_path_selector,
+        protocol_type,
+        protocol_version,
+        action_type,
     ) = match bridge_action {
         BridgeAction::SuiToEthBridgeAction(a) => {
             let bridge_event = a.sui_bridge_event;
@@ -410,6 +413,29 @@ fn build_token_bridge_approve_transaction(
                 "create_token_bridge_message_v2",
                 "approve_token_transfer_v2",
                 None,
+                None,
+                None,
+                None,
+            )
+        }
+        BridgeAction::SuiToEthDefiBridgeAction(a) => {
+            let bridge_event = a.sui_bridge_event;
+            (
+                bridge_event.sui_chain_id,
+                bridge_event.nonce,
+                bridge_event.sui_address.to_vec(),
+                bridge_event.eth_chain_id,
+                bridge_event.eth_address.to_fixed_bytes().to_vec(),
+                bridge_event.token_id,
+                bridge_event.amount_sui_adjusted,
+                vec![],
+                0u16,
+                "create_defi_transfer_out_message",
+                "approve_defi_transfer_out",
+                None,
+                Some(bridge_event.protocol_type),
+                Some(bridge_event.protocol_version),
+                Some(bridge_event.action_type),
             )
         }
         BridgeAction::EthSendBackBridgeAction(a) => {
@@ -426,6 +452,9 @@ fn build_token_bridge_approve_transaction(
                 bridge_event.event_idx,
                 "create_token_bridge_message_v2",
                 "approve_token_transfer_v2",
+                None,
+                None,
+                None,
                 None,
             )
         }
@@ -444,6 +473,9 @@ fn build_token_bridge_approve_transaction(
                 "create_token_bridge_in_message",
                 "approve_token_transfer_in",
                 Some(bridge_event.fast_path_selector),
+                None,
+                None,
+                None,
             )
         }
         _ => unreachable!(),
@@ -504,6 +536,31 @@ fn build_token_bridge_approve_transaction(
                     tx_hash,
                     event_idx,
                     fast_path_selector,
+                ],
+            )
+        }
+        "create_defi_transfer_out_message" => {
+            let protocol_type = builder.pure(protocol_type).unwrap();
+            let protocol_version = builder.pure(protocol_version).unwrap();
+            let action_type = builder.pure(action_type).unwrap();
+            builder.programmable_move_call(
+                BRIDGE_PACKAGE_ID,
+                ident_str!("message").to_owned(),
+                ident_str!(func_name_message).to_owned(),
+                vec![],
+                vec![
+                    source_chain,
+                    seq_num,
+                    sender,
+                    target_chain,
+                    target,
+                    arg_token_type,
+                    amount,
+                    tx_hash,
+                    event_idx,
+                    protocol_type,
+                    protocol_version,
+                    action_type,
                 ],
             )
         }
