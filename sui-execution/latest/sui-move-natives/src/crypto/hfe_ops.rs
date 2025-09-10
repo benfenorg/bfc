@@ -41,7 +41,7 @@ pub const INVALID_PARAMS_ERROR:  u64 = 2;
 
 //const THRESHOLD: usize = 2;
 //const TOTAL_SHARES: usize = 2;
-const MASK_SECRET: u64 = 1152921504606846976;
+const MASK_SECRET: u64 =  18769007017984;
 
 
 pub fn hfe_ops_add(
