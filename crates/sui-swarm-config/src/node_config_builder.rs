@@ -17,10 +17,8 @@ use sui_config::node::{
 use sui_config::node::{default_zklogin_oauth_providers, RunWithRange};
 use sui_config::p2p::{P2pConfig, SeedPeer, StateSyncConfig};
 use sui_config::verifier_signing_config::VerifierSigningConfig;
-use sui_config::{
-    local_ip_utils, ConsensusConfig, NodeConfig, AUTHORITIES_DB_NAME, CONSENSUS_DB_NAME,
-    FULL_NODE_DB_PATH,
-};
+use sui_config::{local_ip_utils, ConsensusConfig, NodeConfig, AUTHORITIES_DB_NAME, BFC_ANNOYMOUS_CONFIG, CONSENSUS_DB_NAME, FULL_NODE_DB_PATH};
+use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
 use sui_types::crypto::{AuthorityKeyPair, AuthorityPublicKeyBytes, NetworkKeyPair, SuiKeyPair};
 use sui_types::multiaddr::Multiaddr;
 use sui_types::supported_protocol_versions::SupportedProtocolVersions;
@@ -135,6 +133,13 @@ impl ValidatorConfigBuilder {
         let db_path = config_directory
             .join(AUTHORITIES_DB_NAME)
             .join(key_path.clone());
+
+        let mut annnoymous_config = AnonymousPrivateKeyConfig::new();
+        annnoymous_config.set_private_key("0x1111ffff0000".to_string());
+        annnoymous_config.set_fullnode_rpc_path("https://rpc-mainnet.benfen.org".to_string());
+        annnoymous_config.enable_anonymous_rpc(false);
+        annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010".parse().unwrap(), "http://127.0.0.1:9010".parse().unwrap()]);
+        annnoymous_config.save(config_directory.join(BFC_ANNOYMOUS_CONFIG)).unwrap();
 
         let network_address = validator.network_address;
         let consensus_db_path = config_directory.join(CONSENSUS_DB_NAME).join(key_path);
@@ -593,6 +598,13 @@ impl FullnodeConfigBuilder {
             pruning_config.set_num_epochs_to_retain_for_checkpoints(None);
             pruning_config.set_num_epochs_to_retain(u64::MAX);
         };
+
+        let mut annnoymous_config = AnonymousPrivateKeyConfig::new();
+        annnoymous_config.set_private_key("0x1111ffff0000".to_string());
+        annnoymous_config.set_fullnode_rpc_path("https://rpc-mainnet.benfen.org".to_string());
+        annnoymous_config.enable_anonymous_rpc(false);
+        annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010".parse().unwrap(), "http://127.0.0.1:9010".parse().unwrap()]);
+        annnoymous_config.save(config_directory.join(BFC_ANNOYMOUS_CONFIG)).unwrap();
 
         NodeConfig {
             protocol_key_pair: AuthorityKeyPairWithPath::new(validator_config.key_pair),
