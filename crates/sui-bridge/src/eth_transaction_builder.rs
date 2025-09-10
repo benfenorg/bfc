@@ -37,6 +37,10 @@ pub async fn build_eth_transaction(
         BridgeAction::SuiToEthBridgeAction(_) => {
             unreachable!()
         }
+        BridgeAction::SuiToEthDefiBridgeAction(_) => {
+            //todo: @fei deal the defi bridge
+            unreachable!()
+        }
         BridgeAction::EthSendBackBridgeAction(_) => {
             unreachable!()
         }

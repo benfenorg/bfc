@@ -475,7 +475,7 @@ module bridge::bridge {
         assert!(token_id != 5, EUseSendBusd);
 
         assert!(tokenlist::is_supported_from_benfen(parent_id, target_chain as u64, token_id),EInvalidChainIDAndTokenIDExpect);
-        //deal the cross fee and limit1817.99
+        //deal the cross fee and limit
         let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,token_amount);
         assert!(token_amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
@@ -487,7 +487,6 @@ module bridge::bridge {
         //get protocol info
         let protocol_info = defi_protocols::get_protocol_info(parent_id, token_id);
         assert!(protocol_info.chain_id() == target_chain, EInvalidProtocolChainID);
-        //todo: @fei deal the cross fee
         
         let message = message::create_defi_transfer_out_message(
             inner.chain_id, 
