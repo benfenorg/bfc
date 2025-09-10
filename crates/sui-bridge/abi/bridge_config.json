@@ -11,6 +11,101 @@
     "type": "error"
   },
   {
+        "type": "function",
+        "name": "investLpTokenIdOf",
+        "inputs": [
+            {
+                "name": "protocolType",
+                "type": "uint64",
+                "internalType": "uint64"
+            },
+            {
+                "name": "underlyingTokenId",
+                "type": "uint64",
+                "internalType": "uint64"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint64",
+                "internalType": "uint64"
+            }
+        ],
+        "stateMutability": "view"
+  },
+  {
+        "type": "function",
+        "name": "underlyingTokenIdOf",
+        "inputs": [
+            {
+                "name": "protocolType",
+                "type": "uint64",
+                "internalType": "uint64"
+            },
+            {
+                "name": "lpTokenId",
+                "type": "uint64",
+                "internalType": "uint64"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint64",
+                "internalType": "uint64"
+            }
+        ],
+        "stateMutability": "view"
+  },
+  {
+        "type": "function",
+        "name": "addLpTokenIdWithSignatures",
+        "inputs": [
+            {
+                "name": "signatures",
+                "type": "bytes[]",
+                "internalType": "bytes[]"
+            },
+            {
+                "name": "message",
+                "type": "tuple",
+                "internalType": "struct BridgeUtils.Message",
+                "components": [
+                    {
+                        "name": "messageType",
+                        "type": "uint8",
+                        "internalType": "uint8"
+                    },
+                    {
+                        "name": "version",
+                        "type": "uint8",
+                        "internalType": "uint8"
+                    },
+                    {
+                        "name": "nonce",
+                        "type": "uint64",
+                        "internalType": "uint64"
+                    },
+                    {
+                        "name": "chainID",
+                        "type": "uint8",
+                        "internalType": "uint8"
+                    },
+                    {
+                        "name": "payload",
+                        "type": "bytes",
+                        "internalType": "bytes"
+                    }
+                ]
+            }
+        ],
+        "outputs": [
+
+        ],
+        "stateMutability": "nonpayable"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -34,6 +129,37 @@
     ],
     "name": "ContractUpgraded",
     "type": "event"
+  },
+  {
+        "type": "event",
+        "name": "LpTokenAdded",
+        "inputs": [
+            {
+                "name": "nonce",
+                "type": "uint64",
+                "indexed": false,
+                "internalType": "uint64"
+            },
+            {
+                "name": "protocolType",
+                "type": "uint64",
+                "indexed": false,
+                "internalType": "uint64"
+            },
+            {
+                "name": "underlyingTokenId",
+                "type": "uint64",
+                "indexed": false,
+                "internalType": "uint64"
+            },
+            {
+                "name": "lpTokenId",
+                "type": "uint64",
+                "indexed": false,
+                "internalType": "uint64"
+            }
+        ],
+        "anonymous": false
   },
   {
     "inputs": [

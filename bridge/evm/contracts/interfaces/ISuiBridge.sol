@@ -45,4 +45,40 @@ interface ISuiBridge {
     /// @param nonce The governance action nonce.
     /// @param paused A boolean indicating whether the bridge is paused or not.
     event EmergencyOperation(uint64 nonce, bool paused);
+
+
+    event TokensStaked(
+        uint8 indexed sourceChainID,
+        uint64 indexed nonce,
+        uint8 indexed destinationChainID,
+        uint64 tokenID,
+        uint256 erc20AdjustedAmount,
+        bytes senderAddress,
+        address recipientAddress,
+        uint64 lpTokenID,
+        uint256 erc20lpTokenAmount,
+        uint64  protocolType,
+        uint64 protocolVersion,
+        uint8 actionType
+    );
+
+
+    event TokensUnStaked(
+        uint8 indexed sourceChainID,
+        uint64 indexed nonce,
+        uint8 indexed destinationChainID,
+        uint64 lpTokenID,
+        uint256 erc20lpTokenAmount,
+        bytes senderAddress,
+        address recipientAddress,
+        uint64 tokenID,
+        uint256 erc20AdjustedAmount,
+        uint64  protocolType,
+        uint64 protocolVersion,
+        uint8 actionType
+    );
+
+
+    event  UpdateInvestAddress(uint64 nonce,address investAddress);
+    
 }

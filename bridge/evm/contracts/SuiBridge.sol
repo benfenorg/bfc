@@ -11,6 +11,8 @@ import "./interfaces/IBridgeVault.sol";
 import "./interfaces/IBridgeLimiter.sol";
 import "./interfaces/IBridgeConfig.sol";
 
+import "./interfaces/IArrow.sol";
+
 /// @title SuiBridge
 /// @notice This contract implements a token bridge that enables users to deposit and withdraw
 /// supported tokens to and from other chains. The bridge supports the transfer of Ethereum and ERC20
@@ -26,6 +28,10 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
     IBridgeLimiter public limiter;
 
     uint8 constant SUI_ADDRESS_LENGTH = 32;
+
+    mapping (uint64 nonce => bool isProcessed) public isInvestProcessed;
+
+    address investAddress;
 
     /* ========== INITIALIZER ========== */
 
@@ -61,6 +67,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         verifyMessageAndSignatures(message, signatures, BridgeUtils.TOKEN_TRANSFER)
         onlySupportedChain(message.chainID)
     {
+        require(message.messageType == BridgeUtils.TOKEN_TRANSFER,"SuiBridge: Invalid message type");
         // verify that message has not been processed
         require(!isTransferProcessed[message.nonce], "SuiBridge: Message already processed");
 
@@ -141,6 +148,122 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 tokenTransferPayload.recipientAddress
             );
         }
+    }
+
+    function investBridgedTokensWithSignatures(
+        bytes[] memory signatures,
+        BridgeUtils.Message memory message
+    )  external
+       nonReentrant
+       verifyMessageAndSignatures(message, signatures, BridgeUtils.DEFI)
+       onlySupportedChain(message.chainID)
+    {
+        require(message.messageType == BridgeUtils.DEFI,"SuiBridge: Invalid message type");
+        require(!isInvestProcessed[message.nonce], "SuiBridge: Message already processed");
+
+        IBridgeConfig config = committee.config();
+
+        BridgeUtils.TokenTransferPayloadV3 memory tokenTransferPayload =
+            BridgeUtils.decodeTokenTransferPayloadV3(message.payload);
+        
+        require(
+            tokenTransferPayload.targetChain == config.chainID(), "SuiBridge: Invalid target chain"
+        );
+
+        uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
+            IERC20Metadata(config.tokenAddressOf(tokenTransferPayload.tokenID)).decimals(),
+            config.tokenSuiDecimalOf(tokenTransferPayload.tokenID),
+            tokenTransferPayload.amount
+        );
+
+        // mark message as processed
+        isInvestProcessed[message.nonce] = true;
+
+        _transferTokensFromVault(
+            message.chainID,
+            tokenTransferPayload.tokenID,
+            tokenTransferPayload.recipientAddress, //资管合约地址
+            erc20AdjustedAmount
+        );
+
+       
+        if (tokenTransferPayload.actionType==0) {
+            //deposit
+            uint64 lpTokenId = config.investLpTokenIdOf(tokenTransferPayload.protocolType,tokenTransferPayload.tokenID);
+            address lpTokenAddress = config.tokenAddressOf(lpTokenId);
+            uint256 beforeLpTokenAmount=IERC20(lpTokenAddress).balanceOf(address(vault));
+
+            IArrow(investAddress).deposit(
+                 tokenTransferPayload.protocolType,
+                 config.tokenAddressOf(tokenTransferPayload.tokenID),
+                 erc20AdjustedAmount            
+            );
+            uint256 afterLpTokenAmount=IERC20(lpTokenAddress).balanceOf(address(vault));
+
+            uint256 lpAmount=afterLpTokenAmount-beforeLpTokenAmount;
+
+            emit TokensStaked(
+                message.chainID,
+                message.nonce,
+                config.chainID(),
+                tokenTransferPayload.tokenID,
+                erc20AdjustedAmount,
+                tokenTransferPayload.senderAddress,
+                tokenTransferPayload.recipientAddress,
+                lpTokenId,
+                lpAmount,
+                tokenTransferPayload.protocolType,
+                tokenTransferPayload.protocolVersion,
+                tokenTransferPayload.actionType
+            );
+        }else if (tokenTransferPayload.actionType==1){
+            uint64 tokenId = config.underlyingTokenIdOf(tokenTransferPayload.protocolType,tokenTransferPayload.tokenID);
+            address tokenAddress = config.tokenAddressOf(tokenId);
+            uint256 beforeTokenAmount=IERC20(tokenAddress).balanceOf(address(vault));
+            //withdraw
+            IArrow(investAddress).withdraw(
+                tokenTransferPayload.protocolType,
+                config.tokenAddressOf(tokenTransferPayload.tokenID), //lp token
+                erc20AdjustedAmount
+            );
+
+            uint256 afterTokenAmount=IERC20(tokenAddress).balanceOf(address(vault));
+
+            uint256 tokenAmount=afterTokenAmount-beforeTokenAmount;
+
+
+            emit TokensUnStaked(
+                message.chainID,
+                message.nonce,
+                config.chainID(),
+                tokenTransferPayload.tokenID,
+                erc20AdjustedAmount,
+                tokenTransferPayload.senderAddress,
+                tokenTransferPayload.recipientAddress,
+                tokenId,
+                tokenAmount,
+                tokenTransferPayload.protocolType,
+                tokenTransferPayload.protocolVersion,
+                tokenTransferPayload.actionType
+            );
+
+        }else{
+            revert("SuiBridge: Invalid actionType");
+        }    
+    }
+
+
+    function updateInvestAddressWithSignatures(
+        bytes[] memory signatures,
+        BridgeUtils.Message memory message
+    ) external
+      nonReentrant
+      verifyMessageAndSignatures(message, signatures, BridgeUtils.UPDATE_INVEST_ADDRESS)
+    {
+        address _investAddress = BridgeUtils.decodeInvestAddressPayload(message.payload);
+        investAddress = _investAddress;
+
+        emit UpdateInvestAddress(message.nonce, _investAddress);
     }
 
     /// @notice Executes an emergency operation with the provided signatures and message.

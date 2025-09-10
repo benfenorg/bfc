@@ -96,6 +96,180 @@ contract BridgeConfigTest is BridgeBaseTest {
         assertEq(config.tokenPriceOf(10), 100_000 * USD_VALUE_MULTIPLIER);
     }
 
+    function testAddLpTokenInvalidNonceFailure() public {
+
+        MockUSDC _newToken = new MockUSDC();
+        // Create add lp token payload
+        uint64 protocolType = 0;
+        uint64 underlyingTokenId = 3;
+        uint64 lpTokenId = 100;
+
+
+        bytes memory payload = abi.encodePacked(
+           protocolType,
+           underlyingTokenId,
+           lpTokenId
+        );
+
+        // Create transfer message
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.ADD_LP_TOKEN_ID,
+            version: 1,
+            nonce: 0,
+            chainID: 1,
+            payload: payload
+        });
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+      
+        config.addLpTokenIdWithSignatures(signatures, message);
+        //assertTrue(config.isTokenSupported(10));
+        assertEq(config.investLpTokenIdOf(protocolType,underlyingTokenId),lpTokenId);
+        assertEq(config.investLpTokenIdOf(protocolType,underlyingTokenId),lpTokenId);
+
+
+        // Create transfer message
+        message = BridgeUtils.Message({
+            messageType: BridgeUtils.ADD_LP_TOKEN_ID,
+            version: 1,
+            nonce: 0,
+            chainID: 1,
+            payload: payload
+        });
+
+        encodedMessage = BridgeUtils.encodeMessage(message);
+
+        messageHash = keccak256(encodedMessage);
+
+        // bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+        vm.expectRevert("MessageVerifier: Invalid nonce");
+        config.addLpTokenIdWithSignatures(signatures, message);
+
+    }
+
+    function testAddLpTokenTwiceFailure() public {
+         MockUSDC _newToken = new MockUSDC();
+        // Create add lp token payload
+        uint64 protocolType = 0;
+        uint64 underlyingTokenId = 3;
+        uint64 lpTokenId = 100;
+
+
+        bytes memory payload = abi.encodePacked(
+           protocolType,
+           underlyingTokenId,
+           lpTokenId
+        );
+
+        // Create transfer message
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.ADD_LP_TOKEN_ID,
+            version: 1,
+            nonce: 0,
+            chainID: 1,
+            payload: payload
+        });
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+      
+        config.addLpTokenIdWithSignatures(signatures, message);
+        //assertTrue(config.isTokenSupported(10));
+        assertEq(config.investLpTokenIdOf(protocolType,underlyingTokenId),lpTokenId);
+        assertEq(config.investLpTokenIdOf(protocolType,underlyingTokenId),lpTokenId);
+
+
+
+        // twice
+        // Create transfer message
+         message = BridgeUtils.Message({
+            messageType: BridgeUtils.ADD_LP_TOKEN_ID,
+            version: 1,
+            nonce: 1,
+            chainID: 1,
+            payload: payload
+        });
+
+        encodedMessage = BridgeUtils.encodeMessage(message);
+
+        messageHash = keccak256(encodedMessage);
+
+        // bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+        vm.expectRevert("BridgeConfig: LPToken already added");
+        config.addLpTokenIdWithSignatures(signatures, message);
+    }
+
+    function testAddLpTokenWithSignatures() public {
+         MockUSDC _newToken = new MockUSDC();
+        // Create add lp token payload
+        uint64 protocolType = 0;
+        uint64 underlyingTokenId = 3;
+        uint64 lpTokenId = 100;
+
+
+        bytes memory payload = abi.encodePacked(
+           protocolType,
+           underlyingTokenId,
+           lpTokenId
+        );
+
+        // Create transfer message
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.ADD_LP_TOKEN_ID,
+            version: 1,
+            nonce: 0,
+            chainID: 1,
+            payload: payload
+        });
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+        config.addLpTokenIdWithSignatures(signatures, message);
+        //assertTrue(config.isTokenSupported(10));
+        assertEq(config.investLpTokenIdOf(protocolType,underlyingTokenId),lpTokenId);
+        assertEq(config.investLpTokenIdOf(protocolType,underlyingTokenId),lpTokenId);
+    }
+
     function testAddTokensAddressFailure() public {
         MockUSDC _newToken = new MockUSDC();
 

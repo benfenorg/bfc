@@ -247,6 +247,183 @@
     "type": "event"
   },
   {
+        "type": "event",
+        "name": "TokensStaked",
+        "inputs": [
+            {
+                "name": "sourceChainID",
+                "type": "uint8",
+                "indexed": true,
+                "internalType": "uint8"
+            },
+            {
+                "name": "nonce",
+                "type": "uint64",
+                "indexed": true,
+                "internalType": "uint64"
+            },
+            {
+                "name": "destinationChainID",
+                "type": "uint8",
+                "indexed": true,
+                "internalType": "uint8"
+            },
+            {
+                "name": "tokenID",
+                "type": "uint64",
+                "indexed": false,
+                "internalType": "uint64"
+            },
+            {
+                "name": "erc20AdjustedAmount",
+                "type": "uint256",
+                "indexed": false,
+                "internalType": "uint256"
+            },
+            {
+                "name": "senderAddress",
+                "type": "bytes",
+                "indexed": false,
+                "internalType": "bytes"
+            },
+            {
+                "name": "recipientAddress",
+                "type": "address",
+                "indexed": false,
+                "internalType": "address"
+            },
+            {
+                "name": "lpTokenID",
+                "type": "uint64",
+                "indexed": false,
+                "internalType": "uint64"
+            },
+            {
+                "name": "erc20lpTokenAmount",
+                "type": "uint256",
+                "indexed": false,
+                "internalType": "uint256"
+            },
+            {
+                "name": "protocolType",
+                "type": "uint64",
+                "indexed": false,
+                "internalType": "uint64"
+            },
+            {
+                "name": "protocolVersion",
+                "type": "uint64",
+                "indexed": false,
+                "internalType": "uint64"
+            },
+            {
+                "name": "actionType",
+                "type": "uint8",
+                "indexed": false,
+                "internalType": "uint8"
+            }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "TokensUnStaked",
+        "inputs": [
+            {
+                "name": "sourceChainID",
+                "type": "uint8",
+                "indexed": true,
+                "internalType": "uint8"
+            },
+            {
+                "name": "nonce",
+                "type": "uint64",
+                "indexed": true,
+                "internalType": "uint64"
+            },
+            {
+                "name": "destinationChainID",
+                "type": "uint8",
+                "indexed": true,
+                "internalType": "uint8"
+            },
+            {
+                "name": "lpTokenID",
+                "type": "uint64",
+                "indexed": false,
+                "internalType": "uint64"
+            },
+            {
+                "name": "erc20lpTokenAmount",
+                "type": "uint256",
+                "indexed": false,
+                "internalType": "uint256"
+            },
+            {
+                "name": "senderAddress",
+                "type": "bytes",
+                "indexed": false,
+                "internalType": "bytes"
+            },
+            {
+                "name": "recipientAddress",
+                "type": "address",
+                "indexed": false,
+                "internalType": "address"
+            },
+            {
+                "name": "tokenID",
+                "type": "uint64",
+                "indexed": false,
+                "internalType": "uint64"
+            },
+            {
+                "name": "erc20AdjustedAmount",
+                "type": "uint256",
+                "indexed": false,
+                "internalType": "uint256"
+            },
+            {
+                "name": "protocolType",
+                "type": "uint64",
+                "indexed": false,
+                "internalType": "uint64"
+            },
+            {
+                "name": "protocolVersion",
+                "type": "uint64",
+                "indexed": false,
+                "internalType": "uint64"
+            },
+            {
+                "name": "actionType",
+                "type": "uint8",
+                "indexed": false,
+                "internalType": "uint8"
+            }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "UpdateInvestAddress",
+        "inputs": [
+            {
+                "name": "nonce",
+                "type": "uint64",
+                "indexed": false,
+                "internalType": "uint64"
+            },
+            {
+                "name": "investAddress",
+                "type": "address",
+                "indexed": false,
+                "internalType": "address"
+            }
+        ],
+        "anonymous": false
+    },
+  {
     "inputs": [],
     "name": "UPGRADE_INTERFACE_VERSION",
     "outputs": [
@@ -550,6 +727,100 @@
     "stateMutability": "nonpayable",
     "type": "function"
   },
+  {
+        "type": "function",
+        "name": "updateInvestAddressWithSignatures",
+        "inputs": [
+            {
+                "name": "signatures",
+                "type": "bytes[]",
+                "internalType": "bytes[]"
+            },
+            {
+                "name": "message",
+                "type": "tuple",
+                "internalType": "struct BridgeUtils.Message",
+                "components": [
+                    {
+                        "name": "messageType",
+                        "type": "uint8",
+                        "internalType": "uint8"
+                    },
+                    {
+                        "name": "version",
+                        "type": "uint8",
+                        "internalType": "uint8"
+                    },
+                    {
+                        "name": "nonce",
+                        "type": "uint64",
+                        "internalType": "uint64"
+                    },
+                    {
+                        "name": "chainID",
+                        "type": "uint8",
+                        "internalType": "uint8"
+                    },
+                    {
+                        "name": "payload",
+                        "type": "bytes",
+                        "internalType": "bytes"
+                    }
+                ]
+            }
+        ],
+        "outputs": [
+
+        ],
+        "stateMutability": "nonpayable"
+   },
+  { 
+        "type": "function",
+        "name": "investBridgedTokensWithSignatures",
+        "inputs": [
+            {
+                "name": "signatures",
+                "type": "bytes[]",
+                "internalType": "bytes[]"
+            },
+            {
+                "name": "message",
+                "type": "tuple",
+                "internalType": "struct BridgeUtils.Message",
+                "components": [
+                    {
+                        "name": "messageType",
+                        "type": "uint8",
+                        "internalType": "uint8"
+                    },
+                    {
+                        "name": "version",
+                        "type": "uint8",
+                        "internalType": "uint8"
+                    },
+                    {
+                        "name": "nonce",
+                        "type": "uint64",
+                        "internalType": "uint64"
+                    },
+                    {
+                        "name": "chainID",
+                        "type": "uint8",
+                        "internalType": "uint8"
+                    },
+                    {
+                        "name": "payload",
+                        "type": "bytes",
+                        "internalType": "bytes"
+                    }
+                ]
+            }
+        ],
+        "outputs": [
+        ],
+        "stateMutability": "nonpayable"
+    },
+
   {
     "inputs": [
       {

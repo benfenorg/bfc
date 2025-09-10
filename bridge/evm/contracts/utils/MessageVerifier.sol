@@ -40,7 +40,7 @@ abstract contract MessageVerifier is Initializable {
         // verify signatures
         committee.verifySignatures(signatures, message);
         // increment message type nonce
-        if (messageType != BridgeUtils.TOKEN_TRANSFER) {
+        if (messageType != BridgeUtils.TOKEN_TRANSFER || messageType!=BridgeUtils.DEFI) {
             // verify chain ID
             require(
                 message.chainID == committee.config().chainID(), "MessageVerifier: Invalid chain ID"
