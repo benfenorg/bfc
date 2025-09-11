@@ -5,8 +5,9 @@ mod utils;
 mod bfc_object;
 mod signature;
 
-use std::convert::Infallible;
 use std::net::SocketAddr;
+use anyhow::anyhow;
+use warp::Rejection;
 
 use crate::bfc_object::parse_response;
 use crate::signature::verify_signature;
@@ -109,6 +110,11 @@ struct AnonymousRestoreValueParams {
     publickey: Vec<u8>,
 }
 
+#[derive(Debug)]
+struct RpcError(anyhow::Error);
+
+impl warp::reject::Reject for RpcError {}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AnonymousServer {
     config_path_string: String
@@ -190,7 +196,7 @@ fn create_routes() -> impl Filter<Extract = impl warp::Reply, Error = warp::Reje
     rpc_route.or(health_route).or(info_route)
 }
 
-async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply, Infallible> {
+async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply, Rejection> {
 
     info!(
         "Received RPC request: method={}, id={:?}",
@@ -217,6 +223,9 @@ async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply,
         },
     };
 
+    if response.error.is_some() {
+        return Err(warp::reject::custom(RpcError( anyhow!("handle_rpc_request failed"))))
+    }
     Ok(warp::reply::json(&response))
 }
 
