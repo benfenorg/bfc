@@ -131,6 +131,7 @@ module bridge::bridge {
         amount_after_fee: u64,
         protocol_type: u64,
         protocol_version: u64,
+        token_id_expect: u64,
         action_type: u8,
     }
 
@@ -465,6 +466,7 @@ module bridge::bridge {
         target_chain: u8,
         target_address: vector<u8>,
         mut token: Coin<T>,
+        token_id_expect: u64,
         ctx: &mut TxContext
     ) {
         let (inner,parent_id) = load_inner_mut_and_uid(bridge);
@@ -530,6 +532,7 @@ module bridge::bridge {
                 amount_after_fee: token_amount,
                 protocol_type: protocol_info.protocol_type(),
                 protocol_version: protocol_info.protocol_version(),
+                token_id_expect,
                 action_type: UNSTAKE,
             },
         );
@@ -614,6 +617,7 @@ module bridge::bridge {
         mut token: Coin<T>,
         protocol_type: u64,
         protocol_version: u64,
+        token_id_expect: u64,
         ctx: &mut TxContext
     ) {
         // TODO more check
@@ -649,6 +653,7 @@ module bridge::bridge {
                 amount_after_fee,
                 protocol_type,
                 protocol_version,
+                token_id_expect,
                 action_type: STAKE,
             },
         );
