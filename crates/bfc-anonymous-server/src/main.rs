@@ -667,6 +667,7 @@ async fn handle_anonymous_split_to_two_value(request: JsonRpcRequest) -> JsonRpc
         Some(params) => match serde_json::from_value::<AnonymousSplitValueParams>(params) {
             Ok(split_to_two_value_params) => {
                 let args = Args::parse();
+                info!("the args is {:?}", args);
                 let mask_secret = match get_mask_secret_from_config(Some(args.config)) {
                     Ok(secret) => secret,
                     Err(e) => {

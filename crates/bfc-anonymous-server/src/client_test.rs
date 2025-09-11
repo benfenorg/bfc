@@ -2,6 +2,7 @@ use reqwest;
 use serde_json::{json, Value};
 use std::error::Error;
 use std::str::FromStr;
+use log::info;
 use sui_types::base_types::SuiAddress;
 
 #[derive(Debug)]
@@ -38,6 +39,8 @@ impl AnonymousClient {
             "params": params,
             "id": id
         });
+
+        info!("the request body is {:?}", request_body);
 
         let response = self
             .client
@@ -287,28 +290,20 @@ fn hex_to_bytes(hex: &str) -> Vec<u8> {
 
 #[cfg(test)]
 mod tests {
-    use crate::AnonymousServer;
+    use crate::{AnonymousServer, Args};
     use std::net::SocketAddr;
+    use clap::Parser;
     use tracing::info;
     use tracing_subscriber::fmt;
 
     #[tokio::test]
-    async fn test_client_without_server_auto_start() {
+    async fn test_client_without_server() {
         let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
         assert_eq!(client.base_url, "http://localhost:9010");
-
-        let ping_result = client.test_ping().await.response.unwrap();
-        info!("Ping Result: {:?}", ping_result);
-
-        // test split first
-        let split_result_0 = client.test_split(20).await.response.unwrap();
-        info!("Split 20 Result: {:?}", split_result_0);
-        let split_result_1 = client.test_split(10).await.response.unwrap();
-        info!("Split 10 Result: {:?}", split_result_1);
     }
 
     #[tokio::test]
-    async fn test_client_with() -> anyhow::Result<()> {
+    async fn test_client_with_server() -> anyhow::Result<()> {
         let subscriber = fmt::Subscriber::new();
         tracing::subscriber::set_global_default(subscriber)
             .expect("Failed to set tracing subscriber");
@@ -317,6 +312,7 @@ mod tests {
         let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
 
         info!("the address is {:?}", addr);
+        let args = Args::parse();
         let server = AnonymousServer::new(None);
         let _server_handle = tokio::spawn(async move {
             if let Err(e) = server.start(addr).await {
