@@ -7,6 +7,8 @@ use std::time::Duration;
 
 use fastcrypto::encoding::{Encoding, Hex};
 use fastcrypto::traits::KeyPair;
+use tracing::info;
+use tracing::log::Level::Info;
 use sui_config::node::{
     default_enable_index_processing, default_end_of_epoch_broadcast_channel_capacity,
     AuthorityKeyPairWithPath, AuthorityOverloadConfig, AuthorityStorePruningConfig,
@@ -134,12 +136,7 @@ impl ValidatorConfigBuilder {
             .join(AUTHORITIES_DB_NAME)
             .join(key_path.clone());
 
-        let mut annnoymous_config = AnonymousPrivateKeyConfig::new();
-        annnoymous_config.set_private_key("0x1111ffff0000".to_string());
-        annnoymous_config.set_fullnode_rpc_path("https://rpc-mainnet.benfen.org".to_string());
-        annnoymous_config.enable_anonymous_rpc(false);
-        annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010".parse().unwrap(), "http://127.0.0.1:9010".parse().unwrap()]);
-        annnoymous_config.save(config_directory.join(BFC_ANNOYMOUS_CONFIG)).unwrap();
+
 
         let network_address = validator.network_address;
         let consensus_db_path = config_directory.join(CONSENSUS_DB_NAME).join(key_path);
@@ -599,12 +596,7 @@ impl FullnodeConfigBuilder {
             pruning_config.set_num_epochs_to_retain(u64::MAX);
         };
 
-        let mut annnoymous_config = AnonymousPrivateKeyConfig::new();
-        annnoymous_config.set_private_key("0x1111ffff0000".to_string());
-        annnoymous_config.set_fullnode_rpc_path("https://rpc-mainnet.benfen.org".to_string());
-        annnoymous_config.enable_anonymous_rpc(false);
-        annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010".parse().unwrap(), "http://127.0.0.1:9010".parse().unwrap()]);
-        annnoymous_config.save(config_directory.join(BFC_ANNOYMOUS_CONFIG)).unwrap();
+
 
         NodeConfig {
             protocol_key_pair: AuthorityKeyPairWithPath::new(validator_config.key_pair),
