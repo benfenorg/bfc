@@ -23,7 +23,6 @@ tokens and coins. <code>Coin</code> can be described as a secure wrapper around
 -  [Function `treasury_into_supply`](#sui_anonymous_coin_treasury_into_supply)
 -  [Function `supply_immut`](#sui_anonymous_coin_supply_immut)
 -  [Function `supply_mut`](#sui_anonymous_coin_supply_mut)
--  [Function `get_anonymous_value`](#sui_anonymous_coin_get_anonymous_value)
 -  [Function `balance`](#sui_anonymous_coin_balance)
 -  [Function `balance_mut`](#sui_anonymous_coin_balance_mut)
 -  [Function `from_balance`](#sui_anonymous_coin_from_balance)
@@ -628,34 +627,6 @@ Get mutable reference to the treasury's <code>Supply</code>.
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_supply_mut">supply_mut</a>&lt;T&gt;(treasury: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;): &<b>mut</b> Supply&lt;T&gt; {
     &<b>mut</b> treasury.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_total_supply">total_supply</a>
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="sui_anonymous_coin_get_anonymous_value"></a>
-
-## Function `get_anonymous_value`
-
-
-
-<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, signatures: vector&lt;u8&gt;, publickey: vector&lt;u8&gt;): u64
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(
-    self: &<a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;,
-    signatures: vector&lt;u8&gt;,
-    publickey: vector&lt;u8&gt;
-): u64 {
-    self.<a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_get_anonymous_value">get_anonymous_value</a>(signatures, <a href="../sui/object.md#sui_object_uid_to_address">object::uid_to_address</a>(&self.id), publickey)
 }
 </code></pre>
 
