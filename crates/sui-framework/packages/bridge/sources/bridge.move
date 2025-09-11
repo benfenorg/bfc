@@ -644,6 +644,9 @@ module bridge::bridge {
         let fee_coin = token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(bridge_id, fee_coin);
 
+        // TODO: create bridge message
+
+
         bfc_system_state.burn_stable(token, ctx);
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::defi());
 
