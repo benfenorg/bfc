@@ -172,16 +172,6 @@ module sui::anonymous_coin {
         &mut treasury.total_supply
     }
 
-    // === Balance <-> Coin accessors and type morphing ===
-
-    public entry fun get_anonymous_value<T>(
-        self: &Anonymous_Coin<T>,
-        signatures: vector<u8>,
-        publickey: vector<u8>
-    ): u64 {
-        self.balance.get_anonymous_value(signatures, object::uid_to_address(&self.id), publickey)
-    }
-
     #[test_only]
     /// Public getter for the coin's value
     public fun value<T>(self: &Anonymous_Coin<T>, signatures: vector<u8>, id: address, publickey: vector<u8>): u64 {

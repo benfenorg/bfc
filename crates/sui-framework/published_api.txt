@@ -2083,16 +2083,10 @@ Supply
 Anonymous_Balance
 	public struct
 	0x2::anonymous_balance
-get_anonymous_value
-	public fun
-	0x2::anonymous_balance
 convert_to_string
 	public fun
 	0x2::anonymous_balance
 create_by_value
-	public fun
-	0x2::anonymous_balance
-value
 	public fun
 	0x2::anonymous_balance
 value1
@@ -2178,9 +2172,6 @@ supply_immut
 	0x2::anonymous_coin
 supply_mut
 	public fun
-	0x2::anonymous_coin
-get_anonymous_value
-	public entry fun
 	0x2::anonymous_coin
 balance
 	public fun
