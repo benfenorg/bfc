@@ -174,7 +174,7 @@ For when an overflow is happening on Supply operations.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, signatures: vector&lt;u8&gt;, id: <b>address</b>, publickey: vector&lt;u8&gt;): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(_self: &<a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, _signatures: vector&lt;u8&gt;, _id: <b>address</b>, _publickey: vector&lt;u8&gt;): u64
 </code></pre>
 
 
@@ -184,13 +184,14 @@ For when an overflow is happening on Supply operations.
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(
-    self: &<a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;,
-    signatures: vector&lt;u8&gt;,
-    id: <b>address</b>,
-    publickey: vector&lt;u8&gt;
+    _self: &<a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;,
+    _signatures: vector&lt;u8&gt;,
+    _id: <b>address</b>,
+    _publickey: vector&lt;u8&gt;
 ): u64 {
     //todo : <b>use</b> <a href="../sui/hfe_ops.md#sui_hfe_ops">hfe_ops</a> to get the <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value">value</a> from <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a> and <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>
-    hfe_ops_restore_value(string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>), string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>), signatures, id, publickey)
+    //hfe_ops_restore_value(string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>), string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>), signatures, id, publickey)
+    0
 }
 </code></pre>
 

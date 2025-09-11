@@ -47,13 +47,14 @@ public struct Anonymous_Balance<phantom T> has store {
 
 
 public fun get_anonymous_value<T>(
-    self: &Anonymous_Balance<T>,
-    signatures: vector<u8>,
-    id: address,
-    publickey: vector<u8>
+    _self: &Anonymous_Balance<T>,
+    _signatures: vector<u8>,
+    _id: address,
+    _publickey: vector<u8>
 ): u64 {
     //todo : use hfe_ops to get the value from value1 and value2
-    hfe_ops_restore_value(string::into_bytes(self.value1), string::into_bytes(self.value2), signatures, id, publickey)
+    //hfe_ops_restore_value(string::into_bytes(self.value1), string::into_bytes(self.value2), signatures, id, publickey)
+    0
 }
 
 public fun convert_to_string( mut value: u64): vector<u8> {
