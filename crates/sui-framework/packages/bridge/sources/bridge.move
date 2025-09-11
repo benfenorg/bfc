@@ -134,19 +134,6 @@ module bridge::bridge {
         action_type: u8,
     }
 
-    public struct DefiTokenDepositedEvent has copy, drop {
-        seq_num: u64,
-        source_chain: u8,
-        sender_address: vector<u8>,
-        target_chain: u8,
-        target_address: vector<u8>,
-        token_type: u64,
-        amount_before_fee: u64,
-        amount_after_fee: u64,
-        protocol_type: u64,
-        protocol_version: u64,
-    }
-
     public struct TokenSendBackEvent has copy, drop {
         seq_num: u64,
         source_chain: u8,
@@ -651,7 +638,7 @@ module bridge::bridge {
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::defi());
 
         emit(
-            DefiTokenDepositedEvent {
+            DefiTransferOutEvent {
                 seq_num: bridge_seq_num,
                 source_chain: inner.chain_id,
                 sender_address: address::to_bytes(ctx.sender()),
@@ -662,6 +649,7 @@ module bridge::bridge {
                 amount_after_fee,
                 protocol_type,
                 protocol_version,
+                action_type: STAKE,
             },
         );
     }
