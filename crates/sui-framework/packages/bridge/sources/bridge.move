@@ -134,7 +134,18 @@ module bridge::bridge {
         action_type: u8,
     }
 
-
+    public struct DefiTokenDepositedEvent has copy, drop {
+        seq_num: u64,
+        source_chain: u8,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount_before_fee: u64,
+        amount_after_fee: u64,
+        protocol_type: u64,
+        protocol_version: u64,
+    }
 
     public struct TokenSendBackEvent has copy, drop {
         seq_num: u64,
@@ -604,6 +615,50 @@ module bridge::bridge {
                 token_type: token_id,
                 amount_before_fee: token_amount,
                 amount_after_fee,
+            },
+        );
+    }
+
+    public fun defi_stake<T>(
+        bridge: &mut Bridge,
+        bfc_system_state: &mut BfcSystemState,
+        target_chain: u8,
+        target_address: vector<u8>,
+        mut token: Coin<T>,
+        protocol_type: u64,
+        protocol_version: u64,
+        ctx: &mut TxContext
+    ) {
+        // TODO more check
+
+        let (inner, bridge_id) = load_inner_mut_and_uid(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        let is_busd = type_name::get<T>() == type_name::get<BUSD>();
+        assert!(is_busd, EOnlySupportBusd);
+
+        let token_amount = token.balance().value();
+        assert!(token_amount > 0, ETokenValueIsZero);
+        let fee = bridge_fee::calculate_cross_out_fee_amount(bridge_id, target_chain as u64, token_id, token_amount);
+        assert!(token_amount > fee, EInputAmountLteBridgeFee);
+        let amount_after_fee = token_amount - fee;
+        let fee_coin = token.split<T>(fee, ctx);
+        bridge_fee::deposit_fee(bridge_id, fee_coin);
+
+        bfc_system_state.burn_stable(token, ctx);
+        let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::defi());
+
+        emit(
+            DefiTokenDepositedEvent {
+                seq_num: bridge_seq_num,
+                source_chain: inner.chain_id,
+                sender_address: address::to_bytes(ctx.sender()),
+                target_chain,
+                target_address,
+                token_type: TOKEN_ID_BUSD,
+                amount_before_fee: token_amount,
+                amount_after_fee,
+                protocol_type,
+                protocol_version,
             },
         );
     }
