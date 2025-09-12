@@ -68,15 +68,6 @@ Name of the coin
 ## Constants
 
 
-<a name="sui_abfc_EAlreadyMinted"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui/anonymous_bfc.md#sui_abfc_EAlreadyMinted">EAlreadyMinted</a>: u64 = 0;
-</code></pre>
-
-
-
 <a name="sui_abfc_ENotSystemAddress"></a>
 
 Sender is not @0x0 the system address.
@@ -126,7 +117,6 @@ This should be called only once during genesis creation.
 
 <pre><code><b>fun</b> <a href="../sui/anonymous_bfc.md#sui_abfc_new">new</a>(ctx: &<b>mut</b> TxContext): Anonymous_Balance&lt;<a href="../sui/anonymous_bfc.md#sui_abfc_ABFC">ABFC</a>&gt; {
     <b>assert</b>!(<a href="../sui/tx_context.md#sui_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="../sui/anonymous_bfc.md#sui_abfc_ENotSystemAddress">ENotSystemAddress</a>);
-    <b>assert</b>!(<a href="../sui/tx_context.md#sui_tx_context_epoch">tx_context::epoch</a>(ctx) == 0, <a href="../sui/anonymous_bfc.md#sui_abfc_EAlreadyMinted">EAlreadyMinted</a>);
     <b>let</b> (treasury, metadata) = <a href="../sui/anonymous_coin.md#sui_anonymous_coin_create_currency">anonymous_coin::create_currency</a>(
         <a href="../sui/anonymous_bfc.md#sui_abfc_ABFC">ABFC</a> {},
         9,

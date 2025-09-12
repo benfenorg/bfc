@@ -6,7 +6,6 @@ module sui::abfc;
 use sui::anonymous_balance::Anonymous_Balance;
 use sui::anonymous_coin;
 
-const EAlreadyMinted: u64 = 0;
 /// Sender is not @0x0 the system address.
 const ENotSystemAddress: u64 = 1;
 
@@ -32,7 +31,6 @@ public struct ABFC has drop {}
 /// This should be called only once during genesis creation.
 fun new(ctx: &mut TxContext): Anonymous_Balance<ABFC> {
     assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
-    assert!(tx_context::epoch(ctx) == 0, EAlreadyMinted);
 
     let (treasury, metadata) = anonymous_coin::create_currency(
         ABFC {},
