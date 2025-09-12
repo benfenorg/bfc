@@ -172,12 +172,6 @@ module sui::anonymous_coin {
         &mut treasury.total_supply
     }
 
-    #[test_only]
-    /// Public getter for the coin's value
-    public fun value<T>(self: &Anonymous_Coin<T>, signatures: vector<u8>, id: address, publickey: vector<u8>): u64 {
-        self.balance.value(signatures, id, publickey)
-    }
-
     /// Get immutable reference to the balance of a coin.
     public fun balance<T>(coin: &Anonymous_Coin<T>): &Anonymous_Balance<T> {
         &coin.balance

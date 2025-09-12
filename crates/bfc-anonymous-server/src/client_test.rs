@@ -312,7 +312,6 @@ mod tests {
         let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
 
         info!("the address is {:?}", addr);
-        let args = Args::parse();
         let server = AnonymousServer::new(None);
         let _server_handle = tokio::spawn(async move {
             if let Err(e) = server.start(addr).await {

@@ -7,8 +7,6 @@ use std::time::Duration;
 
 use fastcrypto::encoding::{Encoding, Hex};
 use fastcrypto::traits::KeyPair;
-use tracing::info;
-use tracing::log::Level::Info;
 use sui_config::node::{
     default_enable_index_processing, default_end_of_epoch_broadcast_channel_capacity,
     AuthorityKeyPairWithPath, AuthorityOverloadConfig, AuthorityStorePruningConfig,
@@ -19,8 +17,7 @@ use sui_config::node::{
 use sui_config::node::{default_zklogin_oauth_providers, RunWithRange};
 use sui_config::p2p::{P2pConfig, SeedPeer, StateSyncConfig};
 use sui_config::verifier_signing_config::VerifierSigningConfig;
-use sui_config::{local_ip_utils, ConsensusConfig, NodeConfig, AUTHORITIES_DB_NAME, BFC_ANNOYMOUS_CONFIG, CONSENSUS_DB_NAME, FULL_NODE_DB_PATH};
-use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
+use sui_config::{local_ip_utils, ConsensusConfig, NodeConfig, AUTHORITIES_DB_NAME, CONSENSUS_DB_NAME, FULL_NODE_DB_PATH};
 use sui_types::crypto::{AuthorityKeyPair, AuthorityPublicKeyBytes, NetworkKeyPair, SuiKeyPair};
 use sui_types::multiaddr::Multiaddr;
 use sui_types::supported_protocol_versions::SupportedProtocolVersions;
