@@ -588,7 +588,7 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                             error: Some(JsonRpcError {
                                 code: -32603,
                                 message: "Verify signature or get owner address failed".to_string(),
-                                data: Some(serde_json::json!({"error": "verify signature false"})),
+                                data: Some(serde_json::json!({"error": "verify signature or get owner address failed"})),
                             }),
                         };
                     }

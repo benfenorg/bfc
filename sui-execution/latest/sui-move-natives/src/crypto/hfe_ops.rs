@@ -82,15 +82,15 @@ pub fn hfe_ops_add(
     let number3 = pop_arg!(args, Vec<u8>);
     let number2 = pop_arg!(args, Vec<u8>);
     let number1 = pop_arg!(args, Vec<u8>);
-    let num1 = String::from_utf8(number1).unwrap();
-    let num2 = String::from_utf8(number2).unwrap();
-    let num3 = String::from_utf8(number3).unwrap();
-    let num4 = String::from_utf8(number4).unwrap();
+    let num1 = String::from_utf8(number1).unwrap_or_default();
+    let num2 = String::from_utf8(number2).unwrap_or_default();
+    let num3 = String::from_utf8(number3).unwrap_or_default();
+    let num4 = String::from_utf8(number4).unwrap_or_default();
 
     if *enable_anonymous_rpc == Some(true) {
         info!("hfe_ops_add calculate in remote");
         let cost = context.gas_used();
-        let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
+        let client = AnonymousClient::new(anonymous_rpc.unwrap_or_default().first().unwrap_or_default().as_str());
         let result = client.add(num1, num2, num3, num4);
         Ok(NativeResult::ok(
             cost,
@@ -168,14 +168,14 @@ pub fn hfe_ops_minus(
     let number3 = pop_arg!(args, Vec<u8>);
     let number2 = pop_arg!(args, Vec<u8>);
     let number1 = pop_arg!(args, Vec<u8>);
-    let num1 = String::from_utf8(number1).unwrap();
-    let num2 = String::from_utf8(number2).unwrap();
-    let num3 = String::from_utf8(number3).unwrap();
-    let num4 = String::from_utf8(number4).unwrap();
+    let num1 = String::from_utf8(number1).unwrap_or_default();
+    let num2 = String::from_utf8(number2).unwrap_or_default();
+    let num3 = String::from_utf8(number3).unwrap_or_default();
+    let num4 = String::from_utf8(number4).unwrap_or_default();
 
     if *enable_anonymous_rpc == Some(true) {
         info!("hfe_ops_minus calculate in remote");
-        let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
+        let client = AnonymousClient::new(anonymous_rpc.unwrap_or_default().first().unwrap_or_default().as_str());
         let result = client.minus(num1, num2, num3, num4);
         Ok(NativeResult::ok(
             cost,
@@ -257,15 +257,15 @@ pub fn hfe_ops_multiplied(
     let number3 = pop_arg!(args, Vec<u8>);
     let number2 = pop_arg!(args, Vec<u8>);
     let number1 = pop_arg!(args, Vec<u8>);
-    let num1 = String::from_utf8(number1).unwrap();
-    let num2 = String::from_utf8(number2).unwrap();
-    let num3 = String::from_utf8(number3).unwrap();
-    let num4 = String::from_utf8(number4).unwrap();
+    let num1 = String::from_utf8(number1).unwrap_or_default();
+    let num2 = String::from_utf8(number2).unwrap_or_default();
+    let num3 = String::from_utf8(number3).unwrap_or_default();
+    let num4 = String::from_utf8(number4).unwrap_or_default();
 
     if *enable_anonymous_rpc == Some(true) {
         info!("hfe_ops_minus calculate in remote");
 
-        let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
+        let client = AnonymousClient::new(anonymous_rpc.unwrap_or_default().first().unwrap_or_default().as_str());
         let result = client.multiply(num1, num2, num3, num4);
         Ok(NativeResult::ok(
             cost,
@@ -345,7 +345,7 @@ pub fn hfe_ops_split_value(context: &mut NativeContext,
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
 
     if *enable_anonymous_rpc == Some(true) {
-        let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
+        let client = AnonymousClient::new(anonymous_rpc.unwrap_or_default().first().unwrap_or_default().as_str());
         let result = client.split_value(value);
         Ok(NativeResult::ok(
             cost,
@@ -402,12 +402,12 @@ pub fn hfe_ops_compare_value(
 
     let number1 = pop_arg!(args, Vec<u8>);
 
-    let num1 = String::from_utf8(number1).unwrap();
-    let num2 = String::from_utf8(number2).unwrap();
+    let num1 = String::from_utf8(number1).unwrap_or_default();
+    let num2 = String::from_utf8(number2).unwrap_or_default();
 
     if *enable_anonymous_rpc == Some(true) {
 
-        let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
+        let client = AnonymousClient::new(anonymous_rpc.unwrap_or_default().first().unwrap_or_default().as_str());
 
         let result = client.compare_value(num1, num2, number3);
 
@@ -487,7 +487,7 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
     let num2 = String::from_utf8(number2).unwrap();
 
     if *enable_anonymous_rpc == Some(true) {
-        let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
+        let client = AnonymousClient::new(anonymous_rpc.unwrap_or_default().first().unwrap_or_default().as_str());
         let result = client.restore_value(num1, num2, signature, id, publickey);
         info!("hfe_ops_restore_value calculate in remote restore");
 
