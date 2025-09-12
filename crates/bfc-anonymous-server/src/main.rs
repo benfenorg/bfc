@@ -224,7 +224,7 @@ async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply,
     };
 
     if response.error.is_some() {
-        return Err(warp::reject::custom(RpcError( anyhow!("handle_rpc_request failed"))))
+        return Err(warp::reject::custom(RpcError( anyhow!("handle_rpc_request failed, caused by {}", response.error.unwrap().message))))
     }
     Ok(warp::reply::json(&response))
 }
@@ -560,6 +560,7 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                     .is_ok();
                     info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
                     if pass_verify_signature == true {
+                        info!("handle_anonymous_restore_value pass verify signature");
                         match get_object_owneraddress(objectid.clone()).await {
                             Ok(owner_address_value) => {
                                 let sui_address_from_send = public_key_bytes_to_sui_address(
@@ -586,7 +587,7 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                             result: None,
                             error: Some(JsonRpcError {
                                 code: -32603,
-                                message: "Verify signature false".to_string(),
+                                message: "Verify signature or get owner address failed".to_string(),
                                 data: Some(serde_json::json!({"error": "verify signature false"})),
                             }),
                         };
