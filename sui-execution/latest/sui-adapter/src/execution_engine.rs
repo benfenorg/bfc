@@ -991,7 +991,7 @@ mod checked {
             // create rewards in stable coin
             let rewards_bfc;
             if STABLE::is_outer_gas_type(&type_tag,param.current_protocol_version.as_u64()) {
-                if param.epoch > BFC_COLLECT_OTHER_GAS_EPOCH {
+                if param.epoch > BFC_COLLECT_OTHER_GAS_EPOCH || param.current_protocol_version.as_u64() > 75 {
                     let stable_charge_arg = builder
                         .input(CallArg::Pure(
                             bcs::to_bytes(&calculate_add(
