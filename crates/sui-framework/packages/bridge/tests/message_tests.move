@@ -100,20 +100,17 @@ module bridge::message_tests {
         let defi_transfer_out_payload = make_payload_4_defi_transfer_out(
             address::to_bytes(sender_address),
             chain_ids::eth_sepolia(),
-            hex::decode(b"00000000000000000000000000000000000000c8"),
-            3u64,
             balance::value(coin::balance(&coin)),
             hex::decode(b""),
             0u16, // event_idx
             1u64,  // aave
             3u64,  // v3
+            3u64,  // protocol token id
             UNSTAKE_DEFI,   // unstake
         );
         let payload = token_bridge_message.extract_defi_transfer_out_payload();
         assert!(payload.sender_address_defi_out() == defi_transfer_out_payload.sender_address_defi_out());
         assert!(payload.target_chain_defi_out() == defi_transfer_out_payload.target_chain_defi_out());
-        assert!(payload.target_address_defi_out() == defi_transfer_out_payload.target_address_defi_out());
-        assert!(payload.token_type_defi_out() == defi_transfer_out_payload.token_type_defi_out());
         assert!(payload.token_amount_defi_out() == defi_transfer_out_payload.token_amount_defi_out());
         assert!(payload.token_tx_hash_defi_out() == defi_transfer_out_payload.token_tx_hash_defi_out());
         assert!(payload.token_event_idx_defi_out() == defi_transfer_out_payload.token_event_idx_defi_out());
@@ -124,7 +121,7 @@ module bridge::message_tests {
         // Test message serialization
         let message = serialize_message(token_bridge_message);
         let expected_msg = hex::decode(
-            b"1701000000000000000a012000000000000000000000000000000000000000000000000000000000000000640b1400000000000000000000000000000000000000c8000000000000000300000000000030390000000000000000000001000000000000000301",
+            b"1701000000000000000a012000000000000000000000000000000000000000000000000000000000000000640b000000000000303900000000000000000000010000000000000003000000000000000301",
         );
         assert_eq(message, expected_msg);
         assert!(token_bridge_message == deserialize_message_test_only(message));
@@ -151,21 +148,18 @@ module bridge::message_tests {
         let defi_transfer_in_payload = make_payload_4_defi_transfer_in(
             address::to_bytes(sender_address),
             chain_ids::sui_testnet(),
-            hex::decode(b"00000000000000000000000000000000000000c8"),
-            3u64,
             balance::value(coin::balance(&coin)),
             hex::decode(b""),
             0u16, // event_idx
             0u8,   // fast path selector
             1u64,  // aave
             3u64,  // v3
+            3u64,  // protocol token id
             UNSTAKE_DEFI,   // unstake
         );
         let payload = token_bridge_message.extract_defi_transfer_in_payload();
         assert!(payload.sender_address_defi_in() == defi_transfer_in_payload.sender_address_defi_in());
         assert!(payload.target_chain_defi_in() == defi_transfer_in_payload.target_chain_defi_in());
-        assert!(payload.target_address_defi_in() == defi_transfer_in_payload.target_address_defi_in());
-        assert!(payload.token_type_defi_in() == defi_transfer_in_payload.token_type_defi_in());
         assert!(payload.token_amount_defi_in() == defi_transfer_in_payload.token_amount_defi_in());
         assert!(payload.tx_hash_defi_in() == defi_transfer_in_payload.tx_hash_defi_in());
         assert!(payload.event_idx_defi_in() == defi_transfer_in_payload.event_idx_defi_in());
@@ -177,7 +171,7 @@ module bridge::message_tests {
         // Test message serialization
         let message = serialize_message(token_bridge_message);
         let expected_msg = hex::decode(
-            b"1701000000000000000a0b200000000000000000000000000000000000000000000000000000000000000064011400000000000000000000000000000000000000c800000000000000030000000000003039000000000000000000000001000000000000000301",
+            b"1701000000000000000a0b2000000000000000000000000000000000000000000000000000000000000000640100000000000030390000000000000000000000010000000000000003000000000000000301",
         );
         assert_eq(message, expected_msg);
         assert!(token_bridge_message == deserialize_message_test_only(message));
@@ -976,13 +970,12 @@ module bridge::message_tests {
             10, 
             address::to_bytes(sender), 
             target_chain, 
-            hex::decode(b"00000000000000000000000000000000000000c8"), 
-            3u64, 
             balance::value<T>(coin::balance(coin)), 
             hex::decode(b""), 
             0u16, 
             1u64,  // aave
             3u64,  // v3
+            3u64,  // protocol token id
             UNSTAKE_DEFI,   // unstake
         )
     }
@@ -998,14 +991,13 @@ module bridge::message_tests {
             10, 
             address::to_bytes(sender), 
             target_chain, 
-            hex::decode(b"00000000000000000000000000000000000000c8"), 
-            3u64, 
             balance::value<T>(coin::balance(coin)), 
             hex::decode(b""), 
             0u16, 
             0u8,   // fast path selector
             1u64,  // aave
             3u64,  // v3
+            3u64,  // protocol token id
             UNSTAKE_DEFI   // unstake
         )
     }

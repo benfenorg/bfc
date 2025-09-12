@@ -100,7 +100,6 @@ module bridge::message {
     public struct DefiTransferOutPayload has drop {
         sender_address: vector<u8>,
         target_chain: u8,
-        target_address: vector<u8>,
         amount: u64,
         tx_hash: vector<u8>,
         event_idx: u16,
@@ -113,7 +112,6 @@ module bridge::message {
     public struct DefiTransferInPayload has drop {
         sender_address: vector<u8>,
         target_chain: u8,
-        target_address: vector<u8>,
         amount: u64,
         tx_hash: vector<u8>,
         event_idx: u16,
@@ -1278,8 +1276,6 @@ module bridge::message {
         seq_num: u64,
         sender_address: vector<u8>,
         target_chain: u8,
-        target_address: vector<u8>,
-        token_type: u64,
         amount: u64,
         tx_hash: vector<u8>,
         event_idx: u16,
@@ -1298,11 +1294,7 @@ module bridge::message {
         payload.push_back((vector::length(&sender_address) as u8));
         payload.append(sender_address);
         payload.push_back(target_chain);
-        // target address should be less than 255 bytes so can fit into u8
-        payload.push_back((vector::length(&target_address) as u8));
-        payload.append(target_address);
         // bcs serializes u64 as 8 bytes
-        payload.append(reverse_bytes(bcs::to_bytes(&token_type)));
         payload.append(reverse_bytes(bcs::to_bytes(&amount)));
 
         // tx_hash length prefix
@@ -1346,9 +1338,6 @@ module bridge::message {
         payload.push_back((vector::length(&sender_address) as u8));
         payload.append(sender_address);
         payload.push_back(target_chain);
-        // target address should be less than 255 bytes so can fit into u8
-        // payload.push_back((vector::length(&target_address) as u8));
-        // payload.append(target_address);
         // bcs serializes u64 as 8 bytes
         payload.append(reverse_bytes(bcs::to_bytes(&amount)));
 
@@ -1374,7 +1363,6 @@ module bridge::message {
         let mut bcs = bcs::new(message.payload);
         let sender_address = bcs.peel_vec_u8();
         let target_chain = bcs.peel_u8();
-        let target_address = bcs.peel_vec_u8();
         let amount = peel_u64_be(&mut bcs);
         let tx_hash = bcs.peel_vec_u8();
         let event_idx = bcs.peel_u16();
@@ -1389,7 +1377,6 @@ module bridge::message {
         DefiTransferInPayload {
             sender_address,
             target_chain,
-            target_address,
             amount,
             tx_hash,
             event_idx,
@@ -1405,7 +1392,6 @@ module bridge::message {
         let mut bcs = bcs::new(message.payload);
         let sender_address = bcs.peel_vec_u8();
         let target_chain = bcs.peel_u8();
-        let target_address = bcs.peel_vec_u8();
         let amount = peel_u64_be(&mut bcs);
         let tx_hash = bcs.peel_vec_u8();
         let event_idx = bcs.peel_u16();
@@ -1419,7 +1405,6 @@ module bridge::message {
         DefiTransferOutPayload {
             sender_address,
             target_chain,
-            target_address,
             amount,
             tx_hash,
             event_idx,
@@ -1558,12 +1543,6 @@ module bridge::message {
         self.target_chain
     }
 
-    public fun target_address_defi_out(self: &DefiTransferOutPayload): vector<u8> {
-        self.target_address
-    }
-
-
-
     public fun token_amount_defi_out(self: &DefiTransferOutPayload): u64 {
         self.amount
     }
@@ -1600,12 +1579,6 @@ module bridge::message {
         self.target_chain
     }
 
-    public fun target_address_defi_in(self: &DefiTransferInPayload): vector<u8> {
-        self.target_address
-    }
-
-    
-    
     public fun token_amount_defi_in(self: &DefiTransferInPayload): u64 {
         self.amount
     }
@@ -1978,7 +1951,6 @@ module bridge::message {
     public(package) fun make_payload_4_defi_transfer_out(
         sender_address: vector<u8>,
         target_chain: u8,
-        target_address: vector<u8>,
         amount: u64,
         tx_hash: vector<u8>,
         event_idx: u16,
@@ -1990,7 +1962,6 @@ module bridge::message {
         DefiTransferOutPayload {
             sender_address,
             target_chain,
-            target_address,
             amount,
             tx_hash,
             event_idx,
@@ -2005,7 +1976,6 @@ module bridge::message {
     public(package) fun make_payload_4_defi_transfer_in(
         sender_address: vector<u8>,
         target_chain: u8,
-        target_address: vector<u8>,
         amount: u64,
         tx_hash: vector<u8>,
         event_idx: u16,
@@ -2018,7 +1988,6 @@ module bridge::message {
         DefiTransferInPayload {
             sender_address,
             target_chain,
-            target_address,
             amount,
             tx_hash,
             event_idx,
