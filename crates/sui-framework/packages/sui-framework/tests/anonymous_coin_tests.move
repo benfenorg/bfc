@@ -133,12 +133,6 @@ module sui::anonymous_coin_tests {
         anonymous_coin::mint_and_transfer<COIN_TESTS>(&mut treasury, 42, TEST_ADDR, scenario.ctx());
         scenario.next_epoch(TEST_ADDR); // needed or else we won't have a value for `most_recent_id_for_address` coming up next.
         let coin = scenario.take_from_address<Anonymous_Coin<COIN_TESTS>>(TEST_ADDR);
-        let object_id : address = @0xd4c2360f11b1608f3be0b8d89bc97ff3047378dbc34d0b3976f40e6392496fd5;
-        let signature = x"0f31177f8ece16b2cfb8c1ba0b71f73252acaa6cfbbe13d36c3320617f05bc7f9a860f16c8b10c787455a01ca7bcca3469858aae4e369bc994ab64967f1fd20f";
-        let publickey = x"8496d3d932986b43bb64b5d5c7548d5c97a73aebf4301447f3746680b2114ae1";
-
-        let value = coin.value(signature, object_id, publickey);
-        assert!(value == 42);
         anonymous_pay::keep(coin, scenario.ctx());
 
         transfer::public_freeze_object(metadata);

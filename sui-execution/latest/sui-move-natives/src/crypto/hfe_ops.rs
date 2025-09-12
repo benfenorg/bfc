@@ -76,7 +76,7 @@ pub fn hfe_ops_add(
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
 
     info!("anonymous_rpc{:?}", anonymous_rpc.clone());
-    info!("enable-anonymous-rpc{:?}", enable_anonymous_rpc.clone().unwrap());
+    info!("enable-anonymous-rpc{:?}", enable_anonymous_rpc.clone());
 
     let number4 = pop_arg!(args, Vec<u8>);
     let number3 = pop_arg!(args, Vec<u8>);
