@@ -1,7 +1,7 @@
-
-# Anonymous private key configuration
-anonymous-privatekey: "0x121212"
-enable-anonymous-rpc: true
+---
+anonymous-privatekey: "0x1111ffff0000"
 anonymous-rpc:
   - "http://localhost:9010"
   - "http://localhost:9010"
+enable-anonymous-rpc: true
+fullnode-rpc-path: "https://rpc-mainnet.benfen.org"
