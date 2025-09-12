@@ -1329,7 +1329,6 @@ module bridge::message {
         seq_num: u64,
         sender_address: vector<u8>,
         target_chain: u8,
-        target_address: vector<u8>,
         amount: u64,
         tx_hash: vector<u8>,
         event_idx: u16,
@@ -1348,8 +1347,8 @@ module bridge::message {
         payload.append(sender_address);
         payload.push_back(target_chain);
         // target address should be less than 255 bytes so can fit into u8
-        payload.push_back((vector::length(&target_address) as u8));
-        payload.append(target_address);
+        // payload.push_back((vector::length(&target_address) as u8));
+        // payload.append(target_address);
         // bcs serializes u64 as 8 bytes
         payload.append(reverse_bytes(bcs::to_bytes(&amount)));
 
