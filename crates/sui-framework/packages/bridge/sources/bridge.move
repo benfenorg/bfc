@@ -216,7 +216,7 @@ module bridge::bridge {
     const EMustBeDefiMessage: u64 = 57;
     const EOnlySupportDefiTransferOut: u64 = 58;
     const EOnlySupportDefiTransferIn: u64 = 59;
-    
+    const EOnlySupportUsdcOrUsdt: u64 = 60;
 
     const CURRENT_VERSION: u64 = 1;
 
@@ -466,7 +466,6 @@ module bridge::bridge {
         protocol_version: u64,
         protocol_token_id: u64,
         amount: u64,
-        token_id_expect: u64,
         ctx: &mut TxContext
     ) {
         let (inner,parent_id) = load_inner_mut_and_uid(bridge);
@@ -476,8 +475,9 @@ module bridge::bridge {
 
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::defi());
         
-        // assert!(token_amount > 0, ETokenValueIsZero);
-        // assert!(token_id != 5, EUseSendBusd);
+        assert!(amount > 0, ETokenValueIsZero);
+        assert!(protocol_token_id == TOKEN_ID_USDC || protocol_token_id == TOKEN_ID_USDT, EOnlySupportUsdcOrUsdt);
+        //todo: @fei check sender has permission to unstake
 
         assert!(tokenlist::is_supported_from_benfen(parent_id, target_chain as u64, protocol_token_id),EInvalidChainIDAndTokenIDExpect);
         //deal the cross fee and limit
@@ -486,12 +486,7 @@ module bridge::bridge {
         //todo: @fei store the fee amount
         let amount_after_fee=amount-fee;
         let route = chain_ids::get_route(inner.chain_id, target_chain);
-        //todo: @fei unstake need limit check
-        // let amount_in_usd = inner.treasury.calculate_amount_in_usd<T>(amount_after_fee);
-        // assert!(amount_in_usd <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
-        // //get protocol info
-        // let protocol_info = defi_protocols::get_protocol_info(parent_id, token_id);
-        // assert!(protocol_info.chain_id() == target_chain, EInvalidProtocolChainID);
+        assert!(amount_after_fee <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
         
         let message = message::create_defi_transfer_out_message(
             inner.chain_id, 
@@ -505,8 +500,6 @@ module bridge::bridge {
             protocol_token_id,
             UNSTAKE
         );
-        // burn / escrow token, unsupported coins will fail in this step
-        // inner.treasury.burn(token);
         // Store pending bridge request
         inner.token_transfer_records.push_back(
             message.key(),
