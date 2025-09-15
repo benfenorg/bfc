@@ -81,7 +81,7 @@ async fn sim_test_mint_anonymous_usd() -> Result<(), anyhow::Error>{
         = publish_coin::do_publish(&mut test_cluster, "tests/test_anonymous_usd").await.unwrap();
 
     //mint
-    publish_coin::do_mint_anonymous(&mut test_cluster,package,30000000000000000).await;
+    let move_call_response = publish_coin::do_mint_anonymous(&mut test_cluster,package,30000000000000000).await;
 
     let filter=format!("{}{}{}","0x2::anonymous_coin::Anonymous_Coin<",package,"::testabfc::TESTABFC>");
     let abfc_objects =
@@ -91,39 +91,6 @@ async fn sim_test_mint_anonymous_usd() -> Result<(), anyhow::Error>{
 
     // public entry fun bind_swap_pool<T1, T2> (anonymous_coin: Anonymous_Coin<T1>, coin: Coin<T2>, ctx: &mut TxContext){
     // now do the call
-    let package_id = SUI_FRAMEWORK_PACKAGE_ID;
-    let module = "anonymous_coin".to_string();
-    // let function = "bind_swap_pool".to_string();
-    let mut type_arguments = Vec::new();
-    let anonymous_type = format!("{}{}", package, "::testabfc::TESTABFC");
-    type_arguments.push(SuiTypeTag::new(anonymous_type.to_string()));
-
-    let function = "get_anonymous_value".to_string();
-
-    let signature = "cd5f94646b13eaa370a55fe9c084d6b266e1c3856c16e43fbc8b2e9a28076ffe7b73fec594974a0ff7a7ebac2cf9ad2196ff89fdd97c14c0883159ec0181730c";
-    let publickey = "8496d3d932986b43bb64b5d5c7548d5c97a73aebf4301447f3746680b2114ae1";
-
-    let signature_bytes = hex_to_bytes(signature);
-    let publickey_bytes = hex_to_bytes(publickey);
-
-
-    let arg = vec![
-        SuiJsonValue::from_str(&testabfc_object.object_id.to_string()).unwrap(),
-        SuiJsonValue::from_bcs_bytes(Some(&MoveTypeLayout::U32), &signature_bytes).unwrap(),
-        SuiJsonValue::from_bcs_bytes(Some(&MoveTypeLayout::U32), &publickey_bytes).unwrap(),
-    ];
-    let move_call_response = do_move_call(
-        &http_client,
-        &gas,
-        address,
-        &test_cluster,
-        package_id,
-        module,
-        function,
-        type_arguments,
-        arg,
-    ).await?;
-    //
     assert!(*move_call_response.effects.unwrap().status() ==  SuiExecutionStatus::Success);
     Ok(())
 }

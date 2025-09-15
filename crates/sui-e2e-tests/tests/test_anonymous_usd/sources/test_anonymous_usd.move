@@ -47,12 +47,6 @@ module test_anonymous_usd::testabfc {
         anonymous_coin::mint_and_transfer(treasury_cap, amount, recipient, ctx);
     }
 
-    public entry fun get_anonymous_value(coin: Anonymous_Coin<TESTABFC>, signatures: vector<u8>, anonymous_coin_id: address, publickey: vector<u8>, ctx: &mut TxContext) :u64{
-         let balance = coin.get_anonymous_value(signatures, publickey);
-         transfer::public_transfer(coin, tx_context::sender(ctx));
-         balance
-    }
-
     public fun burn(treasury_cap: &mut TreasuryCap<TESTABFC>, coin: Anonymous_Coin<TESTABFC>, signatures: vector<u8>, anonymous_coin_id: address, publickey: vector<u8>) {
         anonymous_coin::burn(treasury_cap, coin, signatures, anonymous_coin_id, publickey);
     }
