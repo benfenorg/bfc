@@ -134,6 +134,18 @@ module bridge::bridge {
         action_type: u8,
     }
 
+    public struct DefiUnstakeEvent has copy, drop {
+        seq_num: u64,
+        source_chain: u8,
+        target_chain: u8,
+        target_address: vector<u8>,
+        amount_before_fee: u64,
+        amount_after_fee: u64,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+    }
+
     public struct TokenSendBackEvent has copy, drop {
         seq_num: u64,
         source_chain: u8,
@@ -1075,8 +1087,6 @@ module bridge::bridge {
 
         assert!(message.message_type() == message_types::defi(), EMustBeDefiMessage);
         assert!(message.message_version() == MESSAGE_VERSION_DEFI_OUT, EUnexpectedMessageVersion);
-        let token_payload = message.extract_defi_transfer_out_payload();
-        // let target_chain = token_payload.target_chain_defi_out();
         assert!(message.source_chain() != inner.chain_id, EOnlySupportDefiTransferOut);
         let message_key = message.key();
         let record = &mut inner.token_transfer_records[message_key];
@@ -1204,6 +1214,23 @@ module bridge::bridge {
         ctx: &mut TxContext,
     ) {
         let (token, owner) = bridge.claim_stable_token_internal<T>(bfc_system_state, clock, source_chain, bridge_seq_num, cap, ctx);
+        if (token.is_some()) {
+            transfer::public_transfer(token.destroy_some(), owner)
+        } else {
+            token.destroy_none();
+        };
+    }
+    
+    public fun claim_and_transfer_busd_for_defi<T>(
+        bridge: &mut Bridge,
+        bfc_system_state: &mut BfcSystemState,
+        clock: &Clock,
+        source_chain: u8,
+        bridge_seq_num: u64,
+        cap: &BfcSystemModifyCap,
+        ctx: &mut TxContext,
+    ) {
+        let (token, owner) = bridge.claim_stable_token_for_defi_internal<T>(bfc_system_state, clock, source_chain, bridge_seq_num, cap, ctx);
         if (token.is_some()) {
             transfer::public_transfer(token.destroy_some(), owner)
         } else {
@@ -2134,7 +2161,7 @@ module bridge::bridge {
         (option::none(), owner)
     }
 
-    fun claim_stable_token_internal_for_defi<T>(
+    fun claim_stable_token_for_defi_internal<T>(
         bridge: &mut Bridge,
         bfc_system_state: &mut BfcSystemState,
         clock: &Clock,
@@ -2208,8 +2235,6 @@ module bridge::bridge {
         let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_id_busd,amount);
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let amount_after_fee=amount-fee;
-        //todo: @fei continue tag
-        check_fast_path_limit(parent_id, clock, defi_payload);
         // claim from treasury
         //transfer busd to owner
         bfc_system_state.mint_stable_entry_to_address<BUSD>(amount_after_fee, cap, owner, ctx);
@@ -2217,8 +2242,20 @@ module bridge::bridge {
             let fee_coin=bfc_system_state.mint_stable<BUSD>(fee,cap, ctx);
             bridge_fee::deposit_fee(parent_id, fee_coin);
         };
+        
         record.claimed = true;
         emit(TokenTransferClaimed { message_key: key });
+        emit(DefiUnstakeEvent {
+            seq_num: bridge_seq_num,
+            source_chain: source_chain,
+            target_chain: target_chain,
+            target_address: address::to_bytes(owner),
+            amount_before_fee: amount,
+            amount_after_fee: amount_after_fee,
+            protocol_type: defi_payload.protocol_type_defi_in(),
+            protocol_version: defi_payload.protocol_version_defi_in(),
+            protocol_token_id: defi_payload.protocol_token_id_defi_in(),
+        });
         (option::none(), owner)
     }
 
