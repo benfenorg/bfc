@@ -290,9 +290,8 @@ fn hex_to_bytes(hex: &str) -> Vec<u8> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{AnonymousServer, Args};
+    use crate::{AnonymousServer};
     use std::net::SocketAddr;
-    use clap::Parser;
     use tracing::info;
     use tracing_subscriber::fmt;
 

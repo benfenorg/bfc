@@ -111,6 +111,7 @@ struct AnonymousRestoreValueParams {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 struct RpcError(anyhow::Error);
 
 impl warp::reject::Reject for RpcError {}
