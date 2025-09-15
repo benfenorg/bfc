@@ -36,15 +36,8 @@ Response: {
   "jsonrpc": "2.0",
   "id": 0,
   "result": {
-    "digest": "7w9QWehQUwxjD7RKQyJ8GDv48gEvP4teDyocjfcxYf9n",
+    "digest": "DN1SY3YzGDBDeXGZSkfGMWW3ZiSdqXfASNWZ6Xw2Egxp",
     "objectChanges": [
-      {
-        "type": "wrapped",
-        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
-        "objectType": "0x1301ffe0dd12ad5c35c3615a2de64ea536898486bab70f761bb9d3f91fd96ecf::M::I",
-        "objectId": "BFC0e1a8865e1c8caeb493c1aa3e5c159780d8ba4454b949f933e1c3609bf1e92c074d0",
-        "version": "3"
-      },
       {
         "type": "mutated",
         "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
@@ -55,7 +48,14 @@ Response: {
         "objectId": "BFC1368f3ce1a354a08e6a92821900897ceb1ad5c9ba4ddcde7c0f0f88a2e9bfbfd4278",
         "version": "3",
         "previousVersion": "2",
-        "digest": "3d8u8K74u5dCmUnMvokJygtyRo1DHnW5TstkW3KTXCNq"
+        "digest": "9q6Y3nxe1TKrYd7HZ5w16Mah8zzukNrP3BLhBjnWRh9k"
+      },
+      {
+        "type": "wrapped",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
+        "objectType": "0xb94e4106a19e743481afe14f2c58a876b47e8cf3e97e548a14cd38f78ec8fef4::M::I",
+        "objectId": "BFCd1504f0757bf1d94ea077a11fbe2595fee39232a2f5f98253b2210779fa9f08c9030",
+        "version": "3"
       },
       {
         "type": "created",
@@ -63,10 +63,10 @@ Response: {
         "owner": {
           "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
         },
-        "objectType": "0x1301ffe0dd12ad5c35c3615a2de64ea536898486bab70f761bb9d3f91fd96ecf::M::O",
-        "objectId": "BFC29fddc52077db569c93d6088297b4ebc7a996bba2cb29f3329586670c389abb3722e",
+        "objectType": "0xb94e4106a19e743481afe14f2c58a876b47e8cf3e97e548a14cd38f78ec8fef4::M::O",
+        "objectId": "BFCe7bc8ec851532484f24d71c2422e78db51d61c11da8dfe7a4bb154c2c4efd03e7f39",
         "version": "3",
-        "digest": "BYqmDrRSLMwkSEC6HqJSsx15L9ct3iFrbsXp5gTLqYBf"
+        "digest": "2VT8uVpTNiSkn9cQbouHFQwV1bTmbrPxoxUmgGMGDbVZ"
       }
     ]
   }
