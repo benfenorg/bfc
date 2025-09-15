@@ -66,12 +66,11 @@ pub struct MoveDefiTransferOutEvent {
     pub source_chain: u8,
     pub sender_address: Vec<u8>,
     pub target_chain: u8,
-    pub target_address: Vec<u8>,
-    pub token_type: u64,
     pub amount_before_fee: u64,
     pub amount_after_fee: u64,
     pub protocol_type: u64,
     pub protocol_version: u64,
+    pub protocol_token_id: u64,
     pub action_type: u8,
 }
 
@@ -299,13 +298,12 @@ pub struct EmittedSuiToEthDefiBridgeV1 {
     pub sui_chain_id: BridgeChainId,
     pub eth_chain_id: BridgeChainId,
     pub sui_address: SuiAddress,
-    pub eth_address: EthAddress,
-    pub token_id: u64,
     pub amount_sui_adjusted: u64,
     pub tx_hash: Vec<u8>,
     pub event_idx: u16,
     pub protocol_type: u64,
     pub protocol_version: u64,
+    pub protocol_token_id: u64,
     pub action_type: u8,
 }
 
@@ -519,53 +517,50 @@ impl TryFrom<MoveDefiTransferOutEvent> for EmittedSuiToEthDefiBridgeV1 {
     fn try_from(event: MoveDefiTransferOutEvent) -> BridgeResult<Self> {
         if event.amount_after_fee == 0 {
             return Err(BridgeError::ZeroValueBridgeTransfer(format!(
-                "Failed to convert MoveTokenDepositedEventV2 to EmittedSuiToEthTokenBridgeV1. Manual intervention is required. 0 value transfer should not be allowed in Move: {:?}",
+                "Failed to convert MoveDefiTransferOutEvent to EmittedSuiToEthDefiBridgeV1. Manual intervention is required. 0 value transfer should not be allowed in Move: {:?}",
                 event,
             )));
         }
 
-        let token_id = event.token_type;
         let sui_chain_id = BridgeChainId::try_from(event.source_chain).map_err(|_e| {
             BridgeError::Generic(format!(
-                "Failed to convert MoveTokenDepositedEventV2 to EmittedSuiToEthTokenBridgeV1. Failed to convert source chain {} to BridgeChainId",
-                event.token_type,
+                "Failed to convert MoveDefiTransferOutEvent to EmittedSuiToEthDefiBridgeV1. Failed to convert source chain {} to BridgeChainId",
+                event.source_chain,
             ))
         })?;
         let eth_chain_id = BridgeChainId::try_from(event.target_chain).map_err(|_e| {
             BridgeError::Generic(format!(
-                "Failed to convert MoveTokenDepositedEventV2 to EmittedSuiToEthTokenBridgeV1. Failed to convert target chain {} to BridgeChainId",
-                event.token_type,
+                "Failed to convert MoveDefiTransferOutEvent to EmittedSuiToEthDefiBridgeV1. Failed to convert target chain {} to BridgeChainId",
+                event.target_chain,
             ))
         })?;
         if !sui_chain_id.is_sui_chain() {
             return Err(BridgeError::Generic(format!(
-                "Failed to convert MoveTokenDepositedEventV2 to EmittedSuiToEthTokenBridgeV1. Invalid source chain {}",
+                "Failed to convert MoveDefiTransferOutEvent to EmittedSuiToEthDefiBridgeV1. Invalid source chain {}",
                 event.source_chain
             )));
         }
         if eth_chain_id.is_sui_chain() {
             return Err(BridgeError::Generic(format!(
-                "Failed to convert MoveTokenDepositedEventV2 to EmittedSuiToEthTokenBridgeV1. Invalid target chain {}",
+                "Failed to convert MoveDefiTransferOutEvent to EmittedSuiToEthDefiBridgeV1. Invalid target chain {}",
                 event.target_chain
             )));
         }
 
         let sui_address = SuiAddress::from_bytes(event.sender_address)
-            .map_err(|e| BridgeError::Generic(format!("Failed to convert MoveTokenDepositedEventV2 to EmittedSuiToEthTokenBridgeV1. Failed to convert sender_address to SuiAddress: {:?}", e)))?;
-        let eth_address = EthAddress::from_str(&Hex::encode(&event.target_address))?;
+            .map_err(|e| BridgeError::Generic(format!("Failed to convert MoveDefiTransferOutEvent to EmittedSuiToEthDefiBridgeV1. Failed to convert sender_address to SuiAddress: {:?}", e)))?;
 
         Ok(Self {
             nonce: event.seq_num,
             sui_chain_id,
             eth_chain_id,
             sui_address,
-            eth_address,
-            token_id,
             amount_sui_adjusted: event.amount_after_fee,
             tx_hash: vec![],
             event_idx: 0,
             protocol_type: event.protocol_type,
             protocol_version: event.protocol_version,
+            protocol_token_id: event.protocol_token_id,
             action_type: event.action_type,
         })
     }

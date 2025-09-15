@@ -396,6 +396,7 @@ fn build_token_bridge_approve_transaction(
         fast_path_selector,
         protocol_type,
         protocol_version,
+        protocol_token_id,
         action_type,
     ) = match bridge_action {
         BridgeAction::SuiToEthBridgeAction(a) => {
@@ -416,6 +417,7 @@ fn build_token_bridge_approve_transaction(
                 None,
                 None,
                 None,
+                None,
             )
         }
         BridgeAction::SuiToEthDefiBridgeAction(a) => {
@@ -425,8 +427,8 @@ fn build_token_bridge_approve_transaction(
                 bridge_event.nonce,
                 bridge_event.sui_address.to_vec(),
                 bridge_event.eth_chain_id,
-                bridge_event.eth_address.to_fixed_bytes().to_vec(),
-                bridge_event.token_id,
+                vec![],
+                0u64,
                 bridge_event.amount_sui_adjusted,
                 vec![],
                 0u16,
@@ -435,6 +437,7 @@ fn build_token_bridge_approve_transaction(
                 None,
                 Some(bridge_event.protocol_type),
                 Some(bridge_event.protocol_version),
+                Some(bridge_event.protocol_token_id),
                 Some(bridge_event.action_type),
             )
         }
@@ -456,6 +459,7 @@ fn build_token_bridge_approve_transaction(
                 None,
                 None,
                 None,
+                None,
             )
         }
         BridgeAction::EthToSuiBridgeAction(a) => {
@@ -473,6 +477,7 @@ fn build_token_bridge_approve_transaction(
                 "create_token_bridge_in_message",
                 "approve_token_transfer_in",
                 Some(bridge_event.fast_path_selector),
+                None,
                 None,
                 None,
                 None,
@@ -543,6 +548,7 @@ fn build_token_bridge_approve_transaction(
             let protocol_type = builder.pure(protocol_type).unwrap();
             let protocol_version = builder.pure(protocol_version).unwrap();
             let action_type = builder.pure(action_type).unwrap();
+            let protocol_token_id = builder.pure(protocol_token_id).unwrap();
             builder.programmable_move_call(
                 BRIDGE_PACKAGE_ID,
                 ident_str!("message").to_owned(),
@@ -553,13 +559,12 @@ fn build_token_bridge_approve_transaction(
                     seq_num,
                     sender,
                     target_chain,
-                    target,
-                    arg_token_type,
                     amount,
                     tx_hash,
                     event_idx,
                     protocol_type,
                     protocol_version,
+                    protocol_token_id,
                     action_type,
                 ],
             )

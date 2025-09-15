@@ -159,14 +159,6 @@ impl BridgeMessageEncoding for SuiToEthDefiBridgeAction {
         bytes.extend_from_slice(&e.sui_address.to_vec());
         // Add dest chain id
         bytes.push(e.eth_chain_id as u8);
-        // Add dest address length
-        bytes.push(EthAddress::len_bytes() as u8);
-        // Add dest address
-        bytes.extend_from_slice(e.eth_address.as_bytes());
-
-        // Add token id
-        bytes.extend_from_slice(&e.token_id.to_be_bytes());
-
         // Add token amount
         bytes.extend_from_slice(&e.amount_sui_adjusted.to_be_bytes());
 
@@ -179,6 +171,9 @@ impl BridgeMessageEncoding for SuiToEthDefiBridgeAction {
 
         //add protocol type
         bytes.extend_from_slice(&e.protocol_type.to_be_bytes());
+
+        //add protocol token id
+        bytes.extend_from_slice(&e.protocol_token_id.to_be_bytes());
 
         //add protocol version
         bytes.extend_from_slice(&e.protocol_version.to_be_bytes());
