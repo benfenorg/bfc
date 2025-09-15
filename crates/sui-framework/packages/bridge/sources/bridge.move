@@ -55,6 +55,7 @@ module bridge::bridge {
     const MESSAGE_VERSION_V2: u8 = 2;
     const MESSAGE_VERSION_V3: u8 = 3;
     const MESSAGE_VERSION_DEFI_OUT: u8 = 1;
+    const MESSAGE_VERSION_DEFI_IN: u8 = 1;
 
     // Transfer Status
     const TRANSFER_STATUS_PENDING: u8 = 0;
@@ -119,7 +120,7 @@ module bridge::bridge {
         amount_before_fee: u64,
         amount_after_fee: u64
     }
-
+    //defi event: benfen to evm
     public struct DefiTransferOutEvent has copy, drop {
         seq_num: u64,
         source_chain: u8,
@@ -217,6 +218,7 @@ module bridge::bridge {
     const EOnlySupportDefiTransferOut: u64 = 58;
     const EOnlySupportDefiTransferIn: u64 = 59;
     const EOnlySupportUsdcOrUsdt: u64 = 60;
+    const EOnlySupportUnstake: u64 = 61;
 
     const CURRENT_VERSION: u64 = 1;
 
@@ -1090,6 +1092,47 @@ module bridge::bridge {
         };
         // Store approval
         record.verified_signatures = option::some(signatures);
+        emit(TokenTransferApproved { message_key });
+    }
+
+    public fun approve_defi_transfer_in(
+        bridge: &mut Bridge,
+        message: BridgeMessage,
+        signatures: vector<vector<u8>>,
+    ) {
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        // verify signatures
+        inner.committee.verify_signatures(message, signatures);
+
+        assert!(message.message_type() == message_types::defi(), EMustBeDefiMessage);
+        assert!(message.message_version() == MESSAGE_VERSION_DEFI_IN, EUnexpectedMessageVersion);
+        let defi_payload = message.extract_defi_transfer_in_payload();
+        let target_chain = defi_payload.target_chain_defi_in();
+        assert!(target_chain == inner.chain_id,EUnexpectedChainID);
+
+        let message_key = message.key();
+        // retrieve pending message if source chain is Sui, the initial message
+        // must exist on chain
+        //only support token transfer in
+        assert!(message.source_chain() != inner.chain_id, EOnlySupportDefiTransferIn);
+        // At this point, if this message is in token_transfer_records, we know
+        // it's already approved because we only add a message to token_transfer_records
+        // after verifying the signatures
+        if (inner.token_transfer_records.contains(message_key)) {
+            emit(TokenTransferAlreadyApproved { message_key });
+            return
+        };
+        // Store message and approval
+        inner.token_transfer_records.push_back(
+            message_key,
+            BridgeRecord {
+                message,
+                verified_signatures: option::some(signatures),
+                claimed: false
+            },
+        );
+
         emit(TokenTransferApproved { message_key });
     }
 
@@ -2079,6 +2122,94 @@ module bridge::bridge {
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let amount_after_fee=amount-fee;
         check_fast_path_limit(parent_id, clock, token_payload);
+        // claim from treasury
+        //transfer busd to owner
+        bfc_system_state.mint_stable_entry_to_address<BUSD>(amount_after_fee, cap, owner, ctx);
+        if (fee != 0){
+            let fee_coin=bfc_system_state.mint_stable<BUSD>(fee,cap, ctx);
+            bridge_fee::deposit_fee(parent_id, fee_coin);
+        };
+        record.claimed = true;
+        emit(TokenTransferClaimed { message_key: key });
+        (option::none(), owner)
+    }
+
+    fun claim_stable_token_internal_for_defi<T>(
+        bridge: &mut Bridge,
+        bfc_system_state: &mut BfcSystemState,
+        clock: &Clock,
+        source_chain: u8,
+        bridge_seq_num: u64,
+        cap: &BfcSystemModifyCap,
+        ctx: &mut TxContext,
+    ): (Option<Coin<T>>, address) {
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+
+        let key = message::create_key(source_chain, message_types::defi(), bridge_seq_num);
+        assert!(inner.token_transfer_records.contains(key), EMessageNotFoundInRecords);
+
+        // retrieve approved bridge message
+        let record = &mut inner.token_transfer_records[key];
+        // ensure this is a defi bridge message
+        assert!(
+            &record.message.message_type() == message_types::defi(),
+            EUnexpectedMessageType,
+        );
+        // Ensure it's signed
+        assert!(record.verified_signatures.is_some(), EUnauthorisedClaim);
+
+        // extract token message
+        let defi_payload = record.message.extract_defi_transfer_in_payload();
+        // get owner address
+        let owner = address::from_bytes(defi_payload.sender_address_defi_in());
+        // get token type
+        let token_id = defi_payload.protocol_token_id_defi_in();
+        //get action:stake or unstake
+        let action = defi_payload.action_type_defi_in();
+        assert!(action == UNSTAKE, EOnlySupportUnstake);
+        //only support usdc and usdt
+        assert!(token_id == 3 || token_id == 4, EOnlySupportUsdcOrUsdt);
+
+        // If already claimed, exit early
+        if (record.claimed) {
+            emit(TokenTransferAlreadyClaimed { message_key: key });
+            return (option::none(), owner)
+        };
+
+        let target_chain = defi_payload.target_chain_defi_in();
+        // ensure target chain matches bridge.chain_id
+        assert!(target_chain == inner.chain_id, EUnexpectedChainID);
+
+        // `get_route` abort if route is invalid
+        let route = chain_ids::get_route(source_chain, target_chain);
+        // check token type
+        assert!(
+            treasury::token_id<T>(&inner.treasury) == 5,
+            EUnexpectedTokenType,
+        );
+        //todo: @fei check the decimals of the token
+        let amount = defi_payload.amount_defi_in();
+        assert!(amount <= inner.limiter.get_mint_busd_max_limit(), EInvalidMintAmount);
+        // Make sure transfer is within limit.
+        if (!inner
+            .limiter
+            .check_and_record_sending_transfer<T>(
+            &inner.treasury,
+            clock,
+            route,
+            amount,
+        )
+        ) {
+            emit(TokenTransferLimitExceed { message_key: key });
+            return (option::none(), owner)
+        };
+        let token_id_busd=5;
+        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_id_busd,amount);
+        assert!(amount>fee,EInputAmountLteBridgeFee);
+        let amount_after_fee=amount-fee;
+        //todo: @fei continue tag
+        check_fast_path_limit(parent_id, clock, defi_payload);
         // claim from treasury
         //transfer busd to owner
         bfc_system_state.mint_stable_entry_to_address<BUSD>(amount_after_fee, cap, owner, ctx);

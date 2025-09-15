@@ -1579,7 +1579,7 @@ module bridge::message {
         self.target_chain
     }
 
-    public fun token_amount_defi_in(self: &DefiTransferInPayload): u64 {
+    public fun amount_defi_in(self: &DefiTransferInPayload): u64 {
         self.amount
     }
 
@@ -1601,6 +1601,10 @@ module bridge::message {
 
     public fun protocol_version_defi_in(self: &DefiTransferInPayload): u64 {
         self.protocol_version
+    }
+
+    public fun protocol_token_id_defi_in(self: &DefiTransferInPayload): u64 {
+        self.protocol_token_id
     }
 
     public fun action_type_defi_in(self: &DefiTransferInPayload): u8 {
