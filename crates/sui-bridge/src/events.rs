@@ -522,7 +522,6 @@ impl TryFrom<MoveDefiTransferOutEvent> for EmittedSuiToEthDefiBridgeV1 {
             )));
         }
 
-        let token_id = event.protocol_token_id;
         let sui_chain_id = BridgeChainId::try_from(event.source_chain).map_err(|_e| {
             BridgeError::Generic(format!(
                 "Failed to convert MoveDefiTransferOutEvent to EmittedSuiToEthDefiBridgeV1. Failed to convert source chain {} to BridgeChainId",
