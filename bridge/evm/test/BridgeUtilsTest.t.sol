@@ -219,6 +219,48 @@ contract BridgeUtilsTest is BridgeBaseTest {
         assertFalse(blocklisting);
     }
 
+    function testDecodeDefiTransferPayload() public {
+        uint8 senderAddressLength = 32;
+        bytes memory senderAddress = abi.encode(0);
+        uint8 targetChain = chainID;
+        uint64 tokenID = BridgeUtils.USDC;
+        uint64 protocolType=0;
+
+        uint8 recipientAddressLength = 20;
+        address recipientAddress = bridgerA;
+        uint64 amount = 1_000_000;
+        uint16 eventIdx = 0;
+        uint64 protocolVersion=1;
+        uint64 protocolTokenID=tokenID;
+        uint8 actionType=0;
+
+        bytes memory payload = abi.encodePacked(
+            senderAddressLength,
+            senderAddress,
+            targetChain,
+            amount,
+            new bytes(0),
+            eventIdx,
+            protocolType,
+            protocolVersion,
+            protocolTokenID,
+            actionType
+        );
+
+        BridgeUtils.DefiTransferPayload memory _payload =
+            BridgeUtils.decodeDefiTransferPayload(payload);
+
+        assertEq(_payload.senderAddressLength, senderAddressLength);
+        assertEq(_payload.senderAddress, senderAddress);
+        assertEq(_payload.targetChain, targetChain);
+        assertEq(_payload.amount, amount);
+        assertEq(_payload.eventIdx, eventIdx);
+        assertEq(_payload.protocolType, protocolType);
+        assertEq(_payload.protocolVersion, protocolVersion);
+        assertEq(_payload.protocolTokenID, protocolTokenID);
+        assertEq(_payload.actionType, actionType);
+    }
+
     function testDecodeUpdateLimitPayload() public {
         bytes memory payload = hex"0c00000002540be400";
         (uint8 sourceChainID, uint64 newLimit) = BridgeUtils.decodeUpdateLimitPayload(payload);

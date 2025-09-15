@@ -76,6 +76,25 @@ contract MockUSDC is ERC20 {
     function testSkip() public {}
 }
 
+
+contract MockLPToken is ERC20 {
+    constructor() ERC20("LP Token", "LP") {}
+
+    function mint(address to, uint256 amount) public virtual {
+        _mint(to, amount);
+    }
+
+    function burn(address from, uint256 amount) public virtual {
+        _burn(from, amount);
+    }
+
+    function decimals() public view virtual override returns (uint8) {
+        return 6;
+    }
+
+    function testSkip() public {}
+}
+
 contract MockUSDT is ERC20 {
     constructor() ERC20("Tether", "USDT") {}
 

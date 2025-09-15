@@ -65,26 +65,26 @@ library BridgeUtils {
     }
 
 
-    /// @dev A struct that represents a token transfer payload
+
+    /// @dev A struct that represents a defi transfer payload
     /// @param senderAddressLength The length of the sender address in bytes
     /// @param senderAddress The address of the sender on the source chain
     /// @param targetChain The chain ID of the target chain
-    /// @param recipientAddressLength The length of the target address in bytes
-    /// @param recipientAddress The address of the recipient on the target chain
-    /// @param tokenID The ID of the token to be transferred
     /// @param amount The amount of the token to be transferred    
-    struct TokenTransferPayloadV3 {
+    /// @param protocolType The type of the protocol, such as aave, compound, curve, etc.
+    /// @param protocolVersion The version of the protocol
+    /// @param protocolTokenID The ID of the token in the protocol
+    /// @param actionType The type of the action, such as stake, unstake, etc.
+    struct DefiTransferPayload {
         uint8 senderAddressLength;
         bytes senderAddress;
         uint8 targetChain;
-        uint8 recipientAddressLength;
-        address recipientAddress;
-        uint64 tokenID;
         uint64 amount;
         bytes txHash;   
         uint16 eventIdx;
         uint64 protocolType;
         uint64 protocolVersion;
+        uint64 protocolTokenID;
         uint8 actionType;
     }
 
@@ -484,24 +484,16 @@ library BridgeUtils {
     }
 
 
-    /// @notice Decodes a token transfer payload from bytes to a TokenTransferPayload struct.
-    /// @dev The function will revert if the payload length is invalid.
-    ///     TokenTransfer payload is 64 bytes.
-    ///     byte 0       : sender address length
-    ///     bytes 1-32   : sender address (as we only support Sui now, it has to be 32 bytes long)
-    ///     bytes 33     : target chain id
-    ///     byte 34      : target address length
-    ///     bytes 35-54  : target address
-    ///     byte 55      : token id
-    ///     bytes 56-63  : amount
+
+    /// @dev A struct that represents a defi transfer payload
     /// @param _payload The payload to be decoded.
-    /// @return The decoded token transfer payload as a TokenTransferPayload struct.
-    function decodeTokenTransferPayloadV3(bytes memory _payload)
+    /// @return The decoded defi transfer payload as a DefiTransferPayload struct.
+    function decodeDefiTransferPayload(bytes memory _payload)
         internal
         pure
-        returns (TokenTransferPayloadV3 memory)
+        returns (DefiTransferPayload memory)
     {
-               require(_payload.length >= 64, "BridgeUtils: TokenTransferPayload must be at least 64 bytes");
+        require(_payload.length >= 59, "BridgeUtils: DefiTransferPayload must be at least 59 bytes");
 
         uint8 senderAddressLength = uint8(_payload[0]);
 
@@ -525,46 +517,11 @@ library BridgeUtils {
         // target chain is a single byte
         uint8 targetChain = uint8(_payload[offset++]);
 
-        // target address length is a single byte
-        uint8 recipientAddressLength = uint8(_payload[offset++]);
-        require(
-            recipientAddressLength == 20,
-            "BridgeUtils: Invalid target address length, EVM address must be 20 bytes"
-        );
-
-        // extract target address from payload (35-54)
-        address recipientAddress;
-
-        // why `add(recipientAddressLength, offset)`?
-        // At this point, offset = 35, recipientAddressLength = 20. `mload(add(payload, 55))`
-        // reads the next 32 bytes from bytes 23 in paylod, because the first 32 bytes
-        // of payload stores its length. So in reality, bytes 23 - 54 is loaded. During
-        // casting to address (20 bytes), the least sigificiant bytes are retained, namely
-        // `recipientAddress` is bytes 35-54
-        assembly {
-            recipientAddress := mload(add(_payload, add(recipientAddressLength, offset)))
-        }
-
-        // move offset past the target address length
-        offset += recipientAddressLength;
-
-        // token id
-        uint8 tokenIDLength = 8;
-        uint64 tokenID;
-        assembly {
-            tokenID := shr(192, mload(add(add(_payload, 0x20), offset)))
-        }
-        offset += tokenIDLength;
         // extract amount from payload
         uint64 amount;
-        uint8 amountLength = 8; // uint64 = 8 bits
+        uint8 amountLength = 8; // uint64 = 8 bytes
 
-        // Why `add(amountLength, offset)`?
-        // At this point, offset = 56, amountLength = 8. `mload(add(payload, 64))`
-        // reads the next 32 bytes from bytes 32 in paylod, because the first 32 bytes
-        // of payload stores its length. So in reality, bytes 32 - 63 is loaded. During
-        // casting to uint64 (8 bytes), the least sigificiant bytes are retained, namely
-        // `recipientAddress` is bytes 56-63
+        // extract amount from payload
         assembly {
             amount := mload(add(_payload, add(amountLength, offset)))
         }
@@ -573,8 +530,10 @@ library BridgeUtils {
         offset = offset + amountLength;
 
         // extract tx hash from payload
-        bytes memory txHash = new bytes(_payload.length - offset - 2 - 8 - 8 - 1); // -2 for eventIdx, -8 for protocolType, -8 for protocolVersion, -1 for actionType
-        for (uint256 i; i < _payload.length - offset - 2; i++) {
+        // Calculate transaction hash length (remaining bytes minus fixed-size fields at the end)
+        uint256 txHashLength = _payload.length - offset - 2 - 8 - 8 - 8 - 1; // -2 eventIdx, -8 protocolType, -8 protocolVersion, -8 protocolTokenID, -1 actionType
+        bytes memory txHash = new bytes(txHashLength);
+        for (uint256 i; i < txHashLength; i++) {
             txHash[i] = _payload[i + offset];
         }
 
@@ -597,35 +556,38 @@ library BridgeUtils {
         // extract protocolVersion (uint64)
         uint64 protocolVersion;
         assembly {
-            protocolVersion := shr(192, mload(add(add(_payload, 0x20), offset)))
+            protocolVersion :=shr(192, mload(add(add(_payload, 0x20), offset)))
         }
         offset += 8; // uint64 = 8 bytes
+
+        uint64 protocolTokenID;
+        assembly {
+            protocolTokenID := shr(192, mload(add(add(_payload, 0x20), offset)))
+        }
+        offset += 8;
 
         // extract actionType (uint8)
         uint8 actionType = uint8(_payload[offset]);
         
-        return TokenTransferPayloadV3(
+        return DefiTransferPayload(
             senderAddressLength,
             senderAddress,
             targetChain,
-            recipientAddressLength,
-            recipientAddress,
-            tokenID,
             amount,
             txHash,
             eventIdx,
             protocolType,
             protocolVersion,
+            protocolTokenID,
             actionType
         );
-
     }
 
     function decodeInvestAddressPayload(bytes memory _payload) internal pure returns (address) {
         require(_payload.length == 20, "BridgeUtils: Invalid payload length");
         address investAddress;
         assembly {
-            investAddress := mload(add(_payload, 0x20))
+            investAddress := shr(96, mload(add(_payload, 0x20)))
         }
         return investAddress;
     }

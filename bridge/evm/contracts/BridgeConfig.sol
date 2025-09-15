@@ -139,7 +139,7 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         tokenToLP[protocolType][tokenID] = lpTokenId;
         lpToToken[protocolType][lpTokenId] = tokenID;
 
-        emit LpTokenAdded(message.nonce,protocolType,tokenID,lpTokenId);
+        emit LpTokenIdAdded(message.nonce,protocolType,tokenID,lpTokenId);
     }
 
     /// @notice Updates the token price with the provided message if the provided signatures are valid.

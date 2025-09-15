@@ -163,17 +163,18 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
 
         IBridgeConfig config = committee.config();
 
-        BridgeUtils.TokenTransferPayloadV3 memory tokenTransferPayload =
-            BridgeUtils.decodeTokenTransferPayloadV3(message.payload);
+        BridgeUtils.DefiTransferPayload memory defiTransferPayload =
+            BridgeUtils.decodeDefiTransferPayload(message.payload);
         
         require(
-            tokenTransferPayload.targetChain == config.chainID(), "SuiBridge: Invalid target chain"
+            defiTransferPayload.targetChain == config.chainID(), "SuiBridge: Invalid target chain"
         );
 
+        // convert amount to ERC20 token decimals
         uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
-            IERC20Metadata(config.tokenAddressOf(tokenTransferPayload.tokenID)).decimals(),
-            config.tokenSuiDecimalOf(tokenTransferPayload.tokenID),
-            tokenTransferPayload.amount
+            IERC20Metadata(config.tokenAddressOf(defiTransferPayload.protocolTokenID)).decimals(),
+            config.tokenSuiDecimalOf(defiTransferPayload.protocolTokenID),
+            defiTransferPayload.amount
         );
 
         // mark message as processed
@@ -181,21 +182,21 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
 
         _transferTokensFromVault(
             message.chainID,
-            tokenTransferPayload.tokenID,
-            investAddress, //资管合约地址
+            defiTransferPayload.protocolTokenID,
+            address(this), 
             erc20AdjustedAmount
         );
 
        
-        if (tokenTransferPayload.actionType==0) {
+        if (defiTransferPayload.actionType==0) {
             //deposit
-            uint64 lpTokenId = config.investLpTokenIdOf(tokenTransferPayload.protocolType,tokenTransferPayload.tokenID);
+            uint64 lpTokenId = config.investLpTokenIdOf(defiTransferPayload.protocolType,defiTransferPayload.protocolTokenID);
             address lpTokenAddress = config.tokenAddressOf(lpTokenId);
             uint256 beforeLpTokenAmount=IERC20(lpTokenAddress).balanceOf(address(vault));
-
+            IERC20(config.tokenAddressOf(defiTransferPayload.protocolTokenID)).approve(investAddress,erc20AdjustedAmount);
             IArrow(investAddress).deposit(
-                 tokenTransferPayload.protocolType,
-                 config.tokenAddressOf(tokenTransferPayload.tokenID),
+                 defiTransferPayload.protocolType,
+                 config.tokenAddressOf(defiTransferPayload.protocolTokenID),
                  erc20AdjustedAmount            
             );
             uint256 afterLpTokenAmount=IERC20(lpTokenAddress).balanceOf(address(vault));
@@ -206,24 +207,25 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 message.chainID,
                 message.nonce,
                 config.chainID(),
-                tokenTransferPayload.tokenID,
-                erc20AdjustedAmount,
-                tokenTransferPayload.senderAddress,
-                tokenTransferPayload.recipientAddress,
-                lpTokenId,
+                defiTransferPayload.senderAddress,
+                investAddress,
+                0,
                 lpAmount,
-                tokenTransferPayload.protocolType,
-                tokenTransferPayload.protocolVersion,
-                tokenTransferPayload.actionType
+                defiTransferPayload.protocolType,
+                defiTransferPayload.protocolVersion,
+                defiTransferPayload.protocolTokenID,
+                defiTransferPayload.actionType
             );
-        }else if (tokenTransferPayload.actionType==1){
-            uint64 tokenId = config.underlyingTokenIdOf(tokenTransferPayload.protocolType,tokenTransferPayload.tokenID);
+        }else if (defiTransferPayload.actionType==1){
+            uint64 tokenId = config.underlyingTokenIdOf(defiTransferPayload.protocolType,defiTransferPayload.protocolTokenID);
             address tokenAddress = config.tokenAddressOf(tokenId);
             uint256 beforeTokenAmount=IERC20(tokenAddress).balanceOf(address(vault));
+
+            IERC20(config.tokenAddressOf(defiTransferPayload.protocolTokenID)).approve(investAddress,erc20AdjustedAmount);
             //withdraw
             IArrow(investAddress).withdraw(
-                tokenTransferPayload.protocolType,
-                config.tokenAddressOf(tokenTransferPayload.tokenID), //lp token
+                defiTransferPayload.protocolType,
+                config.tokenAddressOf(defiTransferPayload.protocolTokenID), //lp token
                 erc20AdjustedAmount
             );
 
@@ -236,15 +238,14 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 message.chainID,
                 message.nonce,
                 config.chainID(),
-                tokenTransferPayload.tokenID,
+                defiTransferPayload.senderAddress,
+                investAddress, 
+                tokenAmount, // aave redeem token (usdc/usdt)
                 erc20AdjustedAmount,
-                tokenTransferPayload.senderAddress,
-                tokenTransferPayload.recipientAddress,
-                tokenId,
-                tokenAmount,
-                tokenTransferPayload.protocolType,
-                tokenTransferPayload.protocolVersion,
-                tokenTransferPayload.actionType
+                defiTransferPayload.protocolType,
+                defiTransferPayload.protocolVersion,
+                defiTransferPayload.protocolTokenID,
+                defiTransferPayload.actionType
             );
 
         }else{

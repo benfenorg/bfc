@@ -4,7 +4,13 @@ pragma solidity ^0.8.20;
 import "./BridgeBaseTest.t.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "../contracts/interfaces/ISuiBridge.sol";
+import "../contracts/interfaces/IBridgeConfig.sol";
 import "./mocks/MockSuiBridgeV2.sol";
+
+import {MockLPToken} from "./mocks/MockTokens.sol";
+
+
+import {MockArrow} from "./mocks/MockArrow.sol";
 import {console2} from "forge-std/console2.sol";
 
 
@@ -14,10 +20,130 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         setUpBridgeTest();
     }
 
+
+    function addLpToken(address lpToken,uint64 tokenID)internal{
+        // Create update tokens payload
+        bool _isNative = true;
+        uint8 _numTokenIDs = 1;
+        uint64 tokenID1 = tokenID;
+        uint8 _numAddresses = 1;
+        address address1 = lpToken;
+        uint8 _numSuiDecimals = 1;
+        uint8 suiDecimal1 = 6;
+        uint8 _numPrices = 1;
+        uint64 price1 = 100_000 * USD_VALUE_MULTIPLIER;
+
+        bytes memory payload = abi.encodePacked(
+            _isNative,
+            _numTokenIDs,
+            tokenID1,
+            _numAddresses,
+            address1,
+            _numSuiDecimals,
+            suiDecimal1,
+            _numPrices,
+            price1
+        );
+
+        // Create transfer message
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.ADD_EVM_TOKENS,
+            version: 1,
+            nonce: 0,
+            chainID: 1,
+            payload: payload
+        });
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+        config.addTokensWithSignatures(signatures, message);
+        assertTrue(config.isTokenSupported(tokenID));
+    }
+
+    function addLpTokenID(uint64 protocolType, uint64 tokenID, uint64 lpTokenId) public {
+        bytes memory payload = abi.encodePacked(
+            protocolType,
+            tokenID,
+            lpTokenId
+        );
+
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.ADD_LP_TOKEN_ID,
+            version: 1,
+            nonce: 0,
+            chainID: 1,
+            payload: payload
+        });
+
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);  
+        config.addLpTokenIdWithSignatures(signatures, message);
+    }
+
+    function setInvestContract(address investAddress) public {
+        bytes memory payload = abi.encodePacked(
+           investAddress
+        );
+
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.UPDATE_INVEST_ADDRESS,
+            version: 1,
+            nonce: 0,
+            chainID: 1,
+            payload: payload
+        });
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);  
+        bridge.updateInvestAddressWithSignatures(signatures, message);
+    }
+
     function testSuiBridgeInitialization() public {
         assertEq(address(bridge.committee()), address(committee));
         assertEq(address(bridge.vault()), address(vault));
     }
+
+
+    function createLpToken() public returns(address) {
+        MockLPToken lpToken = new MockLPToken();
+        //lpToken.mint(address(this), 1000000);
+        // arrow.setLpToken(USDC, address(lpToken));
+        return address(lpToken);
+    }
+
+
+    function mintLpToken(address lpToken, address receiver,  uint256 amount) public {
+        MockLPToken(lpToken).mint(address(receiver), amount);
+    }
+
+
+
 
     function testTransferBridgedTokensWithSignaturesTokenDailyLimitExceeded() public {
         uint8 senderAddressLength = 32;
@@ -153,7 +279,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         signatures[1] = getSignature(messageHash, committeeMemberPkB);
         vm.expectRevert(bytes("MessageVerifier: message does not match type"));
         bridge.transferBridgedTokensWithSignatures(signatures, message);
-    }
+    } 
 
     function testTransferWETHWithValidSignatures() public {
         // Fill vault with WETH
@@ -205,6 +331,170 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
 
         vm.expectRevert(bytes("SuiBridge: Message already processed"));
         bridge.transferBridgedTokensWithSignatures(signatures, message);
+    }
+
+    function testInvestStakedUSDCWithValidSignatures() public {
+        //部署invest 合约
+        MockArrow arrow = new MockArrow(address(vault));
+        uint64 protocolType = 0;
+        uint64 tokenID = BridgeUtils.USDC;
+        uint64 lpTokenId = 100;
+
+        address lpToken = createLpToken();
+        //设置lp token
+        arrow.setLpToken(USDC, lpToken);
+        //给资管合约 mint lpToken
+        mintLpToken(lpToken, address(arrow), 1000000000000000);
+        //添加lp token
+        addLpToken(lpToken, lpTokenId);
+
+        //添加lp token id
+        addLpTokenID(protocolType, tokenID, lpTokenId);
+        //设置invest合约
+        setInvestContract(address(arrow));
+
+        //构造stake calldata
+        changePrank(USDCWhale);
+        IERC20(USDC).transfer(address(vault), 100_000_000);
+        changePrank(deployer);
+
+        // Create Defi payload
+        uint8 senderAddressLength = 32;
+        bytes memory senderAddress = abi.encode(0);
+        uint8 targetChain = chainID;
+        uint8 recipientAddressLength = 20;
+        address recipientAddress = bridgerA;
+        uint64 amount = 1_000_000;
+        uint16 eventIdx = 0;
+        //uint64 protocolType=1; 
+        uint64 protocolVersion=1;
+        uint64 protocolTokenID=tokenID;
+        uint8 actionType=0;
+
+        bytes memory payload = abi.encodePacked(
+            senderAddressLength,
+            senderAddress,
+            targetChain,
+            amount,
+            new bytes(0),
+            eventIdx,
+            protocolType,
+            protocolVersion,
+            protocolTokenID,
+            actionType
+        );
+
+        // Create Defi message
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.DEFI,
+            version: 1,
+            nonce: 1,
+            chainID: 0,
+            payload: payload
+        });
+
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        //signatures
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+        uint256 bbalance=IERC20(lpToken).balanceOf(address(vault));
+
+        //调用
+        bridge.investBridgedTokensWithSignatures(signatures, message);
+
+        uint256 abalance=IERC20(lpToken).balanceOf(address(vault));
+
+        assertEq(abalance-bbalance,amount);
+    }
+
+    function testInvestUnStakedUSDCWithValidSignatures() public {
+         //部署invest 合约
+        MockArrow arrow = new MockArrow(address(vault));
+        uint64 protocolType = 0;
+        uint64 tokenID = BridgeUtils.USDC;
+        uint64 lpTokenId = 100;
+
+        address lpToken = createLpToken();
+        //设置lp token
+        arrow.setAsset(USDC, lpToken);
+        //给资管合约 mint lpToken
+        mintLpToken(lpToken, address(vault), 1000000000000000);
+        //添加lp token
+        addLpToken(lpToken, lpTokenId);
+
+        //添加lp token id
+        addLpTokenID(protocolType, tokenID, lpTokenId);
+        //设置invest合约
+        setInvestContract(address(arrow));
+
+        //构造stake calldata
+        changePrank(USDCWhale);
+        IERC20(USDC).transfer(address(arrow), 100_000_000_000);
+        changePrank(deployer);
+
+        // Create Defi payload
+        uint8 senderAddressLength = 32;
+        bytes memory senderAddress = abi.encode(0);
+        uint8 targetChain = chainID;
+        uint8 recipientAddressLength = 20;
+        address recipientAddress = bridgerA;
+        uint64 amount = 1_000_000;
+        uint16 eventIdx = 0;
+        //uint64 protocolType=1; 
+        uint64 protocolVersion=1;
+        uint64 protocolTokenID=lpTokenId;
+        uint8 actionType=1;
+
+        bytes memory payload = abi.encodePacked(
+            senderAddressLength,
+            senderAddress,
+            targetChain,
+            amount,
+            new bytes(0),
+            eventIdx,
+            protocolType,
+            protocolVersion,
+            protocolTokenID,
+            actionType
+        );
+
+        // Create Defi message
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.DEFI,
+            version: 1,
+            nonce: 1,
+            chainID: 0,
+            payload: payload
+        });
+
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        //signatures
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+        uint256 bbalance=IERC20(USDC).balanceOf(address(vault));
+
+        //调用
+        bridge.investBridgedTokensWithSignatures(signatures, message);
+
+        uint256 abalance=IERC20(USDC).balanceOf(address(vault));
+
+        assertEq(abalance-bbalance,amount);
     }
 
     function testTransferUSDCWithValidSignatures() public {
@@ -260,26 +550,6 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         changePrank(USDCWhale);
         IERC20(USDC).transfer(address(vault), 100_000_000);
         changePrank(deployer);
-
-          
-
-        // BridgeUtils.TokenTransferPayload memory payload = BridgeUtils.TokenTransferPayload({
-        //     senderAddressLength: 32,
-        //     senderAddress: abi.encode(hex"80ab1ee086210a3a37355300ca24672e81062fcdb5ced6618dab203f6a3b291c"),
-        //     targetChain: chainID,
-        //     recipientAddressLength: 20,
-        //     recipientAddress: bridgerA,
-        //     tokenID: BridgeUtils.USDC,
-        //     // This is Sui amount (usdc decimal 9)
-        //     amount: 1_000_000_000,
-        //     txHash: new bytes(0),
-        //     eventIdx: 0
-        // });
-
-        // console2.log("test1234",payload.senderAddressLength);
-
-
-
         // // Create transfer payload
         uint8 senderAddressLength = 32;
         bytes memory senderAddress = hex"80ab1ee086210a3a37355300ca24672e81062fcdb5ced6618dab203f6a3b291c";

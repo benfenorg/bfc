@@ -75,5 +75,5 @@ interface IBridgeConfig {
     event TokenPriceUpdated(uint64 tokenID, uint64 tokenPrice);
 
 
-    event LpTokenAdded(uint64 nonce,uint64 protocolType,uint64 underlyingTokenId,uint64 lpTokenId);
+    event LpTokenIdAdded(uint64 nonce,uint64 protocolType,uint64 underlyingTokenId,uint64 lpTokenId);
 }
