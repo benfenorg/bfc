@@ -480,9 +480,24 @@ mod tests {
     }
 
     #[test]
+    fn test_split_to_two_value_boundary() -> Result<(), Box<dyn std::error::Error>>{
+        let mask_secret = 0x1234567890ABCDEFu64;
+        let resutl = &split_to_two_value(0, mask_secret);
+        let shares = recover_two_shares(resutl.0.to_string(), resutl.1.to_string())?;
+        let value = recover_secret_with_xor(&shares[..THRESHOLD], THRESHOLD, mask_secret)?;
+        assert_eq!(value, 0);
+
+        let resutl = &split_to_two_value(u64::MAX, mask_secret);
+        let shares = recover_two_shares(resutl.0.to_string(), resutl.1.to_string())?;
+        let value = recover_secret_with_xor(&shares[..THRESHOLD], THRESHOLD, mask_secret)?;
+        assert_eq!(value, u64::MAX);
+        Ok(())
+    }
+
+    #[test]
     fn test_invalid_share_vectors() {
         let mask_secret = 0x1234567890ABCDEFu64;
-        
+
         // Test with insufficient shares (only one share instead of two)
         let single_share = vec![create_test_share(1, vec![1, 2, 3])];
         let valid_shares = create_shares_from_hex(

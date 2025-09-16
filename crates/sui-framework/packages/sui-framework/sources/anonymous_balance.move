@@ -45,21 +45,6 @@ public struct Anonymous_Balance<phantom T> has store {
     version: u8,
 }
 
-
-public fun convert_to_string( mut value: u64): vector<u8> {
-if (value == 0) {
-return string::utf8(b"0").into_bytes()
-};
-let mut buffer = vector::empty<u8>();
-while (value != 0) {
-vector::push_back(&mut buffer, ((48 + value % 10) as u8));
-value = value / 10;
-};
-vector::reverse(&mut buffer);
-string::utf8(buffer).into_bytes()
-}
-
-
 public fun create_by_value<T>(value: u64): Anonymous_Balance<T> {
     let mut encode_data = string::utf8(b"");
     let balance_type = BALANCE_TYPE_SHARING;

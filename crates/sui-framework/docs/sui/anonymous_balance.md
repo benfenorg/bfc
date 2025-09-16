@@ -10,7 +10,6 @@ custom coins with <code><a href="../sui/anonymous_balance.md#sui_anonymous_balan
 -  [Struct `Supply`](#sui_anonymous_balance_Supply)
 -  [Struct `Anonymous_Balance`](#sui_anonymous_balance_Anonymous_Balance)
 -  [Constants](#@Constants_0)
--  [Function `convert_to_string`](#sui_anonymous_balance_convert_to_string)
 -  [Function `create_by_value`](#sui_anonymous_balance_create_by_value)
 -  [Function `value1`](#sui_anonymous_balance_value1)
 -  [Function `value2`](#sui_anonymous_balance_value2)
@@ -165,39 +164,6 @@ For when an overflow is happening on Supply operations.
 </code></pre>
 
 
-
-<a name="sui_anonymous_balance_convert_to_string"></a>
-
-## Function `convert_to_string`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_convert_to_string">convert_to_string</a>(value: u64): vector&lt;u8&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_convert_to_string">convert_to_string</a>( <b>mut</b> value: u64): vector&lt;u8&gt; {
-<b>if</b> (value == 0) {
-<b>return</b> string::utf8(b"0").into_bytes()
-};
-<b>let</b> <b>mut</b> buffer = vector::empty&lt;u8&gt;();
-<b>while</b> (value != 0) {
-vector::push_back(&<b>mut</b> buffer, ((48 + value % 10) <b>as</b> u8));
-value = value / 10;
-};
-vector::reverse(&<b>mut</b> buffer);
-string::utf8(buffer).into_bytes()
-}
-</code></pre>
-
-
-
-</details>
 
 <a name="sui_anonymous_balance_create_by_value"></a>
 
