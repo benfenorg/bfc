@@ -544,6 +544,27 @@ impl DataMapper<RawEthData, ProcessedTxnData> for EthDataMapper {
                         }),
                     }));
                 }
+                EthSuiBridgeEvents::TokensStakedFilter(bridge_event) => {
+                    info!(
+                        "Observed Eth Tokens Staked at block: {}, tx_hash: {}",
+                        log.block_number(),
+                        log.tx_hash
+                    );
+                }
+                EthSuiBridgeEvents::TokensUnStakedFilter(bridge_event) => {
+                    info!(
+                        "Observed Eth Tokens UnStaked at block: {}, tx_hash: {}",
+                        log.block_number(),
+                        log.tx_hash
+                    );
+                }
+                EthSuiBridgeEvents::UpdateInvestAddressFilter(bridge_event) => {
+                    info!(
+                        "Observed Eth Update Invest Address at block: {}, tx_hash: {}",
+                        log.block_number(),
+                        log.tx_hash
+                    );
+                }
                 EthSuiBridgeEvents::TokensClaimedFilter(bridge_event) => {
                     info!(
                         "Observed Eth Claim at block: {}, tx_hash: {}",
@@ -741,6 +762,13 @@ impl DataMapper<RawEthData, ProcessedTxnData> for EthDataMapper {
                 }
             },
             EthBridgeEvent::EthBridgeConfigEvents(bridge_event) => match &bridge_event {
+                EthBridgeConfigEvents::LpTokenAddedFilter(_) => {
+                    info!(
+                        "Observed Eth LpToken Added at block: {}, tx_hash: {}",
+                        log.block_number(),
+                        log.tx_hash
+                    );
+                }
                 EthBridgeConfigEvents::TokenPriceUpdatedFilter(_) => {
                     info!(
                         "Observed Eth TokenPrices Update at block: {}, tx_hash: {}",

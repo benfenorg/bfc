@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::abi::EthToSuiTokenBridgeV1;
+use crate::abi::{EthToSuiDefiBridgeV1, EthToSuiTokenBridgeV1};
 use crate::crypto::BridgeAuthorityPublicKeyBytes;
 use crate::crypto::{
     BridgeAuthorityPublicKey, BridgeAuthorityRecoverableSignature, BridgeAuthoritySignInfo,
@@ -308,6 +308,13 @@ pub struct EthToSuiBridgeAction {
     pub eth_bridge_event: EthToSuiTokenBridgeV1,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct EthToSuiDefiBridgeAction {
+    pub eth_tx_hash: EthTransactionHash,
+    pub eth_event_index: u16,
+    pub eth_bridge_event: EthToSuiDefiBridgeV1,
+}
+
 #[derive(
     Debug,
     Serialize,
@@ -543,6 +550,7 @@ pub enum BridgeAction {
     ExternalDepositStartBridgeAction(ExternalDepositStartBridgeAction),
     /// Eth to sui bridge action
     EthToSuiBridgeAction(EthToSuiBridgeAction),
+    EthToSuiDefiBridgeAction(EthToSuiDefiBridgeAction),
     BlocklistCommitteeAction(BlocklistCommitteeAction),
     RefundAdminAction(RefundAdminAction),
     FastPathLimitUpdateAction(FastPathLimitUpdateAction),
@@ -589,6 +597,7 @@ impl BridgeAction {
             BridgeAction::EthSendBackBridgeAction(a) => a.sui_bridge_event.sui_chain_id,
             BridgeAction::ExternalDepositStartBridgeAction(a) => a.sui_bridge_event.source_chain,
             BridgeAction::EthToSuiBridgeAction(a) => a.eth_bridge_event.eth_chain_id,
+            BridgeAction::EthToSuiDefiBridgeAction(a) => a.eth_bridge_event.eth_chain_id,
             BridgeAction::BlocklistCommitteeAction(a) => a.chain_id,
             BridgeAction::EmergencyAction(a) => a.chain_id,
             BridgeAction::LimitUpdateAction(a) => a.chain_id,
@@ -650,7 +659,7 @@ impl BridgeAction {
             BridgeAction::EthSendBackBridgeAction(_) => BridgeActionType::TokenTransfer,
             BridgeAction::ExternalDepositStartBridgeAction(_) => BridgeActionType::TokenTransfer,
             BridgeAction::EthToSuiBridgeAction(_) => BridgeActionType::TokenTransfer,
-            BridgeAction::SuiToEthDefiBridgeAction(_) => BridgeActionType::DefiTransferOut,
+            BridgeAction::EthToSuiDefiBridgeAction(_) => BridgeActionType::DefiTransferIn,
             BridgeAction::BlocklistCommitteeAction(_) => BridgeActionType::UpdateCommitteeBlocklist,
             BridgeAction::EmergencyAction(_) => BridgeActionType::EmergencyButton,
             BridgeAction::LimitUpdateAction(_) => BridgeActionType::LimitUpdate,
@@ -683,6 +692,7 @@ impl BridgeAction {
             BridgeAction::EthSendBackBridgeAction(a) => a.sui_bridge_event.nonce,
             BridgeAction::ExternalDepositStartBridgeAction(a) => a.sui_bridge_event.nonce,
             BridgeAction::EthToSuiBridgeAction(a) => a.eth_bridge_event.nonce,
+            BridgeAction::EthToSuiDefiBridgeAction(a) => a.eth_bridge_event.nonce,
             BridgeAction::BlocklistCommitteeAction(a) => a.nonce,
             BridgeAction::EmergencyAction(a) => a.nonce,
             BridgeAction::LimitUpdateAction(a) => a.nonce,
@@ -714,6 +724,7 @@ impl BridgeAction {
             BridgeAction::EthSendBackBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::ExternalDepositStartBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::EthToSuiBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
+            BridgeAction::EthToSuiDefiBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::BlocklistCommitteeAction(_) => APPROVAL_THRESHOLD_COMMITTEE_BLOCKLIST,
             BridgeAction::EmergencyAction(a) => match a.action_type {
                 EmergencyActionType::Pause => APPROVAL_THRESHOLD_EMERGENCY_PAUSE,

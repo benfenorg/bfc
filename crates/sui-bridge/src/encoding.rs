@@ -4,6 +4,7 @@
 use crate::types::AddTokensOnEvmAction;
 use crate::types::AddTokensOnSuiAction;
 use crate::types::AddTokenOnTokenListAction;
+use crate::types::EthToSuiDefiBridgeAction;
 use crate::types::RemoveTokenOnTokenListAction;
 use crate::types::AddExternalCoinAdminAction;
 use crate::types::FastPathLimitUpdateAction;
@@ -334,6 +335,59 @@ impl BridgeMessageEncoding for EthToSuiBridgeAction {
 
         //add fast path selector
         bytes.push(e.fast_path_selector as u8);
+
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for EthToSuiDefiBridgeAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.eth_bridge_event;
+        // Add message type
+        bytes.push(BridgeActionType::DefiTransferIn as u8);
+        // Add message version
+        bytes.push(DEFI_TRANSFER_IN_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&e.nonce.to_be_bytes());
+        // Add source chain id
+        bytes.push(e.eth_chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.eth_bridge_event;
+
+        // Add source address length
+        bytes.push(EthAddress::len_bytes() as u8);
+        // Add source address
+        bytes.extend_from_slice(e.eth_address.as_bytes());
+        // Add target chain id
+        bytes.push(e.sui_chain_id as u8);
+        // Add amount
+        bytes.extend_from_slice(&e.sui_adjusted_amount.to_be_bytes());
+        // Add tx hash
+        bytes.push(e.tx_hash.len() as u8);
+        bytes.extend_from_slice(&e.tx_hash.to_vec());
+        // Add event idx
+        bytes.extend_from_slice(&e.event_idx.to_be_bytes());
+        // Add fast path selector
+        bytes.push(e.fast_path_selector as u8);
+        // Add protocol type
+        bytes.extend_from_slice(&e.protocol_type.to_be_bytes());
+        // Add protocol version
+        bytes.extend_from_slice(&e.protocol_version.to_be_bytes());
+        // Add protocol token id
+        bytes.extend_from_slice(&e.protocol_token_id.to_be_bytes());
+        // Add original seq num
+        bytes.extend_from_slice(&e.original_seq_num.to_be_bytes());
+        // Add action type
+        bytes.push(e.action_type as u8);
 
         bytes
     }
