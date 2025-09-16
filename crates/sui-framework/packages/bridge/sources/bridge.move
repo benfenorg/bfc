@@ -134,6 +134,17 @@ module bridge::bridge {
         action_type: u8,
     }
 
+    public struct DefiTokensStakedEvent has copy, drop {
+        seq_num: u64,
+        source_chain: u8,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        lp_token_amount: u64,
+    }
+
     public struct DefiUnstakeEvent has copy, drop {
         seq_num: u64,
         source_chain: u8,
@@ -616,11 +627,10 @@ module bridge::bridge {
         bridge: &mut Bridge,
         bfc_system_state: &mut BfcSystemState,
         target_chain: u8,
-        target_address: vector<u8>,
         mut token: Coin<T>,
         protocol_type: u64,
         protocol_version: u64,
-        token_id_expect: u64,
+        protocol_token_id: u64,
         ctx: &mut TxContext
     ) {
         // TODO more check
@@ -632,17 +642,36 @@ module bridge::bridge {
 
         let token_amount = token.balance().value();
         assert!(token_amount > 0, ETokenValueIsZero);
-        let fee = bridge_fee::calculate_cross_out_fee_amount(bridge_id, target_chain as u64, token_id_expect, token_amount);
+        let fee = bridge_fee::calculate_cross_out_fee_amount(bridge_id, target_chain as u64, protocol_token_id, token_amount);
         assert!(token_amount > fee, EInputAmountLteBridgeFee);
         let amount_after_fee = token_amount - fee;
         let fee_coin = token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(bridge_id, fee_coin);
 
-        // TODO: create bridge message
-
+        let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::defi());
+        let message = message::create_defi_transfer_out_message(
+            inner.chain_id,
+            bridge_seq_num,
+            address::to_bytes(ctx.sender()),
+            target_chain,
+            amount_after_fee,
+            hex::decode(b""),
+            0u16,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            STAKE
+        );
 
         bfc_system_state.burn_stable(token, ctx);
-        let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::defi());
+        inner.token_transfer_records.push_back(
+            message.key(),
+            BridgeRecord {
+                message,
+                verified_signatures: option::none(),
+                claimed: false,
+            },
+        );
 
         emit(
             DefiTransferOutEvent {
@@ -654,7 +683,7 @@ module bridge::bridge {
                 amount_after_fee,
                 protocol_type,
                 protocol_version,
-                protocol_token_id: token_id_expect,
+                protocol_token_id: protocol_token_id,
                 action_type: STAKE,
             },
         );
