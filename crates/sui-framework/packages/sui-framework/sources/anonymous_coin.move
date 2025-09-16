@@ -75,14 +75,20 @@ module sui::anonymous_coin {
     //     transfer::public_transfer(normal_coin, tx_context::sender(ctx));
     // }
 
-    entry public fun swap_out_with_amount<T1, T2>(anonymous_coin: &mut Anonymous_Coin<T1>,
+    entry public fun swap_out_with_amount<T1, T2>(mut anonymous_coin: Anonymous_Coin<T1>,
                                                   swap_out_amount: u64,
                                                   swap_pool: &mut SwapPool<T1, T2>,
                                                   ctx: &mut TxContext) {
         assert!(swap_out_amount <= swap_pool.max_availalbe_normal_coin, ENotEnough);
-
+        let compare_result = anonymous_coin.compare(swap_out_amount);
         let swap_out_acoin = anonymous_coin.split(swap_out_amount, ctx);
         join(&mut swap_pool.anonymous_coin, swap_out_acoin);
+
+        if (compare_result == 0) {
+            anonymous_coin.destry_zero();
+        } else {
+            transfer::public_transfer(anonymous_coin, tx_context::sender(ctx));
+        };
 
         let normal_coin = coin::split(&mut swap_pool.normal_coin, swap_out_amount, ctx);
         swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin - swap_out_amount;
@@ -228,6 +234,10 @@ module sui::anonymous_coin {
         take(&mut self.balance, split_amount, ctx)
     }
 
+    public fun compare<T>(self: &mut Anonymous_Coin<T>, amount: u64) : u8 {
+        self.balance.compare(amount)
+    }
+
     /// Make any Coin with a zero value. Useful for placeholding
     /// bids/payments or preemptively making empty balances.
     public fun zero<T>(ctx: &mut TxContext): Anonymous_Coin<T> {
@@ -235,11 +245,10 @@ module sui::anonymous_coin {
     }
 
     /// Destroy a coin with value zero
-    public fun destroy_zero<T>(c: Anonymous_Coin<T>, signatures: vector<u8>, publickey: vector<u8>) {
+    public fun destry_zero<T>(c: Anonymous_Coin<T>) {
         let Anonymous_Coin { id, balance } = c;
-        let address = object::uid_to_address(&id);
         id.delete();
-        balance.destroy_zero(signatures, address, publickey)
+        balance.destroy_zero()
     }
 
     // === Registering new coin types and managing the coin supply ===

@@ -152,6 +152,10 @@ public fun join<T>(self: &mut Anonymous_Balance<T>, balance: Anonymous_Balance<T
     (self.value1, self.value2)
 }
 
+public fun compare<T>(self: &mut Anonymous_Balance<T>, value: u64): u8 {
+    hfe_ops_compare_value(string::into_bytes(self.value1), string::into_bytes(self.value2), value)
+}
+
 /// Split a `Balance` and take a sub balance from it.
 public fun split<T>(self: &mut Anonymous_Balance<T>, value: u64): Anonymous_Balance<T> {
     let compare_result: u8 = hfe_ops_compare_value(string::into_bytes(self.value1), string::into_bytes(self.value2), value);
@@ -179,9 +183,9 @@ public fun split<T>(self: &mut Anonymous_Balance<T>, value: u64): Anonymous_Bala
 // }
 
 /// Destroy a zero `Balance`.
-public fun destroy_zero<T>(balance: Anonymous_Balance<T>, signatures: vector<u8>, id: address, publickey: vector<u8>) {
-    let value = hfe_ops_restore_value(string::into_bytes(balance.value1), string::into_bytes(balance.value2), signatures, id, publickey);
-    assert!(value == 0, ENonZero);
+public fun destroy_zero<T>(balance: Anonymous_Balance<T>) {
+    let compare_result = hfe_ops_compare_value(string::into_bytes(balance.value1), string::into_bytes(balance.value2), 0);
+    assert!(compare_result == 0, ENonZero);
     let Anonymous_Balance {
         encode_data: _,
         version: _,

@@ -2116,6 +2116,9 @@ update_encode_data
 join
 	public fun
 	0x2::anonymous_balance
+compare
+	public fun
+	0x2::anonymous_balance
 split
 	public fun
 	0x2::anonymous_balance
@@ -2194,10 +2197,13 @@ join
 split
 	public fun
 	0x2::anonymous_coin
+compare
+	public fun
+	0x2::anonymous_coin
 zero
 	public fun
 	0x2::anonymous_coin
-destroy_zero
+destry_zero
 	public fun
 	0x2::anonymous_coin
 create_currency

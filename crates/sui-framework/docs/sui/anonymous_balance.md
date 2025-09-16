@@ -21,6 +21,7 @@ custom coins with <code><a href="../sui/anonymous_balance.md#sui_anonymous_balan
 -  [Function `zero`](#sui_anonymous_balance_zero)
 -  [Function `update_encode_data`](#sui_anonymous_balance_update_encode_data)
 -  [Function `join`](#sui_anonymous_balance_join)
+-  [Function `compare`](#sui_anonymous_balance_compare)
 -  [Function `split`](#sui_anonymous_balance_split)
 -  [Function `destroy_zero`](#sui_anonymous_balance_destroy_zero)
 -  [Function `destroy_supply`](#sui_anonymous_balance_destroy_supply)
@@ -486,6 +487,30 @@ Join two balances together.
 
 </details>
 
+<a name="sui_anonymous_balance_compare"></a>
+
+## Function `compare`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_compare">compare</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, value: u64): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_compare">compare</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, value: u64): u8 {
+    hfe_ops_compare_value(string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>), string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>), value)
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="sui_anonymous_balance_split"></a>
 
 ## Function `split`
@@ -528,7 +553,7 @@ Split a <code>Balance</code> and take a sub balance from it.
 Destroy a zero <code>Balance</code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_destroy_zero">destroy_zero</a>&lt;T&gt;(<a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, signatures: vector&lt;u8&gt;, id: <b>address</b>, publickey: vector&lt;u8&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_destroy_zero">destroy_zero</a>&lt;T&gt;(<a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;)
 </code></pre>
 
 
@@ -537,9 +562,9 @@ Destroy a zero <code>Balance</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_destroy_zero">destroy_zero</a>&lt;T&gt;(<a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, signatures: vector&lt;u8&gt;, id: <b>address</b>, publickey: vector&lt;u8&gt;) {
-    <b>let</b> value = hfe_ops_restore_value(string::into_bytes(<a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>), string::into_bytes(<a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>), signatures, id, publickey);
-    <b>assert</b>!(value == 0, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_ENonZero">ENonZero</a>);
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_destroy_zero">destroy_zero</a>&lt;T&gt;(<a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;) {
+    <b>let</b> compare_result = hfe_ops_compare_value(string::into_bytes(<a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>), string::into_bytes(<a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>), 0);
+    <b>assert</b>!(compare_result == 0, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_ENonZero">ENonZero</a>);
     <b>let</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a> {
         encode_data: _,
         version: _,
