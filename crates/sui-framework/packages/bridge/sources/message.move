@@ -119,6 +119,7 @@ module bridge::message {
         protocol_type: u64,// 0:aave, 1:compound, 2:curve 等等
         protocol_version: u64,
         protocol_token_id: u64,
+        original_seq_num: u64,
         action_type: u8, // 0:stake, 1:unstake
     }
 
@@ -1370,6 +1371,7 @@ module bridge::message {
         let protocol_type = peel_u64_be(&mut bcs);
         let protocol_version = peel_u64_be(&mut bcs);
         let protocol_token_id = peel_u64_be(&mut bcs);
+        let original_seq_num = peel_u64_be(&mut bcs);
         let action_type = bcs.peel_u8();
         chain_ids::assert_valid_chain_id(target_chain);
         assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
@@ -1384,6 +1386,7 @@ module bridge::message {
             protocol_type,
             protocol_version,
             protocol_token_id,
+            original_seq_num,
             action_type
         }
     }
@@ -1605,6 +1608,10 @@ module bridge::message {
 
     public fun protocol_token_id_defi_in(self: &DefiTransferInPayload): u64 {
         self.protocol_token_id
+    }
+
+    public fun original_seq_num_defi_in(self: &DefiTransferInPayload): u64 {
+        self.original_seq_num
     }
 
     public fun action_type_defi_in(self: &DefiTransferInPayload): u8 {
@@ -1999,6 +2006,7 @@ module bridge::message {
             protocol_type,
             protocol_version,
             protocol_token_id,
+            original_seq_num: 0u64,
             action_type,
         }
     }

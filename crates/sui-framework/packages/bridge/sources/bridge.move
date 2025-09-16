@@ -135,6 +135,7 @@ module bridge::bridge {
     }
 
     public struct DefiTokensStakedEvent has copy, drop {
+        original_seq_num: u64,
         seq_num: u64,
         source_chain: u8,
         sender_address: vector<u8>,
@@ -145,7 +146,8 @@ module bridge::bridge {
         lp_token_amount: u64,
     }
 
-    public struct DefiUnstakeEvent has copy, drop {
+    public struct DefiTokensUnstakeEvent has copy, drop {
+        original_seq_num: u64,
         seq_num: u64,
         source_chain: u8,
         target_chain: u8,
@@ -2274,7 +2276,8 @@ module bridge::bridge {
         
         record.claimed = true;
         emit(TokenTransferClaimed { message_key: key });
-        emit(DefiUnstakeEvent {
+        emit(DefiTokensUnstakeEvent {
+            original_seq_num: defi_payload.original_seq_num_defi_in(),
             seq_num: bridge_seq_num,
             source_chain: source_chain,
             target_chain: target_chain,
