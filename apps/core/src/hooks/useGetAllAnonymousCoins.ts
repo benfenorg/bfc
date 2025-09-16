@@ -68,10 +68,12 @@ export const useGetAllAnonymousCoins = (address?: string | null, typeFilter?: st
 						.filter((row): row is AnonymousCoinFields => !!row),
 				);
 
-				cursor = data.nextCursor;
-				if (!data.hasNextPage) {
-					break;
-				}
+				break;
+				// 暂时不获取所有
+				// cursor = data.nextCursor;
+				// if (!data.hasNextPage) {
+				// 	break;
+				// }
 			}
 
 			return result;

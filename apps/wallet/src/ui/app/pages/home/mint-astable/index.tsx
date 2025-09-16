@@ -8,7 +8,6 @@ import { Button } from '_app/shared/ButtonUI';
 import { Text } from '_app/shared/text';
 import Overlay from '_src/ui/app/components/overlay';
 import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
-import { useChainData } from '_src/ui/app/hooks';
 import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
 import { useDryRunTransaction } from '_src/ui/app/hooks/useDryRunTransaction';
 import { useSigner } from '_src/ui/app/hooks/useSigner';
@@ -27,6 +26,7 @@ import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 
 const initialValues = {
+	pkg: '',
 	capId: '',
 	amount: '',
 };
@@ -34,6 +34,7 @@ const initialValues = {
 type FormValues = typeof initialValues;
 
 const validationSchema = Yup.object({
+	pkg: Yup.string().required(),
 	capId: Yup.string().required('Cap ID is a required field'),
 	amount: Yup.mixed<BigNumber>()
 		.transform((_, original) => new BigNumber(original))
@@ -50,7 +51,6 @@ export const MintAstable = () => {
 	const dryrun = useDryRunTransaction();
 	const signer = useSigner(activeAccount);
 
-	const { ANONYMOUS_STABLE_PKG } = useChainData();
 	const { data: caps } = useGetAllAnonymousTreasuryCaps(activeAccount?.address);
 
 	const { mutateAsync: mint } = useMutation({
@@ -59,7 +59,7 @@ export const MintAstable = () => {
 			const tx = new Transaction();
 			const bn = new BigNumber(values.amount).shiftedBy(BFC_DECIMALS).toString();
 			tx.moveCall({
-				target: `${ANONYMOUS_STABLE_PKG}::anonymous_usd::mint`,
+				target: `${values.pkg}::anonymous_usd::mint`,
 				typeArguments: [],
 				arguments: [tx.object(values.capId), tx.pure.u64(bn)],
 			});
@@ -110,6 +110,14 @@ export const MintAstable = () => {
 									<Content>
 										<Form autoComplete={'off'} noValidate={true}>
 											<div className="w-full flex flex-col flex-grow">
+												<div className="px-2 mb-2.5">
+													<Text variant="caption" color="steel" weight="semibold">
+														Package ID
+													</Text>
+												</div>
+												<InputWithAction type="text" name="pkg" rounded="lg" dark />
+											</div>
+											<div className="w-full flex flex-col flex-grow mt-2.5">
 												<div className="px-2 mb-2.5">
 													<Text variant="caption" color="steel" weight="semibold">
 														Select TreasureCap
