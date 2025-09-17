@@ -209,7 +209,7 @@ async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply,
         "bfcx_getAnonymousMinus" => handle_anonymous_minus(request).await,
         "bfcx_getAnonymousMultiply" => handle_anonymous_multiply(request).await,
         "bfcx_getAnonymousCompare" => handle_anonymous_compare(request).await,
-        "bfcx_getAnonymousSplitValue" => handle_anonymous_split_to_two_value(request).await,
+        "bfcx_getAnonymousEncodeData" => handle_anonymous_split_to_two_value(request).await,
         "bfcx_getAnonymousRestoreValue" => handle_anonymous_restore_value(request).await,
         "bfcx_ping" => handle_ping(request).await,
         _ => JsonRpcResponse {
@@ -724,7 +724,7 @@ async fn handle_anonymous_split_to_two_value(request: JsonRpcRequest) -> JsonRpc
                 }
             }
             Err(e) => {
-                warn!("Invalid parameters for bfcx_getAnonymousSplitValue: {}", e);
+                warn!("Invalid parameters for bfcx_getAnonymousEncodeData: {}", e);
                 JsonRpcResponse {
                     jsonrpc: "2.0".to_string(),
                     id: request.id,

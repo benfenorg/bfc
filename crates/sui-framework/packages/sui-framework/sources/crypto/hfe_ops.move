@@ -28,7 +28,7 @@ public native fun hfe_ops_compare_value(
     input_3: u64,
 ): u8;
 
-public native fun hfe_ops_split_value(
+public native fun hfe_ops_encode_data(
     value: u64,
 ): (vector<u8>, vector<u8>);
 

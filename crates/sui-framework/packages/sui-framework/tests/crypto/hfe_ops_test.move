@@ -45,12 +45,12 @@ module sui::hfe_ops_test {
     }
 
     #[test]
-   fun test_hfe_ops_split_value() {
-        let (result0, result1) = hfe_ops::hfe_ops_split_value(5);
+   fun test_hfe_ops_encode_data() {
+        let (result0, result1) = hfe_ops::hfe_ops_encode_data(5);
         assert!(anonymous_balance::compare_anoymous_coin(result0, result1, 5) == 0);
         assert!(anonymous_balance::compare_anoymous_coin(result0, result1, 10) == 2);
         // repeat split value
-        let (result2, result3) = hfe_ops::hfe_ops_split_value(5);
+        let (result2, result3) = hfe_ops::hfe_ops_encode_data(5);
         assert_eq(result0, result2);
         assert_eq(result1, result3);
    }

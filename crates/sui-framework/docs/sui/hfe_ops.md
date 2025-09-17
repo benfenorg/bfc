@@ -8,7 +8,7 @@ title: Module `sui::hfe_ops`
 -  [Function `hfe_ops_minus`](#sui_hfe_ops_hfe_ops_minus)
 -  [Function `hfe_ops_multiplied`](#sui_hfe_ops_hfe_ops_multiplied)
 -  [Function `hfe_ops_compare_value`](#sui_hfe_ops_hfe_ops_compare_value)
--  [Function `hfe_ops_split_value`](#sui_hfe_ops_hfe_ops_split_value)
+-  [Function `hfe_ops_encode_data`](#sui_hfe_ops_hfe_ops_encode_data)
 -  [Function `hfe_ops_restore_value`](#sui_hfe_ops_hfe_ops_restore_value)
 
 
@@ -123,13 +123,13 @@ title: Module `sui::hfe_ops`
 
 </details>
 
-<a name="sui_hfe_ops_hfe_ops_split_value"></a>
+<a name="sui_hfe_ops_hfe_ops_encode_data"></a>
 
-## Function `hfe_ops_split_value`
+## Function `hfe_ops_encode_data`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_split_value">hfe_ops_split_value</a>(value: u64): (vector&lt;u8&gt;, vector&lt;u8&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_encode_data">hfe_ops_encode_data</a>(value: u64): (vector&lt;u8&gt;, vector&lt;u8&gt;)
 </code></pre>
 
 
@@ -138,7 +138,7 @@ title: Module `sui::hfe_ops`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>native</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_split_value">hfe_ops_split_value</a>(
+<pre><code><b>public</b> <b>native</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_encode_data">hfe_ops_encode_data</a>(
     value: u64,
 ): (vector&lt;u8&gt;, vector&lt;u8&gt;);
 </code></pre>

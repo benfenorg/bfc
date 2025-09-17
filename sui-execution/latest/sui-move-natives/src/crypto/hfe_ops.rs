@@ -310,7 +310,7 @@ pub fn hfe_ops_multiplied(
 
 }
 
-pub fn hfe_ops_split_value(context: &mut NativeContext,
+pub fn hfe_ops_encode_data(context: &mut NativeContext,
                            _ty_args: Vec<Type>,
                            mut args: VecDeque<Value>) -> PartialVMResult<NativeResult> {
 
@@ -346,7 +346,7 @@ pub fn hfe_ops_split_value(context: &mut NativeContext,
 
     if *enable_anonymous_rpc == Some(true) {
         let client = AnonymousClient::new(anonymous_rpc.unwrap_or_default().pop().unwrap_or_default().as_str());
-        let result = client.split_value(value);
+        let result = client.encode_data(value);
         Ok(NativeResult::ok(
             cost,
             smallvec![
@@ -632,12 +632,12 @@ impl AnonymousClient {
         }
     }
 
-    pub fn split_value(&self, value1: u64) -> AnonymousResult  {
+    pub fn encode_data(&self, value1: u64) -> AnonymousResult  {
         let params = json!({
             "value": value1,
         });
 
-        match self.atto_http_post("bfcx_getAnonymousSplitValue", params, 3) {
+        match self.atto_http_post("bfcx_getAnonymousEncodeData", params, 3) {
             Ok(response) => {
 
                 let result1 = response["result"]["result1"].as_str().unwrap();

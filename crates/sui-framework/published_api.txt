@@ -2071,7 +2071,7 @@ hfe_ops_multiplied
 hfe_ops_compare_value
 	public fun
 	0x2::hfe_ops
-hfe_ops_split_value
+hfe_ops_encode_data
 	public fun
 	0x2::hfe_ops
 hfe_ops_restore_value

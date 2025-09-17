@@ -222,17 +222,17 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousSplitValue", params, 4)
+            .send_rpc_request("bfcx_getAnonymousEncodeData", params, 4)
             .await
         {
             Ok(response) => TestResult {
-                method: "bfcx_getAnonymousSplitValue".to_string(),
+                method: "bfcx_getAnonymousEncodeData".to_string(),
                 success: true,
                 response: Some(response),
                 error: None,
             },
             Err(e) => TestResult {
-                method: "bfcx_getAnonymousSplitValue".to_string(),
+                method: "bfcx_getAnonymousEncodeData".to_string(),
                 success: false,
                 response: None,
                 error: Some(e.to_string()),
