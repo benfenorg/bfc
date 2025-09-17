@@ -565,6 +565,26 @@ impl DataMapper<RawEthData, ProcessedTxnData> for EthDataMapper {
                         is_finalized,
                     }));
                 }
+                EthSuiBridgeEvents::TokensStakedFilter(bridge_event) => {
+                    info!(
+                        "Observed Eth Tokens Staked at block: {}, tx_hash: {}",
+                        log.block_number(),
+                        log.tx_hash
+                    );
+                    // self.metrics.total_eth_tokens_staked.inc();
+                },
+
+                EthSuiBridgeEvents::TokensUnStakedFilter(bridge_event) => {
+                    info!(
+                        "Observed Eth Tokens Unstaked at block: {}, tx_hash: {}",
+                        log.block_number(),
+                        log.tx_hash
+                    );
+                    // self.metrics.total_eth_tokens_unstaked.inc();
+                },
+
+                EthSuiBridgeEvents::UpdateInvestAddressFilter(_) => todo!(),
+
                 EthSuiBridgeEvents::EmergencyOperationFilter(f) => {
                     info!(
                         "Observed Eth Emergency Operation at block: {}, tx_hash: {}",
@@ -825,6 +845,23 @@ impl DataMapper<RawEthData, ProcessedTxnData> for EthDataMapper {
                         action: GovernanceActionType::UpgradeEVMContract,
                         data: serde_json::to_value(bridge_event)?,
                     }));
+                },
+                EthBridgeConfigEvents::LpTokenIdAddedFilter(_) => {
+                    info!(
+                        "Observed Eth LpTokenIdAdded at block: {}, tx_hash: {}",
+                        log.block_number(),
+                        log.tx_hash
+                    );
+
+                    // processed_txn_data.push(ProcessedTxnData::GovernanceAction(GovernanceAction {
+                    //     nonce: None,
+                    //     data_source: BridgeDataSource::Eth,
+                    //     tx_digest: txn_hash.clone(),
+                    //     sender: txn_sender.clone(),
+                    //     timestamp_ms,
+                    //     action: GovernanceActionType::AddLpTokenId,
+                    //     data: serde_json::to_value(bridge_event)?,
+                    // }));
                 }
 
                 EthBridgeConfigEvents::InitializedFilter(_)

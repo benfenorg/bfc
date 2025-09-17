@@ -46,14 +46,15 @@ interface ISuiBridge {
     /// @param paused A boolean indicating whether the bridge is paused or not.
     event EmergencyOperation(uint64 nonce, bool paused);
 
-    /// @notice Emitted when tokens are staked.
+     /// @notice Emitted when tokens are staked.
     event TokensStaked(
-        uint8 indexed sourceChainID,
-        uint64 indexed nonce,
-        uint8 indexed destinationChainID,
+        uint8 indexed sourceChainID, 
+        uint64 indexed nonce, 
+        uint8 indexed destinationChainID, 
+        uint64 originNonce, 
         bytes senderAddress,
         address recipientAddress,
-        uint256 erc20AdjustedAmount,
+        uint256 erc20AdjustedAmount,  //0
         uint256 erc20lpTokenAmount,
         uint64  protocolType,
         uint64 protocolVersion,
@@ -62,15 +63,16 @@ interface ISuiBridge {
     );
 
 
-    /// @notice Emitted when tokens are un-staked.
+     /// @notice Emitted when tokens are un-staked.
     event TokensUnStaked(
-        uint8 indexed sourceChainID,
-        uint64 indexed nonce,
-        uint8 indexed destinationChainID,
+        uint8 indexed sourceChainID, 
+        uint64 indexed nonce, 
+        uint8 indexed destinationChainID, 
+        uint64 originNonce, 
         bytes recipientAddress,
         address senderAddress,
-        uint256 erc20AdjustedAmount, 
-        uint256 erc20lpTokenAmount, 
+        uint256 erc20AdjustedAmount, //aave 返回的 usdt 数量
+        uint256 erc20lpTokenAmount, //赎回 LP 的 amount
         uint64  protocolType,
         uint64 protocolVersion,
         uint64 protocolTokenId,

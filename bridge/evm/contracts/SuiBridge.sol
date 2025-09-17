@@ -10,8 +10,7 @@ import "./interfaces/ISuiBridge.sol";
 import "./interfaces/IBridgeVault.sol";
 import "./interfaces/IBridgeLimiter.sol";
 import "./interfaces/IBridgeConfig.sol";
-
-import "./interfaces/IArrow.sol";
+import  {ArrowLib} from "./utils/ArrowLib.sol";
 
 /// @title SuiBridge
 /// @notice This contract implements a token bridge that enables users to deposit and withdraw
@@ -40,7 +39,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
     /// @param _committee The address of the committee contract.
     /// @param _vault The address of the bridge vault contract.
     /// @param _limiter The address of the bridge limiter contract.
-    function initialize(address _committee, address _vault, address _limiter)
+    function initialize(address _committee, address _vault, address _limiter,address _investAddress)
         external
         initializer
     {
@@ -48,6 +47,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         __Pausable_init();
         vault = IBridgeVault(_vault);
         limiter = IBridgeLimiter(_limiter);
+        investAddress = _investAddress;
     }
 
     /* ========== EXTERNAL FUNCTIONS ========== */
@@ -193,20 +193,23 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             uint64 lpTokenId = config.investLpTokenIdOf(defiTransferPayload.protocolType,defiTransferPayload.protocolTokenID);
             address lpTokenAddress = config.tokenAddressOf(lpTokenId);
             uint256 beforeLpTokenAmount=IERC20(lpTokenAddress).balanceOf(address(vault));
-            IERC20(config.tokenAddressOf(defiTransferPayload.protocolTokenID)).approve(investAddress,erc20AdjustedAmount);
-            IArrow(investAddress).deposit(
-                 defiTransferPayload.protocolType,
-                 config.tokenAddressOf(defiTransferPayload.protocolTokenID),
-                 erc20AdjustedAmount            
+            ArrowLib.deposit(
+                investAddress,
+                defiTransferPayload.protocolType,
+                config.tokenAddressOf(defiTransferPayload.protocolTokenID),
+                erc20AdjustedAmount
             );
             uint256 afterLpTokenAmount=IERC20(lpTokenAddress).balanceOf(address(vault));
+
+            require(afterLpTokenAmount>beforeLpTokenAmount,"SuiBridge: Invalid stake amount");
 
             uint256 lpAmount=afterLpTokenAmount-beforeLpTokenAmount;
 
             emit TokensStaked(
                 message.chainID,
-                message.nonce,
+                nonces[BridgeUtils.DEFI],
                 config.chainID(),
+                message.nonce,
                 defiTransferPayload.senderAddress,
                 investAddress,
                 0,
@@ -216,37 +219,39 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 defiTransferPayload.protocolTokenID,
                 defiTransferPayload.actionType
             );
+            nonces[BridgeUtils.DEFI]++;
         }else if (defiTransferPayload.actionType==1){
             uint64 tokenId = config.underlyingTokenIdOf(defiTransferPayload.protocolType,defiTransferPayload.protocolTokenID);
             address tokenAddress = config.tokenAddressOf(tokenId);
             uint256 beforeTokenAmount=IERC20(tokenAddress).balanceOf(address(vault));
-
-            IERC20(config.tokenAddressOf(defiTransferPayload.protocolTokenID)).approve(investAddress,erc20AdjustedAmount);
             //withdraw
-            IArrow(investAddress).withdraw(
+            ArrowLib.withdraw(
+                investAddress,
                 defiTransferPayload.protocolType,
                 config.tokenAddressOf(defiTransferPayload.protocolTokenID), //lp token
                 erc20AdjustedAmount
             );
-
             uint256 afterTokenAmount=IERC20(tokenAddress).balanceOf(address(vault));
 
+            require(afterTokenAmount>beforeTokenAmount,"SuiBridge: Invalid unstake amount");
+
             uint256 tokenAmount=afterTokenAmount-beforeTokenAmount;
-
-
+            //
             emit TokensUnStaked(
+                config.chainID(),
+                nonces[BridgeUtils.DEFI],
                 message.chainID,
                 message.nonce,
-                config.chainID(),
                 defiTransferPayload.senderAddress,
                 investAddress, 
                 tokenAmount, // aave redeem token (usdc/usdt)
-                erc20AdjustedAmount,
+                erc20AdjustedAmount, //lp token
                 defiTransferPayload.protocolType,
                 defiTransferPayload.protocolVersion,
                 defiTransferPayload.protocolTokenID,
                 defiTransferPayload.actionType
             );
+            nonces[BridgeUtils.DEFI]++;
 
         }else{
             revert("SuiBridge: Invalid actionType");

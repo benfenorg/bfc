@@ -160,7 +160,7 @@ impl EthBridgeEvent {
                 EthBridgeLimiterEvents::LimitUpdatedV2Filter(_event) => None,
             },
             EthBridgeEvent::EthBridgeConfigEvents(event) => match event {
-                EthBridgeConfigEvents::LpTokenAddedFilter(_event) => None,
+                EthBridgeConfigEvents::LpTokenIdAddedFilter(_event) => None,
                 EthBridgeConfigEvents::InitializedFilter(_event) => None,
                 EthBridgeConfigEvents::UpgradedFilter(_event) => None,
                 EthBridgeConfigEvents::TokenAddedFilter(_event) => None,
