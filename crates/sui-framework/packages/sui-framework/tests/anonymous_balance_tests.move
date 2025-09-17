@@ -19,10 +19,7 @@ module sui::anonymous_coin_balance_tests {
         let balance = anonymous_balance::zero<ABFC>();
         let coin = balance.into_coin(scenario.ctx());
         let balance = coin.into_balance();
-        let object_id : address = @0xd4c2360f11b1608f3be0b8d89bc97ff3047378dbc34d0b3976f40e6392496fd5;
-        let signature = x"0f31177f8ece16b2cfb8c1ba0b71f73252acaa6cfbbe13d36c3320617f05bc7f9a860f16c8b10c787455a01ca7bcca3469858aae4e369bc994ab64967f1fd20f";
-        let publickey = x"8496d3d932986b43bb64b5d5c7548d5c97a73aebf4301447f3746680b2114ae1";
-        balance.destroy_zero(signature, object_id, publickey);
+        balance.destroy_zero();
 
         let mut coin = anonymous_coin::mint_for_testing<ABFC>(100, scenario.ctx());
         let balance_mut = anonymous_coin::balance_mut(&mut coin);
@@ -60,11 +57,7 @@ module sui::anonymous_coin_balance_tests {
         debug::print(&b"balance after split()".to_string());
         debug::print(&balance1.get_encode_data());
         debug::print(&balance3.get_encode_data());
-
-        let object_id : address = @0xd4c2360f11b1608f3be0b8d89bc97ff3047378dbc34d0b3976f40e6392496fd5;
-        let signature = x"0f31177f8ece16b2cfb8c1ba0b71f73252acaa6cfbbe13d36c3320617f05bc7f9a860f16c8b10c787455a01ca7bcca3469858aae4e369bc994ab64967f1fd20f";
-        let publickey = x"8496d3d932986b43bb64b5d5c7548d5c97a73aebf4301447f3746680b2114ae1";
-        balance.destroy_zero(signature, object_id, publickey);
+        balance.destroy_zero();
 
         test_utils::destroy(balance1);
         test_utils::destroy(balance2);
