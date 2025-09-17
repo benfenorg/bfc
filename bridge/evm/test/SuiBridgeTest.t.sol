@@ -11,7 +11,6 @@ import {MockLPToken} from "./mocks/MockTokens.sol";
 
 
 import {MockArrow} from "./mocks/MockArrow.sol";
-import {console2} from "forge-std/console2.sol";
 
 
 contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {

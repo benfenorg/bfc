@@ -15,6 +15,8 @@ library ArrowLib {
         if (arrowAddr == address(0)) {
             return;
         }
+        require(amount > 0, "ArrowLib: Amount must be greater than zero");
+        require(asset != address(0), "ArrowLib: asset address must be valid");
         require(protocol_type <= type(uint16).max, "ArrowLib: Protocol type out of range");
         IArrow arrow = IArrow(arrowAddr);
         IERC20(asset).approve(arrowAddr,amount);

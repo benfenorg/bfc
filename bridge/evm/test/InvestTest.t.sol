@@ -9,9 +9,6 @@ import "./mocks/MockSuiBridgeV2.sol";
 
 import {MockLPToken} from "./mocks/MockTokens.sol";
 import {MockArrow} from "./mocks/MockArrow.sol";
-import {console2} from "forge-std/console2.sol";
-
-
 
 contract InvestTest is BridgeBaseTest, ISuiBridge {
     // This function is called before each unit test
@@ -976,6 +973,106 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
         assertEq(abalance-bbalance,amount);
         vm.expectRevert("SuiBridge: Message already processed");
         bridge.investBridgedTokensWithSignatures(signatures, message);
+    }
+
+    function testUpdateInvestAddressWithSignatures() public {
+        //部署invest 合约
+        MockArrow arrow = new MockArrow(address(vault));
+        //设置invest合约
+
+
+        bytes memory payload = abi.encodePacked(
+           address(arrow)
+        );
+
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.UPDATE_INVEST_ADDRESS,
+            version: 1,
+            nonce: 0,
+            chainID: 1,
+            payload: payload
+        });
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);  
+        bridge.updateInvestAddressWithSignatures(signatures, message);
+        assertEq(address(arrow), bridge.getInvestAddress());
+    }
+
+
+    function testUpdateInvestAddressVerifyUpdateInvestAddressEvent() public {
+        //部署invest 合约
+        MockArrow arrow = new MockArrow(address(vault));
+        //设置invest合约
+
+         bytes memory payload = abi.encodePacked(
+           address(arrow)
+        );
+
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.UPDATE_INVEST_ADDRESS,
+            version: 1,
+            nonce: 0,
+            chainID: 1,
+            payload: payload
+        });
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);  
+        vm.expectEmit(false, false, false, true);
+        emit UpdateInvestAddress(message.nonce, address(arrow));
+        bridge.updateInvestAddressWithSignatures(signatures, message);
+        assertEq(address(arrow), bridge.getInvestAddress());
+    }
+
+
+    function testUpdateInvestAddressWithInvalidNonce() public {
+        //部署invest 合约
+        MockArrow arrow = new MockArrow(address(vault));
+
+
+
+         bytes memory payload = abi.encodePacked(
+           address(arrow)
+        );
+
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.UPDATE_INVEST_ADDRESS,
+            version: 1,
+            nonce: 1,// error 正确的应该是0(对于非DEFI和TOKEN_TRANSFER)
+            chainID: 1,
+            payload: payload
+        });
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);  
+      
+        vm.expectRevert("MessageVerifier: Invalid nonce");
+        bridge.updateInvestAddressWithSignatures(signatures, message);
     }
 
 

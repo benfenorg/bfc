@@ -272,6 +272,12 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         emit UpdateInvestAddress(message.nonce, _investAddress);
     }
 
+
+    function getInvestAddress() external view returns (address) {
+        return investAddress;
+    }
+
+
     /// @notice Executes an emergency operation with the provided signatures and message.
     /// @dev If the given operation is to freeze and the bridge is already frozen, the operation
     /// will revert.
