@@ -45,6 +45,17 @@ pub fn build_sui_transaction(
             sui_token_type_tags,
             rgp,
         ),
+        //todo: @fei deal the defi bridge
+        BridgeAction::EthToSuiDefiBridgeAction(_) => build_token_bridge_approve_transaction(
+            client_address,
+            gas_object_ref,
+            action,
+            true,
+            bridge_object_arg,
+            admin_cap_arg,
+            sui_token_type_tags,
+            rgp,
+        ),
         BridgeAction::EthSendBackBridgeAction(_) => build_token_bridge_approve_transaction(
             client_address,
             gas_object_ref,
