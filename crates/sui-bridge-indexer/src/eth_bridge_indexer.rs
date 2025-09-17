@@ -782,7 +782,7 @@ impl DataMapper<RawEthData, ProcessedTxnData> for EthDataMapper {
                 }
             },
             EthBridgeEvent::EthBridgeConfigEvents(bridge_event) => match &bridge_event {
-                EthBridgeConfigEvents::LpTokenAddedFilter(_) => {
+                EthBridgeConfigEvents::LpTokenIdAddedFilter(_) => {
                     info!(
                         "Observed Eth LpToken Added at block: {}, tx_hash: {}",
                         log.block_number(),
