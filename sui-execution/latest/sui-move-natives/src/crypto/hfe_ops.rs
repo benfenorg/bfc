@@ -406,9 +406,7 @@ pub fn hfe_ops_compare_value(
     let num2 = String::from_utf8(number2).unwrap_or_default();
 
     if *enable_anonymous_rpc == Some(true) {
-
         let client = AnonymousClient::new(anonymous_rpc.unwrap_or_default().pop().unwrap_or_default().as_str());
-
         let result = client.compare_value(num1, num2, number3);
 
         Ok(NativeResult::ok(

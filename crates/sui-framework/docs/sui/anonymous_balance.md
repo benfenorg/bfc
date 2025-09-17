@@ -127,11 +127,11 @@ d to store coins which don't need the key ability.
 
 
 
-<a name="sui_anonymous_balance_DEFAULT_EQUIVALENT_RESULT_VALUE"></a>
+<a name="sui_anonymous_balance_DEFAULT_COMPARE_RESULT_LESS_THAN"></a>
 
 
 
-<pre><code><b>const</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_DEFAULT_EQUIVALENT_RESULT_VALUE">DEFAULT_EQUIVALENT_RESULT_VALUE</a>: u8 = 2;
+<pre><code><b>const</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_DEFAULT_COMPARE_RESULT_LESS_THAN">DEFAULT_COMPARE_RESULT_LESS_THAN</a>: u8 = 2;
 </code></pre>
 
 
@@ -529,7 +529,7 @@ Split a <code>Balance</code> and take a sub balance from it.
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_split">split</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, value: u64): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
     <b>let</b> compare_result: u8 = hfe_ops_compare_value(string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>), string::into_bytes(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>), value);
-    <b>assert</b>!(compare_result != <a href="../sui/anonymous_balance.md#sui_anonymous_balance_DEFAULT_EQUIVALENT_RESULT_VALUE">DEFAULT_EQUIVALENT_RESULT_VALUE</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_ENotEnough">ENotEnough</a>);
+    <b>assert</b>!(compare_result != <a href="../sui/anonymous_balance.md#sui_anonymous_balance_DEFAULT_COMPARE_RESULT_LESS_THAN">DEFAULT_COMPARE_RESULT_LESS_THAN</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_ENotEnough">ENotEnough</a>);
     <b>let</b> (result0, result1) = hfe_ops_split_value(value);
     <b>let</b> value3 = string::utf8(result0);
     <b>let</b> value4 = string::utf8(result1);

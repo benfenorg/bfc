@@ -22,7 +22,7 @@ const ENotEnough: u64 = 2;
 // System operation performed for a coin other than SUI
 //const ENotSUI: u64 = 4;
 
-const DEFAULT_EQUIVALENT_RESULT_VALUE: u8 = 2;
+const DEFAULT_COMPARE_RESULT_LESS_THAN: u8 = 2;
 
 /// A Supply of T. Used for minting and burning.
 /// Wrapped into a `TreasuryCap` in the `Coin` module.
@@ -157,9 +157,10 @@ public fun compare<T>(self: &mut Anonymous_Balance<T>, value: u64): u8 {
 }
 
 /// Split a `Balance` and take a sub balance from it.
+///
 public fun split<T>(self: &mut Anonymous_Balance<T>, value: u64): Anonymous_Balance<T> {
     let compare_result: u8 = hfe_ops_compare_value(string::into_bytes(self.value1), string::into_bytes(self.value2), value);
-    assert!(compare_result != DEFAULT_EQUIVALENT_RESULT_VALUE, ENotEnough);
+    assert!(compare_result != DEFAULT_COMPARE_RESULT_LESS_THAN, ENotEnough);
     let (result0, result1) = hfe_ops_split_value(value);
 
     let value3 = string::utf8(result0);
