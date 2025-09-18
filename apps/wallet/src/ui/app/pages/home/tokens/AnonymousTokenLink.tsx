@@ -52,10 +52,10 @@ export const AnonymousTokenLink = ({ token }: { token: AnonymousCoinFields }) =>
 				</Text>
 				<div className={'flex flex-col items-end'}>
 					<Text variant={'body'} color={'steel-darker'} weight={'medium'}>
-						{data?.data.result.result1 ?? token.balance.fields.value1}
+						{data?.data.result.result1 ?? '***'}
 					</Text>
 					<Text variant={'body'} color={'steel-darker'} weight={'medium'}>
-						{data?.data.result.result2 ?? token.balance.fields.value2}
+						{data?.data.result.result2 ?? '***'}
 					</Text>
 				</div>
 			</div>

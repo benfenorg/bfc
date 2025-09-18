@@ -10,13 +10,10 @@ export type AnonymousCoinFields = {
 	balance: {
 		type: string;
 		fields: {
-			balance_type: {
-				type: string;
-				variant: string;
-			};
-			encode_data: string;
-			value1: string;
-			value2: string;
+			balance_type: number;
+			encode_data: number[];
+			value1: number[];
+			value2: number[];
 			version: number;
 		};
 	};

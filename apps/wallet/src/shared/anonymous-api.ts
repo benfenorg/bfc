@@ -18,8 +18,8 @@ export const anonymousRequest = <TRes, TParams>({
 };
 
 export const getAnonymousRestoreValue = (params: {
-	value1: string;
-	value2: string;
+	value1: number[];
+	value2: number[];
 	signature: number[];
 	objectid: string;
 	publickey: number[];
