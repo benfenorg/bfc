@@ -48,14 +48,14 @@ interface ISuiBridge {
 
      /// @notice Emitted when tokens are staked.
     event TokensStaked(
-        uint8 indexed sourceChainID, 
-        uint64 indexed nonce, 
-        uint8 indexed destinationChainID, 
-        uint64 originNonce, 
-        bytes senderAddress,
-        address recipientAddress,
-        uint256 erc20AdjustedAmount,  //0
-        uint256 erc20lpTokenAmount,
+        uint8 indexed sourceChainID, //benfen 
+        uint64 indexed nonce, // evm
+        uint8 indexed destinationChainID, //evm
+        uint64 originNonce, //benfen 生成的
+        bytes senderAddress, // benfen 上用户的地址
+        address recipientAddress, //资管合约地址
+        uint64 suiAdjustedAmount,  //0
+        uint64 suiLpTokenAmount, 
         uint64  protocolType,
         uint64 protocolVersion,
         uint64 protocolTokenId,
@@ -65,14 +65,14 @@ interface ISuiBridge {
 
      /// @notice Emitted when tokens are un-staked.
     event TokensUnStaked(
-        uint8 indexed sourceChainID, 
-        uint64 indexed nonce, 
-        uint8 indexed destinationChainID, 
-        uint64 originNonce, 
-        bytes recipientAddress,
-        address senderAddress,
-        uint256 erc20AdjustedAmount, //aave 返回的 usdt 数量
-        uint256 erc20lpTokenAmount, //赎回 LP 的 amount
+        uint8 indexed sourceChainID, //evm
+        uint64 indexed nonce, // evm
+        uint8 indexed destinationChainID, //benfen
+        uint64 originNonce, //benfen 生成的
+        bytes recipientAddress, // benfen 上用户的地址
+        address senderAddress, // 资管合约地址
+        uint64 suiAdjustedAmount, //aave 返回的 usdt 数量
+        uint64 suiLpTokenAmount, //赎回 LP 的 amount
         uint64  protocolType,
         uint64 protocolVersion,
         uint64 protocolTokenId,

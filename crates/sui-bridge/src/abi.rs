@@ -8,9 +8,7 @@ use crate::encoding::{
 use crate::error::{BridgeError, BridgeResult};
 use crate::fast_path::FastPathSelector;
 use crate::types::{
-    AddTokensOnEvmAction, AssetPriceUpdateAction, BlocklistCommitteeAction, BridgeAction,
-    BridgeActionType, EmergencyAction, EthLog, EthToSuiBridgeAction, EvmContractUpgradeAction,
-    LimitUpdateAction, SuiToEthBridgeAction,
+    AddTokensOnEvmAction, AssetPriceUpdateAction, BlocklistCommitteeAction, BridgeAction, BridgeActionType, EmergencyAction, EthLog, EthToSuiBridgeAction, EthToSuiDefiBridgeAction, EvmContractUpgradeAction, LimitUpdateAction, SuiToEthBridgeAction
 };
 use crate::types::{
     ParsedTokenTransferMessage, ParsedTokenTransferMessageV2, SingleTransferLimitUpdateAction,
@@ -130,8 +128,48 @@ impl EthBridgeEvent {
                             eth_bridge_event: bridge_event,
                         }))
                     }
-                    EthSuiBridgeEvents::TokensStakedFilter(_event) => None,
-                    EthSuiBridgeEvents::TokensUnStakedFilter(_event) => None,
+                    EthSuiBridgeEvents::TokensStakedFilter(event) => {
+                        let bridge_event = match EthToSuiDefiBridgeV1::try_from(&event) {
+                            Ok(mut bridge_event) => {
+                                bridge_event.set_tx_hash(eth_tx_hash.as_bytes().to_vec());
+                                bridge_event.set_event_idx(eth_event_index);
+                                bridge_event
+                            }
+                            // This only happens when solidity code does not align with rust code.
+                            // When this happens in production, there is a risk of stuck bridge transfers.
+                            // We log error here.
+                            // TODO: add metrics and alert
+                            Err(e) => {
+                                return Err(BridgeError::Generic(format!("Manual intervention is required. Failed to convert TokensStakedFilter log to EthToSuiDefiBridgeV1. This indicates incorrect parameters or a bug in the code: {:?}. Err: {:?}", event, e)));
+                            }
+                        };
+                        Some(BridgeAction::EthToSuiDefiBridgeAction(EthToSuiDefiBridgeAction {  
+                            eth_tx_hash,
+                            eth_event_index,
+                            eth_bridge_event: bridge_event,
+                        }))
+                    },
+                    EthSuiBridgeEvents::TokensUnStakedFilter(event) => {
+                        let bridge_event = match EthToSuiDefiBridgeV1::try_from(&event) {
+                            Ok(mut bridge_event) => {
+                                bridge_event.set_tx_hash(eth_tx_hash.as_bytes().to_vec());
+                                bridge_event.set_event_idx(eth_event_index);
+                                bridge_event
+                            }
+                            // This only happens when solidity code does not align with rust code.
+                            // When this happens in production, there is a risk of stuck bridge transfers.
+                            // We log error here.
+                            // TODO: add metrics and alert
+                            Err(e) => {
+                                return Err(BridgeError::Generic(format!("Manual intervention is required. Failed to convert TokensUnStakedFilter log to EthToSuiDefiBridgeV1. This indicates incorrect parameters or a bug in the code: {:?}. Err: {:?}", event, e)));
+                            }
+                        };
+                        Some(BridgeAction::EthToSuiDefiBridgeAction(EthToSuiDefiBridgeAction {  
+                            eth_tx_hash,
+                            eth_event_index,
+                            eth_bridge_event: bridge_event,
+                        }))
+                    },
                     EthSuiBridgeEvents::UpdateInvestAddressFilter(_event) => None,
                     EthSuiBridgeEvents::TokensClaimedFilter(_event) => None,
                     EthSuiBridgeEvents::PausedFilter(_event) => None,
@@ -209,6 +247,21 @@ pub struct EthToSuiDefiBridgeV1 {
     pub action_type: u8,
     pub original_seq_num: u64,
     pub sui_adjusted_amount: u64,
+    pub lp_token_amount: u64,
+}
+
+impl EthToSuiDefiBridgeV1 {
+    pub fn set_tx_hash(&mut self, tx_hash: Vec<u8>) {
+        self.tx_hash = tx_hash;
+    }
+
+    pub fn set_event_idx(&mut self, event_idx: u16) {
+        self.event_idx = event_idx;
+    }
+
+    pub fn set_fast_path_selector(&mut self, fast_path_selector: FastPathSelector) {
+        self.fast_path_selector = fast_path_selector;
+    }
 }
 
 impl EthToSuiTokenBridgeV1 {
@@ -239,6 +292,52 @@ impl TryFrom<&TokensDepositedFilter> for EthToSuiTokenBridgeV1 {
             tx_hash: vec![],
             event_idx: 0,
             fast_path_selector: FastPathSelector::Finalized,
+        })
+    }
+}
+
+impl TryFrom<&TokensStakedFilter> for EthToSuiDefiBridgeV1 {
+    type Error = BridgeError;
+    fn try_from(event: &TokensStakedFilter) -> BridgeResult<Self> {
+        Ok(Self {
+            nonce: event.nonce,
+            sui_chain_id: BridgeChainId::try_from(event.destination_chain_id)?,
+            eth_chain_id: BridgeChainId::try_from(event.source_chain_id)?,
+            sui_address: SuiAddress::from_bytes(event.sender_address.as_ref())?,
+            eth_address: event.recipient_address,
+            tx_hash: vec![],
+            event_idx: 0,
+            fast_path_selector: FastPathSelector::Finalized,
+            protocol_type: event.protocol_type,
+            protocol_version: event.protocol_version,
+            protocol_token_id: event.protocol_token_id,
+            action_type: event.action_type,
+            original_seq_num: event.origin_nonce,
+            sui_adjusted_amount: event.sui_adjusted_amount,
+            lp_token_amount: event.sui_lp_token_amount,
+        })
+    }
+}
+
+impl TryFrom<&TokensUnStakedFilter> for EthToSuiDefiBridgeV1 {
+    type Error = BridgeError;
+    fn try_from(event: &TokensUnStakedFilter) -> BridgeResult<Self> {
+        Ok(Self {
+            nonce: event.nonce,
+            sui_chain_id: BridgeChainId::try_from(event.destination_chain_id)?,
+            eth_chain_id: BridgeChainId::try_from(event.source_chain_id)?,
+            sui_address: SuiAddress::from_bytes(event.recipient_address.as_ref())?,
+            eth_address: event.sender_address,
+            tx_hash: vec![],
+            event_idx: 0,
+            fast_path_selector: FastPathSelector::Finalized,
+            protocol_type: event.protocol_type,
+            protocol_version: event.protocol_version,
+            protocol_token_id: event.protocol_token_id,
+            action_type: event.action_type,
+            original_seq_num: event.origin_nonce,
+            sui_adjusted_amount: event.sui_adjusted_amount,
+            lp_token_amount: event.sui_lp_token_amount,
         })
     }
 }
