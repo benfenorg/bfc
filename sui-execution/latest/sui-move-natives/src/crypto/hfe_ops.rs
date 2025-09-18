@@ -43,6 +43,8 @@ pub const INVALID_INPUT_ERROR:  u64 = 3;
 
 pub const NOT_FOUND_ANONYMOUS_RPC_ADDRESS: u64 = 4;
 
+pub const INVALID_SERVER_RESPONSE_ERROR: u64 = 5;
+
 //const THRESHOLD: usize = 2;
 //const TOTAL_SHARES: usize = 2;
 const MASK_SECRET: &str =  "0x1111ffff0000";
@@ -115,7 +117,7 @@ pub fn hfe_ops_add(
                         ))
                     }
                     false => {
-                        Ok(NativeResult::err(cost, INVALID_PARAMS_ERROR))
+                        Ok(NativeResult::err(cost, INVALID_SERVER_RESPONSE_ERROR))
                     }
                 }
             },
@@ -216,7 +218,7 @@ pub fn hfe_ops_minus(
                         ))
                     }
                     false => {
-                        Ok(NativeResult::err(cost, INVALID_PARAMS_ERROR))
+                        Ok(NativeResult::err(cost, INVALID_SERVER_RESPONSE_ERROR))
                     }
                 }
             },
@@ -323,7 +325,7 @@ pub fn hfe_ops_multiplied(
                         ))
                     }
                     false => {
-                        Ok(NativeResult::err(cost, INVALID_PARAMS_ERROR))
+                        Ok(NativeResult::err(cost, INVALID_SERVER_RESPONSE_ERROR))
                     }
                 }
             },
@@ -415,7 +417,7 @@ pub fn hfe_ops_encode_data(context: &mut NativeContext,
                         ))
                     }
                     false => {
-                        Ok(NativeResult::err(cost, INVALID_PARAMS_ERROR))
+                        Ok(NativeResult::err(cost, INVALID_SERVER_RESPONSE_ERROR))
                     }
                 }
             },
@@ -492,7 +494,7 @@ pub fn hfe_ops_compare_value(
                         ))
                     }
                     false => {
-                        Ok(NativeResult::err(cost, INVALID_PARAMS_ERROR))
+                        Ok(NativeResult::err(cost, INVALID_SERVER_RESPONSE_ERROR))
                     }
                 }
             },
@@ -591,7 +593,7 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
                         ))
                     }
                     false => {
-                        Ok(NativeResult::err(cost, INVALID_PARAMS_ERROR))
+                        Ok(NativeResult::err(cost, INVALID_SERVER_RESPONSE_ERROR))
                     }
                 }
             },
