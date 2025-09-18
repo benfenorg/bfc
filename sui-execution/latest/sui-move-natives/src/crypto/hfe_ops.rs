@@ -39,6 +39,10 @@ type HmacSha256 = Hmac<Sha256>;
 pub const ARITHMETIC_OVERFLOW_ERROR: u64 = 1;
 pub const INVALID_PARAMS_ERROR:  u64 = 2;
 
+pub const INVALID_INPUT_ERROR:  u64 = 3;
+
+pub const NOT_FOUND_ANONYMOUS_RPC_ADDRESS: u64 = 4;
+
 //const THRESHOLD: usize = 2;
 //const TOTAL_SHARES: usize = 2;
 const MASK_SECRET: &str =  "0x1111ffff0000";
@@ -86,23 +90,36 @@ pub fn hfe_ops_add(
     let num2 = String::from_utf8(number2).unwrap_or_default();
     let num3 = String::from_utf8(number3).unwrap_or_default();
     let num4 = String::from_utf8(number4).unwrap_or_default();
+    let cost = context.gas_used();
+    if num1.is_empty() || num2.is_empty() || num3.is_empty() || num4.is_empty() {
+        return Ok(NativeResult::err(
+            cost,
+            INVALID_INPUT_ERROR,
+        ));
+    }
 
     if *enable_anonymous_rpc == Some(true) {
         info!("hfe_ops_add calculate in remote");
-        let cost = context.gas_used();
-        let client = AnonymousClient::new(anonymous_rpc.unwrap_or_default().pop().unwrap_or_default().as_str());
-        let result = client.add(num1, num2, num3, num4);
-        Ok(NativeResult::ok(
-            cost,
-            smallvec![
+        match anonymous_rpc {
+            Some(mut v) => {
+                if v.is_empty() {
+                   return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS));
+                }
+                let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
+                let result = client.add(num1, num2, num3, num4);
+                Ok(NativeResult::ok(
+                    cost,
+                    smallvec![
                 Value::vector_u8(result.value1.into_bytes()),
                 Value::vector_u8(result.value2.into_bytes())
             ]
-        ))
+                ))
+            },
+            None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
+        }
     } else {
         let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
             .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
-
 
         info!("hfe_ops_add calculate in local");
         let cost = context.gas_used();
@@ -172,18 +189,32 @@ pub fn hfe_ops_minus(
     let num2 = String::from_utf8(number2).unwrap_or_default();
     let num3 = String::from_utf8(number3).unwrap_or_default();
     let num4 = String::from_utf8(number4).unwrap_or_default();
+    if num1.is_empty() || num2.is_empty() || num3.is_empty() || num4.is_empty() {
+        return Ok(NativeResult::err(
+            cost,
+            INVALID_INPUT_ERROR,
+        ));
+    }
 
     if *enable_anonymous_rpc == Some(true) {
         info!("hfe_ops_minus calculate in remote");
-        let client = AnonymousClient::new(anonymous_rpc.unwrap_or_default().pop().unwrap_or_default().as_str());
-        let result = client.minus(num1, num2, num3, num4);
-        Ok(NativeResult::ok(
-            cost,
-            smallvec![
+        match anonymous_rpc {
+            Some(mut v) => {
+                if v.is_empty() {
+                    return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS));
+                }
+                let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
+                let result = client.minus(num1, num2, num3, num4);
+                Ok(NativeResult::ok(
+                    cost,
+                    smallvec![
                 Value::vector_u8(result.value1.into_bytes()),
                 Value::vector_u8(result.value2.into_bytes())
             ]
-        ))
+                ))
+            },
+            None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
+        }
     } else {
         let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
             .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
@@ -261,19 +292,32 @@ pub fn hfe_ops_multiplied(
     let num2 = String::from_utf8(number2).unwrap_or_default();
     let num3 = String::from_utf8(number3).unwrap_or_default();
     let num4 = String::from_utf8(number4).unwrap_or_default();
+    if num1.is_empty() || num2.is_empty() || num3.is_empty() || num4.is_empty() {
+        return Ok(NativeResult::err(
+            cost,
+            INVALID_INPUT_ERROR,
+        ));
+    }
 
     if *enable_anonymous_rpc == Some(true) {
         info!("hfe_ops_minus calculate in remote");
-
-        let client = AnonymousClient::new(anonymous_rpc.unwrap_or_default().pop().unwrap_or_default().as_str());
-        let result = client.multiply(num1, num2, num3, num4);
-        Ok(NativeResult::ok(
-            cost,
-            smallvec![
+        match anonymous_rpc {
+            Some(mut v) => {
+                if v.is_empty() {
+                    return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS));
+                }
+                let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
+                let result = client.multiply(num1, num2, num3, num4);
+                Ok(NativeResult::ok(
+                    cost,
+                    smallvec![
                 Value::vector_u8(result.value1.into_bytes()),
                 Value::vector_u8(result.value2.into_bytes())
             ]
-        ))
+                ))
+            },
+            None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
+        }
     } else {
         info!("hfe_ops_minus calculate in local");
         let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
@@ -345,15 +389,23 @@ pub fn hfe_ops_encode_data(context: &mut NativeContext,
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
 
     if *enable_anonymous_rpc == Some(true) {
-        let client = AnonymousClient::new(anonymous_rpc.unwrap_or_default().pop().unwrap_or_default().as_str());
-        let result = client.encode_data(value);
-        Ok(NativeResult::ok(
-            cost,
-            smallvec![
+        match anonymous_rpc {
+            Some(mut v) => {
+                if v.is_empty() {
+                    return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS));
+                }
+                let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
+                let result = client.encode_data(value);
+                Ok(NativeResult::ok(
+                    cost,
+                    smallvec![
                 Value::vector_u8(result.value1.into_bytes()),
                 Value::vector_u8(result.value2.into_bytes())
             ]
-        ))
+                ))
+            },
+            None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
+        }
     } else {
         let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
             .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
@@ -399,20 +451,31 @@ pub fn hfe_ops_compare_value(
     let number3 = pop_arg!(args, u64);
 
     let number2 = pop_arg!(args, Vec<u8>);
-
     let number1 = pop_arg!(args, Vec<u8>);
-
     let num1 = String::from_utf8(number1).unwrap_or_default();
     let num2 = String::from_utf8(number2).unwrap_or_default();
 
-    if *enable_anonymous_rpc == Some(true) {
-        let client = AnonymousClient::new(anonymous_rpc.unwrap_or_default().pop().unwrap_or_default().as_str());
-        let result = client.compare_value(num1, num2, number3);
-
-        Ok(NativeResult::ok(
+    if num1.is_empty() || num2.is_empty() {
+        return Ok(NativeResult::err(
             cost,
-            smallvec![Value::u8(result.value1.parse::<u8>().unwrap())],
-        ))
+            INVALID_INPUT_ERROR,
+        ));
+    }
+    if *enable_anonymous_rpc == Some(true) {
+        match anonymous_rpc {
+            Some(mut v) => {
+                if v.is_empty() {
+                    return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS));
+                }
+                let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
+                let result = client.compare_value(num1, num2, number3);
+                Ok(NativeResult::ok(
+                    cost,
+                    smallvec![Value::u8(result.value1.parse::<u8>().unwrap())],
+                ))
+            },
+            None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
+        }
     } else {
         let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
             .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
@@ -481,18 +544,30 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
         .clone();
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
 
-    let num1 = String::from_utf8(number1).unwrap();
-    let num2 = String::from_utf8(number2).unwrap();
+    let num1 = String::from_utf8(number1).unwrap_or_default();
+    let num2 = String::from_utf8(number2).unwrap_or_default();
+    if num1.is_empty() || num2.is_empty() {
+        return Ok(NativeResult::err(
+            cost,
+            INVALID_INPUT_ERROR,
+        ));
+    }
 
     if *enable_anonymous_rpc == Some(true) {
-        let client = AnonymousClient::new(anonymous_rpc.unwrap_or_default().pop().unwrap_or_default().as_str());
-        let result = client.restore_value(num1, num2, signature, id, publickey);
-        info!("hfe_ops_restore_value calculate in remote restore");
-
-        Ok(NativeResult::ok(
-            cost,
-            smallvec![Value::u64(result.value1.parse::<u64>().expect("Failed to parse number"))],
-        ))
+        match anonymous_rpc {
+            Some(mut v) => {
+                if v.is_empty() {
+                    return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS));
+                }
+                let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
+                let result = client.restore_value(num1, num2, signature, id, publickey);
+                Ok(NativeResult::ok(
+                    cost,
+                    smallvec![Value::u64(result.value1.parse::<u64>().expect("Failed to parse number"))],
+                ))
+            },
+            None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
+        }
     } else {
         let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
             .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
