@@ -160,7 +160,7 @@ impl EthBridgeEvent {
                 EthBridgeLimiterEvents::LimitUpdatedV2Filter(_event) => None,
             },
             EthBridgeEvent::EthBridgeConfigEvents(event) => match event {
-                EthBridgeConfigEvents::LpTokenAddedFilter(_event) => None,
+                EthBridgeConfigEvents::LpTokenIdAddedFilter(_event) => None,
                 EthBridgeConfigEvents::InitializedFilter(_event) => None,
                 EthBridgeConfigEvents::UpgradedFilter(_event) => None,
                 EthBridgeConfigEvents::TokenAddedFilter(_event) => None,
@@ -191,6 +191,24 @@ pub struct EthToSuiTokenBridgeV1 {
     pub tx_hash: Vec<u8>,
     pub event_idx: u16,
     pub fast_path_selector: FastPathSelector,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
+pub struct EthToSuiDefiBridgeV1 {
+    pub nonce: u64,
+    pub sui_chain_id: BridgeChainId,
+    pub eth_chain_id: BridgeChainId,
+    pub sui_address: SuiAddress,
+    pub eth_address: EthAddress,
+    pub tx_hash: Vec<u8>,
+    pub event_idx: u16,
+    pub fast_path_selector: FastPathSelector,
+    pub protocol_type: u64,
+    pub protocol_version: u64,
+    pub protocol_token_id: u64,
+    pub action_type: u8,
+    pub original_seq_num: u64,
+    pub sui_adjusted_amount: u64,
 }
 
 impl EthToSuiTokenBridgeV1 {

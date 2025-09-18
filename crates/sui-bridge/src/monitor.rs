@@ -302,7 +302,7 @@ where
                 EthBridgeConfigEvents::TokenPriceUpdatedFilter(_) => {
                     bump_eth_counter!("update_token_price");
                 }
-                EthBridgeConfigEvents::LpTokenAddedFilter(_) => {
+                EthBridgeConfigEvents::LpTokenIdAddedFilter(_) => {
                     bump_eth_counter!("new_lp_token_added");
                 }
                 EthBridgeConfigEvents::ContractUpgradedFilter(_) => {

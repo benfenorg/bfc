@@ -13,6 +13,7 @@ import "../contracts/BridgeLimiter.sol";
 import "../contracts/SuiBridge.sol";
 import "../test/mocks/MockTokens.sol";
 
+import {MockArrow} from "../test/mocks/MockArrow.sol";
 contract DeployBridge is Script {
     function parseDeployConfig(string memory path) public returns (DeployConfig memory) {
         string memory json = vm.readFile(path);
@@ -29,7 +30,8 @@ contract DeployBridge is Script {
         config.supportedTokens = abi.decode(vm.parseJson(json, ".supportedTokens"), (address[]));
         config.tokenIds = abi.decode(vm.parseJson(json, ".tokenIds"), (uint256[]));
         config.suiDecimals = abi.decode(vm.parseJson(json, ".suiDecimals"), (uint256[]));
-        config.weth = abi.decode(vm.parseJson(json, ".weth"), (address));
+        config.weth = abi.decode(vm.parseJson(json, ".weth"), (address));   
+        config.investAddress = abi.decode(vm.parseJson(json, ".investAddress"), (address));
 
         return config;
     }
@@ -230,9 +232,10 @@ contract DeployBridge is Script {
 
         // deploy Sui Bridge ========================================================================
 
+        MockArrow mockArrow = new MockArrow(address(vault));
         address suiBridge = Upgrades.deployUUPSProxy(
             "SuiBridge.sol",
-            abi.encodeCall(SuiBridge.initialize, (bridgeCommittee, address(vault), limiter)),
+            abi.encodeCall(SuiBridge.initialize, (bridgeCommittee, address(vault), limiter,address(mockArrow))),
             opts
         );
 
@@ -253,6 +256,7 @@ contract DeployBridge is Script {
         console.log("[Deployed] USDC:", BridgeConfig(bridgeConfig).tokenAddressOf(3));
         console.log("[Deployed] USDT:", BridgeConfig(bridgeConfig).tokenAddressOf(4));
         console.log("[Deployed] BNB:", BridgeConfig(bridgeConfig).tokenAddressOf(6));
+        console.log("[Deployed] Arrow:",address(mockArrow));
 
         vm.stopBroadcast();
     }
@@ -276,4 +280,5 @@ struct DeployConfig {
     uint256[] tokenIds;
     uint256[] suiDecimals;
     address weth;
+    address investAddress;
 }
