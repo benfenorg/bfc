@@ -122,7 +122,6 @@ pub fn hfe_ops_add(
             .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
 
         info!("hfe_ops_add calculate in local");
-        let cost = context.gas_used();
         let value1_share = recover_two_shares(num1, num2);
         let value2_share = recover_two_shares(num3, num4);
         if value1_share.is_err() || value2_share.is_err() {
