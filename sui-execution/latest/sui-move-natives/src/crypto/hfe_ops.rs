@@ -107,13 +107,17 @@ pub fn hfe_ops_add(
                 }
                 let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
                 let result = client.add(num1, num2, num3, num4);
-                Ok(NativeResult::ok(
-                    cost,
-                    smallvec![
-                Value::vector_u8(result.value1.into_bytes()),
-                Value::vector_u8(result.value2.into_bytes())
-            ]
-                ))
+                match result.success {
+                    true => {
+                        Ok(NativeResult::ok(
+                            cost,
+                            smallvec![Value::vector_u8(result.value1.into_bytes()), Value::vector_u8(result.value2.into_bytes())],
+                        ))
+                    }
+                    false => {
+                        Ok(NativeResult::err(cost, INVALID_PARAMS_ERROR))
+                    }
+                }
             },
             None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
         }
@@ -204,13 +208,17 @@ pub fn hfe_ops_minus(
                 }
                 let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
                 let result = client.minus(num1, num2, num3, num4);
-                Ok(NativeResult::ok(
-                    cost,
-                    smallvec![
-                Value::vector_u8(result.value1.into_bytes()),
-                Value::vector_u8(result.value2.into_bytes())
-            ]
-                ))
+                match result.success {
+                    true => {
+                        Ok(NativeResult::ok(
+                            cost,
+                            smallvec![Value::vector_u8(result.value1.into_bytes()), Value::vector_u8(result.value2.into_bytes())],
+                        ))
+                    }
+                    false => {
+                        Ok(NativeResult::err(cost, INVALID_PARAMS_ERROR))
+                    }
+                }
             },
             None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
         }
@@ -307,13 +315,17 @@ pub fn hfe_ops_multiplied(
                 }
                 let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
                 let result = client.multiply(num1, num2, num3, num4);
-                Ok(NativeResult::ok(
-                    cost,
-                    smallvec![
-                Value::vector_u8(result.value1.into_bytes()),
-                Value::vector_u8(result.value2.into_bytes())
-            ]
-                ))
+                match result.success {
+                    true => {
+                        Ok(NativeResult::ok(
+                            cost,
+                            smallvec![Value::vector_u8(result.value1.into_bytes()), Value::vector_u8(result.value2.into_bytes())],
+                        ))
+                    }
+                    false => {
+                        Ok(NativeResult::err(cost, INVALID_PARAMS_ERROR))
+                    }
+                }
             },
             None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
         }
@@ -395,13 +407,17 @@ pub fn hfe_ops_encode_data(context: &mut NativeContext,
                 }
                 let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
                 let result = client.encode_data(value);
-                Ok(NativeResult::ok(
-                    cost,
-                    smallvec![
-                Value::vector_u8(result.value1.into_bytes()),
-                Value::vector_u8(result.value2.into_bytes())
-            ]
-                ))
+                match result.success {
+                    true => {
+                        Ok(NativeResult::ok(
+                            cost,
+                            smallvec![Value::vector_u8(result.value1.into_bytes()), Value::vector_u8(result.value2.into_bytes())],
+                        ))
+                    }
+                    false => {
+                        Ok(NativeResult::err(cost, INVALID_PARAMS_ERROR))
+                    }
+                }
             },
             None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
         }
@@ -468,10 +484,17 @@ pub fn hfe_ops_compare_value(
                 }
                 let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
                 let result = client.compare_value(num1, num2, number3);
-                Ok(NativeResult::ok(
-                    cost,
-                    smallvec![Value::u8(result.value1.parse::<u8>().unwrap())],
-                ))
+                match result.success {
+                    true => {
+                        Ok(NativeResult::ok(
+                            cost,
+                            smallvec![Value::vector_u8(result.value1.into_bytes())],
+                        ))
+                    }
+                    false => {
+                        Ok(NativeResult::err(cost, INVALID_PARAMS_ERROR))
+                    }
+                }
             },
             None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
         }
@@ -560,10 +583,17 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
                 }
                 let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
                 let result = client.restore_value(num1, num2, signature, id, publickey);
-                Ok(NativeResult::ok(
-                    cost,
-                    smallvec![Value::u64(result.value1.parse::<u64>().expect("Failed to parse number"))],
-                ))
+                match result.success {
+                    true => {
+                        Ok(NativeResult::ok(
+                            cost,
+                            smallvec![Value::u64(result.value1.parse::<u64>().expect("Failed to parse number"))],
+                        ))
+                    }
+                    false => {
+                        Ok(NativeResult::err(cost, INVALID_PARAMS_ERROR))
+                    }
+                }
             },
             None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
         }
