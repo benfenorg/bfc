@@ -205,6 +205,13 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
 
             uint256 lpAmount=afterLpTokenAmount-beforeLpTokenAmount;
 
+
+            uint64 suiLpTokenAmount = BridgeUtils.convertERC20ToSuiDecimal(
+                IERC20Metadata(lpTokenAddress).decimals(),
+                config.tokenSuiDecimalOf(lpTokenId),
+                lpAmount
+            );
+
             emit TokensStaked(
                 message.chainID,
                 nonces[BridgeUtils.DEFI],
@@ -213,7 +220,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 defiTransferPayload.senderAddress,
                 investAddress,
                 0,
-                lpAmount,
+                suiLpTokenAmount,
                 defiTransferPayload.protocolType,
                 defiTransferPayload.protocolVersion,
                 defiTransferPayload.protocolTokenID,
@@ -236,6 +243,13 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             require(afterTokenAmount>beforeTokenAmount,"SuiBridge: Invalid unstake amount");
 
             uint256 tokenAmount=afterTokenAmount-beforeTokenAmount;
+
+
+            uint64 suiTokenAmount = BridgeUtils.convertERC20ToSuiDecimal(
+                IERC20Metadata(tokenAddress).decimals(),
+                config.tokenSuiDecimalOf(tokenId),
+                tokenAmount
+            );
             //
             emit TokensUnStaked(
                 config.chainID(),
@@ -244,8 +258,8 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 message.nonce,
                 defiTransferPayload.senderAddress,
                 investAddress, 
-                tokenAmount, // aave redeem token (usdc/usdt)
-                erc20AdjustedAmount, //lp token
+                suiTokenAmount, // aave redeem token (usdc/usdt)
+                defiTransferPayload.amount, //lp token
                 defiTransferPayload.protocolType,
                 defiTransferPayload.protocolVersion,
                 defiTransferPayload.protocolTokenID,

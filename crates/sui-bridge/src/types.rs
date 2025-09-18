@@ -409,6 +409,19 @@ pub struct SingleTransferLimitUpdateAction {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct UpdateInvestAddressAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub invest_address: EthAddress,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct AddLpTokenIdAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub token_id: u64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct AssetPriceUpdateAction {
     pub nonce: u64,
     pub chain_id: BridgeChainId,
