@@ -1284,6 +1284,7 @@ module bridge::message {
         protocol_type: u64,
         protocol_version: u64,
         protocol_token_id: u64,
+        original_seq_num: u64,
         action_type: u8,
     ): BridgeMessage{
         chain_ids::assert_valid_chain_id(source_chain);
@@ -1306,6 +1307,7 @@ module bridge::message {
         payload.append(reverse_bytes(bcs::to_bytes(&protocol_type)));
         payload.append(reverse_bytes(bcs::to_bytes(&protocol_version)));
         payload.append(reverse_bytes(bcs::to_bytes(&protocol_token_id)));
+        payload.append(reverse_bytes(bcs::to_bytes(&original_seq_num)));
         payload.push_back(action_type);
 
         BridgeMessage {
@@ -1824,6 +1826,8 @@ module bridge::message {
             5001
         }else if (message_type == message_types::fast_path_limit_update()) {
             5001
+        }else if (message_type == message_types::defi()) {
+            5001
         }
         else {
             abort EInvalidMessageType
@@ -1994,6 +1998,7 @@ module bridge::message {
         protocol_type: u64,// 0:aave, 1:compound, 2:curve 等等
         protocol_version: u64,
         protocol_token_id: u64,
+        original_seq_num: u64,
         action_type: u8, // 0:stake, 1:unstake
     ): DefiTransferInPayload {
         DefiTransferInPayload {
@@ -2006,7 +2011,7 @@ module bridge::message {
             protocol_type,
             protocol_version,
             protocol_token_id,
-            original_seq_num: 0u64,
+            original_seq_num,
             action_type,
         }
     }

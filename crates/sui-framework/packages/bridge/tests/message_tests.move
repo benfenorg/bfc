@@ -155,12 +155,13 @@ module bridge::message_tests {
             1u64,  // aave
             3u64,  // v3
             3u64,  // protocol token id
+            0u64,
             UNSTAKE_DEFI,   // unstake
         );
         let payload = token_bridge_message.extract_defi_transfer_in_payload();
         assert!(payload.sender_address_defi_in() == defi_transfer_in_payload.sender_address_defi_in());
         assert!(payload.target_chain_defi_in() == defi_transfer_in_payload.target_chain_defi_in());
-        assert!(payload.token_amount_defi_in() == defi_transfer_in_payload.token_amount_defi_in());
+        assert!(payload.amount_defi_in() == defi_transfer_in_payload.amount_defi_in());
         assert!(payload.tx_hash_defi_in() == defi_transfer_in_payload.tx_hash_defi_in());
         assert!(payload.event_idx_defi_in() == defi_transfer_in_payload.event_idx_defi_in());
         assert!(payload.fast_path_selector_defi_in() == defi_transfer_in_payload.fast_path_selector_defi_in());
@@ -998,6 +999,7 @@ module bridge::message_tests {
             1u64,  // aave
             3u64,  // v3
             3u64,  // protocol token id
+            0u64,
             UNSTAKE_DEFI   // unstake
         )
     }

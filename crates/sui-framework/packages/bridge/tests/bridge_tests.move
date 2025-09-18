@@ -69,6 +69,7 @@ use bridge::busd;
 
 use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
 use bridge::bridge_env::get_usdc;
+use sui::event;
 
 // common error start code for unexpected errors in tests (assertions).
 // If more than one assert in a test needs to use an unexpected error code,
@@ -78,7 +79,8 @@ const UNEXPECTED_ERROR: u64 = 10293847;
 const TEST_DONE: u64 = 74839201;
 
 const MINT_BUSD_RIGHT_KEY: vector<u8> = b"MINT-BUSD-right_key";
-
+const STAKE: u8 = 0;
+const UNSTAKE: u8 = 1;
 
 #[test]
 fun test_bridge_create() {
@@ -1924,6 +1926,291 @@ fun test_external_busd_other_coin_withdraw_external_busd_coin() {
     sui::test_scenario::return_shared(bfc_system_state);
     sui::test_scenario::end(scenario);
     bridge.return_bridge();
+    env.destroy_env();
+}
+
+// Test for defi_stake_success function
+#[test]
+fun test_defi_stake_success() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+
+    let source_chain = chain_ids::eth_mainnet();
+    let seq_num = 100;
+    let sender_address = address::to_bytes(@0xABCD);
+    let target_chain = chain_ids::sui_custom();
+    let amount = 1000;
+    let protocol_type = 1;
+    let protocol_version = 1;
+    let protocol_token_id = 3; // USDC
+
+    // Create a BridgeMessage for defi transfer in
+    let message = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num,
+        sender_address,
+        target_chain,
+        amount,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE
+    );
+
+    // Create signatures
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+
+    // Call approve_defi_transfer_in which will internally call defi_stake_success
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+    
+    bridge.approve_defi_transfer_in(message, signatures);
+
+    // Check that the DefiTokensStakedEvent was emitted
+    let staked_events = sui::event::events_by_type<bridge::bridge::DefiTokensStakedEvent>();
+    assert!(staked_events.length() == 1, 0);
+
+    // Check that the defi_holders record was updated
+    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+        protocol_type,
+        protocol_version,
+        protocol_token_id
+    );
+    
+    let holder_amount = bridge.test_defi_holders_get(address::from_bytes(sender_address), defi_protocol_key);
+    assert!(holder_amount == amount, 0);
+
+    bridge_wrap.return_bridge();
+    env.destroy_env();
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EBridgeUnavailable)]
+fun test_defi_stake_success_bridge_paused() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+
+    // Pause the bridge
+    env.freeze_bridge(@0x0, 1000);
+
+    let source_chain = chain_ids::eth_mainnet();
+    let seq_num = 100;
+    let sender_address = address::to_bytes(@0xABCD);
+    let target_chain = chain_ids::sui_custom();
+    let amount = 1000;
+    let protocol_type = 1;
+    let protocol_version = 1;
+    let protocol_token_id = 3; // USDC
+
+    // Create a BridgeMessage for defi transfer in
+    let message = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num,
+        sender_address,
+        target_chain,
+        amount,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE
+    );
+
+    // Create signatures
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+
+    // Call approve_defi_transfer_in which will internally call defi_stake_success
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+    
+    // This should fail because the bridge is paused
+    bridge.approve_defi_transfer_in(message, signatures);
+
+    bridge_wrap.return_bridge();
+    env.destroy_env();
+}
+
+#[test]
+fun test_defi_stake_success_multiple_stakes_same_user() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+
+    let source_chain = chain_ids::eth_mainnet();
+    let target_chain = chain_ids::sui_custom();
+    let protocol_type = 1;
+    let protocol_version = 1;
+    let protocol_token_id = 3; // USDC
+    let sender_address = address::to_bytes(@0xABCD);
+
+    // First stake
+    let seq_num1 = 100;
+    let amount1 = 1000;
+
+    let message1 = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num1,
+        sender_address,
+        target_chain,
+        amount1,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE
+    );
+
+    let signatures1 = sign_message_with(&env, message1, vector[0, 1, 2]);
+
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+    bridge.approve_defi_transfer_in(message1, signatures1);
+
+    // Second stake with same user and protocol
+    let seq_num2 = 101;
+    let amount2 = 2000;
+
+    let message2 = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num2,
+        sender_address,
+        target_chain,
+        amount2,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE
+    );
+
+    let signatures2 = sign_message_with(&env, message2, vector[0, 1, 2]);
+
+    bridge.approve_defi_transfer_in(message2, signatures2);
+
+    // Check that the defi_holders record was updated with combined amount
+    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+        protocol_type,
+        protocol_version,
+        protocol_token_id
+    );
+    
+    let holder_amount = bridge.test_defi_holders_get(address::from_bytes(sender_address), defi_protocol_key);
+    assert!(holder_amount == (amount1 + amount2), 0);
+
+    // Check that two DefiTokensStakedEvent events were emitted
+    let staked_events = sui::event::events_by_type<bridge::bridge::DefiTokensStakedEvent>();
+    assert!(staked_events.length() == 2, 0);
+
+    bridge_wrap.return_bridge();
+    env.destroy_env();
+}
+
+#[test]
+fun test_defi_stake_success_different_users_protocols() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+
+    let source_chain = chain_ids::eth_mainnet();
+    let target_chain = chain_ids::sui_custom();
+    
+    // User 1 with protocol 1
+    let user1_address = address::to_bytes(@0x1);
+    let protocol_type1 = 1;
+    let protocol_version1 = 1;
+    let protocol_token_id1 = 3; // USDC
+    let seq_num1 = 100;
+    let amount1 = 1000;
+
+    let message1 = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num1,
+        user1_address,
+        target_chain,
+        amount1,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type1,
+        protocol_version1,
+        protocol_token_id1,
+        0u64,
+        STAKE
+    );
+
+    let signatures1 = sign_message_with(&env, message1, vector[0, 1, 2]);
+
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+    bridge.approve_defi_transfer_in(message1, signatures1);
+
+    // User 2 with protocol 2
+    let user2_address = address::to_bytes(@0x2);
+    let protocol_type2 = 2;
+    let protocol_version2 = 1;
+    let protocol_token_id2 = 4; // USDT
+    let seq_num2 = 101;
+    let amount2 = 2000;
+
+    let message2 = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num2,
+        user2_address,
+        target_chain,
+        amount2,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type2,
+        protocol_version2,
+        protocol_token_id2,
+        0u64,
+        STAKE
+    );
+
+    let signatures2 = sign_message_with(&env, message2, vector[0, 1, 2]);
+
+    bridge.approve_defi_transfer_in(message2, signatures2);
+
+    // Check that the defi_holders records were updated correctly
+    let defi_protocol_key1 = bridge::bridge::create_defi_protocol_key_for_testing(
+        protocol_type1,
+        protocol_version1,
+        protocol_token_id1
+    );
+    
+    let defi_protocol_key2 = bridge::bridge::create_defi_protocol_key_for_testing(
+        protocol_type2,
+        protocol_version2,
+        protocol_token_id2
+    );
+    
+    let user1_amount = bridge.test_defi_holders_get(address::from_bytes(user1_address), defi_protocol_key1);
+    assert!(user1_amount == amount1, 0);
+    
+    let user2_amount = bridge.test_defi_holders_get(address::from_bytes(user2_address), defi_protocol_key2);
+    assert!(user2_amount == amount2, 0);
+
+    // User 1 should not have any amount for protocol 2
+    let user1_amount_protocol2 = bridge.test_defi_holders_get(address::from_bytes(user1_address), defi_protocol_key2);
+    assert!(user1_amount_protocol2 == 0, 0);
+
+    // Check that two DefiTokensStakedEvent events were emitted
+    let staked_events = sui::event::events_by_type<bridge::bridge::DefiTokensStakedEvent>();
+    assert!(staked_events.length() == 2, 0);
+
+    bridge_wrap.return_bridge();
     env.destroy_env();
 }
 
