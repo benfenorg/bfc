@@ -128,7 +128,27 @@ impl EthBridgeEvent {
                             eth_bridge_event: bridge_event,
                         }))
                     }
-                    EthSuiBridgeEvents::TokensStakedFilter(_event) => None,
+                    EthSuiBridgeEvents::TokensStakedFilter(event) => {
+                        let bridge_event = match EthToSuiDefiBridgeV1::try_from(&event) {
+                            Ok(mut bridge_event) => {
+                                bridge_event.set_tx_hash(eth_tx_hash.as_bytes().to_vec());
+                                bridge_event.set_event_idx(eth_event_index);
+                                bridge_event
+                            }
+                            // This only happens when solidity code does not align with rust code.
+                            // When this happens in production, there is a risk of stuck bridge transfers.
+                            // We log error here.
+                            // TODO: add metrics and alert
+                            Err(e) => {
+                                return Err(BridgeError::Generic(format!("Manual intervention is required. Failed to convert TokensStakedFilter log to EthToSuiDefiBridgeV1. This indicates incorrect parameters or a bug in the code: {:?}. Err: {:?}", event, e)));
+                            }
+                        };
+                        Some(BridgeAction::EthToSuiDefiBridgeAction(EthToSuiDefiBridgeAction {  
+                            eth_tx_hash,
+                            eth_event_index,
+                            eth_bridge_event: bridge_event,
+                        }))
+                    },
                     EthSuiBridgeEvents::TokensUnStakedFilter(event) => {
                         let bridge_event = match EthToSuiDefiBridgeV1::try_from(&event) {
                             Ok(mut bridge_event) => {
@@ -293,8 +313,8 @@ impl TryFrom<&TokensStakedFilter> for EthToSuiDefiBridgeV1 {
             protocol_token_id: event.protocol_token_id,
             action_type: event.action_type,
             original_seq_num: event.origin_nonce,
-            sui_adjusted_amount: event.erc_20_adjusted_amount.as_u64(),
-            lp_token_amount: event.erc_2_0lp_token_amount.as_u64(),
+            sui_adjusted_amount: event.sui_adjusted_amount,
+            lp_token_amount: event.sui_lp_token_amount,
         })
     }
 }
@@ -316,8 +336,8 @@ impl TryFrom<&TokensUnStakedFilter> for EthToSuiDefiBridgeV1 {
             protocol_token_id: event.protocol_token_id,
             action_type: event.action_type,
             original_seq_num: event.origin_nonce,
-            sui_adjusted_amount: event.erc_20_adjusted_amount.as_u64(),
-            lp_token_amount: event.erc_2_0lp_token_amount.as_u64(),
+            sui_adjusted_amount: event.sui_adjusted_amount,
+            lp_token_amount: event.sui_lp_token_amount,
         })
     }
 }
