@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use jsonrpsee::http_client::HttpClient;
 use sui_json_rpc_api::{IndexerApiClient, TransactionBuilderClient, WriteApiClient};
 use sui_json_rpc_types::{SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
@@ -15,8 +14,6 @@ use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
 //use std::str::FromStr;
 use sui_json_rpc_types::SuiExecutionStatus;
 //use serde_json::json;
-use sui_types::SUI_FRAMEWORK_PACKAGE_ID;
-use move_core_types::annotated_value::MoveTypeLayout;
 use tracing::info;
 // use move_core_types::{
 //     account_address::AccountAddress, ident_str, identifier::Identifier, language_storage::TypeTag,
@@ -176,12 +173,4 @@ async fn do_get_owned_objects_without_filter(http_client: &HttpClient, address: 
         .data;
     Ok(objects)
 }
-
-fn hex_to_bytes(hex: &str) -> Vec<u8> {
-    (0..hex.len())
-        .step_by(2)
-        .map(|i| u8::from_str_radix(&hex[i..i+2], 16).unwrap())
-        .collect()
-}
-
 

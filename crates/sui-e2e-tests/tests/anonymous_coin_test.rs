@@ -13,7 +13,6 @@ use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
 use sui_json_rpc_types::SuiExecutionStatus;
 use serde_json::json;
 use sui_types::SUI_FRAMEWORK_PACKAGE_ID;
-use move_core_types::annotated_value::MoveTypeLayout;
 use tracing::info;
 mod publish_coin;
 
@@ -676,13 +675,6 @@ async fn do_get_owned_objects_without_filter(http_client: &HttpClient, address: 
         .await?
         .data;
     Ok(objects)
-}
-
-fn hex_to_bytes(hex: &str) -> Vec<u8> {
-    (0..hex.len())
-        .step_by(2)
-        .map(|i| u8::from_str_radix(&hex[i..i+2], 16).unwrap())
-        .collect()
 }
 
 
