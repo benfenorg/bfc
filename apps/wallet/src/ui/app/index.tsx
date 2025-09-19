@@ -46,7 +46,6 @@ import { MintAstable } from './pages/home/mint-astable';
 import { SwapAnonymous } from './pages/home/swap-anonymous';
 import TokenDetailsPage from './pages/home/tokens/TokenDetailsPage';
 import { TransferAnonymous } from './pages/home/transfer-anonymous';
-import { TransferAstable } from './pages/home/transfer-astable';
 import { RestrictedPage } from './pages/restricted';
 import SiteConnectPage from './pages/site-connect';
 import { StorageMigrationPage } from './pages/StorageMigrationPage';
@@ -132,7 +131,6 @@ const App = () => {
 				<Route path="swap-anonymous" element={<SwapAnonymous />} />
 				<Route path="mint-astable" element={<MintAstable />} />
 				<Route path="transfer-anonymous" element={<TransferAnonymous />} />
-				<Route path="transfer-astable" element={<TransferAstable />} />
 				<Route path="stake/*" element={<Staking />} />
 				<Route path="swap/*" element={<SwapPage />} />
 				<Route path="swap/from-assets" element={<FromAssets />} />

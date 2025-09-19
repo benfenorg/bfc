@@ -12,19 +12,26 @@ import { useSigner } from '_src/ui/app/hooks/useSigner';
 import BottomMenuLayout, { Content, Menu } from '_src/ui/app/shared/bottom-menu-layout';
 import { InputWithAction } from '_src/ui/app/shared/InputWithAction';
 import { Transaction } from '@benfen/bfc.js/transactions';
-import { BFC_DECIMALS, isValidBenfenAddress } from '@benfen/bfc.js/utils';
+import {
+	BFC_DECIMALS,
+	isValidBenfenAddress,
+	normalizeStructTag,
+	parseStructTag,
+} from '@benfen/bfc.js/utils';
 import { useGetAllAnonymousCoins } from '@mysten/core';
-import { ABFC_TYPE } from '@mysten/core/src/utils/constants';
 import { ArrowRight16 } from '@mysten/icons';
 import { useMutation } from '@tanstack/react-query';
 import { BigNumber } from 'bignumber.js';
 import clsx from 'clsx';
 import { Field, Form, Formik } from 'formik';
+import { uniq } from 'lodash';
+import { useMemo } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 
 const initialValues = {
+	type: '',
 	amount: '',
 	to: '',
 };
@@ -32,6 +39,7 @@ const initialValues = {
 type FormValues = typeof initialValues;
 
 const validationSchema = Yup.object({
+	type: Yup.string().required(),
 	amount: Yup.mixed<BigNumber>()
 		.transform((_, original) => new BigNumber(original))
 		.test('required', `\${path} is a required field`, (value) => {
@@ -58,16 +66,25 @@ export const TransferAnonymous = () => {
 		activeAccount?.address,
 	);
 
+	const types = useMemo(() => {
+		return uniq(
+			anonymousCoins?.map((i) => normalizeStructTag(parseStructTag(i.balance.type).typeParams[0])),
+		);
+	}, [anonymousCoins]);
+
 	const { mutateAsync: transfer } = useMutation({
 		mutationKey: ['transfer-anonymous-coins'],
 		mutationFn: async (values: FormValues) => {
 			const tx = new Transaction();
 			const bn = new BigNumber(values.amount).shiftedBy(BFC_DECIMALS).toString();
-			const [primary, ...others] = anonymousCoins!;
+			const coins = anonymousCoins?.filter(
+				(i) => normalizeStructTag(parseStructTag(i.balance.type).typeParams[0]) === values.type,
+			);
+			const [primary, ...others] = coins!;
 			if (others.length > 0) {
 				tx.moveCall({
 					target: `0x2::anonymous_pay::join_vec`,
-					typeArguments: [ABFC_TYPE],
+					typeArguments: [values.type],
 					arguments: [
 						tx.object(primary.id.id),
 						tx.makeMoveVec({ elements: others.map((i) => tx.object(i.id.id)) }),
@@ -77,7 +94,7 @@ export const TransferAnonymous = () => {
 
 			tx.moveCall({
 				target: `0x2::anonymous_pay::split_and_transfer`,
-				typeArguments: [ABFC_TYPE],
+				typeArguments: [values.type],
 				arguments: [tx.object(primary.id.id), tx.pure.u64(bn), tx.pure.address(values.to)],
 			});
 
@@ -130,6 +147,23 @@ export const TransferAnonymous = () => {
 											<div className="w-full flex flex-col flex-grow">
 												<div className="px-2 mb-2.5">
 													<Text variant="caption" color="steel" weight="semibold">
+														Select Coin Type
+													</Text>
+												</div>
+												<div className="w-full flex relative items-center flex-col">
+													<Field as="select" name="type">
+														<option value={''} className={'hidden'}></option>
+														{types?.map((i) => (
+															<option key={i} value={i}>
+																{parseStructTag(i).name}
+															</option>
+														))}
+													</Field>
+												</div>
+											</div>
+											<div className="w-full flex flex-col flex-grow mt-7.5">
+												<div className="px-2 mb-2.5">
+													<Text variant="caption" color="steel" weight="semibold">
 														Select Coin Amount to Transfer
 													</Text>
 												</div>
@@ -138,9 +172,7 @@ export const TransferAnonymous = () => {
 													type="numberInput"
 													name="amount"
 													placeholder="0.00"
-													suffix={` ABFC`}
 													allowNegative={false}
-													decimals
 													rounded="lg"
 													dark
 												/>
