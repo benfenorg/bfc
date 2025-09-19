@@ -2110,7 +2110,8 @@ fun test_defi_stake_success() {
     let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
         protocol_type,
         protocol_version,
-        protocol_token_id
+        protocol_token_id,
+        target_chain
     );
     
     let holder_amount = bridge.test_defi_holders_get(address::from_bytes(sender_address), defi_protocol_key);
@@ -2238,7 +2239,8 @@ fun test_defi_stake_success_multiple_stakes_same_user() {
     let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
         protocol_type,
         protocol_version,
-        protocol_token_id
+        protocol_token_id,
+        target_chain
     );
     
     let holder_amount = bridge.test_defi_holders_get(address::from_bytes(sender_address), defi_protocol_key);
@@ -2324,13 +2326,15 @@ fun test_defi_stake_success_different_users_protocols() {
     let defi_protocol_key1 = bridge::bridge::create_defi_protocol_key_for_testing(
         protocol_type1,
         protocol_version1,
-        protocol_token_id1
+        protocol_token_id1,
+        target_chain
     );
     
     let defi_protocol_key2 = bridge::bridge::create_defi_protocol_key_for_testing(
         protocol_type2,
         protocol_version2,
-        protocol_token_id2
+        protocol_token_id2,
+        target_chain
     );
     
     let user1_amount = bridge.test_defi_holders_get(address::from_bytes(user1_address), defi_protocol_key1);

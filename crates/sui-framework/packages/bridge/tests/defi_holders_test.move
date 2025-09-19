@@ -13,7 +13,7 @@ module bridge::defi_holders_test;
         env.create_bridge_default();
         
         let user_address = @0x1;
-        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3);
+        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3, 0);
         let amount = 1000;
 
         let mut bridge_wrap = env.bridge(user_address);
@@ -24,7 +24,7 @@ module bridge::defi_holders_test;
         let retrieved_amount = bridge.test_defi_holders_get(user_address, protocol_key);
         assert!(retrieved_amount == amount, 0);
 
-        let non_existent_key = create_defi_protocol_key_for_testing(2, 1, 4);
+        let non_existent_key = create_defi_protocol_key_for_testing(2, 1, 4, 0);
         let zero_amount = bridge.test_defi_holders_get(user_address, non_existent_key);
         assert!(zero_amount == 0, 0);
 
@@ -42,7 +42,7 @@ module bridge::defi_holders_test;
         env.create_bridge_default();
         
         let user_address = @0x1;
-        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3);
+        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3, 0);
         let amount1 = 1000;
         let amount2 = 500;
 
@@ -65,7 +65,7 @@ module bridge::defi_holders_test;
         env.create_bridge_default();
         
         let user_address = @0x1;
-        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3);
+        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3, 0);
         let initial_amount = 1000;
         let del_amount = 300;
 
@@ -98,7 +98,7 @@ module bridge::defi_holders_test;
         env.create_bridge_default();
         
         let user_address = @0x1;
-        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3);
+        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3, 0);
         let initial_amount = 1000;
         let del_amount = 1500;
 
@@ -127,8 +127,8 @@ module bridge::defi_holders_test;
         let user1 = @0x1;
         let user2 = @0x2;
         
-        let protocol_key1 = create_defi_protocol_key_for_testing(1, 1, 3);
-        let protocol_key2 = create_defi_protocol_key_for_testing(2, 1, 4);
+        let protocol_key1 = create_defi_protocol_key_for_testing(1, 1, 3, 0);
+        let protocol_key2 = create_defi_protocol_key_for_testing(2, 1, 4, 0);
         
         let amount1 = 1000;
         let amount2 = 2000;
@@ -164,7 +164,7 @@ module bridge::defi_holders_test;
         env.create_bridge_default();
         
         let user_address = @0x1;
-        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3);
+        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3, 0);
 
         let mut bridge_wrap = env.bridge(user_address);
         let bridge = bridge_wrap.bridge_ref_mut();
@@ -189,8 +189,8 @@ module bridge::defi_holders_test;
         env.create_bridge_default();
         
         let user_address = @0x1;
-        let protocol_key1 = create_defi_protocol_key_for_testing(1, 1, 3);
-        let protocol_key2 = create_defi_protocol_key_for_testing(2, 1, 4);
+        let protocol_key1 = create_defi_protocol_key_for_testing(1, 1, 3, 0);
+        let protocol_key2 = create_defi_protocol_key_for_testing(2, 1, 4, 0);
         let amount = 1000;
 
         let mut bridge_wrap = env.bridge(user_address);
@@ -224,7 +224,7 @@ module bridge::defi_holders_test;
         env.create_bridge_default();
         
         let user_address = @0x1;
-        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3);
+        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3, 0);
         let large_amount = 1000000000000; // 1 trillion
 
         let mut bridge_wrap = env.bridge(user_address);
@@ -258,8 +258,8 @@ module bridge::defi_holders_test;
         env.create_bridge_default();
         
         let user_address = @0x1;
-        let existing_protocol_key = create_defi_protocol_key_for_testing(1, 1, 3);
-        let nonexistent_protocol_key = create_defi_protocol_key_for_testing(2, 1, 4);
+        let existing_protocol_key = create_defi_protocol_key_for_testing(1, 1, 3, 0);
+        let nonexistent_protocol_key = create_defi_protocol_key_for_testing(2, 1, 4, 0);
         let amount = 1000;
 
         let mut bridge_wrap = env.bridge(user_address);
@@ -286,7 +286,7 @@ module bridge::defi_holders_test;
         env.create_bridge_default();
         
         let user_address = @0x1;
-        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3);
+        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3, 0);
         let amount = 1000;
 
         let mut bridge_wrap = env.bridge(user_address);
@@ -312,7 +312,7 @@ module bridge::defi_holders_test;
         env.create_bridge_default();
         
         let user_address = @0x1;
-        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3);
+        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3, 0);
         let amount = 1000;
 
         let mut bridge_wrap = env.bridge(user_address);
@@ -340,7 +340,7 @@ module bridge::defi_holders_test;
         env.create_bridge_default();
         
         let user_address = @0x1;
-        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3);
+        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3, 0);
         let amount = 0;
 
         let mut bridge_wrap = env.bridge(user_address);
@@ -362,7 +362,7 @@ module bridge::defi_holders_test;
         env.create_bridge_default();
         
         let user_address = @0x1;
-        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3);
+        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3, 0);
         let mut amounts = vector[100, 200, 300, 400];
 
         let mut bridge_wrap = env.bridge(user_address);
@@ -397,7 +397,7 @@ module bridge::defi_holders_test;
         env.create_bridge_default();
         
         let user_address = @0x1;
-        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3);
+        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3, 0);
         let _max_u64 = 18446744073709551615; // Maximum u64 value
         let half_max = 9223372036854775807;  // Approximately half of max u64
 
@@ -426,7 +426,7 @@ module bridge::defi_holders_test;
         let user1 = @0x1;
         let user2 = @0x2;
         let user3 = @0x3;
-        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3);
+        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3, 0);
         let amount = 1000;
 
         let mut bridge_wrap = env.bridge(user1);
@@ -460,7 +460,7 @@ module bridge::defi_holders_test;
         env.create_bridge_default();
         
         let user_address = @0x1;
-        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3);
+        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3, 0);
         let amount = 1000;
 
         let mut bridge_wrap = env.bridge(user_address);
@@ -484,9 +484,9 @@ module bridge::defi_holders_test;
         env.create_bridge_default();
         
         let user_address = @0x1;
-        let protocol_key1 = create_defi_protocol_key_for_testing(1, 1, 3);
-        let protocol_key2 = create_defi_protocol_key_for_testing(2, 1, 4);
-        let protocol_key3 = create_defi_protocol_key_for_testing(3, 1, 5);
+        let protocol_key1 = create_defi_protocol_key_for_testing(1, 1, 3, 0);
+        let protocol_key2 = create_defi_protocol_key_for_testing(2, 1, 4, 0);
+        let protocol_key3 = create_defi_protocol_key_for_testing(3, 1, 5, 0);
         let amount = 1000;
 
         let mut bridge_wrap = env.bridge(user_address);
@@ -523,8 +523,8 @@ module bridge::defi_holders_test;
         let user_address = @0x1;
         
         // Create protocol keys that are identical
-        let protocol_key1 = create_defi_protocol_key_for_testing(1, 1, 3);
-        let protocol_key2 = create_defi_protocol_key_for_testing(1, 1, 3);
+        let protocol_key1 = create_defi_protocol_key_for_testing(1, 1, 3, 0);
+        let protocol_key2 = create_defi_protocol_key_for_testing(1, 1, 3, 0);
         
         let amount1 = 1000;
         let amount2 = 2000;
@@ -552,7 +552,7 @@ module bridge::defi_holders_test;
         env.create_bridge_default();
         
         let user_address = @0x1;
-        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3);
+        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3, 0);
         let amount = 5000;
 
         let mut bridge_wrap = env.bridge(user_address);
@@ -571,7 +571,7 @@ module bridge::defi_holders_test;
         assert!(retrieved_amount == 0, 0);
 
         // Test with a different protocol key (should return 0)
-        let other_protocol_key = create_defi_protocol_key_for_testing(2, 1, 4);
+        let other_protocol_key = create_defi_protocol_key_for_testing(2, 1, 4, 0);
         let retrieved_amount = bridge.test_defi_holders_amount_get(user_address, other_protocol_key);
         assert!(retrieved_amount == 0, 0);
         

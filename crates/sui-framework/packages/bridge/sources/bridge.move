@@ -102,6 +102,7 @@ module bridge::bridge {
         protocol_type: u64,
         protocol_version: u64,
         protocol_token_id: u64,
+        target_chain: u8,
     }
 
 
@@ -715,6 +716,7 @@ module bridge::bridge {
             protocol_type: protocol_type,
             protocol_version: protocol_version,
             protocol_token_id: protocol_token_id,
+            target_chain: target_chain,
         };
         
         defi_holders_add(inner, address::from_bytes(sender_address), key, lp_token_amount);
@@ -2791,12 +2793,14 @@ module bridge::bridge {
     public fun create_defi_protocol_key_for_testing(
         protocol_type: u64,
         protocol_version: u64,
-        protocol_token_id: u64
+        protocol_token_id: u64,
+        target_chain: u8
     ): DefiProtocolKey {
         DefiProtocolKey {
             protocol_type,
             protocol_version,
             protocol_token_id,
+            target_chain,
         }
     }
 
