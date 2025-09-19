@@ -1884,6 +1884,11 @@ module bridge::bridge {
         );
     }
 
+    public fun defi_holders_amount_get(bridge: &Bridge, user_address: address, key: DefiProtocolKey): u64 {
+        let inner = load_inner(bridge);
+        inner.defi_holders_get(user_address, key)
+    }
+
     //////////////////////////////////////////////////////
     // DevInspect Functions for Read
     //
@@ -2545,7 +2550,7 @@ module bridge::bridge {
         seq_num
     }
 
-    public fun defi_holders_add(bridge: &mut BridgeInner, user_address: address, key: DefiProtocolKey, value: u64) {
+    fun defi_holders_add(bridge: &mut BridgeInner, user_address: address, key: DefiProtocolKey, value: u64) {
         if (!linked_table::contains(&bridge.defi_holders, user_address)) {
             let new_table = vec_map::empty<DefiProtocolKey, u64>();
             linked_table::push_back(&mut bridge.defi_holders, user_address, new_table);
@@ -2561,7 +2566,7 @@ module bridge::bridge {
         }
     }
 
-    public fun defi_holders_get(bridge: &BridgeInner, user_address: address, key: DefiProtocolKey): u64 {
+    fun defi_holders_get(bridge: &BridgeInner, user_address: address, key: DefiProtocolKey): u64 {
         if (!linked_table::contains(&bridge.defi_holders, user_address)) {
             return 0
         };
@@ -2574,7 +2579,7 @@ module bridge::bridge {
         *vec_map::get<DefiProtocolKey, u64>(user_protocol_table, &key)
     }
 
-    public fun defi_holders_del(bridge: &mut BridgeInner, user_address: address, key: DefiProtocolKey, value: u64): bool {
+    fun defi_holders_del(bridge: &mut BridgeInner, user_address: address, key: DefiProtocolKey, value: u64): bool {
         // If user doesn't exist in defi_holders, return false
         if (!linked_table::contains(&bridge.defi_holders, user_address)) {
             return false
@@ -2771,6 +2776,11 @@ module bridge::bridge {
     public fun test_defi_holders_del(bridge: &mut Bridge, user_address: address, key: DefiProtocolKey, value: u64): bool {
         let inner = bridge.load_inner_mut();
         inner.defi_holders_del(user_address, key, value)
+    }
+
+    #[test_only]
+    public fun test_defi_holders_amount_get(bridge: &Bridge, user_address: address, key: DefiProtocolKey): u64 {
+        bridge.defi_holders_amount_get(user_address, key)
     }
 
     /////////////////////////////////////////////////////

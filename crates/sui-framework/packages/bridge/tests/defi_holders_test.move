@@ -3,7 +3,7 @@
 
 #[test_only]
 module bridge::defi_holders_test;
-    use bridge::bridge::{test_defi_holders_add, test_defi_holders_get, test_defi_holders_del, create_defi_protocol_key_for_testing};
+    use bridge::bridge::{test_defi_holders_add, test_defi_holders_get, test_defi_holders_del, create_defi_protocol_key_for_testing, test_defi_holders_amount_get};
     use bridge::bridge_env::{create_env, create_bridge_default};
     use bridge::chain_ids;
 
@@ -541,6 +541,39 @@ module bridge::defi_holders_test;
         // Should have combined amount since keys are identical
         let retrieved_amount = bridge.test_defi_holders_get(user_address, protocol_key1);
         assert!(retrieved_amount == (amount1 + amount2), 0);
+        
+        bridge_wrap.return_bridge();
+        env.destroy_env();
+    }
+
+    #[test]
+    fun test_defi_holders_amount_get_simple() {
+        let mut env = create_env(chain_ids::sui_custom());
+        env.create_bridge_default();
+        
+        let user_address = @0x1;
+        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3);
+        let amount = 5000;
+
+        let mut bridge_wrap = env.bridge(user_address);
+        let bridge = bridge_wrap.bridge_ref_mut();
+
+        // Add some amount for the user
+        bridge.test_defi_holders_add(user_address, protocol_key, amount);
+
+        // Test that defi_holders_amount_get returns the correct amount
+        let retrieved_amount = bridge.test_defi_holders_amount_get(user_address, protocol_key);
+        assert!(retrieved_amount == amount, 0);
+
+        // Test with a different user (should return 0)
+        let other_user = @0x2;
+        let retrieved_amount = bridge.test_defi_holders_amount_get(other_user, protocol_key);
+        assert!(retrieved_amount == 0, 0);
+
+        // Test with a different protocol key (should return 0)
+        let other_protocol_key = create_defi_protocol_key_for_testing(2, 1, 4);
+        let retrieved_amount = bridge.test_defi_holders_amount_get(user_address, other_protocol_key);
+        assert!(retrieved_amount == 0, 0);
         
         bridge_wrap.return_bridge();
         env.destroy_env();
