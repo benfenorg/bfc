@@ -103,8 +103,8 @@ struct AnonymousSplitValueParams {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct AnonymousRestoreValueParams {
-    value1: String,
-    value2: String,
+    value1: Vec<u8>,
+    value2: Vec<u8>,
     signature: Vec<u8>,
     objectid: String,
     publickey: Vec<u8>,
@@ -621,7 +621,10 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                     
                     let data1 = restore_value_params.value1;
                     let data2 = restore_value_params.value2;
-                    match recover_value(data1, data2, mask_secret) {
+                    let data_str1 = String::from_utf8(data1).unwrap_or_default();
+                    let data_str2 = String::from_utf8(data2).unwrap_or_default();
+
+                    match recover_value(data_str1, data_str2, mask_secret) {
                         Ok(value) => JsonRpcResponse {
                             jsonrpc: "2.0".to_string(),
                             id: request.id,
@@ -635,7 +638,7 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                         },
                         Err(e) => {
                             warn!(
-                                "Invalid parameters for bfcx_getAnonymousRestoreValue: {}",
+                                "process recover_value error, caused by: {}",
                                 e
                             );
                             JsonRpcResponse {
