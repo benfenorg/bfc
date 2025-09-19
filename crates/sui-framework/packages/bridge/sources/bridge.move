@@ -1160,7 +1160,7 @@ module bridge::bridge {
 
         assert!(message.message_type() == message_types::defi(), EMustBeDefiMessage);
         assert!(message.message_version() == MESSAGE_VERSION_DEFI_OUT, EUnexpectedMessageVersion);
-        assert!(message.source_chain() != inner.chain_id, EOnlySupportDefiTransferOut);
+        assert!(message.source_chain() == inner.chain_id, EOnlySupportDefiTransferOut);
         let message_key = message.key();
         let record = &mut inner.token_transfer_records[message_key];
 
