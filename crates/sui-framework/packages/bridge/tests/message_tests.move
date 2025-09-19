@@ -157,6 +157,7 @@ module bridge::message_tests {
             3u64,  // protocol token id
             0u64,
             UNSTAKE_DEFI,   // unstake
+            100,
         );
         let payload = token_bridge_message.extract_defi_transfer_in_payload();
         assert!(payload.sender_address_defi_in() == defi_transfer_in_payload.sender_address_defi_in());
@@ -1000,7 +1001,8 @@ module bridge::message_tests {
             3u64,  // v3
             3u64,  // protocol token id
             0u64,
-            UNSTAKE_DEFI   // unstake
+            UNSTAKE_DEFI,   // unstake
+            100,
         )
     }
 
