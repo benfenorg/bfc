@@ -2089,7 +2089,8 @@ fun test_defi_stake_success() {
         protocol_version,
         protocol_token_id,
         0u64,
-        STAKE
+        STAKE,
+        100
     );
 
     // Create signatures
@@ -2151,7 +2152,8 @@ fun test_defi_stake_success_bridge_paused() {
         protocol_version,
         protocol_token_id,
         0u64,
-        STAKE
+        STAKE,
+        100
     );
 
     // Create signatures
@@ -2197,7 +2199,8 @@ fun test_defi_stake_success_multiple_stakes_same_user() {
         protocol_version,
         protocol_token_id,
         0u64,
-        STAKE
+        STAKE,
+        100
     );
 
     let signatures1 = sign_message_with(&env, message1, vector[0, 1, 2]);
@@ -2223,7 +2226,8 @@ fun test_defi_stake_success_multiple_stakes_same_user() {
         protocol_version,
         protocol_token_id,
         0u64,
-        STAKE
+        STAKE,
+        100
     );
 
     let signatures2 = sign_message_with(&env, message2, vector[0, 1, 2]);
@@ -2277,7 +2281,8 @@ fun test_defi_stake_success_different_users_protocols() {
         protocol_version1,
         protocol_token_id1,
         0u64,
-        STAKE
+        STAKE,
+        100
     );
 
     let signatures1 = sign_message_with(&env, message1, vector[0, 1, 2]);
@@ -2307,7 +2312,8 @@ fun test_defi_stake_success_different_users_protocols() {
         protocol_version2,
         protocol_token_id2,
         0u64,
-        STAKE
+        STAKE,
+        100
     );
 
     let signatures2 = sign_message_with(&env, message2, vector[0, 1, 2]);
