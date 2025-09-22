@@ -122,7 +122,7 @@ module bridge::message {
         protocol_token_id: u64,
         original_seq_num: u64,
         action_type: u8, // 0:stake, 1:unstake
-        lp_token_amount:u64,
+        lp_token_amount: u64,
     }
 
     public struct TokenTransferInPayload has drop {
@@ -1591,6 +1591,10 @@ module bridge::message {
 
     public fun amount_defi_in(self: &DefiTransferInPayload): u64 {
         self.amount
+    }
+
+    public fun lp_token_amount_defi_in(self: &DefiTransferInPayload): u64 {
+        self.lp_token_amount
     }
 
     public fun tx_hash_defi_in(self: &DefiTransferInPayload): vector<u8> {

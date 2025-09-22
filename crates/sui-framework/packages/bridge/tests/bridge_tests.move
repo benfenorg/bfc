@@ -20,6 +20,8 @@ use bridge::bridge::{
     transfer_status_claimed,
     transfer_status_not_found,
     transfer_status_pending,
+    test_defi_holders_amount_get,
+    defi_holders_amount_get,
     Bridge
 };
 use bridge::bridge_env::{
@@ -2114,7 +2116,7 @@ fun test_defi_stake_success() {
         target_chain
     );
     
-    let holder_amount = bridge.test_defi_holders_get(address::from_bytes(sender_address), defi_protocol_key);
+    let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
     assert!(holder_amount == amount, 0);
 
     bridge_wrap.return_bridge();
@@ -2243,8 +2245,9 @@ fun test_defi_stake_success_multiple_stakes_same_user() {
         target_chain
     );
     
-    let holder_amount = bridge.test_defi_holders_get(address::from_bytes(sender_address), defi_protocol_key);
-    assert!(holder_amount == (amount1 + amount2), 0);
+    let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    assert!(holder_amount == (1000 + 2000), 0);
+
 
     // Check that two DefiTokensStakedEvent events were emitted
     let staked_events = sui::event::events_by_type<bridge::bridge::DefiTokensStakedEvent>();
@@ -2337,14 +2340,14 @@ fun test_defi_stake_success_different_users_protocols() {
         target_chain
     );
     
-    let user1_amount = bridge.test_defi_holders_get(address::from_bytes(user1_address), defi_protocol_key1);
+    let user1_amount = bridge.defi_holders_amount_get(address::from_bytes(user1_address), defi_protocol_key1);
     assert!(user1_amount == amount1, 0);
     
-    let user2_amount = bridge.test_defi_holders_get(address::from_bytes(user2_address), defi_protocol_key2);
+    let user2_amount = bridge.defi_holders_amount_get(address::from_bytes(user2_address), defi_protocol_key2);
     assert!(user2_amount == amount2, 0);
 
     // User 1 should not have any amount for protocol 2
-    let user1_amount_protocol2 = bridge.test_defi_holders_get(address::from_bytes(user1_address), defi_protocol_key2);
+    let user1_amount_protocol2 = bridge.defi_holders_amount_get(address::from_bytes(user1_address), defi_protocol_key2);
     assert!(user1_amount_protocol2 == 0, 0);
 
     // Check that two DefiTokensStakedEvent events were emitted

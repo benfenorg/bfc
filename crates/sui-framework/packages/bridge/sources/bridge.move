@@ -96,7 +96,7 @@ module bridge::bridge {
         refund_records: LinkedTable<RefundMessageKey, BridgeRecord>,
         refund_admins: VecSet<String>,
         // bfc_system_id: UID,
-        defi_holders: LinkedTable<address, VecMap<DefiProtocolKey, u64>>,
+        defi_holders: LinkedTable<address, VecMap<DefiProtocolKey, DefiHolderInfo>>,
     }
 
     public struct DefiProtocolKey has copy, store, drop {
@@ -104,6 +104,11 @@ module bridge::bridge {
         protocol_version: u64,
         protocol_token_id: u64,
         target_chain: u8,
+    }
+
+    public struct DefiHolderInfo has copy, store, drop {
+        amount: u64,
+        lp_token_amount: u64,
     }
 
 
@@ -516,8 +521,9 @@ module bridge::bridge {
             protocol_token_id: protocol_token_id,
             target_chain: target_chain,
         };
-        assert!(inner.defi_holders_get(ctx.sender(), defi_protocol_key)>=amount, EDefiUnstakeAmountNotEnough);
-        inner.defi_holders_del(ctx.sender(), defi_protocol_key, amount);
+        let defi_info = inner.defi_holders_get(ctx.sender(), defi_protocol_key);
+        assert!(defi_info.amount >= amount, EDefiUnstakeAmountNotEnough);
+        inner.defi_holders_del(ctx.sender(), defi_protocol_key, amount, amount);
         //todo: @fei deal the fee after unstake is successful
         // //deal the cross fee and limit
         // let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,protocol_token_id,amount);
@@ -713,6 +719,7 @@ module bridge::bridge {
         protocol_type: u64,
         protocol_version: u64,
         protocol_token_id: u64,
+        amount: u64,
         lp_token_amount: u64,
     ) {
         assert!(!inner.paused, EBridgeUnavailable);
@@ -724,7 +731,7 @@ module bridge::bridge {
             target_chain: target_chain,
         };
         
-        defi_holders_add(inner, address::from_bytes(sender_address), key, lp_token_amount);
+        defi_holders_add(inner, address::from_bytes(sender_address), key, amount, lp_token_amount);
 
 
         emit(DefiTokensStakedEvent {
@@ -1226,7 +1233,8 @@ module bridge::bridge {
                  defi_payload.protocol_type_defi_in(), 
                  defi_payload.protocol_version_defi_in(),
                   defi_payload.protocol_token_id_defi_in(), 
-                  defi_payload.amount_defi_in()
+                  defi_payload.amount_defi_in(),
+                  defi_payload.lp_token_amount_defi_in()
             );
 
             // Store message and approval
@@ -1891,9 +1899,26 @@ module bridge::bridge {
         );
     }
 
+    public fun defi_holders_lp_token_amount_get(bridge: &Bridge, user_address: address, key: DefiProtocolKey): u64 {
+        let inner = load_inner(bridge);
+        let defi_info = inner.defi_holders_get(user_address, key);
+        defi_info.lp_token_amount
+    }
+
     public fun defi_holders_amount_get(bridge: &Bridge, user_address: address, key: DefiProtocolKey): u64 {
         let inner = load_inner(bridge);
-        inner.defi_holders_get(user_address, key)
+        let defi_info = inner.defi_holders_get(user_address, key);
+        defi_info.amount
+    }
+
+    #[test_only]
+    public fun test_defi_holders_info_amount_get(defi_info: &DefiHolderInfo): u64 {
+        defi_info.amount
+    }
+
+    #[test_only]
+    public fun test_defi_holders_info_lp_token_amount_get(defi_info: &DefiHolderInfo): u64 {
+        defi_info.lp_token_amount
     }
 
     //////////////////////////////////////////////////////
@@ -2557,36 +2582,38 @@ module bridge::bridge {
         seq_num
     }
 
-    fun defi_holders_add(bridge: &mut BridgeInner, user_address: address, key: DefiProtocolKey, value: u64) {
+    fun defi_holders_add(bridge: &mut BridgeInner, user_address: address, key: DefiProtocolKey, amount: u64, lp_token_amount: u64) {
         if (!linked_table::contains(&bridge.defi_holders, user_address)) {
-            let new_table = vec_map::empty<DefiProtocolKey, u64>();
+            let new_table = vec_map::empty<DefiProtocolKey, DefiHolderInfo>();
             linked_table::push_back(&mut bridge.defi_holders, user_address, new_table);
         };
         
         let user_protocol_table = linked_table::borrow_mut(&mut bridge.defi_holders, user_address);
         
-        if (vec_map::contains<DefiProtocolKey, u64>(user_protocol_table, &key)) {
-            let current_value = vec_map::get_mut<DefiProtocolKey, u64>(user_protocol_table, &key);
-            *current_value = *current_value + value;
+        if (vec_map::contains<DefiProtocolKey, DefiHolderInfo>(user_protocol_table, &key)) {
+            let current_value = vec_map::get_mut<DefiProtocolKey, DefiHolderInfo>(user_protocol_table, &key);
+            current_value.amount = current_value.amount + amount;
+            current_value.lp_token_amount = current_value.lp_token_amount + lp_token_amount;
         } else {
-            vec_map::insert<DefiProtocolKey, u64>(user_protocol_table, key, value);
+            let defi_info = DefiHolderInfo { amount: amount, lp_token_amount: lp_token_amount };
+            vec_map::insert<DefiProtocolKey, DefiHolderInfo>(user_protocol_table, key, defi_info);
         }
     }
 
-    fun defi_holders_get(bridge: &BridgeInner, user_address: address, key: DefiProtocolKey): u64 {
+    fun defi_holders_get(bridge: &BridgeInner, user_address: address, key: DefiProtocolKey): DefiHolderInfo {
         if (!linked_table::contains(&bridge.defi_holders, user_address)) {
-            return 0
+            return DefiHolderInfo { amount: 0, lp_token_amount: 0 }
         };
         
         let user_protocol_table = linked_table::borrow(&bridge.defi_holders, user_address);
-        if (!vec_map::contains<DefiProtocolKey, u64>(user_protocol_table, &key)) {
-            return 0
+        if (!vec_map::contains<DefiProtocolKey, DefiHolderInfo>(user_protocol_table, &key)) {
+            return DefiHolderInfo { amount: 0, lp_token_amount: 0 }
         };
         
-        *vec_map::get<DefiProtocolKey, u64>(user_protocol_table, &key)
+        *vec_map::get<DefiProtocolKey, DefiHolderInfo>(user_protocol_table, &key)
     }
 
-    fun defi_holders_del(bridge: &mut BridgeInner, user_address: address, key: DefiProtocolKey, value: u64): bool {
+    fun defi_holders_del(bridge: &mut BridgeInner, user_address: address, key: DefiProtocolKey, amount: u64, lp_token_amount: u64): bool {
         // If user doesn't exist in defi_holders, return false
         if (!linked_table::contains(&bridge.defi_holders, user_address)) {
             return false
@@ -2595,27 +2622,28 @@ module bridge::bridge {
         let user_protocol_table = linked_table::borrow_mut(&mut bridge.defi_holders, user_address);
         
         // If protocol key doesn't exist for this user, return false
-        if (!vec_map::contains<DefiProtocolKey, u64>(user_protocol_table, &key)) {
+        if (!vec_map::contains<DefiProtocolKey, DefiHolderInfo>(user_protocol_table, &key)) {
             return false
         };
         
-        let current_value = vec_map::get_mut<DefiProtocolKey, u64>(user_protocol_table, &key);
+        let current_value = vec_map::get_mut<DefiProtocolKey, DefiHolderInfo>(user_protocol_table, &key);
         
         // If requested deletion amount is greater than current value, return false
-        if (value > *current_value) {
+        if (amount > current_value.amount || lp_token_amount > current_value.lp_token_amount) {
             return false
-        } else if (value == *current_value) {
+        } else if (amount == current_value.amount && lp_token_amount == current_value.lp_token_amount) {
             // If deleting exact amount, remove the entry
-            vec_map::remove<DefiProtocolKey, u64>(user_protocol_table, &key);
+            vec_map::remove<DefiProtocolKey, DefiHolderInfo>(user_protocol_table, &key);
         } else {
-            // Otherwise, subtract the value
-            *current_value = *current_value - value;
+            // Otherwise, subtract the values
+            current_value.amount = current_value.amount - amount;
+            current_value.lp_token_amount = current_value.lp_token_amount - lp_token_amount;
         };
         
         // If user's protocol table is now empty, clean it up
-        if (vec_map::is_empty<DefiProtocolKey, u64>(user_protocol_table)) {
+        if (vec_map::is_empty<DefiProtocolKey, DefiHolderInfo>(user_protocol_table)) {
             let removed_table = linked_table::remove(&mut bridge.defi_holders, user_address);
-            vec_map::destroy_empty<DefiProtocolKey, u64>(removed_table);
+            vec_map::destroy_empty<DefiProtocolKey, DefiHolderInfo>(removed_table);
         };
         
         // Operation successful
@@ -2768,26 +2796,26 @@ module bridge::bridge {
     //
 
     #[test_only]
-    public fun test_defi_holders_add(bridge: &mut Bridge, user_address: address, key: DefiProtocolKey, value: u64) {
+    public fun test_defi_holders_add(bridge: &mut Bridge, user_address: address, key: DefiProtocolKey, amount: u64, lp_token_amount: u64) {
         let inner = bridge.load_inner_mut();
-        inner.defi_holders_add(user_address, key, value);
+        inner.defi_holders_add(user_address, key, amount, lp_token_amount);
     }
 
     #[test_only]
-    public fun test_defi_holders_get(bridge: &Bridge, user_address: address, key: DefiProtocolKey): u64 {
+    public fun test_defi_holders_get(bridge: &Bridge, user_address: address, key: DefiProtocolKey): DefiHolderInfo {
         let inner = bridge.load_inner();
         inner.defi_holders_get(user_address, key)
     }
 
     #[test_only]
-    public fun test_defi_holders_del(bridge: &mut Bridge, user_address: address, key: DefiProtocolKey, value: u64): bool {
+    public fun test_defi_holders_del(bridge: &mut Bridge, user_address: address, key: DefiProtocolKey, amount: u64, lp_token_amount: u64): bool {
         let inner = bridge.load_inner_mut();
-        inner.defi_holders_del(user_address, key, value)
+        inner.defi_holders_del(user_address, key, amount, lp_token_amount)
     }
 
     #[test_only]
     public fun test_defi_holders_amount_get(bridge: &Bridge, user_address: address, key: DefiProtocolKey): u64 {
-        bridge.defi_holders_amount_get(user_address, key)
+        bridge.defi_holders_lp_token_amount_get(user_address, key)
     }
 
     /////////////////////////////////////////////////////
