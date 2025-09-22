@@ -8,7 +8,7 @@ use sui_types::{parse_sui_struct_tag};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use test_cluster::{TestCluster, TestClusterBuilder};
 use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
-//use std::str::FromStr;
+use std::str::FromStr;
 use sui_json_rpc_types::SuiExecutionStatus;
 use serde_json::json;
 use sui_types::SUI_FRAMEWORK_PACKAGE_ID;
