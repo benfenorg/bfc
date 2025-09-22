@@ -44,6 +44,7 @@ module bridge::bridge {
     use bridge::limiter_fast_path;
     use bridge::message::TokenTransferInPayload;
     use sui::coin::split;
+    use bridge::message::amount;
     //  stable coin id
     const TOKEN_ID_USDC: u64 = 3;
     const TOKEN_ID_USDT: u64 = 4;
@@ -249,7 +250,7 @@ module bridge::bridge {
     const EOnlySupportDefiTransferIn: u64 = 59;
     const EOnlySupportUsdcOrUsdt: u64 = 60;
     const EOnlySupportUnstake: u64 = 61;
-
+    const EDefiUnstakeAmountNotEnough: u64 = 62;
     const CURRENT_VERSION: u64 = 1;
 
     public struct TokenTransferApproved has copy, drop {
@@ -505,29 +506,33 @@ module bridge::bridge {
         let (inner,parent_id) = load_inner_mut_and_uid(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
-        // assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
-
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::defi());
-        
         assert!(amount > 0, ETokenValueIsZero);
         assert!(protocol_token_id == TOKEN_ID_USDC || protocol_token_id == TOKEN_ID_USDT, EOnlySupportUsdcOrUsdt);
-        //todo: @fei check sender has permission to unstake
-
         assert!(tokenlist::is_supported_from_benfen(parent_id, target_chain as u64, protocol_token_id),EInvalidChainIDAndTokenIDExpect);
-        //deal the cross fee and limit
-        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,protocol_token_id,amount);
-        assert!(amount>fee,EInputAmountLteBridgeFee);
-        //todo: @fei store the fee amount
-        let amount_after_fee=amount-fee;
+        let defi_protocol_key = DefiProtocolKey{
+            protocol_type: protocol_type,
+            protocol_version: protocol_version,
+            protocol_token_id: protocol_token_id,
+            target_chain: target_chain,
+        };
+        assert!(inner.defi_holders_get(ctx.sender(), defi_protocol_key)>=amount, EDefiUnstakeAmountNotEnough);
+        inner.defi_holders_del(ctx.sender(), defi_protocol_key, amount);
+        //todo: @fei deal the fee after unstake is successful
+        // //deal the cross fee and limit
+        // let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,protocol_token_id,amount);
+        // assert!(amount>fee,EInputAmountLteBridgeFee);
+        // //todo: @fei store the fee amount
+        // let amount_after_fee=amount-fee;
         let route = chain_ids::get_route(inner.chain_id, target_chain);
-        assert!(amount_after_fee <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
+        assert!(amount <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
         
         let message = message::create_defi_transfer_out_message(
             inner.chain_id, 
             bridge_seq_num, 
             address::to_bytes(ctx.sender()), 
             target_chain, 
-            amount_after_fee, 
+            amount, 
             hex::decode(b""), 0u16, 
             protocol_type, 
             protocol_version, 
@@ -552,7 +557,7 @@ module bridge::bridge {
                 sender_address: address::to_bytes(ctx.sender()),
                 target_chain,
                 amount_before_fee: amount,
-                amount_after_fee: amount_after_fee,
+                amount_after_fee: amount,
                 protocol_type: protocol_type,
                 protocol_version: protocol_version,
                 protocol_token_id: protocol_token_id,
