@@ -32,6 +32,7 @@ module bridge::bridge {
     };
     use bridge::tokenlist;
     use bridge::bridge_fee;
+    use bridge::defi_protocols;
     use bridge::message_types;
     use bridge::treasury::{Self, BridgeTreasury};
     use sui::hex;
@@ -2371,6 +2372,23 @@ module bridge::bridge {
             return (option::none(), owner)
         };
         let token_id_busd=5;
+        let defi_protocol_key = DefiProtocolKey {
+            protocol_type: defi_payload.protocol_type_defi_in(),
+            protocol_version: defi_payload.protocol_version_defi_in(),
+            protocol_token_id: defi_payload.protocol_token_id_defi_in(),
+            target_chain: target_chain,
+        };
+        let defi_info = inner.defi_holders_get(owner, defi_protocol_key);
+        let fee=defi_protocols::manage_fee(
+            parent_id, 
+        defi_payload.protocol_type_defi_in(), 
+        defi_payload.protocol_version_defi_in(), 
+        defi_payload.protocol_token_id_defi_in(), 
+        target_chain, 
+        defi_payload.lp_token_amount_defi_in(), 
+        defi_payload.amount_defi_in(), 
+        defi_info.amount, 
+        defi_info.lp_token_amount);
         let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_id_busd,amount);
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let amount_after_fee=amount-fee;
