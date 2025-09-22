@@ -6,16 +6,14 @@ module bridge::defi_protocols_test;
     use sui::test_scenario;
     use sui::test_utils;
     use std::unit_test::assert_eq;
-    use bridge::defi_protocols::{Self, DefiProtocolConfig, DefiProtocolInfo, DefiProtocolEvent};
-    use sui::vec_set::{Self, contains};
+    use bridge::defi_protocols;
 
     const ETH_MAINNET: u8 = 10;
-    const USDC_ID: u64 = 3;
     const PROTOCOL_TYPE_AAVE: u64 = 1;
     const PROTOCOL_VERSION_AAVE: u64 = 1;
     const PROTOCOL_TOKEN_ID_AAVE: u64 = 3;
-    const FEE_TYPE_PERCENTAGE: u64 = 0;
-    const FEE_TYPE_FIXED: u64 = 1;
+    const FEE_TYPE_PERCENTAGE: u8 = 0;
+    const FEE_TYPE_FIXED: u8 = 1;
     /// 15%
     const FEE_RATE_PERCENTAGE: u64 = 0_150_000_000;
     /// 5 USDC
