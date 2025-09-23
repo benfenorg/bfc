@@ -69,9 +69,8 @@ module bridge::defi_protocols_test;
         test_utils::destroy(obj);
         test_scenario::end(scenario);
     }
-
     #[test]
-    #[expected_failure(abort_code = 1)] // EDefiProtocolConfigNotFound
+    #[expected_failure(abort_code = defi_protocols::EDefiProtocolConfigNotFound)]
     fun test_delete_existing_protocol() {
         let mut scenario = test_scenario::begin(@0x1);
         let ctx = test_scenario::ctx(&mut scenario);
@@ -85,196 +84,133 @@ module bridge::defi_protocols_test;
         test_scenario::end(scenario);
     }
 
+    #[test]
+    fun test_manage_fee_gt_0() {
+        let mut scenario = test_scenario::begin(@0x1);
+        let ctx = test_scenario::ctx(&mut scenario);
+        let mut obj = new(ctx);
+        defi_protocols::new_defi_protocol_config_for_testing(&mut obj.id,ctx);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE);
+        // 测试百分比费率
+        let fee = defi_protocols::manage_fee(
+            &obj.id,
+            PROTOCOL_TYPE_AAVE,
+            PROTOCOL_VERSION_AAVE,
+            PROTOCOL_TOKEN_ID_AAVE,
+            ETH_MAINNET,
+            100, // lp_amount_withdraw
+            1100, // amount_withdraw
+            2000, // amount_in_record
+            100 // lp_amount_in_record
+        );
+        //percentage=100/(100+100)=0.5
+        //赎回本金=2000*0.5=1000
+        //赎回利息=1100-1000=100
+        //fee=100*0.15=15
+        assert_eq!(fee, 15);
 
+        // 测试固定费率
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED);
+        let fee = defi_protocols::manage_fee(
+            &obj.id,
+            PROTOCOL_TYPE_AAVE,
+            PROTOCOL_VERSION_AAVE,
+            PROTOCOL_TOKEN_ID_AAVE,
+            ETH_MAINNET,
+            100, // lp_amount_withdraw
+            1100, // amount_withdraw
+            1000, // amount_in_record
+            100 // lp_amount_in_record
+        );
+        assert_eq!(fee, FEE_RATE_FIXED);
+        test_utils::destroy(obj);
+        test_scenario::end(scenario);
+    }
 
-    // #[test]
-    // #[expected_failure(abort_code = 1)] // EDefiProtocolConfigNotFound
-    // fun test_get_nonexistent_protocol() {
-    //     let mut scenario = test::begin(@0x1);
-    //     let mut ctx = ctx(&mut scenario);
-        
-    //     let mut parent = object::new(&mut ctx);
-    //     let parent_id = object::uid_to_inner(&parent);
-        
-    //     defi_protocols::registry(parent_id, &mut ctx);
-        
-    //     // 尝试获取不存在的协议
-    //     defi_protocols::get_protocol_info(parent_id, PROTOCOL_TYPE_1, PROTOCOL_VERSION_1, PROTOCOL_TOKEN_ID_1);
-        
-    //     object::delete(parent);
-    //     test::end(scenario);
-    // }
+    #[test]
+    fun test_manage_fee_profit_lt_0() {
+        let mut scenario = test_scenario::begin(@0x1);
+        let ctx = test_scenario::ctx(&mut scenario);
+        let mut obj = new(ctx);
+        defi_protocols::new_defi_protocol_config_for_testing(&mut obj.id,ctx);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE);
+        // 测试百分比费率
+        let fee = defi_protocols::manage_fee(
+            &obj.id,
+            PROTOCOL_TYPE_AAVE,
+            PROTOCOL_VERSION_AAVE,
+            PROTOCOL_TOKEN_ID_AAVE,
+            ETH_MAINNET,
+            100, // lp_amount_withdraw
+            997, // amount_withdraw
+            2000, // amount_in_record
+            100 // lp_amount_in_record
+        );
+        //percentage=100/(100+100)=0.5
+        //赎回本金=2000*0.5=1000
+        //赎回利息=997-1000=-3
+        //fee=0
+        assert_eq!(fee, 0);
 
-    // #[test]
-    // fun test_protocol_info_getters() {
-    //     let mut scenario = test::begin(@0x1);
-    //     let mut ctx = ctx(&mut scenario);
-        
-    //     let mut parent = object::new(&mut ctx);
-    //     let parent_id = object::uid_to_inner(&parent);
-        
-    //     defi_protocols::registry(parent_id, &mut ctx);
-    //     defi_protocols::add_defi_protocol(parent_id, PROTOCOL_TYPE_1, PROTOCOL_VERSION_1, PROTOCOL_TOKEN_ID_1, CHAIN_ID_1);
-        
-    //     let protocol_info = defi_protocols::get_protocol_info(parent_id, PROTOCOL_TYPE_1, PROTOCOL_VERSION_1, PROTOCOL_TOKEN_ID_1);
-        
-    //     // 测试所有 getter 方法
-    //     assert!(defi_protocols::protocol_type(&protocol_info) == PROTOCOL_TYPE_1, 0);
-    //     assert!(defi_protocols::protocol_version(&protocol_info) == PROTOCOL_VERSION_1, 1);
-    //     assert!(defi_protocols::chain_id(&protocol_info) == CHAIN_ID_1, 2);
-        
-    //     object::delete(parent);
-    //     test::end(scenario);
-    // }
+        // 测试固定费率
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED);
+        let fee = defi_protocols::manage_fee(
+            &obj.id,
+            PROTOCOL_TYPE_AAVE,
+            PROTOCOL_VERSION_AAVE,
+            PROTOCOL_TOKEN_ID_AAVE,
+            ETH_MAINNET,
+            100, // lp_amount_withdraw
+            997, // amount_withdraw
+            2000, // amount_in_record
+            100 // lp_amount_in_record
+        );
+        assert_eq!(fee, 0);
 
-    // #[test]
-    // fun test_defi_protocol_config_key() {
-    //     let mut scenario = test::begin(@0x1);
-    //     let mut ctx = ctx(&mut scenario);
-        
-    //     // 测试 DefiProtocolConfigKey 的创建和比较
-    //     let key1 = DefiProtocolConfigKey {
-    //         protocol_type: PROTOCOL_TYPE_1,
-    //         protocol_version: PROTOCOL_VERSION_1,
-    //         protocol_token_id: PROTOCOL_TOKEN_ID_1,
-    //     };
-        
-    //     let key2 = DefiProtocolConfigKey {
-    //         protocol_type: PROTOCOL_TYPE_1,
-    //         protocol_version: PROTOCOL_VERSION_1,
-    //         protocol_token_id: PROTOCOL_TOKEN_ID_1,
-    //     };
-        
-    //     let key3 = DefiProtocolConfigKey {
-    //         protocol_type: PROTOCOL_TYPE_2,
-    //         protocol_version: PROTOCOL_VERSION_1,
-    //         protocol_token_id: PROTOCOL_TOKEN_ID_1,
-    //     };
-        
-    //     // 相同键应该相等
-    //     assert!(key1 == key2, 0);
-    //     // 不同键应该不相等
-    //     assert!(key1 != key3, 1);
-        
-    //     test::end(scenario);
-    // }
+        test_utils::destroy(obj);
+        test_scenario::end(scenario);
+    }
 
-    // #[test]
-    // fun test_defi_protocol_info() {
-    //     let mut scenario = test::begin(@0x1);
-    //     let mut ctx = ctx(&mut scenario);
-        
-    //     // 测试 DefiProtocolInfo 的创建和字段访问
-    //     let info = DefiProtocolInfo {
-    //         protocol_type: PROTOCOL_TYPE_1,
-    //         protocol_version: PROTOCOL_VERSION_1,
-    //         protocol_token_id: PROTOCOL_TOKEN_ID_1,
-    //         chain_id: CHAIN_ID_1,
-    //     };
-        
-    //     assert!(info.protocol_type == PROTOCOL_TYPE_1, 0);
-    //     assert!(info.protocol_version == PROTOCOL_VERSION_1, 1);
-    //     assert!(info.protocol_token_id == PROTOCOL_TOKEN_ID_1, 2);
-    //     assert!(info.chain_id == CHAIN_ID_1, 3);
-        
-    //     test::end(scenario);
-    // }
+    #[test]
+    fun test_manage_fee_profit_eq_0() {
+        let mut scenario = test_scenario::begin(@0x1);
+        let ctx = test_scenario::ctx(&mut scenario);
+        let mut obj = new(ctx);
+        defi_protocols::new_defi_protocol_config_for_testing(&mut obj.id,ctx);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE);
+        // 测试百分比费率
+        let fee = defi_protocols::manage_fee(
+            &obj.id,
+            PROTOCOL_TYPE_AAVE,
+            PROTOCOL_VERSION_AAVE,
+            PROTOCOL_TOKEN_ID_AAVE,
+            ETH_MAINNET,
+            100, // lp_amount_withdraw
+            1000, // amount_withdraw
+            2000, // amount_in_record
+            100 // lp_amount_in_record
+        );
+        //percentage=100/(100+100)=0.5
+        //赎回本金=2000*0.5=1000
+        //赎回利息=1000-1000=0
+        //fee=0
+        assert_eq!(fee, 0);
 
-    // #[test]
-    // fun test_defi_protocol_event() {
-    //     let mut scenario = test::begin(@0x1);
-    //     let mut ctx = ctx(&mut scenario);
-        
-    //     // 测试 DefiProtocolEvent 的创建
-    //     let event = DefiProtocolEvent {
-    //         protocol_type: PROTOCOL_TYPE_1,
-    //         protocol_version: PROTOCOL_VERSION_1,
-    //         protocol_token_id: PROTOCOL_TOKEN_ID_1,
-    //         chain_id: CHAIN_ID_1,
-    //     };
-        
-    //     assert!(event.protocol_type == PROTOCOL_TYPE_1, 0);
-    //     assert!(event.protocol_version == PROTOCOL_VERSION_1, 1);
-    //     assert!(event.protocol_token_id == PROTOCOL_TOKEN_ID_1, 2);
-    //     assert!(event.chain_id == CHAIN_ID_1, 3);
-        
-    //     test::end(scenario);
-    // }
+        // 测试固定费率
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED);
+        let fee = defi_protocols::manage_fee(
+            &obj.id,
+            PROTOCOL_TYPE_AAVE,
+            PROTOCOL_VERSION_AAVE,
+            PROTOCOL_TOKEN_ID_AAVE,
+            ETH_MAINNET,
+            100, // lp_amount_withdraw
+            1000, // amount_withdraw
+            2000, // amount_in_record
+            100 // lp_amount_in_record
+        );
+        assert_eq!(fee, 0);
 
-    // #[test]
-    // fun test_new_limiter_fast_path_for_testing() {
-    //     let mut scenario = test::begin(@0x1);
-    //     let mut ctx = ctx(&mut scenario);
-        
-    //     let mut parent = object::new(&mut ctx);
-    //     let parent_id = object::uid_to_inner(&parent);
-        
-    //     // 使用测试专用函数
-    //     defi_protocols::new_limiter_fast_path_for_testing(parent_id, &mut ctx);
-        
-    //     // 验证注册成功
-    //     let config = defi_protocols::borrow(parent_id);
-    //     assert!(config != &defi_protocols::DefiProtocolConfig { protocol_info_map: defi_protocols::table::new(&mut ctx) }, 0);
-        
-    //     object::delete(parent);
-    //     test::end(scenario);
-    // }
-
-    // #[test]
-    // #[expected_failure(abort_code = 0)] // EDefiProtocolConfigRegistryAlreadyExists
-    // fun test_new_limiter_fast_path_already_exists() {
-    //     let mut scenario = test::begin(@0x1);
-    //     let mut ctx = ctx(&mut scenario);
-        
-    //     let mut parent = object::new(&mut ctx);
-    //     let parent_id = object::uid_to_inner(&parent);
-        
-    //     // 第一次注册
-    //     defi_protocols::new_limiter_fast_path_for_testing(parent_id, &mut ctx);
-        
-    //     // 第二次注册应该失败
-    //     defi_protocols::new_limiter_fast_path_for_testing(parent_id, &mut ctx);
-        
-    //     object::delete(parent);
-    //     test::end(scenario);
-    // }
-
-    // #[test]
-    // fun test_complex_protocol_scenario() {
-    //     let mut scenario = test::begin(@0x1);
-    //     let mut ctx = ctx(&mut scenario);
-        
-    //     let mut parent = object::new(&mut ctx);
-    //     let parent_id = object::uid_to_inner(&parent);
-        
-    //     defi_protocols::registry(parent_id, &mut ctx);
-        
-    //     // 添加多个不同版本的协议
-    //     defi_protocols::add_defi_protocol(parent_id, 1, 1, 100, 1); // Uniswap V1
-    //     defi_protocols::add_defi_protocol(parent_id, 1, 2, 100, 1); // Uniswap V2
-    //     defi_protocols::add_defi_protocol(parent_id, 1, 3, 100, 1); // Uniswap V3
-    //     defi_protocols::add_defi_protocol(parent_id, 2, 1, 200, 2); // Compound V1
-    //     defi_protocols::add_defi_protocol(parent_id, 2, 2, 200, 2); // Compound V2
-        
-    //     // 验证所有协议
-    //     let uniswap_v1 = defi_protocols::get_protocol_info(parent_id, 1, 1, 100);
-    //     let uniswap_v2 = defi_protocols::get_protocol_info(parent_id, 1, 2, 100);
-    //     let uniswap_v3 = defi_protocols::get_protocol_info(parent_id, 1, 3, 100);
-    //     let compound_v1 = defi_protocols::get_protocol_info(parent_id, 2, 1, 200);
-    //     let compound_v2 = defi_protocols::get_protocol_info(parent_id, 2, 2, 200);
-        
-    //     assert!(defi_protocols::protocol_type(&uniswap_v1) == 1, 0);
-    //     assert!(defi_protocols::protocol_version(&uniswap_v1) == 1, 1);
-    //     assert!(defi_protocols::protocol_type(&uniswap_v2) == 1, 2);
-    //     assert!(defi_protocols::protocol_version(&uniswap_v2) == 2, 3);
-    //     assert!(defi_protocols::protocol_type(&uniswap_v3) == 1, 4);
-    //     assert!(defi_protocols::protocol_version(&uniswap_v3) == 3, 5);
-    //     assert!(defi_protocols::protocol_type(&compound_v1) == 2, 6);
-    //     assert!(defi_protocols::protocol_version(&compound_v1) == 1, 7);
-    //     assert!(defi_protocols::protocol_type(&compound_v2) == 2, 8);
-    //     assert!(defi_protocols::protocol_version(&compound_v2) == 2, 9);
-        
-    //     object::delete(parent);
-    //     test::end(scenario);
-    // }
-}
+        test_utils::destroy(obj);
+        test_scenario::end(scenario);
+    }

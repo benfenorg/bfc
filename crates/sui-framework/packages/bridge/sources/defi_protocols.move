@@ -135,15 +135,25 @@ module bridge::defi_protocols {
         let lp_amount_in_record_u256 = lp_amount_in_record as u256;
         let amount_withdraw_u256 = amount_withdraw as u256;
         let amount_in_record_u256 = amount_in_record as u256;
+        let lp_decimal=10000;
         //赎回的LP占比
-        let lp_percent=lp_amount_withdraw_u256/(lp_amount_withdraw_u256+lp_amount_in_record_u256);
+        let lp_percent=lp_amount_withdraw_u256*lp_decimal/(lp_amount_withdraw_u256+lp_amount_in_record_u256);
         //赎回的本金
-        let principal=amount_in_record_u256*lp_percent;
+        let principal=amount_in_record_u256*lp_percent/lp_decimal;
         //赎回的利息
-        let profit = amount_withdraw_u256-principal;
+        let profit = if (amount_withdraw_u256>principal) {
+            amount_withdraw_u256-principal
+        } else {
+            0u256
+        };
+
         //计算管理费用
         let fee: u64 = if (protocol_info.fee_type == FEE_TYPE_FIXED) {
-            protocol_info.fee_rate
+            if (profit > (protocol_info.fee_rate as u256)) {
+                protocol_info.fee_rate
+            } else {
+                profit as u64
+            }
         } else {
             ((profit * (protocol_info.fee_rate as u256)) / 1_000_000_000) as u64
         };
