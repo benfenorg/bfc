@@ -11,7 +11,6 @@ module bridge::defi_protocols {
     const EDefiProtocolConfigRegistryAlreadyExists: u64 = 0;
     const EDefiProtocolConfigNotFound: u64 = 1;
 
-    const FEE_TYPE_PERCENTAGE: u8 = 0;
     const FEE_TYPE_FIXED: u8 = 1;
     
 
@@ -117,7 +116,7 @@ module bridge::defi_protocols {
     }
 
     public(package) fun manage_fee(
-        parent_id: &mut UID,
+        parent_id: &UID,
         protocol_type: u64,
         protocol_version: u64,
         protocol_token_id: u64,

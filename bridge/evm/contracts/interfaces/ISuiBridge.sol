@@ -72,7 +72,7 @@ interface ISuiBridge {
         bytes recipientAddress, // benfen 上用户的地址
         address senderAddress, // 资管合约地址
         uint64 suiAdjustedAmount, //aave 返回的 usdt 数量
-        uint64 suiLpTokenAmount, //赎回 LP 的 amount
+        uint64 suiLpTokenAmount, //赎回 LP 的 amount 统一成 9 位小数
         uint64  protocolType,
         uint64 protocolVersion,
         uint64 protocolTokenId,
