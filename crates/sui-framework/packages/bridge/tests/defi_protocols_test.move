@@ -215,3 +215,47 @@ module bridge::defi_protocols_test;
         test_utils::destroy(obj);
         test_scenario::end(scenario);
     }
+
+    #[test]
+    fun test_manage_fee_unstake_all() {
+        let mut scenario = test_scenario::begin(@0x1);
+        let ctx = test_scenario::ctx(&mut scenario);
+        let mut obj = new(ctx);
+        defi_protocols::new_defi_protocol_config_for_testing(&mut obj.id,ctx);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE);
+        // 测试百分比费率
+        let (fee, _principal) = defi_protocols::manage_fee(
+            &obj.id,
+            PROTOCOL_TYPE_AAVE,
+            PROTOCOL_VERSION_AAVE,
+            PROTOCOL_TOKEN_ID_AAVE,
+            ETH_MAINNET,
+            100, // lp_amount_withdraw
+            1100, // amount_withdraw
+            1000, // amount_in_record
+            0 // lp_amount_in_record
+        );
+        //percentage=100/(100+0)=1
+        //赎回本金=1000*1=1000
+        //赎回利息=1100-1000=100
+        //fee=100*0.15=15
+        assert_eq!(fee, 15);
+
+        // 测试固定费率
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED);
+        let decimal_token=1_000_000_000;
+        let (fee, _principal) = defi_protocols::manage_fee(
+            &obj.id,
+            PROTOCOL_TYPE_AAVE,
+            PROTOCOL_VERSION_AAVE,
+            PROTOCOL_TOKEN_ID_AAVE,
+            ETH_MAINNET,
+            100*decimal_token, // lp_amount_withdraw
+            1100*decimal_token, // amount_withdraw
+            1000*decimal_token, // amount_in_record
+            0 // lp_amount_in_record
+        );
+        assert_eq!(fee, FEE_RATE_FIXED);
+        test_utils::destroy(obj);
+        test_scenario::end(scenario);
+    }
