@@ -2371,7 +2371,6 @@ module bridge::bridge {
             emit(TokenTransferLimitExceed { message_key: key });
             return (option::none(), owner)
         };
-        let token_id_busd=5;
         let defi_protocol_key = DefiProtocolKey {
             protocol_type: defi_payload.protocol_type_defi_in(),
             protocol_version: defi_payload.protocol_version_defi_in(),
@@ -2389,7 +2388,6 @@ module bridge::bridge {
         defi_payload.amount_defi_in(), 
         defi_info.amount, 
         defi_info.lp_token_amount);
-        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_id_busd,amount);
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let amount_after_fee=amount-fee;
         // claim from treasury

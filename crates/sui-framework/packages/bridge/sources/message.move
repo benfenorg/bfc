@@ -8,7 +8,6 @@ module bridge::message {
 
     use bridge::chain_ids;
     use bridge::message_types;
-    use std::u64;
 
     const CURRENT_MESSAGE_VERSION: u8 = 1;
     const CURRENT_MESSAGE_VERSION_V2: u8 = 2;
