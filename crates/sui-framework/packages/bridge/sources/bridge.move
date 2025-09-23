@@ -2317,7 +2317,7 @@ module bridge::bridge {
         assert!(inner.token_transfer_records.contains(key), EMessageNotFoundInRecords);
 
         // retrieve approved bridge message
-        let record = &mut inner.token_transfer_records[key];
+        let record = &inner.token_transfer_records[key];
         // ensure this is a defi bridge message
         assert!(
             &record.message.message_type() == message_types::defi(),
@@ -2400,7 +2400,7 @@ module bridge::bridge {
             bridge_fee::deposit_fee(parent_id, fee_coin);
         };
         
-        record.claimed = true;
+        inner.token_transfer_records[key].claimed = true;
         emit(TokenTransferClaimed { message_key: key });
         emit(DefiTokensUnstakeEvent {
             original_seq_num: defi_payload.original_seq_num_defi_in(),
