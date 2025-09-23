@@ -525,12 +525,6 @@ module bridge::bridge {
         let defi_info = inner.defi_holders_get(ctx.sender(), defi_protocol_key);
         assert!(defi_info.amount >= amount, EDefiUnstakeAmountNotEnough);
         inner.defi_holders_del(ctx.sender(), defi_protocol_key, amount, amount);
-        //todo: @fei deal the fee after unstake is successful
-        // //deal the cross fee and limit
-        // let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,protocol_token_id,amount);
-        // assert!(amount>fee,EInputAmountLteBridgeFee);
-        // //todo: @fei store the fee amount
-        // let amount_after_fee=amount-fee;
         let route = chain_ids::get_route(inner.chain_id, target_chain);
         assert!(amount <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
         
@@ -2301,6 +2295,28 @@ module bridge::bridge {
         (option::none(), owner)
     }
 
+    // adjust amount for busd out
+    fun adjust_amount_busd_out(target_chain: u8,amount: u64): u64 {
+        let need_adjust:bool=target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom();
+        let token_amount=if (need_adjust) {
+             amount/1000u64
+        }else{
+             amount
+        };
+        token_amount
+    }
+
+    // adjust amount for usdc/usdt in
+    fun adjust_amount_usdc_usdt_in(source_chain: u8,amount: u64): u64 {
+        let need_adjust:bool=source_chain==chain_ids::eth_mainnet() || source_chain==chain_ids::eth_sepolia() || source_chain==chain_ids::eth_custom();
+        let token_amount=if (need_adjust) {
+             (amount as u128 * 1000u128) as u64
+        }else{
+             amount
+        };
+        token_amount
+    }
+
     fun claim_stable_token_for_defi_internal<T>(
         bridge: &mut Bridge,
         bfc_system_state: &mut BfcSystemState,
@@ -2356,7 +2372,7 @@ module bridge::bridge {
             EUnexpectedTokenType,
         );
         //todo: @fei check the decimals of the token
-        let amount = defi_payload.amount_defi_in();
+        let amount = adjust_amount_usdc_usdt_in(source_chain, defi_payload.amount_defi_in());
         assert!(amount <= inner.limiter.get_mint_busd_max_limit(), EInvalidMintAmount);
         // Make sure transfer is within limit.
         if (!inner
@@ -2385,7 +2401,7 @@ module bridge::bridge {
         defi_payload.protocol_token_id_defi_in(), 
         target_chain, 
         defi_payload.lp_token_amount_defi_in(), 
-        defi_payload.amount_defi_in(), 
+        amount, 
         defi_info.amount, 
         defi_info.lp_token_amount);
         assert!(amount>fee,EInputAmountLteBridgeFee);
