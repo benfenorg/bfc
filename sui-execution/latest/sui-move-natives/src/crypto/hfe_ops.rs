@@ -57,8 +57,6 @@ pub fn hfe_ops_add(
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult>{
 
-    //todo: add result overflow defense.
-
     let anonymous_compute_cost = &context
         .extensions()
         .get::<NativesCostTable>()
@@ -835,18 +833,21 @@ impl AnonymousClient {
 
         let resp = post(&format!("{}/rpc", self.base_url)).timeout(Duration::from_secs(10))
             .json(&data)?
-            .send()?;
-
-
-
-        if resp.is_success() {
-            let response_json: serde_json::Value = resp.json()?;
-            println!("Server responded with: {}", response_json);
-            Ok(response_json)
-
-        } else {
-            eprintln!("POST request failed with status: {}", resp.status());
-            Err(anyhow!("post request failed").into())
+            .send();
+        match resp {
+            Ok(resp) => {
+                let response_json: serde_json::Value = resp.json()?;
+                println!("Server responded with: {}", response_json);
+                Ok(response_json)
+            },
+            Err(Error::Timeout) => {
+                println!("The request timed out. Please check the network or try again later");
+                Err(anyhow!("request time out").into())
+            }
+            Err(e) => {
+                eprintln!("POST request failed with status: {:?},", e.to_string());
+                Err(anyhow!("post request failed").into())
+            }
         }
     }
 }
