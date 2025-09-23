@@ -525,7 +525,7 @@ module bridge::bridge {
         };
         let defi_info = inner.defi_holders_get(ctx.sender(), defi_protocol_key);
         assert!(defi_info.amount >= amount, EDefiUnstakeAmountNotEnough);
-        inner.defi_holders_del(ctx.sender(), defi_protocol_key, amount, amount);
+        inner.defi_holders_del(ctx.sender(), defi_protocol_key, 0, amount);
         let route = chain_ids::get_route(inner.chain_id, target_chain);
         assert!(amount <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
         
@@ -2396,7 +2396,7 @@ module bridge::bridge {
             target_chain: target_chain,
         };
         let defi_info = inner.defi_holders_get(owner, defi_protocol_key);
-        let fee=defi_protocols::manage_fee(
+        let (fee, principal)=defi_protocols::manage_fee(
             parent_id, 
         defi_payload.protocol_type_defi_in(), 
         defi_payload.protocol_version_defi_in(), 
@@ -2415,7 +2415,7 @@ module bridge::bridge {
             let fee_coin=bfc_system_state.mint_stable<BUSD>(fee,cap, ctx);
             bridge_fee::deposit_fee(parent_id, fee_coin);
         };
-        
+        inner.defi_holders_del(ctx.sender(), defi_protocol_key, principal, 0);
         inner.token_transfer_records[key].claimed = true;
         emit(TokenTransferClaimed { message_key: key });
         emit(DefiTokensUnstakeEvent {

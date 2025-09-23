@@ -115,6 +115,8 @@ module bridge::defi_protocols {
         emit(DefiProtocolEvent { protocol_type, protocol_version, protocol_token_id, chain_id });
     }
 
+    /// 计算管理费用
+    /// 返回值：(管理费用, 赎回本金)
     public(package) fun manage_fee(
         parent_id: &UID,
         protocol_type: u64,
@@ -125,7 +127,7 @@ module bridge::defi_protocols {
         amount_withdraw: u64,
         amount_in_record: u64,
         lp_amount_in_record: u64,
-    ): u64 {
+    ): (u64, u64) {
         let self=borrow(parent_id);
         let config_key = DefiProtocolKey { protocol_type, protocol_version, protocol_token_id, chain_id };
         assert!(self.protocol_info_map.contains(config_key), EDefiProtocolConfigNotFound);
@@ -157,7 +159,7 @@ module bridge::defi_protocols {
         } else {
             ((profit * (protocol_info.fee_rate as u256)) / 1_000_000_000) as u64
         };
-        fee
+        (fee, principal as u64)
     }
 
 

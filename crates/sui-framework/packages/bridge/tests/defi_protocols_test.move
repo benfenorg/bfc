@@ -92,7 +92,7 @@ module bridge::defi_protocols_test;
         defi_protocols::new_defi_protocol_config_for_testing(&mut obj.id,ctx);
         defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE);
         // 测试百分比费率
-        let fee = defi_protocols::manage_fee(
+        let (fee, _principal) = defi_protocols::manage_fee(
             &obj.id,
             PROTOCOL_TYPE_AAVE,
             PROTOCOL_VERSION_AAVE,
@@ -111,7 +111,7 @@ module bridge::defi_protocols_test;
 
         // 测试固定费率
         defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED);
-        let fee = defi_protocols::manage_fee(
+        let (fee, _principal) = defi_protocols::manage_fee(
             &obj.id,
             PROTOCOL_TYPE_AAVE,
             PROTOCOL_VERSION_AAVE,
@@ -135,7 +135,7 @@ module bridge::defi_protocols_test;
         defi_protocols::new_defi_protocol_config_for_testing(&mut obj.id,ctx);
         defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE);
         // 测试百分比费率
-        let fee = defi_protocols::manage_fee(
+        let (fee, _principal) = defi_protocols::manage_fee(
             &obj.id,
             PROTOCOL_TYPE_AAVE,
             PROTOCOL_VERSION_AAVE,
@@ -154,7 +154,7 @@ module bridge::defi_protocols_test;
 
         // 测试固定费率
         defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED);
-        let fee = defi_protocols::manage_fee(
+        let (fee, _principal) = defi_protocols::manage_fee(
             &obj.id,
             PROTOCOL_TYPE_AAVE,
             PROTOCOL_VERSION_AAVE,
@@ -179,7 +179,7 @@ module bridge::defi_protocols_test;
         defi_protocols::new_defi_protocol_config_for_testing(&mut obj.id,ctx);
         defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE);
         // 测试百分比费率
-        let fee = defi_protocols::manage_fee(
+        let (fee, _principal) = defi_protocols::manage_fee(
             &obj.id,
             PROTOCOL_TYPE_AAVE,
             PROTOCOL_VERSION_AAVE,
@@ -198,7 +198,7 @@ module bridge::defi_protocols_test;
 
         // 测试固定费率
         defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED);
-        let fee = defi_protocols::manage_fee(
+        let (fee, _principal) = defi_protocols::manage_fee(
             &obj.id,
             PROTOCOL_TYPE_AAVE,
             PROTOCOL_VERSION_AAVE,
