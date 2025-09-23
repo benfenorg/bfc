@@ -4,8 +4,8 @@
 module bridge::defi_protocols {
     use sui::event::emit;
     use sui::table::{Self, Table};
-
     use sui::dynamic_field;
+
     const KEY: vector<u8> = b"defi_protocols";
     // Error codes
     const EDefiProtocolConfigRegistryAlreadyExists: u64 = 0;
@@ -173,6 +173,21 @@ module bridge::defi_protocols {
         *self.protocol_info_map.borrow(config_key)
     }
 
+    public fun is_valid_protocol(
+        parent_id: &UID,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ): bool {
+        if (!dynamic_field::exists_(parent_id, KEY)) {
+            return false
+        };
+        let self = borrow(parent_id);
+        let config_key = DefiProtocolKey { protocol_type, protocol_version, protocol_token_id, chain_id };
+        self.protocol_info_map.contains(config_key)
+    }
+
     //getter
     public fun chain_id(self: &DefiProtocolInfo): u8 {
         self.chain_id
@@ -213,5 +228,14 @@ module bridge::defi_protocols {
             KEY,
             new(ctx),
         );
+    }
+
+    #[test_only]
+    public fun test_is_valid_protocol(ctx: &mut TxContext) {
+        let dummy_object = object::new(ctx);
+
+        assert!(!is_valid_protocol(&dummy_object, 1, 1, 1, 1), 0);
+        
+        object::delete(dummy_object);
     }
 }

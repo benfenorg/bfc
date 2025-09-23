@@ -257,6 +257,7 @@ module bridge::bridge {
     const EOnlySupportUsdcOrUsdt: u64 = 60;
     const EOnlySupportUnstake: u64 = 61;
     const EDefiUnstakeAmountNotEnough: u64 = 62;
+    const EDefiProtocolConfigNotFound: u64 = 63;
     const CURRENT_VERSION: u64 = 1;
 
     public struct TokenTransferApproved has copy, drop {
@@ -654,15 +655,16 @@ module bridge::bridge {
         protocol_token_id: u64,
         ctx: &mut TxContext
     ) {
-        // TODO more check
-
         let (inner, bridge_id) = load_inner_mut_and_uid(bridge);
+        assert!(defi_protocols::is_valid_protocol(bridge_id, protocol_type, protocol_version, protocol_token_id, target_chain), EDefiProtocolConfigNotFound);
+
         assert!(!inner.paused, EBridgeUnavailable);
         let is_busd = type_name::get<T>() == type_name::get<BUSD>();
         assert!(is_busd, EOnlySupportBusd);
 
         let token_amount = token.balance().value();
         assert!(token_amount > 0, ETokenValueIsZero);
+
         let fee = bridge_fee::calculate_cross_out_fee_amount(bridge_id, target_chain as u64, protocol_token_id, token_amount);
         assert!(token_amount > fee, EInputAmountLteBridgeFee);
         let amount_after_fee = token_amount - fee;
