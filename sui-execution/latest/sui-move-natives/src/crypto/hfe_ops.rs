@@ -20,6 +20,7 @@ use move_core_types::account_address::AccountAddress;
 
 use std::collections::VecDeque;
 use std::error::Error;
+use std::time::Duration;
 use move_core_types::gas_algebra::InternalGas;
 use serde_json::{json};
 use serde_json::Value as JsonValue;
@@ -832,7 +833,7 @@ impl AnonymousClient {
             "id": id
         });
 
-        let resp = post(&format!("{}/rpc", self.base_url))
+        let resp = post(&format!("{}/rpc", self.base_url)).timeout(Duration::from_secs(10))
             .json(&data)?
             .send()?;
 

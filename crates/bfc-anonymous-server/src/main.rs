@@ -564,15 +564,21 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                         info!("handle_anonymous_restore_value pass verify signature");
                         match get_object_owneraddress(objectid.clone()).await {
                             Ok(owner_address_value) => {
-                                let sui_address_from_send = public_key_bytes_to_sui_address(
+                                let sui_address_from_send_result = public_key_bytes_to_sui_address(
                                     restore_value_params.publickey.clone(),
                                 );
-                                let owner_address_from_send =
-                                    AccountAddress::from(sui_address_from_send);
-                                let evm_addr_from_system =
-                                    convert_to_evm_address(owner_address_value.clone());
-                                pass_verify_signature = evm_addr_from_system
-                                    == owner_address_from_send.to_hex_with_hex_head();
+                                if sui_address_from_send_result.is_err() {
+                                    info!("failed public key to sui address: {:?}", sui_address_from_send_result.err());
+                                    pass_verify_signature = false;
+                                } else {
+                                    let sui_address_from_send = sui_address_from_send_result.unwrap();
+                                    let owner_address_from_send =
+                                        AccountAddress::from(sui_address_from_send);
+                                    let evm_addr_from_system =
+                                        convert_to_evm_address(owner_address_value.clone());
+                                    pass_verify_signature = evm_addr_from_system
+                                        == owner_address_from_send.to_hex_with_hex_head();
+                                }
                             }
                             Err(error) => {
                                 info!("failed get owner address: {}", error);

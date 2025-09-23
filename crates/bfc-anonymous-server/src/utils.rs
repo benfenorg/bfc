@@ -48,9 +48,9 @@ pub async fn get_object_owneraddress(
     }
 }
 
-pub fn public_key_bytes_to_sui_address(pubkey_bytes: Vec<u8>) -> SuiAddress {
+pub fn public_key_bytes_to_sui_address(pubkey_bytes: Vec<u8>) -> Result<SuiAddress, Box<dyn std::error::Error>> {
     let ed25519_pk =
-        Ed25519PublicKey::from_bytes(&pubkey_bytes).expect("Valid Ed25519 public key bytes");
-    SuiAddress::from(&ed25519_pk)
+        Ed25519PublicKey::from_bytes(&pubkey_bytes)?;
+    Ok(SuiAddress::from(&ed25519_pk))
 }
 
