@@ -111,16 +111,17 @@ module bridge::defi_protocols_test;
 
         // 测试固定费率
         defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED);
+        let decimal_token=1_000_000_000;
         let (fee, _principal) = defi_protocols::manage_fee(
             &obj.id,
             PROTOCOL_TYPE_AAVE,
             PROTOCOL_VERSION_AAVE,
             PROTOCOL_TOKEN_ID_AAVE,
             ETH_MAINNET,
-            100, // lp_amount_withdraw
-            1100, // amount_withdraw
-            1000, // amount_in_record
-            100 // lp_amount_in_record
+            100*decimal_token, // lp_amount_withdraw
+            1100*decimal_token, // amount_withdraw
+            1000*decimal_token, // amount_in_record
+            100*decimal_token // lp_amount_in_record
         );
         assert_eq!(fee, FEE_RATE_FIXED);
         test_utils::destroy(obj);
