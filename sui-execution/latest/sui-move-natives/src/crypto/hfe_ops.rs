@@ -840,10 +840,6 @@ impl AnonymousClient {
                 println!("Server responded with: {}", response_json);
                 Ok(response_json)
             },
-            Err(Error::Timeout) => {
-                println!("The request timed out. Please check the network or try again later");
-                Err(anyhow!("request time out").into())
-            }
             Err(e) => {
                 eprintln!("POST request failed with status: {:?},", e.to_string());
                 Err(anyhow!("post request failed").into())
