@@ -18,6 +18,8 @@ module bridge::defi_protocols_test;
     const FEE_RATE_PERCENTAGE: u64 = 0_150_000_000;
     /// 5 USDC
     const FEE_RATE_FIXED: u64 = 5_000_000_000;
+    const LIMIT_STAKE_AMOUNT: u64 = 100_000_000_000_000;
+    const LIMIT_UNSTAKE_AMOUNT: u64 = 100_000_000_000_000;
     
     
     public struct DefiProtocolConfigObject has key,store {
@@ -36,7 +38,7 @@ module bridge::defi_protocols_test;
         let ctx = test_scenario::ctx(&mut scenario);
         let mut obj = new(ctx);
         defi_protocols::new_defi_protocol_config_for_testing(&mut obj.id,ctx);
-        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         let protocol_info = defi_protocols::get_protocol_info(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET);
         assert_eq!(protocol_info.protocol_type(), PROTOCOL_TYPE_AAVE);
         assert_eq!(protocol_info.protocol_version(), PROTOCOL_VERSION_AAVE);
@@ -56,9 +58,9 @@ module bridge::defi_protocols_test;
         let ctx = test_scenario::ctx(&mut scenario);
         let mut obj = new(ctx);
         defi_protocols::new_defi_protocol_config_for_testing(&mut obj.id,ctx);
-        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         //update fee 
-        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         let protocol_info = defi_protocols::get_protocol_info(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET);
         assert_eq!(protocol_info.fee_type(), FEE_TYPE_FIXED);
         assert_eq!(protocol_info.fee_rate(), FEE_RATE_FIXED);
@@ -76,7 +78,7 @@ module bridge::defi_protocols_test;
         let ctx = test_scenario::ctx(&mut scenario);
         let mut obj = new(ctx);
         defi_protocols::new_defi_protocol_config_for_testing(&mut obj.id,ctx);
-        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         //update fee 
         defi_protocols::delete_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET);
         defi_protocols::get_protocol_info(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET);
@@ -90,7 +92,7 @@ module bridge::defi_protocols_test;
         let ctx = test_scenario::ctx(&mut scenario);
         let mut obj = new(ctx);
         defi_protocols::new_defi_protocol_config_for_testing(&mut obj.id,ctx);
-        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         // 测试百分比费率
         let (fee, _principal) = defi_protocols::manage_fee(
             &obj.id,
@@ -110,7 +112,7 @@ module bridge::defi_protocols_test;
         assert_eq!(fee, 15);
 
         // 测试固定费率
-        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         let decimal_token=1_000_000_000;
         let (fee, _principal) = defi_protocols::manage_fee(
             &obj.id,
@@ -134,7 +136,7 @@ module bridge::defi_protocols_test;
         let ctx = test_scenario::ctx(&mut scenario);
         let mut obj = new(ctx);
         defi_protocols::new_defi_protocol_config_for_testing(&mut obj.id,ctx);
-        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         // 测试百分比费率
         let (fee, _principal) = defi_protocols::manage_fee(
             &obj.id,
@@ -154,7 +156,7 @@ module bridge::defi_protocols_test;
         assert_eq!(fee, 0);
 
         // 测试固定费率
-        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         let (fee, _principal) = defi_protocols::manage_fee(
             &obj.id,
             PROTOCOL_TYPE_AAVE,
@@ -178,7 +180,7 @@ module bridge::defi_protocols_test;
         let ctx = test_scenario::ctx(&mut scenario);
         let mut obj = new(ctx);
         defi_protocols::new_defi_protocol_config_for_testing(&mut obj.id,ctx);
-        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         // 测试百分比费率
         let (fee, _principal) = defi_protocols::manage_fee(
             &obj.id,
@@ -198,7 +200,7 @@ module bridge::defi_protocols_test;
         assert_eq!(fee, 0);
 
         // 测试固定费率
-        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         let (fee, _principal) = defi_protocols::manage_fee(
             &obj.id,
             PROTOCOL_TYPE_AAVE,
@@ -222,7 +224,7 @@ module bridge::defi_protocols_test;
         let ctx = test_scenario::ctx(&mut scenario);
         let mut obj = new(ctx);
         defi_protocols::new_defi_protocol_config_for_testing(&mut obj.id,ctx);
-        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         // 测试百分比费率
         let (fee, _principal) = defi_protocols::manage_fee(
             &obj.id,
@@ -242,7 +244,7 @@ module bridge::defi_protocols_test;
         assert_eq!(fee, 15);
 
         // 测试固定费率
-        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_FIXED, FEE_RATE_FIXED, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         let decimal_token=1_000_000_000;
         let (fee, _principal) = defi_protocols::manage_fee(
             &obj.id,
