@@ -20,6 +20,9 @@ module bridge::defi_protocols {
 
     const PROTOCOL_TOKEN_ID_USDC: u64 = 3;
     const PROTOCOL_TOKEN_ID_USDT: u64 = 4;
+
+    const LIMIT_STAKE_AMOUNT: u64 = 100_000_000_000_000;
+    const LIMIT_UNSTAKE_AMOUNT: u64 = 100_000_000_000_000;
     
 
     /// token id 映射表
@@ -53,6 +56,10 @@ module bridge::defi_protocols {
         fee_type: u8,
         /// fee rate,decimal precision is 1e9
         fee_rate: u64,
+        /// 质押时，单笔最大金额限制
+        limit_stake_amount: u64,
+        /// 赎回时，单笔最大金额限制
+        limit_unstake_amount: u64,
     }
 
     /// 用户限额使用事件
@@ -93,23 +100,23 @@ module bridge::defi_protocols {
 
     public(package) fun initial_defi_protocol(parent_id: &mut UID) {
         //aave mainnet
-        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_mainnet(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
-        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_mainnet(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_mainnet(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_mainnet(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         //aave sepolia
-        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_sepolia(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
-        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_sepolia(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_sepolia(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_sepolia(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         //aave custom
-        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_custom(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
-        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_custom(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_custom(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_custom(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         //compound mainnet
-        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_mainnet(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
-        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_mainnet(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_mainnet(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_mainnet(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         //compound sepolia
-        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_sepolia(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
-        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_sepolia(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_sepolia(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_sepolia(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
         //compound custom
-        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_custom(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
-        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_custom(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_custom(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_custom(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
     }
 
     public(package) fun add_defi_protocol(
@@ -120,13 +127,15 @@ module bridge::defi_protocols {
         chain_id: u8,
         fee_type: u8,
         fee_rate: u64,
+        limit_stake_amount: u64,
+        limit_unstake_amount: u64,
     ) {
         let self=borrow_mut(parent_id);
         let config_key = DefiProtocolKey { protocol_type, protocol_version, protocol_token_id, chain_id };
         if (!self.protocol_info_map.contains(config_key)) {
-            self.protocol_info_map.add(config_key, DefiProtocolInfo { protocol_type, protocol_version, protocol_token_id, chain_id, fee_type, fee_rate });
+            self.protocol_info_map.add(config_key, DefiProtocolInfo { protocol_type, protocol_version, protocol_token_id, chain_id, fee_type, fee_rate, limit_stake_amount, limit_unstake_amount });
         };
-        *self.protocol_info_map.borrow_mut(config_key) = DefiProtocolInfo { protocol_type, protocol_version, protocol_token_id, chain_id, fee_type, fee_rate };
+        *self.protocol_info_map.borrow_mut(config_key) = DefiProtocolInfo { protocol_type, protocol_version, protocol_token_id, chain_id, fee_type, fee_rate, limit_stake_amount, limit_unstake_amount };
         emit(DefiProtocolEvent { protocol_type, protocol_version, protocol_token_id, chain_id });
     }
 
@@ -251,6 +260,14 @@ module bridge::defi_protocols {
 
     public fun fee_rate(self: &DefiProtocolInfo): u64 {
         self.fee_rate
+    }
+
+    public fun limit_stake_amount(self: &DefiProtocolInfo): u64 {
+        self.limit_stake_amount
+    }
+
+    public fun limit_unstake_amount(self: &DefiProtocolInfo): u64 {
+        self.limit_unstake_amount
     }
 
     //////////////////////////////////////////////////////

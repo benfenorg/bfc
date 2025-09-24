@@ -258,6 +258,7 @@ module bridge::bridge {
     const EOnlySupportUnstake: u64 = 61;
     const EDefiUnstakeAmountNotEnough: u64 = 62;
     const EDefiProtocolConfigNotFound: u64 = 63;
+    const EDefiLimitError: u64 = 64;
     const CURRENT_VERSION: u64 = 1;
 
     public struct TokenTransferApproved has copy, drop {
@@ -526,11 +527,15 @@ module bridge::bridge {
             protocol_token_id: protocol_token_id,
             chain_id: target_chain,
         };
+        assert!(defi_protocols::is_valid_protocol(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain), EDefiProtocolConfigNotFound);
         let defi_info = inner.defi_holders_get(ctx.sender(), defi_protocol_key);
-        assert!(defi_info.amount >= amount, EDefiUnstakeAmountNotEnough);
+        assert!(defi_info.lp_token_amount >= amount, EDefiUnstakeAmountNotEnough);
         inner.defi_holders_del(ctx.sender(), defi_protocol_key, 0, amount);
-        let route = chain_ids::get_route(inner.chain_id, target_chain);
-        assert!(amount <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
+        //tips: defi_info_updated is the latest defi info, so we can use it to calculate the principal
+        let defi_info_updated = inner.defi_holders_get(ctx.sender(), defi_protocol_key);
+        let defi_protocol_info = defi_protocols::get_protocol_info(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain);
+        let (_fee, principal) = defi_protocols::manage_fee(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain, amount, 0, defi_info_updated.amount, defi_info_updated.lp_token_amount);
+        assert!(defi_protocol_info.limit_unstake_amount() >= principal, EDefiLimitError);
         
         let message = message::create_defi_transfer_out_message(
             inner.chain_id, 
