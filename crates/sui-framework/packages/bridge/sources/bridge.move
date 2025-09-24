@@ -433,13 +433,13 @@ module bridge::bridge {
         }
     }
 
+    #[allow(unused_function)]
     public entry fun migrate(
         bridge: &mut Bridge,
         ctx: &mut TxContext
     ){
-        bridge_fee::new_bridge_fee_registry(&mut bridge.id, ctx);
-        limiter_fast_path::registry(&mut bridge.id, ctx);
-        limiter::new_external_limits(&mut bridge.id, ctx);
+        defi_protocols::registry(&mut bridge.id, ctx);
+        defi_protocols::initial_defi_protocol(&mut bridge.id);
     }
 
     public fun init_token_list(
@@ -449,6 +449,9 @@ module bridge::bridge {
         tokenlist::new_tokenlist_registry(&mut bridge.id, ctx);
         tokenlist::add_center_token_list(&mut bridge.id, ctx);
         limiter::update_transfer_limits(&mut load_inner_mut(bridge).limiter);
+        bridge_fee::new_bridge_fee_registry(&mut bridge.id, ctx);
+        limiter_fast_path::registry(&mut bridge.id, ctx);
+        limiter::new_external_limits(&mut bridge.id, ctx);
     }
 
     public fun update_external_out_limit(

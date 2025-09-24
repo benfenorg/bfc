@@ -12,6 +12,14 @@ module bridge::defi_protocols {
     const EDefiProtocolConfigNotFound: u64 = 1;
 
     const FEE_TYPE_FIXED: u8 = 1;
+    const FEE_TYPE_PERCENTAGE: u8 = 0;
+    const FEE_RATE_15_PERCENTAGE: u64 = 150_000_000;
+
+    const PROTOCOL_TYPE_AAVE: u64 = 1;
+    const PROTOCOL_TYPE_COMPOUND: u64 = 2;
+
+    const PROTOCOL_TOKEN_ID_USDC: u64 = 3;
+    const PROTOCOL_TOKEN_ID_USDT: u64 = 4;
     
 
     /// token id 映射表
@@ -81,6 +89,27 @@ module bridge::defi_protocols {
             KEY,
             new(ctx),
         );
+    }
+
+    public(package) fun initial_defi_protocol(parent_id: &mut UID) {
+        //aave mainnet
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_mainnet(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_mainnet(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        //aave sepolia
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_sepolia(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_sepolia(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        //aave custom
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_custom(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_custom(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        //compound mainnet
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_mainnet(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_mainnet(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        //compound sepolia
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_sepolia(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_sepolia(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        //compound custom
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_custom(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_custom(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE);
     }
 
     public(package) fun add_defi_protocol(

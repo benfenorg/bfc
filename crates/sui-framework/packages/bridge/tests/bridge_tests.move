@@ -47,7 +47,6 @@ use bridge::btc::BTC;
 use bridge::chain_ids;
 use bridge::eth::ETH;
 use bridge::message::{Self, to_parsed_token_transfer_message_v2};
-use bridge::defi_protocols;
 use bridge::message_types;
 use bridge::test_token::{TEST_TOKEN, create_bridge_token as create_test_token};
 use bridge::usdc::USDC;
@@ -1841,33 +1840,13 @@ fun test_defi_stake() {
     scenario.next_tx(@0x0);
     let coin = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount, &cap, scenario.ctx());
 
-    // Set up defi protocols before calling defi_stake
-    let mut bridge = env.bridge(@0x0);
-    
-    // Initialize defi protocols registry
-    defi_protocols::registry(bridge.bridge_ref_mut().test_load_mut_uid(), env.ctx());
-    
-    // Add a default protocol configuration for testing
-    // Protocol type: 1, version: 1, token_id: 3 (USDC), chain: eth_mainnet
-    defi_protocols::add_defi_protocol(
-        bridge.bridge_ref_mut().test_load_mut_uid(),
-        1,  // protocol_type
-        1,  // protocol_version
-        3,  // protocol_token_id (USDC)
-        chain_ids::eth_mainnet(),  // target_chain
-        0,  // fee_type (percentage)
-        150_000_000  // fee_rate (15%)
-    );
-    
-    bridge.return_bridge();
-
     // Call defi_stake function
     let mut bridge = env.bridge(@0x0);
     let ctx = env.ctx();
 
     let target_chain = chain_ids::eth_mainnet();
     let protocol_type = 1u64;
-    let protocol_version = 1u64;
+    let protocol_version = 3u64;
     let protocol_token_id = 3u64; // USDC
 
     bridge.bridge_ref_mut().defi_stake<BUSD>(
@@ -1910,33 +1889,13 @@ fun test_defi_stake_and_approve_defi_transfer_out_full_flow() {
     scenario.next_tx(@0x0);
     let coin = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount, &cap, scenario.ctx());
 
-    // Set up defi protocols before calling defi_stake
-    let mut bridge = env.bridge(@0x0);
-    
-    // Initialize defi protocols registry
-    defi_protocols::registry(bridge.bridge_ref_mut().test_load_mut_uid(), env.ctx());
-    
-    // Add a default protocol configuration for testing
-    // Protocol type: 1, version: 1, token_id: 3 (USDC), chain: eth_mainnet
-    defi_protocols::add_defi_protocol(
-        bridge.bridge_ref_mut().test_load_mut_uid(),
-        1,  // protocol_type
-        1,  // protocol_version
-        3,  // protocol_token_id (USDC)
-        chain_ids::eth_mainnet(),  // target_chain
-        0,  // fee_type (percentage)
-        150_000_000  // fee_rate (15%)
-    );
-    
-    bridge.return_bridge();
-
     // Call defi_stake function
     let mut bridge = env.bridge(@0x0);
     let ctx = env.ctx();
 
     let target_chain = chain_ids::eth_mainnet();
     let protocol_type = 1u64;
-    let protocol_version = 1u64;
+    let protocol_version = 3u64;
     let protocol_token_id = 3u64; // USDC
 
     bridge.bridge_ref_mut().defi_stake<BUSD>(
@@ -2430,4 +2389,10 @@ fun test_external_busd_withdraw_external_busd_coin(token_id_expect: u64, target_
 
     bridge.return_bridge();
     env.destroy_env();
+}
+
+// Test defi unstake
+#[test]
+fun test_defi_unstake() {
+    
 }
