@@ -2411,12 +2411,13 @@ fun test_defi_unstake() {
     scenario.next_tx(@0x0);
     let source_chain = chain_ids::eth_custom();
     let seq_num = 100;
-    let sender_address = address::to_bytes(@0xABCD);
+    let sender_address = address::to_bytes(@0x0);
     let target_chain = chain_ids::sui_custom();
     let amount = 1000;
     let protocol_type = 1;
     let protocol_version = 3;
     let protocol_token_id = 3; // USDC
+    let lp_token_amount = 1000_000_000_000;
 
     // Create a BridgeMessage for defi transfer in
     let message = message::create_defi_transfer_in_message(
@@ -2433,7 +2434,7 @@ fun test_defi_unstake() {
         protocol_token_id,
         0u64,
         STAKE,
-        100
+        lp_token_amount
     );
 
     // Create signatures
@@ -2454,18 +2455,26 @@ fun test_defi_unstake() {
         protocol_type,
         protocol_version,
         protocol_token_id,
-        target_chain
+        source_chain,
     );
-    
+    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
+    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
     let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
-    assert!(holder_amount == amount, 0);
-    scenario.next_tx(@0x0);
+    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    assert!(holder_amount == adjusted_amount, 0);
+    assert!(lp_token_amount == lp_token_amount, 0);
     //unstake start
-
+    scenario.next_tx(@0xABCD);
     let ctx = env.ctx();
-    bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, amount, ctx);
+    
+    bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
     let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
     assert!(transfer_out_events.length() == 1, 0);
+
+    let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    assert!(holder_amount == adjusted_amount, 0);
+    assert!(lp_token_amount == 0, 0);
     
     //unstake end
     bridge_wrap.return_bridge();

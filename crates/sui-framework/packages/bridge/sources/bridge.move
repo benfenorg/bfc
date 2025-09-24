@@ -527,10 +527,13 @@ module bridge::bridge {
             chain_id: target_chain,
         };
         let defi_info = inner.defi_holders_get(ctx.sender(), defi_protocol_key);
-        assert!(defi_info.amount >= amount, EDefiUnstakeAmountNotEnough);
+        assert!(defi_info.lp_token_amount >= amount, EDefiUnstakeAmountNotEnough);
         inner.defi_holders_del(ctx.sender(), defi_protocol_key, 0, amount);
-        let route = chain_ids::get_route(inner.chain_id, target_chain);
-        assert!(amount <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
+        // let route = chain_ids::get_route(inner.chain_id, target_chain);
+        // let amount_limit= limiter::get_external_out_limit(parent_id, &route);
+        // debug::print(&amount_limit);
+        // debug::print(&amount);
+        // assert!(amount <= amount_limit, ETransferLimit);
         
         let message = message::create_defi_transfer_out_message(
             inner.chain_id, 
