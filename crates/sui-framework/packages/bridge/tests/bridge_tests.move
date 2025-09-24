@@ -1959,6 +1959,101 @@ fun test_defi_stake_and_approve_defi_transfer_out_full_flow() {
     env.destroy_env();
 }
 
+// Test for defi_stake with amount within limit
+#[test]
+fun test_defi_stake_within_limit() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+
+    // Get BUSD coin for testing with amount within limit
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+    // Set amount to be within the limit (100_000_000_000_000)
+    let amount = 50_000_000_000_000u64;
+
+    scenario.next_tx(@0x0);
+    let coin = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount, &cap, scenario.ctx());
+
+    // Call defi_stake function
+    let mut bridge = env.bridge(@0x0);
+    let ctx = env.ctx();
+
+    let target_chain = chain_ids::eth_mainnet();
+    let protocol_type = 1u64;
+    let protocol_version = 3u64;
+    let protocol_token_id = 3u64; // USDC
+
+    bridge.bridge_ref_mut().defi_stake<BUSD>(
+        &mut bfc_system_state,
+        target_chain,
+        coin,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        ctx,
+    );
+
+    // Check that the DefiTransferOutEvent was emitted
+    let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
+    assert!(transfer_out_events.length() == 1, 0);
+
+    // Check that the bridge record was stored
+    let bridge_inner = bridge.bridge_ref().test_load_inner();
+    let records = bridge_inner.inner_token_transfer_records();
+    assert!(records.length() == 1, 0);
+
+    bridge.return_bridge();
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+// Test for defi_stake with amount exceeding limit
+#[test]
+#[expected_failure(abort_code = bridge::bridge::ETransferLimit)]
+fun test_defi_stake_exceeds_limit() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+
+    // Get BUSD coin for testing with amount exceeding limit
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+    // Set amount to exceed the limit (100_000_000_000_000)
+    let amount = 200_000_000_000_000u64;
+
+    scenario.next_tx(@0x0);
+    let coin = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount, &cap, scenario.ctx());
+
+    // Call defi_stake function
+    let mut bridge = env.bridge(@0x0);
+    let ctx = env.ctx();
+
+    let target_chain = chain_ids::eth_mainnet();
+    let protocol_type = 1u64;
+    let protocol_version = 3u64;
+    let protocol_token_id = 3u64; // USDC
+
+    // This should fail with ETransferLimit error
+    bridge.bridge_ref_mut().defi_stake<BUSD>(
+        &mut bfc_system_state,
+        target_chain,
+        coin,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        ctx,
+    );
+
+    bridge.return_bridge();
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
 #[test]
 fun test_external_busd_withdraw_external_busd_coin_tron_test() {
     test_external_busd_withdraw_external_busd_coin(4u64,  chain_ids::tron_testnet(),chain_ids::sui_custom());

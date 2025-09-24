@@ -660,12 +660,16 @@ module bridge::bridge {
         let (inner, bridge_id) = load_inner_mut_and_uid(bridge);
         assert!(defi_protocols::is_valid_protocol(bridge_id, protocol_type, protocol_version, protocol_token_id, target_chain), EDefiProtocolConfigNotFound);
 
+        let token_amount = token.balance().value();
+        assert!(token_amount > 0, ETokenValueIsZero);
+        
+        // 检查质押金额是否超过协议限制
+        let protocol_info = defi_protocols::get_protocol_info(bridge_id, protocol_type, protocol_version, protocol_token_id, target_chain);
+        assert!(token_amount <= defi_protocols::limit_stake_amount(&protocol_info), ETransferLimit);
+
         assert!(!inner.paused, EBridgeUnavailable);
         let is_busd = type_name::get<T>() == type_name::get<BUSD>();
         assert!(is_busd, EOnlySupportBusd);
-
-        let token_amount = token.balance().value();
-        assert!(token_amount > 0, ETokenValueIsZero);
 
         let fee = bridge_fee::calculate_cross_out_fee_amount(bridge_id, target_chain as u64, protocol_token_id, token_amount);
         assert!(token_amount > fee, EInputAmountLteBridgeFee);
