@@ -22,6 +22,7 @@ use bridge::bridge::{
     transfer_status_pending,
     test_defi_holders_amount_get,
     defi_holders_amount_get,
+    test_adjust_amount_usdc_usdt_in,
     Bridge
 };
 use bridge::bridge_env::{
@@ -2157,8 +2158,10 @@ fun test_defi_stake_success() {
         target_chain
     );
     
+    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
+    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
     let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
-    assert!(holder_amount == amount, 0);
+    assert!(holder_amount == adjusted_amount, 0);
 
     bridge_wrap.return_bridge();
     env.destroy_env();
@@ -2286,8 +2289,11 @@ fun test_defi_stake_success_multiple_stakes_same_user() {
         target_chain
     );
     
+    // When source_chain is eth_mainnet, amounts are adjusted by adjust_amount_usdc_usdt_in function
+    let adjusted_amount1 = test_adjust_amount_usdc_usdt_in(source_chain, 1000);
+    let adjusted_amount2 = test_adjust_amount_usdc_usdt_in(source_chain, 2000);
     let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
-    assert!(holder_amount == (1000 + 2000), 0);
+    assert!(holder_amount == (adjusted_amount1 + adjusted_amount2), 0);
 
 
     // Check that two DefiTokensStakedEvent events were emitted
@@ -2381,11 +2387,14 @@ fun test_defi_stake_success_different_users_protocols() {
         target_chain
     );
     
+    // When source_chain is eth_mainnet, amounts are adjusted by adjust_amount_usdc_usdt_in function
+    let adjusted_amount1 = test_adjust_amount_usdc_usdt_in(source_chain, amount1);
+    let adjusted_amount2 = test_adjust_amount_usdc_usdt_in(source_chain, amount2);
     let user1_amount = bridge.defi_holders_amount_get(address::from_bytes(user1_address), defi_protocol_key1);
-    assert!(user1_amount == amount1, 0);
+    assert!(user1_amount == adjusted_amount1, 0);
     
     let user2_amount = bridge.defi_holders_amount_get(address::from_bytes(user2_address), defi_protocol_key2);
-    assert!(user2_amount == amount2, 0);
+    assert!(user2_amount == adjusted_amount2, 0);
 
     // User 1 should not have any amount for protocol 2
     let user1_amount_protocol2 = bridge.defi_holders_amount_get(address::from_bytes(user1_address), defi_protocol_key2);

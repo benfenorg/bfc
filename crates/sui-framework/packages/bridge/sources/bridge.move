@@ -1220,6 +1220,7 @@ module bridge::bridge {
 
 
         if (defi_payload.action_type_defi_in() == STAKE) {
+            let amount = adjust_amount_usdc_usdt_in(message.source_chain(), defi_payload.amount_defi_in());
             defi_stake_success(
                 inner, 
                  message.source_chain(), 
@@ -1230,7 +1231,7 @@ module bridge::bridge {
                  defi_payload.protocol_type_defi_in(), 
                  defi_payload.protocol_version_defi_in(),
                   defi_payload.protocol_token_id_defi_in(), 
-                  defi_payload.amount_defi_in(),
+                  amount,
                   defi_payload.lp_token_amount_defi_in()
             );
 
@@ -2317,6 +2318,11 @@ module bridge::bridge {
              amount
         };
         token_amount
+    }
+
+    #[test_only]
+    public fun test_adjust_amount_usdc_usdt_in(source_chain: u8, amount: u64): u64 {
+        adjust_amount_usdc_usdt_in(source_chain, amount)
     }
 
     fun claim_stable_token_for_defi_internal<T>(
