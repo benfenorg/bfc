@@ -104,7 +104,7 @@ module bridge::bridge {
         protocol_type: u64,
         protocol_version: u64,
         protocol_token_id: u64,
-        target_chain: u8,
+        chain_id: u8,
     }
 
     public struct DefiHolderInfo has copy, store, drop {
@@ -524,7 +524,7 @@ module bridge::bridge {
             protocol_type: protocol_type,
             protocol_version: protocol_version,
             protocol_token_id: protocol_token_id,
-            target_chain: target_chain,
+            chain_id: target_chain,
         };
         let defi_info = inner.defi_holders_get(ctx.sender(), defi_protocol_key);
         assert!(defi_info.amount >= amount, EDefiUnstakeAmountNotEnough);
@@ -711,11 +711,10 @@ module bridge::bridge {
 
     fun defi_stake_success(
         inner: &mut BridgeInner,
-        source_chain: u8,
         seq_num: u64,
         original_seq_num: u64,
         sender_address: vector<u8>,
-        target_chain: u8,
+        protocol_chain: u8,
         protocol_type: u64,
         protocol_version: u64,
         protocol_token_id: u64,
@@ -723,12 +722,14 @@ module bridge::bridge {
         lp_token_amount: u64,
     ) {
         assert!(!inner.paused, EBridgeUnavailable);
-        // todo: record user stake amount
+
+        let bridge_id = inner.chain_id;
+        
         let key = DefiProtocolKey{
             protocol_type: protocol_type,
             protocol_version: protocol_version,
             protocol_token_id: protocol_token_id,
-            target_chain: target_chain,
+            chain_id: protocol_chain,
         };
         
         defi_holders_add(inner, address::from_bytes(sender_address), key, amount, lp_token_amount);
@@ -737,9 +738,9 @@ module bridge::bridge {
         emit(DefiTokensStakedEvent {
             original_seq_num,
             seq_num,
-            source_chain,
+            source_chain: bridge_id,
             sender_address,
-            target_chain,
+            target_chain: protocol_chain,
             protocol_type,
             protocol_version,
             protocol_token_id,
@@ -1223,14 +1224,14 @@ module bridge::bridge {
 
 
         if (defi_payload.action_type_defi_in() == STAKE) {
+            let protocol_chain = message.source_chain();
             let amount = adjust_amount_usdc_usdt_in(message.source_chain(), defi_payload.amount_defi_in());
             defi_stake_success(
                 inner, 
-                 message.source_chain(), 
                  message.seq_num(), 
                  defi_payload.original_seq_num_defi_in(), 
                  defi_payload.sender_address_defi_in(), 
-                target_chain, 
+                protocol_chain, 
                  defi_payload.protocol_type_defi_in(), 
                  defi_payload.protocol_version_defi_in(),
                   defi_payload.protocol_token_id_defi_in(), 
@@ -2402,7 +2403,7 @@ module bridge::bridge {
             protocol_type: defi_payload.protocol_type_defi_in(),
             protocol_version: defi_payload.protocol_version_defi_in(),
             protocol_token_id: defi_payload.protocol_token_id_defi_in(),
-            target_chain: target_chain,
+            chain_id: target_chain,
         };
         let defi_info = inner.defi_holders_get(owner, defi_protocol_key);
         let (fee, principal)=defi_protocols::manage_fee(
@@ -2870,13 +2871,13 @@ module bridge::bridge {
         protocol_type: u64,
         protocol_version: u64,
         protocol_token_id: u64,
-        target_chain: u8
+        chain_id: u8
     ): DefiProtocolKey {
         DefiProtocolKey {
             protocol_type,
             protocol_version,
             protocol_token_id,
-            target_chain,
+            chain_id,
         }
     }
 

@@ -2114,7 +2114,7 @@ fun test_defi_stake_success() {
         protocol_type,
         protocol_version,
         protocol_token_id,
-        target_chain
+        source_chain
     );
     
     // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
@@ -2245,7 +2245,7 @@ fun test_defi_stake_success_multiple_stakes_same_user() {
         protocol_type,
         protocol_version,
         protocol_token_id,
-        target_chain
+        source_chain
     );
     
     // When source_chain is eth_mainnet, amounts are adjusted by adjust_amount_usdc_usdt_in function
@@ -2336,14 +2336,14 @@ fun test_defi_stake_success_different_users_protocols() {
         protocol_type1,
         protocol_version1,
         protocol_token_id1,
-        target_chain
+        source_chain
     );
     
     let defi_protocol_key2 = bridge::bridge::create_defi_protocol_key_for_testing(
         protocol_type2,
         protocol_version2,
         protocol_token_id2,
-        target_chain
+        source_chain
     );
     
     // When source_chain is eth_mainnet, amounts are adjusted by adjust_amount_usdc_usdt_in function
