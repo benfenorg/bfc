@@ -1276,7 +1276,7 @@ module bridge::message {
     public fun create_defi_transfer_in_message(
         source_chain: u8,
         seq_num: u64,
-        sender_address: vector<u8>,
+        benfen_address: vector<u8>,
         target_chain: u8,
         amount: u64,
         tx_hash: vector<u8>,
@@ -1295,8 +1295,8 @@ module bridge::message {
         let mut payload = vector[];
 
         // sender address should be less than 255 bytes so can fit into u8
-        payload.push_back((vector::length(&sender_address) as u8));
-        payload.append(sender_address);
+        payload.push_back((vector::length(&benfen_address) as u8));
+        payload.append(benfen_address);
         payload.push_back(target_chain);
         // bcs serializes u64 as 8 bytes
         payload.append(reverse_bytes(bcs::to_bytes(&amount)));
