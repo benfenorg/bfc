@@ -1590,7 +1590,7 @@ fun test_twice_call_init_token_list() {
 #[test]
 #[
 expected_failure(
-    abort_code = bridge::bridge_fee::EBridgeFeeRegistryAlreadyExists,
+    abort_code = bridge::defi_protocols::EDefiProtocolConfigRegistryAlreadyExists,
 )]
 fun test_twice_call_migrate(){
     let chain_id = chain_ids::sui_testnet();
