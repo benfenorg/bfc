@@ -259,6 +259,9 @@ module bridge::bridge {
     const EDefiUnstakeAmountNotEnough: u64 = 62;
     const EDefiProtocolConfigNotFound: u64 = 63;
     const EDefiLimitError: u64 = 64;
+    const EDefiUnstakeAmountNotEnoughForDel: u64 = 65;
+
+
     const CURRENT_VERSION: u64 = 1;
 
     public struct TokenTransferApproved has copy, drop {
@@ -530,7 +533,7 @@ module bridge::bridge {
         assert!(defi_protocols::is_valid_protocol(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain), EDefiProtocolConfigNotFound);
         let defi_info = inner.defi_holders_get(ctx.sender(), defi_protocol_key);
         assert!(defi_info.lp_token_amount >= amount, EDefiUnstakeAmountNotEnough);
-        inner.defi_holders_del(ctx.sender(), defi_protocol_key, 0, amount);
+        assert!(inner.defi_holders_del(ctx.sender(), defi_protocol_key, 0, amount), EDefiUnstakeAmountNotEnoughForDel);
         //tips: defi_info_updated is the latest defi info, so we can use it to calculate the principal
         let defi_info_updated = inner.defi_holders_get(ctx.sender(), defi_protocol_key);
         let defi_protocol_info = defi_protocols::get_protocol_info(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain);
@@ -3016,6 +3019,20 @@ module bridge::bridge {
         bridge_inner: &mut BridgeInner,
     ): &mut LinkedTable<BridgeMessageKey, BridgeRecord> {
         &mut bridge_inner.token_transfer_records
+    }
+
+    #[test_only]
+    public fun message(
+        record: &BridgeRecord,
+    ): &BridgeMessage {
+        &record.message
+    }
+
+    #[test_only]
+    public fun message_mut(
+        record: &mut BridgeRecord,
+    ): &mut BridgeMessage {
+        &mut record.message
     }
 
     #[test_only]
