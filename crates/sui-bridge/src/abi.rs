@@ -13,6 +13,7 @@ use crate::types::{
     AddTokensOnEvmAction, AssetPriceUpdateAction, BlocklistCommitteeAction, BridgeAction,
     BridgeActionType, EmergencyAction, EthLog, EthToSuiBridgeAction, EvmContractUpgradeAction,
     LimitUpdateAction, SuiToEthBridgeAction,UpdateInvestAddressAction,AddLpTokenIdAction,
+    EthToSuiDefiBridgeAction,
 };
 use crate::types::{
     ParsedTokenTransferMessage, ParsedTokenTransferMessageV2, SingleTransferLimitUpdateAction,
