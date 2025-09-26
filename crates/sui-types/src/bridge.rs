@@ -434,6 +434,7 @@ pub struct BridgeInnerV1 {
     pub refund_records: LinkedTable<MoveTypeRefundMessageKey>,
     pub refund_admins: VecSet<String>,
     // pub bfc_system_id: UID,
+    pub defi_holders: LinkedTable<SuiAddress>,
 }
 
 impl BridgeTrait for BridgeInnerV1 {
@@ -708,6 +709,22 @@ pub struct MoveTypeExternalBridgeRecord {
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct MoveTypeRefundMessageKey {
     pub tx_hash: Vec<u8>,
+}
+
+/// Rust version of the Move bridge::DefiProtocolKey type.
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct MoveTypeDefiProtocolKey {
+    pub protocol_type: u64,
+    pub protocol_version: u64,
+    pub protocol_token_id: u64,
+    pub chain_id: u8,
+}
+
+/// Rust version of the Move bridge::DefiHolderInfo type.
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct MoveTypeDefiHolderInfo {
+    pub amount: u64,
+    pub lp_token_amount: u64,
 }
 
 /// Rust version of the Move limiter::TransferLimiter type.

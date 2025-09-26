@@ -393,6 +393,8 @@ impl BridgeMessageEncoding for EthToSuiDefiBridgeAction {
         bytes.extend_from_slice(&e.original_seq_num.to_be_bytes());
         // Add action type
         bytes.push(e.action_type as u8);
+        // Add lp token amount
+        bytes.extend_from_slice(&e.lp_token_amount.to_be_bytes());
 
         bytes
     }

@@ -4,17 +4,42 @@
 module bridge::defi_protocols {
     use sui::event::emit;
     use sui::table::{Self, Table};
-
     use sui::dynamic_field;
+
     const KEY: vector<u8> = b"defi_protocols";
     // Error codes
     const EDefiProtocolConfigRegistryAlreadyExists: u64 = 0;
     const EDefiProtocolConfigNotFound: u64 = 1;
 
+    const FEE_TYPE_FIXED: u8 = 1;
+    const FEE_TYPE_PERCENTAGE: u8 = 0;
+    const FEE_RATE_15_PERCENTAGE: u64 = 150_000_000;
+
+    const PROTOCOL_TYPE_AAVE: u64 = 1;
+    const PROTOCOL_TYPE_COMPOUND: u64 = 2;
+
+    const PROTOCOL_TOKEN_ID_USDC: u64 = 3;
+    const PROTOCOL_TOKEN_ID_USDT: u64 = 4;
+
+    const LIMIT_STAKE_AMOUNT: u64 = 100_000_000_000_000;
+    const LIMIT_UNSTAKE_AMOUNT: u64 = 100_000_000_000_000;
+    
+
     /// token id 映射表
     public struct DefiProtocolConfig has store {
-        /// token id 映射表
-        token_id_map: Table<DefiProtocolConfigKey, DefiProtocolInfo>,
+        protocol_info_map: Table<DefiProtocolKey, DefiProtocolInfo>,
+    }
+
+    /// 协议信息，存储每个协议的信息
+    public struct DefiProtocolKey has store, copy,drop {
+        /// 协议类型
+        protocol_type: u64,
+        /// 协议版本
+        protocol_version: u64,
+        /// token id
+        protocol_token_id: u64,
+        /// chain id
+        chain_id: u8,
     }
 
     /// 协议信息，存储每个协议的信息
@@ -24,13 +49,17 @@ module bridge::defi_protocols {
         /// 协议版本
         protocol_version: u64,
         /// token id
-        token_id: u64,
+        protocol_token_id: u64,
         /// chain id
         chain_id: u8,
-    }
-
-    public struct DefiProtocolConfigKey has copy, drop ,store{
-        token_id: u64,
+        /// fee type, 0: fixed, 1: percentage
+        fee_type: u8,
+        /// fee rate,decimal precision is 1e9
+        fee_rate: u64,
+        /// 质押时，单笔最大金额限制
+        limit_stake_amount: u64,
+        /// 赎回时，单笔最大金额限制
+        limit_unstake_amount: u64,
     }
 
     /// 用户限额使用事件
@@ -40,7 +69,7 @@ module bridge::defi_protocols {
         /// 协议版本
         protocol_version: u64,
         /// token id
-        token_id: u64,
+        protocol_token_id: u64,
         /// chain id
         chain_id: u8,
     }
@@ -69,20 +98,106 @@ module bridge::defi_protocols {
         );
     }
 
+    public(package) fun initial_defi_protocol(parent_id: &mut UID) {
+        //aave mainnet
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_mainnet(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_mainnet(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        //aave sepolia
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_sepolia(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_sepolia(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        //aave custom
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_custom(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_AAVE, 3, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_custom(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        //compound mainnet
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_mainnet(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_mainnet(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        //compound sepolia
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_sepolia(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_sepolia(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        //compound custom
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDC, bridge::chain_ids::eth_custom(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        add_defi_protocol(parent_id, PROTOCOL_TYPE_COMPOUND, 1, PROTOCOL_TOKEN_ID_USDT, bridge::chain_ids::eth_custom(), FEE_TYPE_PERCENTAGE, FEE_RATE_15_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+    }
+
     public(package) fun add_defi_protocol(
         parent_id: &mut UID,
-        token_id: u64,
-        chain_id: u8,
         protocol_type: u64,
         protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+        fee_type: u8,
+        fee_rate: u64,
+        limit_stake_amount: u64,
+        limit_unstake_amount: u64,
     ) {
         let self=borrow_mut(parent_id);
-        let config_key = DefiProtocolConfigKey { token_id };
-        if (!self.token_id_map.contains(config_key)) {
-            self.token_id_map.add(config_key, DefiProtocolInfo { protocol_type, protocol_version, token_id, chain_id });
+        let config_key = DefiProtocolKey { protocol_type, protocol_version, protocol_token_id, chain_id };
+        if (!self.protocol_info_map.contains(config_key)) {
+            self.protocol_info_map.add(config_key, DefiProtocolInfo { protocol_type, protocol_version, protocol_token_id, chain_id, fee_type, fee_rate, limit_stake_amount, limit_unstake_amount });
         };
-        *self.token_id_map.borrow_mut(config_key) = DefiProtocolInfo { protocol_type, protocol_version, token_id, chain_id };
-        emit(DefiProtocolEvent { protocol_type, protocol_version, token_id, chain_id });
+        *self.protocol_info_map.borrow_mut(config_key) = DefiProtocolInfo { protocol_type, protocol_version, protocol_token_id, chain_id, fee_type, fee_rate, limit_stake_amount, limit_unstake_amount };
+        emit(DefiProtocolEvent { protocol_type, protocol_version, protocol_token_id, chain_id });
+    }
+
+    public(package) fun delete_defi_protocol(
+        parent_id: &mut UID,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) {
+        let self=borrow_mut(parent_id);
+        let config_key = DefiProtocolKey { protocol_type, protocol_version, protocol_token_id, chain_id };
+        assert!(self.protocol_info_map.contains(config_key), EDefiProtocolConfigNotFound);
+        self.protocol_info_map.remove(config_key);
+        emit(DefiProtocolEvent { protocol_type, protocol_version, protocol_token_id, chain_id });
+    }
+
+    /// 计算管理费用
+    /// 返回值：(管理费用, 赎回本金)
+    public(package) fun manage_fee(
+        parent_id: &UID,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+        lp_amount_withdraw: u64,
+        amount_withdraw: u64,
+        amount_in_record: u64,
+        lp_amount_in_record: u64,
+    ): (u64, u64) {
+        let self=borrow(parent_id);
+        let config_key = DefiProtocolKey { protocol_type, protocol_version, protocol_token_id, chain_id };
+        assert!(self.protocol_info_map.contains(config_key), EDefiProtocolConfigNotFound);
+        let protocol_info = self.protocol_info_map.borrow(config_key);
+
+        let lp_amount_withdraw_u256 = lp_amount_withdraw as u256;
+        let lp_amount_in_record_u256 = lp_amount_in_record as u256;
+        let amount_withdraw_u256 = amount_withdraw as u256;
+        let amount_in_record_u256 = amount_in_record as u256;
+        let lp_decimal=10000;
+        //赎回的LP占比
+        let lp_percent=lp_amount_withdraw_u256*lp_decimal/(lp_amount_withdraw_u256+lp_amount_in_record_u256);
+        //赎回的本金
+        let principal=amount_in_record_u256*lp_percent/lp_decimal;
+        //赎回的利息
+        let profit = if (amount_withdraw_u256>principal) {
+            amount_withdraw_u256-principal
+        } else {
+            0u256
+        };
+
+        //计算管理费用
+        let fee: u64 = if (protocol_info.fee_type == FEE_TYPE_FIXED) {
+            if (profit > (protocol_info.fee_rate as u256)) {
+                protocol_info.fee_rate
+            } else {
+                profit as u64
+            }
+        } else {
+            ((profit * (protocol_info.fee_rate as u256)) / 1_000_000_000) as u64
+        };
+        (fee, principal as u64)
     }
 
 
@@ -90,18 +205,36 @@ module bridge::defi_protocols {
     /// 创建新的用户限额管理器
     public fun new(ctx: &mut TxContext): DefiProtocolConfig {
         DefiProtocolConfig {
-            token_id_map: table::new(ctx),
+            protocol_info_map: table::new(ctx),
         }
     }
 
     public fun get_protocol_info(
         parent_id: &mut UID,
-        token_id: u64,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
     ): DefiProtocolInfo {
         let self=borrow(parent_id);
-        let config_key = DefiProtocolConfigKey { token_id };
-        assert!(self.token_id_map.contains(config_key), EDefiProtocolConfigNotFound);
-        *self.token_id_map.borrow(config_key)
+        let config_key = DefiProtocolKey { protocol_type, protocol_version, protocol_token_id, chain_id };
+        assert!(self.protocol_info_map.contains(config_key), EDefiProtocolConfigNotFound);
+        *self.protocol_info_map.borrow(config_key)
+    }
+
+    public fun is_valid_protocol(
+        parent_id: &UID,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ): bool {
+        if (!dynamic_field::exists_(parent_id, KEY)) {
+            return false
+        };
+        let self = borrow(parent_id);
+        let config_key = DefiProtocolKey { protocol_type, protocol_version, protocol_token_id, chain_id };
+        self.protocol_info_map.contains(config_key)
     }
 
     //getter
@@ -117,12 +250,32 @@ module bridge::defi_protocols {
         self.protocol_version
     }
 
+    public fun protocol_token_id(self: &DefiProtocolInfo): u64 {
+        self.protocol_token_id
+    }
+
+    public fun fee_type(self: &DefiProtocolInfo): u8 {
+        self.fee_type
+    }
+
+    public fun fee_rate(self: &DefiProtocolInfo): u64 {
+        self.fee_rate
+    }
+
+    public fun limit_stake_amount(self: &DefiProtocolInfo): u64 {
+        self.limit_stake_amount
+    }
+
+    public fun limit_unstake_amount(self: &DefiProtocolInfo): u64 {
+        self.limit_unstake_amount
+    }
+
     //////////////////////////////////////////////////////
     // Test functions
     //
 
     #[test_only]
-    public(package) fun new_limiter_fast_path_for_testing(parent_id: &mut UID,ctx: &mut TxContext) {
+    public(package) fun new_defi_protocol_config_for_testing(parent_id: &mut UID,ctx: &mut TxContext) {
         assert!(
             !dynamic_field::exists_(parent_id, KEY),
             EDefiProtocolConfigRegistryAlreadyExists
@@ -134,6 +287,12 @@ module bridge::defi_protocols {
         );
     }
 
+    #[test_only]
+    public fun test_is_valid_protocol(ctx: &mut TxContext) {
+        let dummy_object = object::new(ctx);
 
-
+        assert!(!is_valid_protocol(&dummy_object, 1, 1, 1, 1), 0);
+        
+        object::delete(dummy_object);
+    }
 }

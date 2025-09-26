@@ -45,8 +45,7 @@ pub fn build_sui_transaction(
             sui_token_type_tags,
             rgp,
         ),
-        //todo: @fei deal the defi bridge
-        BridgeAction::EthToSuiDefiBridgeAction(_) => build_token_bridge_approve_transaction(
+        BridgeAction::EthToSuiDefiBridgeAction(_) => build_defi_bridge_approve_transaction(
             client_address,
             gas_object_ref,
             action,
@@ -87,8 +86,7 @@ pub fn build_sui_transaction(
             sui_token_type_tags,
             rgp,
         ),
-        //todo: @fei deal the defi bridge
-        BridgeAction::SuiToEthDefiBridgeAction(_) => build_token_bridge_approve_transaction(
+        BridgeAction::SuiToEthDefiBridgeAction(_) => build_defi_bridge_approve_transaction(
             client_address,
             gas_object_ref,
             action,
@@ -647,6 +645,227 @@ fn build_token_bridge_approve_transaction(
             );
         }
     }
+
+    let pt = builder.finish();
+    info!("bbking pt: {:?}", pt);
+    Ok(TransactionData::new_programmable(
+        client_address,
+        vec![*gas_object_ref],
+        pt,
+        100_000_000,
+        rgp,
+    ))
+}
+
+fn build_defi_bridge_approve_transaction(
+    client_address: SuiAddress,
+    gas_object_ref: &ObjectRef,
+    action: VerifiedCertifiedBridgeAction,
+    claim: bool,
+    bridge_object_arg: ObjectArg,
+    admin_cap_arg: Option<ObjectArg>,
+    sui_token_type_tags: &HashMap<u64, TypeTag>,
+    rgp: u64,
+) -> BridgeResult<TransactionData> {
+    let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
+    let mut builder = ProgrammableTransactionBuilder::new();
+    let (
+        source_chain,
+        seq_num,
+        sender,
+        target_chain,
+        target_address,
+        amount,
+        tx_hash,
+        event_idx,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        action_type,
+        func_name_message,
+        func_name_approve,
+        fast_path_selector,
+        lp_token_amount,
+        original_seq_num,
+    ) = match bridge_action {
+        BridgeAction::SuiToEthDefiBridgeAction(a) => {
+            let bridge_event = a.sui_bridge_event;
+            (
+                bridge_event.sui_chain_id,
+                bridge_event.nonce,
+                bridge_event.sui_address.to_vec(),
+                bridge_event.eth_chain_id,
+                None,
+                bridge_event.amount_sui_adjusted,
+                vec![],
+                0u16,
+                Some(bridge_event.protocol_type),
+                Some(bridge_event.protocol_version),
+                Some(bridge_event.protocol_token_id),
+                Some(bridge_event.action_type),
+                "create_defi_transfer_out_message",
+                "approve_defi_transfer_out",
+                None,//fast_path_selector
+                0u64,//lp_token_amount
+                0u64,//original_seq_num
+            )
+        }
+        BridgeAction::EthToSuiDefiBridgeAction(a) => {
+            let bridge_event = a.eth_bridge_event;
+            (
+                bridge_event.eth_chain_id,
+                bridge_event.nonce,
+                bridge_event.eth_address.to_fixed_bytes().to_vec(),
+                bridge_event.sui_chain_id,
+                Some(bridge_event.sui_address.to_vec()),
+                bridge_event.sui_adjusted_amount,
+                a.eth_tx_hash.as_bytes().to_vec(),
+                a.eth_event_index,
+                Some(bridge_event.protocol_type),
+                Some(bridge_event.protocol_version),
+                Some(bridge_event.protocol_token_id),
+                Some(bridge_event.action_type),
+                "create_token_bridge_in_message",
+                "approve_token_transfer_in",
+                Some(bridge_event.fast_path_selector),
+                bridge_event.lp_token_amount,
+                bridge_event.original_seq_num,
+            )
+        }
+        _ => unreachable!(),
+    };
+    let source_chain = builder.pure(source_chain as u8).unwrap();
+    let seq_num = builder.pure(seq_num).unwrap();
+    let sender = builder.pure(sender.clone()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize sender: {:?}. Err: {:?}",
+            sender, e
+        ))
+    })?;
+    let target_chain = builder.pure(target_chain as u8).unwrap();
+    let amount = builder.pure(amount).unwrap();
+    let tx_hash = builder.pure(tx_hash).unwrap();
+    let event_idx = builder.pure(event_idx).unwrap();
+
+    let protocol_type = builder.pure(protocol_type).unwrap();
+    let protocol_version = builder.pure(protocol_version).unwrap();
+    let protocol_token_id_arg = builder.pure(protocol_token_id).unwrap();
+    let action_type = builder.pure(action_type).unwrap();
+    let lp_token_amount = builder.pure(lp_token_amount).unwrap();
+    let original_seq_num = builder.pure(original_seq_num).unwrap();
+
+    let arg_msg = match func_name_message {
+        "create_defi_transfer_out_message" => {
+            builder.programmable_move_call(
+                BRIDGE_PACKAGE_ID,
+                ident_str!("message").to_owned(),
+                ident_str!(func_name_message).to_owned(),
+                vec![],
+                vec![
+                    source_chain,
+                    seq_num,
+                    sender,
+                    target_chain,
+                    amount,
+                    tx_hash,
+                    event_idx,
+                    protocol_type,
+                    protocol_version,
+                    protocol_token_id_arg,
+                    action_type,
+                ],
+            )
+        },
+        "create_token_bridge_in_message" => {
+            let target = builder.pure(target_address.unwrap().clone()).map_err(|e| {
+                BridgeError::BridgeSerializationError(format!(
+                    "Failed to serialize target: {:?}. Err: {:?}",
+                    target_address.unwrap(), e
+                ))
+            })?;
+            let protocol_type = builder.pure(protocol_type).unwrap();
+            let protocol_version = builder.pure(protocol_version).unwrap();
+            let action_type = builder.pure(action_type).unwrap();
+            let protocol_token_id = builder.pure(protocol_token_id).unwrap();
+            let lp_token_amount = builder.pure(lp_token_amount).unwrap();
+            let original_seq_num = builder.pure(original_seq_num).unwrap();
+            let fast_path_selector = builder.pure(fast_path_selector).unwrap();
+            builder.programmable_move_call(
+                BRIDGE_PACKAGE_ID,
+                ident_str!("message").to_owned(),
+                ident_str!(func_name_message).to_owned(),
+                vec![],
+                vec![
+                    source_chain,
+                    seq_num,
+                    sender,
+                    target_chain,
+                    amount,
+                    tx_hash,
+                    event_idx,
+                    fast_path_selector,
+                    protocol_type,
+                    protocol_version,
+                    protocol_token_id_arg,
+                    original_seq_num,
+                    action_type,
+                    lp_token_amount,
+                ],
+            )
+        }
+        _ => unreachable!(),
+    };
+
+    // Unwrap: these should not fail
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+    let arg_clock = builder.input(CallArg::CLOCK_IMM).unwrap();
+
+    let mut sig_bytes = vec![];
+    for (_, sig) in sigs.signatures {
+        sig_bytes.push(sig.as_bytes().to_vec());
+    }
+    let arg_signatures = builder.pure(sig_bytes.clone()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize signatures: {:?}. Err: {:?}",
+            sig_bytes, e
+        ))
+    })?;
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
+        ident_str!(func_name_approve).to_owned(),
+        vec![],
+        vec![arg_bridge, arg_msg, arg_signatures],
+    );
+
+    if claim {
+        let admin_cap = builder.obj(admin_cap_arg.unwrap()).unwrap();
+        let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+        let protocol_token_id = protocol_token_id.unwrap_or(0);    
+        let token_type = if protocol_token_id ==3 || protocol_token_id == 4 {
+            5
+        } else {
+            protocol_token_id
+        };
+
+        builder.programmable_move_call(
+                BRIDGE_PACKAGE_ID,
+                sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
+                ident_str!("claim_and_transfer_busd").to_owned(),
+                vec![sui_token_type_tags
+                    .get(&token_type)
+                    .ok_or(BridgeError::UnknownTokenId(token_type))?
+                    .clone()],
+                vec![
+                    arg_bridge,
+                    system_obj,
+                    arg_clock,
+                    source_chain,
+                    seq_num,
+                    admin_cap,
+                ],
+        );
+    };
 
     let pt = builder.finish();
     info!("bbking pt: {:?}", pt);
