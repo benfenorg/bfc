@@ -41,9 +41,11 @@ use sui_types::bridge::{
     APPROVAL_THRESHOLD_SET_CROSS_OUT_BRIDGE_FEE,
     APPROVAL_THRESHOLD_SET_CROSS_IN_BRIDGE_FEE,
     APPROVAL_THRESHOLD_WITHDRAW_BRIDGE_FEE,
+    APPROVAL_THRESHOLD_ADD_LP_TOKEN_ID,
+    APPROVAL_THRESHOLD_UPDATE_INVEST_ADDRESS,
 };
 use sui_types::committee::CommitteeTrait;
-use sui_types::committee::StakeUnit;
+use sui_types::committee::StakeUnit;    
 use sui_types::crypto::ToFromBytes;
 use sui_types::digests::{Digest, TransactionDigest};
 use sui_types::message_envelope::{Envelope, Message, VerifiedEnvelope};
@@ -235,6 +237,8 @@ pub enum BridgeActionType {
     WithdrawBridgeFee = 22,
     DefiTransferOut = 23,
     DefiTransferIn = 24,
+    UpdateInvestAddress = 26,
+    AddLpTokenId = 27,
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -418,7 +422,9 @@ pub struct UpdateInvestAddressAction {
 pub struct AddLpTokenIdAction {
     pub nonce: u64,
     pub chain_id: BridgeChainId,
+    pub protocol_type: u64,
     pub token_id: u64,
+    pub lp_token_id: u64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -585,6 +591,8 @@ pub enum BridgeAction {
     WithdrawBridgeFeeAction(WithdrawBridgeFeeAction),
     AddTokensOnSuiAction(AddTokensOnSuiAction),
     AddTokensOnEvmAction(AddTokensOnEvmAction),
+    UpdateInvestAddressAction(UpdateInvestAddressAction),
+    AddLpTokenIdAction(AddLpTokenIdAction),
 }
 
 impl BridgeAction {
@@ -632,6 +640,8 @@ impl BridgeAction {
             BridgeAction::AddTokensOnEvmAction(a) => a.chain_id,
             BridgeAction::RefundAdminAction(a) => a.chain_id,
             BridgeAction::FastPathLimitUpdateAction(a) => a.chain_id,
+            BridgeAction::UpdateInvestAddressAction(a) => a.chain_id,
+            BridgeAction::AddLpTokenIdAction(a) => a.chain_id,
         }
     }
 
@@ -661,6 +671,8 @@ impl BridgeAction {
             BridgeActionType::AddTokensOnEvm => true,
             BridgeActionType::RefundAdmin => true,
             BridgeActionType::FastPathLimitUpdate => true,
+            BridgeActionType::UpdateInvestAddress => true,
+            BridgeActionType::AddLpTokenId => true,
         }
     }
 
@@ -694,6 +706,8 @@ impl BridgeAction {
             BridgeAction::AddTokensOnEvmAction(_) => BridgeActionType::AddTokensOnEvm,
             BridgeAction::RefundAdminAction(_) => BridgeActionType::RefundAdmin,
             BridgeAction::FastPathLimitUpdateAction(_) => BridgeActionType::FastPathLimitUpdate,
+            BridgeAction::UpdateInvestAddressAction(_) => BridgeActionType::UpdateInvestAddress,
+            BridgeAction::AddLpTokenIdAction(_) => BridgeActionType::AddLpTokenId,
         }
     }
 
@@ -727,6 +741,8 @@ impl BridgeAction {
             BridgeAction::AddTokensOnEvmAction(a) => a.nonce,
             BridgeAction::RefundAdminAction(a) => a.nonce,
             BridgeAction::FastPathLimitUpdateAction(a) => a.nonce,
+            BridgeAction::UpdateInvestAddressAction(a) => a.nonce,
+            BridgeAction::AddLpTokenIdAction(a) => a.nonce,
         }
     }
 
@@ -762,6 +778,8 @@ impl BridgeAction {
             BridgeAction::AddTokensOnEvmAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM,
             BridgeAction::RefundAdminAction(_) => APPROVAL_THRESHOLD_REFUND_ADMIN,
             BridgeAction::FastPathLimitUpdateAction(_) => APPROVAL_THRESHOLD_FAST_PATH_LIMIT_UPDATE,
+            BridgeAction::UpdateInvestAddressAction(_) => APPROVAL_THRESHOLD_UPDATE_INVEST_ADDRESS,
+            BridgeAction::AddLpTokenIdAction(_) => APPROVAL_THRESHOLD_ADD_LP_TOKEN_ID,
         }
     }
 

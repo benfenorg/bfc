@@ -12,6 +12,8 @@ use crate::types::{
     BridgeCommitteeValiditySignInfo, EvmContractUpgradeAction, LimitUpdateAction,
     SingleTransferLimitUpdateAction,
     VerifiedCertifiedBridgeAction,
+    UpdateInvestAddressAction,
+    AddLpTokenIdAction,
 };
 use crate::utils::EthSigner;
 use crate::{
@@ -52,6 +54,14 @@ pub async fn build_eth_transaction(
         }
         BridgeAction::EmergencyAction(action) => {
             build_emergency_op_approve_transaction(contract_address, signer, action.clone(), sigs)
+                .await
+        }
+        BridgeAction::AddLpTokenIdAction(action) => {
+            build_add_lp_token_id_approve_transaction(contract_address, signer, action.clone(), sigs)
+                .await
+        }
+        BridgeAction::UpdateInvestAddressAction(action) => {
+            build_update_invest_address_approve_transaction(contract_address, signer, action.clone(), sigs)
                 .await
         }
         BridgeAction::BlocklistCommitteeAction(action) => {
@@ -168,6 +178,41 @@ pub async fn build_committee_blocklist_approve_transaction(
         .collect::<Vec<_>>();
     Ok(contract.update_blocklist_with_signatures(signatures, message))
 }
+
+pub async  fn build_update_invest_address_approve_transaction(
+    contract_address: EthAddress,
+    signer: EthSigner,
+    action: UpdateInvestAddressAction,
+    sigs: &BridgeCommitteeValiditySignInfo,
+) -> BridgeResult<ContractCall<EthSigner, ()>> {
+    let contract = EthSuiBridge::new(contract_address, signer.into());
+
+    let message: eth_sui_bridge::Message = action.clone().into();
+    let signatures = sigs
+        .signatures
+        .values()
+        .map(|sig| Bytes::from(sig.as_ref().to_vec()))
+        .collect::<Vec<_>>();
+    Ok(contract.update_invest_address_with_signatures(signatures, message))
+}
+
+pub async  fn build_add_lp_token_id_approve_transaction(
+    contract_address: EthAddress,
+    signer: EthSigner,
+    action: AddLpTokenIdAction,
+    sigs: &BridgeCommitteeValiditySignInfo,
+) -> BridgeResult<ContractCall<EthSigner, ()>> {
+    let contract = EthBridgeConfig::new(contract_address, signer.into());
+
+    let message: eth_bridge_config::Message = action.clone().into();
+    let signatures = sigs
+        .signatures
+        .values()
+        .map(|sig| Bytes::from(sig.as_ref().to_vec()))
+        .collect::<Vec<_>>();
+    Ok(contract.add_lp_token_id_with_signatures(signatures, message))
+}
+
 
 pub async fn build_limit_update_approve_transaction(
     contract_address: EthAddress,

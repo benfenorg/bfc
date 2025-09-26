@@ -30,6 +30,8 @@ use crate::types::SuiToEthDefiBridgeAction;
 use crate::types::UpdateBridgeFeeOnCrossOutAction;
 use crate::types::UpdateBridgeFeeOnCrossInAction;
 use crate::types::WithdrawBridgeFeeAction;
+use crate::types::AddLpTokenIdAction;
+use crate::types::UpdateInvestAddressAction;
 use enum_dispatch::enum_dispatch;
 // use ethers::core::k256::elliptic_curve::ff::derive::bitvec::view::AsBits;
 use ethers::types::Address as EthAddress;
@@ -62,6 +64,9 @@ pub const SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION: u8 = 1;
 pub const SET_CROSS_OUT_BRIDGE_FEE_MESSAGE_VERSION: u8 = 1;
 pub const SET_CROSS_IN_BRIDGE_FEE_MESSAGE_VERSION: u8 = 1;
 pub const WITHDRAW_BRIDGE_FEE_MESSAGE_VERSION: u8 = 1;
+pub const ADD_LP_TOKEN_ID_MESSAGE_VERSION: u8 = 1;
+pub const UPDATE_INVEST_ADDRESS_MESSAGE_VERSION: u8 = 1;
+
 
 
 pub const BRIDGE_MESSAGE_PREFIX: &[u8] = b"SUI_BRIDGE_MESSAGE";
@@ -571,6 +576,59 @@ impl BridgeMessageEncoding for SingleTransferLimitUpdateAction {
         bytes.push(self.sending_chain_id as u8);
         // Add new usd limit
         bytes.extend_from_slice(&self.new_usd_limit.to_be_bytes());
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for AddLpTokenIdAction {
+      fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::AddLpTokenId as u8);
+        // Add message version
+        bytes.push(ADD_LP_TOKEN_ID_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+        bytes
+      }
+
+      fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add protocol type
+        bytes.extend_from_slice(&self.protocol_type.to_be_bytes());
+        // Add token id
+        bytes.extend_from_slice(&self.token_id.to_be_bytes());
+        // Add lp token id
+        bytes.extend_from_slice(&self.lp_token_id.to_be_bytes());
+        bytes
+      }
+    
+}
+
+impl BridgeMessageEncoding for UpdateInvestAddressAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::UpdateInvestAddress as u8);
+        // Add message version
+        bytes.push(UPDATE_INVEST_ADDRESS_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add new invest address
+        bytes.extend_from_slice(&self.invest_address.as_bytes().to_vec());
         bytes
     }
 }

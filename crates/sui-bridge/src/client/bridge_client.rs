@@ -143,6 +143,22 @@ impl BridgeClient {
                 let new_usd_limit = a.new_usd_limit.to_string();
                 format!("sign/update_single_transfer_limit/{chain_id}/{nonce}/{sending_chain_id}/{new_usd_limit}")
             }
+
+            BridgeAction::UpdateInvestAddressAction(a) => {
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let invest_address = Hex::encode(a.invest_address.as_bytes());
+                format!("sign/update_invest_address/{chain_id}/{nonce}/{invest_address}")
+            }
+            BridgeAction::AddLpTokenIdAction(a) => {
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let protocol_type = a.protocol_type.to_string();
+                let token_id = a.token_id.to_string();
+                let lp_token_id = a.lp_token_id.to_string();
+                format!("sign/add_lp_token_id/{chain_id}/{nonce}/{protocol_type}/{token_id}/{lp_token_id}")
+            }
+
             BridgeAction::AssetPriceUpdateAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();

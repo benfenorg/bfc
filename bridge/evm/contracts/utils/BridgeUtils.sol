@@ -101,8 +101,9 @@ library BridgeUtils {
     uint8 public constant UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT = 19;
 
     uint8 public constant DEFI=23;
-    uint8 public constant ADD_LP_TOKEN_ID =24;
-    uint8 public constant UPDATE_INVEST_ADDRESS =25;
+    uint8 public constant UPDATE_INVEST_ADDRESS =26;
+    uint8 public constant ADD_LP_TOKEN_ID =27;
+
 
 
 

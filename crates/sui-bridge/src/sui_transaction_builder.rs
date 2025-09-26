@@ -121,6 +121,14 @@ pub fn build_sui_transaction(
             // It does not need a Sui tranaction to add tokens on EVM
             unreachable!()
         }
+        BridgeAction::AddLpTokenIdAction(_) =>{
+             unreachable!()
+        }
+
+        BridgeAction::UpdateInvestAddressAction(_) => {
+            unreachable!()
+        }
+
         BridgeAction::AssetPriceUpdateAction(_) => build_asset_price_update_approve_transaction(
             client_address,
             gas_object_ref,

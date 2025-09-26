@@ -18,6 +18,7 @@ use crate::{
         RemoveExternalCoinWitnessAction, RemoveTokenOnTokenListAction, SignedBridgeAction,
         SingleTransferLimitUpdateAction, UpdateBridgeFeeOnCrossInAction,
         UpdateBridgeFeeOnCrossOutAction, WithdrawBridgeFeeAction,
+        AddLpTokenIdAction, UpdateInvestAddressAction
     },
 };
 use axum::{
@@ -115,6 +116,11 @@ pub const UPDATE_REFUND_ADMIN_PATH: &str =
 pub const UPDATE_FAST_PATH_LIMIT_PATH: &str =
     "/sign/update_fast_path_limit/:chain_id/:nonce/:token_id/:amount/:chain_id_evm";
 
+pub const UPDATE_INVEST_ADDRESS_PATH: &str =
+    "/sign/update_invest_address/:chain_id/:nonce/:invest_address";
+pub const ADD_LP_TOKEN_ID_PATH: &str =
+    "/sign/add_lp_token_id/:chain_id/:nonce/:protocol_type/:token_id/:lp_token_id";
+
 // BridgeNode's public metadata that is accessible via the `/ping` endpoint.
 // Be careful with what to put here, as it is public.
 #[derive(serde::Serialize)]
@@ -197,6 +203,8 @@ pub(crate) fn make_router(
             get(handle_asset_price_update_action),
         )
         .route(EVM_CONTRACT_UPGRADE_PATH, get(handle_evm_contract_upgrade))
+        .route(ADD_LP_TOKEN_ID_PATH, get(handle_add_lp_token_id_on_evm))
+        .route(UPDATE_INVEST_ADDRESS_PATH, get(handle_update_invest_address))
         .route(
             EVM_CONTRACT_UPGRADE_PATH_WITH_CALLDATA,
             get(handle_evm_contract_upgrade_with_calldata),
@@ -546,6 +554,59 @@ async fn handle_asset_price_update_action(
         Ok(sig)
     };
     with_metrics!(metrics.clone(), "handle_asset_price_update_action", future).await
+}
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, protocol_type=protocol_type, token_id=token_id, lp_token_id=lp_token_id))]
+async fn handle_add_lp_token_id_on_evm(
+    Path((chain_id, nonce, protocol_type, token_id, lp_token_id)): Path<(u8, u64, u64, u64, u64)>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+        let action = BridgeAction::AddLpTokenIdAction(AddLpTokenIdAction {
+            chain_id,
+            nonce,
+            protocol_type,
+            token_id,
+            lp_token_id,
+        });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_add_lp_token_id_on_evm", future).await
+}
+//:chain_id/:nonce/:new_invest_address
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, invest_address=format!("{:x}", invest_address)))]
+async  fn handle_update_invest_address(
+    Path((chain_id, nonce,invest_address)) : Path<(
+      u8,
+      u64,  
+      EthAddress,
+    )>,
+     State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+)-> Result<Json<SignedBridgeAction>, BridgeError> {
+     let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+        let action = BridgeAction::UpdateInvestAddressAction(UpdateInvestAddressAction{
+            chain_id,
+            nonce,
+            invest_address,
+        });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_update_invest_address", future).await
 }
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, proxy_address=format!("{:x}", proxy_address), new_impl_address=format!("{:x}", new_impl_address)))]
