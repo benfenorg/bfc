@@ -5665,6 +5665,9 @@ has_vote
 token
 	public fun
 	0xb::message_types
+defi
+	public fun
+	0xb::message_types
 committee_blocklist
 	public fun
 	0xb::message_types
@@ -5878,6 +5881,12 @@ TokenTransferPayload
 TokenTransferPayloadV2
 	public struct
 	0xb::message
+DefiTransferOutPayload
+	public struct
+	0xb::message
+DefiTransferInPayload
+	public struct
+	0xb::message
 TokenTransferInPayload
 	public struct
 	0xb::message
@@ -6088,6 +6097,18 @@ create_withdraw_fee_cap
 create_add_tokens_on_sui_message
 	public fun
 	0xb::message
+create_defi_transfer_in_message
+	public fun
+	0xb::message
+create_defi_transfer_out_message
+	public fun
+	0xb::message
+extract_defi_transfer_in_payload
+	public fun
+	0xb::message
+extract_defi_transfer_out_payload
+	public fun
+	0xb::message
 create_key
 	public fun
 	0xb::message
@@ -6176,6 +6197,69 @@ token_event_idx_in
 	public fun
 	0xb::message
 token_fast_path_selector_in
+	public fun
+	0xb::message
+sender_address_defi_out
+	public fun
+	0xb::message
+target_chain_defi_out
+	public fun
+	0xb::message
+token_amount_defi_out
+	public fun
+	0xb::message
+token_tx_hash_defi_out
+	public fun
+	0xb::message
+token_event_idx_defi_out
+	public fun
+	0xb::message
+protocol_type_defi_out
+	public fun
+	0xb::message
+protocol_version_defi_out
+	public fun
+	0xb::message
+action_type_defi_out
+	public fun
+	0xb::message
+protocol_token_id_defi_out
+	public fun
+	0xb::message
+sender_address_defi_in
+	public fun
+	0xb::message
+target_chain_defi_in
+	public fun
+	0xb::message
+amount_defi_in
+	public fun
+	0xb::message
+lp_token_amount_defi_in
+	public fun
+	0xb::message
+tx_hash_defi_in
+	public fun
+	0xb::message
+event_idx_defi_in
+	public fun
+	0xb::message
+fast_path_selector_defi_in
+	public fun
+	0xb::message
+protocol_type_defi_in
+	public fun
+	0xb::message
+protocol_version_defi_in
+	public fun
+	0xb::message
+protocol_token_id_defi_in
+	public fun
+	0xb::message
+original_seq_num_defi_in
+	public fun
+	0xb::message
+action_type_defi_in
 	public fun
 	0xb::message
 emergency_op_type
@@ -6646,6 +6730,72 @@ initial_transfer_limits
 update_transfer_limits
 	public(package) fun
 	0xb::limiter
+DefiProtocolConfig
+	public struct
+	0xb::defi_protocols
+DefiProtocolKey
+	public struct
+	0xb::defi_protocols
+DefiProtocolInfo
+	public struct
+	0xb::defi_protocols
+DefiProtocolEvent
+	public struct
+	0xb::defi_protocols
+borrow
+	public(package) fun
+	0xb::defi_protocols
+borrow_mut
+	public(package) fun
+	0xb::defi_protocols
+registry
+	public(package) fun
+	0xb::defi_protocols
+initial_defi_protocol
+	public(package) fun
+	0xb::defi_protocols
+add_defi_protocol
+	public(package) fun
+	0xb::defi_protocols
+delete_defi_protocol
+	public(package) fun
+	0xb::defi_protocols
+manage_fee
+	public(package) fun
+	0xb::defi_protocols
+new
+	public fun
+	0xb::defi_protocols
+get_protocol_info
+	public fun
+	0xb::defi_protocols
+is_valid_protocol
+	public fun
+	0xb::defi_protocols
+chain_id
+	public fun
+	0xb::defi_protocols
+protocol_type
+	public fun
+	0xb::defi_protocols
+protocol_version
+	public fun
+	0xb::defi_protocols
+protocol_token_id
+	public fun
+	0xb::defi_protocols
+fee_type
+	public fun
+	0xb::defi_protocols
+fee_rate
+	public fun
+	0xb::defi_protocols
+limit_stake_amount
+	public fun
+	0xb::defi_protocols
+limit_unstake_amount
+	public fun
+	0xb::defi_protocols
 BlocklistValidatorEvent
 	public struct
 	0xb::committee
@@ -6781,10 +6931,25 @@ Bridge
 BridgeInner
 	public struct
 	0xb::bridge
+DefiProtocolKey
+	public struct
+	0xb::bridge
+DefiHolderInfo
+	public struct
+	0xb::bridge
 TokenDepositedEvent
 	public struct
 	0xb::bridge
 TokenDepositedEventV2
+	public struct
+	0xb::bridge
+DefiTransferOutEvent
+	public struct
+	0xb::bridge
+DefiTokensStakedEvent
+	public struct
+	0xb::bridge
+DefiTokensUnstakeEvent
 	public struct
 	0xb::bridge
 TokenSendBackEvent
@@ -6868,8 +7033,17 @@ update_node_url
 register_foreign_token
 	public fun
 	0xb::bridge
+defi_unstake
+	public fun
+	0xb::bridge
 send_token
 	public fun
+	0xb::bridge
+defi_stake
+	public fun
+	0xb::bridge
+defi_stake_success
+	fun
 	0xb::bridge
 send_busd
 	public fun
@@ -6898,6 +7072,12 @@ approve_token_transfer_v2
 approve_token_transfer_in
 	public fun
 	0xb::bridge
+approve_defi_transfer_out
+	public fun
+	0xb::bridge
+approve_defi_transfer_in
+	public fun
+	0xb::bridge
 get_max_mint_busd_amount
 	public fun
 	0xb::bridge
@@ -6911,6 +7091,9 @@ claim_and_transfer_token
 	public fun
 	0xb::bridge
 claim_and_transfer_busd
+	public fun
+	0xb::bridge
+claim_and_transfer_busd_for_defi
 	public fun
 	0xb::bridge
 execute_system_message_with_ctx
@@ -6938,6 +7121,12 @@ withdraw_external_busd_coin
 	public fun
 	0xb::bridge
 withdraw_external_coin
+	public fun
+	0xb::bridge
+defi_holders_lp_token_amount_get
+	public fun
+	0xb::bridge
+defi_holders_amount_get
 	public fun
 	0xb::bridge
 get_unclaimed_bridge_fee
@@ -6983,6 +7172,12 @@ check_fast_path_limit
 	fun
 	0xb::bridge
 claim_stable_token_internal
+	fun
+	0xb::bridge
+adjust_amount_usdc_usdt_in
+	fun
+	0xb::bridge
+claim_stable_token_for_defi_internal
 	fun
 	0xb::bridge
 execute_emergency_op
@@ -7040,6 +7235,15 @@ execute_add_tokens_on_sui
 	fun
 	0xb::bridge
 get_current_seq_num_and_increment
+	fun
+	0xb::bridge
+defi_holders_add
+	fun
+	0xb::bridge
+defi_holders_get
+	fun
+	0xb::bridge
+defi_holders_del
 	fun
 	0xb::bridge
 get_parsed_token_transfer_message

@@ -11,6 +11,8 @@ title: Module `bridge::message`
 -  [Struct `FastPathLimitPayload`](#bridge_message_FastPathLimitPayload)
 -  [Struct `TokenTransferPayload`](#bridge_message_TokenTransferPayload)
 -  [Struct `TokenTransferPayloadV2`](#bridge_message_TokenTransferPayloadV2)
+-  [Struct `DefiTransferOutPayload`](#bridge_message_DefiTransferOutPayload)
+-  [Struct `DefiTransferInPayload`](#bridge_message_DefiTransferInPayload)
 -  [Struct `TokenTransferInPayload`](#bridge_message_TokenTransferInPayload)
 -  [Struct `EmergencyOp`](#bridge_message_EmergencyOp)
 -  [Struct `Blocklist`](#bridge_message_Blocklist)
@@ -82,6 +84,10 @@ title: Module `bridge::message`
 -  [Function `create_set_cross_out_bridge_fee`](#bridge_message_create_set_cross_out_bridge_fee)
 -  [Function `create_withdraw_fee_cap`](#bridge_message_create_withdraw_fee_cap)
 -  [Function `create_add_tokens_on_sui_message`](#bridge_message_create_add_tokens_on_sui_message)
+-  [Function `create_defi_transfer_in_message`](#bridge_message_create_defi_transfer_in_message)
+-  [Function `create_defi_transfer_out_message`](#bridge_message_create_defi_transfer_out_message)
+-  [Function `extract_defi_transfer_in_payload`](#bridge_message_extract_defi_transfer_in_payload)
+-  [Function `extract_defi_transfer_out_payload`](#bridge_message_extract_defi_transfer_out_payload)
 -  [Function `create_key`](#bridge_message_create_key)
 -  [Function `key`](#bridge_message_key)
 -  [Function `key_refund`](#bridge_message_key_refund)
@@ -112,6 +118,27 @@ title: Module `bridge::message`
 -  [Function `token_tx_hash_in`](#bridge_message_token_tx_hash_in)
 -  [Function `token_event_idx_in`](#bridge_message_token_event_idx_in)
 -  [Function `token_fast_path_selector_in`](#bridge_message_token_fast_path_selector_in)
+-  [Function `sender_address_defi_out`](#bridge_message_sender_address_defi_out)
+-  [Function `target_chain_defi_out`](#bridge_message_target_chain_defi_out)
+-  [Function `token_amount_defi_out`](#bridge_message_token_amount_defi_out)
+-  [Function `token_tx_hash_defi_out`](#bridge_message_token_tx_hash_defi_out)
+-  [Function `token_event_idx_defi_out`](#bridge_message_token_event_idx_defi_out)
+-  [Function `protocol_type_defi_out`](#bridge_message_protocol_type_defi_out)
+-  [Function `protocol_version_defi_out`](#bridge_message_protocol_version_defi_out)
+-  [Function `action_type_defi_out`](#bridge_message_action_type_defi_out)
+-  [Function `protocol_token_id_defi_out`](#bridge_message_protocol_token_id_defi_out)
+-  [Function `sender_address_defi_in`](#bridge_message_sender_address_defi_in)
+-  [Function `target_chain_defi_in`](#bridge_message_target_chain_defi_in)
+-  [Function `amount_defi_in`](#bridge_message_amount_defi_in)
+-  [Function `lp_token_amount_defi_in`](#bridge_message_lp_token_amount_defi_in)
+-  [Function `tx_hash_defi_in`](#bridge_message_tx_hash_defi_in)
+-  [Function `event_idx_defi_in`](#bridge_message_event_idx_defi_in)
+-  [Function `fast_path_selector_defi_in`](#bridge_message_fast_path_selector_defi_in)
+-  [Function `protocol_type_defi_in`](#bridge_message_protocol_type_defi_in)
+-  [Function `protocol_version_defi_in`](#bridge_message_protocol_version_defi_in)
+-  [Function `protocol_token_id_defi_in`](#bridge_message_protocol_token_id_defi_in)
+-  [Function `original_seq_num_defi_in`](#bridge_message_original_seq_num_defi_in)
+-  [Function `action_type_defi_in`](#bridge_message_action_type_defi_in)
 -  [Function `emergency_op_type`](#bridge_message_emergency_op_type)
 -  [Function `blocklist_type`](#bridge_message_blocklist_type)
 -  [Function `blocklist_validator_addresses`](#bridge_message_blocklist_validator_addresses)
@@ -472,6 +499,153 @@ title: Module `bridge::message`
 </dd>
 <dt>
 <code>event_idx: u16</code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
+<a name="bridge_message_DefiTransferOutPayload"></a>
+
+## Struct `DefiTransferOutPayload`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">DefiTransferOutPayload</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>sender_address: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>target_chain: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code><a href="../bridge/message.md#bridge_message_amount">amount</a>: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>tx_hash: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>event_idx: u16</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>protocol_type: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>protocol_version: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>protocol_token_id: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>action_type: u8</code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
+<a name="bridge_message_DefiTransferInPayload"></a>
+
+## Struct `DefiTransferInPayload`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>sender_address: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>target_chain: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code><a href="../bridge/message.md#bridge_message_amount">amount</a>: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>tx_hash: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>event_idx: u16</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>fast_path_selector: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>protocol_type: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>protocol_version: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>protocol_token_id: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>original_seq_num: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>action_type: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>lp_token_amount: u64</code>
 </dt>
 <dd>
 </dd>
@@ -3316,6 +3490,228 @@ Update Sui token message
 
 </details>
 
+<a name="bridge_message_create_defi_transfer_in_message"></a>
+
+## Function `create_defi_transfer_in_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_defi_transfer_in_message">create_defi_transfer_in_message</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8, <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64, benfen_address: vector&lt;u8&gt;, target_chain: u8, <a href="../bridge/message.md#bridge_message_amount">amount</a>: u64, tx_hash: vector&lt;u8&gt;, event_idx: u16, fast_path_selector: u8, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, original_seq_num: u64, action_type: u8, lp_token_amount: u64): <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_defi_transfer_in_message">create_defi_transfer_in_message</a>(
+    <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8,
+    <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64,
+    benfen_address: vector&lt;u8&gt;,
+    target_chain: u8,
+    <a href="../bridge/message.md#bridge_message_amount">amount</a>: u64,
+    tx_hash: vector&lt;u8&gt;,
+    event_idx: u16,
+    fast_path_selector: u8,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    original_seq_num: u64,
+    action_type: u8,
+    lp_token_amount:u64,
+): <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>{
+    <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>);
+    <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(target_chain);
+    <b>let</b> <b>mut</b> <a href="../bridge/message.md#bridge_message_payload">payload</a> = vector[];
+    // sender <b>address</b> should be less than 255 bytes so can fit into u8
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back((vector::length(&benfen_address) <b>as</b> u8));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(benfen_address);
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back(target_chain);
+    // bcs serializes u64 <b>as</b> 8 bytes
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&<a href="../bridge/message.md#bridge_message_amount">amount</a>)));
+    // tx_hash length prefix
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back((vector::length(&tx_hash) <b>as</b> u8));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(tx_hash);
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&event_idx)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back(fast_path_selector);
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&protocol_type)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&protocol_version)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&protocol_token_id)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&original_seq_num)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back(action_type);
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&lp_token_amount)));
+    <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a> {
+        <a href="../bridge/message.md#bridge_message_message_type">message_type</a>: <a href="../bridge/message_types.md#bridge_message_types_defi">message_types::defi</a>(),
+        <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>,
+        <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>,
+        <a href="../bridge/message.md#bridge_message_payload">payload</a>,
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_create_defi_transfer_out_message"></a>
+
+## Function `create_defi_transfer_out_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_defi_transfer_out_message">create_defi_transfer_out_message</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8, <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64, sender_address: vector&lt;u8&gt;, target_chain: u8, <a href="../bridge/message.md#bridge_message_amount">amount</a>: u64, tx_hash: vector&lt;u8&gt;, event_idx: u16, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, action_type: u8): <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_defi_transfer_out_message">create_defi_transfer_out_message</a>(
+    <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8,
+    <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64,
+    sender_address: vector&lt;u8&gt;,
+    target_chain: u8,
+    <a href="../bridge/message.md#bridge_message_amount">amount</a>: u64,
+    tx_hash: vector&lt;u8&gt;,
+    event_idx: u16,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    action_type: u8,
+): <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>{
+    <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>);
+    <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(target_chain);
+    <b>let</b> <b>mut</b> <a href="../bridge/message.md#bridge_message_payload">payload</a> = vector[];
+    // sender <b>address</b> should be less than 255 bytes so can fit into u8
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back((vector::length(&sender_address) <b>as</b> u8));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(sender_address);
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back(target_chain);
+    // bcs serializes u64 <b>as</b> 8 bytes
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&<a href="../bridge/message.md#bridge_message_amount">amount</a>)));
+    // tx_hash length prefix
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back((vector::length(&tx_hash) <b>as</b> u8));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(tx_hash);
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&event_idx)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&protocol_type)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&protocol_version)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&protocol_token_id)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back(action_type);
+    <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a> {
+        <a href="../bridge/message.md#bridge_message_message_type">message_type</a>: <a href="../bridge/message_types.md#bridge_message_types_defi">message_types::defi</a>(),
+        <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>,
+        <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>,
+        <a href="../bridge/message.md#bridge_message_payload">payload</a>,
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_extract_defi_transfer_in_payload"></a>
+
+## Function `extract_defi_transfer_in_payload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_defi_transfer_in_payload">extract_defi_transfer_in_payload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_DefiTransferInPayload">bridge::message::DefiTransferInPayload</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_defi_transfer_in_payload">extract_defi_transfer_in_payload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a> {
+    <b>let</b> <b>mut</b> bcs = bcs::new(<a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_payload">payload</a>);
+    <b>let</b> sender_address = bcs.peel_vec_u8();
+    <b>let</b> target_chain = bcs.peel_u8();
+    <b>let</b> <a href="../bridge/message.md#bridge_message_amount">amount</a> = <a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+    <b>let</b> tx_hash = bcs.peel_vec_u8();
+    <b>let</b> event_idx = bcs.peel_u16();
+    <b>let</b> fast_path_selector = bcs.peel_u8();
+    <b>let</b> protocol_type = <a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+    <b>let</b> protocol_version = <a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+    <b>let</b> protocol_token_id = <a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+    <b>let</b> original_seq_num = <a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+    <b>let</b> action_type = bcs.peel_u8();
+    <b>let</b> lp_token_amount = <a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+    <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(target_chain);
+    <b>assert</b>!(bcs.into_remainder_bytes().is_empty(), <a href="../bridge/message.md#bridge_message_ETrailingBytes">ETrailingBytes</a>);
+    <a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a> {
+        sender_address,
+        target_chain,
+        <a href="../bridge/message.md#bridge_message_amount">amount</a>,
+        tx_hash,
+        event_idx,
+        fast_path_selector,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        original_seq_num,
+        action_type,
+        lp_token_amount,
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_extract_defi_transfer_out_payload"></a>
+
+## Function `extract_defi_transfer_out_payload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_defi_transfer_out_payload">extract_defi_transfer_out_payload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">bridge::message::DefiTransferOutPayload</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_defi_transfer_out_payload">extract_defi_transfer_out_payload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">DefiTransferOutPayload</a> {
+    <b>let</b> <b>mut</b> bcs = bcs::new(<a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_payload">payload</a>);
+    <b>let</b> sender_address = bcs.peel_vec_u8();
+    <b>let</b> target_chain = bcs.peel_u8();
+    <b>let</b> <a href="../bridge/message.md#bridge_message_amount">amount</a> = <a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+    <b>let</b> tx_hash = bcs.peel_vec_u8();
+    <b>let</b> event_idx = bcs.peel_u16();
+    <b>let</b> protocol_type = <a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+    <b>let</b> protocol_version = <a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+    <b>let</b> protocol_token_id = <a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
+    <b>let</b> action_type = bcs.peel_u8();
+    <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(target_chain);
+    <b>assert</b>!(bcs.into_remainder_bytes().is_empty(), <a href="../bridge/message.md#bridge_message_ETrailingBytes">ETrailingBytes</a>);
+    <a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">DefiTransferOutPayload</a> {
+        sender_address,
+        target_chain,
+        <a href="../bridge/message.md#bridge_message_amount">amount</a>,
+        tx_hash,
+        event_idx,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        action_type
+    }
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="bridge_message_create_key"></a>
 
 ## Function `create_key`
@@ -4029,6 +4425,510 @@ Update Sui token message
 
 <pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_token_fast_path_selector_in">token_fast_path_selector_in</a>(self: &<a href="../bridge/message.md#bridge_message_TokenTransferInPayload">TokenTransferInPayload</a>): u8 {
     self.fast_path_selector
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_sender_address_defi_out"></a>
+
+## Function `sender_address_defi_out`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_sender_address_defi_out">sender_address_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">bridge::message::DefiTransferOutPayload</a>): vector&lt;u8&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_sender_address_defi_out">sender_address_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">DefiTransferOutPayload</a>): vector&lt;u8&gt; {
+    self.sender_address
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_target_chain_defi_out"></a>
+
+## Function `target_chain_defi_out`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_target_chain_defi_out">target_chain_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">bridge::message::DefiTransferOutPayload</a>): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_target_chain_defi_out">target_chain_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">DefiTransferOutPayload</a>): u8 {
+    self.target_chain
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_token_amount_defi_out"></a>
+
+## Function `token_amount_defi_out`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_token_amount_defi_out">token_amount_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">bridge::message::DefiTransferOutPayload</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_token_amount_defi_out">token_amount_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">DefiTransferOutPayload</a>): u64 {
+    self.<a href="../bridge/message.md#bridge_message_amount">amount</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_token_tx_hash_defi_out"></a>
+
+## Function `token_tx_hash_defi_out`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_token_tx_hash_defi_out">token_tx_hash_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">bridge::message::DefiTransferOutPayload</a>): vector&lt;u8&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_token_tx_hash_defi_out">token_tx_hash_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">DefiTransferOutPayload</a>): vector&lt;u8&gt; {
+    self.tx_hash
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_token_event_idx_defi_out"></a>
+
+## Function `token_event_idx_defi_out`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_token_event_idx_defi_out">token_event_idx_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">bridge::message::DefiTransferOutPayload</a>): u16
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_token_event_idx_defi_out">token_event_idx_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">DefiTransferOutPayload</a>): u16 {
+    self.event_idx
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_protocol_type_defi_out"></a>
+
+## Function `protocol_type_defi_out`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_protocol_type_defi_out">protocol_type_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">bridge::message::DefiTransferOutPayload</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_protocol_type_defi_out">protocol_type_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">DefiTransferOutPayload</a>): u64 {
+    self.protocol_type
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_protocol_version_defi_out"></a>
+
+## Function `protocol_version_defi_out`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_protocol_version_defi_out">protocol_version_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">bridge::message::DefiTransferOutPayload</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_protocol_version_defi_out">protocol_version_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">DefiTransferOutPayload</a>): u64 {
+    self.protocol_version
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_action_type_defi_out"></a>
+
+## Function `action_type_defi_out`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_action_type_defi_out">action_type_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">bridge::message::DefiTransferOutPayload</a>): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_action_type_defi_out">action_type_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">DefiTransferOutPayload</a>): u8 {
+    self.action_type
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_protocol_token_id_defi_out"></a>
+
+## Function `protocol_token_id_defi_out`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_protocol_token_id_defi_out">protocol_token_id_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">bridge::message::DefiTransferOutPayload</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_protocol_token_id_defi_out">protocol_token_id_defi_out</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">DefiTransferOutPayload</a>): u64 {
+    self.protocol_token_id
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_sender_address_defi_in"></a>
+
+## Function `sender_address_defi_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_sender_address_defi_in">sender_address_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">bridge::message::DefiTransferInPayload</a>): vector&lt;u8&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_sender_address_defi_in">sender_address_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a>): vector&lt;u8&gt; {
+    self.sender_address
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_target_chain_defi_in"></a>
+
+## Function `target_chain_defi_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_target_chain_defi_in">target_chain_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">bridge::message::DefiTransferInPayload</a>): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_target_chain_defi_in">target_chain_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a>): u8 {
+    self.target_chain
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_amount_defi_in"></a>
+
+## Function `amount_defi_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_amount_defi_in">amount_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">bridge::message::DefiTransferInPayload</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_amount_defi_in">amount_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a>): u64 {
+    self.<a href="../bridge/message.md#bridge_message_amount">amount</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_lp_token_amount_defi_in"></a>
+
+## Function `lp_token_amount_defi_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_lp_token_amount_defi_in">lp_token_amount_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">bridge::message::DefiTransferInPayload</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_lp_token_amount_defi_in">lp_token_amount_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a>): u64 {
+    self.lp_token_amount
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_tx_hash_defi_in"></a>
+
+## Function `tx_hash_defi_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_tx_hash_defi_in">tx_hash_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">bridge::message::DefiTransferInPayload</a>): vector&lt;u8&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_tx_hash_defi_in">tx_hash_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a>): vector&lt;u8&gt; {
+    self.tx_hash
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_event_idx_defi_in"></a>
+
+## Function `event_idx_defi_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_event_idx_defi_in">event_idx_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">bridge::message::DefiTransferInPayload</a>): u16
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_event_idx_defi_in">event_idx_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a>): u16 {
+    self.event_idx
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_fast_path_selector_defi_in"></a>
+
+## Function `fast_path_selector_defi_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_fast_path_selector_defi_in">fast_path_selector_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">bridge::message::DefiTransferInPayload</a>): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_fast_path_selector_defi_in">fast_path_selector_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a>): u8 {
+    self.fast_path_selector
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_protocol_type_defi_in"></a>
+
+## Function `protocol_type_defi_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_protocol_type_defi_in">protocol_type_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">bridge::message::DefiTransferInPayload</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_protocol_type_defi_in">protocol_type_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a>): u64 {
+    self.protocol_type
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_protocol_version_defi_in"></a>
+
+## Function `protocol_version_defi_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_protocol_version_defi_in">protocol_version_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">bridge::message::DefiTransferInPayload</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_protocol_version_defi_in">protocol_version_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a>): u64 {
+    self.protocol_version
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_protocol_token_id_defi_in"></a>
+
+## Function `protocol_token_id_defi_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_protocol_token_id_defi_in">protocol_token_id_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">bridge::message::DefiTransferInPayload</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_protocol_token_id_defi_in">protocol_token_id_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a>): u64 {
+    self.protocol_token_id
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_original_seq_num_defi_in"></a>
+
+## Function `original_seq_num_defi_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_original_seq_num_defi_in">original_seq_num_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">bridge::message::DefiTransferInPayload</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_original_seq_num_defi_in">original_seq_num_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a>): u64 {
+    self.original_seq_num
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_action_type_defi_in"></a>
+
+## Function `action_type_defi_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_action_type_defi_in">action_type_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">bridge::message::DefiTransferInPayload</a>): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_action_type_defi_in">action_type_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a>): u8 {
+    self.action_type
 }
 </code></pre>
 
@@ -5034,6 +5934,8 @@ Return the required signature threshold for the message, values are voting power
     }<b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_withdraw_bridge_fee">message_types::withdraw_bridge_fee</a>()) {
         5001
     }<b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_fast_path_limit_update">message_types::fast_path_limit_update</a>()) {
+        5001
+    }<b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_defi">message_types::defi</a>()) {
         5001
     }
     <b>else</b> {
