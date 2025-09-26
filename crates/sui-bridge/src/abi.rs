@@ -4,13 +4,15 @@
 use crate::encoding::{BridgeMessageEncoding, ADD_TOKENS_ON_EVM_MESSAGE_VERSION, ASSET_PRICE_UPDATE_MESSAGE_VERSION, EVM_CONTRACT_UPGRADE_MESSAGE_VERSION, LIMIT_UPDATE_MESSAGE_VERSION, SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION, TOKEN_TRANSFER_MESSAGE_VERSION_V3};
 use crate::encoding::{
     COMMITTEE_BLOCKLIST_MESSAGE_VERSION, EMERGENCY_BUTTON_MESSAGE_VERSION,
+    UPDATE_INVEST_ADDRESS_MESSAGE_VERSION,
+    ADD_LP_TOKEN_ID_MESSAGE_VERSION,
 };
 use crate::error::{BridgeError, BridgeResult};
 use crate::fast_path::FastPathSelector;
 use crate::types::{
     AddTokensOnEvmAction, AssetPriceUpdateAction, BlocklistCommitteeAction, BridgeAction,
     BridgeActionType, EmergencyAction, EthLog, EthToSuiBridgeAction, EvmContractUpgradeAction,
-    LimitUpdateAction, SuiToEthBridgeAction,
+    LimitUpdateAction, SuiToEthBridgeAction,UpdateInvestAddressAction,AddLpTokenIdAction,
 };
 use crate::types::{
     ParsedTokenTransferMessage, ParsedTokenTransferMessageV2, SingleTransferLimitUpdateAction,
@@ -309,6 +311,30 @@ impl From<ParsedTokenTransferMessageV2> for eth_sui_bridge::Message {
             nonce: parsed_message.seq_num,
             chain_id: parsed_message.source_chain as u8,
             payload: parsed_message.payload.into(),
+        }
+    }
+}
+
+impl From<UpdateInvestAddressAction> for eth_sui_bridge::Message {
+    fn from(action: UpdateInvestAddressAction) -> Self {
+        eth_sui_bridge::Message {
+            message_type: BridgeActionType::UpdateInvestAddress as u8,
+            version: UPDATE_INVEST_ADDRESS_MESSAGE_VERSION,
+            nonce: action.nonce,
+            chain_id: action.chain_id as u8,
+            payload: action.as_payload_bytes().into(),
+        }
+    }
+}
+
+impl From<AddLpTokenIdAction> for eth_bridge_config::Message {
+    fn from(action: AddLpTokenIdAction) -> Self {
+        eth_bridge_config::Message {
+            message_type: BridgeActionType::AddLpTokenId as u8,
+            version: ADD_LP_TOKEN_ID_MESSAGE_VERSION,
+            nonce: action.nonce,
+            chain_id: action.chain_id as u8,
+            payload: action.as_payload_bytes().into(),
         }
     }
 }

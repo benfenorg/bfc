@@ -106,6 +106,7 @@ const BNB_NAME: &str = "BNB";
 const USDC_NAME: &str = "USDC";
 const USDT_NAME: &str = "USDT";
 const KA_NAME: &str = "KA";
+const ARROW_NAME: &str = "Arrow";
 
 pub const TEST_PK: &str = "0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356";
 
@@ -560,6 +561,7 @@ pub struct DeployedSolContracts {
     pub usdc: EthAddress,
     pub usdt: EthAddress,
     pub ka: EthAddress,
+    pub arrow :EthAddress,
 }
 
 impl DeployedSolContracts {
@@ -587,6 +589,7 @@ struct SolDeployConfig {
     token_prices: Vec<u64>,
     weth: String,
     max_usd_limit: u64,
+    invest_address: String,
 }
 
 pub(crate) async fn deploy_sol_contract(
@@ -634,6 +637,7 @@ pub(crate) async fn deploy_sol_contract(
         token_prices: vec![12800, 432518900, 25969600, 10000, 10000, 10000, 10000],
         weth: "".to_string(), // this is set up in the deploy script
         max_usd_limit: u64::MAX,
+        invest_address: "".to_string(),
     };
 
     let serialized_config = serde_json::to_string_pretty(&deploy_config).unwrap();
@@ -740,6 +744,7 @@ pub(crate) async fn deploy_sol_contract(
         usdc: deployed_contracts.remove(USDC_NAME).unwrap(),
         usdt: deployed_contracts.remove(USDT_NAME).unwrap(),
         ka: deployed_contracts.remove(KA_NAME).unwrap(),
+        arrow: deployed_contracts.remove(ARROW_NAME).unwrap(),
     };
     let eth_bridge_committee =
         EthBridgeCommittee::new(contracts.bridge_committee, eth_signer.clone().into());
@@ -858,6 +863,17 @@ impl EthBridgeEnvironment {
         EthBridgeLimiter::new(self.contracts().bridge_limiter, provider.clone())
     }
 
+    pub fn get_benfen_bridge(
+        &self,
+    ) -> EthSuiBridge<ethers::prelude::Provider<ethers::providers::Http>> {
+        let provider = Arc::new(
+            ethers::prelude::Provider::<ethers::providers::Http>::try_from(&self.rpc_url)
+                .unwrap()
+                .interval(std::time::Duration::from_millis(2000)),
+        );
+        EthSuiBridge::new(self.contracts().sui_bridge, provider.clone())
+    }
+
     pub async fn get_supported_token(&self, token_id: u64) -> (EthAddress, u8, u64) {
         let config = self.get_bridge_config();
         let token_address = config.token_address_of(token_id).call().await.unwrap();
@@ -866,11 +882,24 @@ impl EthBridgeEnvironment {
         (token_address, token_sui_decimal, token_price)
     }
 
+    pub async fn get_protocol_type_lp_token_id(&self, protocol_type: u64,token_id: u64) -> u64 {
+        let config = self.get_bridge_config();
+        //investLpTokenIdOf
+        let token_id=config.invest_lp_token_id_of(protocol_type, token_id).call().await.unwrap();
+        token_id
+    }
+
     pub async fn get_single_transfer_limit(&self) -> u64 {
         let limit = self.get_bridge_limit();
         //getUsdMaxLimit
         let amount: U256 = limit.get_usd_max_limit().call().await.unwrap();
         amount.as_u64()
+    }
+
+    pub async  fn get_invest_address(&self) -> EthAddress {
+        let bridge = self.get_benfen_bridge();
+        let invest_address =  bridge.get_invest_address().call().await.unwrap();
+        invest_address
     }
 }
 

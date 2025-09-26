@@ -37,6 +37,7 @@ use crate::types::{
     RemoveExternalCoinAdminAction, RemoveExternalCoinTargetAction, RemoveExternalCoinWitnessAction,
     RemoveTokenOnTokenListAction, SingleTransferLimitUpdateAction, UpdateBridgeFeeOnCrossInAction,
     UpdateBridgeFeeOnCrossOutAction, WithdrawBridgeFeeAction,
+    UpdateInvestAddressAction, AddLpTokenIdAction,
 };
 use crate::utils::publish_and_register_coins_return_add_coins_on_sui_action;
 use crate::BRIDGE_ENABLE_PROTOCOL_VERSION;
@@ -1053,6 +1054,131 @@ info!("bridge_test_cluster.sign_and_execute_transaction before");
     let effects = response.effects.unwrap();
     assert_eq!(effects.status(), &SuiExecutionStatus::Success);
 }
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn test_add_lp_token_on_evm(){
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_eth_env(true)
+        .with_bridge_cluster(false)
+        .with_num_validators(3)
+        .build()
+        .await;
+    // pub nonce: u64,
+    // pub chain_id: BridgeChainId,
+    // pub protocol_type: u64,
+    // pub token_id: u64,
+    // pub lp_token_id: u64,
+    let add_lp_token =
+        BridgeAction::AddLpTokenIdAction(AddLpTokenIdAction {
+            nonce: 0,
+            chain_id: BridgeChainId::EthCustom,
+            protocol_type: 0, //aave
+            token_id: 3, //usdc
+            lp_token_id: 10000, //lp_token
+    });
+
+    bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![add_lp_token.clone()],
+        vec![add_lp_token.clone()],
+        vec![add_lp_token.clone()],
+    ]);
+
+    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee AddLpTokenIdAction"),
+    );
+
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_eth_action = agg
+        .request_committee_signatures(add_lp_token)
+        .await
+        .expect("Failed to request committee signatures for AddLpTokenIdAction");
+
+    let config_contract = bridge_test_cluster.contracts().bridge_config;
+
+
+    let eth_signer = bridge_test_cluster.get_eth_signer().await;
+    let eth_call = build_eth_transaction(config_contract, eth_signer, certified_eth_action)
+        .await
+        .unwrap();
+    let eth_receipt = send_eth_tx_and_get_tx_receipt(eth_call).await;
+    assert_eq!(eth_receipt.status.unwrap().as_u64(), 1);
+
+
+
+} 
+
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async  fn test_update_invest_address(){
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_eth_env(true)
+        .with_bridge_cluster(false)
+        .with_num_validators(3)
+        .build()
+        .await;
+    let update_action =
+        BridgeAction::UpdateInvestAddressAction(UpdateInvestAddressAction {
+            nonce: 0,
+            chain_id: BridgeChainId::EthCustom,
+            invest_address: EthAddress::from_str("0x1234567890123456789012345678901234567890").unwrap(),
+    });
+
+    bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![update_action.clone(), update_action.clone()],
+        vec![update_action.clone()],
+        vec![update_action.clone()],
+    ]);
+
+
+    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+   
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee UpdateInvestAddressAction"),
+    );
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_eth_action = agg
+        .request_committee_signatures(update_action)
+        .await
+        .expect("Failed to request committee signatures for UpdateInvestAddressAction");
+
+    let sui_bridge = bridge_test_cluster.contracts().sui_bridge;
+    let eth_signer = bridge_test_cluster.get_eth_signer().await;
+    let eth_call = build_eth_transaction(sui_bridge, eth_signer, certified_eth_action)
+        .await
+        .unwrap();
+    let eth_receipt = send_eth_tx_and_get_tx_receipt(eth_call).await;
+    assert_eq!(eth_receipt.status.unwrap().as_u64(), 1);
+
+    //Verify
+    let lp_token_id = bridge_test_cluster
+        .eth_env().get_protocol_type_lp_token_id(0, 3)
+        .await;
+
+    assert_eq!(lp_token_id, 10000);
+
+
+}
+
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn test_set_bridge_fee_on_cross_in() {
