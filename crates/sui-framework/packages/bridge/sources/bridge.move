@@ -2415,7 +2415,7 @@ module bridge::bridge {
             protocol_type: defi_payload.protocol_type_defi_in(),
             protocol_version: defi_payload.protocol_version_defi_in(),
             protocol_token_id: defi_payload.protocol_token_id_defi_in(),
-            chain_id: target_chain,
+            chain_id: source_chain,
         };
         let defi_info = inner.defi_holders_get(owner, defi_protocol_key);
         let (fee, principal)=defi_protocols::manage_fee(
@@ -2423,7 +2423,7 @@ module bridge::bridge {
         defi_payload.protocol_type_defi_in(), 
         defi_payload.protocol_version_defi_in(), 
         defi_payload.protocol_token_id_defi_in(), 
-        target_chain, 
+        source_chain, 
         defi_payload.lp_token_amount_defi_in(), 
         amount, 
         defi_info.amount, 

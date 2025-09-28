@@ -42,7 +42,8 @@ use bridge::bridge_env::{
     test_token_id,
     chain_id,
     token_type,
-    sign_message_with
+    sign_message_with,
+    sign_message_with_mut
 };
 use bridge::btc::BTC;
 use bridge::chain_ids;
@@ -55,6 +56,7 @@ use bridge::usdc::USDC;
 use std::type_name;
 use sui::address;
 use sui::balance;
+use sui::clock::{Self};
 use sui::coin::{Self, Coin};
 use sui::hex;
 use sui::package::test_publish;
@@ -68,7 +70,7 @@ use bfc_system::bfc_system::BfcSystemState;
 use bfc_system::bfc_system;
 use bfc_system::bfc_system_tests::public_setup;
 use bfc_system::busd::BUSD;
-use bridge::busd;
+use bridge::busd::BUSD as BUSDFAKER;
 
 
 use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
@@ -1783,7 +1785,7 @@ fun test_external_busd_approval_and_claimed_external_busd_coin() {
     let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
     let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
     // 调用 approval_and_claimed_external_busd_coin
-    bridge.bridge_ref_mut().approval_and_claimed_external_busd_coin<busd::BUSD>(
+    bridge.bridge_ref_mut().approval_and_claimed_external_busd_coin<BUSDFAKER>(
         message,
         signatures,
         &mut bfc_system_state,
@@ -2984,16 +2986,23 @@ fun test_defi_unstake_and_approve_defi_transfer_in(){
         lp_token_amount
     );
     // Create signatures
-    let signatures_in = sign_message_with(&env, message_in, vector[0, 1, 2]);
+    let signatures_in = sign_message_with_mut(&mut env, message_in, vector[0, 1, 2]);
     bridge.approve_defi_transfer_in(message_in, signatures_in);
     let approved_events = sui::event::events_by_type<bridge::bridge::TokenTransferApproved>();
     assert!(approved_events.length() == 1, 0);
     //todo:mint busd @fei
-
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let ctx = env.ctx();
+    let clock = clock::create_for_testing(ctx);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+    
+    bridge.claim_and_transfer_busd_for_defi<BUSDFAKER>(&mut bfc_system_state, &clock, chain_id_evm, seq_num_1, &cap, ctx);
+    
     //unstake end
     bridge_wrap.return_bridge();
-    // sui::test_scenario::return_shared(bfc_system_state);
-    // sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::return_shared(bfc_system_state);
+    clock::destroy_for_testing(clock);
+    sui::test_scenario::return_to_sender(&scenario, cap);
     sui::test_scenario::end(scenario);
     env.destroy_env();
 }
