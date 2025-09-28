@@ -183,8 +183,8 @@ impl AnonymousClient {
 
     pub async fn test_restore_value(
         &self,
-        value1: String,
-        value2: String,
+        value1: Vec<u8>,
+        value2: Vec<u8>,
         signature: Vec<u8>,
         objectid: String,
         publickey: Vec<u8>,
@@ -272,7 +272,7 @@ impl AnonymousClient {
         let publickey_bytes = hex_to_bytes(publickey);
 
         let restore_result = self
-            .test_restore_value(share1, share2, signature_bytes, object_id, publickey_bytes)
+            .test_restore_value(share1.into_bytes(), share2.into_bytes(), signature_bytes, object_id, publickey_bytes)
             .await
             .response
             .unwrap();
