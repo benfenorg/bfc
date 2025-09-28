@@ -323,6 +323,29 @@ impl AnonymousClient {
 
         restore_result["result"]["result1"].as_u64().unwrap()
     }
+    async fn test_recover_array_with_signature(&self, share1: String, share2: String) -> u64 {
+        // test restore 20
+        let signature = "0f31177f8ece16b2cfb8c1ba0b71f73252acaa6cfbbe13d36c3320617f05bc7f9a860f16c8b10c787455a01ca7bcca3469858aae4e369bc994ab64967f1fd20f";
+        let publickey = "8496d3d932986b43bb64b5d5c7548d5c97a73aebf4301447f3746680b2114ae1";
+
+        let object_id = SuiAddress::from_str(
+            "0xd4c2360f11b1608f3be0b8d89bc97ff3047378dbc34d0b3976f40e6392496fd5",
+        )
+            .unwrap()
+            .to_string();
+
+        let signature_bytes = hex_to_bytes(signature);
+        let publickey_bytes = hex_to_bytes(publickey);
+
+        let restore_result = self
+            .test_restore_value_array(share1.into_bytes(), share2.into_bytes(), signature_bytes, object_id, publickey_bytes)
+            .await
+            .response
+            .unwrap();
+
+        restore_result["result"]["result1"].as_u64().unwrap()
+    }
+
 }
 
 fn hex_to_bytes(hex: &str) -> Vec<u8> {
@@ -401,7 +424,7 @@ mod tests {
         let data2 = add_result["result"]["result2"].as_str().unwrap().to_owned();
         info!("data1 = {}, data2 = {}", data1, data2);
         let add_result = client
-            .test_recover_with_signature(
+            .test_recover_array_with_signature(
                 data1,
                 data2,
             )
