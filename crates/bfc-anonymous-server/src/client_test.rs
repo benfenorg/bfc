@@ -181,6 +181,50 @@ impl AnonymousClient {
         }
     }
 
+    pub async fn test_restore_value_array(
+        &self,
+        value1: Vec<u8>,
+        value2: Vec<u8>,
+        signature: Vec<u8>,
+        objectid: String,
+        publickey: Vec<u8>,
+    ) -> TestResult {
+        let params = json!([{
+            "value1": value1,
+            "value2": value2,
+            "signature": signature,
+            "objectid": objectid,
+            "publickey": publickey,
+        },
+            {
+            "value1": value1,
+            "value2": value2,
+            "signature": signature,
+            "objectid": objectid,
+            "publickey": publickey,
+        }
+        ]);
+
+        match self
+            .send_rpc_request("bfcx_getAnonymousRestoreValueArray", params, 4)
+            .await
+        {
+            Ok(response) => TestResult {
+                method: "bfcx_getAnonymousRestoreValueArray".to_string(),
+                success: true,
+                response: Some(response),
+                error: None,
+            },
+            Err(e) => TestResult {
+                method: "bfcx_getAnonymousRestoreValueArray".to_string(),
+                success: false,
+                response: None,
+                error: Some(e.to_string()),
+            },
+        }
+    }
+
+
     pub async fn test_restore_value(
         &self,
         value1: Vec<u8>,
@@ -270,7 +314,7 @@ impl AnonymousClient {
 
         let signature_bytes = hex_to_bytes(signature);
         let publickey_bytes = hex_to_bytes(publickey);
-
+        
         let restore_result = self
             .test_restore_value(share1.into_bytes(), share2.into_bytes(), signature_bytes, object_id, publickey_bytes)
             .await
@@ -299,6 +343,72 @@ mod tests {
     async fn test_client_without_server() {
         let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
         assert_eq!(client.base_url, "http://localhost:9010");
+    }
+
+
+    #[tokio::test]
+    async fn test_client_restore_value_array(){
+        let subscriber = fmt::Subscriber::new();
+        tracing::subscriber::set_global_default(subscriber)
+            .expect("Failed to set tracing subscriber");
+
+        //let args = Args::parse();
+        let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
+
+        info!("the address is {:?}", addr);
+        let server = AnonymousServer::new(None);
+        let _server_handle = tokio::spawn(async move {
+            if let Err(e) = server.start(addr).await {
+                eprintln!("Server error: {:?}", e);
+            }
+        });
+
+        let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
+        let ping_result = client.test_ping().await.response.unwrap();
+        info!("Ping Result: {:?}", ping_result);
+
+
+        // test split first
+        let split_result_0 = client.test_split(20).await.response.unwrap();
+        info!("Split 20 Result: {:?}", split_result_0);
+
+
+        //test 20 + 20
+        let add_result = client
+            .test_add(
+                split_result_0["result"]["result1"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+                split_result_0["result"]["result2"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+                split_result_0["result"]["result1"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+                split_result_0["result"]["result2"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+            )
+            .await
+            .response
+            .unwrap();
+        info!("Add Result: {:?}", add_result);
+        let data1 = add_result["result"]["result1"].as_str().unwrap().to_owned();
+        let data2 = add_result["result"]["result2"].as_str().unwrap().to_owned();
+        info!("data1 = {}, data2 = {}", data1, data2);
+        let add_result = client
+            .test_recover_with_signature(
+                data1,
+                data2,
+            )
+            .await;
+        info!("Add Result recover to u64:{}", add_result);
+        assert_eq!(add_result, 40);
+
     }
 
     #[tokio::test]
