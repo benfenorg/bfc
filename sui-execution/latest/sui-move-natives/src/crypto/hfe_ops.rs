@@ -487,10 +487,18 @@ pub fn hfe_ops_compare_value(
                 let result = client.compare_value(num1, num2, number3);
                 match result.success {
                     true => {
-                        Ok(NativeResult::ok(
-                            cost,
-                            smallvec![Value::vector_u8(result.value1.into_bytes())],
-                        ))
+                        let result = result.value1.parse::<u8>();
+                        match result {
+                            Ok(result) => {
+                                Ok(NativeResult::ok(
+                                    cost,
+                                    smallvec![Value::u8(result)],
+                                ))
+                            }
+                            Err(_e) => {
+                                Ok(NativeResult::err(cost, INVALID_SERVER_RESPONSE_ERROR))
+                            }
+                        }
                     }
                     false => {
                         Ok(NativeResult::err(cost, INVALID_SERVER_RESPONSE_ERROR))
