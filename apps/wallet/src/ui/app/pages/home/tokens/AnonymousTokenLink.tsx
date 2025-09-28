@@ -4,6 +4,7 @@
 import { getEphemeralValue } from '_src/background/session-ephemeral-values';
 import { getAnonymousRestoreValue } from '_src/shared/anonymous-api';
 import { fromExportedKeypair } from '_src/shared/utils/from-exported-keypair';
+import { useChainData } from '_src/ui/app/hooks';
 import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
 import { Text } from '_src/ui/app/shared/text';
 import { type StructTag } from '@benfen/bfc.js/bcs/bcs';
@@ -15,6 +16,7 @@ import { Link } from 'react-router-dom';
 
 export const AnonymousTokenLink = ({ token }: { token: AnonymousCoinFields }) => {
 	const activeAccount = useActiveAccount();
+	const { ANONYMOUS_RPC } = useChainData();
 
 	const symbol = useMemo(() => {
 		const parsed = parseStructTag(token.balance.type);
@@ -30,7 +32,7 @@ export const AnonymousTokenLink = ({ token }: { token: AnonymousCoinFields }) =>
 			const tokenId = bfc2HexAddress(token.id.id);
 			const signature = await keypair.sign(new TextEncoder().encode(tokenId));
 
-			const res = await getAnonymousRestoreValue({
+			const res = await getAnonymousRestoreValue(ANONYMOUS_RPC, {
 				value1: token.balance.fields.value1,
 				value2: token.balance.fields.value2,
 				signature: Array.from(signature),

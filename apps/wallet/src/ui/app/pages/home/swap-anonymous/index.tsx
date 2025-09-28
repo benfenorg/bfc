@@ -14,6 +14,7 @@ import { Transaction } from '@benfen/bfc.js/transactions';
 import {
 	BFC_DECIMALS,
 	BFC_TYPE_ARG,
+	isValidBenfenAddress,
 	normalizeStructTag,
 	parseStructTag,
 } from '@benfen/bfc.js/utils';
@@ -37,8 +38,21 @@ const initialValues = {
 type FormValues = typeof initialValues;
 
 const validationSchema = Yup.object({
-	pool: Yup.string().required(),
-	type: Yup.string().required(),
+	pool: Yup.string()
+		.required()
+		.test('address', 'Pool is a address', (value) => {
+			return isValidBenfenAddress(value!);
+		}),
+	type: Yup.string()
+		.test('type', 'Type is a struct tag', (value) => {
+			try {
+				parseStructTag(value!);
+				return true;
+			} catch (e) {
+				return false;
+			}
+		})
+		.required(),
 	amount: Yup.mixed<BigNumber>()
 		.transform((_, original) => new BigNumber(original))
 		.test('required', `\${path} is a required field`, (value) => {
@@ -66,7 +80,9 @@ export const SwapAnonymous = () => {
 			const bn = new BigNumber(values.amount).shiftedBy(BFC_DECIMALS).toString();
 			if (values.swapOut) {
 				const coins = (anonymousCoins || []).filter(
-					(i) => normalizeStructTag(parseStructTag(i.balance.type).typeParams[0]) === values.type,
+					(i) =>
+						normalizeStructTag(parseStructTag(i.balance.type).typeParams[0]) ===
+						normalizeStructTag(values.type),
 				);
 				if (!coins) {
 					throw new Error('No coins found');
