@@ -110,6 +110,7 @@ struct AnonymousRestoreValueParams {
     publickey: Vec<u8>,
 }
 
+
 #[derive(Debug)]
 #[allow(dead_code)]
 struct RpcError(anyhow::Error);
@@ -551,105 +552,107 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
 async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
         Some(params) => {
-            match serde_json::from_value::<AnonymousRestoreValueParams>(params) {
-                Ok(restore_value_params) => {
-                    let signature = restore_value_params.signature;
-                    let objectid = restore_value_params.objectid;
-                    let mut pass_verify_signature = verify_signature(
-                        &restore_value_params.publickey,
-                        &*signature,
-                        objectid.as_bytes(),
-                    )
-                        .is_ok();
-                    info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
-                    if pass_verify_signature == true {
-                        info!("handle_anonymous_restore_value pass verify signature");
-                        match get_object_owneraddress(objectid.clone()).await {
-                            Ok(owner_address_value) => {
-                                let sui_address_from_send_result = public_key_bytes_to_sui_address(
-                                    restore_value_params.publickey.clone(),
-                                );
-                                if sui_address_from_send_result.is_err() {
-                                    info!("failed public key to sui address: {:?}", sui_address_from_send_result.err());
-                                    pass_verify_signature = false;
-                                } else {
-                                    let sui_address_from_send = sui_address_from_send_result.unwrap();
-                                    let owner_address_from_send =
-                                        AccountAddress::from(sui_address_from_send);
-                                    let evm_addr_from_system =
-                                        convert_to_evm_address(owner_address_value.clone());
-                                    pass_verify_signature = evm_addr_from_system
-                                        == owner_address_from_send.to_hex_with_hex_head();
-                                }
-                            }
-                            Err(error) => {
-                                info!("failed get owner address: {}", error);
-                                pass_verify_signature = false;
+            let response  = serde_json::from_value(params);
+            if response.is_err() {
+                warn!(
+                        "Invalid parameters for bfcx_getAnonymousRestoreValueArray: {:?}",
+                        response.err()
+                    );
+                return create_error_response(request.id, -32602, "Invalid params".to_string(), None)
+            }
+            let anonymous_restore_value_array: Vec<AnonymousRestoreValueParams> = response.unwrap();
+            let mut restore_result_array = Vec::new();
+            for anonymous_restore_value in anonymous_restore_value_array {
+                let signature = anonymous_restore_value.signature;
+                let objectid = anonymous_restore_value.objectid;
+                let mut pass_authentication = verify_signature(
+                    &anonymous_restore_value.publickey,
+                    &*signature,
+                    objectid.as_bytes(),
+                )
+                    .is_ok();
+                info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
+                if pass_authentication == true {
+                    info!("handle_anonymous_restore_value pass verify signature");
+                    match get_object_owneraddress(objectid.clone()).await {
+                        Ok(owner_address_value) => {
+                            let sui_address_from_send_result = public_key_bytes_to_sui_address(
+                                anonymous_restore_value.publickey.clone(),
+                            );
+                            if sui_address_from_send_result.is_err() {
+                                info!("failed public key to sui address: {:?}", sui_address_from_send_result.err());
+                                pass_authentication = false;
+                            } else {
+                                let sui_address_from_send = sui_address_from_send_result.unwrap();
+                                let owner_address_from_send =
+                                    AccountAddress::from(sui_address_from_send);
+                                let evm_addr_from_system =
+                                    convert_to_evm_address(owner_address_value.clone());
+                                pass_authentication = evm_addr_from_system
+                                    == owner_address_from_send.to_hex_with_hex_head();
                             }
                         }
-                    }
-
-                    if pass_verify_signature == false {
-                        return create_error_response(request.id,
-                                                     -32603,
-                                                     "Verify signature or get owner address failed".to_string(),
-                                                     Some(serde_json::json!({"error": "verify signature or get owner address failed"})));
-                    }
-
-
-                    let args_result = Args::try_parse();
-                    let mut config_path : Option<String> = None;
-                    if args_result.is_ok() {
-                        config_path = Some(args_result.unwrap().config);
-                    }
-                    let mask_secret = match get_mask_secret_from_config(config_path) {
-                        Ok(secret) => secret,
-                        Err(e) => {
-                            warn!("Failed to get mask secret from config: {}", e);
-                            return create_error_response(request.id,
-                                                     -32603,
-                                                     "Internal error: Failed to load configuration".to_string(),
-                                                     Some(serde_json::json!({"error": e.to_string()})));
+                        Err(error) => {
+                            info!("failed get owner address: {}", error);
+                            pass_authentication = false;
                         }
-                    };
+                    }
+                }
+                if pass_authentication == false {
+                    restore_result_array.push(0);
+                }
 
-                    let data1 = restore_value_params.value1;
-                    let data2 = restore_value_params.value2;
-                    let data_str1 = String::from_utf8(data1).unwrap_or_default();
-                    let data_str2 = String::from_utf8(data2).unwrap_or_default();
+                let args_result = Args::try_parse();
+                let mut config_path : Option<String> = None;
+                if args_result.is_ok() {
+                    config_path = Some(args_result.unwrap().config);
+                }
+                let mask_secret = match get_mask_secret_from_config(config_path) {
+                    Ok(secret) => secret,
+                    Err(e) => {
+                        info!("get_mask_secret_from_config failed, caused by: {}", e);
+                        restore_result_array.push(0);
+                        continue;
+                    }
+                };
 
-                    match recover_value(data_str1, data_str2, mask_secret) {
-                        Ok(value) => JsonRpcResponse {
-                            jsonrpc: "2.0".to_string(),
-                            id: request.id,
-                            result: Some(serde_json::json!({
-                                "result1": value,
-                                "result2": 0,
-                                "operation": "anonymous_restore_value",
-                                "timestamp": chrono::Utc::now().timestamp()
-                            })),
-                            error: None,
-                        },
-                        Err(e) => {
-                            warn!(
+                let data1 = anonymous_restore_value.value1;
+                let data2 = anonymous_restore_value.value2;
+                info!("data1 len: {}, data2 len: {}", data1.len(), data2.len());
+
+                let data_str1 = String::from_utf8(data1).unwrap_or_default();
+                let data_str2 = String::from_utf8(data2).unwrap_or_default();
+                info!("=== data_str1: {}, data_str2: {} ===", data_str1, data_str2);
+
+                match recover_value(data_str1, data_str2, mask_secret) {
+                    Ok(value) => {
+                        restore_result_array.push(value);
+                    },
+                    Err(e) => {
+                        restore_result_array.push(0);
+
+                        warn!(
                                 "process recover_value error, caused by: {}",
                                 e
                             );
-                            create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
-                        }
                     }
                 }
-                Err(e) => {
-                    warn!(
-                        "Invalid parameters for bfcx_getAnonymousRestoreValue: {}",
-                        e
-                    );
-                    create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
-                }
+            }
+
+            JsonRpcResponse {
+                jsonrpc: "2.0".to_string(),
+                id: request.id,
+                result: Some(serde_json::json!({
+                                "result1": restore_result_array,
+                                "result2": 0,
+                                "operation": "anonymous_multiply",
+                                "timestamp": chrono::Utc::now().timestamp()
+                            })),
+                error: None,
             }
         }
         None => {
-                create_error_response(request.id, -32602, "Missing params".to_string(), None)
+            create_error_response(request.id, -32602, "Missing params".to_string(), None)
         }
     }
 }

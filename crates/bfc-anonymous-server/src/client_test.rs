@@ -323,7 +323,7 @@ impl AnonymousClient {
 
         restore_result["result"]["result1"].as_u64().unwrap()
     }
-    async fn test_recover_array_with_signature(&self, share1: String, share2: String) -> u64 {
+    async fn test_recover_array_with_signature(&self, share1: String, share2: String) -> Result<Vec<u64>, serde_json::error::Error> {
         // test restore 20
         let signature = "0f31177f8ece16b2cfb8c1ba0b71f73252acaa6cfbbe13d36c3320617f05bc7f9a860f16c8b10c787455a01ca7bcca3469858aae4e369bc994ab64967f1fd20f";
         let publickey = "8496d3d932986b43bb64b5d5c7548d5c97a73aebf4301447f3746680b2114ae1";
@@ -342,8 +342,7 @@ impl AnonymousClient {
             .await
             .response
             .unwrap();
-
-        restore_result["result"]["result1"].as_u64().unwrap()
+        serde_json::from_value(restore_result["result"]["result1"].clone())
     }
 
 }
@@ -429,8 +428,11 @@ mod tests {
                 data2,
             )
             .await;
-        info!("Add Result recover to u64:{}", add_result);
-        assert_eq!(add_result, 40);
+        assert!(add_result.is_ok());
+
+        let value = add_result .expect("failed to get restore value array");
+        assert_eq!(value[0], 40);
+        assert_eq!(value[1], 40);
 
     }
 
