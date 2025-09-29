@@ -538,6 +538,7 @@ module bridge::bridge {
         let defi_info_updated = inner.defi_holders_get(ctx.sender(), defi_protocol_key);
         let defi_protocol_info = defi_protocols::get_protocol_info(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain);
         let (_fee, principal) = defi_protocols::manage_fee(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain, amount, 0, defi_info_updated.amount, defi_info_updated.lp_token_amount);
+        //check limit
         assert!(defi_protocol_info.limit_unstake_amount() >= principal, EDefiLimitError);
         
         let message = message::create_defi_transfer_out_message(
