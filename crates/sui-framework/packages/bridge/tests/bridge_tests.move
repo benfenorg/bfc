@@ -20,7 +20,6 @@ use bridge::bridge::{
     transfer_status_claimed,
     transfer_status_not_found,
     transfer_status_pending,
-    test_defi_holders_amount_get,
     defi_holders_amount_get,
     test_adjust_amount_usdc_usdt_in,
     Bridge
@@ -50,7 +49,6 @@ use bridge::chain_ids;
 use bridge::eth::ETH;
 use bridge::message::{Self, to_parsed_token_transfer_message_v2};
 use bridge::message_types;
-use bridge::defi_protocols;
 use bridge::test_token::{TEST_TOKEN, create_bridge_token as create_test_token};
 use bridge::usdc::USDC;
 use std::type_name;
@@ -2990,14 +2988,14 @@ fun test_defi_unstake_and_approve_defi_transfer_in(){
     bridge.approve_defi_transfer_in(message_in, signatures_in);
     let approved_events = sui::event::events_by_type<bridge::bridge::TokenTransferApproved>();
     assert!(approved_events.length() == 1, 0);
-    //todo:mint busd @fei
     let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
     let ctx = env.ctx();
     let clock = clock::create_for_testing(ctx);
     let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
     
     bridge.claim_and_transfer_busd_for_defi<BUSDFAKER>(&mut bfc_system_state, &clock, chain_id_evm, seq_num_1, &cap, ctx);
-    
+    let transfer_in_events = sui::event::events_by_type<bridge::bridge::DefiTokensUnstakeEvent>();
+    assert!(transfer_in_events.length() == 1, 0);
     //unstake end
     bridge_wrap.return_bridge();
     sui::test_scenario::return_shared(bfc_system_state);

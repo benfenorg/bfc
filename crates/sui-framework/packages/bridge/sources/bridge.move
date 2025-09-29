@@ -2395,7 +2395,6 @@ module bridge::bridge {
             treasury::token_id<T>(&inner.treasury) == 5,
             EUnexpectedTokenType,
         );
-        //todo: @fei check the decimals of the token
         let amount = adjust_amount_usdc_usdt_in(source_chain, defi_payload.amount_defi_in());
         assert!(amount <= inner.limiter.get_mint_busd_max_limit(), EInvalidMintAmount);
         // Make sure transfer is within limit.
