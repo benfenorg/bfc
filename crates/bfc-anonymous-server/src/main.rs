@@ -254,16 +254,7 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
                 let value1_share = recover_two_shares(add_params.value1, add_params.value2);
                 let value2_share = recover_two_shares(add_params.value3, add_params.value4);
                 if value1_share.is_err() || value2_share.is_err() {
-                    return JsonRpcResponse {
-                        jsonrpc: "2.0".to_string(),
-                        id: request.id,
-                        result: None,
-                        error: Some(JsonRpcError {
-                            code: -32602,
-                            message: "Invalid params".to_string(),
-                            data: Some(serde_json::json!({"error": "invalid params"})),
-                        }),
-                    };
+                    return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": "invalid params"})));
                 }
 
                 let args_result = Args::try_parse();
@@ -276,16 +267,10 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
-                        return JsonRpcResponse {
-                            jsonrpc: "2.0".to_string(),
-                            id: request.id,
-                            result: None,
-                            error: Some(JsonRpcError {
-                                code: -32603,
-                                message: "Internal error: Failed to load configuration".to_string(),
-                                data: Some(serde_json::json!({"error": e.to_string()})),
-                            }),
-                        };
+                        return create_error_response(request.id,
+                                                     -32603,
+                                                     "Internal error: Failed to load configuration".to_string(),
+                                                     Some(serde_json::json!({"error": e.to_string()})));
                     }
                 };
                 
@@ -310,43 +295,18 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
                     }
                     Err(e) => {
                         warn!("Invalid parameters for bfcx_getAnonymousAdd: {}", e);
-                        JsonRpcResponse {
-                            jsonrpc: "2.0".to_string(),
-                            id: request.id,
-                            result: None,
-                            error: Some(JsonRpcError {
-                                code: -32602,
-                                message: "Invalid params".to_string(),
-                                data: Some(serde_json::json!({"error": e.to_string()})),
-                            }),
-                        }
+                        create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
                     }
                 }
             }
             Err(e) => {
                 warn!("Invalid parameters for bfcx_getAnonymousAdd: {}", e);
-                JsonRpcResponse {
-                    jsonrpc: "2.0".to_string(),
-                    id: request.id,
-                    result: None,
-                    error: Some(JsonRpcError {
-                        code: -32602,
-                        message: "Invalid params".to_string(),
-                        data: Some(serde_json::json!({"error": e.to_string()})),
-                    }),
-                }
+                create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
             }
         },
-        None => JsonRpcResponse {
-            jsonrpc: "2.0".to_string(),
-            id: request.id,
-            result: None,
-            error: Some(JsonRpcError {
-                code: -32602,
-                message: "Missing params".to_string(),
-                data: None,
-            }),
-        },
+        None => {
+            create_error_response(request.id, -32602, "Missing params".to_string(), None)
+        }
     }
 }
 
@@ -357,16 +317,8 @@ async fn handle_anonymous_minus(request: JsonRpcRequest) -> JsonRpcResponse {
                 let value1_share = recover_two_shares(minus_params.value1, minus_params.value2);
                 let value2_share = recover_two_shares(minus_params.value3, minus_params.value4);
                 if value1_share.is_err() || value2_share.is_err() {
-                    return JsonRpcResponse {
-                        jsonrpc: "2.0".to_string(),
-                        id: request.id,
-                        result: None,
-                        error: Some(JsonRpcError {
-                            code: -32602,
-                            message: "Invalid params".to_string(),
-                            data: Some(serde_json::json!({"error": "invalid params"})),
-                        }),
-                    };
+                    return create_error_response(request.id, -32602, "Invalid params".to_string(),
+                                                 Some(serde_json::json!({"error": "invalid params"})));
                 }
 
                 let args_result = Args::try_parse();
@@ -379,16 +331,7 @@ async fn handle_anonymous_minus(request: JsonRpcRequest) -> JsonRpcResponse {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
-                        return JsonRpcResponse {
-                            jsonrpc: "2.0".to_string(),
-                            id: request.id,
-                            result: None,
-                            error: Some(JsonRpcError {
-                                code: -32603,
-                                message: "Internal error: Failed to load configuration".to_string(),
-                                data: Some(serde_json::json!({"error": e.to_string()})),
-                            }),
-                        };
+                        return create_error_response(request.id,-32603 , "Internal error: Failed to load configuration".to_string(), Some(serde_json::json!({"error": e.to_string()})))
                     }
                 };
                 
@@ -413,43 +356,18 @@ async fn handle_anonymous_minus(request: JsonRpcRequest) -> JsonRpcResponse {
                     }
                     Err(e) => {
                         warn!("Invalid parameters for bfcx_getAnonymousMinus: {}", e);
-                        JsonRpcResponse {
-                            jsonrpc: "2.0".to_string(),
-                            id: request.id,
-                            result: None,
-                            error: Some(JsonRpcError {
-                                code: -32602,
-                                message: "Invalid params".to_string(),
-                                data: Some(serde_json::json!({"error": e.to_string()})),
-                            }),
-                        }
+                        create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
                     }
                 }
             }
             Err(e) => {
                 warn!("Invalid parameters for bfcx_getAnonymousMinus: {}", e);
-                JsonRpcResponse {
-                    jsonrpc: "2.0".to_string(),
-                    id: request.id,
-                    result: None,
-                    error: Some(JsonRpcError {
-                        code: -32602,
-                        message: "Invalid params".to_string(),
-                        data: Some(serde_json::json!({"error": e.to_string()})),
-                    }),
-                }
+                create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
             }
         },
-        None => JsonRpcResponse {
-            jsonrpc: "2.0".to_string(),
-            id: request.id,
-            result: None,
-            error: Some(JsonRpcError {
-                code: -32602,
-                message: "Missing params".to_string(),
-                data: None,
-            }),
-        },
+        None => {
+            create_error_response(request.id, -32602, "Missing params".to_string(), None)
+        }
     }
 }
 
