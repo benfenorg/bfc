@@ -681,13 +681,15 @@ module bridge::bridge {
         let fee_coin = token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(bridge_id, fee_coin);
 
+        let amount = adjust_amount_busd_out(target_chain, amount_after_fee);
+
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::defi());
         let message = message::create_defi_transfer_out_message(
             inner.chain_id,
             bridge_seq_num,
             address::to_bytes(ctx.sender()),
             target_chain,
-            amount_after_fee,
+            amount,
             hex::decode(b""),
             0u16,
             protocol_type,
@@ -2315,16 +2317,16 @@ module bridge::bridge {
         (option::none(), owner)
     }
 
-    // // adjust amount for busd out
-    // fun adjust_amount_busd_out(target_chain: u8,amount: u64): u64 {
-    //     let need_adjust:bool=target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom();
-    //     let token_amount=if (need_adjust) {
-    //          amount/1000u64
-    //     }else{
-    //          amount
-    //     };
-    //     token_amount
-    // }
+    // adjust amount for busd out
+    fun adjust_amount_busd_out(target_chain: u8,amount: u64): u64 {
+        let need_adjust:bool=target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom();
+        let token_amount=if (need_adjust) {
+             amount/1000u64
+        }else{
+             amount
+        };
+        token_amount
+    }
 
     // adjust amount for usdc/usdt in
     fun adjust_amount_usdc_usdt_in(source_chain: u8,amount: u64): u64 {
