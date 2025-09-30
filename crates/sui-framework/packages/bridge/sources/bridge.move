@@ -538,6 +538,7 @@ module bridge::bridge {
         let defi_info_updated = inner.defi_holders_get(ctx.sender(), defi_protocol_key);
         let defi_protocol_info = defi_protocols::get_protocol_info(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain);
         let (_fee, principal) = defi_protocols::manage_fee(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain, amount, 0, defi_info_updated.amount, defi_info_updated.lp_token_amount);
+        //check limit
         assert!(defi_protocol_info.limit_unstake_amount() >= principal, EDefiLimitError);
         
         let message = message::create_defi_transfer_out_message(
@@ -680,13 +681,15 @@ module bridge::bridge {
         let fee_coin = token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(bridge_id, fee_coin);
 
+        let amount = adjust_amount_busd_out(target_chain, amount_after_fee);
+
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::defi());
         let message = message::create_defi_transfer_out_message(
             inner.chain_id,
             bridge_seq_num,
             address::to_bytes(ctx.sender()),
             target_chain,
-            amount_after_fee,
+            amount,
             hex::decode(b""),
             0u16,
             protocol_type,
@@ -2314,16 +2317,16 @@ module bridge::bridge {
         (option::none(), owner)
     }
 
-    // // adjust amount for busd out
-    // fun adjust_amount_busd_out(target_chain: u8,amount: u64): u64 {
-    //     let need_adjust:bool=target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom();
-    //     let token_amount=if (need_adjust) {
-    //          amount/1000u64
-    //     }else{
-    //          amount
-    //     };
-    //     token_amount
-    // }
+    // adjust amount for busd out
+    fun adjust_amount_busd_out(target_chain: u8,amount: u64): u64 {
+        let need_adjust:bool=target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom();
+        let token_amount=if (need_adjust) {
+             amount/1000u64
+        }else{
+             amount
+        };
+        token_amount
+    }
 
     // adjust amount for usdc/usdt in
     fun adjust_amount_usdc_usdt_in(source_chain: u8,amount: u64): u64 {
@@ -2395,7 +2398,6 @@ module bridge::bridge {
             treasury::token_id<T>(&inner.treasury) == 5,
             EUnexpectedTokenType,
         );
-        //todo: @fei check the decimals of the token
         let amount = adjust_amount_usdc_usdt_in(source_chain, defi_payload.amount_defi_in());
         assert!(amount <= inner.limiter.get_mint_busd_max_limit(), EInvalidMintAmount);
         // Make sure transfer is within limit.
@@ -2415,7 +2417,7 @@ module bridge::bridge {
             protocol_type: defi_payload.protocol_type_defi_in(),
             protocol_version: defi_payload.protocol_version_defi_in(),
             protocol_token_id: defi_payload.protocol_token_id_defi_in(),
-            chain_id: target_chain,
+            chain_id: source_chain,
         };
         let defi_info = inner.defi_holders_get(owner, defi_protocol_key);
         let (fee, principal)=defi_protocols::manage_fee(
@@ -2423,7 +2425,7 @@ module bridge::bridge {
         defi_payload.protocol_type_defi_in(), 
         defi_payload.protocol_version_defi_in(), 
         defi_payload.protocol_token_id_defi_in(), 
-        target_chain, 
+        source_chain, 
         defi_payload.lp_token_amount_defi_in(), 
         amount, 
         defi_info.amount, 

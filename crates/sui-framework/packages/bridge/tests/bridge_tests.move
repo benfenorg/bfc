@@ -20,7 +20,6 @@ use bridge::bridge::{
     transfer_status_claimed,
     transfer_status_not_found,
     transfer_status_pending,
-    test_defi_holders_amount_get,
     defi_holders_amount_get,
     test_adjust_amount_usdc_usdt_in,
     Bridge
@@ -42,19 +41,20 @@ use bridge::bridge_env::{
     test_token_id,
     chain_id,
     token_type,
-    sign_message_with
+    sign_message_with,
+    sign_message_with_mut
 };
 use bridge::btc::BTC;
 use bridge::chain_ids;
 use bridge::eth::ETH;
 use bridge::message::{Self, to_parsed_token_transfer_message_v2};
 use bridge::message_types;
-use bridge::defi_protocols;
 use bridge::test_token::{TEST_TOKEN, create_bridge_token as create_test_token};
 use bridge::usdc::USDC;
 use std::type_name;
 use sui::address;
 use sui::balance;
+use sui::clock::{Self};
 use sui::coin::{Self, Coin};
 use sui::hex;
 use sui::package::test_publish;
@@ -68,7 +68,7 @@ use bfc_system::bfc_system::BfcSystemState;
 use bfc_system::bfc_system;
 use bfc_system::bfc_system_tests::public_setup;
 use bfc_system::busd::BUSD;
-use bridge::busd;
+use bridge::busd::BUSD as BUSDFAKER;
 
 
 use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
@@ -1783,7 +1783,7 @@ fun test_external_busd_approval_and_claimed_external_busd_coin() {
     let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
     let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
     // 调用 approval_and_claimed_external_busd_coin
-    bridge.bridge_ref_mut().approval_and_claimed_external_busd_coin<busd::BUSD>(
+    bridge.bridge_ref_mut().approval_and_claimed_external_busd_coin<BUSDFAKER>(
         message,
         signatures,
         &mut bfc_system_state,
@@ -2886,6 +2886,154 @@ fun test_defi_unstake_and_approve_defi_transfer_out(){
     env.destroy_env();
 }
 
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EDefiLimitError)]
+fun test_defi_unstake_limit_error(){
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    scenario.next_tx(@0x0);
+    let source_chain = chain_ids::eth_custom();
+    let seq_num = 100;
+    let sender_address = address::to_bytes(@0x0);
+    let target_chain = chain_ids::sui_custom();
+    let amount = 101_000_000_000_000;
+    let protocol_type = 1;
+    let protocol_version = 3;
+    let protocol_token_id = 3; // USDC
+    let lp_token_amount = 1000_000_000_000;
+
+    // Create a BridgeMessage for defi transfer in
+    let message = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num,
+        sender_address,
+        target_chain,
+        amount,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE,
+        lp_token_amount
+    );
+
+    // Create signatures
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+
+    // Call approve_defi_transfer_in which will internally call defi_stake_success
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+    
+    bridge.approve_defi_transfer_in(message, signatures);
+
+    // Check that the DefiTokensStakedEvent was emitted
+    let staked_events = sui::event::events_by_type<bridge::bridge::DefiTokensStakedEvent>();
+    assert!(staked_events.length() == 1, 0);
+
+    // Check that the defi_holders record was updated
+    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain,
+    );
+    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
+    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
+    let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    assert!(holder_amount == adjusted_amount, 0);
+    assert!(lp_token_amount == lp_token_amount, 0);
+    //unstake start
+    scenario.next_tx(@0xABCD);
+    let ctx = env.ctx();
+    
+    bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
+    //unstake end
+    bridge_wrap.return_bridge();
+    // sui::test_scenario::return_shared(bfc_system_state);
+    // sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EDefiUnstakeAmountNotEnough)]
+fun test_defi_unstake_gt_lp_amount(){
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    scenario.next_tx(@0x0);
+    let source_chain = chain_ids::eth_custom();
+    let seq_num = 100;
+    let sender_address = address::to_bytes(@0x0);
+    let target_chain = chain_ids::sui_custom();
+    let amount = 101_000_000_000_000;
+    let protocol_type = 1;
+    let protocol_version = 3;
+    let protocol_token_id = 3; // USDC
+    let lp_token_amount = 1000_000_000_000;
+
+    // Create a BridgeMessage for defi transfer in
+    let message = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num,
+        sender_address,
+        target_chain,
+        amount,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE,
+        lp_token_amount
+    );
+
+    // Create signatures
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+
+    // Call approve_defi_transfer_in which will internally call defi_stake_success
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+    
+    bridge.approve_defi_transfer_in(message, signatures);
+
+    // Check that the DefiTokensStakedEvent was emitted
+    let staked_events = sui::event::events_by_type<bridge::bridge::DefiTokensStakedEvent>();
+    assert!(staked_events.length() == 1, 0);
+
+    // Check that the defi_holders record was updated
+    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain,
+    );
+    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
+    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
+    let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    assert!(holder_amount == adjusted_amount, 0);
+    assert!(lp_token_amount == lp_token_amount, 0);
+    //unstake start
+    scenario.next_tx(@0xABCD);
+    let ctx = env.ctx();
+    
+    bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount+1, ctx);
+    //unstake end
+    bridge_wrap.return_bridge();
+    // sui::test_scenario::return_shared(bfc_system_state);
+    // sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
 //unstake, evm to sui test
 #[test]
 fun test_defi_unstake_and_approve_defi_transfer_in(){
@@ -2984,16 +3132,23 @@ fun test_defi_unstake_and_approve_defi_transfer_in(){
         lp_token_amount
     );
     // Create signatures
-    let signatures_in = sign_message_with(&env, message_in, vector[0, 1, 2]);
+    let signatures_in = sign_message_with_mut(&mut env, message_in, vector[0, 1, 2]);
     bridge.approve_defi_transfer_in(message_in, signatures_in);
     let approved_events = sui::event::events_by_type<bridge::bridge::TokenTransferApproved>();
     assert!(approved_events.length() == 1, 0);
-    //todo:mint busd @fei
-
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let ctx = env.ctx();
+    let clock = clock::create_for_testing(ctx);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+    
+    bridge.claim_and_transfer_busd_for_defi<BUSDFAKER>(&mut bfc_system_state, &clock, chain_id_evm, seq_num_1, &cap, ctx);
+    let transfer_in_events = sui::event::events_by_type<bridge::bridge::DefiTokensUnstakeEvent>();
+    assert!(transfer_in_events.length() == 1, 0);
     //unstake end
     bridge_wrap.return_bridge();
-    // sui::test_scenario::return_shared(bfc_system_state);
-    // sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::return_shared(bfc_system_state);
+    clock::destroy_for_testing(clock);
+    sui::test_scenario::return_to_sender(&scenario, cap);
     sui::test_scenario::end(scenario);
     env.destroy_env();
 }
