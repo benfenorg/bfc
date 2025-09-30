@@ -1931,7 +1931,7 @@ fun test_defi_stake_and_approve_defi_transfer_out_full_flow() {
         bridge_seq_num,
         sender_address,
         target_chain, // target chain should be eth_mainnet
-        amount_after_fee,
+        amount_after_fee / 1000,
         hex::decode(b""),
         0u16,
         protocol_type,
@@ -2550,7 +2550,7 @@ fun test_defi_stake_complete_flow() {
         bridge_seq_num,
         sender_address,
         target_chain,
-        amount_after_fee,
+        amount_after_fee / 1000,
         hex::decode(b""),
         0u16,
         protocol_type,
