@@ -77,17 +77,11 @@ async fn sim_test_get_full_checkpoint() {
 
     let _transaction_digest = transfer_coin(&test_cluster.wallet).await;
 
-
     let client = Client::new(test_cluster.rpc_url()).unwrap();
-    info!("the rpc_url is {}", test_cluster.rpc_url());
 
-    let data = client.get_latest_checkpoint().await;
-    info!("latest checkpoint data: {:#?}", data);
-    
-    panic!("Uncomment the code below to test get_full_checkpoint");
-    //let latest = client.get_latest_checkpoint().await.unwrap().into_data();
-    // let _ = client
-    //     .get_full_checkpoint(latest.sequence_number)
-    //     .await
-    //     .unwrap();
+    let latest = client.get_latest_checkpoint().await.unwrap().into_data();
+    let _ = client
+        .get_full_checkpoint(latest.sequence_number)
+        .await
+        .unwrap();
 }

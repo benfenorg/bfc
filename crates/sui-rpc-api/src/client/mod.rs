@@ -114,7 +114,7 @@ impl Client {
             .await?
             .into_parts();
 
-        certified_checkpoint_summary_try_from_proto(&checkpoint)
+        certified_checkpoint_internal_summary_try_from_proto(&checkpoint)
             .map_err(|e| status_from_error_with_metadata(e, metadata))
     }
 
@@ -259,11 +259,40 @@ fn certified_checkpoint_summary_try_from_proto(
     ))
 }
 
+fn certified_checkpoint_internal_summary_try_from_proto(
+    checkpoint: &proto::Checkpoint,
+) -> Result<CertifiedCheckpointSummary, TryFromProtoError> {
+    let summary_result: Result<sui_sdk_types::CheckpointSummary,  bcs::Error>   = checkpoint
+        .summary
+        .as_ref()
+        .and_then(|summary| summary.bcs.as_ref())
+        .ok_or_else(|| TryFromProtoError::missing("summary_bcs"))?
+        .deserialize();
+    let summary = summary_result
+        .map_err(TryFromProtoError::from_error).unwrap();
+
+    let signature = sui_types::crypto::AuthorityStrongQuorumSignInfo::from(
+        sui_sdk_types::ValidatorAggregatedSignature::try_from(
+            checkpoint
+                .signature
+                .as_ref()
+                .ok_or_else(|| TryFromProtoError::missing("signature"))?,
+        )
+            .map_err(TryFromProtoError::from_error)?,
+    );
+
+    let checkpoint_summary : sui_types::messages_checkpoint::CheckpointSummary = (&summary).into();
+
+    Ok(CertifiedCheckpointSummary::new_from_data_and_sig(
+        checkpoint_summary, signature,
+    ))
+}
+
 /// Attempts to parse `CheckpointData` from a proto::Checkpoint
 fn checkpoint_data_try_from_proto(
     checkpoint: &proto::Checkpoint,
 ) -> Result<CheckpointData, TryFromProtoError> {
-    let checkpoint_summary = certified_checkpoint_summary_try_from_proto(checkpoint)?;
+    let checkpoint_summary = certified_checkpoint_internal_summary_try_from_proto(checkpoint)?;
 
     let checkpoint_contents = checkpoint
         .contents

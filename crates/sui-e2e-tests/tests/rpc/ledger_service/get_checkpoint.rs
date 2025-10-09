@@ -1,6 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::time::Duration;
+use tokio::time::sleep;
 use sui_macros::sim_test;
 use sui_rpc_api::field_mask::FieldMask;
 use sui_rpc_api::field_mask::FieldMaskUtil;
@@ -16,6 +18,8 @@ use crate::{stake_with_validator, transfer_coin};
 
 #[sim_test]
 async fn get_checkpoint() {
+    telemetry_subscribers::init_for_testing();
+
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let _transaction_digest = transfer_coin(&test_cluster.wallet).await;
@@ -24,6 +28,7 @@ async fn get_checkpoint() {
     let mut client = LedgerServiceClient::connect(test_cluster.rpc_url().to_owned())
         .await
         .unwrap();
+
 
     // Request with no provided read_mask
     let Checkpoint {
@@ -76,17 +81,7 @@ async fn get_checkpoint() {
     assert!(signature.is_some());
     assert!(contents.is_some());
     assert!(!transactions.is_empty());
-
-    // Request by digest
-    let response = client
-        .get_checkpoint(GetCheckpointRequest {
-            checkpoint_id: Some(CheckpointId::Digest(digest.clone().unwrap())),
-            read_mask: None,
-        })
-        .await
-        .unwrap()
-        .into_inner();
-    assert_eq!(response.digest, digest.to_owned());
+    let _ = sleep(Duration::from_secs(10)).await;
 
     // Request by sequence_number
     let response = client

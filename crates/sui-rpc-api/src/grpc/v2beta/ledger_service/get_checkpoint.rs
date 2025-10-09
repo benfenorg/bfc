@@ -21,7 +21,7 @@ use crate::ErrorReason;
 use crate::RpcError;
 use crate::RpcService;
 use prost_types::FieldMask;
-use sui_sdk_types::CheckpointDigest;
+use sui_sdk_types::{CheckpointContents, CheckpointContentsDigest, CheckpointDigest, CheckpointTimestamp, EndOfEpochData, GasCostSummary};
 
 #[tracing::instrument(skip(service))]
 pub fn get_checkpoint(
@@ -37,6 +37,7 @@ pub fn get_checkpoint(
                 .with_description(format!("invalid read_mask path: {path}"))
                 .with_reason(ErrorReason::FieldInvalid)
         })?;
+
         FieldMaskTree::from(read_mask)
     };
 
@@ -62,10 +63,8 @@ pub fn get_checkpoint(
         None => service.reader.inner().get_latest_checkpoint()?,
     };
 
-    let sui_sdk_types::SignedCheckpointSummary {
-        checkpoint: summary,
-        signature,
-    } = verified_summary.clone().into_inner().try_into()?;
+    let summary: sui_sdk_types::CheckpointSummary =  (&(*verified_summary.clone().into_inner())).into();
+    let signature: sui_sdk_types::ValidatorAggregatedSignature = verified_summary.clone().into_inner().into_sig().into();
 
     let mut checkpoint = Checkpoint::default();
 
@@ -121,13 +120,10 @@ pub(crate) fn checkpoint_data_to_checkpoint_proto(
     let sequence_number = checkpoint_data.checkpoint_summary.sequence_number;
     let timestamp_ms = checkpoint_data.checkpoint_summary.timestamp_ms;
 
-    let sui_sdk_types::SignedCheckpointSummary {
-        checkpoint: summary,
-        signature,
-    } = checkpoint_data.checkpoint_summary.try_into()?;
+    let summary: sui_sdk_types::CheckpointSummary =  (&(*checkpoint_data.checkpoint_summary)).into();
 
+    let signature: sui_sdk_types::ValidatorAggregatedSignature = checkpoint_data.checkpoint_summary.into_sig().into();
     let mut checkpoint = Checkpoint::default();
-
     checkpoint.merge(&summary, read_mask);
     checkpoint.merge(signature, read_mask);
 
@@ -152,7 +148,6 @@ pub(crate) fn checkpoint_data_to_checkpoint_proto(
             })
             .collect::<Result<_, _>>()?;
     }
-
     Ok(checkpoint)
 }
 

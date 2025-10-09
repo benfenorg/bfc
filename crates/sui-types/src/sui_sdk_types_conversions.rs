@@ -13,6 +13,7 @@ use sui_sdk_types::*;
 use tap::Pipe;
 use crate::execution_status::ExecutionFailureStatus;
 use crate::crypto::SuiSignature as _;
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct SdkTypeConversionError(String);
@@ -20,6 +21,91 @@ pub struct SdkTypeConversionError(String);
 impl std::fmt::Display for SdkTypeConversionError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.0)
+    }
+}
+
+impl From<&sui_sdk_types::CheckpointSummary>  for crate::messages_checkpoint::CheckpointSummary {
+    fn from(value : &sui_sdk_types::CheckpointSummary) -> Self {
+        Self {
+            epoch: value.epoch,
+            sequence_number: value.sequence_number,
+            network_total_transactions: value.network_total_transactions,
+            content_digest: crate::digests::CheckpointContentsDigest::new(*value.content_digest.inner()),
+            previous_digest: value.previous_digest.map(|d | crate::digests::CheckpointDigest::new(*d.inner())),
+            epoch_rolling_bfc_gas_cost_summary: crate::gas::GasCostSummary{
+                base_point: value.epoch_rolling_bfc_gas_cost_summary.base_point,
+                rate: value.epoch_rolling_bfc_gas_cost_summary.rate,
+                computation_cost: value.epoch_rolling_bfc_gas_cost_summary.computation_cost,
+                storage_cost: value.epoch_rolling_bfc_gas_cost_summary.storage_cost,
+                storage_rebate: value.epoch_rolling_bfc_gas_cost_summary.storage_rebate,
+                non_refundable_storage_fee: value.epoch_rolling_bfc_gas_cost_summary.non_refundable_storage_fee,
+            },
+            epoch_rolling_stable_gas_cost_summary_map: HashMap::new(),
+            timestamp_ms: value.timestamp_ms,
+            checkpoint_commitments: value.checkpoint_commitments.clone().into_iter().map(|c |
+                match c {
+                    sui_sdk_types::CheckpointCommitment::EcmhLiveObjectSet{ digest} =>
+                        crate::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(crate::messages_checkpoint::ECMHLiveObjectSetDigest{
+                            digest: crate::digests::Digest::new(*digest.inner())
+                        })
+                }).collect(),
+            end_of_epoch_data: value.end_of_epoch_data.clone().map(|c | crate::messages_checkpoint::EndOfEpochData {
+                next_epoch_committee: c.next_epoch_committee.into_iter().map(|next_epoch_committee | {
+                    (crate::crypto::AuthorityPublicKeyBytes(*next_epoch_committee.public_key.inner()), next_epoch_committee.stake)
+                }).collect(),
+                next_epoch_protocol_version: crate::committee::ProtocolVersion::new(c.next_epoch_protocol_version),
+                epoch_commitments: c.epoch_commitments.clone().into_iter().map(|epoch_commitment |
+                    match epoch_commitment {
+                        sui_sdk_types::CheckpointCommitment::EcmhLiveObjectSet{ digest} =>
+                            crate::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(crate::messages_checkpoint::ECMHLiveObjectSetDigest{
+                                digest: crate::digests::Digest::new(*digest.inner())
+                            })
+                    }).collect(),
+            }),
+            version_specific_data: value.version_specific_data.clone(),
+        }
+    }
+}
+impl From<&crate::messages_checkpoint::CheckpointSummary> for sui_sdk_types::CheckpointSummary {
+    fn from(value : &crate::messages_checkpoint::CheckpointSummary) -> Self {
+        Self {
+            epoch: value.epoch,
+            sequence_number: *value.sequence_number(),
+            network_total_transactions: value.network_total_transactions,
+            content_digest: sui_sdk_types::CheckpointContentsDigest::new(*value.content_digest.inner()),
+            previous_digest: value.previous_digest.map(|d | sui_sdk_types::CheckpointDigest::new(*d.inner())),
+            epoch_rolling_bfc_gas_cost_summary: sui_sdk_types::GasCostSummary {
+                base_point: value.epoch_rolling_bfc_gas_cost_summary.base_point,
+                rate: value.epoch_rolling_bfc_gas_cost_summary.rate,
+                computation_cost: value.epoch_rolling_bfc_gas_cost_summary.computation_cost,
+                storage_cost: value.epoch_rolling_bfc_gas_cost_summary.storage_cost,
+                storage_rebate: value.epoch_rolling_bfc_gas_cost_summary.storage_rebate,
+                non_refundable_storage_fee: value.epoch_rolling_bfc_gas_cost_summary.non_refundable_storage_fee,
+            },
+            timestamp_ms: value.timestamp_ms,
+            checkpoint_commitments: value.checkpoint_commitments.clone().into_iter().map(|c |
+                sui_sdk_types::CheckpointCommitment::EcmhLiveObjectSet{digest: match c {
+                    crate::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(ecmh_live_object_set_digest) =>
+                        sui_sdk_types::Digest::new(*ecmh_live_object_set_digest.digest.inner()
+                        ),
+                }}).collect(),
+            end_of_epoch_data: value.end_of_epoch_data.clone().map(|c | sui_sdk_types::EndOfEpochData {
+                next_epoch_committee: c.next_epoch_committee.into_iter().map(|next_epoch_committee | {
+                    sui_sdk_types::ValidatorCommitteeMember {
+                        public_key: sui_sdk_types::Bls12381PublicKey::new(next_epoch_committee.0.0),
+                        stake: next_epoch_committee.1,
+                    }
+                }).collect(),
+                next_epoch_protocol_version: c.next_epoch_protocol_version.as_u64(),
+                epoch_commitments: c.epoch_commitments.clone().into_iter().map(|epoch_commitment |
+                    sui_sdk_types::CheckpointCommitment::EcmhLiveObjectSet{digest: match epoch_commitment {
+                        crate::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(ecmh_live_object_set_digest) =>
+                            sui_sdk_types::Digest::new(*ecmh_live_object_set_digest.digest.inner()
+                            ),
+                    }}).collect(),
+            }),
+            version_specific_data: value.version_specific_data.clone(),
+        }
     }
 }
 
