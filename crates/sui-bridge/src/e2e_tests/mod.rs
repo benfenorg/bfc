@@ -7,3 +7,4 @@ mod basic;
 mod complex;
 pub mod test_utils;
 pub mod auth;
+pub mod stable;

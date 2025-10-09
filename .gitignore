@@ -76,3 +76,5 @@ docs/content/references/framework/**
 lcov.info
 
 .sparse
+
+bridge/evm/broadcast/deploy_bridge.s.sol

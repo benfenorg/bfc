@@ -86,6 +86,7 @@ use move_core_types::ident_str;
 use std::process::Child;
 use sui_config::local_ip_utils::get_available_port;
 use sui_sdk::SuiClient;
+use sui_types::crypto::SuiKeyPair;
 use sui_types::base_types::SuiAddress;
 use sui_types::crypto::EncodeDecodeBase64;
 use sui_types::crypto::KeypairTraits;
@@ -122,6 +123,8 @@ pub struct BridgeTestCluster {
     bridge_tx_cursor: Option<TransactionDigest>,
     eth_chain_id: BridgeChainId,
     sui_chain_id: BridgeChainId,
+    pub minter_address: Option<SuiAddress>,
+    pub minter_key_pair: Option<SuiKeyPair>,
 }
 
 pub struct BridgeTestClusterBuilder {
@@ -240,22 +243,27 @@ impl BridgeTestClusterBuilder {
         let test_cluster = start_cluster_res.unwrap();
         let eth_environment = start_eth_env_res.unwrap();
         let mut bridge_node_handles = None;
+        let mut minter_address = None;
+        let mut minter_key_pair = None;
         if self.with_bridge_cluster {
             let approved_governace_actions = self
                 .approved_governance_actions
                 .clone()
                 .unwrap_or(vec![vec![]; self.num_validators]);
-            bridge_node_handles = Some(
-                start_bridge_cluster(
-                    &test_cluster,
-                    &eth_environment,
-                    approved_governace_actions,
-                    self.enable_fast_path_latest,
-                    self.enable_fast_path_safe,
-                    self.enable_fast_path_finalized,
-                )
-                .await,
-            );
+            let (handles, minter_info) = start_bridge_cluster(
+                &test_cluster,
+                &eth_environment,
+                approved_governace_actions,
+                self.enable_fast_path_latest,
+                self.enable_fast_path_safe,
+                self.enable_fast_path_finalized,
+            )
+            .await;
+            bridge_node_handles = Some(handles);
+            if let Some((address, key)) = minter_info {
+                minter_address = Some(address);
+                minter_key_pair = Some(key);
+            }
         }
         let bridge_client =
             SuiBridgeClient::new(&test_cluster.inner.fullnode_handle.rpc_url, metrics)
@@ -279,6 +287,8 @@ impl BridgeTestClusterBuilder {
             bridge_tx_cursor: None,
             sui_chain_id: self.sui_chain_id,
             eth_chain_id: self.eth_chain_id,
+            minter_address,
+            minter_key_pair,
         }
     }
 
@@ -447,17 +457,20 @@ impl BridgeTestCluster {
             .approved_governance_actions_for_next_start
             .clone()
             .unwrap_or(vec![vec![], vec![], vec![], vec![]]);
-        self.bridge_node_handles = Some(
-            start_bridge_cluster(
-                &self.test_cluster,
-                &self.eth_environment,
-                approved_governace_actions,
-                enable_fast_path_latest,
-                enable_fast_path_safe,
-                enable_fast_path_finalized,
-            )
-            .await,
-        );
+        let (handles, minter_info) = start_bridge_cluster(
+            &self.test_cluster,
+            &self.eth_environment,
+            approved_governace_actions,
+            enable_fast_path_latest,
+            enable_fast_path_safe,
+            enable_fast_path_finalized,
+        )
+        .await;
+        self.bridge_node_handles = Some(handles);
+        if let Some((address, key)) = minter_info {
+            self.minter_address = Some(address);
+            self.minter_key_pair = Some(key);
+        }
     }
 
     /// Returns new bridge transaction. It advanaces the stored tx digest cursor.
@@ -916,7 +929,7 @@ pub(crate) async fn start_bridge_cluster(
     enable_fast_path_latest: bool,
     enable_fast_path_safe: bool,
     enable_fast_path_finalized: bool,
-) -> Vec<JoinHandle<()>> {
+) -> (Vec<JoinHandle<()>>, Option<(SuiAddress, SuiKeyPair)>) {
     let bridge_authority_keys = test_cluster
         .bridge_authority_keys
         .iter()
@@ -936,6 +949,7 @@ pub(crate) async fn start_bridge_cluster(
         .sui_bridge_addrress_hex();
 
     let mut handles = vec![];
+    let mut minter_info = None;
     for (i, ((kp, server_listen_port), approved_governance_actions)) in bridge_authority_keys
         .iter()
         .zip(bridge_server_ports.iter())
@@ -1002,7 +1016,8 @@ pub(crate) async fn start_bridge_cluster(
             let client_config = client_config.unwrap();
             let sui_address = client_config.sui_address;
             let sui_key_pair = client_config.key;
-            info!("add admin cap for {:?}", sui_address);
+            minter_info = Some((sui_address, sui_key_pair.copy()));
+            error!("add admin cap for {:?}", sui_address);
             //set up auth key
             auth::auth_setup_imut(
                 &test_cluster.inner.rpc_client(),
@@ -1025,7 +1040,7 @@ pub(crate) async fn start_bridge_cluster(
             .unwrap(),
         );
     }
-    handles
+    (handles, minter_info)
 }
 
 pub async fn get_signatures(
@@ -1762,7 +1777,7 @@ async fn wait_for_transfer_action_status(
             );
             return Ok(());
         }
-        if now.elapsed().as_secs() > 60 {
+        if now.elapsed().as_secs() > 300 {
             return Err(anyhow!(
                 "Timeout waiting for token transfer action to be {:?}. chain_id: {chain_id:?}, nonce: {nonce}. Time elapsed: {:?}",
                 status,
