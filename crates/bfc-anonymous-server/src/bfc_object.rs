@@ -69,7 +69,10 @@ struct RpcError {
 }
 
 pub fn parse_response(response: &str) -> Option<String> {
-    let rpc_response: RpcResponse = serde_json::from_str(response).unwrap();
+    let rpc_response: RpcResponse = match serde_json::from_str(response) {
+        Ok(parsed) => parsed,
+        Err(_) =>  return None,
+    };
 
     match (rpc_response.error, rpc_response.result) {
         // Top-level RPC error (e.g., invalid request)
