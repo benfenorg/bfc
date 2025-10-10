@@ -786,16 +786,24 @@ module bridge::bridge {
         // let token_id_origin = inner.treasury.token_id<T>();
         // assert!(token_id_origin == 5, EOnlySupportBusd);
         let token_id = token_id_expect;
+        //token amount is usdc or usdt amount
         let token_amount=if (target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom()) {
-             token.balance().value()/1000u64
+            token.balance().value()/1000u64
         }else{
-             token.balance().value()
+            token.balance().value()
         };
         assert!(token_amount > 0, ETokenValueIsZero);
+        //fee is usdc or usdt amount
         let fee=bridge_fee::calculate_cross_out_fee_amount(bridge_id,target_chain as u64,token_id,token_amount);
         assert!(token_amount>fee,EInputAmountLteBridgeFee);
         let amount_after_fee=token_amount-fee;
-        let fee_coin=token.split<T>(fee, ctx);
+        //fee coin is busd,so we need convert fee to busd
+        let fee_busd= if (target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom()) {
+            fee*1000u64
+        }else{
+            fee
+        };
+        let fee_coin=token.split<T>(fee_busd, ctx);
         bridge_fee::deposit_fee(bridge_id, fee_coin);
         // create bridge message
         let message = message::create_token_bridge_message_v2(
