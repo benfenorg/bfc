@@ -180,6 +180,41 @@ pub fn get_test_sui_to_eth_defi_bridge_action(
     })
 }
 
+pub fn get_test_eth_to_sui_defi_bridge_action(
+    nonce: Option<u64>,
+    amount: Option<u64>,
+    sui_address: Option<SuiAddress>,
+    protocol_type: Option<u64>,
+    protocol_version: Option<u64>,
+    protocol_token_id: Option<u64>,
+    action_type: Option<u8>,
+    lp_token_amount: Option<u64>,
+    original_seq_num: Option<u64>,
+) -> BridgeAction {
+    let tx_hash = TxHash::random();
+    BridgeAction::EthToSuiDefiBridgeAction(crate::types::EthToSuiDefiBridgeAction {
+        eth_tx_hash: tx_hash,
+        eth_event_index: 0,
+        eth_bridge_event: crate::abi::EthToSuiDefiBridgeV1 {
+            eth_chain_id: BridgeChainId::EthCustom,
+            nonce: nonce.unwrap_or_default(),
+            sui_chain_id: BridgeChainId::SuiCustom,
+            sui_adjusted_amount: amount.unwrap_or(100_000),
+            sui_address: sui_address.unwrap_or_else(SuiAddress::random_for_testing_only),
+            eth_address: EthAddress::random(),
+            tx_hash: tx_hash.as_bytes().to_vec(),
+            event_idx: 0,
+            fast_path_selector: FastPathSelector::Finalized,
+            protocol_type: protocol_type.unwrap_or(1),
+            protocol_version: protocol_version.unwrap_or(1),
+            protocol_token_id: protocol_token_id.unwrap_or(5),
+            action_type: action_type.unwrap_or(0),
+            original_seq_num: original_seq_num.unwrap_or(0),
+            lp_token_amount: lp_token_amount.unwrap_or(0),
+        },
+    })
+}
+
 pub fn run_mock_bridge_server(
     mock_handlers: Vec<BridgeRequestMockHandler>,
 ) -> (Vec<JoinHandle<()>>, Vec<u16>) {

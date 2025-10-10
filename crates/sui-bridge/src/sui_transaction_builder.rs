@@ -774,6 +774,39 @@ fn build_defi_bridge_approve_transaction(
                 action_type,
             ],
         ),
+        "create_defi_transfer_in_message" => {
+            let target_address_value = target_address.as_ref().unwrap().clone();
+            let target = builder.pure(target_address_value.clone()).map_err(|e| {
+                BridgeError::BridgeSerializationError(format!(
+                    "Failed to serialize target: {:?}. Err: {:?}",
+                    target_address_value, e
+                ))
+            })?;
+            let _fast_path_selector = builder.pure(fast_path_selector.unwrap() as u8).unwrap();
+            builder.programmable_move_call(
+                BRIDGE_PACKAGE_ID,
+                ident_str!("message").to_owned(),
+                ident_str!(func_name_message).to_owned(),
+                vec![],
+                vec![
+                    source_chain,
+                    seq_num,
+                    sender,
+                    target_chain,
+                    target,
+                    amount,
+                    tx_hash,
+                    event_idx,
+                    _fast_path_selector,
+                    protocol_type,
+                    protocol_version,
+                    protocol_token_id_arg,
+                    original_seq_num,
+                    action_type,
+                    lp_token_amount,
+                ],
+            )
+        }
         "create_token_bridge_in_message" => {
             let target_address_value = target_address.as_ref().unwrap().clone();
             let target = builder.pure(target_address_value.clone()).map_err(|e| {
@@ -2787,6 +2820,77 @@ mod tests {
         assert!(
             tx_data.is_ok(),
             "DeFi bridge transaction building failed: {:?}",
+            tx_data.err()
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+    async fn test_build_sui_transaction_for_eth_to_sui_defi_bridge_transfer() {
+        telemetry_subscribers::init_for_testing();
+        let num_valdiator = 2;
+        let mut bridge_keys = vec![];
+        for _ in 0..num_valdiator {
+            let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
+            bridge_keys.push(kp);
+        }
+        let mut test_cluster = TestClusterWrapperBuilder::new()
+            .with_bridge_authority_keys(bridge_keys)
+            .with_deploy_tokens(true)
+            .build()
+            .await;
+
+        let metrics = Arc::new(BridgeMetrics::new_for_testing());
+        let sui_client = SuiClient::new(&test_cluster.inner.fullnode_handle.rpc_url, metrics)
+            .await
+            .unwrap();
+        let bridge_authority_keys = test_cluster.authority_keys_clone();
+
+        // Wait until committee is set up
+        test_cluster
+            .trigger_reconfiguration_if_not_yet_and_assert_bridge_committee_initialized()
+            .await;
+        let context = &mut test_cluster.inner.wallet;
+        let sender = context.active_address().unwrap();
+        let bridge_object_arg = sui_client
+            .get_mutable_bridge_object_arg_must_succeed()
+            .await;
+        let id_token_map = sui_client.get_token_id_map().await.unwrap();
+
+        // Get gas reference for transaction building
+        let rgp = context.get_reference_gas_price().await.unwrap();
+
+        // Create action for Eth to Sui DeFi transfer (e.g., unstake from Ethereum to Sui)
+        let action = crate::test_utils::get_test_eth_to_sui_defi_bridge_action(
+            Some(1),       // nonce
+            Some(100_000), // amount
+            Some(sender),  // sui_address
+            Some(1),       // protocol_type
+            Some(1),       // protocol_version
+            Some(5),       // protocol_token_id (BUSD)
+            Some(1),       // action_type: STAKE = 0, UNSTAKE = 1
+            Some(50_000),  // lp_token_amount
+            Some(0),       // original_seq_num
+        );
+
+        // Test transaction building
+        let action_certificate =
+            get_certified_action_with_validator_secrets(action, &bridge_authority_keys);
+        let sui_address = context.active_address().unwrap();
+        let gas_obj_ref = context.get_one_gas_object().await.unwrap().unwrap().1;
+        let tx_data = crate::sui_transaction_builder::build_sui_transaction(
+            sui_address,
+            &gas_obj_ref,
+            action_certificate,
+            bridge_object_arg,
+            None,
+            &id_token_map,
+            rgp,
+        );
+
+        // The transaction building should succeed
+        assert!(
+            tx_data.is_ok(),
+            "Eth to Sui DeFi bridge transaction building failed: {:?}",
             tx_data.err()
         );
     }
