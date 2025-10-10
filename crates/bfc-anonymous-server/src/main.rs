@@ -110,6 +110,20 @@ struct AnonymousRestoreValueParams {
     publickey: Vec<u8>,
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+struct AnonymousRestoreElementParams {
+    value1: Vec<u8>,
+    value2: Vec<u8>,
+    objectid: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct AnonymousRestoreArrayParams {
+    anonymous_restore_array: Vec<AnonymousRestoreElementParams>,
+    signature: Vec<u8>,
+    publickey: Vec<u8>,
+}
+
 
 #[derive(Debug)]
 #[allow(dead_code)]
@@ -560,46 +574,57 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
                     );
                 return create_error_response(request.id, -32602, "Invalid params".to_string(), None)
             }
-            let anonymous_restore_value_array: Vec<AnonymousRestoreValueParams> = response.unwrap();
+
+            let anonymous_restore_value_array: AnonymousRestoreArrayParams = response.unwrap();
+            let mut object_ids = String::new();
+            for anonymous_restore_value in &anonymous_restore_value_array.anonymous_restore_array {
+                object_ids = format!("{}{}", object_ids, anonymous_restore_value.objectid);
+            }
+
+            let mut pass_authentication = verify_signature(
+                &anonymous_restore_value_array.publickey,
+                &*anonymous_restore_value_array.signature,
+                object_ids.as_bytes(),
+            ).is_ok();
+            if pass_authentication == false {
+                warn!(
+                        "Invalid authentication for bfcx_getAnonymousRestoreValueArray",
+                    );
+                return create_error_response(request.id, -32602, "Invalid authentication".to_string(), None)
+            }
+
+            info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
             let mut restore_result_array = Vec::new();
-            for anonymous_restore_value in anonymous_restore_value_array {
-                let signature = anonymous_restore_value.signature;
-                let objectid = anonymous_restore_value.objectid;
-                let mut pass_authentication = verify_signature(
-                    &anonymous_restore_value.publickey,
-                    &*signature,
-                    objectid.as_bytes(),
-                )
-                    .is_ok();
-                info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
-                if pass_authentication == true {
-                    info!("handle_anonymous_restore_value pass verify signature");
-                    match get_object_owneraddress(objectid.clone()).await {
-                        Ok(owner_address_value) => {
-                            let sui_address_from_send_result = public_key_bytes_to_sui_address(
-                                anonymous_restore_value.publickey.clone(),
-                            );
-                            if sui_address_from_send_result.is_err() {
-                                info!("failed public key to sui address: {:?}", sui_address_from_send_result.err());
-                                pass_authentication = false;
-                            } else {
-                                let sui_address_from_send = sui_address_from_send_result.unwrap();
-                                let owner_address_from_send =
-                                    AccountAddress::from(sui_address_from_send);
-                                let evm_addr_from_system =
-                                    convert_to_evm_address(owner_address_value.clone());
-                                pass_authentication = evm_addr_from_system
-                                    == owner_address_from_send.to_hex_with_hex_head();
-                            }
-                        }
-                        Err(error) => {
-                            info!("failed get owner address: {}", error);
+
+            for anonymous_restore_value in &anonymous_restore_value_array.anonymous_restore_array {
+                let objectid = anonymous_restore_value.objectid.clone();
+                match get_object_owneraddress(objectid.clone()).await {
+                    Ok(owner_address_value) => {
+                        let sui_address_from_send_result = public_key_bytes_to_sui_address(
+                            anonymous_restore_value_array.publickey.clone(),
+                        );
+                        if sui_address_from_send_result.is_err() {
+                            info!("failed public key to sui address: {:?}", sui_address_from_send_result.err());
                             pass_authentication = false;
+                        } else {
+                            let sui_address_from_send = sui_address_from_send_result.unwrap();
+                            let owner_address_from_send =
+                                AccountAddress::from(sui_address_from_send);
+                            let evm_addr_from_system =
+                                convert_to_evm_address(owner_address_value.clone());
+                            pass_authentication = evm_addr_from_system
+                                == owner_address_from_send.to_hex_with_hex_head();
                         }
                     }
+                    Err(error) => {
+                        info!("failed get owner address: {}", error);
+                        pass_authentication = false;
+                    }
                 }
+
                 if pass_authentication == false {
                     restore_result_array.push(0);
+                    continue;
                 }
 
                 let args_result = Args::try_parse();
@@ -616,8 +641,8 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
                     }
                 };
 
-                let data1 = anonymous_restore_value.value1;
-                let data2 = anonymous_restore_value.value2;
+                let data1 = anonymous_restore_value.value1.clone();
+                let data2 = anonymous_restore_value.value2.clone();
                 info!("data1 len: {}, data2 len: {}", data1.len(), data2.len());
 
                 let data_str1 = String::from_utf8(data1).unwrap_or_default();
@@ -630,15 +655,11 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
                     },
                     Err(e) => {
                         restore_result_array.push(0);
-
-                        warn!(
-                                "process recover_value error, caused by: {}",
-                                e
-                            );
+                        warn!("process recover_value error, caused by: {}",e);
                     }
                 }
-            }
 
+            }
             JsonRpcResponse {
                 jsonrpc: "2.0".to_string(),
                 id: request.id,
