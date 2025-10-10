@@ -775,13 +775,6 @@ fn build_defi_bridge_approve_transaction(
             ],
         ),
         "create_defi_transfer_in_message" => {
-            let target_address_value = target_address.as_ref().unwrap().clone();
-            let target = builder.pure(target_address_value.clone()).map_err(|e| {
-                BridgeError::BridgeSerializationError(format!(
-                    "Failed to serialize target: {:?}. Err: {:?}",
-                    target_address_value, e
-                ))
-            })?;
             let _fast_path_selector = builder.pure(fast_path_selector.unwrap() as u8).unwrap();
             builder.programmable_move_call(
                 BRIDGE_PACKAGE_ID,
@@ -793,7 +786,6 @@ fn build_defi_bridge_approve_transaction(
                     seq_num,
                     sender,
                     target_chain,
-                    target,
                     amount,
                     tx_hash,
                     event_idx,
