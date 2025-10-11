@@ -476,7 +476,7 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
 
                     let mut intent_data = Vec::new();
                     intent_data.extend_from_slice(PERSONAL_MESSAGE_PREFIX);
-                    let length = objectid.len().to_le_bytes();
+                    let length = to_le_bytes_trimmed(objectid.len());
                     intent_data.extend_from_slice(length.as_ref());
                     intent_data.extend_from_slice(objectid.as_bytes());
                     let digest = fastcrypto::hash::Blake2b256::digest(intent_data);
@@ -719,7 +719,7 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
 
             let mut intent_data = Vec::new();
             intent_data.extend_from_slice(PERSONAL_MESSAGE_PREFIX);
-            let length = object_ids.len().to_le_bytes();
+            let length = to_le_bytes_trimmed(object_ids.len());
             intent_data.extend_from_slice(length.as_ref());
             intent_data.extend_from_slice(object_ids.as_bytes());
             let digest = fastcrypto::hash::Blake2b256::digest(intent_data);
@@ -945,3 +945,13 @@ async fn handle_ping(request: JsonRpcRequest) -> JsonRpcResponse {
     }
 }
 
+fn to_le_bytes_trimmed(value: usize) -> Vec<u8> {
+    if value == 0 {
+        return vec![0];
+    }
+
+    let bytes = value.to_le_bytes();
+    let significant_bytes = (usize::BITS as usize - value.leading_zeros() as usize + 7) / 8;
+
+    bytes[..significant_bytes].to_vec()
+}
