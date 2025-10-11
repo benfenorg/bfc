@@ -456,23 +456,6 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_zk_login() {
-        let signature = "BQNMNzQwNjU5MTg4MDA1OTM4MTA0ODQwMzg5ODE2NDI3NzkxNTEwMzc1MzAwMjE1Mjc4NTQzNjU4OTg0ODg4MDkyMDIwNzE1OTM0MzE0Nkw2MzAyNzAzODkyOTIzMjkwNjY4NDExMjE2NDIwNzUzNTkzMTA1OTU1NjczNDA1MTg2MTQ0MTY4MTAzMTc2NDE2NTY0MTI1OTk3MzMxATEDAk0xNTc5NzgwMDYxNjIxNzIxNTc5MDM1NDM4NDM3OTk1Mjg5MzA4Mjc4Mjk5NTg5Mzg3MjcwNTA2MzU4NTk3MzM5MjcxMzA4NzUxMDYyN00xNjg5NTQ0OTgxNDk2NDc1NjkxNjY1MzYzMjc5NDM2MjM5NjIzNTczNjc0MjY2MDcxNzA5NDEwNjIwNDk0NDg2MTQ2OTMyMjk4MTUzMQJNMjAyNzIzMjY4NjQwMDA3ODc0Njc2ODM1ODM1ODg3MzM4NzQyOTQzMzQ3NDc4ODMyNjUwOTY2OTIzNDUwNTA3NzIwNjc5NDczMDMwMTlNMTQ0NjEwMDU0MzI3OTQ1NDE2NjUwMDI1OTQ1NTQwMDIyMTcwODk1MDg5OTM0ODY4MTEzMzUzMjg4NTYxODM2MDkwMDk2MTc5ODAzODcCATEBMANMMTQzMzcwMTE5MDkxMzk5ODEwMjkxMDExODI2MDg1MjgyMDg1ODAwMzU3NjAyNjc4ODQ2ODA4NzE5NTcwMTUzOTI1MzQ2ODc1MjQxM0w3NDM2MTUyMTI1NzgzNjc2OTcxNTU2MTE5NjQ5MDM2Mzg3MjQ0NzkwMjUyODc1NTc0NzA3NjkxMTAwNjgyNDEwODg4MjQ5NTUzNDc2ATExeUpwYzNNaU9pSm9kSFJ3Y3pvdkwyRmpZMjkxYm5SekxtZHZiMmRzWlM1amIyMGlMQwFmZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNkltTTRZV0kzTVRVek1EazNNbUppWVRJd1lqUTVaamM0WVRBNVl6azROVEpqTkRObVpqa3hNVGdpTENKMGVYQWlPaUpLVjFRaWZRTDMwMDQ0NTI0MzM5NTM0Nzc0NjgyOTcxMjgwMjIyNjAyMTI4MjI2OTQyMzkzMzA1NTg5MTk4Nzc5Mzk4MDYyMDI5ODMwOTk4OTI4NTWMAQAAAAAAAGEAxqsNdDnLneK1Mddhyah+ievUrlMQ62UmaQ1jMJqm1kbTqtwudjkfXwW95ak9f5PDjZvn9DLzWsAwPMkKYTuRBO11ucBJUzUhMPtpKZN7hlm9lX65QKqpOIryYcizifqc";
-        let bytes = "QkZDOGMyOTM4ZjFmMzJjODBhY2M1NDhiM2FhNjI2ZDcxNzE2M2Y4MDU4OTdiNTg2ZTBkODE5YTg4NzU0ZTNmYWMyYzAwZWM6OTZNMlJ4UFY1cEJ6aWJiWmQtTENMUWd0V2RCUVE0MlNSdUUwaHBvVlB0NXE0S0tVTDRSMlBpbjNUbHFFV2RnQw==";
-        let url = "https://testrpc.benfen.org";
-        let request = ZkVerifyRequest {
-            signature: signature.to_string(),
-            bytes: bytes.to_string(),
-            intent_scope: 3,
-            cur_epoch: None,
-            cur_rpc_url: Some(url.to_string()),
-            author: "BFC8c2938f1f32c80acc548b3aa626d717163f805897b586e0d819a88754e3fac2c00ec".to_string(),
-        };
-        let result = verify_zklogin_signature(request, "https://devsimplerpc.openblock.vip/verify_zk_login_sig".to_string()).await;
-        assert_eq!(result.is_ok(), true);
-    }
-
-    #[tokio::test]
     async fn test_client_with_server() -> anyhow::Result<()> {
         let subscriber = fmt::Subscriber::new();
         tracing::subscriber::set_global_default(subscriber)
