@@ -29,7 +29,8 @@ use tracing_subscriber::fmt;
 use warp::Filter;
 use fastcrypto::hash::HashFunction;
 use mpc_transmission::get_zklogin_rpc_address_from_config;
-const PERSONAL_MESSAGE_PREFIX: &[u8; 3] = b"300";
+const PERSONAL_MESSAGE_PREFIX: &[u8; 3] = &[3, 0, 0];
+
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -475,10 +476,13 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
 
                     let mut intent_data = Vec::new();
                     intent_data.extend_from_slice(PERSONAL_MESSAGE_PREFIX);
+                    let length = objectid.len().to_le_bytes();
+                    intent_data.extend_from_slice(length.as_ref());
                     intent_data.extend_from_slice(objectid.as_bytes());
                     let digest = fastcrypto::hash::Blake2b256::digest(intent_data);
+                    let logdata = hex::encode(digest.as_ref());
 
-
+                    info!("handle_anonymous_restore_value intent data: {}", logdata);
 
                     let mut pass_verify_signature = verify_signature(
                         &restore_value_params.publickey,
@@ -715,6 +719,8 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
 
             let mut intent_data = Vec::new();
             intent_data.extend_from_slice(PERSONAL_MESSAGE_PREFIX);
+            let length = object_ids.len().to_le_bytes();
+            intent_data.extend_from_slice(length.as_ref());
             intent_data.extend_from_slice(object_ids.as_bytes());
             let digest = fastcrypto::hash::Blake2b256::digest(intent_data);
 
