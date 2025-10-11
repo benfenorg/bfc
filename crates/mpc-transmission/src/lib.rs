@@ -225,6 +225,24 @@ pub fn get_mask_secret_from_config(config_path: Option<String>) -> Result<u64, B
     Ok(mask_secret)
 }
 
+pub fn get_zklogin_rpc_address_from_config(config_path: Option<String>) -> Result<String, Box<dyn std::error::Error>> {
+    let config = config_path.unwrap_or("".parse().unwrap());
+    let pre_path = get_sui_config_directory();
+    let mut path = pre_path.join("bfc_anonymous_config.yaml");
+    if config.len() != 0 {
+        path = PathBuf::from(config).join("bfc_anonymous_config.yaml");
+    }
+
+    // Load config file, return error if it doesn't exist or is invalid
+    let config = AnonymousPrivateKeyConfig::from_yaml_file(&path)?;
+
+    // Get the private key string from config
+    let rpc_address = config.zklogin_verify_rpc_path
+        .ok_or_else(|| anyhow!("zklogin rpc address in configuration"))?;
+
+    Ok(rpc_address)
+}
+
 pub fn get_sui_config_directory() -> PathBuf {
     match dirs::home_dir() {
         Some(v) => v.join(".bfc").join("bfc_config"),

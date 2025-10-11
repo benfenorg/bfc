@@ -2,10 +2,58 @@ use crate::parse_response;
 use anyhow::anyhow;
 use fastcrypto::ed25519::Ed25519PublicKey;
 use fastcrypto::traits::ToFromBytes;
-use serde_json::json;
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
+use tracing::info;
 use mpc_transmission::get_sui_config_directory;
 use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
 use sui_types::base_types::SuiAddress;
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ZkVerifyRequest {
+    pub signature: String,
+    pub bytes: String, // abfc token objectid
+    pub intent_scope: u8,
+    pub cur_epoch: Option<u64>,
+    pub cur_rpc_url : Option<String>,
+    pub author: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct ZkVerifyResponse {
+    result: bool,
+    message: String,
+}
+
+pub async fn verify_zklogin_signature(
+    signature: ZkVerifyRequest,
+    zklogin_rpc: String
+) -> Result<bool, Box<dyn std::error::Error>> {
+    let client = reqwest::Client::new();
+
+    let response = client
+        .post(zklogin_rpc)
+        .json(&signature)
+        .send()
+        .await?;
+
+    let result = response.text().await?;
+
+    match serde_json::from_str::<ZkVerifyResponse>(result.as_str()) {
+        Ok(response) => {
+            if response.result == false {
+                Err(anyhow!("verify failed",).into())
+            } else {
+                Ok(true)
+            }
+
+        }
+        Err(e) => {
+            info!("resolving failed, caused by: {}", e);
+            Err(anyhow!("resolving failed, caused by {}", e).into())
+        }
+    }
+}
 
 pub async fn get_object_owneraddress(
     object_id: String,
