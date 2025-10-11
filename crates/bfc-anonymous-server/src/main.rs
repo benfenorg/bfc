@@ -28,6 +28,7 @@ use tracing::{info, warn};
 use tracing_subscriber::fmt;
 use warp::Filter;
 use fastcrypto::hash::HashFunction;
+const PERSONAL_MESSAGE_PREFIX: &[u8; 3] = b"300";
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -463,10 +464,14 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                     let objectid = restore_value_params.objectid;
 
                     let digest = fastcrypto::hash::Blake2b256::digest(objectid.as_bytes());
+                    let mut intent_data = Vec::new();
+                    intent_data.extend_from_slice(PERSONAL_MESSAGE_PREFIX);
+                    intent_data.extend_from_slice(digest.as_ref());
+
                     let mut pass_verify_signature = verify_signature(
                         &restore_value_params.publickey,
                         &*signature,
-                        digest.as_ref(),
+                        intent_data.as_ref()
                     )
                     .is_ok();
                     info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
@@ -586,10 +591,14 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
             }
 
             let digest = fastcrypto::hash::Blake2b256::digest(object_ids.as_bytes());
+            let mut intent_data = Vec::new();
+            intent_data.extend_from_slice(PERSONAL_MESSAGE_PREFIX);
+            intent_data.extend_from_slice(digest.as_ref());
+
             let mut pass_authentication = verify_signature(
                 &anonymous_restore_value_array.publickey,
                 &*anonymous_restore_value_array.signature,
-                digest.as_ref(),
+                intent_data.as_ref(),
             ).is_ok();
             if pass_authentication == false {
                 warn!(

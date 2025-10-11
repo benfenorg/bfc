@@ -369,9 +369,11 @@ mod tests {
     #[tokio::test]
     async fn test_blake2b_hash() {
         use fastcrypto::hash::HashFunction;
-        let data = b"hello world";
-        let hash = fastcrypto::hash::Blake2b256::digest(data);
-        let expected_hex = "256c83b297114d201b30179f3f0ef0cace9783622da5974326b436178aeef610";
+        let data1 = b"300"; // Personal message prefix 300
+        let data2 = b"hello world";
+        let databytes = [data1.as_slice(), data2.as_slice()].concat();
+        let hash = fastcrypto::hash::Blake2b256::digest(databytes);
+        let expected_hex = "c9e8caa4700fd1c98a7568ba636f47d35e43f8d2ba08f379bad7baf7d113e1f9";
         assert_eq!(hex::encode(hash), expected_hex);
     }
 
