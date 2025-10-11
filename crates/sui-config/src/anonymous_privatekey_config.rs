@@ -47,6 +47,10 @@ impl AnonymousPrivateKeyConfig {
         self.fullnode_rpc_path = Some(key);
     }
 
+    pub fn set_zklogin_verify_rpc_path(&mut self, key: String) {
+        self.zklogin_verify_rpc_path = Some(key);
+    }
+
     pub fn enable_anonymous_rpc(&mut self, key: bool) {
         self.enable_anonymous_rpc = Some(key);
     }
