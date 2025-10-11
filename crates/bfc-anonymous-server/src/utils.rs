@@ -2,10 +2,55 @@ use crate::parse_response;
 use anyhow::anyhow;
 use fastcrypto::ed25519::Ed25519PublicKey;
 use fastcrypto::traits::ToFromBytes;
-use serde_json::json;
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
 use mpc_transmission::get_sui_config_directory;
 use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
 use sui_types::base_types::SuiAddress;
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ZkVerifyRequest {
+    pub signature: String,
+    pub bytes: String, // abfc token objectid
+    pub intent_scope: u8,
+    pub cur_epoch: Option<u64>,
+    pub cur_rpc_url : Option<String>,
+    pub author: String,
+}
+
+pub async fn verify_zklogin_signature(
+    signature: ZkVerifyRequest,
+    zklogin_rpc: String
+) -> Result<String, Box<dyn std::error::Error>> {
+    let client = reqwest::Client::new();
+    let params = Value::Object(
+        serde_json::Map::from_iter([
+            ("jsonrpc".to_string(), Value::String("2.0".to_string())),
+            ("id".to_string(), Value::Number(1.into())),
+            ("params".to_string(), Value::Array(vec![
+                Value::Object(serde_json::Map::from_iter([
+                    ("signature".to_string(), json!(signature.signature)),
+                    ("author".to_string(), Value::String(signature.author)),
+                    ("bytes".to_string(), Value::String(signature.bytes)),
+                ])),
+            ])),
+        ])
+    );
+
+    let response = client
+        .post(zklogin_rpc)
+        .json(&params)
+        .send()
+        .await?;
+
+    let result = response.text().await?;
+
+    let object_id = parse_response(&result.clone());
+    match object_id {
+        Some(val) => return Ok(val),
+        None => return Err(anyhow!("object owner not exit").into()),
+    }
+}
 
 pub async fn get_object_owneraddress(
     object_id: String,

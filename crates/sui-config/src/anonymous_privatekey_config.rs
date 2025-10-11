@@ -23,6 +23,10 @@ pub struct AnonymousPrivateKeyConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[arg(long)]
     pub fullnode_rpc_path: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[arg(long)]
+    pub zklogin_verify_rpc_path: Option<String>,
 }
 
 
@@ -90,12 +94,18 @@ impl AnonymousPrivateKeyConfig {
             .get("fullnode-rpc-path")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string());
+
+        let zklogin_verify_rpc_path = yaml_value
+            .get("zklogin-verify-rpc-path")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
             
         Ok(AnonymousPrivateKeyConfig { 
             anonymous_privatekey: private_key,
             anonymous_rpc,
             enable_anonymous_rpc,
             fullnode_rpc_path,
+            zklogin_verify_rpc_path,
         })
     }
 
