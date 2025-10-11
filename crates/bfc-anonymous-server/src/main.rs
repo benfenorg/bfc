@@ -463,15 +463,17 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                     let signature = restore_value_params.signature;
                     let objectid = restore_value_params.objectid;
 
-                    let digest = fastcrypto::hash::Blake2b256::digest(objectid.as_bytes());
                     let mut intent_data = Vec::new();
                     intent_data.extend_from_slice(PERSONAL_MESSAGE_PREFIX);
-                    intent_data.extend_from_slice(digest.as_ref());
+                    intent_data.extend_from_slice(objectid.as_bytes());
+                    let digest = fastcrypto::hash::Blake2b256::digest(intent_data.as_ref());
+
+
 
                     let mut pass_verify_signature = verify_signature(
                         &restore_value_params.publickey,
                         &*signature,
-                        intent_data.as_ref()
+                        digest.as_ref()
                     )
                     .is_ok();
                     info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
@@ -590,15 +592,16 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
                 object_ids = format!("{}{}", object_ids, anonymous_restore_value.objectid);
             }
 
-            let digest = fastcrypto::hash::Blake2b256::digest(object_ids.as_bytes());
             let mut intent_data = Vec::new();
             intent_data.extend_from_slice(PERSONAL_MESSAGE_PREFIX);
-            intent_data.extend_from_slice(digest.as_ref());
+            intent_data.extend_from_slice(object_ids.as_bytes());
+            let digest = fastcrypto::hash::Blake2b256::digest(intent_data.as_ref());
+
 
             let mut pass_authentication = verify_signature(
                 &anonymous_restore_value_array.publickey,
                 &*anonymous_restore_value_array.signature,
-                intent_data.as_ref(),
+                digest.as_ref(),
             ).is_ok();
             if pass_authentication == false {
                 warn!(
