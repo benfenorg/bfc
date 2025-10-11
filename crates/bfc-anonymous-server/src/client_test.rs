@@ -365,7 +365,6 @@ mod tests {
     use std::net::SocketAddr;
     use tracing::info;
     use tracing_subscriber::fmt;
-    use crate::utils::{verify_zklogin_signature, ZkVerifyRequest};
 
     #[tokio::test]
     async fn test_blake2b_hash() {
