@@ -14,6 +14,7 @@ use crate::signature::verify_signature;
 use crate::utils::get_object_owneraddress;
 use crate::utils::public_key_bytes_to_sui_address;
 use clap::Parser;
+use ed25519_dalek::ed25519::signature::digest;
 use move_core_types::account_address::AccountAddress;
 use mpc_transmission::{get_sui_config_directory, two_party_share::{
     add_two_shared_secrets, mul_two_shared_secrets, recover_two_shares, recover_value,
@@ -26,6 +27,7 @@ use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 use tracing::{info, warn};
 use tracing_subscriber::fmt;
 use warp::Filter;
+use fastcrypto::hash::HashFunction;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -459,10 +461,12 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                 Ok(restore_value_params) => {
                     let signature = restore_value_params.signature;
                     let objectid = restore_value_params.objectid;
+
+                    let digest = fastcrypto::hash::Blake2b256::digest(objectid.as_bytes());
                     let mut pass_verify_signature = verify_signature(
                         &restore_value_params.publickey,
                         &*signature,
-                        objectid.as_bytes(),
+                        digest.as_ref(),
                     )
                     .is_ok();
                     info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
@@ -581,10 +585,11 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
                 object_ids = format!("{}{}", object_ids, anonymous_restore_value.objectid);
             }
 
+            let digest = fastcrypto::hash::Blake2b256::digest(object_ids.as_bytes());
             let mut pass_authentication = verify_signature(
                 &anonymous_restore_value_array.publickey,
                 &*anonymous_restore_value_array.signature,
-                object_ids.as_bytes(),
+                digest.as_ref(),
             ).is_ok();
             if pass_authentication == false {
                 warn!(

@@ -362,6 +362,15 @@ mod tests {
     use tracing_subscriber::fmt;
 
     #[tokio::test]
+    async fn test_blake2b_hash() {
+        use fastcrypto::hash::HashFunction;
+        let data = b"hello world";
+        let hash = fastcrypto::hash::Blake2b256::digest(data);
+        let expected_hex = "256c83b297114d201b30179f3f0ef0cace9783622da5974326b436178aeef610";
+        assert_eq!(hex::encode(hash), expected_hex);
+    }
+
+    #[tokio::test]
     async fn test_client_without_server() {
         let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
         assert_eq!(client.base_url, "http://localhost:9010");
