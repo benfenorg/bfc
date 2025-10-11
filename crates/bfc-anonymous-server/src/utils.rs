@@ -4,6 +4,7 @@ use fastcrypto::ed25519::Ed25519PublicKey;
 use fastcrypto::traits::ToFromBytes;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use tracing::info;
 use mpc_transmission::get_sui_config_directory;
 use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
 use sui_types::base_types::SuiAddress;
@@ -18,37 +19,39 @@ pub struct ZkVerifyRequest {
     pub author: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct ZkVerifyResponse {
+    result: bool,
+    message: String,
+}
+
 pub async fn verify_zklogin_signature(
     signature: ZkVerifyRequest,
     zklogin_rpc: String
-) -> Result<String, Box<dyn std::error::Error>> {
+) -> Result<bool, Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
-    let params = Value::Object(
-        serde_json::Map::from_iter([
-            ("jsonrpc".to_string(), Value::String("2.0".to_string())),
-            ("id".to_string(), Value::Number(1.into())),
-            ("params".to_string(), Value::Array(vec![
-                Value::Object(serde_json::Map::from_iter([
-                    ("signature".to_string(), json!(signature.signature)),
-                    ("author".to_string(), Value::String(signature.author)),
-                    ("bytes".to_string(), Value::String(signature.bytes)),
-                ])),
-            ])),
-        ])
-    );
 
     let response = client
         .post(zklogin_rpc)
-        .json(&params)
+        .json(&signature)
         .send()
         .await?;
 
     let result = response.text().await?;
 
-    let object_id = parse_response(&result.clone());
-    match object_id {
-        Some(val) => return Ok(val),
-        None => return Err(anyhow!("object owner not exit").into()),
+    match serde_json::from_str::<ZkVerifyResponse>(result.as_str()) {
+        Ok(response) => {
+            if response.result == false {
+                Err(anyhow!("verify failed",).into())
+            } else {
+                Ok(true)
+            }
+
+        }
+        Err(e) => {
+            info!("resolving failed, caused by: {}", e);
+            Err(anyhow!("resolving failed, caused by {}", e).into())
+        }
     }
 }
 
