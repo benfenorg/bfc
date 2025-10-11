@@ -476,7 +476,7 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                     let mut intent_data = Vec::new();
                     intent_data.extend_from_slice(PERSONAL_MESSAGE_PREFIX);
                     intent_data.extend_from_slice(objectid.as_bytes());
-                    let digest = fastcrypto::hash::Blake2b256::digest(intent_data.as_ref());
+                    let digest = fastcrypto::hash::Blake2b256::digest(intent_data);
 
 
 
@@ -716,7 +716,7 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
             let mut intent_data = Vec::new();
             intent_data.extend_from_slice(PERSONAL_MESSAGE_PREFIX);
             intent_data.extend_from_slice(object_ids.as_bytes());
-            let digest = fastcrypto::hash::Blake2b256::digest(intent_data.as_ref());
+            let digest = fastcrypto::hash::Blake2b256::digest(intent_data);
 
 
             let mut pass_authentication = verify_signature(
