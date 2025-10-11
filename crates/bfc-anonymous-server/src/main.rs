@@ -11,7 +11,7 @@ use warp::Rejection;
 
 use crate::bfc_object::parse_response;
 use crate::signature::verify_signature;
-use crate::utils::get_object_owneraddress;
+use crate::utils::{get_object_owneraddress, verify_zklogin_signature, ZkVerifyRequest};
 use crate::utils::public_key_bytes_to_sui_address;
 use clap::Parser;
 use ed25519_dalek::ed25519::signature::digest;
@@ -28,6 +28,7 @@ use tracing::{info, warn};
 use tracing_subscriber::fmt;
 use warp::Filter;
 use fastcrypto::hash::HashFunction;
+use mpc_transmission::get_zklogin_rpc_address_from_config;
 const PERSONAL_MESSAGE_PREFIX: &[u8; 3] = b"300";
 
 #[derive(Parser, Debug)]
@@ -111,6 +112,14 @@ struct AnonymousRestoreValueParams {
     signature: Vec<u8>,
     objectid: String,
     publickey: Vec<u8>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct AnonymousRestoreZKLoginParams {
+    value1: Vec<u8>,
+    value2: Vec<u8>,
+    signature: ZkVerifyRequest,
+    objectid: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -241,6 +250,7 @@ async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply,
         "bfcx_getAnonymousEncodeData" => handle_anonymous_split_to_two_value(request).await,
         "bfcx_getAnonymousRestoreValue" => handle_anonymous_restore_value(request).await,
         "bfcx_getAnonymousRestoreValueArray" => handle_anonymous_restore_value_array(request).await,
+        "bfcx_getAnonymousRestoreValueForZKloginAddress" => handle_anonymous_restore_value_for_zklogin_address(request).await,
         "bfcx_ping" => handle_ping(request).await,
         _ => JsonRpcResponse {
             jsonrpc: "2.0".to_string(),
@@ -291,7 +301,7 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
                                                      Some(serde_json::json!({"error": e.to_string()})));
                     }
                 };
-                
+
                 match add_two_shared_secrets(
                     value1_share.unwrap(),
                     value2_share.unwrap(),
@@ -352,7 +362,7 @@ async fn handle_anonymous_minus(request: JsonRpcRequest) -> JsonRpcResponse {
                         return create_error_response(request.id,-32603 , "Internal error: Failed to load configuration".to_string(), Some(serde_json::json!({"error": e.to_string()})))
                     }
                 };
-                
+
                 match sub_two_shared_secrets(
                     value1_share.unwrap(),
                     value2_share.unwrap(),
@@ -417,7 +427,7 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
                                                      Some(serde_json::json!({"error": e.to_string()})));
                     }
                 };
-                
+
                 match mul_two_shared_secrets(
                     value1_share.unwrap(),
                     value2_share.unwrap(),
@@ -475,7 +485,7 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                         &*signature,
                         digest.as_ref()
                     )
-                    .is_ok();
+                        .is_ok();
                     info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
                     if pass_verify_signature == true {
                         info!("handle_anonymous_restore_value pass verify signature");
@@ -522,12 +532,12 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                         Err(e) => {
                             warn!("Failed to get mask secret from config: {}", e);
                             return create_error_response(request.id,
-                                                     -32603,
-                                                     "Internal error: Failed to load configuration".to_string(),
-                                                     Some(serde_json::json!({"error": e.to_string()})));
+                                                         -32603,
+                                                         "Internal error: Failed to load configuration".to_string(),
+                                                         Some(serde_json::json!({"error": e.to_string()})));
                         }
                     };
-                    
+
                     let data1 = restore_value_params.value1;
                     let data2 = restore_value_params.value2;
                     info!("data1 len: {}, data2 len: {}", data1.len(), data2.len());
@@ -562,6 +572,117 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                         "Invalid parameters for bfcx_getAnonymousRestoreValue: {}",
                         e
                     );
+                    create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+                }
+            }
+        }
+        None => {
+            create_error_response(request.id, -32602, "Missing params".to_string(), None)
+        }
+    }
+}
+
+
+#[warn(unused_assignments)]
+async fn handle_anonymous_restore_value_for_zklogin_address(request: JsonRpcRequest) -> JsonRpcResponse {
+    match request.params {
+        Some(params) => {
+            match serde_json::from_value::<AnonymousRestoreZKLoginParams>(params) {
+                Ok(restore_value_params) => {
+                    let author = restore_value_params.signature.author.clone();
+                    let signature = restore_value_params.signature;
+                    let objectid = restore_value_params.objectid;
+                    let args_result = Args::try_parse();
+                    let mut config_path: Option<String> = None;
+                    if args_result.is_ok() {
+                        config_path = Some(args_result.unwrap().config);
+                    }
+
+                    let zklogin_address = match get_zklogin_rpc_address_from_config(config_path) {
+                        Ok(address) => address,
+                        Err(e) => {
+                            warn!("Failed to get zklogin address from config: {}", e);
+                            return create_error_response(request.id, -32603, "Internal error: Failed to load configuration".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+                        }
+                    };
+
+
+                    let mut pass_verify_signature = verify_zklogin_signature(
+                        signature,
+                        zklogin_address
+                    ).await.is_ok();
+                    info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
+
+                    if pass_verify_signature == true {
+                        info!("handle_anonymous_restore_value pass verify signature");
+                        match get_object_owneraddress(objectid.clone()).await {
+                            Ok(owner_address_value) => {
+                                pass_verify_signature = author.eq(&owner_address_value);
+                            }
+                            Err(error) => {
+                                info!("failed get owner address: {}", error);
+                                pass_verify_signature = false;
+                            }
+                        }
+                    }
+                    if pass_verify_signature == false {
+                        return create_error_response(request.id,
+                                                     -32603,
+                                                     "Verify signature or get owner address failed".to_string(),
+                                                     Some(serde_json::json!({"error": "verify signature or get owner address failed"})));
+                    }
+
+
+                    let args_result = Args::try_parse();
+                    let mut config_path: Option<String> = None;
+                    if args_result.is_ok() {
+                        config_path = Some(args_result.unwrap().config);
+                    }
+                    let mask_secret = match get_mask_secret_from_config(config_path) {
+                        Ok(secret) => secret,
+                        Err(e) => {
+                            warn!("Failed to get mask secret from config: {}", e);
+                            return create_error_response(request.id,
+                                                         -32603,
+                                                         "Internal error: Failed to load configuration".to_string(),
+                                                         Some(serde_json::json!({"error": e.to_string()})));
+                        }
+                    };
+
+                    let data1 = restore_value_params.value1;
+                    let data2 = restore_value_params.value2;
+                    info!("data1 len: {}, data2 len: {}", data1.len(), data2.len());
+
+                    let data_str1 = String::from_utf8(data1).unwrap_or_default();
+                    let data_str2 = String::from_utf8(data2).unwrap_or_default();
+                    info!("=== data_str1: {}, data_str2: {} ===", data_str1, data_str2);
+
+                    match recover_value(data_str1, data_str2, mask_secret) {
+                        Ok(value) => JsonRpcResponse {
+                            jsonrpc: "2.0".to_string(),
+                            id: request.id,
+                            result: Some(serde_json::json!({
+                            "result1": value,
+                            "result2": 0,
+                            "operation": "anonymous_restore_value",
+                            "timestamp": chrono::Utc::now().timestamp()
+                        })),
+                            error: None,
+                        },
+                        Err(e) => {
+                            warn!(
+                            "process recover_value error, caused by: {}",
+                            e
+                        );
+                            create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+                        }
+                    }
+                }
+                Err(e) => {
+                    warn!(
+                    "Invalid parameters for bfcx_getAnonymousRestoreValue: {}",
+                    e
+                );
                     create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
                 }
             }
@@ -717,7 +838,7 @@ async fn handle_anonymous_split_to_two_value(request: JsonRpcRequest) -> JsonRpc
                                                      Some(serde_json::json!({"error": e.to_string()})));
                     }
                 };
-                
+
                 let value = split_to_two_value_params.value;
                 let (result1, result2) = split_to_two_value(value, mask_secret);
                 JsonRpcResponse {
@@ -763,7 +884,7 @@ async fn handle_anonymous_compare(request: JsonRpcRequest) -> JsonRpcResponse {
                                                      Some(serde_json::json!({"error": e.to_string()})));
                     }
                 };
-                
+
                 match recover_value(compare_params.value1, compare_params.value2, mask_secret) {
                     Ok(value_a) => {
                         let value_b = compare_params.value3;
@@ -817,3 +938,4 @@ async fn handle_ping(request: JsonRpcRequest) -> JsonRpcResponse {
         error: None,
     }
 }
+
