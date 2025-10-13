@@ -124,6 +124,13 @@ struct AnonymousRestoreZKLoginParams {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+struct AnonymousRestoreArrayParamsZKLoginParams {
+    anonymous_restore_array: Vec<AnonymousRestoreElementParams>,
+    signature: ZkVerifyRequest,
+    object_ids: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 struct AnonymousRestoreElementParams {
     value1: Vec<u8>,
     value2: Vec<u8>,
@@ -252,6 +259,7 @@ async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply,
         "bfcx_getAnonymousRestoreValue" => handle_anonymous_restore_value(request).await,
         "bfcx_getAnonymousRestoreValueArray" => handle_anonymous_restore_value_array(request).await,
         "bfcx_getAnonymousRestoreValueForZKloginAddress" => handle_anonymous_restore_value_for_zklogin_address(request).await,
+        "bfcx_getAnonymousRestoreValueArrayForZKloginAddress" => handle_anonymous_restore_value_array_for_zklogin_address(request).await,
         "bfcx_ping" => handle_ping(request).await,
         _ => JsonRpcResponse {
             jsonrpc: "2.0".to_string(),
@@ -574,6 +582,110 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                 Err(e) => {
                     warn!(
                         "Invalid parameters for bfcx_getAnonymousRestoreValue: {}",
+                        e
+                    );
+                    create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+                }
+            }
+        }
+        None => {
+            create_error_response(request.id, -32602, "Missing params".to_string(), None)
+        }
+    }
+}
+
+#[warn(unused_assignments)]
+async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonRpcRequest) -> JsonRpcResponse {
+    match request.params {
+        Some(params) => {
+            match serde_json::from_value::<AnonymousRestoreArrayParamsZKLoginParams>(params) {
+                Ok(restore_value_params) => {
+                    let signature = restore_value_params.signature;
+                    let args_result = Args::try_parse();
+                    let mut config_path: Option<String> = None;
+                    if args_result.is_ok() {
+                        config_path = Some(args_result.unwrap().config);
+                    }
+
+                    let zklogin_address = match get_zklogin_rpc_address_from_config(config_path.clone()) {
+                        Ok(address) => address,
+                        Err(e) => {
+                            warn!("Failed to get zklogin address from config: {}", e);
+                            return create_error_response(request.id, -32603, "Internal error: Failed to load configuration".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+                        }
+                    };
+
+                    let mut pass_verify_signature = verify_zklogin_signature(
+                        signature,
+                        zklogin_address
+                    ).await.is_ok();
+                    info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
+
+                    if pass_verify_signature == false {
+                        return create_error_response(request.id,
+                                                     -32603,
+                                                     "Verify signature or get owner address failed".to_string(),
+                                                     Some(serde_json::json!({"error": "verify signature or get owner address failed"})));
+                    }
+
+                    let mask_secret = match get_mask_secret_from_config(config_path) {
+                        Ok(secret) => secret,
+                        Err(e) => {
+                            warn!("Failed to get mask secret from config: {}", e);
+                            return create_error_response(request.id,
+                                                         -32603,
+                                                         "Internal error: Failed to load configuration".to_string(),
+                                                         Some(serde_json::json!({"error": e.to_string()})));
+                        }
+                    };
+                    let mut restore_result_array = Vec::new();
+
+                    let mut object_ids =  String::new();
+
+                    for anonymous_restore_value in &restore_value_params.anonymous_restore_array {
+                        let data1 = anonymous_restore_value.value1.clone();
+                        let data2 = anonymous_restore_value.value2.clone();
+                        object_ids = format!("{}{}", object_ids, anonymous_restore_value.objectid);
+                        info!("data1 len: {}, data2 len: {}", data1.len(), data2.len());
+
+                        let data_str1 = String::from_utf8(data1).unwrap_or_default();
+                        let data_str2 = String::from_utf8(data2).unwrap_or_default();
+                        info!("=== data_str1: {}, data_str2: {} ===", data_str1, data_str2);
+
+                        match recover_value(data_str1, data_str2, mask_secret) {
+                            Ok(value) => {
+                                restore_result_array.push(value);
+                            },
+                            Err(e) => {
+                                restore_result_array.push(0);
+                                warn!("process recover_value error, caused by: {}",e);
+                            }
+                        }
+                    }
+
+                    if object_ids != restore_value_params.object_ids {
+                        warn!(
+                        "authentication failed for bfcx_getAnonymousRestoreArrayParamsZKLoginParams"
+                        );
+                        return create_error_response(request.id, -32602, "authentication failed".to_string(), None);
+                    }
+
+                    JsonRpcResponse {
+                        jsonrpc: "2.0".to_string(),
+                        id: request.id,
+                        result: Some(serde_json::json!({
+                        "result1": restore_result_array,
+                        "result2": 0,
+                        "operation": "anonymous_multiply",
+                        "timestamp": chrono::Utc::now().timestamp()
+                    })),
+                        error: None,
+                    }
+                }
+
+                Err(e) => {
+                    warn!(
+                        "Invalid parameters for bfcx_getAnonymousRestoreArrayParamsZKLoginParams: {}",
                         e
                     );
                     create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
