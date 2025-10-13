@@ -679,7 +679,7 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
                         result: Some(serde_json::json!({
                         "result1": restore_result_array,
                         "result2": 0,
-                        "operation": "anonymous_multiply",
+                        "operation": "restore_value_array_for_zklogin",
                         "timestamp": chrono::Utc::now().timestamp()
                     })),
                         error: None,
@@ -783,7 +783,7 @@ async fn handle_anonymous_restore_value_for_zklogin_address(request: JsonRpcRequ
                             result: Some(serde_json::json!({
                             "result1": value,
                             "result2": 0,
-                            "operation": "anonymous_restore_value",
+                            "operation": "anonymous_restore_value_for_zklogin",
                             "timestamp": chrono::Utc::now().timestamp()
                         })),
                             error: None,
@@ -929,7 +929,7 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
                 result: Some(serde_json::json!({
                                 "result1": restore_result_array,
                                 "result2": 0,
-                                "operation": "anonymous_multiply",
+                                "operation": "anonymous_restore_value_array",
                                 "timestamp": chrono::Utc::now().timestamp()
                             })),
                 error: None,
