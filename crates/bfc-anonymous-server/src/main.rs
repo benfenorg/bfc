@@ -831,11 +831,15 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
 
             let mut intent_data = Vec::new();
             intent_data.extend_from_slice(PERSONAL_MESSAGE_PREFIX);
-            let length = to_le_bytes_trimmed(object_ids.len());
-            intent_data.extend_from_slice(length.as_ref());
+            let len = object_ids.len() as u64;
+            let mut buffer = [0u8; 10];
+            let length = write_unsigned_leb128(&mut buffer, len);
+            intent_data.extend_from_slice(&buffer[..length]);
             intent_data.extend_from_slice(object_ids.as_bytes());
-            let digest = fastcrypto::hash::Blake2b256::digest(intent_data);
+            println!("value array before {:?}", hex::encode(intent_data.clone()));
 
+            let digest = fastcrypto::hash::Blake2b256::digest(intent_data);
+            println!("value array after{:?}", hex::encode(digest));
 
             let mut pass_authentication = verify_signature(
                 &anonymous_restore_value_array.publickey,
@@ -1057,27 +1061,18 @@ async fn handle_ping(request: JsonRpcRequest) -> JsonRpcResponse {
     }
 }
 
-fn to_le_bytes_trimmed(value: usize) -> Vec<u8> {
-    if value == 0 {
-        return vec![0];
+pub fn write_unsigned_leb128(out: &mut [u8], mut value: u64) -> usize {
+    let mut i = 0;
+    loop {
+        if value < 0x80 {
+            out[i] = value as u8;
+            i += 1;
+            break;
+        } else {
+            out[i] = ((value & 0x7F) | 0x80) as u8;
+            value >>= 7;
+            i += 1;
+        }
     }
-
-    let bytes = value.to_le_bytes();
-    let significant_bytes = (usize::BITS as usize - value.leading_zeros() as usize + 7) / 8;
-
-    bytes[..significant_bytes].to_vec()
-}
-
-
-#[tokio::test]
-async fn test_le_bytes_trimmed() -> anyhow::Result<()> {
-    assert_eq!(to_le_bytes_trimmed(0), vec![0]);
-    assert_eq!(to_le_bytes_trimmed(42), vec![42]);
-    assert_eq!(to_le_bytes_trimmed(255), vec![255]);
-    assert_eq!(to_le_bytes_trimmed(256), vec![0, 1]);
-    assert_eq!(to_le_bytes_trimmed(65535), vec![255, 255]);
-    assert_eq!(to_le_bytes_trimmed(65536), vec![0, 0, 1]);
-    assert_eq!(to_le_bytes_trimmed(4294967295), vec![255, 255, 255, 255]);
-    assert_eq!(to_le_bytes_trimmed(4294967296), vec![0, 0, 0, 0, 1]);
-    Ok(())
+    i
 }
