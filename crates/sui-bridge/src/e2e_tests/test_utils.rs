@@ -108,6 +108,7 @@ const USDC_NAME: &str = "USDC";
 const USDT_NAME: &str = "USDT";
 const KA_NAME: &str = "KA";
 const ARROW_NAME: &str = "Arrow";
+const AAVE_LP_TOKEN_NAME: &str = "AaveLPToken";
 
 pub const TEST_PK: &str = "0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356";
 
@@ -575,6 +576,7 @@ pub struct DeployedSolContracts {
     pub usdt: EthAddress,
     pub ka: EthAddress,
     pub arrow :EthAddress,
+    pub aave_lp_token: EthAddress,
 }
 
 impl DeployedSolContracts {
@@ -758,6 +760,7 @@ pub(crate) async fn deploy_sol_contract(
         usdt: deployed_contracts.remove(USDT_NAME).unwrap(),
         ka: deployed_contracts.remove(KA_NAME).unwrap(),
         arrow: deployed_contracts.remove(ARROW_NAME).unwrap(),
+        aave_lp_token: deployed_contracts.remove(AAVE_LP_TOKEN_NAME).unwrap(),
     };
     let eth_bridge_committee =
         EthBridgeCommittee::new(contracts.bridge_committee, eth_signer.clone().into());

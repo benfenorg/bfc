@@ -38,7 +38,10 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         uint64[] memory _tokenPrices,
         uint64[] memory _tokenIds,
         uint8[] memory _suiDecimals,
-        uint8[] memory _supportedChains
+        uint8[] memory _supportedChains,
+        uint64 _protocolType,
+        uint64 _tokenID,
+        uint64 _lpTokenId
     ) external initializer {
         __CommitteeUpgradeable_init(_committee);
         require(
@@ -66,6 +69,8 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
             tokenPrices[_tokenIds[i]] = _tokenPrices[i];
         }
 
+        tokenToLP[_protocolType][_tokenID] = _lpTokenId;
+        lpToToken[_protocolType][_lpTokenId] = _tokenID;
         chainID = _chainID;
     }
 

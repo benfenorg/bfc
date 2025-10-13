@@ -66,10 +66,13 @@ contract DeployBridge is Script {
             // deploy mock tokens
             IERC20 USDC;
             IERC20 USDT;
+            IERC20 AAVELPTOKEN;
 
             if (chainIDHash == keccak256(abi.encode("31337"))){
                 USDC = new MockUSDC();
                 USDT = new MockUSDT();
+                AAVELPTOKEN= new MockAAVELPToken();
+
             }else{
                 USDC = new MockBNBUSDC();
                 USDT = new MockBNBUSDT();
@@ -82,7 +85,7 @@ contract DeployBridge is Script {
             console.log("[Deployed] BNB:", address(BNB));
 
             // update deployConfig with test values
-            deployConfig.supportedTokens = new address[](7);
+            deployConfig.supportedTokens = new address[](8);
             deployConfig.supportedTokens[0] = address(0);
             deployConfig.supportedTokens[1] = address(wBTC);
             deployConfig.supportedTokens[2] = deployConfig.weth;
@@ -90,8 +93,9 @@ contract DeployBridge is Script {
             deployConfig.supportedTokens[4] = address(USDT);
             deployConfig.supportedTokens[5] = address(BUSD);
             deployConfig.supportedTokens[6] = address(BNB);
+            deployConfig.supportedTokens[7] = address(AAVELPTOKEN);
 
-            deployConfig.tokenIds = new uint256[](7);
+            deployConfig.tokenIds = new uint256[](8);
             deployConfig.tokenIds[0] = 0;
             deployConfig.tokenIds[1] = 1;
             deployConfig.tokenIds[2] = 2;
@@ -99,8 +103,9 @@ contract DeployBridge is Script {
             deployConfig.tokenIds[4] = 4;
             deployConfig.tokenIds[5] = 5;
             deployConfig.tokenIds[6] = 6;
+            deployConfig.tokenIds[7] = 7;
 
-            deployConfig.suiDecimals = new uint256[](7);
+            deployConfig.suiDecimals = new uint256[](8);
             deployConfig.suiDecimals[0] = 9;
             deployConfig.suiDecimals[1] = 8;
             deployConfig.suiDecimals[2] = 8;
@@ -108,10 +113,12 @@ contract DeployBridge is Script {
                 console.log("bbking1");
                 deployConfig.suiDecimals[3] = 6;
                 deployConfig.suiDecimals[4] = 6;
+                deployConfig.suiDecimals[7] = 6;
             }else{
                 console.log("bbking2");
                 deployConfig.suiDecimals[3] = 9;
                 deployConfig.suiDecimals[4] = 9;
+                deployConfig.suiDecimals[7] = 9;
             }
 
             deployConfig.suiDecimals[5] = 9;
@@ -193,7 +200,10 @@ contract DeployBridge is Script {
                     tokenPrices,
                     tokenIds,
                     suiDecimals,
-                    supportedChainIds
+                    supportedChainIds,
+                    uint64(0), // aave protocolType
+                    uint64(3), // tokenID
+                    uint64(7)  // lpTokenId
                 )
             ),
             opts
@@ -257,6 +267,7 @@ contract DeployBridge is Script {
         console.log("[Deployed] USDT:", BridgeConfig(bridgeConfig).tokenAddressOf(4));
         console.log("[Deployed] BNB:", BridgeConfig(bridgeConfig).tokenAddressOf(6));
         console.log("[Deployed] Arrow:",address(mockArrow));
+        console.log("[Deployed] AaveLPToken:", BridgeConfig(bridgeConfig).tokenAddressOf(7));
 
         vm.stopBroadcast();
     }

@@ -150,6 +150,46 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         }
     }
 
+
+    function mockInvestContract(
+        uint8 actionType
+    )external{
+        if (actionType==0){
+            //deposit
+             emit TokensStaked(
+                2,
+                100,
+                11,
+                101,
+                bytes("0x0000000000000000000000000000000000000000"),
+                address(0),
+                0,
+                50000000,
+                0,
+                1,
+                3,
+                1
+            );
+        }else if (actionType==1){
+            //withdraw
+            emit TokensUnStaked(
+                11,
+                100,
+                2,
+                101,
+                bytes("0x0000000000000000000000000000000000000000"),
+                address(0),
+                50000000, // aave redeem token (usdc/usdt)
+                50000000, //lp token
+                0,
+                1,
+                3,
+                1
+            );
+        }
+
+    }
+
     function investBridgedTokensWithSignatures(
         bytes[] memory signatures,
         BridgeUtils.Message memory message

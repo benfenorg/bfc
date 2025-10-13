@@ -820,7 +820,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             "BridgeConfig.sol",
             abi.encodeCall(
                 BridgeConfig.initialize,
-                (address(committee), 11, _supportedTokens, tokenPrices, tokenIds, suiDecimals, _supportedDestinationChains)
+                (address(committee), 11, _supportedTokens, tokenPrices, tokenIds, suiDecimals, _supportedDestinationChains, 1, 3, 7)
             ),
             opts
         );
@@ -938,7 +938,10 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
                     tokenPrices,
                     tokenIds,
                     suiDecimals,
-                    _supportedDestinationChains
+                    _supportedDestinationChains,
+                    1,
+                    3,
+                    7
                 )
             ),
             opts
@@ -1017,7 +1020,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             "BridgeConfig.sol",
             abi.encodeCall(
                 BridgeConfig.initialize,
-                (address(committee), chainID, supportedTokens, tokenPrices, tokenIds, suiDecimals, supportedChains)
+                (address(committee), chainID, supportedTokens, tokenPrices, tokenIds, suiDecimals, supportedChains, 1, 3, 7)
             ),
             opts
         );
@@ -1172,7 +1175,10 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
                     tokenPrices,
                     tokenIds,
                     suiDecimals,
-                    _supportedDestinationChains
+                    _supportedDestinationChains,
+                    1,
+                    3,
+                    7
                 )
             ),
             opts
