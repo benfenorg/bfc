@@ -1507,6 +1507,15 @@ async fn trigger_reconfiguration_if_not_yet_and_assert_bridge_committee_initiali
     );
 }
 
+pub async fn mock_bridge_unstake_eth_to_sui(
+    bridge_test_cluster: &BridgeTestCluster,
+    stake:bool,
+) -> Result<(), anyhow::Error> {
+    info!("Mocking defi stake/unstake eth to sui");
+    
+    Ok(())
+}
+
 pub async fn initiate_bridge_eth_to_sui(
     bridge_test_cluster: &BridgeTestCluster,
     amount: u64,
