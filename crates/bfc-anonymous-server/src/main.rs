@@ -955,3 +955,17 @@ fn to_le_bytes_trimmed(value: usize) -> Vec<u8> {
 
     bytes[..significant_bytes].to_vec()
 }
+
+
+#[tokio::test]
+async fn test_le_bytes_trimmed() -> anyhow::Result<()> {
+    assert_eq!(to_le_bytes_trimmed(0), vec![0]);
+    assert_eq!(to_le_bytes_trimmed(42), vec![42]);
+    assert_eq!(to_le_bytes_trimmed(255), vec![255]);
+    assert_eq!(to_le_bytes_trimmed(256), vec![0, 1]);
+    assert_eq!(to_le_bytes_trimmed(65535), vec![255, 255]);
+    assert_eq!(to_le_bytes_trimmed(65536), vec![0, 0, 1]);
+    assert_eq!(to_le_bytes_trimmed(4294967295), vec![255, 255, 255, 255]);
+    assert_eq!(to_le_bytes_trimmed(4294967296), vec![0, 0, 0, 0, 1]);
+    Ok(())
+}
