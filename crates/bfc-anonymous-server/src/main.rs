@@ -484,9 +484,12 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
 
                     let mut intent_data = Vec::new();
                     intent_data.extend_from_slice(PERSONAL_MESSAGE_PREFIX);
-                    let length = to_le_bytes_trimmed(objectid.len());
-                    intent_data.extend_from_slice(length.as_ref());
+                    let len = objectid.len() as u64;
+                    let mut buffer = [0u8; 10];
+                    let length = write_unsigned_leb128(&mut buffer, len);
+                    intent_data.extend_from_slice(&buffer[..length]);
                     intent_data.extend_from_slice(objectid.as_bytes());
+
                     let digest = fastcrypto::hash::Blake2b256::digest(intent_data);
                     let logdata = hex::encode(digest.as_ref());
 
