@@ -76,6 +76,7 @@ contract DeployBridge is Script {
             }else{
                 USDC = new MockBNBUSDC();
                 USDT = new MockBNBUSDT();
+                AAVELPTOKEN= new MockAAVELPToken();
             }
             MockWBTC wBTC = new MockWBTC();
             MockKA KA = new MockKA();

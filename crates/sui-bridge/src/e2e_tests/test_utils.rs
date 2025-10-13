@@ -649,7 +649,7 @@ pub(crate) async fn deploy_sol_contract(
         supported_tokens: vec![], // this is set up in the deploy script
         token_ids: vec![],        // this is set up in the deploy script
         sui_decimals: vec![],     // this is set up in the deploy script
-        token_prices: vec![12800, 432518900, 25969600, 10000, 10000, 10000, 10000],
+        token_prices: vec![12800, 432518900, 25969600, 10000, 10000, 10000, 10000,10000],
         weth: "".to_string(), // this is set up in the deploy script
         max_usd_limit: u64::MAX,
         invest_address: "".to_string(),

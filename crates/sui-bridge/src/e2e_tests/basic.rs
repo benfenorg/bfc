@@ -1073,7 +1073,7 @@ async fn test_add_lp_token_on_evm(){
             nonce: 0,
             chain_id: BridgeChainId::EthCustom,
             protocol_type: 0, //aave
-            token_id: 3, //usdc
+            token_id: 4, //usdt
             lp_token_id: 10000, //lp_token
     });
 
