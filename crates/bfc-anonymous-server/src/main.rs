@@ -14,7 +14,6 @@ use crate::signature::verify_signature;
 use crate::utils::{get_object_owneraddress, verify_zklogin_signature, ZkVerifyRequest};
 use crate::utils::public_key_bytes_to_sui_address;
 use clap::Parser;
-use ed25519_dalek::ed25519::signature::digest;
 use move_core_types::account_address::AccountAddress;
 use mpc_transmission::{get_sui_config_directory, two_party_share::{
     add_two_shared_secrets, mul_two_shared_secrets, recover_two_shares, recover_value,

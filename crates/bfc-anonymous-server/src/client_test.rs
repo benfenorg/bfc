@@ -4,7 +4,6 @@ use std::error::Error;
 use std::str::FromStr;
 use log::info;
 use sui_types::base_types::SuiAddress;
-use crate::AnonymousRestoreElementParams;
 
 #[derive(Debug)]
 #[allow(unused)]
@@ -308,7 +307,7 @@ impl AnonymousClient {
 
     async fn test_recover_with_signature(&self, share1: String, share2: String) -> u64 {
         // test restore 20
-        let signature = "0f31177f8ece16b2cfb8c1ba0b71f73252acaa6cfbbe13d36c3320617f05bc7f9a860f16c8b10c787455a01ca7bcca3469858aae4e369bc994ab64967f1fd20f";
+        let signature = "80361ef8ca66108d1fb68ac81970cc9f7315ca6b1dea0bc493059603faffc8bcdcc7644b2ec55b8e48fe613b30e9b534000ef9e1b626f9f5bdf9519e7b7cef04";
         let publickey = "8496d3d932986b43bb64b5d5c7548d5c97a73aebf4301447f3746680b2114ae1";
 
         let object_id = SuiAddress::from_str(
@@ -330,7 +329,7 @@ impl AnonymousClient {
     }
     async fn test_recover_array_with_signature(&self, share1: String, share2: String) -> Result<Vec<u64>, serde_json::error::Error> {
         // test restore 20
-        let signature = "724f9ae6ae54c249d77b9c9589a289a4ffb74358f888624602f89baf2e779460faefe09cb70bdf5e6730f16b7317893baa5b99b1d811842237e60103c4106f04";
+        let signature = "be916feb774aa5ca80e72db8d9952003608adec00604108c18fbcb205095ab2e9ede1b032c6c6ac1bdc3110d425e64f977e313e4b3b57d81f6066bfe227e6f06";
         let publickey = "8496d3d932986b43bb64b5d5c7548d5c97a73aebf4301447f3746680b2114ae1";
 
         let object_id = SuiAddress::from_str(
