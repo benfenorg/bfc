@@ -221,6 +221,18 @@ impl CoinReadApiServer for CoinReadApi {
 
     #[instrument(skip(self))]
     async fn get_anonyment_coin_metadata(&self, coin_type: String) -> RpcResult<Option<SuiCoinMetadata>> {
+        if coin_type.eq("0x2::abfc::ABFC") {
+            let abfc_metadata = SuiCoinMetadata {
+                decimals: 9,
+                name: "ABFC".to_string(),
+                symbol: "ABfc".to_string(),
+                description: "".to_string(),
+                icon_url: None,
+                id: None,
+            };
+            return Ok(Some(abfc_metadata));
+        }
+
         with_tracing!(async move {
             let coin_struct = parse_to_struct_tag(&coin_type)?;
             let metadata_object = self
