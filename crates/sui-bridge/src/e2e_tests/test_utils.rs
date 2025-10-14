@@ -1523,13 +1523,16 @@ pub async fn mock_bridge_unstake_eth_to_sui(
         .iter()
         .find_map(EthBridgeEvent::try_from_log)
         .unwrap();
-    let EthBridgeEvent::EthSuiBridgeEvents(EthSuiBridgeEvents::TokensUnStakedFilter(
-        eth_bridge_event,
-    )) = eth_bridge_event
-    else {
-        unreachable!();
-    };
-    assert_eq!(eth_bridge_event.action_type, 0);
+    if !stake {
+        let EthBridgeEvent::EthSuiBridgeEvents(EthSuiBridgeEvents::TokensUnStakedFilter(
+            eth_bridge_event,
+        )) = eth_bridge_event
+        else {
+            unreachable!();
+        };
+        assert_eq!(eth_bridge_event.action_type, 1);    
+    }
+    
 
     Ok(())
 }

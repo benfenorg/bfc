@@ -44,10 +44,6 @@ async fn test_unstake_from_eth_to_sui() {
         .await
         .unwrap();
 
-    let sui_address = bridge_test_cluster.sui_user_address();
-    let amount = 42;
-    let sui_amount = amount * 100_000_000;
-
     mock_bridge_unstake_eth_to_sui(&bridge_test_cluster, false).await.unwrap();
 }
 
