@@ -257,6 +257,7 @@ where
                 log_wrapper.logs.len(),
                 log_wrapper.fast_path_selector
             );
+            info!("bbking110 Received Eth events: {:?}", log_wrapper.logs);
             metrics
                 .eth_watcher_received_events
                 .inc_by(log_wrapper.logs.len() as u64);

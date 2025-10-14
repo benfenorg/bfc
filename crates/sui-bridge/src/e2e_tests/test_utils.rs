@@ -1512,6 +1512,9 @@ pub async fn mock_bridge_unstake_eth_to_sui(
     stake:bool,
 ) -> Result<(), anyhow::Error> {
     info!("Mocking defi stake/unstake eth to sui");
+    let sui_address = bridge_test_cluster.sui_user_address();
+    let sui_chain_id = bridge_test_cluster.sui_chain_id();
+    let eth_chain_id = bridge_test_cluster.eth_chain_id();
     let (eth_signer, eth_address) = bridge_test_cluster
         .get_eth_signer_and_address()
         .await
@@ -1531,10 +1534,19 @@ pub async fn mock_bridge_unstake_eth_to_sui(
             unreachable!();
         };
         assert_eq!(eth_bridge_event.action_type, 1);    
+        wait_for_defi_transfer_action_status(
+            bridge_test_cluster.bridge_client(),
+            eth_chain_id,
+            eth_bridge_event.nonce,
+            BridgeActionStatus::Claimed,
+        )
+        .await
+        .tap_ok(|_| {
+            info!("Eth to Sui bridge defi unstaked claimed");
+        })
+    }else{
+        Ok(())
     }
-    
-
-    Ok(())
 }
 
 pub async fn initiate_bridge_eth_to_sui(
@@ -1781,6 +1793,47 @@ pub async fn initiate_bridge_sui_to_eth(
 }
 
 async fn wait_for_transfer_action_status(
+    sui_bridge_client: &SuiBridgeClient,
+    chain_id: BridgeChainId,
+    nonce: u64,
+    status: BridgeActionStatus,
+) -> Result<(), anyhow::Error> {
+    // Wait for the bridge action to be approved
+    let now = std::time::Instant::now();
+    info!(
+        "Waiting for onchain status {:?}. chain: {:?}, nonce: {nonce}",
+        status, chain_id as u8
+    );
+    loop {
+        let timer = std::time::Instant::now();
+        let res = sui_bridge_client
+            .get_token_transfer_action_onchain_status_until_success(chain_id as u8, nonce)
+            .await;
+        info!(
+            "get_token_transfer_action_onchain_status_until_success took {:?}, status: {:?}",
+            timer.elapsed(),
+            res
+        );
+
+        if res == status {
+            info!(
+                "detected on chain status {:?}. chain: {:?}, nonce: {nonce}",
+                status, chain_id as u8
+            );
+            return Ok(());
+        }
+        if now.elapsed().as_secs() > 300 {
+            return Err(anyhow!(
+                "Timeout waiting for token transfer action to be {:?}. chain_id: {chain_id:?}, nonce: {nonce}. Time elapsed: {:?}",
+                status,
+                now.elapsed(),
+            ));
+        }
+        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+    }
+}
+
+async fn wait_for_defi_transfer_action_status(
     sui_bridge_client: &SuiBridgeClient,
     chain_id: BridgeChainId,
     nonce: u64,

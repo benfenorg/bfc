@@ -297,6 +297,21 @@ impl SuiClientInner for SuiMockClient {
             .unwrap_or(BridgeActionStatus::Pending))
     }
 
+    async fn get_defi_transfer_action_onchain_status(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> Result<BridgeActionStatus, BridgeError> {
+        Ok(self
+            .onchain_status
+            .lock()
+            .unwrap()
+            .get(&(source_chain_id, seq_number))
+            .cloned()
+            .unwrap_or(BridgeActionStatus::Pending))
+    }
+
     async fn get_eth_to_sui_limit(
         &self,
         _bridge_object_arg: ObjectArg,
