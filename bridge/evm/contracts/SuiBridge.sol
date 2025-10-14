@@ -161,7 +161,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 100,
                 11,
                 101,
-                bytes("0x0000000000000000000000000000000000000000"),
+                bytes("D37BD588C4E12BFBBCD791DCBD6B44DAFDF26A076677BF26AC2516CB6DB567F6"),
                 address(0),
                 0,
                 50000000,
@@ -177,7 +177,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 100,
                 2,
                 101,
-                bytes("0x0000000000000000000000000000000000000000"),
+                bytes("D37BD588C4E12BFBBCD791DCBD6B44DAFDF26A076677BF26AC2516CB6DB567F6"),
                 address(0),
                 50000000, // aave redeem token (usdc/usdt)
                 50000000, //lp token
