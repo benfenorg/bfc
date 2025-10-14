@@ -173,18 +173,18 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         }else if (actionType==1){
             //withdraw
             emit TokensUnStaked(
-                11,
-                100,
-                2,
-                101,
-                bytes("D37BD588C4E12BFBBCD791DCBD6B44DAFDF26A076677BF26AC2516CB6DB567F6"),
-                address(0),
+                11, // source chain id
+                100, // nonce
+                2, // destination chain id
+                101, // protocol token id
+                abi.encodePacked(hex"D37BD588C4E12BFBBCD791DCBD6B44DAFDF26A076677BF26AC2516CB6DB567F6"), // recipient address
+                0x1234567890123456789012345678901234567890, // sender address
                 50000000, // aave redeem token (usdc/usdt)
-                50000000, //lp token
-                0,
-                1,
-                3,
-                1
+                50000000, // lp token
+                0, // protocol type
+                1, // protocol version
+                3, // action type
+                1 // original seq num
             );
         }
 
