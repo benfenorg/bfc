@@ -2114,6 +2114,27 @@ module bridge::bridge {
         record.verified_signatures
     }
 
+    #[allow(unused_function)]
+    fun get_defi_transfer_out_action_signatures(
+        bridge: &Bridge,
+        source_chain: u8,
+        bridge_seq_num: u64,
+    ): Option<vector<vector<u8>>> {
+        let inner = load_inner(bridge);
+        let key = message::create_key(
+            source_chain,
+            message_types::defi(),
+            bridge_seq_num
+        );
+
+        if (!inner.token_transfer_records.contains(key)) {
+            return option::none()
+        };
+
+        let record = &inner.token_transfer_records[key];
+        record.verified_signatures
+    }
+
     //////////////////////////////////////////////////////
     // Internal functions
     //
@@ -2771,6 +2792,50 @@ module bridge::bridge {
 
     #[allow(unused_function)]
     fun get_parsed_token_transfer_message_v2(
+        bridge: &Bridge,
+        source_chain: u8,
+        bridge_seq_num: u64,
+    ): Option<ParsedTokenTransferMessageV2> {
+        let inner = load_inner(bridge);
+        let key = message::create_key(
+            source_chain,
+            message_types::token(),
+            bridge_seq_num
+        );
+
+        if (!inner.token_transfer_records.contains(key)) {
+            return option::none()
+        };
+
+        let record = &inner.token_transfer_records[key];
+        let message = &record.message;
+        option::some(to_parsed_token_transfer_message_v2(message))
+    }
+
+    #[allow(unused_function)]
+    fun get_parsed_defi_transfer_out_message_v2(
+        bridge: &Bridge,
+        source_chain: u8,
+        bridge_seq_num: u64,
+    ): Option<ParsedTokenTransferMessage> {
+        let inner = load_inner(bridge);
+        let key = message::create_key(
+            source_chain,
+            message_types::defi(),
+            bridge_seq_num
+        );
+
+        if (!inner.token_transfer_records.contains(key)) {
+            return option::none()
+        };
+
+        let record = &inner.token_transfer_records[key];
+        let message = &record.message;
+        option::some(to_parsed_token_transfer_message_v2(message))
+    }
+
+    #[allow(unused_function)]
+    fun get_parsed_defi_transfer_message(
         bridge: &Bridge,
         source_chain: u8,
         bridge_seq_num: u64,

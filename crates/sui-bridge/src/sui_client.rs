@@ -21,7 +21,7 @@ use sui_json_rpc_types::{
 use sui_sdk::{SuiClient as SuiSdkClient, SuiClientBuilder};
 use sui_types::base_types::ObjectRef;
 use sui_types::base_types::SequenceNumber;
-use sui_types::bridge::BridgeSummary;
+use sui_types::bridge::{BridgeSummary, MoveTypeParsedDefiTransferOutMessage};
 use sui_types::bridge::BridgeTreasurySummary;
 use sui_types::bridge::MoveTypeCommitteeMember;
 use sui_types::bridge::MoveTypeParsedTokenTransferMessageV2;
@@ -53,7 +53,7 @@ use crate::error::{BridgeError, BridgeResult};
 use crate::events::SuiBridgeEvent;
 use crate::metrics::BridgeMetrics;
 use crate::retry_with_max_elapsed_time;
-use crate::types::BridgeActionStatus;
+use crate::types::{BridgeActionStatus, ParsedDefiTransferOutMessage};
 use crate::types::ParsedTokenTransferMessageV2;
 use crate::types::{BridgeAction, BridgeAuthority, BridgeCommittee};
 
@@ -494,6 +494,35 @@ where
         }
     }
 
+    pub async fn get_defi_transfer_out_action_onchain_signatures_until_success(
+        &self,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> Option<Vec<Vec<u8>>> {
+        loop {
+            let bridge_object_arg = self.get_mutable_bridge_object_arg_must_succeed().await;
+            let Ok(Ok(sigs)) = retry_with_max_elapsed_time!(
+                self.inner.get_defi_transfer_out_action_onchain_signatures(
+                    bridge_object_arg,
+                    source_chain_id,
+                    seq_number
+                ),
+                Duration::from_secs(30)
+            ) else {
+                self.bridge_metrics
+                    .sui_rpc_errors
+                    .with_label_values(&["get_defi_transfer_out_action_onchain_signatures"])
+                    .inc();
+                error!(
+                    source_chain_id,
+                    seq_number, "Failed to get defi transfer out action onchain signatures"
+                );
+                continue;
+            };
+            return sigs;
+        }
+    }
+
     pub async fn get_parsed_token_transfer_message(
         &self,
         source_chain_id: u8,
@@ -506,6 +535,22 @@ where
             .await?;
         Ok(match message {
             Some(payload) => Some(ParsedTokenTransferMessageV2::try_from(payload)?),
+            None => None,
+        })
+    }
+
+    pub async fn get_parsed_defi_transfer_out_message(
+        &self,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> BridgeResult<Option<ParsedDefiTransferOutMessage>> {
+        let bridge_object_arg = self.get_mutable_bridge_object_arg_must_succeed().await;
+        let message = self
+            .inner
+            .get_parsed_defi_transfer_out_message(bridge_object_arg, source_chain_id, seq_number)
+            .await?;
+        Ok(match message {
+            Some(payload) => Some(ParsedDefiTransferOutMessage::try_from(payload)?),
             None => None,
         })
     }
@@ -615,12 +660,26 @@ pub trait SuiClientInner: Send + Sync {
         seq_number: u64,
     ) -> Result<Option<Vec<Vec<u8>>>, BridgeError>;
 
+    async fn get_defi_transfer_out_action_onchain_signatures(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> Result<Option<Vec<Vec<u8>>>, BridgeError>;
+
     async fn get_parsed_token_transfer_message(
         &self,
         bridge_object_arg: ObjectArg,
         source_chain_id: u8,
         seq_number: u64,
     ) -> Result<Option<MoveTypeParsedTokenTransferMessageV2>, BridgeError>;
+
+    async fn get_parsed_defi_transfer_out_message(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> Result<Option<MoveTypeParsedDefiTransferOutMessage>, BridgeError>;
 
     async fn get_gas_data_panic_if_not_gas(
         &self,
@@ -843,6 +902,22 @@ impl SuiClientInner for SuiSdkClient {
         .await
     }
 
+    async fn get_defi_transfer_out_action_onchain_signatures(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> Result<Option<Vec<Vec<u8>>>, BridgeError> {
+        dev_inspect_bridge::<Option<Vec<Vec<u8>>>>(
+            self,
+            bridge_object_arg,
+            source_chain_id,
+            seq_number,
+            "get_defi_transfer_out_action_signatures",
+        )
+        .await
+    }
+
     async fn execute_transaction_block_with_effects(
         &self,
         tx: Transaction,
@@ -869,6 +944,22 @@ impl SuiClientInner for SuiSdkClient {
             source_chain_id,
             seq_number,
             "get_parsed_token_transfer_message_v2",
+        )
+        .await
+    }
+
+    async fn get_parsed_defi_transfer_out_message(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> Result<Option<MoveTypeParsedDefiTransferOutMessage>, BridgeError> {
+        dev_inspect_bridge::<Option<MoveTypeParsedDefiTransferOutMessage>>(
+            self,
+            bridge_object_arg,
+            source_chain_id,
+            seq_number,
+            "get_parsed_defi_transfer_out_message",
         )
         .await
     }

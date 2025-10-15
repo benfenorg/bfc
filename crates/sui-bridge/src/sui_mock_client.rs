@@ -371,6 +371,15 @@ impl SuiClientInner for SuiMockClient {
         unimplemented!()
     }
 
+    async fn get_defi_transfer_out_action_onchain_signatures(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _source_chain_id: u8,
+        _seq_number: u64,
+    ) -> Result<Option<Vec<Vec<u8>>>, BridgeError> {
+        unimplemented!()
+    }
+
     async fn get_parsed_token_transfer_message(
         &self,
         _bridge_object_arg: ObjectArg,

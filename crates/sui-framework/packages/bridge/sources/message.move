@@ -22,6 +22,7 @@ module bridge::message {
     // const EInvalidPayloadLength: u64 = 5;
     const EMustBeTokenMessage: u64 = 6;
     const EInvalidOperationType: u64 = 7;
+    const EMustBeDefiMessage: u64 = 8;
     // Emergency Op types
     const PAUSE: u8 = 0;
     const UNPAUSE: u8 = 1;
@@ -225,6 +226,14 @@ module bridge::message {
         source_chain: u8,
         payload: vector<u8>,
         parsed_payload: TokenTransferInPayload,
+    }
+
+    public struct ParsedDefiTransferOutMessage has drop {
+        message_version: u8,
+        seq_num: u64,
+        source_chain: u8,
+        payload: vector<u8>,
+        parsed_payload: DefiTransferOutPayload,
     }
 
     public struct  AddTokenOnTokenList has drop {
@@ -1877,6 +1886,20 @@ module bridge::message {
         assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
         let payload = message.extract_token_bridge_in_payload();
         ParsedTokenTransferInMessage {
+            message_version: message.message_version(),
+            seq_num: message.seq_num(),
+            source_chain: message.source_chain(),
+            payload: message.payload(),
+            parsed_payload: payload,
+        }
+    }
+
+    public fun to_parsed_defi_transfer_out_message(
+        message: &BridgeMessage,
+    ): ParsedDefiTransferOutMessage {
+        assert!(message.message_type() == message_types::defi(), EMustBeDefiMessage);
+        let payload = message.extract_defi_transfer_out_payload();
+        ParsedDefiTransferOutMessage {
             message_version: message.message_version(),
             seq_num: message.seq_num(),
             source_chain: message.source_chain(),

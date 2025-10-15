@@ -10,10 +10,7 @@ use crate::encoding::{
 use crate::error::{BridgeError, BridgeResult};
 use crate::fast_path::FastPathSelector;
 use crate::types::{
-    AddTokensOnEvmAction, AssetPriceUpdateAction, BlocklistCommitteeAction, BridgeAction,
-    BridgeActionType, EmergencyAction, EthLog, EthToSuiBridgeAction, EvmContractUpgradeAction,
-    LimitUpdateAction, SuiToEthBridgeAction,UpdateInvestAddressAction,AddLpTokenIdAction,
-    EthToSuiDefiBridgeAction,
+    AddLpTokenIdAction, AddTokensOnEvmAction, AssetPriceUpdateAction, BlocklistCommitteeAction, BridgeAction, BridgeActionType, EmergencyAction, EthLog, EthToSuiBridgeAction, EthToSuiDefiBridgeAction, EvmContractUpgradeAction, LimitUpdateAction, ParsedDefiTransferOutMessage, SuiToEthBridgeAction, UpdateInvestAddressAction
 };
 use crate::types::{
     ParsedTokenTransferMessage, ParsedTokenTransferMessageV2, SingleTransferLimitUpdateAction,
@@ -409,6 +406,18 @@ impl From<ParsedTokenTransferMessageV2> for eth_sui_bridge::Message {
     fn from(parsed_message: ParsedTokenTransferMessageV2) -> Self {
         eth_sui_bridge::Message {
             message_type: BridgeActionType::TokenTransfer as u8,
+            version: parsed_message.message_version,
+            nonce: parsed_message.seq_num,
+            chain_id: parsed_message.source_chain as u8,
+            payload: parsed_message.payload.into(),
+        }
+    }
+}
+
+impl From<ParsedDefiTransferOutMessage> for eth_sui_bridge::Message {
+    fn from(parsed_message: ParsedDefiTransferOutMessage) -> Self {
+        eth_sui_bridge::Message {
+            message_type: BridgeActionType::DefiTransferOut as u8,
             version: parsed_message.message_version,
             nonce: parsed_message.seq_num,
             chain_id: parsed_message.source_chain as u8,

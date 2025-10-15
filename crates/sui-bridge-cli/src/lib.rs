@@ -1172,6 +1172,57 @@ async fn claim_on_eth(
     Ok(())
 }
 
+async fn claim_defi_on_eth(
+    seq_num: u64,
+    config: &LoadedBridgeCliConfig,
+    sui_bridge_client: SuiBridgeClient,
+    dry_run: bool,
+) -> BridgeResult<()> {
+    let sui_chain_id = sui_bridge_client.get_bridge_summary().await?.chain_id;
+    let parsed_message = sui_bridge_client
+        .get_parsed_defi_transfer_out_message(sui_chain_id, seq_num)
+        .await?;
+    if parsed_message.is_none() {
+        println!("No record found for seq_num: {seq_num}, chain id: {sui_chain_id}");
+        return Ok(());
+    }
+    let parsed_message = parsed_message.unwrap();
+    let sigs = sui_bridge_client
+        .get_defi_transfer_out_action_onchain_signatures_until_success(sui_chain_id, seq_num)
+        .await;
+    if sigs.is_none() {
+        println!("No signatures found for seq_num: {seq_num}, chain id: {sui_chain_id}");
+        return Ok(());
+    }
+    let signatures = sigs
+        .unwrap()
+        .into_iter()
+        .map(|sig: Vec<u8>| ethers::types::Bytes::from(sig))
+        .collect::<Vec<_>>();
+
+    let eth_sui_bridge = EthSuiBridge::new(
+        config.eth_bridge_proxy_address,
+        Arc::new(config.eth_signer().clone()),
+    );
+    let message = eth_sui_bridge::Message::from(parsed_message);
+    let tx = eth_sui_bridge.invest_bridged_tokens_with_signatures(signatures, message);
+    if dry_run {
+        let tx = tx.tx;
+        let resp = config.eth_signer.estimate_gas(&tx, None).await;
+        println!(
+            "Sui to Eth bridge transfer claim dry run result: {:?}",
+            resp
+        );
+    } else {
+        let eth_claim_tx_receipt = tx.send().await.unwrap().await.unwrap().unwrap();
+        println!(
+            "Sui to Eth bridge transfer claimed: {:?}",
+            eth_claim_tx_receipt
+        );
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use ethers::abi::FunctionExt;

@@ -823,6 +823,20 @@ pub struct MoveTypeTokenTransferPayloadV2 {
     pub event_idx: u16,
 }
 
+/// Rust version of the Move message::DefiTransferOutPayload type.
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct MoveTypeDefiTransferOutPayload {
+    pub sender_address: Vec<u8>,
+    pub target_chain: u8,
+    pub amount: u64,
+    pub tx_hash: Vec<u8>,
+    pub event_idx: u16,
+    pub protocol_type: u64,
+    pub protocol_version: u64,
+    pub protocol_token_id: u64,
+    pub action_type: u8,
+}
+
 /// Rust version of the Move message::ParsedTokenTransferMessage type.
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct MoveTypeParsedTokenTransferMessage {
@@ -841,4 +855,14 @@ pub struct MoveTypeParsedTokenTransferMessageV2 {
     pub source_chain: u8,
     pub payload: Vec<u8>,
     pub parsed_payload: MoveTypeTokenTransferPayloadV2,
+}
+
+/// Rust version of the Move message::ParsedDefiTransferOutMessage type.
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct MoveTypeParsedDefiTransferOutMessage {
+    pub message_version: u8,
+    pub seq_num: u64,
+    pub source_chain: u8,
+    pub payload: Vec<u8>,
+    pub parsed_payload: MoveTypeDefiTransferOutPayload,
 }
