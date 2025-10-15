@@ -49,7 +49,7 @@ pub fn build_sui_transaction(
             client_address,
             gas_object_ref,
             action,
-            false,
+            true,
             bridge_object_arg,
             admin_cap_arg,
             sui_token_type_tags,
@@ -725,7 +725,8 @@ fn build_defi_bridge_approve_transaction(
     let protocol_type = builder.pure(protocol_type.unwrap()).unwrap();
     let protocol_version = builder.pure(protocol_version.unwrap()).unwrap();
     let protocol_token_id_arg = builder.pure(protocol_token_id.unwrap()).unwrap();
-    let action_type = builder.pure(action_type.unwrap()).unwrap();
+    let action_type = action_type.unwrap();
+    let action_type_arg = builder.pure(action_type).unwrap();
     let lp_token_amount = builder.pure(lp_token_amount).unwrap();
     let original_seq_num = builder.pure(original_seq_num).unwrap();
 
@@ -746,7 +747,7 @@ fn build_defi_bridge_approve_transaction(
                 protocol_type,
                 protocol_version,
                 protocol_token_id_arg,
-                action_type,
+                action_type_arg,
             ],
         ),
         "create_defi_transfer_in_message" => {
@@ -769,7 +770,7 @@ fn build_defi_bridge_approve_transaction(
                     protocol_version,
                     protocol_token_id_arg,
                     original_seq_num,
-                    action_type,
+                    action_type_arg,
                     lp_token_amount,
                 ],
             )
@@ -799,7 +800,8 @@ fn build_defi_bridge_approve_transaction(
         vec![arg_bridge, arg_msg, arg_signatures],
     );
 
-    if claim {
+    //claim for unstake
+    if claim && action_type == 1 {
         let admin_cap = builder.obj(admin_cap_arg.unwrap()).unwrap();
         let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
         let protocol_token_id = protocol_token_id.unwrap_or(0);
