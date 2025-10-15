@@ -723,7 +723,8 @@ fn build_defi_bridge_approve_transaction(
     let action_type_arg = builder.pure(action_type).unwrap();
     let lp_token_amount = builder.pure(lp_token_amount).unwrap();
     let original_seq_num = builder.pure(original_seq_num).unwrap();
-    let sui_address = builder.pure(sui_address.unwrap()).map_err(|e| {
+    let sui_address = sui_address.unwrap();
+    let sui_address = builder.pure(sui_address.clone()).map_err(|e| {
         BridgeError::BridgeSerializationError(format!(
             "Failed to serialize sender: {:?}. Err: {:?}",
             sui_address, e
