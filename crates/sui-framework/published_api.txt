@@ -7141,6 +7141,9 @@ get_cross_in_fee_amount
 get_token_transfer_action_status
 	fun
 	0xb::bridge
+get_defi_transfer_action_status
+	fun
+	0xb::bridge
 get_external_token_transfer_action_status
 	fun
 	0xb::bridge
@@ -7172,6 +7175,9 @@ check_fast_path_limit
 	fun
 	0xb::bridge
 claim_stable_token_internal
+	fun
+	0xb::bridge
+adjust_amount_busd_out
 	fun
 	0xb::bridge
 adjust_amount_usdc_usdt_in

@@ -178,11 +178,11 @@ impl BridgeMessageEncoding for SuiToEthDefiBridgeAction {
         //add protocol type
         bytes.extend_from_slice(&e.protocol_type.to_be_bytes());
 
-        //add protocol token id
-        bytes.extend_from_slice(&e.protocol_token_id.to_be_bytes());
-
         //add protocol version
         bytes.extend_from_slice(&e.protocol_version.to_be_bytes());
+
+        //add protocol token id
+        bytes.extend_from_slice(&e.protocol_token_id.to_be_bytes());
 
         //add action type
         bytes.push(e.action_type as u8);

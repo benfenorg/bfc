@@ -561,31 +561,6 @@ fn build_token_bridge_approve_transaction(
                 ],
             )
         }
-        "create_defi_transfer_out_message" => {
-            let protocol_type = builder.pure(protocol_type).unwrap();
-            let protocol_version = builder.pure(protocol_version).unwrap();
-            let action_type = builder.pure(action_type).unwrap();
-            let protocol_token_id = builder.pure(protocol_token_id).unwrap();
-            builder.programmable_move_call(
-                BRIDGE_PACKAGE_ID,
-                ident_str!("message").to_owned(),
-                ident_str!(func_name_message).to_owned(),
-                vec![],
-                vec![
-                    source_chain,
-                    seq_num,
-                    sender,
-                    target_chain,
-                    amount,
-                    tx_hash,
-                    event_idx,
-                    protocol_type,
-                    protocol_version,
-                    protocol_token_id,
-                    action_type,
-                ],
-            )
-        }
         _ => unreachable!(),
     };
 
@@ -796,45 +771,6 @@ fn build_defi_bridge_approve_transaction(
                     original_seq_num,
                     action_type,
                     lp_token_amount,
-                ],
-            )
-        }
-        "create_token_bridge_in_message" => {
-            let target_address_value = target_address.as_ref().unwrap().clone();
-            let target = builder.pure(target_address_value.clone()).map_err(|e| {
-                BridgeError::BridgeSerializationError(format!(
-                    "Failed to serialize target: {:?}. Err: {:?}",
-                    target_address_value, e
-                ))
-            })?;
-            let _protocol_type = builder.pure(protocol_type).unwrap();
-            let _protocol_version = builder.pure(protocol_version).unwrap();
-            let _action_type = builder.pure(action_type).unwrap();
-            let _protocol_token_id = builder.pure(protocol_token_id).unwrap();
-            let _lp_token_amount = builder.pure(lp_token_amount).unwrap();
-            let _original_seq_num = builder.pure(original_seq_num).unwrap();
-            let _fast_path_selector = builder.pure(fast_path_selector).unwrap();
-            builder.programmable_move_call(
-                BRIDGE_PACKAGE_ID,
-                ident_str!("message").to_owned(),
-                ident_str!(func_name_message).to_owned(),
-                vec![],
-                vec![
-                    source_chain,
-                    seq_num,
-                    sender,
-                    target_chain,
-                    target,
-                    amount,
-                    tx_hash,
-                    event_idx,
-                    _fast_path_selector,
-                    _protocol_type,
-                    _protocol_version,
-                    protocol_token_id_arg,
-                    _original_seq_num,
-                    _action_type,
-                    _lp_token_amount,
                 ],
             )
         }
@@ -2817,7 +2753,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
-    async fn test_build_sui_transaction_for_eth_to_sui_defi_bridge_transfer() {
+    async fn test_bridge_defi_build_sui_transaction_for_eth_to_sui_defi_bridge_transfer() {
         telemetry_subscribers::init_for_testing();
         let num_valdiator = 2;
         let mut bridge_keys = vec![];

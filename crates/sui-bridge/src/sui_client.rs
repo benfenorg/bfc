@@ -378,6 +378,35 @@ where
         }
     }
 
+    pub async fn get_defi_transfer_action_status_until_success(
+        &self,
+        source_chain: u8,
+        seq_number: u64,
+    ) -> BridgeActionStatus {
+        loop {
+            let bridge_object_arg = self.get_mutable_bridge_object_arg_must_succeed().await;
+            let Ok(Ok(status)) = retry_with_max_elapsed_time!(
+                self.inner.get_defi_transfer_action_status(
+                    bridge_object_arg,
+                    source_chain,
+                    seq_number
+                ),
+                Duration::from_secs(30)
+            ) else {
+                self.bridge_metrics
+                    .sui_rpc_errors
+                    .with_label_values(&["get_defi_transfer_action_onchain_status"])
+                    .inc();
+                error!(
+                    source_chain,
+                    seq_number, "Failed to get defi transfer action onchain status"
+                );
+                continue;
+            };
+            return status;
+        }
+    }
+
     // TODO: this function is very slow (seconds) in tests, we need to optimize it
     pub async fn get_send_back_onchain_status_until_success(
         &self,
@@ -527,6 +556,13 @@ pub trait SuiClientInner: Send + Sync {
         target_address: &Vec<u8>,
         amount: u64,
         tx_hash: String,
+    ) -> Result<BridgeActionStatus, BridgeError>;
+
+    async fn get_defi_transfer_action_status(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain: u8,
+        seq_number: u64,
     ) -> Result<BridgeActionStatus, BridgeError>;
 
     async fn get_send_back_onchain_status(
@@ -700,6 +736,23 @@ impl SuiClientInner for SuiSdkClient {
             amount,
             tx_hash,
             "get_external_token_transfer_action_status",
+        )
+        .await
+        .and_then(|status_byte| BridgeActionStatus::try_from(status_byte).map_err(Into::into))
+    }
+
+    async fn get_defi_transfer_action_status(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain: u8,
+        seq_number: u64,
+    ) -> Result<BridgeActionStatus, BridgeError> {
+        dev_inspect_bridge::<u8>(
+            self,
+            bridge_object_arg,
+            source_chain,
+            seq_number,
+            "get_defi_transfer_action_status",
         )
         .await
         .and_then(|status_byte| BridgeActionStatus::try_from(status_byte).map_err(Into::into))

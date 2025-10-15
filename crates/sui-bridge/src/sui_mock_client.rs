@@ -330,6 +330,15 @@ impl SuiClientInner for SuiMockClient {
         Ok(BridgeActionStatus::NotFound)
     }
 
+    async fn get_defi_transfer_action_status(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _source_chain: u8,
+        _seq_number: u64,
+    ) -> Result<BridgeActionStatus, BridgeError> {
+        Ok(BridgeActionStatus::NotFound)
+    }
+
     async fn get_send_back_onchain_status(
         &self,
         _bridge_object_arg: ObjectArg,

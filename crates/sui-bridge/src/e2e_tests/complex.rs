@@ -4,7 +4,7 @@
 use crate::client::bridge_authority_aggregator::BridgeAuthorityAggregator;
 use crate::e2e_tests::{auth, stable};
 use crate::e2e_tests::test_utils::{
-    initiate_bridge_eth_to_sui, initiate_bridge_sui_to_eth, BridgeTestClusterBuilder,
+    initiate_bridge_eth_to_sui, initiate_bridge_sui_to_eth, BridgeTestCluster, BridgeTestClusterBuilder,
 };
 use crate::sui_transaction_builder::build_sui_transaction;
 use crate::types::{BridgeAction, EmergencyAction};
@@ -12,14 +12,16 @@ use crate::types::{BridgeActionStatus, EmergencyActionType};
 use ethers::types::Address as EthAddress;
 use sui_types::BRIDGE_PACKAGE_ID;
 use std::sync::Arc;
+use std::collections::HashSet;
 use sui_json_rpc_types::{SuiExecutionStatus, TransactionBlockBytes};
 use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
 use move_core_types::ident_str;
 use move_core_types::language_storage::TypeTag;
 use sui_types::bridge::{BridgeChainId, TOKEN_ID_ETH};
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
-use sui_types::transaction::{ObjectArg, TransactionData};
+use sui_types::transaction::{CallArg, ObjectArg, TransactionData, TransactionKind};
 use sui_types::{SUI_CLOCK_OBJECT_ID, SUI_CLOCK_OBJECT_SHARED_VERSION};
+use sui_types::{BFC_SYSTEM_STATE_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION};
 use tracing::info;
 use std::str::FromStr;
 use std::time::Duration;
@@ -152,10 +154,10 @@ async fn test_sui_bridge_paused() {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 16)]
-async fn test_bridge_defi_stake_move_function_e2e() -> Result<(), anyhow::Error> {    
+async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     // Setup bridge test env
-    let bridge_test_cluster = BridgeTestClusterBuilder::new()
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
     // .with_eth_env(true)
     .with_bridge_cluster(true)
     .with_num_validators(4)
@@ -163,8 +165,7 @@ async fn test_bridge_defi_stake_move_function_e2e() -> Result<(), anyhow::Error>
     .await;
 
     let address = bridge_test_cluster.sui_user_address();
-    let test_cluster = &bridge_test_cluster.test_cluster.inner;
-    let http_client = test_cluster.rpc_client().clone();
+    let http_client = bridge_test_cluster.test_cluster.inner.rpc_client().clone();
 
     // auth::auth_setup(&mut test_cluster, &mut http_client, address, "MINT-BUSD-right_key").await?;
     // info!("Setting up authentication for BUSD minting...");
@@ -212,8 +213,8 @@ async fn test_bridge_defi_stake_move_function_e2e() -> Result<(), anyhow::Error>
     };
 
     // Step 5: Setup DeFi staking parameters
-    let target_chain = 1u8; // ETH chain
-    let protocol_type = 1u64; // Compound protocol
+    let target_chain = 12u8; // ETH Custom chain (matches defi_protocols::initial_defi_protocol)
+    let protocol_type = 2u64; // Compound protocol type
     let protocol_version = 1u64; // Version 1
     let protocol_token_id = 4u64; // USDT token ID for DeFi protocol
     let stake_amount = busd_amount / 2; // Use half of the BUSD for staking
@@ -229,10 +230,10 @@ async fn test_bridge_defi_stake_move_function_e2e() -> Result<(), anyhow::Error>
     let mut builder = ProgrammableTransactionBuilder::new();
 
     let bridge_arg = builder.obj(bridge_object_arg).unwrap();
-    let clock_arg = builder.obj(ObjectArg::SharedObject {
-        id: SUI_CLOCK_OBJECT_ID,
-        initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-        mutable: false,
+    let bfc_system_state_arg = builder.obj(ObjectArg::SharedObject {
+        id: BFC_SYSTEM_STATE_OBJECT_ID,
+        initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+        mutable: true,
     }).unwrap();
     let busd_arg = builder.obj(ObjectArg::ImmOrOwnedObject(busd_coin.object_ref())).unwrap();
 
@@ -248,7 +249,7 @@ async fn test_bridge_defi_stake_move_function_e2e() -> Result<(), anyhow::Error>
         vec![TypeTag::from_str("0xc8::busd::BUSD").unwrap()],
         vec![
             bridge_arg,
-            clock_arg,
+            bfc_system_state_arg,
             target_chain_arg,
             busd_arg,
             protocol_type_arg,
@@ -257,7 +258,7 @@ async fn test_bridge_defi_stake_move_function_e2e() -> Result<(), anyhow::Error>
         ],
     );
     let pt = builder.finish();
-    let gas = test_cluster
+    let gas = bridge_test_cluster.test_cluster.inner
         .wallet
         .get_one_gas_object_owned_by_address(address)
         .await
@@ -269,11 +270,11 @@ async fn test_bridge_defi_stake_move_function_e2e() -> Result<(), anyhow::Error>
         vec![gas],
         pt,
         50_000_000_000,
-        test_cluster.get_reference_gas_price().await,
+        bridge_test_cluster.test_cluster.inner.get_reference_gas_price().await,
     );
 
     // Step 7: Sign and execute the DeFi stake transaction
-    let tx = test_cluster.wallet.sign_transaction(&tx_data);
+    let tx = bridge_test_cluster.test_cluster.inner.wallet.sign_transaction(&tx_data);
     let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
 
     println!("Executing DeFi stake transaction...");
@@ -289,26 +290,27 @@ async fn test_bridge_defi_stake_move_function_e2e() -> Result<(), anyhow::Error>
 
     // Step 8: Verify transaction execution
     let effects = tx_response.effects.as_ref().unwrap();
-    match &effects.status() {
+    let defi_stake_succeeded = match effects.status() {
         SuiExecutionStatus::Success => {
-            info!("✅ DeFi stake transaction executed successfully!");
+            true
         },
         SuiExecutionStatus::Failure { error } => {
             error!("❌ DeFi stake transaction failed: {}", error);
-            // For testing purposes, we'll log the failure but continue
-            // In a real implementation, we might want to handle specific error cases
-            info!("Note: This might be expected if bridge infrastructure is not fully set up in test environment");
+            info!("Note: This is expected if DeFi protocol configuration is not initialized in test environment");
+            info!("The test will skip the approve_defi_transfer_out verification");
+            false
         }
-    }
+    };
 
-    println!("Transaction response: {:?}", tx_response);
+    assert!(defi_stake_succeeded, "DeFi stake transaction should succeed");
+    println!("✅ DeFi stake transaction executed successfully!");
 
-    // Step 9: Check for DeFi bridge events (if transaction was successful)
+    //  Check for DeFi bridge events (if transaction was successful)
     if let Some(events) = &tx_response.events {
-        info!("Transaction emitted {} events", events.data.len());
+        println!("Transaction emitted {} events", events.data.len());
 
         for (idx, event) in events.data.iter().enumerate() {
-            info!("Event {}: type={}, sender={:?}", idx, event.type_, event.sender);
+            println!("Event {}: type={}, sender={:?}", idx, event.type_, event.sender);
 
             // Look for DeFi-related events
             if event.type_.address.to_string().contains("bridge") ||
@@ -319,33 +321,85 @@ async fn test_bridge_defi_stake_move_function_e2e() -> Result<(), anyhow::Error>
         }
     }
 
-    // Step 10: Verify final state - check remaining BUSD balance
-    let final_busd_objects = auth::do_get_owned_objects_with_filter(
-        "0x2::coin::Coin<0xc8::busd::BUSD>",
-        &http_client,
-        address
-    ).await?;
 
-    if !final_busd_objects.is_empty() {
-        let final_busd_coin = final_busd_objects.first().unwrap().object().unwrap();
-        let final_balance = auth::get_balance(final_busd_coin);
-        info!("BUSD balance after DeFi stake: {}", final_balance);
+    println!("=== Step 4: Extract DefiTransferOutEvent from transaction ===");
+    let events = tx_response.events.as_ref().expect("Should have events");
+    let mut defi_event = None;
+    let mut event_seq_num = 0u64;
 
-        // In a successful DeFi stake, the BUSD should be consumed/transferred
-        // The exact behavior depends on the Move contract implementation
-    } else {
-        info!("No BUSD coins remaining after DeFi stake operation");
+    for (idx, event) in events.data.iter().enumerate() {
+        println!("Event {}: type={}", idx, event.type_);
+
+        if event.type_.name.as_str() == "DefiTransferOutEvent" {
+            println!("🌉 Found DefiTransferOutEvent!");
+            defi_event = Some(event.clone());
+
+            // Parse event to get seq_num
+            if let Ok(parsed_event) = bcs::from_bytes::<crate::events::MoveDefiTransferOutEvent>(&event.bcs.bytes()) {
+                event_seq_num = parsed_event.seq_num;
+                info!("  - Sequence number: {}", event_seq_num);
+                info!("  - Source chain: {}", parsed_event.source_chain);
+                info!("  - Target chain: {}", parsed_event.target_chain);
+                info!("  - Protocol type: {}", parsed_event.protocol_type);
+                info!("  - Protocol version: {}", parsed_event.protocol_version);
+                info!("  - Protocol token ID: {}", parsed_event.protocol_token_id);
+                info!("  - Amount after fee: {}", parsed_event.amount_after_fee);
+                info!("  - Action type: {}", parsed_event.action_type);
+            }
+            break;
+        }
     }
 
-    // Step 11: Additional verification - ensure system state is consistent
+    assert!(defi_event.is_some(), "DefiTransferOutEvent should be emitted");
+    println!("✅ DefiTransferOutEvent confirmed with seq_num: {}", event_seq_num);
+
+    println!("=== Step 5: Wait for bridge cluster to automatically process DeFi action ===");
+    // Wait for bridge cluster to detect the event, get signatures, and approve
+    println!("Waiting for TokenTransferApproved event...");
+
+    // Give bridge cluster enough time to process the action
+    tokio::time::sleep(Duration::from_secs(15)).await;
+
+    let events = bridge_test_cluster
+        .new_bridge_events(
+            HashSet::from_iter([
+                crate::events::TokenTransferApproved.get().unwrap().clone(),
+            ]),
+            true,
+        )
+        .await;
+
+    assert!(!events.is_empty(), "Should have TokenTransferApproved event");
+    println!("✅ Bridge cluster automatically approved the DeFi transfer");
+
+    println!("=== Step 6: Verify the bridge record was approved ===");
+    // Verify the record has verified signatures now
     tokio::time::sleep(Duration::from_secs(2)).await;
 
-    info!("✅ DeFi stake simtest completed successfully!");
-    info!("📊 Test summary:");
-    info!("  - BUSD minted: {}", busd_amount);
-    info!("  - Initial BUSD balance: {}", busd_balance);
-    info!("  - DeFi stake attempted with protocol_type: {}, protocol_version: {}", protocol_type, protocol_version);
-    info!("  - Transaction status: {:?}", effects.status());
+    // Check that the action status is approved (not pending anymore)
+    // For DeFi messages, we need to use a different query function
+    let status = bridge_test_cluster
+        .bridge_client()
+        .get_defi_transfer_action_status_until_success(
+            bridge_test_cluster.sui_chain_id() as u8,
+            event_seq_num,
+        )
+        .await;
+
+    println!("DeFi transfer action status: {:?}", status);
+    // The status should be Approved (signatures verified) but not Claimed
+    // because this is a Sui->Eth transfer that will be claimed on the Eth side
+    assert_eq!(status, BridgeActionStatus::Approved, "Action should be approved");
+
+    println!("=== Test Summary ===");
+    println!("✅ Successfully completed full DeFi stake integration test:");
+    println!("  1. Minted BUSD tokens");
+    println!("  2. Called defi_stake Move function");
+    println!("  3. Detected DefiTransferOutEvent");
+    println!("  4. Bridge cluster automatically approved the DeFi transfer");
+    println!("  5. Verified action status is Approved");
+    println!("📊 BUSD minted: {}, Staked amount: {}", busd_amount, stake_amount);
+    println!("🎯 DeFi protocol: type={}, version={}, token_id={}", protocol_type, protocol_version, protocol_token_id);
 
     Ok(())
 }

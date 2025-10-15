@@ -1835,7 +1835,7 @@ module bridge::message {
         }else if (message_type == message_types::fast_path_limit_update()) {
             5001
         }else if (message_type == message_types::defi()) {
-            5001
+            3334
         }
         else {
             abort EInvalidMessageType

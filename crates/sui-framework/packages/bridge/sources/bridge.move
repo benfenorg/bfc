@@ -715,7 +715,7 @@ module bridge::bridge {
                 sender_address: address::to_bytes(ctx.sender()),
                 target_chain,
                 amount_before_fee: token_amount,
-                amount_after_fee,
+                amount_after_fee: amount,
                 protocol_type,
                 protocol_version,
                 protocol_token_id: protocol_token_id,
@@ -2008,6 +2008,35 @@ module bridge::bridge {
     }
 
     #[allow(unused_function)]
+    fun get_defi_transfer_action_status(
+        bridge: &Bridge,
+        source_chain: u8,
+        bridge_seq_num: u64,
+    ): u8 {
+        let inner = load_inner(bridge);
+        let key = message::create_key(
+            source_chain,
+            message_types::defi(),
+            bridge_seq_num
+        );
+
+        if (!inner.token_transfer_records.contains(key)) {
+            return TRANSFER_STATUS_NOT_FOUND
+        };
+
+        let record = &inner.token_transfer_records[key];
+        if (record.claimed) {
+            return TRANSFER_STATUS_CLAIMED
+        };
+
+        if (record.verified_signatures.is_some()) {
+            return TRANSFER_STATUS_APPROVED
+        };
+
+        TRANSFER_STATUS_PENDING
+    }
+
+    #[allow(unused_function)]
     fun get_external_token_transfer_action_status(
         bridge: &Bridge,
         source_chain: u8,
@@ -2958,6 +2987,15 @@ module bridge::bridge {
         bridge_seq_num: u64,
     ): u8 {
         bridge.get_token_transfer_action_status(source_chain, bridge_seq_num)
+    }
+
+    #[test_only]
+    public fun test_get_defi_transfer_action_status(
+        bridge: &Bridge,
+        source_chain: u8,
+        bridge_seq_num: u64,
+    ): u8 {
+        bridge.get_defi_transfer_action_status(source_chain, bridge_seq_num)
     }
 
     #[test_only]

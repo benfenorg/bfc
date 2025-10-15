@@ -77,6 +77,7 @@ title: Module `bridge::bridge`
 -  [Function `get_cross_out_fee_amount`](#bridge_bridge_get_cross_out_fee_amount)
 -  [Function `get_cross_in_fee_amount`](#bridge_bridge_get_cross_in_fee_amount)
 -  [Function `get_token_transfer_action_status`](#bridge_bridge_get_token_transfer_action_status)
+-  [Function `get_defi_transfer_action_status`](#bridge_bridge_get_defi_transfer_action_status)
 -  [Function `get_external_token_transfer_action_status`](#bridge_bridge_get_external_token_transfer_action_status)
 -  [Function `get_send_back_status`](#bridge_bridge_get_send_back_status)
 -  [Function `get_token_transfer_action_signatures`](#bridge_bridge_get_token_transfer_action_signatures)
@@ -88,6 +89,7 @@ title: Module `bridge::bridge`
 -  [Function `claim_token_internal`](#bridge_bridge_claim_token_internal)
 -  [Function `check_fast_path_limit`](#bridge_bridge_check_fast_path_limit)
 -  [Function `claim_stable_token_internal`](#bridge_bridge_claim_stable_token_internal)
+-  [Function `adjust_amount_busd_out`](#bridge_bridge_adjust_amount_busd_out)
 -  [Function `adjust_amount_usdc_usdt_in`](#bridge_bridge_adjust_amount_usdc_usdt_in)
 -  [Function `claim_stable_token_for_defi_internal`](#bridge_bridge_claim_stable_token_for_defi_internal)
 -  [Function `execute_emergency_op`](#bridge_bridge_execute_emergency_op)
@@ -2527,6 +2529,7 @@ title: Module `bridge::bridge`
     <b>let</b> defi_info_updated = inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(ctx.sender(), defi_protocol_key);
     <b>let</b> defi_protocol_info = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_get_protocol_info">defi_protocols::get_protocol_info</a>(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain);
     <b>let</b> (_fee, principal) = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_manage_fee">defi_protocols::manage_fee</a>(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain, amount, 0, defi_info_updated.amount, defi_info_updated.lp_token_amount);
+    //check limit
     <b>assert</b>!(defi_protocol_info.limit_unstake_amount() &gt;= principal, <a href="../bridge/bridge.md#bridge_bridge_EDefiLimitError">EDefiLimitError</a>);
     <b>let</b> <a href="../bridge/message.md#bridge_message">message</a> = <a href="../bridge/message.md#bridge_message_create_defi_transfer_out_message">message::create_defi_transfer_out_message</a>(
         inner.chain_id,
@@ -2694,13 +2697,14 @@ title: Module `bridge::bridge`
     <b>let</b> amount_after_fee = token_amount - fee;
     <b>let</b> fee_coin = token.split&lt;T&gt;(fee, ctx);
     <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(bridge_id, fee_coin);
+    <b>let</b> amount = <a href="../bridge/bridge.md#bridge_bridge_adjust_amount_busd_out">adjust_amount_busd_out</a>(target_chain, amount_after_fee);
     <b>let</b> bridge_seq_num = inner.<a href="../bridge/bridge.md#bridge_bridge_get_current_seq_num_and_increment">get_current_seq_num_and_increment</a>(<a href="../bridge/message_types.md#bridge_message_types_defi">message_types::defi</a>());
     <b>let</b> <a href="../bridge/message.md#bridge_message">message</a> = <a href="../bridge/message.md#bridge_message_create_defi_transfer_out_message">message::create_defi_transfer_out_message</a>(
         inner.chain_id,
         bridge_seq_num,
         address::to_bytes(ctx.sender()),
         target_chain,
-        amount_after_fee,
+        amount,
         hex::decode(b""),
         0u16,
         protocol_type,
@@ -2724,7 +2728,7 @@ title: Module `bridge::bridge`
             sender_address: address::to_bytes(ctx.sender()),
             target_chain,
             amount_before_fee: token_amount,
-            amount_after_fee,
+            amount_after_fee: amount,
             protocol_type,
             protocol_version,
             protocol_token_id: protocol_token_id,
@@ -2828,16 +2832,24 @@ title: Module `bridge::bridge`
     // <b>let</b> token_id_origin = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.token_id&lt;T&gt;();
     // <b>assert</b>!(token_id_origin == 5, <a href="../bridge/bridge.md#bridge_bridge_EOnlySupportBusd">EOnlySupportBusd</a>);
     <b>let</b> token_id = token_id_expect;
+    //token amount is usdc or usdt amount
     <b>let</b> token_amount=<b>if</b> (target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() || target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() || target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_custom">chain_ids::eth_custom</a>()) {
-         token.balance().value()/1000u64
+        token.balance().value()/1000u64
     }<b>else</b>{
-         token.balance().value()
+        token.balance().value()
     };
     <b>assert</b>!(token_amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
+    //fee is usdc or usdt amount
     <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(bridge_id,target_chain <b>as</b> u64,token_id,token_amount);
     <b>assert</b>!(token_amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
     <b>let</b> amount_after_fee=token_amount-fee;
-    <b>let</b> fee_coin=token.split&lt;T&gt;(fee, ctx);
+    //fee coin is busd,so we need convert fee to busd
+    <b>let</b> fee_busd= <b>if</b> (target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() || target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() || target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_custom">chain_ids::eth_custom</a>()) {
+        fee*1000u64
+    }<b>else</b>{
+        fee
+    };
+    <b>let</b> fee_coin=token.split&lt;T&gt;(fee_busd, ctx);
     <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(bridge_id, fee_coin);
     // <a href="../bridge/bridge.md#bridge_bridge_create">create</a> <a href="../bridge/bridge.md#bridge_bridge">bridge</a> <a href="../bridge/message.md#bridge_message">message</a>
     <b>let</b> <a href="../bridge/message.md#bridge_message">message</a> = <a href="../bridge/message.md#bridge_message_create_token_bridge_message_v2">message::create_token_bridge_message_v2</a>(
@@ -4554,6 +4566,50 @@ title: Module `bridge::bridge`
 
 </details>
 
+<a name="bridge_bridge_get_defi_transfer_action_status"></a>
+
+## Function `get_defi_transfer_action_status`
+
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_defi_transfer_action_status">get_defi_transfer_action_status</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, source_chain: u8, bridge_seq_num: u64): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_defi_transfer_action_status">get_defi_transfer_action_status</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    source_chain: u8,
+    bridge_seq_num: u64,
+): u8 {
+    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner">load_inner</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> key = <a href="../bridge/message.md#bridge_message_create_key">message::create_key</a>(
+        source_chain,
+        <a href="../bridge/message_types.md#bridge_message_types_defi">message_types::defi</a>(),
+        bridge_seq_num
+    );
+    <b>if</b> (!inner.token_transfer_records.contains(key)) {
+        <b>return</b> <a href="../bridge/bridge.md#bridge_bridge_TRANSFER_STATUS_NOT_FOUND">TRANSFER_STATUS_NOT_FOUND</a>
+    };
+    <b>let</b> record = &inner.token_transfer_records[key];
+    <b>if</b> (record.claimed) {
+        <b>return</b> <a href="../bridge/bridge.md#bridge_bridge_TRANSFER_STATUS_CLAIMED">TRANSFER_STATUS_CLAIMED</a>
+    };
+    <b>if</b> (record.verified_signatures.is_some()) {
+        <b>return</b> <a href="../bridge/bridge.md#bridge_bridge_TRANSFER_STATUS_APPROVED">TRANSFER_STATUS_APPROVED</a>
+    };
+    <a href="../bridge/bridge.md#bridge_bridge_TRANSFER_STATUS_PENDING">TRANSFER_STATUS_PENDING</a>
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="bridge_bridge_get_external_token_transfer_action_status"></a>
 
 ## Function `get_external_token_transfer_action_status`
@@ -5056,6 +5112,36 @@ title: Module `bridge::bridge`
 
 </details>
 
+<a name="bridge_bridge_adjust_amount_busd_out"></a>
+
+## Function `adjust_amount_busd_out`
+
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_adjust_amount_busd_out">adjust_amount_busd_out</a>(target_chain: u8, amount: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_adjust_amount_busd_out">adjust_amount_busd_out</a>(target_chain: u8,amount: u64): u64 {
+    <b>let</b> need_adjust:bool=target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() || target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() || target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_custom">chain_ids::eth_custom</a>();
+    <b>let</b> token_amount=<b>if</b> (need_adjust) {
+         amount/1000u64
+    }<b>else</b>{
+         amount
+    };
+    token_amount
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="bridge_bridge_adjust_amount_usdc_usdt_in"></a>
 
 ## Function `adjust_amount_usdc_usdt_in`
@@ -5149,7 +5235,6 @@ title: Module `bridge::bridge`
         <a href="../bridge/treasury.md#bridge_treasury_token_id">treasury::token_id</a>&lt;T&gt;(&inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>) == 5,
         <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedTokenType">EUnexpectedTokenType</a>,
     );
-    //todo: @fei check the decimals of the token
     <b>let</b> amount = <a href="../bridge/bridge.md#bridge_bridge_adjust_amount_usdc_usdt_in">adjust_amount_usdc_usdt_in</a>(source_chain, defi_payload.amount_defi_in());
     <b>assert</b>!(amount &lt;= inner.<a href="../bridge/limiter.md#bridge_limiter">limiter</a>.get_mint_busd_max_limit(), <a href="../bridge/bridge.md#bridge_bridge_EInvalidMintAmount">EInvalidMintAmount</a>);
     // Make sure transfer is within limit.
@@ -5169,7 +5254,7 @@ title: Module `bridge::bridge`
         protocol_type: defi_payload.protocol_type_defi_in(),
         protocol_version: defi_payload.protocol_version_defi_in(),
         protocol_token_id: defi_payload.protocol_token_id_defi_in(),
-        chain_id: target_chain,
+        chain_id: source_chain,
     };
     <b>let</b> defi_info = inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(owner, defi_protocol_key);
     <b>let</b> (fee, principal)=<a href="../bridge/defi_protocols.md#bridge_defi_protocols_manage_fee">defi_protocols::manage_fee</a>(
@@ -5177,7 +5262,7 @@ title: Module `bridge::bridge`
     defi_payload.protocol_type_defi_in(),
     defi_payload.protocol_version_defi_in(),
     defi_payload.protocol_token_id_defi_in(),
-    target_chain,
+    source_chain,
     defi_payload.lp_token_amount_defi_in(),
     amount,
     defi_info.amount,
