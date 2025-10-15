@@ -4,6 +4,7 @@ use std::error::Error;
 use std::str::FromStr;
 use log::info;
 use sui_types::base_types::SuiAddress;
+use crate::utils::ZkVerifyRequest;
 
 #[derive(Debug)]
 #[allow(unused)]
@@ -228,6 +229,38 @@ impl AnonymousClient {
         }
     }
 
+    pub async fn test_restore_value_for_zklogin(
+        &self,
+        value1: Vec<u8>,
+        value2: Vec<u8>,
+        signature: ZkVerifyRequest,
+        objectid: String,
+    ) -> TestResult {
+        let params = json!({
+            "value1": value1,
+            "value2": value2,
+            "signature": signature,
+            "objectid": objectid,
+        });
+
+        match self
+            .send_rpc_request("bfcx_getAnonymousRestoreValueForZKloginAddress", params, 4)
+            .await
+        {
+            Ok(response) => TestResult {
+                method: "bfcx_getAnonymousRestoreValueForZKloginAddress".to_string(),
+                success: true,
+                response: Some(response),
+                error: None,
+            },
+            Err(e) => TestResult {
+                method: "bfcx_getAnonymousRestoreValueForZKloginAddress".to_string(),
+                success: false,
+                response: None,
+                error: Some(e.to_string()),
+            },
+        }
+    }
 
     pub async fn test_restore_value(
         &self,
@@ -303,6 +336,38 @@ impl AnonymousClient {
                 error: Some(e.to_string()),
             },
         }
+    }
+
+    async fn test_recover_with_signature_for_zklogin(&self, share1: String, share2: String) -> u64 {
+        // test restore 20
+        let signature = "80361ef8ca66108d1fb68ac81970cc9f7315ca6b1dea0bc493059603faffc8bcdcc7644b2ec55b8e48fe613b30e9b534000ef9e1b626f9f5bdf9519e7b7cef04";
+        let publickey = "8496d3d932986b43bb64b5d5c7548d5c97a73aebf4301447f3746680b2114ae1";
+
+        let object_id = SuiAddress::from_str(
+            "0xa6eecddaabb11bef34c99e982e6f74d9c3820d3bf87220ec3f208a360b77223f",
+        )
+            .unwrap()
+            .to_string();
+
+        let publickey_bytes = hex_to_bytes(publickey);
+        let signature = "BQNMMjgzMzYwMjYzNTk1NTYyMjM3NjczOTA3OTk2NzgwMjgzMzI2NjA1NDU2NDkxMzk2NTQ5MDQ5NTE2NDIwNzc0ODY2MTIxNDQ0MTk1NkwyNDc1OTEyOTUxNTAxNTUwOTExMTk0MjIzNTA1ODMxMDMyNzQzNDUzNDkyNDc1NDQ1OTEyODYwNzMyMTE1NjM4MTIxNTYzNTQzNzAwATEDAk0xNTAxNDc1MzAzNjkyODg4NzY2MTg1MTA3NzgzNDYwNDM5MjU2NTQxODk0OTU0MzE0OTY4OTY3NjE4MDIwMDQzOTI1OTU2MjIyMTk0Mk0xMTU5NDA2NzI0ODU4NzAyNjQxMzc4NjY4Mzk0NTc5MDg4MzY3OTg4Nzg1ODc1MDgyMzkwMTExNDkyMjg1MDYzMzg4MjU3ODUzNDA4OAJMNDQ2NzM4NjUwODU1NTQxMjU5NjUyODAxMzc5NjMyMjI3MTA2NDUwNzUyNDM1NjM0ODI3Nzg1NjA5MjM1MjU3MTk3MzMyOTg1MTc5M00xNDUzOTc2Mzk2MDg5Mzc4MDM2Nzk5Njg5NTAwMzI2NDg4MzkxMDM4NjgyNzE3NjE4OTk5MTQwMDIyNTM4MTQ5MzUxMTIwMTY3NDEyMQIBMQEwA0szMjk3MjM2MDkyNDcxMTkxNjc2MDU3MzM2MTE2MjQ3MzE0MDgxMDkyMTg1MDU2NjgzNzU4ODgzMTA4NzA3ODk4MDk1OTQ3OTE2NDlNMTYwMjA5OTAyNjQ5MTMxMzg4NDk3ODU2MTI2Mjk4NjQ3NDU1OTEzNDAwODE2ODE0OTk5NjAxNzYxNTgzNzIzMDQzNjEzMTE1MjA4NDMBMTF5SnBjM01pT2lKb2RIUndjem92TDJGalkyOTFiblJ6TG1kdmIyZHNaUzVqYjIwaUxDAWZleUpoYkdjaU9pSlNVekkxTmlJc0ltdHBaQ0k2SW1NNFlXSTNNVFV6TURrM01tSmlZVEl3WWpRNVpqYzRZVEE1WXprNE5USmpORE5tWmpreE1UZ2lMQ0owZVhBaU9pSktWMVFpZlFNMTYyNzEyNzI4MzAxMDc2NTQ0NzM0NjE3NDk3Nzg2MzQ2MjMwODQ1MDM3MzQwMzc4MjM1NzUxNjAwMDkzODUyNTY1NDI3NjM3Njk3ODeMAQAAAAAAAGEAjtxMFS4GFnahbYxmI8teVbo2iLHRlMiveOdoh0rfKW4mTjA2YlJ3DOA3sSMVfGWnQPg/H1KgwDOl/t/GUiFhB56JP/IwBKtUjNOnocmfTmLDPvOKHyeHN00Rv0xh8XIF".to_string();
+        let byte = "MHhhNmVlY2RkYWFiYjExYmVmMzRjOTllOTgyZTZmNzRkOWMzODIwZDNiZjg3MjIwZWMzZjIwOGEzNjBiNzcyMjNm".to_string();
+        let signature_bytes= ZkVerifyRequest {
+            signature: signature,
+            bytes: byte, // abfc token objectid
+            intent_scope: 3,
+            cur_epoch: None,
+            cur_rpc_url : Some("https://testrpc.benfen.org/".to_string()),
+            author: "BFC8c92533545c7f97e7491ea0049c9efdd25f43bf18fe56e92b4ce4b40d05165be80f1".to_string(),
+        };
+
+        let restore_result = self
+            .test_restore_value_for_zklogin(share1.into_bytes(), share2.into_bytes(), signature_bytes, object_id)
+            .await
+            .response
+            .unwrap();
+
+        restore_result["result"]["result1"].as_u64().unwrap()
     }
 
     async fn test_recover_with_signature(&self, share1: String, share2: String) -> u64 {
@@ -382,9 +447,6 @@ mod tests {
         assert_eq!(client.base_url, "http://localhost:9010");
     }
 
-
-
-
     #[tokio::test]
     async fn test_client_restore_value_array(){
         let subscriber = fmt::Subscriber::new();
@@ -451,6 +513,35 @@ mod tests {
         assert_eq!(value[0], 40);
         assert_eq!(value[1], 40);
 
+    }
+
+    #[tokio::test]
+    async fn test_client_restore_value_for_zklogin(){
+        let subscriber = fmt::Subscriber::new();
+        tracing::subscriber::set_global_default(subscriber)
+            .expect("Failed to set tracing subscriber");
+
+        //let args = Args::parse();
+        let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
+
+        info!("the address is {:?}", addr);
+        let server = AnonymousServer::new(None);
+        let _server_handle = tokio::spawn(async move {
+            if let Err(e) = server.start(addr).await {
+                eprintln!("Server error: {:?}", e);
+            }
+        });
+
+        let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
+        let split_result_0 = client.test_split(20).await.response.unwrap();
+        info!("Split 20 Result: {:?}", split_result_0);
+
+        let add_result = client
+            .test_recover_with_signature_for_zklogin(
+                split_result_0["result"]["result1"].as_str().unwrap().to_owned(),
+                split_result_0["result"]["result2"].as_str().unwrap().to_owned(),
+            )
+            .await;
     }
 
     #[tokio::test]
