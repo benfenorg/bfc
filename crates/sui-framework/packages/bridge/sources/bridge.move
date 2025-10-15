@@ -681,7 +681,7 @@ module bridge::bridge {
         let fee_coin = token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(bridge_id, fee_coin);
 
-        let amount = adjust_amount_busd_out(target_chain, amount_after_fee);
+        let after_fee_amount = adjust_amount_busd_out(target_chain, amount_after_fee);
 
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::defi());
         let message = message::create_defi_transfer_out_message(
@@ -689,7 +689,7 @@ module bridge::bridge {
             bridge_seq_num,
             address::to_bytes(ctx.sender()),
             target_chain,
-            amount,
+            after_fee_amount,
             hex::decode(b""),
             0u16,
             protocol_type,
@@ -708,14 +708,16 @@ module bridge::bridge {
             },
         );
 
+        let before_fee_amount = adjust_amount_busd_out(target_chain, token_amount);
+
         emit(
             DefiTransferOutEvent {
                 seq_num: bridge_seq_num,
                 source_chain: inner.chain_id,
                 sender_address: address::to_bytes(ctx.sender()),
                 target_chain,
-                amount_before_fee: token_amount,
-                amount_after_fee: amount,
+                amount_before_fee: before_fee_amount,
+                amount_after_fee: after_fee_amount,
                 protocol_type,
                 protocol_version,
                 protocol_token_id: protocol_token_id,
