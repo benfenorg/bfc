@@ -647,9 +647,9 @@ fn build_defi_bridge_approve_transaction(
     let (
         source_chain,
         seq_num,
-        sender,
+        sui_address,
         target_chain,
-        target_address,
+        eth_address,
         amount,
         tx_hash,
         event_idx,
@@ -668,7 +668,7 @@ fn build_defi_bridge_approve_transaction(
             (
                 bridge_event.sui_chain_id,
                 bridge_event.nonce,
-                bridge_event.sui_address.to_vec(),
+                Some(bridge_event.sui_address.to_vec()),
                 bridge_event.eth_chain_id,
                 None,
                 bridge_event.amount_sui_adjusted,
@@ -690,9 +690,9 @@ fn build_defi_bridge_approve_transaction(
             (
                 bridge_event.eth_chain_id,
                 bridge_event.nonce,
-                bridge_event.eth_address.to_fixed_bytes().to_vec(),
-                bridge_event.sui_chain_id,
                 Some(bridge_event.sui_address.to_vec()),
+                bridge_event.sui_chain_id,
+                Some(bridge_event.eth_address.to_fixed_bytes().to_vec()),
                 bridge_event.sui_adjusted_amount,
                 a.eth_tx_hash.as_bytes().to_vec(),
                 a.eth_event_index,
@@ -711,12 +711,6 @@ fn build_defi_bridge_approve_transaction(
     };
     let source_chain = builder.pure(source_chain as u8).unwrap();
     let seq_num = builder.pure(seq_num).unwrap();
-    let sender = builder.pure(sender.clone()).map_err(|e| {
-        BridgeError::BridgeSerializationError(format!(
-            "Failed to serialize sender: {:?}. Err: {:?}",
-            sender, e
-        ))
-    })?;
     let target_chain = builder.pure(target_chain as u8).unwrap();
     let amount = builder.pure(amount).unwrap();
     let tx_hash = builder.pure(tx_hash).unwrap();
@@ -729,9 +723,17 @@ fn build_defi_bridge_approve_transaction(
     let action_type_arg = builder.pure(action_type).unwrap();
     let lp_token_amount = builder.pure(lp_token_amount).unwrap();
     let original_seq_num = builder.pure(original_seq_num).unwrap();
+    let sui_address = builder.pure(sui_address.unwrap()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize sender: {:?}. Err: {:?}",
+            sui_address, e
+        ))
+    })?;
 
     let arg_msg = match func_name_message {
-        "create_defi_transfer_out_message" => builder.programmable_move_call(
+        "create_defi_transfer_out_message" => {
+            
+            builder.programmable_move_call(
             BRIDGE_PACKAGE_ID,
             ident_str!("message").to_owned(),
             ident_str!(func_name_message).to_owned(),
@@ -739,7 +741,7 @@ fn build_defi_bridge_approve_transaction(
             vec![
                 source_chain,
                 seq_num,
-                sender,
+                sui_address,
                 target_chain,
                 amount,
                 tx_hash,
@@ -749,7 +751,7 @@ fn build_defi_bridge_approve_transaction(
                 protocol_token_id_arg,
                 action_type_arg,
             ],
-        ),
+        )},
         "create_defi_transfer_in_message" => {
             let _fast_path_selector = builder.pure(fast_path_selector.unwrap() as u8).unwrap();
             builder.programmable_move_call(
@@ -760,7 +762,7 @@ fn build_defi_bridge_approve_transaction(
                 vec![
                     source_chain,
                     seq_num,
-                    sender,
+                    sui_address,
                     target_chain,
                     amount,
                     tx_hash,
