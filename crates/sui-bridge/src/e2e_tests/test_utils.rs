@@ -108,6 +108,7 @@ const USDC_NAME: &str = "USDC";
 const USDT_NAME: &str = "USDT";
 const KA_NAME: &str = "KA";
 const ARROW_NAME: &str = "Arrow";
+const AAVE_LP_TOKEN_NAME: &str = "AaveLPToken";
 
 pub const TEST_PK: &str = "0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356";
 
@@ -575,6 +576,7 @@ pub struct DeployedSolContracts {
     pub usdt: EthAddress,
     pub ka: EthAddress,
     pub arrow :EthAddress,
+    pub aave_lp_token: EthAddress,
 }
 
 impl DeployedSolContracts {
@@ -647,7 +649,7 @@ pub(crate) async fn deploy_sol_contract(
         supported_tokens: vec![], // this is set up in the deploy script
         token_ids: vec![],        // this is set up in the deploy script
         sui_decimals: vec![],     // this is set up in the deploy script
-        token_prices: vec![12800, 432518900, 25969600, 10000, 10000, 10000, 10000],
+        token_prices: vec![12800, 432518900, 25969600, 10000, 10000, 10000, 10000,10000],
         weth: "".to_string(), // this is set up in the deploy script
         max_usd_limit: u64::MAX,
         invest_address: "".to_string(),
@@ -758,6 +760,7 @@ pub(crate) async fn deploy_sol_contract(
         usdt: deployed_contracts.remove(USDT_NAME).unwrap(),
         ka: deployed_contracts.remove(KA_NAME).unwrap(),
         arrow: deployed_contracts.remove(ARROW_NAME).unwrap(),
+        aave_lp_token: deployed_contracts.remove(AAVE_LP_TOKEN_NAME).unwrap(),
     };
     let eth_bridge_committee =
         EthBridgeCommittee::new(contracts.bridge_committee, eth_signer.clone().into());
@@ -1504,6 +1507,48 @@ async fn trigger_reconfiguration_if_not_yet_and_assert_bridge_committee_initiali
     );
 }
 
+pub async fn mock_bridge_unstake_eth_to_sui(
+    bridge_test_cluster: &BridgeTestCluster,
+    stake:bool,
+) -> Result<(), anyhow::Error> {
+    info!("Mocking defi stake/unstake eth to sui");
+    let sui_address = bridge_test_cluster.sui_user_address();
+    let sui_chain_id = bridge_test_cluster.sui_chain_id();
+    let eth_chain_id = bridge_test_cluster.eth_chain_id();
+    let (eth_signer, eth_address) = bridge_test_cluster
+        .get_eth_signer_and_address()
+        .await
+        .unwrap();
+    let eth_tx = mock_unstake_native_eth_to_sol_contract(&eth_signer, bridge_test_cluster.contracts().sui_bridge, stake).await;
+    let tx_receipt = send_eth_tx_and_get_tx_receipt(eth_tx).await;
+    let eth_bridge_event = tx_receipt
+        .logs
+        .iter()
+        .find_map(EthBridgeEvent::try_from_log)
+        .unwrap();
+    if !stake {
+        let EthBridgeEvent::EthSuiBridgeEvents(EthSuiBridgeEvents::TokensUnStakedFilter(
+            eth_bridge_event,
+        )) = eth_bridge_event
+        else {
+            unreachable!();
+        };
+        assert_eq!(eth_bridge_event.action_type, 1);    
+        wait_for_defi_transfer_action_status(
+            bridge_test_cluster.bridge_client(),
+            eth_chain_id,
+            eth_bridge_event.nonce,
+            BridgeActionStatus::Claimed,
+        )
+        .await
+        .tap_ok(|_| {
+            info!("Eth to Sui bridge defi unstaked claimed");
+        })
+    }else{
+        Ok(())
+    }
+}
+
 pub async fn initiate_bridge_eth_to_sui(
     bridge_test_cluster: &BridgeTestCluster,
     amount: u64,
@@ -1788,6 +1833,47 @@ async fn wait_for_transfer_action_status(
     }
 }
 
+async fn wait_for_defi_transfer_action_status(
+    sui_bridge_client: &SuiBridgeClient,
+    chain_id: BridgeChainId,
+    nonce: u64,
+    status: BridgeActionStatus,
+) -> Result<(), anyhow::Error> {
+    // Wait for the bridge action to be approved
+    let now = std::time::Instant::now();
+    info!(
+        "Waiting for onchain status {:?}. chain: {:?}, nonce: {nonce}",
+        status, chain_id as u8
+    );
+    loop {
+        let timer = std::time::Instant::now();
+        let res = sui_bridge_client
+            .get_token_transfer_action_onchain_status_until_success(chain_id as u8, nonce)
+            .await;
+        info!(
+            "get_token_transfer_action_onchain_status_until_success took {:?}, status: {:?}",
+            timer.elapsed(),
+            res
+        );
+
+        if res == status {
+            info!(
+                "detected on chain status {:?}. chain: {:?}, nonce: {nonce}",
+                status, chain_id as u8
+            );
+            return Ok(());
+        }
+        if now.elapsed().as_secs() > 300 {
+            return Err(anyhow!(
+                "Timeout waiting for token transfer action to be {:?}. chain_id: {chain_id:?}, nonce: {nonce}. Time elapsed: {:?}",
+                status,
+                now.elapsed(),
+            ));
+        }
+        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+    }
+}
+
 async fn deposit_eth_to_sui_package(
     sui_client: &SuiClient,
     sui_address: SuiAddress,
@@ -1990,4 +2076,18 @@ pub(crate) async fn deposit_native_eth_to_sol_contract(
     contract
         .bridge_eth(sui_recipient_address, sui_chain_id as u8)
         .value(amount)
+}
+
+pub(crate) async fn mock_unstake_native_eth_to_sol_contract(
+    signer: &EthSigner,
+    contract_address: EthAddress,
+    stake: bool,
+) -> ContractCall<EthSigner, ()> {
+    let contract = EthSuiBridge::new(contract_address, signer.clone().into());    
+    let action= if stake {
+        0
+    } else {
+        1
+    };
+    contract.mock_invest_contract(action)
 }

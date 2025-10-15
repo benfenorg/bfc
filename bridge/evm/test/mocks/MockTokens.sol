@@ -77,6 +77,25 @@ contract MockUSDC is ERC20 {
 }
 
 
+contract MockAAVELPToken is ERC20 {
+    constructor() ERC20("AAVE LP Token", "AAVE-LP") {}
+
+    function mint(address to, uint256 amount) public virtual {
+        _mint(to, amount);
+    }
+
+    function burn(address form, uint256 amount) public virtual {
+        _burn(form, amount);
+    }
+
+    function decimals() public view virtual override returns (uint8) {
+        return 6;
+    }
+
+    function testSkip() public {}
+}
+
+
 contract MockLPToken is ERC20 {
     constructor() ERC20("LP Token", "LP") {}
 
