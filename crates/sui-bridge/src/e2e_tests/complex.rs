@@ -329,6 +329,8 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
     let mut defi_event = None;
     let mut event_seq_num = 0u64;
 
+    let mut amount_after_fee=0;
+
     for (idx, event) in events.data.iter().enumerate() {
         println!("Event {}: type={}", idx, event.type_);
 
@@ -346,6 +348,7 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
                 info!("  - Protocol version: {}", parsed_event.protocol_version);
                 info!("  - Protocol token ID: {}", parsed_event.protocol_token_id);
                 info!("  - Amount after fee: {}", parsed_event.amount_after_fee);
+                amount_after_fee=parsed_event.amount_after_fee;
                 info!("  - Action type: {}", parsed_event.action_type);
             }
             break;
@@ -433,5 +436,180 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
     let tx = eth_sui_bridge.invest_bridged_tokens_with_signatures(signatures, message);
     let tx_response = tx.send().await.unwrap().await.unwrap().unwrap();
     println!("Tx response: {:?}", tx_response);
+    if let Some(log) = tx_response.logs.last() {
+        let event = decode_tokens_staked_event(log)?;
+        assert_eq!(event.0,BridgeChainId::SuiCustom as u8);
+        assert_eq!(event.1,0); //evm
+        assert_eq!(event.2,BridgeChainId::EthCustom as u8);
+        assert_eq!(event.3,event_seq_num); // from benfen
+        assert_eq!(event.5,bridge_test_cluster.eth_env().contracts().arrow);
+        assert_eq!(event.6,0);
+        assert_eq!(event.7,amount_after_fee);
+        assert_eq!(event.8,protocol_type);
+        assert_eq!(event.9,protocol_version);
+        assert_eq!(event.10,protocol_token_id);
+        assert_eq!(event.11,0);    
+    }
+
+    // check claim on sui side
+    println!("=== Step 7: Wait for Sui side to process DeFi claim ===");
+    // Poll until the DeFi action becomes Claimed (with a timeout)
+    let mut attempts = 0;
+    let max_attempts = 60; // ~2 minutes if sleeping 2s between polls
+    let mut status = BridgeActionStatus::NotFound;
+    loop {
+        status = bridge_test_cluster
+            .bridge_client()
+            .get_defi_transfer_action_status_until_success(
+                bridge_test_cluster.sui_chain_id() as u8,
+                event_seq_num,
+            )
+            .await;
+        println!("DeFi transfer action status: {:?}", status);
+        if status == BridgeActionStatus::Claimed {
+            break;
+        }
+        attempts += 1;
+        if attempts >= max_attempts {
+            panic!(
+                "Timed out waiting for DeFi transfer action to become Claimed (last status: {:?})",
+                status
+            );
+        }
+        tokio::time::sleep(Duration::from_secs(2)).await;
+    }
+    // The status should be Claimed now
+    assert_eq!(status, BridgeActionStatus::Claimed, "Action should be claimed");
+
     Ok(())
+}
+
+
+fn decode_tokens_staked_event(
+    log: &ethers::types::Log,
+) -> anyhow::Result<(
+    u8,                        // sourceChainID (indexed)
+    u64,                       // nonce (indexed)
+    u8,                        // destinationChainID (indexed)
+    u64,                       // originNonce
+    Vec<u8>,                   // senderAddress
+    ethers::types::Address,    // recipientAddress
+    u64,                       // suiAdjustedAmount
+    u64,                       // suiLpTokenAmount
+    u64,                       // protocolType
+    u64,                       // protocolVersion
+    u64,                       // protocolTokenId
+    u8,                        // actionType
+)> {
+    use anyhow::{anyhow, Result};
+    use ethers::abi::{decode, ParamType};
+    use ethers::types::{H256, U256};
+
+    // 校验事件签名
+    let expected_sig = ethers::utils::keccak256(
+        b"TokensStaked(uint8,uint64,uint8,uint64,bytes,address,uint64,uint64,uint64,uint64,uint64,uint8)",
+    );
+    if log.topics.len() < 4 || log.topics[0] != H256::from(expected_sig) {
+        return Err(anyhow!("not a TokensStaked event (signature mismatch)"));
+    }
+
+    // 解析 indexed 参数（topics）
+    let source_chain_id: u8 = {
+        let mut buf = [0u8; 32];
+        buf.copy_from_slice(log.topics[1].as_bytes());
+        U256::from_big_endian(&buf).as_u64() as u8
+    };
+    let nonce: u64 = {
+        let mut buf = [0u8; 32];
+        buf.copy_from_slice(log.topics[2].as_bytes());
+        U256::from_big_endian(&buf).as_u64()
+    };
+    let destination_chain_id: u8 = {
+        let mut buf = [0u8; 32];
+        buf.copy_from_slice(log.topics[3].as_bytes());
+        U256::from_big_endian(&buf).as_u64() as u8
+    };
+
+    // 解析非 indexed 参数（data）
+    let tokens = decode(
+        &[
+            ParamType::Uint(64),  // originNonce
+            ParamType::Bytes,     // senderAddress
+            ParamType::Address,   // recipientAddress
+            ParamType::Uint(64),  // suiAdjustedAmount
+            ParamType::Uint(64),  // suiLpTokenAmount
+            ParamType::Uint(64),  // protocolType
+            ParamType::Uint(64),  // protocolVersion
+            ParamType::Uint(64),  // protocolTokenId
+            ParamType::Uint(8),   // actionType
+        ],
+        &log.data.0,
+    )?;
+
+    let origin_nonce = tokens[0]
+        .clone()
+        .into_uint()
+        .ok_or_else(|| anyhow!("originNonce decode error"))?
+        .as_u64();
+
+    let sender_address = tokens[1]
+        .clone()
+        .into_bytes()
+        .ok_or_else(|| anyhow!("senderAddress decode error"))?;
+
+    let recipient_address = tokens[2]
+        .clone()
+        .into_address()
+        .ok_or_else(|| anyhow!("recipientAddress decode error"))?;
+
+    let sui_adjusted_amount = tokens[3]
+        .clone()
+        .into_uint()
+        .ok_or_else(|| anyhow!("suiAdjustedAmount decode error"))?
+        .as_u64();
+
+    let sui_lp_token_amount = tokens[4]
+        .clone()
+        .into_uint()
+        .ok_or_else(|| anyhow!("suiLpTokenAmount decode error"))?
+        .as_u64();
+
+    let protocol_type = tokens[5]
+        .clone()
+        .into_uint()
+        .ok_or_else(|| anyhow!("protocolType decode error"))?
+        .as_u64();
+
+    let protocol_version = tokens[6]
+        .clone()
+        .into_uint()
+        .ok_or_else(|| anyhow!("protocolVersion decode error"))?
+        .as_u64();
+
+    let protocol_token_id = tokens[7]
+        .clone()
+        .into_uint()
+        .ok_or_else(|| anyhow!("protocolTokenId decode error"))?
+        .as_u64();
+
+    let action_type = tokens[8]
+        .clone()
+        .into_uint()
+        .ok_or_else(|| anyhow!("actionType decode error"))?
+        .as_u64() as u8;
+
+    Ok((
+        source_chain_id,
+        nonce,
+        destination_chain_id,
+        origin_nonce,
+        sender_address,
+        recipient_address,
+        sui_adjusted_amount,
+        sui_lp_token_amount,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        action_type,
+    ))
 }

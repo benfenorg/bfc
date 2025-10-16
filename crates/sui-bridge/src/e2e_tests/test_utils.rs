@@ -1544,8 +1544,24 @@ pub async fn mock_bridge_unstake_eth_to_sui(
         .tap_ok(|_| {
             info!("Eth to Sui bridge defi unstaked claimed");
         })
-    }else{
-        Ok(())
+    } else {
+        let EthBridgeEvent::EthSuiBridgeEvents(EthSuiBridgeEvents::TokensStakedFilter(
+            eth_bridge_event,
+        )) = eth_bridge_event
+        else {
+            unreachable!();
+        };
+        assert_eq!(eth_bridge_event.action_type, 0);
+        wait_for_defi_transfer_action_status(
+            bridge_test_cluster.bridge_client(),
+            eth_chain_id,
+            eth_bridge_event.nonce,
+            BridgeActionStatus::Claimed,
+        )
+        .await
+        .tap_ok(|_| {
+            info!("Eth to Sui bridge defi unstaked claimed");
+        })
     }
 }
 
@@ -1912,7 +1928,7 @@ async fn wait_for_transfer_action_status(
     }
 }
 
-async fn wait_for_defi_transfer_action_status(
+pub async fn wait_for_defi_transfer_action_status(
     sui_bridge_client: &SuiBridgeClient,
     chain_id: BridgeChainId,
     nonce: u64,
@@ -1920,23 +1936,23 @@ async fn wait_for_defi_transfer_action_status(
 ) -> Result<(), anyhow::Error> {
     // Wait for the bridge action to be approved
     let now = std::time::Instant::now();
-    info!(
+    println!(
         "Waiting for onchain status {:?}. chain: {:?}, nonce: {nonce}",
         status, chain_id as u8
     );
     loop {
         let timer = std::time::Instant::now();
         let res = sui_bridge_client
-            .get_token_transfer_action_onchain_status_until_success(chain_id as u8, nonce)
+            .get_defi_transfer_action_onchain_status_until_success(chain_id as u8, nonce)
             .await;
-        info!(
-            "get_token_transfer_action_onchain_status_until_success took {:?}, status: {:?}",
+        println!(
+            "get_defi_transfer_action_onchain_status_until_success took {:?}, status: {:?}",
             timer.elapsed(),
             res
         );
 
         if res == status {
-            info!(
+            println!(
                 "detected on chain status {:?}. chain: {:?}, nonce: {nonce}",
                 status, chain_id as u8
             );
