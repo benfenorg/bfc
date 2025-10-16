@@ -7,4 +7,4 @@ edition = "2024.beta"
 Sui = { local = "../../../sui-framework/packages/sui-framework" }
 
 [addresses]
-test_anonymous_usd = "0x0"
+test_ausd = "0x0"

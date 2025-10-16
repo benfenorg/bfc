@@ -574,22 +574,22 @@ async fn sim_test_anonymous_coin_swap_out_with_amount_exceed_boundary() -> Resul
 
 
 #[sim_test]
-async fn sim_test_anonymous_usd_coin_create() -> Result<(), anyhow::Error>{
+async fn sim_test_ausd_coin_create() -> Result<(), anyhow::Error>{
 
     Ok(())
 }
 #[sim_test]
-async fn sim_test_anonymous_usd_coin_swap_in() -> Result<(), anyhow::Error>{
+async fn sim_test_ausd_coin_swap_in() -> Result<(), anyhow::Error>{
     Ok(())
 }
 
 #[sim_test]
-async fn sim_test_anonymous_usd_coin_swap_out() -> Result<(), anyhow::Error>{
+async fn sim_test_ausd_coin_swap_out() -> Result<(), anyhow::Error>{
 
     Ok(())
 }
 #[sim_test]
-async fn sim_test_anonymous_usd_coin_restore() -> Result<(), anyhow::Error>{
+async fn sim_test_ausd_coin_restore() -> Result<(), anyhow::Error>{
     Ok(())
 }
 

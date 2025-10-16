@@ -34,7 +34,7 @@ async fn sim_test_do_publish_anonymous_test_usd(){
     let http_client = test_cluster.rpc_client().clone();
     let address = test_cluster.get_address_0();
     let (package, _change_objs)
-        = publish_coin::do_publish(&mut test_cluster,"tests/test_anonymous_usd").await.unwrap();
+        = publish_coin::do_publish(&mut test_cluster,"tests/test_ausd").await.unwrap();
 
     //mint
     publish_coin::do_mint_anonymous(&mut test_cluster,package,30000000000000000).await;
@@ -58,7 +58,7 @@ async fn sim_test_do_publish_anonymous_test_usd(){
 }
 
 #[sim_test]
-async fn sim_test_mint_anonymous_usd() -> Result<(), anyhow::Error>{
+async fn sim_test_mint_ausd() -> Result<(), anyhow::Error>{
     telemetry_subscribers::init_for_testing();
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let http_client = test_cluster.rpc_client().clone();
@@ -75,7 +75,7 @@ async fn sim_test_mint_anonymous_usd() -> Result<(), anyhow::Error>{
 
     //publish
     let (package, _change_objs)
-        = publish_coin::do_publish(&mut test_cluster, "tests/test_anonymous_usd").await.unwrap();
+        = publish_coin::do_publish(&mut test_cluster, "tests/test_ausd").await.unwrap();
 
     //mint
     let move_call_response = publish_coin::do_mint_anonymous(&mut test_cluster,package,30000000000000000).await;

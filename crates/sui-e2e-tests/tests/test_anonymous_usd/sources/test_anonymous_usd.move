@@ -1,4 +1,4 @@
-module test_anonymous_usd::testabfc {
+module test_ausd::testabfc {
     use sui::anonymous_balance::Anonymous_Balance;
     use sui::anonymous_coin;
     use sui::anonymous_coin::{Anonymous_Coin, TreasuryCap};
