@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::abi::{eth_sui_bridge, EthSuiBridge};
 use crate::client::bridge_authority_aggregator::BridgeAuthorityAggregator;
 use crate::e2e_tests::{auth, stable};
 use crate::e2e_tests::test_utils::{
@@ -11,6 +12,7 @@ use crate::types::{BridgeAction, EmergencyAction};
 use crate::types::{BridgeActionStatus, EmergencyActionType};
 use ethers::types::Address as EthAddress;
 use sui_types::BRIDGE_PACKAGE_ID;
+use tap::TapFallible;
 use std::sync::Arc;
 use std::collections::HashSet;
 use sui_json_rpc_types::{SuiExecutionStatus, TransactionBlockBytes};
@@ -401,5 +403,35 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
     println!("📊 BUSD minted: {}, Staked amount: {}", busd_amount, stake_amount);
     println!("🎯 DeFi protocol: type={}, version={}, token_id={}", protocol_type, protocol_version, protocol_token_id);
 
+    let parsed_message = bridge_test_cluster.bridge_client()
+        .get_parsed_defi_transfer_out_message(bridge_test_cluster.sui_chain_id() as u8, event_seq_num)
+        .await;
+    assert!(parsed_message.is_ok(), "Parsed message should be found, but got error: {:?}", parsed_message.err());
+    let parsed_message = parsed_message.unwrap();
+    assert!(parsed_message.is_some(), "Parsed message should be found,bug got none");
+    let parsed_message = parsed_message.unwrap();
+    println!("Parsed message: {:?}", parsed_message);
+    let sigs = bridge_test_cluster.bridge_client()
+        .get_defi_transfer_out_action_onchain_signatures_until_success(bridge_test_cluster.sui_chain_id() as u8, event_seq_num)
+        .await;
+    assert!(sigs.is_some(), "Signatures should be found");
+    let sigs = sigs.unwrap();
+    println!("Signatures: {:?}", sigs);
+    let message = eth_sui_bridge::Message::from(parsed_message);
+    let signatures = sigs
+        .into_iter()
+        .map(|sig: Vec<u8>| ethers::types::Bytes::from(sig))
+        .collect::<Vec<_>>();
+    let (eth_signer, _) = bridge_test_cluster
+        .get_eth_signer_and_address()
+        .await
+        .unwrap();
+    let eth_sui_bridge = EthSuiBridge::new(
+        bridge_test_cluster.eth_env().contracts().sui_bridge,
+        Arc::new(eth_signer),
+    );
+    let tx = eth_sui_bridge.invest_bridged_tokens_with_signatures(signatures, message);
+    let tx_response = tx.send().await.unwrap().await.unwrap().unwrap();
+    println!("Tx response: {:?}", tx_response);
     Ok(())
 }

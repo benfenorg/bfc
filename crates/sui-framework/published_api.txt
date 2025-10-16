@@ -5935,6 +5935,9 @@ ParsedTokenTransferMessageV2
 ParsedTokenTransferInMessage
 	public struct
 	0xb::message
+ParsedDefiTransferOutMessage
+	public struct
+	0xb::message
 AddTokenOnTokenList
 	public struct
 	0xb::message
@@ -6389,6 +6392,9 @@ to_parsed_token_transfer_message_v2
 	public fun
 	0xb::message
 to_parsed_token_transfer_in_message
+	public fun
+	0xb::message
+to_parsed_defi_transfer_out_message
 	public fun
 	0xb::message
 reverse_bytes
@@ -7153,6 +7159,9 @@ get_send_back_status
 get_token_transfer_action_signatures
 	fun
 	0xb::bridge
+get_defi_transfer_out_action_signatures
+	fun
+	0xb::bridge
 multi_signature_passed
 	fun
 	0xb::bridge
@@ -7256,6 +7265,12 @@ get_parsed_token_transfer_message
 	fun
 	0xb::bridge
 get_parsed_token_transfer_message_v2
+	fun
+	0xb::bridge
+get_parsed_defi_transfer_out_message
+	fun
+	0xb::bridge
+get_parsed_defi_transfer_message
 	fun
 	0xb::bridge
 to_bytes

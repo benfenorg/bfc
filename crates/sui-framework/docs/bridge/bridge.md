@@ -81,6 +81,7 @@ title: Module `bridge::bridge`
 -  [Function `get_external_token_transfer_action_status`](#bridge_bridge_get_external_token_transfer_action_status)
 -  [Function `get_send_back_status`](#bridge_bridge_get_send_back_status)
 -  [Function `get_token_transfer_action_signatures`](#bridge_bridge_get_token_transfer_action_signatures)
+-  [Function `get_defi_transfer_out_action_signatures`](#bridge_bridge_get_defi_transfer_out_action_signatures)
 -  [Function `multi_signature_passed`](#bridge_bridge_multi_signature_passed)
 -  [Function `load_inner`](#bridge_bridge_load_inner)
 -  [Function `load_inner_mut`](#bridge_bridge_load_inner_mut)
@@ -116,6 +117,8 @@ title: Module `bridge::bridge`
 -  [Function `defi_holders_del`](#bridge_bridge_defi_holders_del)
 -  [Function `get_parsed_token_transfer_message`](#bridge_bridge_get_parsed_token_transfer_message)
 -  [Function `get_parsed_token_transfer_message_v2`](#bridge_bridge_get_parsed_token_transfer_message_v2)
+-  [Function `get_parsed_defi_transfer_out_message`](#bridge_bridge_get_parsed_defi_transfer_out_message)
+-  [Function `get_parsed_defi_transfer_message`](#bridge_bridge_get_parsed_defi_transfer_message)
 
 
 <pre><code><b>use</b> <a href="../bfc_system/auth_utils.md#bfc_system_auth_utils">bfc_system::auth_utils</a>;
@@ -2697,14 +2700,14 @@ title: Module `bridge::bridge`
     <b>let</b> amount_after_fee = token_amount - fee;
     <b>let</b> fee_coin = token.split&lt;T&gt;(fee, ctx);
     <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(bridge_id, fee_coin);
-    <b>let</b> amount = <a href="../bridge/bridge.md#bridge_bridge_adjust_amount_busd_out">adjust_amount_busd_out</a>(target_chain, amount_after_fee);
+    <b>let</b> after_fee_amount = <a href="../bridge/bridge.md#bridge_bridge_adjust_amount_busd_out">adjust_amount_busd_out</a>(target_chain, amount_after_fee);
     <b>let</b> bridge_seq_num = inner.<a href="../bridge/bridge.md#bridge_bridge_get_current_seq_num_and_increment">get_current_seq_num_and_increment</a>(<a href="../bridge/message_types.md#bridge_message_types_defi">message_types::defi</a>());
     <b>let</b> <a href="../bridge/message.md#bridge_message">message</a> = <a href="../bridge/message.md#bridge_message_create_defi_transfer_out_message">message::create_defi_transfer_out_message</a>(
         inner.chain_id,
         bridge_seq_num,
         address::to_bytes(ctx.sender()),
         target_chain,
-        amount,
+        after_fee_amount,
         hex::decode(b""),
         0u16,
         protocol_type,
@@ -2721,14 +2724,15 @@ title: Module `bridge::bridge`
             claimed: <b>false</b>,
         },
     );
+    <b>let</b> before_fee_amount = <a href="../bridge/bridge.md#bridge_bridge_adjust_amount_busd_out">adjust_amount_busd_out</a>(target_chain, token_amount);
     emit(
         <a href="../bridge/bridge.md#bridge_bridge_DefiTransferOutEvent">DefiTransferOutEvent</a> {
             seq_num: bridge_seq_num,
             source_chain: inner.chain_id,
             sender_address: address::to_bytes(ctx.sender()),
             target_chain,
-            amount_before_fee: token_amount,
-            amount_after_fee: amount,
+            amount_before_fee: before_fee_amount,
+            amount_after_fee: after_fee_amount,
             protocol_type,
             protocol_version,
             protocol_token_id: protocol_token_id,
@@ -4733,6 +4737,44 @@ title: Module `bridge::bridge`
 
 </details>
 
+<a name="bridge_bridge_get_defi_transfer_out_action_signatures"></a>
+
+## Function `get_defi_transfer_out_action_signatures`
+
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_defi_transfer_out_action_signatures">get_defi_transfer_out_action_signatures</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, source_chain: u8, bridge_seq_num: u64): <a href="../std/option.md#std_option_Option">std::option::Option</a>&lt;vector&lt;vector&lt;u8&gt;&gt;&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_defi_transfer_out_action_signatures">get_defi_transfer_out_action_signatures</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    source_chain: u8,
+    bridge_seq_num: u64,
+): Option&lt;vector&lt;vector&lt;u8&gt;&gt;&gt; {
+    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner">load_inner</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> key = <a href="../bridge/message.md#bridge_message_create_key">message::create_key</a>(
+        source_chain,
+        <a href="../bridge/message_types.md#bridge_message_types_defi">message_types::defi</a>(),
+        bridge_seq_num
+    );
+    <b>if</b> (!inner.token_transfer_records.contains(key)) {
+        <b>return</b> option::none()
+    };
+    <b>let</b> record = &inner.token_transfer_records[key];
+    record.verified_signatures
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="bridge_bridge_multi_signature_passed"></a>
 
 ## Function `multi_signature_passed`
@@ -6024,6 +6066,84 @@ title: Module `bridge::bridge`
 
 
 <pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_parsed_token_transfer_message_v2">get_parsed_token_transfer_message_v2</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    source_chain: u8,
+    bridge_seq_num: u64,
+): Option&lt;ParsedTokenTransferMessageV2&gt; {
+    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner">load_inner</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> key = <a href="../bridge/message.md#bridge_message_create_key">message::create_key</a>(
+        source_chain,
+        <a href="../bridge/message_types.md#bridge_message_types_token">message_types::token</a>(),
+        bridge_seq_num
+    );
+    <b>if</b> (!inner.token_transfer_records.contains(key)) {
+        <b>return</b> option::none()
+    };
+    <b>let</b> record = &inner.token_transfer_records[key];
+    <b>let</b> <a href="../bridge/message.md#bridge_message">message</a> = &record.<a href="../bridge/message.md#bridge_message">message</a>;
+    option::some(to_parsed_token_transfer_message_v2(<a href="../bridge/message.md#bridge_message">message</a>))
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_parsed_defi_transfer_out_message"></a>
+
+## Function `get_parsed_defi_transfer_out_message`
+
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_parsed_defi_transfer_out_message">get_parsed_defi_transfer_out_message</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, source_chain: u8, bridge_seq_num: u64): <a href="../std/option.md#std_option_Option">std::option::Option</a>&lt;<a href="../bridge/message.md#bridge_message_ParsedDefiTransferOutMessage">bridge::message::ParsedDefiTransferOutMessage</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_parsed_defi_transfer_out_message">get_parsed_defi_transfer_out_message</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    source_chain: u8,
+    bridge_seq_num: u64,
+): Option&lt;ParsedDefiTransferOutMessage&gt; {
+    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner">load_inner</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> key = <a href="../bridge/message.md#bridge_message_create_key">message::create_key</a>(
+        source_chain,
+        <a href="../bridge/message_types.md#bridge_message_types_defi">message_types::defi</a>(),
+        bridge_seq_num
+    );
+    <b>if</b> (!inner.token_transfer_records.contains(key)) {
+        <b>return</b> option::none()
+    };
+    <b>let</b> record = &inner.token_transfer_records[key];
+    <b>let</b> <a href="../bridge/message.md#bridge_message">message</a> = &record.<a href="../bridge/message.md#bridge_message">message</a>;
+    option::some(to_parsed_defi_transfer_out_message(<a href="../bridge/message.md#bridge_message">message</a>))
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_parsed_defi_transfer_message"></a>
+
+## Function `get_parsed_defi_transfer_message`
+
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_parsed_defi_transfer_message">get_parsed_defi_transfer_message</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, source_chain: u8, bridge_seq_num: u64): <a href="../std/option.md#std_option_Option">std::option::Option</a>&lt;<a href="../bridge/message.md#bridge_message_ParsedTokenTransferMessageV2">bridge::message::ParsedTokenTransferMessageV2</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_parsed_defi_transfer_message">get_parsed_defi_transfer_message</a>(
     <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
     source_chain: u8,
     bridge_seq_num: u64,

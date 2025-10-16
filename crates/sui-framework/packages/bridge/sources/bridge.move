@@ -46,6 +46,8 @@ module bridge::bridge {
     use bridge::message::TokenTransferInPayload;
     use sui::coin::split;
     use bridge::message::amount;
+    use bridge::message::to_parsed_defi_transfer_out_message;
+    use bridge::message::ParsedDefiTransferOutMessage;
     //  stable coin id
     const TOKEN_ID_USDC: u64 = 3;
     const TOKEN_ID_USDT: u64 = 4;
@@ -2813,11 +2815,11 @@ module bridge::bridge {
     }
 
     #[allow(unused_function)]
-    fun get_parsed_defi_transfer_out_message_v2(
+    fun get_parsed_defi_transfer_out_message(
         bridge: &Bridge,
         source_chain: u8,
         bridge_seq_num: u64,
-    ): Option<ParsedTokenTransferMessage> {
+    ): Option<ParsedDefiTransferOutMessage> {
         let inner = load_inner(bridge);
         let key = message::create_key(
             source_chain,
@@ -2831,7 +2833,7 @@ module bridge::bridge {
 
         let record = &inner.token_transfer_records[key];
         let message = &record.message;
-        option::some(to_parsed_token_transfer_message_v2(message))
+        option::some(to_parsed_defi_transfer_out_message(message))
     }
 
     #[allow(unused_function)]
