@@ -34,7 +34,7 @@ use sui_bridge::types::{
     AddTokenOnTokenListAction,RemoveTokenOnTokenListAction,
     SingleTransferLimitUpdateAction,UpdateBridgeFeeOnCrossOutAction,
     UpdateBridgeFeeOnCrossInAction, WithdrawBridgeFeeAction,
-
+    AddLpTokenIdAction, UpdateInvestAddressAction,
 };
 use sui_bridge::utils::{get_eth_signer_client, EthSigner};
 use sui_config::Config;
@@ -343,6 +343,17 @@ pub enum GovernanceClientCommands {
         #[clap(name = "token-sui-decimals", use_value_delimiter = true, long)]
         token_sui_decimals: Vec<u8>,
     },
+    #[clap(name = "add-lp-token-id")]
+    AddLpTokenId {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "protocol-type", long)]
+        protocol_type: u64,
+        #[clap(name = "token-id", long)]
+        token_id: u64,
+        #[clap(name = "lp-token-id", long)]
+        lp_token_id: u64,
+    },
     #[clap(name = "upgrade-evm-contract")]
     UpgradeEVMContract {
         #[clap(name = "nonce", long)]
@@ -358,6 +369,13 @@ pub enum GovernanceClientCommands {
         /// Params to be passed to the function, e.g. `420,false,hello`
         #[clap(name = "params", use_value_delimiter = true, long)]
         params: Vec<String>,
+    },
+    #[clap(name="update-invest-address")]
+    UpdateInvestAddress {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "invest-address", long)]
+        invest_address: EthAddress,
     },
 }
 
@@ -631,6 +649,31 @@ pub fn make_action(
                 token_sui_decimals: token_sui_decimals.clone(),
             })
         }
+        GovernanceClientCommands::AddLpTokenId {
+            nonce,
+            protocol_type,
+            token_id,
+            lp_token_id,
+        } => {
+            BridgeAction::AddLpTokenIdAction(AddLpTokenIdAction {
+                nonce: *nonce,
+                chain_id,
+                protocol_type: *protocol_type,
+                token_id: *token_id,
+                lp_token_id: *lp_token_id,
+            })
+        },
+
+        GovernanceClientCommands::UpdateInvestAddress {
+            nonce,
+            invest_address,
+        } => {
+            BridgeAction::UpdateInvestAddressAction(UpdateInvestAddressAction {
+                nonce: *nonce,
+                chain_id,
+                invest_address: *invest_address,
+            })
+        },
         GovernanceClientCommands::UpgradeEVMContract {
             nonce,
             proxy_address,
@@ -724,6 +767,8 @@ pub fn select_contract_address(
         GovernanceClientCommands::AddTokensOnEvm { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::UpdateRefundAdmin { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::UpdateFastPathLimit { .. } => config.eth_bridge_config_proxy_address,
+        GovernanceClientCommands::AddLpTokenId { .. } => config.eth_bridge_config_proxy_address,
+        GovernanceClientCommands::UpdateInvestAddress { .. } => config.eth_bridge_proxy_address,
     }
 }
 
