@@ -20,11 +20,11 @@ library ArrowLib {
         require(protocol_type <= type(uint16).max, "ArrowLib: Protocol type out of range");
         IArrow arrow = IArrow(arrowAddr);
         IERC20(asset).approve(arrowAddr,amount);
-        if  (protocol_type==0) {
+        if  (protocol_type==1) {
             arrow.depositViaAave(uint16(protocol_type), asset, amount);
-        }else if (protocol_type==1) {
-            arrow.depositViaCompound(uint16(protocol_type), asset, amount);
         }else if (protocol_type==2) {
+            arrow.depositViaCompound(uint16(protocol_type), asset, amount);
+        }else if (protocol_type==3) {
             arrow.depositViaMaker(uint16(protocol_type), asset, amount);
         }else{
             revert("SuiBridge:  Invalid Arrow ProtocolType");
@@ -45,11 +45,11 @@ library ArrowLib {
         require(protocol_type <= type(uint16).max, "ArrowLib: Protocol type out of range");
         IArrow arrow = IArrow(arrowAddr);
         IERC20(lpToken).approve(arrowAddr,amount);
-        if  (protocol_type==0) {
+        if  (protocol_type==1) {
             arrow.withdrawViaAave(uint16(protocol_type), lpToken, amount);
-        }else if (protocol_type==1) {
-            arrow.withdrawViaCompound(uint16(protocol_type), lpToken, amount);
         }else if (protocol_type==2) {
+            arrow.withdrawViaCompound(uint16(protocol_type), lpToken, amount);
+        }else if (protocol_type==3) {
             arrow.withdrawViaMaker(uint16(protocol_type), lpToken, amount);
         }else{
             revert("SuiBridge:  Invalid Arrow ProtocolType");

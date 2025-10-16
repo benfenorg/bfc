@@ -216,9 +216,9 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
 
     // Step 5: Setup DeFi staking parameters
     let target_chain = 12u8; // ETH Custom chain (matches defi_protocols::initial_defi_protocol)
-    let protocol_type = 2u64; // Compound protocol type
-    let protocol_version = 1u64; // Version 1
-    let protocol_token_id = 4u64; // USDT token ID for DeFi protocol
+    let protocol_type = 1u64; // AAVE protocol type
+    let protocol_version = 3u64; // Version 3
+    let protocol_token_id = 3u64; // USDC token ID for DeFi protocol
     let stake_amount = busd_amount / 2; // Use half of the BUSD for staking
 
     // Step 6: Call defi_stake Move function

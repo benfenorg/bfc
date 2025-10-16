@@ -135,14 +135,14 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
     function testInvestStakedUSDCWithValidSignatures() public {
             //部署invest 合约
             MockArrow arrow = new MockArrow(address(vault));
-            uint64 protocolType = 0;
+            uint64 protocolType = 1;
             uint64 tokenID = BridgeUtils.USDC;
             uint64 lpTokenId = 100;
 
             address lpToken = createLpToken();
             //设置lp token
-            //0 aave 1 compound
-            arrow.setLpToken(0,USDC, lpToken);
+            //1 aave 2 compound
+            arrow.setLpToken(1,USDC, lpToken);
             //给资管合约 mint lpToken
             mintLpToken(lpToken, address(arrow), 1000000000000000);
             //添加lp token
@@ -218,15 +218,15 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
     function testInvestStakedUSDCVerifyTokensStakedEvent() public {
             //部署invest 合约
             MockArrow arrow = new MockArrow(address(vault));
-            uint64 protocolType = 0;
+            uint64 protocolType = 1;
             uint64 tokenID = BridgeUtils.USDC;
             uint64 lpTokenId = 100;
             uint64 originNonce = 1;
 
             address lpToken = createLpToken();
             //设置lp token
-            //0 aave 1 compound
-            arrow.setLpToken(0,USDC, lpToken);
+            //1 aave 2 compound
+            arrow.setLpToken(1,USDC, lpToken);
             //给资管合约 mint lpToken
             mintLpToken(lpToken, address(arrow), 1000000000000000);
             //添加lp token
@@ -322,7 +322,7 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
     function testInvestStakedUSDCVerifyTokensStakedeTwiceEvent() public {
             //部署invest 合约
             MockArrow arrow = new MockArrow(address(vault));
-            uint64 protocolType = 0;
+            uint64 protocolType = 1;
             uint64 tokenID = BridgeUtils.USDC;
             uint64 lpTokenId = 100;
 
@@ -332,8 +332,8 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
 
             address lpToken = createLpToken();
             //设置lp token
-            //0 aave 1 compound
-            arrow.setLpToken(0,USDC, lpToken);
+            //1 aave 2 compound
+            arrow.setLpToken(1,USDC, lpToken);
             //给资管合约 mint lpToken
             mintLpToken(lpToken, address(arrow), 1000000000000000);
             //添加lp token
@@ -477,14 +477,14 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
     function testInvestStakedUSDCUseTwiceSignatures() public {
             //部署invest 合约
             MockArrow arrow = new MockArrow(address(vault));
-            uint64 protocolType = 0;
+            uint64 protocolType = 1;
             uint64 tokenID = BridgeUtils.USDC;
             uint64 lpTokenId = 100;
 
             address lpToken = createLpToken();
             //设置lp token
-            //0 aave 1 compound
-            arrow.setLpToken(0,USDC, lpToken);
+            //1 aave 2 compound
+            arrow.setLpToken(1,USDC, lpToken);
             //给资管合约 mint lpToken
             mintLpToken(lpToken, address(arrow), 1000000000000000);
             //添加lp token
@@ -565,13 +565,13 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
     function testInvestUnStakedUSDCWithValidSignatures() public {
          //部署invest 合约
         MockArrow arrow = new MockArrow(address(vault));
-        uint64 protocolType = 0;
+        uint64 protocolType = 1;
         uint64 tokenID = BridgeUtils.USDC;
         uint64 lpTokenId = 100;
 
         address lpToken = createLpToken();
         //设置lp token
-        arrow.setAsset(0,USDC, lpToken);
+        arrow.setAsset(1,USDC, lpToken);
         //给资管合约 mint lpToken
         mintLpToken(lpToken, address(vault), 1000000000000000);
         //添加lp token
@@ -647,14 +647,14 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
     function testInvestUnStakedUSDCVerifyTokensUnStakedEvent() public {
          //部署invest 合约
         MockArrow arrow = new MockArrow(address(vault));
-        uint64 protocolType = 0;
+        uint64 protocolType = 1;
         uint64 tokenID = BridgeUtils.USDC;
         uint64 lpTokenId = 100;
         uint64 originNonce = 100;
 
         address lpToken = createLpToken();
         //设置lp token
-        arrow.setAsset(0,USDC, lpToken);
+        arrow.setAsset(1,USDC, lpToken);
         //给资管合约 mint lpToken
         mintLpToken(lpToken, address(vault), 1000000000000000);
         //添加lp token
@@ -748,7 +748,7 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
     function testInvestUnStakedUSDCVerifyTokensUnStakedeTwiceEvent() public {
         //部署invest 合约
         MockArrow arrow = new MockArrow(address(vault));
-        uint64 protocolType = 0;
+        uint64 protocolType = 1;
         uint64 tokenID = BridgeUtils.USDC;
         uint64 lpTokenId = 100;
         uint64 firstOriginNonce = 100;
@@ -756,7 +756,7 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
 
         address lpToken = createLpToken();
         //设置lp token
-        arrow.setAsset(0,USDC, lpToken);
+        arrow.setAsset(1,USDC, lpToken);
         //给资管合约 mint lpToken
         mintLpToken(lpToken, address(vault), 1000000000000000);
         //添加lp token
@@ -894,13 +894,13 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
     function testInvestUnStakedUSDCUseTwiceSignatures() public {
         //部署invest 合约
         MockArrow arrow = new MockArrow(address(vault));
-        uint64 protocolType = 0;
+        uint64 protocolType = 1;
         uint64 tokenID = BridgeUtils.USDC;
         uint64 lpTokenId = 100;
 
         address lpToken = createLpToken();
         //设置lp token
-        arrow.setAsset(0,USDC, lpToken);
+        arrow.setAsset(1,USDC, lpToken);
         //给资管合约 mint lpToken
         mintLpToken(lpToken, address(vault), 1000000000000000);
         //添加lp token

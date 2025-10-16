@@ -64,19 +64,23 @@ contract DeployBridge is Script {
             deployConfig.weth = address(new WETH());
 
             // deploy mock tokens
-            IERC20 USDC;
-            IERC20 USDT;
-            IERC20 AAVELPTOKEN;
+            MockBNBUSDC BNBUSDC;
+            MockBNBUSDT BNBUSDT;
+            MockUSDC ETHUSDC;
+            MockUSDT ETHUSDT;
+            // IERC20 USDC;
+            // IERC20 USDT;
+            MockLPToken AAVELPTOKEN;
 
             if (chainIDHash == keccak256(abi.encode("31337"))){
-                USDC = new MockUSDC();
-                USDT = new MockUSDT();
-                AAVELPTOKEN= new MockAAVELPToken();
+                ETHUSDC = new MockUSDC();
+                ETHUSDT = new MockUSDT();
+                AAVELPTOKEN= new MockLPToken();
 
             }else{
-                USDC = new MockBNBUSDC();
-                USDT = new MockBNBUSDT();
-                AAVELPTOKEN= new MockAAVELPToken();
+                BNBUSDC = new MockBNBUSDC();
+                BNBUSDT = new MockBNBUSDT();
+                AAVELPTOKEN= new MockLPToken();
             }
             MockWBTC wBTC = new MockWBTC();
             MockKA KA = new MockKA();
@@ -90,8 +94,15 @@ contract DeployBridge is Script {
             deployConfig.supportedTokens[0] = address(0);
             deployConfig.supportedTokens[1] = address(wBTC);
             deployConfig.supportedTokens[2] = deployConfig.weth;
-            deployConfig.supportedTokens[3] = address(USDC);
-            deployConfig.supportedTokens[4] = address(USDT);
+
+            if (chainIDHash == keccak256(abi.encode("31337"))){
+                deployConfig.supportedTokens[3] = address(ETHUSDC);
+                deployConfig.supportedTokens[4] = address(ETHUSDT);
+            }else{
+                deployConfig.supportedTokens[3] = address(BNBUSDC);
+                deployConfig.supportedTokens[4] = address(BNBUSDT);
+            }
+
             deployConfig.supportedTokens[5] = address(BUSD);
             deployConfig.supportedTokens[6] = address(BNB);
             deployConfig.supportedTokens[7] = address(AAVELPTOKEN);
@@ -202,7 +213,7 @@ contract DeployBridge is Script {
                     tokenIds,
                     suiDecimals,
                     supportedChainIds,
-                    uint64(0), // aave protocolType
+                    uint64(1), // aave protocolType
                     uint64(3), // tokenID
                     uint64(7)  // lpTokenId
                 )
@@ -250,11 +261,26 @@ contract DeployBridge is Script {
             opts
         );
 
+        // setAsset
+        mockArrow.setAsset(1, BridgeConfig(bridgeConfig).tokenAddressOf(3), BridgeConfig(bridgeConfig).tokenAddressOf(7));
+        mockArrow.setLpToken(1,BridgeConfig(bridgeConfig).tokenAddressOf(3),BridgeConfig(bridgeConfig).tokenAddressOf(7));
+
         // transfer vault ownership to bridge
         vault.transferOwnership(suiBridge);
         // transfer limiter ownership to bridge
         BridgeLimiter instance = BridgeLimiter(limiter);
         instance.transferOwnership(suiBridge);
+
+        if (chainIDHash == keccak256(abi.encode("31337"))){
+            // mint tokens to vault
+            MockUSDC(BridgeConfig(bridgeConfig).tokenAddressOf(3)).mint(address(vault), 100000000000000000);
+            MockUSDT(BridgeConfig(bridgeConfig).tokenAddressOf(4)).mint(address(vault), 1000000000000000);
+            MockAAVELPToken(BridgeConfig(bridgeConfig).tokenAddressOf(7)).mint(address(vault), 1000000000000000);
+            // mint tokens to mockArrow
+            MockUSDC(BridgeConfig(bridgeConfig).tokenAddressOf(3)).mint(address(mockArrow), 100000000000000000);
+            MockUSDT(BridgeConfig(bridgeConfig).tokenAddressOf(4)).mint(address(mockArrow), 1000000000000000);
+            MockAAVELPToken(BridgeConfig(bridgeConfig).tokenAddressOf(7)).mint(address(mockArrow), 1000000000000000);
+        }
 
         // print deployed addresses for post deployment setup
         console.log("[Deployed] BridgeConfig:", bridgeConfig);
@@ -269,6 +295,8 @@ contract DeployBridge is Script {
         console.log("[Deployed] BNB:", BridgeConfig(bridgeConfig).tokenAddressOf(6));
         console.log("[Deployed] Arrow:",address(mockArrow));
         console.log("[Deployed] AaveLPToken:", BridgeConfig(bridgeConfig).tokenAddressOf(7));
+        console.log("[Deployed] AaveAsset:", mockArrow.getAsset(0, BridgeConfig(bridgeConfig).tokenAddressOf(7)));
+        console.log("[Deployed] LP AaveAsset:", mockArrow.getLpToken(0, BridgeConfig(bridgeConfig).tokenAddressOf(3)));
 
         vm.stopBroadcast();
     }
