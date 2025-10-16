@@ -182,6 +182,23 @@ contract BridgeUtilsTest is BridgeBaseTest {
         );
     }
 
+
+    function testDecodeDefiTransferPayloadOnMove() public {
+        bytes memory payload =
+                hex"20000000000000000000000000000000000000000000000000000000000000abcd0c0000000002fa8ed800000000000000000000020000000000000001000000000000000400";
+        BridgeUtils.DefiTransferPayload memory _payload =
+            BridgeUtils.decodeDefiTransferPayload(payload);
+
+        assertEq(_payload.senderAddressLength, uint8(32));
+        assertEq(_payload.targetChain, uint8(12));
+        assertEq(_payload.protocolTokenID, BridgeUtils.USDT); 
+        assertEq(_payload.amount, uint64(49975000));
+        assertEq(_payload.protocolType, uint8(2));
+        assertEq(_payload.protocolVersion, uint8(1));
+        assertEq(_payload.actionType, uint8(0));
+
+    }
+
     function testDecodeTransferTokenPayload() public {
         // 20: sender length 1 bytes
         // 80ab1ee086210a3a37355300ca24672e81062fcdb5ced6618dab203f6a3b291c: sender 32 bytes
