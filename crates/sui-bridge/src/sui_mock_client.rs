@@ -13,7 +13,7 @@ use sui_json_rpc_types::{ SuiTransactionBlockResponse};
 use sui_json_rpc_types::{EventFilter, EventPage, SuiEvent};
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::base_types::ObjectRef;
-use sui_types::bridge::{BridgeCommitteeSummary, BridgeSummary, BridgeTokenMetadata, BridgeTreasurySummary, MoveTypeParsedTokenTransferMessageV2};
+use sui_types::bridge::{BridgeCommitteeSummary, BridgeSummary, BridgeTokenMetadata, BridgeTreasurySummary, MoveTypeParsedDefiTransferOutMessage, MoveTypeParsedTokenTransferMessageV2};
 use sui_types::digests::TransactionDigest;
 use sui_types::event::EventID;
 use sui_types::gas_coin::GasCoin;
@@ -386,6 +386,15 @@ impl SuiClientInner for SuiMockClient {
         _source_chain_id: u8,
         _seq_number: u64,
     ) -> Result<Option<MoveTypeParsedTokenTransferMessageV2>, BridgeError> {
+        unimplemented!()
+    }
+
+    async fn get_parsed_defi_transfer_out_message(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _source_chain_id: u8,
+        _seq_number: u64,
+    ) -> Result<Option<MoveTypeParsedDefiTransferOutMessage>, BridgeError> {
         unimplemented!()
     }
 
