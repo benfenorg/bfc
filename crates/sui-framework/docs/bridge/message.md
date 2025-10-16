@@ -29,6 +29,7 @@ title: Module `bridge::message`
 -  [Struct `ParsedTokenTransferMessage`](#bridge_message_ParsedTokenTransferMessage)
 -  [Struct `ParsedTokenTransferMessageV2`](#bridge_message_ParsedTokenTransferMessageV2)
 -  [Struct `ParsedTokenTransferInMessage`](#bridge_message_ParsedTokenTransferInMessage)
+-  [Struct `ParsedDefiTransferOutMessage`](#bridge_message_ParsedDefiTransferOutMessage)
 -  [Struct `AddTokenOnTokenList`](#bridge_message_AddTokenOnTokenList)
 -  [Struct `RemoveTokenOnTokenList`](#bridge_message_RemoveTokenOnTokenList)
 -  [Struct `SetCrossOutBridgeFee`](#bridge_message_SetCrossOutBridgeFee)
@@ -182,6 +183,7 @@ title: Module `bridge::message`
 -  [Function `to_parsed_token_transfer_message`](#bridge_message_to_parsed_token_transfer_message)
 -  [Function `to_parsed_token_transfer_message_v2`](#bridge_message_to_parsed_token_transfer_message_v2)
 -  [Function `to_parsed_token_transfer_in_message`](#bridge_message_to_parsed_token_transfer_in_message)
+-  [Function `to_parsed_defi_transfer_out_message`](#bridge_message_to_parsed_defi_transfer_out_message)
 -  [Function `reverse_bytes`](#bridge_message_reverse_bytes)
 -  [Function `peel_u64_be`](#bridge_message_peel_u64_be)
 
@@ -1235,6 +1237,52 @@ title: Module `bridge::message`
 
 </details>
 
+<a name="bridge_message_ParsedDefiTransferOutMessage"></a>
+
+## Struct `ParsedDefiTransferOutMessage`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/message.md#bridge_message_ParsedDefiTransferOutMessage">ParsedDefiTransferOutMessage</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code><a href="../bridge/message.md#bridge_message_message_version">message_version</a>: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code><a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code><a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code><a href="../bridge/message.md#bridge_message_payload">payload</a>: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>parsed_payload: <a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">bridge::message::DefiTransferOutPayload</a></code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
 <a name="bridge_message_AddTokenOnTokenList"></a>
 
 ## Struct `AddTokenOnTokenList`
@@ -1516,6 +1564,15 @@ title: Module `bridge::message`
 
 
 <pre><code><b>const</b> <a href="../bridge/message.md#bridge_message_EInvalidOperationType">EInvalidOperationType</a>: u64 = 7;
+</code></pre>
+
+
+
+<a name="bridge_message_EMustBeDefiMessage"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message.md#bridge_message_EMustBeDefiMessage">EMustBeDefiMessage</a>: u64 = 8;
 </code></pre>
 
 
@@ -6037,6 +6094,40 @@ Return the required signature threshold for the message, values are voting power
     <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_message_type">message_type</a>() == <a href="../bridge/message_types.md#bridge_message_types_token">message_types::token</a>(), <a href="../bridge/message.md#bridge_message_EMustBeTokenMessage">EMustBeTokenMessage</a>);
     <b>let</b> <a href="../bridge/message.md#bridge_message_payload">payload</a> = <a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_extract_token_bridge_in_payload">extract_token_bridge_in_payload</a>();
     <a href="../bridge/message.md#bridge_message_ParsedTokenTransferInMessage">ParsedTokenTransferInMessage</a> {
+        <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_message_version">message_version</a>(),
+        <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: <a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>(),
+        <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: <a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>(),
+        <a href="../bridge/message.md#bridge_message_payload">payload</a>: <a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_payload">payload</a>(),
+        parsed_payload: <a href="../bridge/message.md#bridge_message_payload">payload</a>,
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_to_parsed_defi_transfer_out_message"></a>
+
+## Function `to_parsed_defi_transfer_out_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_to_parsed_defi_transfer_out_message">to_parsed_defi_transfer_out_message</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_ParsedDefiTransferOutMessage">bridge::message::ParsedDefiTransferOutMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_to_parsed_defi_transfer_out_message">to_parsed_defi_transfer_out_message</a>(
+    <a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>,
+): <a href="../bridge/message.md#bridge_message_ParsedDefiTransferOutMessage">ParsedDefiTransferOutMessage</a> {
+    <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_message_type">message_type</a>() == <a href="../bridge/message_types.md#bridge_message_types_defi">message_types::defi</a>(), <a href="../bridge/message.md#bridge_message_EMustBeDefiMessage">EMustBeDefiMessage</a>);
+    <b>let</b> <a href="../bridge/message.md#bridge_message_payload">payload</a> = <a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_extract_defi_transfer_out_payload">extract_defi_transfer_out_payload</a>();
+    <a href="../bridge/message.md#bridge_message_ParsedDefiTransferOutMessage">ParsedDefiTransferOutMessage</a> {
         <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_message_version">message_version</a>(),
         <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: <a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>(),
         <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: <a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>(),
