@@ -1,50 +1,27 @@
+use crate::e2e_tests::{auth, stable};
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-
-use std::collections::HashSet;
-
-use sui_types::bridge::BridgeChainId;
-use tracing::info;
-use crate::abi::{eth_sui_bridge, EthSuiBridge};
-use crate::client::bridge_authority_aggregator::BridgeAuthorityAggregator;
-use crate::e2e_tests::{auth, stable};
-use crate::e2e_tests::test_utils::{
-    initiate_bridge_eth_to_sui, initiate_bridge_sui_to_eth, BridgeTestCluster, BridgeTestClusterBuilder,
-};
-use crate::sui_transaction_builder::build_sui_transaction;
-use crate::types::{BridgeAction, EmergencyAction};
-use crate::types::{BridgeActionStatus, EmergencyActionType};
-use ethers::types::Address as EthAddress;
+use crate::e2e_tests::test_utils::BridgeTestClusterBuilder;
+use crate::types::BridgeActionStatus;
 use sui_types::BRIDGE_PACKAGE_ID;
-use tap::TapFallible;
-use std::sync::Arc;
 use std::collections::HashSet;
-use sui_json_rpc_types::{SuiExecutionStatus, TransactionBlockBytes};
-use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
+use sui_json_rpc_types::SuiExecutionStatus;
 use move_core_types::ident_str;
 use move_core_types::language_storage::TypeTag;
-use sui_types::bridge::{TOKEN_ID_ETH};
+use sui_types::bridge::{BridgeChainId};
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
-use sui_types::transaction::{CallArg, ObjectArg, TransactionData, TransactionKind};
-use sui_types::{SUI_CLOCK_OBJECT_ID, SUI_CLOCK_OBJECT_SHARED_VERSION};
+use sui_types::transaction::{ObjectArg, TransactionData};
 use sui_types::{BFC_SYSTEM_STATE_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION};
 use std::str::FromStr;
 use std::time::Duration;
-use sui_types::base_types::{ObjectID};
-use test_cluster::{TestClusterBuilder};
-use tracing::{error};
-use sui_sdk::json::{SuiJsonValue};
+use tracing::{error, info};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
-use serde_json::json;
-use sui_json_rpc_api::WriteApiClient;
-use sui_json_rpc_api::TransactionBuilderClient;
-use sui_json_rpc_types::{SuiTransactionBlockResponseOptions, SuiTypeTag};
+use sui_json_rpc_types::{SuiTransactionBlockResponseOptions};
 use crate::e2e_tests::test_utils::{
-    get_signatures, initiate_bridge_erc20_to_sui, initiate_bridge_eth_to_sui,
-    initiate_bridge_sui_to_eth, send_eth_tx_and_get_tx_receipt,
     initiate_defi_bridge_unstake_sui_to_eth,mock_bridge_unstake_eth_to_sui,
 };
-use crate::events::{TokenTransferApproved, TokenTransferClaimed};
+use crate::events::TokenTransferApproved;
+
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_eth_test_cluster_builder() {
