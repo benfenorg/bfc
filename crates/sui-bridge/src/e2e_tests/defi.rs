@@ -3,9 +3,10 @@ use crate::e2e_tests::{auth, stable};
 // SPDX-License-Identifier: Apache-2.0
 use crate::e2e_tests::test_utils::BridgeTestClusterBuilder;
 use crate::types::BridgeActionStatus;
+use sui_json_rpc_api::WriteApiClient;
 use sui_types::BRIDGE_PACKAGE_ID;
 use std::collections::HashSet;
-use sui_json_rpc_types::SuiExecutionStatus;
+use sui_json_rpc_types::{SuiExecutionStatus, SuiTransactionBlockEffectsAPI};
 use move_core_types::ident_str;
 use move_core_types::language_storage::TypeTag;
 use sui_types::bridge::{BridgeChainId};
