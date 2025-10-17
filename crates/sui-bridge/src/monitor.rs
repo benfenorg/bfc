@@ -121,6 +121,7 @@ where
         }
 
         match event {
+            SuiBridgeEvent::SuiToEthDefiTokensStaked(_) => (),
             SuiBridgeEvent::SuiToEthTokenBridgeV1(_) => (),
             SuiBridgeEvent::SuiToEthTokenBridgeV2(_) => (),
             SuiBridgeEvent::SuiToEthDefiBridgeV1(_) => (),
