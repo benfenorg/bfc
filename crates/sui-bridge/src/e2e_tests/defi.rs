@@ -103,3 +103,19 @@ async fn test_defi_unstake_sui_to_eth() {
     // There are exactly 1 approved and 1 claimed event
     assert_eq!(events.len(), 1);
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+async fn test_bridge_defi_stake_mock_evm_event_e2e() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    // Setup bridge test env
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+    // .with_eth_env(true)
+    .with_bridge_cluster(true)
+    .with_num_validators(1)
+    .build()
+    .await;
+
+    mock_bridge_unstake_eth_to_sui(&bridge_test_cluster, true).await.unwrap();
+
+    Ok(())
+}
