@@ -297,9 +297,9 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
             vm.expectEmit(true, true, true, true);
             // emit Invested(0, USDC, 1_000_000);
             emit TokensStaked(
-                0,// benfen
+                1,// evm
                 0, //nonce from evm
-                1, //destination chain id(to evm)
+                0, //destination chain id (from benfen)
                 originNonce, //origin nonce(from benfen)
                 senderAddress, //senderAddress
                 address(arrow), //recipientAddress (mock arrow)
@@ -404,9 +404,9 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
             vm.expectEmit(true, true, true, true);
             // emit Invested(0, USDC, 1_000_000);
             emit TokensStaked(
-                0,// benfen
+                1,// evm
                 0, //nonce from evm
-                1, //destination chain id(to evm)
+                0, //destination chain id (from benfen)
                 firstOriginNonce, //origin nonce(from benfen) first
                 senderAddress, //senderAddress
                 address(arrow), //recipientAddress (mock arrow)
@@ -453,9 +453,9 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
 
             vm.expectEmit(true, true, true, true);
             emit TokensStaked(
-                0,// benfen
+                1,// evm
                 1, //nonce from evm (第二笔已经递增)
-                1, //destination chain id(to evm)
+                0, //destination chain id (from benfen)
                 secondOriginNonce, //origin nonce(from benfen) second
                 senderAddress, //senderAddress
                 address(arrow), //recipientAddress (mock arrow)

@@ -210,6 +210,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             defiTransferPayload.targetChain == config.chainID(), "SuiBridge: Invalid target chain"
         );
 
+        require(investAddress != address(0), "SuiBridge: invest address not set");
         // convert amount to ERC20 token decimals
         uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
             IERC20Metadata(config.tokenAddressOf(defiTransferPayload.protocolTokenID)).decimals(),
