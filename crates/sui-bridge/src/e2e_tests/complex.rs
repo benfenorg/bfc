@@ -438,9 +438,9 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
     println!("Tx response: {:?}", tx_response);
     if let Some(log) = tx_response.logs.last() {
         let event = decode_tokens_staked_event(log)?;
-        assert_eq!(event.0,BridgeChainId::SuiCustom as u8);
+        assert_eq!(event.0,BridgeChainId::EthCustom as u8);
         assert_eq!(event.1,0); //evm
-        assert_eq!(event.2,BridgeChainId::EthCustom as u8);
+        assert_eq!(event.2,BridgeChainId::SuiCustom as u8);
         assert_eq!(event.3,event_seq_num); // from benfen
         assert_eq!(event.5,bridge_test_cluster.eth_env().contracts().arrow);
         assert_eq!(event.6,0);

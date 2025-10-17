@@ -253,9 +253,9 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             );
 
             emit TokensStaked(
-                message.chainID,
-                nonces[BridgeUtils.DEFI],
                 config.chainID(),
+                nonces[BridgeUtils.DEFI],
+                message.chainID,
                 message.nonce,
                 defiTransferPayload.senderAddress,
                 investAddress,

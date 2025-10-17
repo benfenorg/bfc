@@ -48,9 +48,9 @@ interface ISuiBridge {
 
      /// @notice Emitted when tokens are staked.
     event TokensStaked(
-        uint8 indexed sourceChainID, //benfen 
+        uint8 indexed sourceChainID, //evm 
         uint64 indexed nonce, // evm
-        uint8 indexed destinationChainID, //evm
+        uint8 indexed destinationChainID, //benfen
         uint64 originNonce, //benfen 生成的
         bytes senderAddress, // benfen 上用户的地址
         address recipientAddress, //资管合约地址
