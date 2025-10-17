@@ -449,7 +449,38 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
         assert_eq!(event.9,protocol_version);
         assert_eq!(event.10,protocol_token_id);
         assert_eq!(event.11,0);    
-    }   
+    }
+
+    // check claim on sui side
+    println!("=== Step 7: Wait for Sui side to process DeFi claim ===");
+    // Poll until the DeFi action becomes Claimed (with a timeout)
+    let mut attempts = 0;
+    let max_attempts = 60; // ~2 minutes if sleeping 2s between polls
+    let mut status = BridgeActionStatus::NotFound;
+    loop {
+        status = bridge_test_cluster
+            .bridge_client()
+            .get_defi_transfer_action_status_until_success(
+                bridge_test_cluster.sui_chain_id() as u8,
+                event_seq_num,
+            )
+            .await;
+        println!("DeFi transfer action status: {:?}", status);
+        if status == BridgeActionStatus::Claimed {
+            break;
+        }
+        attempts += 1;
+        if attempts >= max_attempts {
+            panic!(
+                "Timed out waiting for DeFi transfer action to become Claimed (last status: {:?})",
+                status
+            );
+        }
+        tokio::time::sleep(Duration::from_secs(2)).await;
+    }
+    // The status should be Claimed now
+    assert_eq!(status, BridgeActionStatus::Claimed, "Action should be claimed");
+
     Ok(())
 }
 
