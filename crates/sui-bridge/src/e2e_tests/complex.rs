@@ -461,7 +461,7 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
         status = bridge_test_cluster
             .bridge_client()
             .get_defi_transfer_action_status_until_success(
-                bridge_test_cluster.sui_chain_id() as u8,
+                bridge_test_cluster.eth_chain_id() as u8,
                 event_seq_num,
             )
             .await;
