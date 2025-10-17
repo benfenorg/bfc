@@ -17,7 +17,7 @@ use crate::sui_transaction_builder::{
     build_add_tokenlist_transaction, build_add_tokens_on_sui_transaction,
     build_add_center_tokenlist_transaction,
 };
-use crate::types::BridgeCommitteeValiditySignInfo;
+use crate::types::{BridgeCommitteeValiditySignInfo, SuiToEthDefiBridgeAction};
 use crate::types::CertifiedBridgeAction;
 use crate::types::VerifiedCertifiedBridgeAction;
 use crate::types::{BridgeAction, BridgeActionStatus, SuiToEthBridgeAction};
@@ -1808,6 +1808,85 @@ pub async fn initiate_bridge_sui_to_eth(
     Ok(bridge_event)
 }
 
+pub async fn initiate_defi_bridge_unstake_sui_to_eth(
+    bridge_test_cluster: &BridgeTestCluster,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    amount: u64,
+) -> Result<SuiToEthDefiBridgeAction, anyhow::Error> {
+    let bridge_object_arg = bridge_test_cluster
+        .bridge_client()
+        .get_mutable_bridge_object_arg_must_succeed()
+        .await;
+    let sui_client = bridge_test_cluster.sui_client();
+    let sui_address = bridge_test_cluster.sui_user_address();
+    let resp = match defi_unstake_sui_to_eth_package(
+        sui_client,
+        sui_address,
+        bridge_test_cluster.wallet(),
+        bridge_test_cluster.eth_chain_id(),
+        bridge_object_arg,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        amount,
+    )
+    .await
+    {
+        Ok(resp) => {
+            tracing::info!("Sui TX response: {:?}", resp);
+            if !resp.status_ok().unwrap() {
+                return Err(anyhow!("Sui TX error"));
+            } else {
+                resp
+            }
+        }
+        Err(e) => return Err(e),
+    };
+
+    let sui_events = resp.events.unwrap().data;
+    let bridge_event = sui_events
+        .iter()
+        .filter_map(|e| {
+            let sui_bridge_event = SuiBridgeEvent::try_from_sui_event(e).unwrap()?;
+            info!("sui_bridge_event: {:?}", sui_bridge_event);
+            sui_bridge_event.try_into_bridge_action(e.id.tx_digest, e.id.event_seq as u16)
+        })
+        .find_map(|e| {
+            if let BridgeAction::SuiToEthDefiBridgeAction(a) = e {
+                Some(a)
+            } else {
+                None
+            }
+        })
+        .unwrap();
+    info!("Defi unstaked Sui to Eth");
+    assert_eq!(
+        bridge_event.sui_bridge_event.sui_chain_id,
+        bridge_test_cluster.sui_chain_id()
+    );
+    assert_eq!(
+        bridge_event.sui_bridge_event.eth_chain_id,
+        bridge_test_cluster.eth_chain_id()
+    );
+    assert_eq!(bridge_event.sui_bridge_event.sui_address, sui_address);
+    assert_eq!(bridge_event.sui_bridge_event.amount_sui_adjusted, amount);
+
+    // Wait for the bridge action to be approved
+    wait_for_defi_transfer_action_status(
+        bridge_test_cluster.bridge_client(),
+        bridge_test_cluster.sui_chain_id(),
+        bridge_event.sui_bridge_event.nonce,
+        BridgeActionStatus::Approved,
+    )
+    .await
+    .unwrap();
+    info!("Defi unstaked Sui to Eth approved.");
+
+    Ok(bridge_event)
+}
+
 async fn wait_for_transfer_action_status(
     sui_bridge_client: &SuiBridgeClient,
     chain_id: BridgeChainId,
@@ -1913,6 +1992,54 @@ async fn deposit_eth_to_sui_package(
         ident_str!("send_token").to_owned(),
         vec![sui_token_type_tags.get(&TOKEN_ID_ETH).unwrap().clone()],
         vec![arg_bridge, arg_target_chain, arg_target_address, arg_token],
+    );
+
+    let pt = builder.finish();
+    let gas_object_ref = wallet_context
+        .get_one_gas_object_owned_by_address(sui_address)
+        .await
+        .unwrap()
+        .unwrap();
+    let tx_data = TransactionData::new_programmable(
+        sui_address,
+        vec![gas_object_ref],
+        pt,
+        500_000_000,
+        sui_client
+            .governance_api()
+            .get_reference_gas_price()
+            .await
+            .unwrap(),
+    );
+    let tx = wallet_context.sign_transaction(&tx_data);
+    wallet_context.execute_transaction_may_fail(tx).await
+}
+
+async fn defi_unstake_sui_to_eth_package(
+    sui_client: &SuiClient,
+    sui_address: SuiAddress,
+    wallet_context: &WalletContext,
+    target_chain: BridgeChainId,
+    bridge_object_arg: ObjectArg,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    amount: u64,
+) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
+    let mut builder = ProgrammableTransactionBuilder::new();
+    let arg_target_chain = builder.pure(target_chain as u8).unwrap();
+    
+    let arg_protocol_type = builder.pure(protocol_type).unwrap();
+    let arg_protocol_version = builder.pure(protocol_version).unwrap();
+    let arg_protocol_token_id = builder.pure(protocol_token_id).unwrap();
+    let arg_amount = builder.pure(amount).unwrap();
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        BRIDGE_MODULE_NAME.to_owned(),
+        ident_str!("defi_unstake").to_owned(),
+        vec![],
+        vec![arg_bridge, arg_target_chain, arg_protocol_type, arg_protocol_version, arg_protocol_token_id, arg_amount],
     );
 
     let pt = builder.finish();
