@@ -157,9 +157,9 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         if (actionType==0){
             //deposit
              emit TokensStaked(
-                2,
-                100,
                 12,
+                100,
+                2,
                 0,
                 abi.encodePacked(hex"D37BD588C4E12BFBBCD791DCBD6B44DAFDF26A076677BF26AC2516CB6DB567F6"), // recipient address
                 0x1234567890123456789012345678901234567890, // sender address
