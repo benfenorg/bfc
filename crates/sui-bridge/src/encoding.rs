@@ -350,7 +350,7 @@ impl BridgeMessageEncoding for EthToSuiDefiBridgeAction {
         let mut bytes = Vec::new();
         let e = &self.eth_bridge_event;
         // Add message type
-        bytes.push(BridgeActionType::DefiTransferIn as u8);
+        bytes.push(BridgeActionType::DefiTransferOut as u8);
         // Add message version
         bytes.push(DEFI_TRANSFER_IN_MESSAGE_VERSION);
         // Add nonce
@@ -369,9 +369,9 @@ impl BridgeMessageEncoding for EthToSuiDefiBridgeAction {
         let e = &self.eth_bridge_event;
 
         // Add source address length
-        bytes.push(EthAddress::len_bytes() as u8);
+        bytes.push(SUI_ADDRESS_LENGTH as u8);
         // Add source address
-        bytes.extend_from_slice(e.eth_address.as_bytes());
+        bytes.extend_from_slice(&e.sui_address.to_vec());
         // Add target chain id
         bytes.push(e.sui_chain_id as u8);
         // Add amount
