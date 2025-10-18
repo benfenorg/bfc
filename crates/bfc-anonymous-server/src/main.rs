@@ -617,7 +617,7 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
                         }
                     };
 
-                    let mut pass_verify_signature = verify_zklogin_signature(
+                    let pass_verify_signature = verify_zklogin_signature(
                         signature,
                         zklogin_address
                     ).await.is_ok();
@@ -687,7 +687,7 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
 
                 Err(e) => {
                     warn!(
-                        "Invalid parameters for bfcx_getAnonymousRestoreArrayParamsZKLoginParams: {}",
+                        "Invalid parameters for bfcx_getAnonymousRestoreArrayParamsZKLoginAddress: {}",
                         e
                     );
                     create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
@@ -716,7 +716,7 @@ async fn handle_anonymous_restore_value_for_zklogin_address(request: JsonRpcRequ
                         config_path = Some(args_result.unwrap().config);
                     }
 
-                    let zklogin_address = match get_zklogin_rpc_address_from_config(config_path) {
+                    let zklogin_address = match get_zklogin_rpc_address_from_config(config_path.clone()) {
                         Ok(address) => address,
                         Err(e) => {
                             warn!("Failed to get zklogin address from config: {}", e);
@@ -750,12 +750,6 @@ async fn handle_anonymous_restore_value_for_zklogin_address(request: JsonRpcRequ
                                                      Some(serde_json::json!({"error": "verify signature or get owner address failed"})));
                     }
 
-
-                    let args_result = Args::try_parse();
-                    let mut config_path: Option<String> = None;
-                    if args_result.is_ok() {
-                        config_path = Some(args_result.unwrap().config);
-                    }
                     let mask_secret = match get_mask_secret_from_config(config_path) {
                         Ok(secret) => secret,
                         Err(e) => {
@@ -798,7 +792,7 @@ async fn handle_anonymous_restore_value_for_zklogin_address(request: JsonRpcRequ
                 }
                 Err(e) => {
                     warn!(
-                    "Invalid parameters for bfcx_getAnonymousRestoreValue: {}",
+                    "Invalid parameters for bfcx_getAnonymousRestoreValueForZkloginAddress: {}",
                     e
                 );
                     create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))

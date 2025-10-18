@@ -500,7 +500,7 @@ fn hex_to_bytes(hex: &str) -> Vec<u8> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{AnonymousServer};
+    use crate::{write_unsigned_leb128, AnonymousServer};
     use std::net::SocketAddr;
     use tracing::info;
     use tracing_subscriber::fmt;
@@ -824,5 +824,33 @@ mod tests {
         info!("Compare Result Values: result = {}", result);
 
         Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_write_unsigned_leb128(){
+        // test zero
+        let mut buffer = [0u8; 10];
+        let bytes_written = write_unsigned_leb128(&mut buffer, 0);
+        assert_eq!(bytes_written, 1);
+        assert_eq!(buffer[0], 0);
+
+        // test 1
+        let bytes_written = write_unsigned_leb128(&mut buffer, 1);
+        assert_eq!(bytes_written, 1);
+        assert_eq!(buffer[0], 1);
+
+        // test 127 (0x7F)
+        let bytes_written = write_unsigned_leb128(&mut buffer, 127);
+        assert_eq!(bytes_written, 1);
+        assert_eq!(buffer[0], 127);
+
+        // Test boundary value
+        let bytes_written = write_unsigned_leb128(&mut buffer, 0x7F);
+        assert_eq!(bytes_written, 1);
+        assert_eq!(buffer[0], 0x7F);
+        let bytes_written = write_unsigned_leb128(&mut buffer, 0x80);
+        assert_eq!(bytes_written, 2);
+        assert_eq!(buffer[0], 0x80);
+        assert_eq!(buffer[1], 0x01);
     }
 }
