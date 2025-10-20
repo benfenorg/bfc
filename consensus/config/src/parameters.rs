@@ -108,7 +108,7 @@ impl Parameters {
             Duration::from_millis(250)
         } else {
             //slow the rates...
-            Duration::from_millis(300)
+            Duration::from_millis(400)
         }
     }
 
