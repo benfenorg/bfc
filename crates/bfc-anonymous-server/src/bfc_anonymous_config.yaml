@@ -1,7 +1,8 @@
 ---
 anonymous-privatekey: "0x1111ffff0000"
 anonymous-rpc:
-  - "http://localhost:9010"
-  - "http://localhost:9010"
-enable-anonymous-rpc: true
+  - "http://127.0.0.1:9010"
+  - "http://127.0.0.1:9010"
+enable-anonymous-rpc: false
 fullnode-rpc-path: "https://rpc-mainnet.benfen.org"
+zklogin-verify-rpc-path: "https://zksimplerpc.benfen.org/verify_zk_login_sig"
