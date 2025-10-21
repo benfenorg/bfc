@@ -817,7 +817,7 @@ fn build_defi_bridge_approve_transaction(
         builder.programmable_move_call(
             BRIDGE_PACKAGE_ID,
             sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
-            ident_str!("claim_and_transfer_busd").to_owned(),
+            ident_str!("claim_and_transfer_busd_for_defi").to_owned(),
             vec![sui_token_type_tags
                 .get(&token_type)
                 .ok_or(BridgeError::UnknownTokenId(token_type))?
