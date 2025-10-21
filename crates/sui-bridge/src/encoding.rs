@@ -141,7 +141,7 @@ impl BridgeMessageEncoding for SuiToEthDefiBridgeAction {
         let mut bytes = Vec::new();
         let e = &self.sui_bridge_event;
         // Add message type
-        bytes.push(BridgeActionType::DefiTransferOut as u8);
+        bytes.push(BridgeActionType::Defi as u8);
         // Add message version
         bytes.push(DEFI_TRANSFER_OUT_MESSAGE_VERSION);
         // Add nonce
@@ -350,7 +350,7 @@ impl BridgeMessageEncoding for EthToSuiDefiBridgeAction {
         let mut bytes = Vec::new();
         let e = &self.eth_bridge_event;
         // Add message type
-        bytes.push(BridgeActionType::DefiTransferOut as u8);
+        bytes.push(BridgeActionType::Defi as u8);
         // Add message version
         bytes.push(DEFI_TRANSFER_IN_MESSAGE_VERSION);
         // Add nonce

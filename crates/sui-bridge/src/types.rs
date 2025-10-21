@@ -235,8 +235,7 @@ pub enum BridgeActionType {
     SetCrossOutBridgeFee = 20,
     SetCrossInBridgeFee = 21,
     WithdrawBridgeFee = 22,
-    DefiTransferOut = 23,
-    DefiTransferIn = 24,
+    Defi = 23,
     UpdateInvestAddress = 26,
     AddLpTokenId = 27,
 }
@@ -648,8 +647,7 @@ impl BridgeAction {
     pub fn is_governace_action(&self) -> bool {
         match self.action_type() {
             BridgeActionType::TokenTransfer => false,
-            BridgeActionType::DefiTransferOut => false,
-            BridgeActionType::DefiTransferIn => false,
+            BridgeActionType::Defi => false,
             BridgeActionType::UpdateCommitteeBlocklist => true,
             BridgeActionType::EmergencyButton => true,
             BridgeActionType::LimitUpdate => true,
@@ -680,11 +678,11 @@ impl BridgeAction {
     pub fn action_type(&self) -> BridgeActionType {
         match self {
             BridgeAction::SuiToEthBridgeAction(_) => BridgeActionType::TokenTransfer,
-            BridgeAction::SuiToEthDefiBridgeAction(_) => BridgeActionType::DefiTransferIn,
+            BridgeAction::SuiToEthDefiBridgeAction(_) => BridgeActionType::Defi,
             BridgeAction::EthSendBackBridgeAction(_) => BridgeActionType::TokenTransfer,
             BridgeAction::ExternalDepositStartBridgeAction(_) => BridgeActionType::TokenTransfer,
             BridgeAction::EthToSuiBridgeAction(_) => BridgeActionType::TokenTransfer,
-            BridgeAction::EthToSuiDefiBridgeAction(_) => BridgeActionType::DefiTransferOut,
+            BridgeAction::EthToSuiDefiBridgeAction(_) => BridgeActionType::Defi,
             BridgeAction::BlocklistCommitteeAction(_) => BridgeActionType::UpdateCommitteeBlocklist,
             BridgeAction::EmergencyAction(_) => BridgeActionType::EmergencyButton,
             BridgeAction::LimitUpdateAction(_) => BridgeActionType::LimitUpdate,
