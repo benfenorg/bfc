@@ -3152,3 +3152,604 @@ fun test_defi_unstake_and_approve_defi_transfer_in(){
     sui::test_scenario::end(scenario);
     env.destroy_env();
 }
+
+// Zero amount stake - should fail with ETokenValueIsZero
+#[test]
+#[expected_failure(abort_code = bridge::bridge::ETokenValueIsZero)]
+fun test_defi_stake_zero_amount() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+
+    // Get BUSD coin with non-zero amount, then split to create zero coin
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+    let amount = 1000u64;
+
+    scenario.next_tx(@0x0);
+    let mut coin = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount, &cap, scenario.ctx());
+
+    // Split all value out to create a zero-value coin
+    let _non_zero_coin = coin.split(amount, scenario.ctx());
+    // Now 'coin' has zero value
+
+    // Destroy the non-zero coin since we don't need it
+    bfc_system_state.burn_stable(_non_zero_coin, scenario.ctx());
+
+    // Call defi_stake function with zero-value coin - should fail
+    let mut bridge = env.bridge(@0x0);
+    let ctx = env.ctx();
+
+    let target_chain = chain_ids::eth_mainnet();
+    let protocol_type = 1u64;
+    let protocol_version = 3u64;
+    let protocol_token_id = 3u64; // USDC
+
+    bridge.bridge_ref_mut().defi_stake<BUSD>(
+        &mut bfc_system_state,
+        target_chain,
+        coin,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        ctx,
+    );
+
+    // Cleanup - should not reach here
+    bridge.return_bridge();
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+// Zero amount unstake - should fail with ETokenValueIsZero
+#[test]
+#[expected_failure(abort_code = bridge::bridge::ETokenValueIsZero)]
+fun test_defi_unstake_zero_amount() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    scenario.next_tx(@0x0);
+    let source_chain = chain_ids::eth_custom();
+    let seq_num = 100;
+    let sender_address = address::to_bytes(@0x0);
+    let target_chain = chain_ids::sui_custom();
+    let amount = 1000;
+    let protocol_type = 1;
+    let protocol_version = 3;
+    let protocol_token_id = 3; // USDC
+    let lp_token_amount = 1000_000_000_000;
+
+    // First stake some tokens
+    let message = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num,
+        sender_address,
+        target_chain,
+        amount,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE,
+        lp_token_amount
+    );
+
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+
+    bridge.approve_defi_transfer_in(message, signatures);
+
+    // Try to unstake with zero amount - should fail
+    scenario.next_tx(@0xABCD);
+    let ctx = env.ctx();
+
+    bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, 0u64, ctx);
+
+    // Cleanup - should not reach here
+    bridge_wrap.return_bridge();
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+// Invalid protocol token ID for unstake - should fail with EOnlySupportUsdcOrUsdt
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EOnlySupportUsdcOrUsdt)]
+fun test_defi_unstake_invalid_protocol_token() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    scenario.next_tx(@0x0);
+    let source_chain = chain_ids::eth_custom();
+    let seq_num = 100;
+    let sender_address = address::to_bytes(@0x0);
+    let target_chain = chain_ids::sui_custom();
+    let amount = 1000;
+    let protocol_type = 1;
+    let protocol_version = 3;
+    let protocol_token_id = 3; // USDC
+    let lp_token_amount = 1000_000_000_000;
+
+    // First stake with valid protocol_token_id (USDC)
+    let message = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num,
+        sender_address,
+        target_chain,
+        amount,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE,
+        lp_token_amount
+    );
+
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+
+    bridge.approve_defi_transfer_in(message, signatures);
+
+    // Try to unstake with invalid protocol_token_id (e.g., 999)
+    scenario.next_tx(@0xABCD);
+    let ctx = env.ctx();
+    let invalid_protocol_token_id = 999u64; // Not USDC(3) or USDT(2)
+
+    bridge.defi_unstake(source_chain, protocol_type, protocol_version, invalid_protocol_token_id, lp_token_amount, ctx);
+
+    // Cleanup - should not reach here
+    bridge_wrap.return_bridge();
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+// Unstake when bridge is paused - should fail with EBridgeUnavailable
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EBridgeUnavailable)]
+fun test_defi_unstake_when_bridge_paused() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    scenario.next_tx(@0x0);
+    let source_chain = chain_ids::eth_custom();
+    let seq_num = 100;
+    let sender_address = address::to_bytes(@0x0);
+    let target_chain = chain_ids::sui_custom();
+    let amount = 1000;
+    let protocol_type = 1;
+    let protocol_version = 3;
+    let protocol_token_id = 3; // USDC
+    let lp_token_amount = 1000_000_000_000;
+
+    // First stake some tokens
+    let message = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num,
+        sender_address,
+        target_chain,
+        amount,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE,
+        lp_token_amount
+    );
+
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+
+    bridge.approve_defi_transfer_in(message, signatures);
+
+    // Release bridge reference before pausing
+    bridge_wrap.return_bridge();
+
+    // Pause the bridge
+    env.freeze_bridge(@0x0, 1000);
+
+    // Get bridge reference again after pausing
+    let mut bridge_wrap2 = env.bridge(@0x0);
+    let bridge2 = bridge_wrap2.bridge_ref_mut();
+
+    // Try to unstake when bridge is paused - should fail
+    scenario.next_tx(@0xABCD);
+    let ctx = env.ctx();
+
+    bridge2.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
+
+    // Cleanup - should not reach here
+    bridge_wrap2.return_bridge();
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+// Invalid protocol configuration for DeFi stake - should fail with EDefiProtocolConfigNotFound
+// Note: Protocol validation happens before route validation in defi_stake
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EDefiProtocolConfigNotFound)]
+fun test_defi_stake_invalid_protocol() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+    let amount = 1000u64;
+
+    scenario.next_tx(@0x0);
+    let coin = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount, &cap, scenario.ctx());
+
+    let mut bridge = env.bridge(@0x0);
+    let ctx = env.ctx();
+
+    // Use an invalid target_chain that doesn't have a valid route from sui_custom
+    let target_chain = chain_ids::sui_mainnet(); // Invalid route from sui_custom to sui_mainnet
+    let protocol_type = 1u64;
+    let protocol_version = 3u64;
+    let protocol_token_id = 3u64; // USDC
+
+    // This should fail with EInvalidBridgeRoute
+    bridge.bridge_ref_mut().defi_stake<BUSD>(
+        &mut bfc_system_state,
+        target_chain,
+        coin,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        ctx,
+    );
+
+    // Cleanup - should not reach here
+    bridge.return_bridge();
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+// Invalid route for DeFi unstake - should fail with EInvalidBridgeRoute
+// Note: In defi_unstake, route validation happens before protocol validation
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EInvalidBridgeRoute)]
+fun test_defi_unstake_invalid_route() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    scenario.next_tx(@0x0);
+    let source_chain = chain_ids::eth_custom();
+    let seq_num = 100;
+    let sender_address = address::to_bytes(@0x0);
+    let target_chain = chain_ids::sui_custom();
+    let amount = 1000;
+    let protocol_type = 1;
+    let protocol_version = 3;
+    let protocol_token_id = 3; // USDC
+    let lp_token_amount = 1000_000_000_000;
+
+    // First stake some tokens
+    let message = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num,
+        sender_address,
+        target_chain,
+        amount,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE,
+        lp_token_amount
+    );
+
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+
+    bridge.approve_defi_transfer_in(message, signatures);
+
+    // Try to unstake with invalid target route
+    scenario.next_tx(@0xABCD);
+    let ctx = env.ctx();
+    let invalid_target_chain = chain_ids::sui_mainnet(); // Invalid route
+
+    bridge.defi_unstake(invalid_target_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
+
+    // Cleanup - should not reach here
+    bridge_wrap.return_bridge();
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+// Unsupported chain-protocol combination for unstake - should fail with EDefiProtocolConfigNotFound
+// Note: The protocol config check validates chain-token compatibility
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EDefiProtocolConfigNotFound)]
+fun test_defi_unstake_unsupported_chain_protocol() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    scenario.next_tx(@0x0);
+    let source_chain = chain_ids::eth_custom();
+    let seq_num = 100;
+    let sender_address = address::to_bytes(@0x0);
+    let target_chain = chain_ids::sui_custom();
+    let amount = 1000;
+    let protocol_type = 1;
+    let protocol_version = 3;
+    let protocol_token_id = 3; // USDC
+    let lp_token_amount = 1000_000_000_000;
+
+    // First stake some tokens
+    let message = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num,
+        sender_address,
+        target_chain,
+        amount,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE,
+        lp_token_amount
+    );
+
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+
+    bridge.approve_defi_transfer_in(message, signatures);
+
+    // Try to unstake to a chain that doesn't support the protocol_token_id
+    scenario.next_tx(@0xABCD);
+    let ctx = env.ctx();
+    // Use solana_testnet which may not support USDC from Benfen
+    let unsupported_chain = chain_ids::solana_testnet();
+
+    bridge.defi_unstake(unsupported_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
+
+    // Cleanup - should not reach here
+    bridge_wrap.return_bridge();
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+// Minimum amount stake (1 unit) - should succeed
+#[test]
+fun test_defi_stake_minimum_amount() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+    let amount = 1u64; // Minimum amount (1 unit)
+
+    scenario.next_tx(@0x0);
+    let coin = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount, &cap, scenario.ctx());
+
+    let mut bridge = env.bridge(@0x0);
+    let ctx = env.ctx();
+
+    let target_chain = chain_ids::eth_mainnet();
+    let protocol_type = 1u64;
+    let protocol_version = 3u64;
+    let protocol_token_id = 3u64; // USDC
+
+    bridge.bridge_ref_mut().defi_stake<BUSD>(
+        &mut bfc_system_state,
+        target_chain,
+        coin,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        ctx,
+    );
+
+    // Verify event was emitted
+    let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
+    assert!(transfer_out_events.length() == 1, 0);
+
+    // Verify record was stored
+    let bridge_inner = bridge.bridge_ref().test_load_inner();
+    let records = bridge_inner.inner_token_transfer_records();
+    assert!(records.length() == 1, 0);
+
+    bridge.return_bridge();
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+// Unstake exactly all LP tokens - should succeed
+#[test]
+fun test_defi_unstake_exact_all_lp_tokens() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    scenario.next_tx(@0x0);
+    let source_chain = chain_ids::eth_custom();
+    let seq_num = 100;
+    let sender_address = address::to_bytes(@0x0);
+    let target_chain = chain_ids::sui_custom();
+    let amount = 1000;
+    let protocol_type = 1;
+    let protocol_version = 3;
+    let protocol_token_id = 3; // USDC
+    let lp_token_amount = 1000_000_000_000;
+
+    // First stake some tokens
+    let message = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num,
+        sender_address,
+        target_chain,
+        amount,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE,
+        lp_token_amount
+    );
+
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+
+    bridge.approve_defi_transfer_in(message, signatures);
+
+    // Verify staking succeeded
+    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain,
+    );
+    let holder_lp_amount = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    assert!(holder_lp_amount == lp_token_amount, 0);
+
+    // Unstake exactly all LP tokens
+    scenario.next_tx(@0xABCD);
+    let ctx = env.ctx();
+
+    bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
+
+    // Verify all LP tokens were unstaked
+    let remaining_lp = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    assert!(remaining_lp == 0, 0);
+
+    // Verify event was emitted
+    let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
+    assert!(transfer_out_events.length() == 1, 0);
+
+    bridge_wrap.return_bridge();
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+// Multiple stakes followed by partial unstake - should succeed
+#[test]
+fun test_defi_multiple_stakes_partial_unstake() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    scenario.next_tx(@0x0);
+    let source_chain = chain_ids::eth_custom();
+    let sender_address = address::to_bytes(@0x0);
+    let target_chain = chain_ids::sui_custom();
+    let protocol_type = 1;
+    let protocol_version = 3;
+    let protocol_token_id = 3; // USDC
+
+    // First stake
+    let seq_num_1 = 100;
+    let amount_1 = 1000;
+    let lp_token_amount_1 = 1000_000_000_000;
+
+    let message_1 = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num_1,
+        sender_address,
+        target_chain,
+        amount_1,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE,
+        lp_token_amount_1
+    );
+
+    let signatures_1 = sign_message_with(&env, message_1, vector[0, 1, 2]);
+
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+
+    bridge.approve_defi_transfer_in(message_1, signatures_1);
+
+    // Second stake
+    let seq_num_2 = 101;
+    let amount_2 = 2000;
+    let lp_token_amount_2 = 2000_000_000_000;
+
+    let message_2 = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num_2,
+        sender_address,
+        target_chain,
+        amount_2,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE,
+        lp_token_amount_2
+    );
+
+    let signatures_2 = sign_message_with_mut(&mut env, message_2, vector[0, 1, 2]);
+    bridge.approve_defi_transfer_in(message_2, signatures_2);
+
+    // Verify total LP tokens
+    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain,
+    );
+    let total_lp = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    assert!(total_lp == lp_token_amount_1 + lp_token_amount_2, 0);
+
+    // Partial unstake (only unstake amount from first stake)
+    scenario.next_tx(@0xABCD);
+    let ctx = env.ctx();
+
+    bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount_1, ctx);
+
+    // Verify partial unstake
+    let remaining_lp = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    assert!(remaining_lp == lp_token_amount_2, 0);
+
+    // Verify event was emitted
+    let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
+    assert!(transfer_out_events.length() == 1, 0);
+
+    bridge_wrap.return_bridge();
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
