@@ -417,7 +417,7 @@ impl From<ParsedTokenTransferMessageV2> for eth_sui_bridge::Message {
 impl From<ParsedDefiTransferOutMessage> for eth_sui_bridge::Message {
     fn from(parsed_message: ParsedDefiTransferOutMessage) -> Self {
         eth_sui_bridge::Message {
-            message_type: BridgeActionType::DefiTransferOut as u8,
+            message_type: BridgeActionType::Defi as u8,
             version: parsed_message.message_version,
             nonce: parsed_message.seq_num,
             chain_id: parsed_message.source_chain as u8,
