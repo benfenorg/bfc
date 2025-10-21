@@ -1,11 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-module sui_system::voting_power;
+module sui_system::voting_power {
+    use std::ascii;
+    use sui_system::validator::Validator;
+    use sui::vec_map::VecMap;
+    use sui_system::validator;
 
-use std::ascii;
-use sui::vec_map::VecMap;
-use sui_system::validator::{Self, Validator};
+
 
 #[allow(unused_field)]
 /// Deprecated. Use VotingPowerInfoV2 instead.
@@ -40,24 +42,25 @@ const ERelativePowerMismatch: u64 = 2;
 const EVotingPowerOverThreshold: u64 = 3;
 const EInvalidVotingPower: u64 = 4;
 
-public(package) fun set_voting_power(
-    validators: &mut vector<Validator>,
-    stable_rate: VecMap<ascii::String, u64>,
-) {
-    // If threshold_pct is too small, it's possible that even when all validators reach the threshold we still don't
-    // have 100%. So we bound the threshold_pct to be always enough to find a solution.
-    let total_voting_power = TOTAL_VOTING_POWER;
-    let average_voting_power = total_voting_power.divide_and_round_up(validators.length());
-    let threshold = total_voting_power.min(MAX_VOTING_POWER.max(average_voting_power));
-    let (mut info_list, remaining_power) = init_voting_power_info(
-        validators,
-        threshold,
-        stable_rate,
-    );
-    adjust_voting_power(&mut info_list, threshold, remaining_power);
-    update_voting_power(validators, info_list);
-    check_invariants(validators, stable_rate);
-}
+    /// Set the voting power of all validators.
+    /// Each validator's voting power is initialized using their stake. We then attempt to cap their voting power
+    /// at `MAX_VOTING_POWER`. If `MAX_VOTING_POWER` is not a feasible cap, we pick the lowest possible cap.
+    public(package) fun set_voting_power(
+        validators: &mut vector<Validator>,
+        stable_rate: VecMap<ascii::String, u64>) {
+        // If threshold_pct is too small, it's possible that even when all validators reach the threshold we still don't
+        // have 100%. So we bound the threshold_pct to be always enough to find a solution.
+        let threshold = std::u64::min(
+            TOTAL_VOTING_POWER,
+            std::u64::max(MAX_VOTING_POWER, std::u64::divide_and_round_up(TOTAL_VOTING_POWER, validators.length())),
+        );
+        let (mut info_list, remaining_power) = init_voting_power_info(validators, threshold, stable_rate);
+
+        adjust_voting_power(&mut info_list, threshold, remaining_power);
+        update_voting_power(validators, info_list);
+        check_invariants(validators, stable_rate);
+    }
+
 
 /// Create the initial voting power of each validator, set using their stake, but capped using threshold.
 /// We also perform insertion sort while creating the voting power list, by maintaining the list in
@@ -74,64 +77,45 @@ fun init_voting_power_info(
     let mut total_power = 0;
     let mut result = vector[];
     while (i < len) {
-        let validator = &validators[i];
-        let stake = validator::total_stake_with_all_stable(validator, stable_rate);
-        let adjusted_stake = (stake as u128) * (TOTAL_VOTING_POWER as u128) / (total_stake as u128);
-        let voting_power = std::u64::min((adjusted_stake as u64), threshold);
-        let info = VotingPowerInfoV2 {
-            validator_index: i,
-            voting_power,
-            stake,
-        };
-        insert(&mut result, info);
-        total_power = total_power + voting_power;
-        i = i + 1;
+    let validator = &validators[i];
+    let stake = validator::total_stake_with_all_stable(validator, stable_rate);
+    let voting_power = derive_raw_voting_power(stake, total_stake).min(threshold);
+    let info = VotingPowerInfoV2 {
+    validator_index: i,
+    voting_power,
+    stake,
+    };
+    insert(&mut result, info);
+    total_power = total_power + voting_power;
+    i = i + 1;
     };
     (result, TOTAL_VOTING_POWER - total_power)
 }
 
-// fun init_voting_power_info(
-//     validators: &vector<Validator>,
-//     threshold: u64,
-//     total_stake: u64,
-// ): (vector<VotingPowerInfoV2>, u64) {
-//     let mut total_power = 0;
-//     let mut result = vector[];
-//     validators.length().do!(|i| {
-//         let stake = validators[i].total_stake();
-//         let voting_power = derive_raw_voting_power(stake, total_stake).min(threshold);
-//         insert(&mut result, VotingPowerInfoV2 { validator_index: i, voting_power, stake });
-//         total_power = total_power + voting_power;
-//     });
-//
-//     (result, TOTAL_VOTING_POWER - total_power)
-// }
-
-/// Sum up the total stake of all validators.
-fun total_stake(validators: &vector<Validator>, stable_rate: VecMap<ascii::String, u64>): u64 {
-    let mut i = 0;
-    let len = validators.length();
-    let mut total_stake = 0;
-    while (i < len) {
-        total_stake =
-            total_stake +
-                validator::total_stake_with_all_stable(vector::borrow(validators, i), stable_rate);
-        i = i + 1;
-    };
-    total_stake
-}
 
 public(package) fun derive_raw_voting_power(stake: u64, total_stake: u64): u64 {
     ((stake as u128 * (TOTAL_VOTING_POWER as u128) / (total_stake as u128)) as u64)
 }
+    /// Sum up the total stake of all validators.
+    fun total_stake(validators: &vector<Validator>, stable_rate: VecMap<ascii::String, u64>): u64 {
+        let mut i = 0;
+        let len = validators.length();
+        let mut total_stake =0 ;
+        while (i < len) {
+        total_stake = total_stake +
+        validator::total_stake_with_all_stable(vector::borrow(validators, i), stable_rate);
+        i = i + 1;
+        };
+        total_stake
+    }
 
-/// Insert `new_info` to `info_list` as part of insertion sort, such that `info_list` is always sorted
-/// using stake, in descending order.
-fun insert(info_list: &mut vector<VotingPowerInfoV2>, new_info: VotingPowerInfoV2) {
-    let len = info_list.length();
-    let idx = info_list.find_index!(|info| new_info.stake >= info.stake);
-    info_list.insert(new_info, idx.destroy_or!(len));
-}
+    /// Insert `new_info` to `info_list` as part of insertion sort, such that `info_list` is always sorted
+    /// using stake, in descending order.
+    fun insert(info_list: &mut vector<VotingPowerInfoV2>, new_info: VotingPowerInfoV2) {
+        let len = info_list.length();
+        let idx = info_list.find_index!(|info| new_info.stake >= info.stake);
+        info_list.insert(new_info, idx.destroy_or!(len));
+    }
 
 /// Distribute remaining_power to validators that are not capped at threshold.
 fun adjust_voting_power(
@@ -164,51 +148,52 @@ fun update_voting_power(validators: &mut vector<Validator>, info_list: vector<Vo
     });
 }
 
-/// Check a few invariants that must hold after setting the voting power.
-fun check_invariants(v: &vector<Validator>, stable_rate: VecMap<ascii::String, u64>) {
-    // First check that the total voting power must be TOTAL_VOTING_POWER.
-    let mut i = 0;
-    let len = vector::length(v);
-    let mut total = 0;
-    while (i < len) {
+    /// Check a few invariants that must hold after setting the voting power.
+    fun check_invariants(v: &vector<Validator>, stable_rate: VecMap<ascii::String, u64>) {
+        // First check that the total voting power must be TOTAL_VOTING_POWER.
+        let mut i = 0;
+        let len = vector::length(v);
+        let mut total = 0;
+        while (i < len) {
         let voting_power = validator::voting_power(vector::borrow(v, i));
         assert!(voting_power > 0, EInvalidVotingPower);
         total = total + voting_power;
         i = i + 1;
-    };
-    assert!(total == TOTAL_VOTING_POWER, ETotalPowerMismatch);
+        };
+        assert!(total == TOTAL_VOTING_POWER, ETotalPowerMismatch);
 
-    // Second check that if validator A's stake is larger than B's stake, A's voting power must be no less
-    // than B's voting power; similarly, if A's stake is less than B's stake, A's voting power must be no larger
-    // than B's voting power.
-    let mut a = 0;
-    while (a < len) {
+        // Second check that if validator A's stake is larger than B's stake, A's voting power must be no less
+        // than B's voting power; similarly, if A's stake is less than B's stake, A's voting power must be no larger
+        // than B's voting power.
+        let mut a = 0;
+        while (a < len) {
         let mut b = a + 1;
         while (b < len) {
-            let validator_a = vector::borrow(v, a);
-            let validator_b = vector::borrow(v, b);
-            let stake_a = validator::total_stake_with_all_stable(validator_a, stable_rate);
-            let stake_b = validator::total_stake_with_all_stable(validator_b, stable_rate);
-            let power_a = validator::voting_power(validator_a);
-            let power_b = validator::voting_power(validator_b);
-            if (stake_a > stake_b) {
-                assert!(power_a >= power_b, ERelativePowerMismatch);
-            };
-            if (stake_a < stake_b) {
-                assert!(power_a <= power_b, ERelativePowerMismatch);
-            };
-            b = b + 1;
+        let validator_a = vector::borrow(v, a);
+        let validator_b = vector::borrow(v, b);
+        let stake_a = validator::total_stake_with_all_stable(validator_a, stable_rate);
+        let stake_b = validator::total_stake_with_all_stable(validator_b, stable_rate);
+        let power_a = validator::voting_power(validator_a);
+        let power_b = validator::voting_power(validator_b);
+        if (stake_a > stake_b) {
+        assert!(power_a >= power_b, ERelativePowerMismatch);
+        };
+        if (stake_a < stake_b) {
+        assert!(power_a <= power_b, ERelativePowerMismatch);
+        };
+        b = b + 1;
         };
         a = a + 1;
+        }
     }
-}
 
 /// Return the (constant) total voting power
 public fun total_voting_power(): u64 {
     TOTAL_VOTING_POWER
 }
 
-/// Return the (constant) quorum threshold
-public fun quorum_threshold(): u64 {
-    QUORUM_THRESHOLD
+    /// Return the (constant) quorum threshold
+    public fun quorum_threshold(): u64 {
+        QUORUM_THRESHOLD
+    }
 }
