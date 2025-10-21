@@ -3,7 +3,7 @@
 
 module sui_system::stake_subsidy {
     use sui::balance::Balance;
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::bag::Bag;
     use sui::bag;
 
@@ -11,7 +11,9 @@ module sui_system::stake_subsidy {
 
     const BASIS_POINT_DENOMINATOR: u128 = 10000;
 
-    public struct StakeSubsidy has store {
+    public
+
+    struct StakeSubsidy has store {
         /// Balance of SUI set aside for stake subsidies that will be drawn down over time.
         balance: Balance<BFC>,
 
@@ -63,34 +65,35 @@ module sui_system::stake_subsidy {
         // balance
         let to_withdraw = self.current_distribution_amount.min(self.balance.value());
 
-    // Drawn down the subsidy for this epoch.
-    let stake_subsidy = self.balance.split(to_withdraw);
-    self.distribution_counter = self.distribution_counter + 1;
+        // Drawn down the subsidy for this epoch.
+        let stake_subsidy = self.balance.split(to_withdraw);
+        self.distribution_counter = self.distribution_counter + 1;
 
-    // Decrease the subsidy amount only when the current period ends.
-    if (self.distribution_counter % self.stake_subsidy_period_length == 0) {
-        let decrease_amount =
-            self.current_distribution_amount as u128
-            * (self.stake_subsidy_decrease_rate as u128) / BASIS_POINT_DENOMINATOR;
+        // Decrease the subsidy amount only when the current period ends.
+        if (self.distribution_counter % self.stake_subsidy_period_length == 0) {
+            let decrease_amount =
+                self.current_distribution_amount as u128
+                    * (self.stake_subsidy_decrease_rate as u128) / BASIS_POINT_DENOMINATOR;
 
-        self.current_distribution_amount =
-            self.current_distribution_amount - (decrease_amount as u64)
-    };
+            self.current_distribution_amount =
+                self.current_distribution_amount - (decrease_amount as u64)
+        };
 
-    stake_subsidy
-}
+        stake_subsidy
+    }
 
-/// Returns the amount of stake subsidy to be added at the end of the current epoch.
-public fun current_epoch_subsidy_amount(self: &StakeSubsidy): u64 {
-    self.current_distribution_amount.min(self.balance.value())
-}
+    /// Returns the amount of stake subsidy to be added at the end of the current epoch.
+    public fun current_epoch_subsidy_amount(self: &StakeSubsidy): u64 {
+        self.current_distribution_amount.min(self.balance.value())
+    }
 
-/// Returns the number of distributions that have occurred.
-public(package) fun get_distribution_counter(self: &StakeSubsidy): u64 {
-    self.distribution_counter
-}
+    /// Returns the number of distributions that have occurred.
+    public(package) fun get_distribution_counter(self: &StakeSubsidy): u64 {
+        self.distribution_counter
+    }
 
-#[test_only]
-public(package) fun set_distribution_counter(self: &mut StakeSubsidy, distribution_counter: u64) {
-    self.distribution_counter = distribution_counter;
+    #[test_only]
+    public(package) fun set_distribution_counter(self: &mut StakeSubsidy, distribution_counter: u64) {
+        self.distribution_counter = distribution_counter;
+    }
 }

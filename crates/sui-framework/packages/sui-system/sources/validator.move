@@ -76,10 +76,7 @@ const EGasPriceHigherThanThreshold: u64 = 102;
 
 // TODO: potentially move this value to onchain config.
 const MAX_COMMISSION_RATE: u64 = 2_000; // Max rate is 20%, which is 2000 base points
-    const EInvalidCoinType: u64 =103;
-    // TODO: potentially move this value to onchain config.
-    const MAX_COMMISSION_RATE: u64 = 2_000; // Max rate is 20%, which is 2000 base points
-
+const EInvalidCoinType: u64 =103;
 const MAX_VALIDATOR_METADATA_LENGTH: u64 = 256;
 
 // TODO: Move this to onchain config when we have a good way to do it.
@@ -296,11 +293,6 @@ public(package) fun activate(self: &mut Validator, activation_epoch: u64) {
     self.staking_pool.activate_staking_pool(activation_epoch);
 }
 
-/// Process pending stake and pending withdraws, and update the gas price.
-public(package) fun adjust_stake_and_gas_price(self: &mut Validator) {
-    self.gas_price = self.next_epoch_gas_price;
-    self.commission_rate = self.next_epoch_commission_rate;
-}
     public(package) fun activate_stable(self: &mut Validator, activation_epoch: u64) {
         activate_stable_<BUSD>(self, activation_epoch);
         activate_stable_<BARS>(self, activation_epoch);
@@ -404,7 +396,7 @@ public(package) fun redeem_fungible_staked_sui(
 /// Request to add stake to the validator's staking pool at genesis
 public(package) fun request_add_stake_at_genesis(
     self: &mut Validator,
-    stake: Balance<SUI>,
+    stake: Balance<BFC>,
     staker_address: address,
     ctx: &mut TxContext,
 ) {
@@ -425,9 +417,9 @@ public(package) fun request_add_stake_at_genesis(
 /// Request to withdraw stake from the validator's staking pool, processed at the end of the epoch.
 public(package) fun request_withdraw_stake(
     self: &mut Validator,
-    staked_sui: StakedSui,
+    staked_sui: StakedBfc,
     ctx: &TxContext,
-): Balance<SUI> {
+): Balance<BFC> {
     let principal_amount = staked_sui.amount();
     let stake_activation_epoch = staked_sui.activation_epoch();
     let withdrawn_stake = self.staking_pool.request_withdraw_stake(staked_sui, ctx);

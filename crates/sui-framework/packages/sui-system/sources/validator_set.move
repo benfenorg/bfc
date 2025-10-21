@@ -1,20 +1,19 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-module sui_system::validator_set;
+module sui_system::validator_set{
 
 use sui::bag::{Self, Bag};
 use sui::balance::Balance;
+use std::ascii;
 use sui::event;
 use sui::priority_queue as pq;
-use sui::sui::SUI;
 use sui::table::{Self, Table};
 use sui::table_vec::{Self, TableVec};
 use sui::vec_map::{Self, VecMap};
 use sui::vec_set::VecSet;
 use sui_system::staking_pool::{
     PoolTokenExchangeRate,
-    StakedSui,
     pool_id,
     FungibleStakedSui,
     fungible_staked_sui_pool_id
@@ -24,23 +23,6 @@ use sui_system::validator_cap::{UnverifiedValidatorOperationCap, ValidatorOperat
 use sui_system::validator_wrapper::ValidatorWrapper;
 use sui_system::voting_power;
 
-use bfc_system::bars::BARS;
-use bfc_system::baud::BAUD;
-use bfc_system::bbrl::BBRL;
-use bfc_system::bcad::BCAD;
-use bfc_system::beur::BEUR;
-use bfc_system::bgbp::BGBP;
-use bfc_system::bidr::BIDR;
-use bfc_system::binr::BINR;
-use bfc_system::bjpy::BJPY;
-use bfc_system::bkrw::BKRW;
-use bfc_system::bmxn::BMXN;
-use bfc_system::brub::BRUB;
-use bfc_system::bsar::BSAR;
-use bfc_system::btry::BTRY;
-use bfc_system::busd::BUSD;
-use bfc_system::bzar::BZAR;
-use bfc_system::mgg::MGG;
 use sui_system::stable_pool::StakedStable;
 use sui_system::stable_pool;
 
@@ -716,15 +698,16 @@ fun update_validator_positions_and_calculate_total_stake(
             // SIP-39: as soon as the validator’s voting power falls to VERY_LOW_VOTING_POWER_THRESHOLD,
             //      they are on probation and must acquire sufficient stake to recover to voting power
         } else if (voting_power >= very_low_voting_power_threshold) {
-            // The stake is a bit below the threshold so we increment the entry of the validator in the map.
-            let new_low_stake_period = if (self.at_risk_validators.contains(&validator_address)) {
-                let num_epochs = &mut self.at_risk_validators[&validator_address];
-                *num_epochs = *num_epochs + 1;
-                *num_epochs
-            } else {
-                self.at_risk_validators.insert(validator_address, 1);
-                1
-            };
+    // The stake is a bit below the threshold so we increment the entry of the validator in the map.
+    let new_low_stake_period = if (self.at_risk_validators.contains(&validator_address)) {
+    let num_epochs = &mut self.at_risk_validators[&validator_address];
+    *num_epochs = *num_epochs + 1;
+    *num_epochs
+    } else {
+    self.at_risk_validators.insert(validator_address, 1);
+    1
+    };
+    }
     fun update_and_process_low_stake_departures(
         self: &mut ValidatorSet,
         low_stake_threshold: u64,
@@ -1702,4 +1685,5 @@ fun get_candidate_or_active_validator(self: &ValidatorSet, validator_address: ad
     } else {
         get_validator(&self.active_validators, validator_address)
     }
+}
 }

@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-module sui_system::storage_fund {
-    use sui::balance::{Self, Balance};
-    use sui::bfc::BFC;
+module sui_system::storage_fund;
+use sui::balance::{Self, Balance};
+use sui::bfc::BFC;
 
 /// Struct representing the storage fund, containing two `Balance`s:
 /// - `total_object_storage_rebates` has the invariant that it's the sum of `storage_rebate` of

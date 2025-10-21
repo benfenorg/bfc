@@ -552,7 +552,7 @@ public entry fun join_staked_sui(self: &mut StakedBfc, other: StakedBfc) {
 }
 
 /// Returns true if all the staking parameters of the staked sui except the principal are identical
-public fun is_equal_staking_metadata(self: &StakedSui, other: &StakedSui): bool {
+public fun is_equal_staking_metadata(self: &StakedBfc, other: &StakedBfc): bool {
     (self.pool_id == other.pool_id) &&
     (self.stake_activation_epoch == other.stake_activation_epoch)
 }
