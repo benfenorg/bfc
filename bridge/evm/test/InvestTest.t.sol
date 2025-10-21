@@ -597,7 +597,7 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
         uint16 eventIdx = 0;
         //uint64 protocolType=1; 
         uint64 protocolVersion=1;
-        uint64 protocolTokenID=lpTokenId;
+        uint64 protocolTokenID=tokenID;
         uint8 actionType=1;
 
         bytes memory payload = abi.encodePacked(
@@ -680,7 +680,7 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
         uint16 eventIdx = 0;
         //uint64 protocolType=1; 
         uint64 protocolVersion=1;
-        uint64 protocolTokenID=lpTokenId;
+        uint64 protocolTokenID=tokenID;
         uint8 actionType=1;
 
         bytes memory payload = abi.encodePacked(
@@ -782,7 +782,7 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
         uint16 eventIdx = 0;
         //uint64 protocolType=1; 
         uint64 protocolVersion=1;
-        uint64 protocolTokenID=lpTokenId;
+        uint64 protocolTokenID=tokenID;
         uint8 actionType=1;
 
         bytes memory payload = abi.encodePacked(
@@ -926,7 +926,7 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
         uint16 eventIdx = 0;
         //uint64 protocolType=1; 
         uint64 protocolVersion=1;
-        uint64 protocolTokenID=lpTokenId;
+        uint64 protocolTokenID=tokenID;
         uint8 actionType=1;
 
         bytes memory payload = abi.encodePacked(

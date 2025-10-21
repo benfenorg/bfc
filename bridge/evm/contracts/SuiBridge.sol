@@ -150,46 +150,6 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         }
     }
 
-
-    function mockInvestContract(
-        uint8 actionType
-    )external{
-        if (actionType==0){
-            //deposit
-             emit TokensStaked(
-                12,
-                100,
-                2,
-                0,
-                abi.encodePacked(hex"D37BD588C4E12BFBBCD791DCBD6B44DAFDF26A076677BF26AC2516CB6DB567F6"), // recipient address
-                0x1234567890123456789012345678901234567890, // sender address
-                0,
-                50000000,
-                2,
-                1,
-                4,
-                0
-            );
-        }else if (actionType==1){
-            //withdraw
-            emit TokensUnStaked(
-                11, // source chain id
-                100, // nonce
-                2, // destination chain id
-                101, // protocol token id
-                abi.encodePacked(hex"D37BD588C4E12BFBBCD791DCBD6B44DAFDF26A076677BF26AC2516CB6DB567F6"), // recipient address
-                0x1234567890123456789012345678901234567890, // sender address
-                50000000, // aave redeem token (usdc/usdt)
-                50000000, // lp token
-                0, // protocol type
-                1, // protocol version
-                3, // action type
-                1 // original seq num
-            );
-        }
-
-    }
-
     function investBridgedTokensWithSignatures(
         bytes[] memory signatures,
         BridgeUtils.Message memory message
@@ -205,128 +165,143 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
 
         BridgeUtils.DefiTransferPayload memory defiTransferPayload =
             BridgeUtils.decodeDefiTransferPayload(message.payload);
-        
+
         require(
             defiTransferPayload.targetChain == config.chainID(), "SuiBridge: Invalid target chain"
         );
+        require(investAddress != address(0), "SuiBridge: invest address not set");   
 
-        require(investAddress != address(0), "SuiBridge: invest address not set");       
         if (defiTransferPayload.actionType==0) {
-             // convert amount to ERC20 token decimals
-            uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
-                IERC20Metadata(config.tokenAddressOf(defiTransferPayload.protocolTokenID)).decimals(),
-                config.tokenSuiDecimalOf(defiTransferPayload.protocolTokenID),
-                defiTransferPayload.amount
-            );
-
-            // mark message as processed
-            isInvestProcessed[message.nonce] = true;
-
-            _transferTokensFromVault(
-                message.chainID,
-                defiTransferPayload.protocolTokenID,
-                address(this), 
-                erc20AdjustedAmount
-            );
-            //deposit
-            uint64 lpTokenId = config.investLpTokenIdOf(defiTransferPayload.protocolType,defiTransferPayload.protocolTokenID);
-            address lpTokenAddress = config.tokenAddressOf(lpTokenId);
-            uint256 beforeLpTokenAmount=IERC20(lpTokenAddress).balanceOf(address(vault));
-            ArrowLib.deposit(
-                investAddress,
-                defiTransferPayload.protocolType,
-                config.tokenAddressOf(defiTransferPayload.protocolTokenID),
-                erc20AdjustedAmount
-            );
-            uint256 afterLpTokenAmount=IERC20(lpTokenAddress).balanceOf(address(vault));
-
-            require(afterLpTokenAmount>beforeLpTokenAmount,"SuiBridge: Invalid stake amount");
-
-            uint256 lpAmount=afterLpTokenAmount-beforeLpTokenAmount;
-
-
-            uint64 suiLpTokenAmount = BridgeUtils.convertERC20ToSuiDecimal(
-                IERC20Metadata(lpTokenAddress).decimals(),
-                config.tokenSuiDecimalOf(lpTokenId),
-                lpAmount
-            );
-
-            emit TokensStaked(
-                config.chainID(),
-                nonces[BridgeUtils.DEFI],
-                message.chainID,
-                message.nonce,
-                defiTransferPayload.senderAddress,
-                investAddress,
-                0,
-                suiLpTokenAmount,
-                defiTransferPayload.protocolType,
-                defiTransferPayload.protocolVersion,
-                defiTransferPayload.protocolTokenID,
-                defiTransferPayload.actionType
-            );
-            nonces[BridgeUtils.DEFI]++;
+             defiStake(message,defiTransferPayload,config);
         }else if (defiTransferPayload.actionType==1){
-            uint64 tokenId = defiTransferPayload.protocolTokenID;
-            uint64 lpTokenId = config.investLpTokenIdOf(defiTransferPayload.protocolType,tokenId);
-            // convert amount to ERC20 token decimals
-            uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
-                IERC20Metadata(config.tokenAddressOf(lpTokenId)).decimals(),
-                config.tokenSuiDecimalOf(lpTokenId),
-                defiTransferPayload.amount
-            );
-
-            // mark message as processed
-            isInvestProcessed[message.nonce] = true;
-
-            _transferTokensFromVault(
-                message.chainID,
-                lpTokenId,
-                address(this), 
-                erc20AdjustedAmount
-            );
-            // address lpTokenAddress = config.tokenAddressOf(lpTokenId);
-            address tokenAddress = config.tokenAddressOf(tokenId);
-            uint256 beforeTokenAmount=IERC20(tokenAddress).balanceOf(address(vault));
-            //withdraw
-            ArrowLib.withdraw(
-                investAddress,
-                defiTransferPayload.protocolType,
-                config.tokenAddressOf(lpTokenId), //lp token
-                erc20AdjustedAmount
-            );
-           uint256 afterTokenAmount=IERC20(tokenAddress).balanceOf(address(vault));
-
-            require(afterTokenAmount>beforeTokenAmount,"SuiBridge: Invalid unstake amount");
-
-            uint256 tokenAmount=afterTokenAmount-beforeTokenAmount;
-
-
-            uint64 suiTokenAmount = BridgeUtils.convertERC20ToSuiDecimal(
-                IERC20Metadata(tokenAddress).decimals(),
-                config.tokenSuiDecimalOf(tokenId),
-                tokenAmount
-            );
-            
-            emit TokensUnStaked(
-                config.chainID(),
-                nonces[BridgeUtils.DEFI],
-                message.chainID,
-                message.nonce,
-                defiTransferPayload.senderAddress,
-                investAddress, 
-                suiTokenAmount, // aave redeem token (usdc/usdt)
-                defiTransferPayload.amount, //lp token
-                defiTransferPayload.protocolType,
-                defiTransferPayload.protocolVersion,
-                defiTransferPayload.protocolTokenID,
-                defiTransferPayload.actionType
-            );
-            nonces[BridgeUtils.DEFI]++;
-
+             defiUnStake(message,defiTransferPayload,config);
         }else{
             revert("SuiBridge: Invalid actionType");
         }    
+    }
+
+    function defiStake(
+        BridgeUtils.Message memory message,
+        BridgeUtils.DefiTransferPayload memory defiTransferPayload,
+        IBridgeConfig config
+    )internal {
+        uint64 lpTokenId = config.investLpTokenIdOf(defiTransferPayload.protocolType,defiTransferPayload.protocolTokenID);
+        address lpTokenAddress = config.tokenAddressOf(lpTokenId);
+        // convert token amount(USDT/USDC) to ERC20 token decimals
+        uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
+            IERC20Metadata(config.tokenAddressOf(defiTransferPayload.protocolTokenID)).decimals(),
+            config.tokenSuiDecimalOf(defiTransferPayload.protocolTokenID),
+            defiTransferPayload.amount
+        );
+
+        _transferTokensFromVault(
+            message.chainID,
+            defiTransferPayload.protocolTokenID,
+            address(this), 
+            erc20AdjustedAmount
+        );
+        //deposit
+        uint256 beforeLpTokenAmount=IERC20(lpTokenAddress).balanceOf(address(vault));
+        ArrowLib.deposit(
+            investAddress,
+            defiTransferPayload.protocolType,
+            config.tokenAddressOf(defiTransferPayload.protocolTokenID),
+            erc20AdjustedAmount
+        );
+        uint256 afterLpTokenAmount=IERC20(lpTokenAddress).balanceOf(address(vault));
+
+        require(afterLpTokenAmount>beforeLpTokenAmount,"SuiBridge: Invalid stake amount");
+
+        uint256 lpAmount=afterLpTokenAmount-beforeLpTokenAmount;
+        //LPToken Amount to Benfen Decimal
+        uint64 suiLpTokenAmount = BridgeUtils.convertERC20ToSuiDecimal(
+            IERC20Metadata(lpTokenAddress).decimals(),
+            config.tokenSuiDecimalOf(lpTokenId),
+            lpAmount
+        );
+
+        // mark message as processed
+        isInvestProcessed[message.nonce] = true;
+
+        emit TokensStaked(
+            config.chainID(),
+            nonces[BridgeUtils.DEFI],
+            message.chainID,
+            message.nonce,
+            defiTransferPayload.senderAddress,
+            investAddress,
+            0,
+            suiLpTokenAmount,
+            defiTransferPayload.protocolType,
+            defiTransferPayload.protocolVersion,
+            defiTransferPayload.protocolTokenID,
+            defiTransferPayload.actionType
+        );
+        nonces[BridgeUtils.DEFI]++;
+    }
+
+
+    function defiUnStake(
+        BridgeUtils.Message memory message,
+        BridgeUtils.DefiTransferPayload memory defiTransferPayload,
+        IBridgeConfig config
+    )internal {
+        uint64 tokenId = defiTransferPayload.protocolTokenID;
+        uint64 lpTokenId = config.investLpTokenIdOf(defiTransferPayload.protocolType,tokenId);
+        // convert token amount(LPToken) to ERC20 token decimals
+        uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
+            IERC20Metadata(config.tokenAddressOf(lpTokenId)).decimals(),
+            config.tokenSuiDecimalOf(lpTokenId),
+            defiTransferPayload.amount
+        );
+
+        _transferTokensFromVault(
+            message.chainID,
+            lpTokenId,
+            address(this), 
+            erc20AdjustedAmount
+        );
+        // address lpTokenAddress = config.tokenAddressOf(lpTokenId);
+        address tokenAddress = config.tokenAddressOf(tokenId);
+        uint256 beforeTokenAmount=IERC20(tokenAddress).balanceOf(address(vault));
+        //withdraw
+        ArrowLib.withdraw(
+            investAddress,
+            defiTransferPayload.protocolType,
+            config.tokenAddressOf(lpTokenId), //lp token
+            erc20AdjustedAmount
+        );
+        uint256 afterTokenAmount=IERC20(tokenAddress).balanceOf(address(vault));
+
+        require(afterTokenAmount>beforeTokenAmount,"SuiBridge: Invalid unstake amount");
+
+        uint256 tokenAmount=afterTokenAmount-beforeTokenAmount;
+
+        //Token Amount(USDT/USDC) to Benfen Decimal
+        uint64 suiTokenAmount = BridgeUtils.convertERC20ToSuiDecimal(
+            IERC20Metadata(tokenAddress).decimals(),
+            config.tokenSuiDecimalOf(tokenId),
+            tokenAmount
+        );
+
+        // mark message as processed
+        isInvestProcessed[message.nonce] = true;
+            
+        emit TokensUnStaked(
+            config.chainID(),
+            nonces[BridgeUtils.DEFI],
+            message.chainID,
+            message.nonce,
+            defiTransferPayload.senderAddress,
+            investAddress, 
+            suiTokenAmount, // aave redeem token (usdc/usdt)
+            defiTransferPayload.amount, //lp token
+            defiTransferPayload.protocolType,
+            defiTransferPayload.protocolVersion,
+            defiTransferPayload.protocolTokenID,
+            defiTransferPayload.actionType
+        );
+        nonces[BridgeUtils.DEFI]++;
     }
 
 
