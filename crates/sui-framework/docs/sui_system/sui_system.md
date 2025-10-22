@@ -85,7 +85,6 @@ the SuiSystemStateInner version, or vice versa.
 -  [Function `update_candidate_validator_network_pubkey`](#sui_system_sui_system_update_candidate_validator_network_pubkey)
 -  [Function `validator_address_by_pool_id`](#sui_system_sui_system_validator_address_by_pool_id)
 -  [Function `pool_exchange_rates`](#sui_system_sui_system_pool_exchange_rates)
--  [Function `pool_exchange_stable_rates`](#sui_system_sui_system_pool_exchange_stable_rates)
 -  [Function `active_validator_addresses`](#sui_system_sui_system_active_validator_addresses)
 -  [Function `advance_epoch`](#sui_system_sui_system_advance_epoch)
 -  [Function `get_stable_rate_from_bfc`](#sui_system_sui_system_get_stable_rate_from_bfc)
@@ -243,6 +242,15 @@ the SuiSystemStateInner version, or vice versa.
 
 
 <pre><code><b>const</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_EWrongInnerVersion">EWrongInnerVersion</a>: u64 = 1;
+</code></pre>
+
+
+
+<a name="sui_system_sui_system_EUnsupportedFeature"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_EUnsupportedFeature">EUnsupportedFeature</a>: u64 = 2;
 </code></pre>
 
 
@@ -413,7 +421,10 @@ epoch has already reached the maximum.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_request_add_validator">request_add_validator</a>(wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>, ctx: &<b>mut</b> TxContext) {
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_request_add_validator">request_add_validator</a>(
+    wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>,
+    ctx: &<b>mut</b> TxContext,
+) {
     <b>let</b> self = <a href="../sui_system/sui_system.md#sui_system_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="../sui_system/sui_system_state_inner.md#sui_system_sui_system_state_inner_request_add_validator">sui_system_state_inner::request_add_validator</a>(self, ctx)
 }
@@ -443,7 +454,10 @@ of the validator.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_request_remove_validator">request_remove_validator</a>(wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>, ctx: &<b>mut</b> TxContext) {
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_request_remove_validator">request_remove_validator</a>(
+    wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>,
+    ctx: &<b>mut</b> TxContext,
+) {
     <b>let</b> self = <a href="../sui_system/sui_system.md#sui_system_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="../sui_system/sui_system_state_inner.md#sui_system_sui_system_state_inner_request_remove_validator">sui_system_state_inner::request_remove_validator</a>(self, ctx)
 }
@@ -613,7 +627,7 @@ Add stake to a validator's staking pool.
 Add stake to a validator's stable pool.
 
 
-<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_request_add_stable_stake">request_add_stable_stake</a>&lt;STABLE&gt;(wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">sui_system::sui_system::SuiSystemState</a>, stake: <a href="../sui/coin.md#sui_coin_Coin">sui::coin::Coin</a>&lt;STABLE&gt;, validator_address: <b>address</b>, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_request_add_stable_stake">request_add_stable_stake</a>&lt;STABLE&gt;(_wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">sui_system::sui_system::SuiSystemState</a>, _stake: <a href="../sui/coin.md#sui_coin_Coin">sui::coin::Coin</a>&lt;STABLE&gt;, _validator_address: <b>address</b>, _ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -623,13 +637,14 @@ Add stake to a validator's stable pool.
 
 
 <pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_request_add_stable_stake">request_add_stable_stake</a>&lt;STABLE&gt;(
-    wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>,
-    stake: Coin&lt;STABLE&gt;,
-    validator_address: <b>address</b>,
-    ctx: &<b>mut</b> TxContext,
+    _wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>,
+    _stake: Coin&lt;STABLE&gt;,
+    _validator_address: <b>address</b>,
+    _ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> staked_sui = <a href="../sui_system/sui_system.md#sui_system_sui_system_request_add_stable_stake_non_entry">request_add_stable_stake_non_entry</a>(wrapper, stake, validator_address, ctx);
-    transfer::public_transfer(staked_sui, tx_context::sender(ctx));
+    <b>abort</b>(<a href="../sui_system/sui_system.md#sui_system_sui_system_EUnsupportedFeature">EUnsupportedFeature</a>)
+    // <b>let</b> staked_sui = <a href="../sui_system/sui_system.md#sui_system_sui_system_request_add_stable_stake_non_entry">request_add_stable_stake_non_entry</a>(wrapper, stake, validator_address, ctx);
+    // transfer::public_transfer(staked_sui, tx_context::sender(ctx));
 }
 </code></pre>
 
@@ -723,13 +738,7 @@ Add stake to a validator's staking pool using multiple coins.
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> self = <a href="../sui_system/sui_system.md#sui_system_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
-    <b>let</b> staked_sui = <a href="../sui_system/sui_system_state_inner.md#sui_system_sui_system_state_inner_request_add_stake_mul_coin">sui_system_state_inner::request_add_stake_mul_coin</a>(
-        self,
-        stakes,
-        stake_amount,
-        validator_address,
-        ctx,
-    );
+    <b>let</b> staked_sui = <a href="../sui_system/sui_system_state_inner.md#sui_system_sui_system_state_inner_request_add_stake_mul_coin">sui_system_state_inner::request_add_stake_mul_coin</a>(self, stakes, stake_amount, validator_address, ctx);
     transfer::public_transfer(staked_sui, tx_context::sender(ctx));
 }
 </code></pre>
@@ -788,11 +797,7 @@ Withdraw stake from a validator's staking pool.
     staked_sui: StakedStable&lt;STABLE&gt;,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> (withdrawn_stake, reward) = <a href="../sui_system/sui_system.md#sui_system_sui_system_request_withdraw_stable_stake_non_entry">request_withdraw_stable_stake_non_entry</a>(
-        wrapper,
-        staked_sui,
-        ctx,
-    );
+    <b>let</b> (withdrawn_stake, reward) = <a href="../sui_system/sui_system.md#sui_system_sui_system_request_withdraw_stable_stake_non_entry">request_withdraw_stable_stake_non_entry</a>(wrapper, staked_sui, ctx);
     transfer::public_transfer(coin::from_balance(withdrawn_stake, ctx), tx_context::sender(ctx));
     transfer::public_transfer(coin::from_balance(reward, ctx), tx_context::sender(ctx));
 }
@@ -882,7 +887,7 @@ Non-entry version of <code><a href="../sui_system/sui_system.md#sui_system_sui_s
     wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>,
     staked_sui: StakedBfc,
     ctx: &<b>mut</b> TxContext,
-): Balance&lt;BFC&gt; {
+) : Balance&lt;BFC&gt; {
     <b>let</b> self = <a href="../sui_system/sui_system.md#sui_system_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="../sui_system/sui_system_state_inner.md#sui_system_sui_system_state_inner_request_withdraw_stake">sui_system_state_inner::request_withdraw_stake</a>(self, staked_sui, ctx)
 }
@@ -911,7 +916,7 @@ Non-entry version of <code><a href="../sui_system/sui_system.md#sui_system_sui_s
     wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>,
     staked_sui: StakedStable&lt;STABLE&gt;,
     ctx: &<b>mut</b> TxContext,
-): (Balance&lt;STABLE&gt;, Balance&lt;BFC&gt;) {
+) : (Balance&lt;STABLE&gt;, Balance&lt;BFC&gt;) {
     <b>let</b> self = <a href="../sui_system/sui_system.md#sui_system_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="../sui_system/sui_system_state_inner.md#sui_system_sui_system_state_inner_request_withdraw_stable_stake">sui_system_state_inner::request_withdraw_stable_stake</a>(self, staked_sui, ctx)
 }
@@ -1006,7 +1011,10 @@ validator and registers it. The original object is thus revoked.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_rotate_operation_cap">rotate_operation_cap</a>(self: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>, ctx: &<b>mut</b> TxContext) {
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_rotate_operation_cap">rotate_operation_cap</a>(
+    self: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>,
+    ctx: &<b>mut</b> TxContext,
+) {
     <b>let</b> self = <a href="../sui_system/sui_system.md#sui_system_sui_system_load_system_state_mut">load_system_state_mut</a>(self);
     <a href="../sui_system/sui_system_state_inner.md#sui_system_sui_system_state_inner_rotate_operation_cap">sui_system_state_inner::rotate_operation_cap</a>(self, ctx)
 }
@@ -1404,12 +1412,7 @@ The change will only take effects starting from the next epoch.
     ctx: &TxContext,
 ) {
     <b>let</b> self = <a href="../sui_system/sui_system.md#sui_system_sui_system_load_system_state_mut">load_system_state_mut</a>(self);
-    <a href="../sui_system/sui_system_state_inner.md#sui_system_sui_system_state_inner_update_validator_next_epoch_protocol_pubkey">sui_system_state_inner::update_validator_next_epoch_protocol_pubkey</a>(
-        self,
-        protocol_pubkey,
-        proof_of_possession,
-        ctx,
-    )
+    <a href="../sui_system/sui_system_state_inner.md#sui_system_sui_system_state_inner_update_validator_next_epoch_protocol_pubkey">sui_system_state_inner::update_validator_next_epoch_protocol_pubkey</a>(self, protocol_pubkey, proof_of_possession, ctx)
 }
 </code></pre>
 
@@ -1440,12 +1443,7 @@ Update candidate validator's public key of protocol key and proof of possession.
     ctx: &TxContext,
 ) {
     <b>let</b> self = <a href="../sui_system/sui_system.md#sui_system_sui_system_load_system_state_mut">load_system_state_mut</a>(self);
-    <a href="../sui_system/sui_system_state_inner.md#sui_system_sui_system_state_inner_update_candidate_validator_protocol_pubkey">sui_system_state_inner::update_candidate_validator_protocol_pubkey</a>(
-        self,
-        protocol_pubkey,
-        proof_of_possession,
-        ctx,
-    )
+    <a href="../sui_system/sui_system_state_inner.md#sui_system_sui_system_state_inner_update_candidate_validator_protocol_pubkey">sui_system_state_inner::update_candidate_validator_protocol_pubkey</a>(self, protocol_pubkey, proof_of_possession, ctx)
 }
 </code></pre>
 
@@ -1591,8 +1589,7 @@ Update candidate validator's public key of network key.
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_validator_address_by_pool_id">validator_address_by_pool_id</a>(wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>, pool_id: &ID): <b>address</b> {
-    <b>let</b> self = <a href="../sui_system/sui_system.md#sui_system_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
-    self.<a href="../sui_system/sui_system.md#sui_system_sui_system_validator_address_by_pool_id">validator_address_by_pool_id</a>(pool_id)
+    wrapper.<a href="../sui_system/sui_system.md#sui_system_sui_system_load_system_state_mut">load_system_state_mut</a>().<a href="../sui_system/sui_system.md#sui_system_sui_system_validator_address_by_pool_id">validator_address_by_pool_id</a>(pool_id)
 }
 </code></pre>
 
@@ -1620,36 +1617,7 @@ Getter of the pool token exchange rate of a staking pool. Works for both active 
     wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>,
     pool_id: &ID,
 ): &Table&lt;u64, PoolTokenExchangeRate&gt; {
-    <b>let</b> self = <a href="../sui_system/sui_system.md#sui_system_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
-    <a href="../sui_system/sui_system_state_inner.md#sui_system_sui_system_state_inner_pool_exchange_rates">sui_system_state_inner::pool_exchange_rates</a>(self, pool_id)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="sui_system_sui_system_pool_exchange_stable_rates"></a>
-
-## Function `pool_exchange_stable_rates`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_pool_exchange_stable_rates">pool_exchange_stable_rates</a>&lt;STABLE&gt;(wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">sui_system::sui_system::SuiSystemState</a>, pool_id: &<a href="../sui/object.md#sui_object_ID">sui::object::ID</a>): &<a href="../sui/table.md#sui_table_Table">sui::table::Table</a>&lt;u64, <a href="../sui_system/stable_pool.md#sui_system_stable_pool_PoolStableTokenExchangeRate">sui_system::stable_pool::PoolStableTokenExchangeRate</a>&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_pool_exchange_stable_rates">pool_exchange_stable_rates</a>&lt;STABLE&gt;(
-    wrapper: &<b>mut</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>,
-    pool_id: &ID,
-): &Table&lt;u64, PoolStableTokenExchangeRate&gt; {
-    <b>let</b> self = <a href="../sui_system/sui_system.md#sui_system_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
-    <a href="../sui_system/sui_system_state_inner.md#sui_system_sui_system_state_inner_pool_exchange_stable_rates">sui_system_state_inner::pool_exchange_stable_rates</a>&lt;STABLE&gt;(self, pool_id)
+    wrapper.<a href="../sui_system/sui_system.md#sui_system_sui_system_load_system_state_mut">load_system_state_mut</a>().<a href="../sui_system/sui_system.md#sui_system_sui_system_pool_exchange_rates">pool_exchange_rates</a>(pool_id)
 }
 </code></pre>
 
@@ -1714,11 +1682,11 @@ gas coins.
     storage_rebate: u64,
     non_refundable_storage_fee: u64,
     storage_fund_reinvest_rate: u64, // share of storage fund's rewards that's reinvested
-    // into storage fund, in basis point.
+                                     // into storage fund, in basis point.
     reward_slashing_rate: u64, // how much rewards are slashed to punish a <a href="../sui_system/validator.md#sui_system_validator">validator</a>, in bps.
     epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
     ctx: &<b>mut</b> TxContext,
-): Balance&lt;BFC&gt; {
+) : Balance&lt;BFC&gt; {
     // get stable exchange rate from bfc system
     <b>let</b> stable_rate = <a href="../sui_system/sui_system.md#sui_system_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(&wrapper.bfc_system_id);
     <b>let</b> self = <a href="../sui_system/sui_system.md#sui_system_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
@@ -1761,7 +1729,7 @@ gas coins.
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(id: &UID): VecMap&lt;ascii::String, u64&gt; {
+<pre><code><b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(id: &UID) : VecMap&lt;ascii::String, u64&gt; {
     bfc_system::get_exchange_rate(id)
 }
 </code></pre>
@@ -1785,7 +1753,7 @@ gas coins.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_get_stable_rate">get_stable_rate</a>(self: &<a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>): VecMap&lt;ascii::String, u64&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_get_stable_rate">get_stable_rate</a>(self: &<a href="../sui_system/sui_system.md#sui_system_sui_system_SuiSystemState">SuiSystemState</a>) : VecMap&lt;ascii::String, u64&gt; {
     <a href="../sui_system/sui_system.md#sui_system_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(&self.bfc_system_id)
 }
 </code></pre>

@@ -97,6 +97,9 @@ stake_activation_epoch
 is_preactive
 	public fun
 	0x3::staking_pool
+activation_epoch
+	public(package) fun
+	0x3::staking_pool
 is_inactive
 	public fun
 	0x3::staking_pool
@@ -310,15 +313,6 @@ adjust_stake_and_gas_price
 request_add_stake
 	public(package) fun
 	0x3::validator
-get_stable_pool_mut
-	fun
-	0x3::validator
-get_stable_pool
-	public(package) fun
-	0x3::validator
-request_add_stable_stake
-	public(package) fun
-	0x3::validator
 convert_to_fungible_staked_sui
 	public(package) fun
 	0x3::validator
@@ -499,16 +493,25 @@ pool_stable_token_exchange_rate_at_epoch
 staking_pool_id
 	public fun
 	0x3::validator
+is_duplicate
+	public fun
+	0x3::validator
 stable_pool_id
 	public fun
 	0x3::validator
 stable_pool
 	public fun
 	0x3::validator
-all_stable_pool_id
-	public fun
+request_add_stable_stake
+	public(package) fun
 	0x3::validator
-is_duplicate
+get_stable_pool_mut
+	fun
+	0x3::validator
+get_stable_pool
+	public(package) fun
+	0x3::validator
+all_stable_pool_id
 	public fun
 	0x3::validator
 new_unverified_validator_operation_cap_and_transfer
@@ -601,11 +604,11 @@ set_voting_power
 init_voting_power_info
 	fun
 	0x3::voting_power
-total_stake
-	fun
-	0x3::voting_power
 derive_raw_voting_power
 	public(package) fun
+	0x3::voting_power
+total_stake
+	fun
 	0x3::voting_power
 insert
 	fun
@@ -673,6 +676,9 @@ request_remove_validator_candidate
 request_add_validator
 	public(package) fun
 	0x3::validator_set
+can_join
+	fun
+	0x3::validator_set
 get_voting_power_thresholds
 	fun
 	0x3::validator_set
@@ -706,7 +712,10 @@ request_set_commission_rate
 advance_epoch
 	public(package) fun
 	0x3::validator_set
-update_validator_positions_and_calculate_total_stake
+update_and_process_low_stake_departures
+	fun
+	0x3::validator_set
+process_pending_validators
 	fun
 	0x3::validator_set
 effectuate_staged_metadata
@@ -833,7 +842,7 @@ process_pending_stakes_and_withdraws
 	fun
 	0x3::validator_set
 calculate_total_stakes
-	public(package) fun
+	fun
 	0x3::validator_set
 adjust_stake_and_gas_price
 	fun
@@ -1246,9 +1255,6 @@ validator_address_by_pool_id
 pool_exchange_rates
 	public fun
 	0x3::sui_system
-pool_exchange_stable_rates
-	public fun
-	0x3::sui_system
 active_validator_addresses
 	public fun
 	0x3::sui_system
@@ -1292,6 +1298,9 @@ create
 	fun
 	0x3::genesis
 allocate_tokens
+	fun
+	0x3::genesis
+activate_validators
 	fun
 	0x3::genesis
 curve_dx

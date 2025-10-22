@@ -283,12 +283,19 @@ public(package) fun new(
     metadata.new_from_metadata(gas_price, commission_rate, ctx)
 }
 
-/// Mark Validator's `StakingPool` as inactive by setting the `deactivation_epoch`.
-public(package) fun deactivate(self: &mut Validator, deactivation_epoch: u64) {
-    self.staking_pool.deactivate_staking_pool(deactivation_epoch)
-}
+    /// Mark Validator's `StakingPool` as inactive by setting the `deactivation_epoch`.
+    public(package) fun deactivate(self: &mut Validator, deactivation_epoch: u64) {
+        self.staking_pool.deactivate_staking_pool(deactivation_epoch)
+    }
 
-/// Activate Validator's `StakingPool` by setting the `activation_epoch`.
+    public(package) fun deactivate_stable<STABLE>(self: &mut Validator, deactivation_epoch: u64) {
+        let pool_key = type_name::into_string(type_name::get<STABLE>());
+        let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
+        stable_pool::deactivate_stable_pool(pool, deactivation_epoch);
+    }
+
+
+    /// Activate Validator's `StakingPool` by setting the `activation_epoch`.
 public(package) fun activate(self: &mut Validator, activation_epoch: u64) {
     self.staking_pool.activate_staking_pool(activation_epoch);
 }
@@ -669,6 +676,7 @@ public(package) fun set_candidate_commission_rate(self: &mut Validator, new_comm
         all_pool_total
     }
 
+
     public(package) fun deposit_stable_stake_rewards<STABLE>(
         self: &mut Validator,
         reward: Balance<BFC>,
@@ -698,10 +706,6 @@ public(package) fun process_pending_stakes_and_withdraws(self: &mut Validator, c
     // assert!(stake_amount(self) == self.next_epoch_stake, EInvalidStakeAmount);
 }
 
-/// Returns true if the validator is preactive.
-public fun is_preactive(self: &Validator): bool {
-    self.staking_pool.is_preactive()
-}
     #[allow(unused_mut_parameter)]
     public(package) fun process_pending_all_stable_stakes_and_withdraws(self: &mut Validator, ctx: &mut TxContext) {
         process_pending_stable_stakes_and_withdraws<BUSD>(self, ctx);
@@ -838,7 +842,6 @@ public fun total_stake_amount(self: &Validator): u64 {
     self.staking_pool.sui_balance()
 }
 
-#[deprecated(note = b"Use `total_stake` instead")]
 public fun stake_amount(self: &Validator): u64 {
     self.staking_pool.sui_balance()
 }
@@ -1018,6 +1021,56 @@ public fun is_duplicate(self: &Validator, other: &Validator): bool {
         get_stable_pool<STABLE>(&self.stable_pools)
     }
 
+    public(package) fun request_add_stable_stake<STABLE>(
+        self: &mut Validator,
+        stake: Balance<STABLE>,
+        staker_address: address,
+        ctx: &mut TxContext,
+    ) : StakedStable<STABLE> {
+        assert!(std::type_name::get<STABLE>() == std::type_name::get<BUSD>(), EInvalidCoinType);
+        let stake_amount = stake.value();
+        assert!(stake_amount > 0, EInvalidStakeAmount);
+        let stake_epoch = tx_context::epoch(ctx) + 1;
+        let pool_key = type_name::into_string(type_name::get<STABLE>());
+        let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
+        let staked_sui = stable_pool::request_add_stake<STABLE>(
+            pool, stake, stake_epoch, ctx
+        );
+        // Process stake right away if stable pool is preactive.
+        if (stable_pool::is_preactive<STABLE>(pool)) {
+            stable_pool::process_pending_stake<STABLE>(pool);
+        };
+        let next_stable_stake = vec_map::try_get(&self.next_epoch_stable_stake, &pool_key);
+        if (option::is_none(&next_stable_stake)) {
+            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, stake_amount);
+        } else {
+            let (_, next_stable_stake) = vec_map::remove(&mut self.next_epoch_stable_stake, &pool_key);
+            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, stake_amount + next_stable_stake);
+        };
+        event::emit(
+            StakingRequestEvent {
+                pool_id: stable_pool_id<STABLE>(self),
+                validator_address: self.metadata.sui_address,
+                staker_address,
+                epoch: tx_context::epoch(ctx),
+                amount: stake_amount,
+            }
+        );
+        staked_sui
+    }
+
+    fun get_stable_pool_mut<STABLE>(
+        bag: &mut Bag,
+    ) :&mut StablePool<STABLE> {
+        let pool_key = type_name::into_string(type_name::get<STABLE>());
+        bag::borrow_mut<ascii::String, StablePool<STABLE>>(bag, pool_key)
+    }
+
+    public(package) fun get_stable_pool<STABLE>(bag: &Bag) :&StablePool<STABLE> {
+        let pool_key = type_name::into_string(type_name::get<STABLE>());
+        bag::borrow<ascii::String, StablePool<STABLE>>(bag, pool_key)
+    }
+
     public fun all_stable_pool_id(self:&Validator): vector<ID> {
         let mut id_vec = vector[];
         vector::insert(&mut id_vec ,stable_pool_id<BUSD>(self), 0);
@@ -1040,13 +1093,6 @@ public fun is_duplicate(self: &Validator, other: &Validator): bool {
         id_vec
     }
 
-    fun is_equal_some_and_value<T>(a: &Option<T>, b: &T): bool {
-        if (a.is_none()) {
-            false
-        } else {
-            a.borrow() == b
-        }
-    }
 
 macro fun both_some_and_equal<$T>($a: Option<$T>, $b: Option<$T>): bool {
     let (a, b) = ($a, $b);
@@ -1392,53 +1438,6 @@ public(package) fun get_staking_pool_ref(self: &Validator): &StakingPool {
         }
     }
 
-    // CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.
-    // Creates a validator - bypassing the proof of possession check and other metadata
-    // validation in the process.
-    // Note: `proof_of_possession` MUST be a valid signature using sui_address and
-    // protocol_pubkey_bytes. To produce a valid PoP, run [fn test_proof_of_possession].
-    #[test_only]
-    public(package) fun new_for_testing(
-        sui_address: address,
-        protocol_pubkey_bytes: vector<u8>,
-        network_pubkey_bytes: vector<u8>,
-        worker_pubkey_bytes: vector<u8>,
-        proof_of_possession: vector<u8>,
-        name: vector<u8>,
-        description: vector<u8>,
-        image_url: vector<u8>,
-        project_url: vector<u8>,
-        net_address: vector<u8>,
-        p2p_address: vector<u8>,
-        primary_address: vector<u8>,
-        worker_address: vector<u8>,
-        mut initial_stake_option: Option<Balance<BFC>>,
-        gas_price: u64,
-        commission_rate: u64,
-        is_active_at_genesis: bool,
-        ctx: &mut TxContext
-    ): Validator {
-        let mut validator = new_from_metadata(
-            new_metadata(
-                sui_address,
-                protocol_pubkey_bytes,
-                network_pubkey_bytes,
-                worker_pubkey_bytes,
-                proof_of_possession,
-                name.to_ascii_string().to_string(),
-                description.to_ascii_string().to_string(),
-                url::new_unsafe_from_bytes(image_url),
-                url::new_unsafe_from_bytes(project_url),
-                net_address.to_ascii_string().to_string(),
-                p2p_address.to_ascii_string().to_string(),
-                primary_address.to_ascii_string().to_string(),
-                worker_address.to_ascii_string().to_string(),
-                bag::new(ctx),
-            ),
-            gas_price,
-            commission_rate,
-            ctx
-        );
 // CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.
 // Creates a validator - bypassing the proof of possession check and other metadata
 // validation in the process.

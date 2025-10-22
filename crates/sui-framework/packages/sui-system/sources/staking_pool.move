@@ -159,7 +159,7 @@ public(package) fun request_withdraw_stake(
     // the reason why we exclude preactive pools is to avoid potential underflow
     // on subtraction, and we need to enforce `pending_stake_withdraw` call.
     if (staked_sui.stake_activation_epoch > ctx.epoch() && !pool.is_preactive()) {
-        let principal = staked_sui.into_balance();
+        let principal = unwrap_staked_sui(staked_sui);
         pool.pending_stake = pool.pending_stake - principal.value();
         return principal
     };
@@ -323,14 +323,14 @@ public(package) fun withdraw_from_principal(
     assert!(staked_sui.pool_id == object::id(pool), EWrongPool);
 
     let exchange_rate_at_staking_epoch = pool.pool_token_exchange_rate_at_epoch(staked_sui.stake_activation_epoch);
-    let principal_withdraw = staked_sui.into_balance();
+    let principal_withdraw = unwrap_staked_sui(staked_sui);
     let pool_token_withdraw_amount = exchange_rate_at_staking_epoch.get_token_amount(principal_withdraw.value());
 
     (pool_token_withdraw_amount, principal_withdraw)
 }
 
 /// Allows calling `.into_balance()` on `StakedSui` to invoke `unwrap_staked_sui`
-use fun unwrap_staked_sui as StakedSui.into_balance;
+use fun unwrap_staked_sui as StakedBfc.into_balance;
 
 fun unwrap_staked_sui(staked_sui: StakedBfc): Balance<BFC> {
     let StakedBfc { id, principal, .. } = staked_sui;

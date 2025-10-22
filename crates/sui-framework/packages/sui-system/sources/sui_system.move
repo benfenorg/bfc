@@ -707,9 +707,6 @@ public fun calculate_rewards(self: &mut SuiSystemState, staked_sui: &StakedSui, 
         storage_rebate
     }
 
-fun load_system_state(self: &mut SuiSystemState): &SuiSystemStateInnerV2 {
-    load_inner_maybe_upgrade(self)
-}
     #[allow(unused_function)]
     fun get_stable_rate_from_bfc(id: &UID) : VecMap<ascii::String, u64> {
         bfc_system::get_exchange_rate(id)

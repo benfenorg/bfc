@@ -203,7 +203,19 @@ module sui_system::sui_system_state_inner {
 }
 
     // ==== functions that can only be called by genesis ====
+    #[allow(unused_const)]
+    const ENotValidator: u64 = 0;
+    const ELimitExceeded: u64 = 1;
+    #[allow(unused_const)]
+    const ENotSystemAddress: u64 = 2;
+    const ECannotReportOneself: u64 = 3;
+    const EReportRecordNotFound: u64 = 4;
+    const EBpsTooLarge: u64 = 5;
+    const EStakeWithdrawBeforeActivation: u64 = 6;
+    const ESafeModeGasNotProcessed: u64 = 7;
+    const EAdvancedToWrongEpoch: u64 = 8;
 
+    const BASIS_POINT_DENOMINATOR: u128 = 10000;
     /// Create a new SuiSystemState object and make it shared.
     /// This function will be called only once in genesis.
     public(package) fun create(
@@ -1123,10 +1135,10 @@ module sui_system::sui_system_state_inner {
     #[allow(lint(self_transfer))]
     /// Extract required Balance from vector of Coin<SUI>, transfer the remainder back to sender.
     fun extract_coin_balance(
-        mut coins: vector<Coin<SUI>>,
+        mut coins: vector<Coin<BFC>>,
         amount: Option<u64>,
         ctx: &mut TxContext,
-    ): Balance<SUI> {
+    ): Balance<BFC> {
         let acc = coins.pop_back();
         let merged = coins.fold!(acc, |mut acc, coin| { acc.join(coin); acc });
         let mut total_balance = merged.into_balance();
@@ -1261,8 +1273,5 @@ module sui_system::sui_system_state_inner {
         );
 
         self.validators.request_add_validator_candidate(validator, ctx);
-    }
-    macro fun mul_div($a: u64, $b: u64, $c: u64): u64 {
-    (($a as u128) * ($b as u128) / ($c as u128)) as u64
     }
 }
