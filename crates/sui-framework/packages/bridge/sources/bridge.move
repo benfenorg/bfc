@@ -172,6 +172,7 @@ module bridge::bridge {
         protocol_type: u64,
         protocol_version: u64,
         protocol_token_id: u64,
+        principal: u64,
     }
 
     public struct TokenSendBackEvent has copy, drop {
@@ -2541,6 +2542,7 @@ module bridge::bridge {
             protocol_type: defi_payload.protocol_type_defi_in(),
             protocol_version: defi_payload.protocol_version_defi_in(),
             protocol_token_id: defi_payload.protocol_token_id_defi_in(),
+            principal: principal,
         });
         (option::none(), owner)
     }

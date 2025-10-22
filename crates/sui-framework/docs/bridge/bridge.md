@@ -114,7 +114,6 @@ title: Module `bridge::bridge`
 -  [Function `get_current_seq_num_and_increment`](#bridge_bridge_get_current_seq_num_and_increment)
 -  [Function `defi_holders_add`](#bridge_bridge_defi_holders_add)
 -  [Function `defi_holders_get`](#bridge_bridge_defi_holders_get)
--  [Function `defi_holders_get_by_key`](#bridge_bridge_defi_holders_get_by_key)
 -  [Function `defi_holders_del`](#bridge_bridge_defi_holders_del)
 -  [Function `get_parsed_token_transfer_message`](#bridge_bridge_get_parsed_token_transfer_message)
 -  [Function `get_parsed_token_transfer_message_v2`](#bridge_bridge_get_parsed_token_transfer_message_v2)
@@ -742,6 +741,11 @@ title: Module `bridge::bridge`
 </dd>
 <dt>
 <code>protocol_token_id: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>principal: u64</code>
 </dt>
 <dd>
 </dd>
@@ -5359,6 +5363,7 @@ title: Module `bridge::bridge`
         protocol_type: defi_payload.protocol_type_defi_in(),
         protocol_version: defi_payload.protocol_version_defi_in(),
         protocol_token_id: defi_payload.protocol_token_id_defi_in(),
+        principal: principal,
     });
     (option::none(), owner)
 }
@@ -5980,46 +5985,6 @@ title: Module `bridge::bridge`
         <b>return</b> <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a> { amount: 0, lp_token_amount: 0 }
     };
     *vec_map::get&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a>&gt;(user_protocol_table, &key)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="bridge_bridge_defi_holders_get_by_key"></a>
-
-## Function `defi_holders_get_by_key`
-
-
-
-<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_get_by_key">defi_holders_get_by_key</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, user_address: vector&lt;u8&gt;, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, chain_id: u8): u64
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_get_by_key">defi_holders_get_by_key</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>, user_address: vector&lt;u8&gt;, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, chain_id: u8): u64 {
-    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner">load_inner</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
-    <b>let</b> key = <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a> {
-        protocol_type,
-        protocol_version,
-        protocol_token_id,
-        chain_id,
-    };
-    <b>let</b> addr = address::from_bytes(user_address);
-    <b>if</b> (!linked_table::contains(&inner.defi_holders, addr)) {
-        <b>return</b> 100u64
-    };
-    <b>let</b> user_protocol_table = linked_table::borrow(&inner.defi_holders, addr);
-    <b>if</b> (!vec_map::contains&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a>&gt;(user_protocol_table, &key)) {
-        <b>return</b> 101u64
-    };
-    <b>let</b> defi_info = *vec_map::get&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a>&gt;(user_protocol_table, &key);
-    defi_info.amount <b>as</b> u64
 }
 </code></pre>
 

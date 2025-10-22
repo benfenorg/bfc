@@ -546,6 +546,13 @@ impl BridgeTestCluster {
             .collect();
         events
     }
+
+    pub async fn new_bridge_events_all(
+        &mut self,
+        assert_success: bool,
+    ) -> Vec<SuiTransactionBlockResponse> {
+        self.new_bridge_transactions(assert_success).await
+    }
 }
 
 pub async fn get_eth_signer_client_e2e_test_only(

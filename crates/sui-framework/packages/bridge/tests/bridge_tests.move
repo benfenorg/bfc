@@ -3222,6 +3222,14 @@ fun test_defi_unstake_and_approve_defi_transfer_in(){
     bridge.claim_and_transfer_busd_for_defi<BUSDFAKER>(&mut bfc_system_state, &clock, chain_id_evm, seq_num_1, &cap, ctx);
     let transfer_in_events = sui::event::events_by_type<bridge::bridge::DefiTokensUnstakeEvent>();
     assert!(transfer_in_events.length() == 1, 0);
+    let holder_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    assert!(holder_amount == 0, 404);
     //unstake end
     bridge_wrap.return_bridge();
     sui::test_scenario::return_shared(bfc_system_state);

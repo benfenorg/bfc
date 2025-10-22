@@ -602,7 +602,7 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
         assert_eq!(event.2,BridgeChainId::SuiCustom as u8);
         assert_eq!(event.3,event_seq_num); // from benfen
         assert_eq!(event.5,bridge_test_cluster.eth_env().contracts().arrow);
-        assert_eq!(event.6,0);
+        assert_eq!(event.6,amount_after_fee);
         assert_eq!(event.7,amount_after_fee);
         assert_eq!(event.8,protocol_type);
         assert_eq!(event.9,protocol_version);
@@ -721,6 +721,12 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
     }
     // The status should be Claimed now
     assert_eq!(status, BridgeActionStatus::Claimed, "Action should be claimed");
+    
+    let events = bridge_test_cluster
+        .new_bridge_events_all(
+            true,
+        ).await;
+    info!("bbking110 unstake events: {:?}", events);
     info!("unstake test completed");
     let amount_after_unstake = bridge_test_cluster
         .bridge_client()
@@ -994,7 +1000,7 @@ async fn test_bridge_defi_stake_and_unstake_revoke_twice_e2e() -> Result<(), any
         assert_eq!(event.2,BridgeChainId::SuiCustom as u8);
         assert_eq!(event.3,event_seq_num); // from benfen
         assert_eq!(event.5,bridge_test_cluster.eth_env().contracts().arrow);
-        assert_eq!(event.6,0);
+        assert_eq!(event.6,amount_after_fee);
         assert_eq!(event.7,amount_after_fee);
         assert_eq!(event.8,protocol_type);
         assert_eq!(event.9,protocol_version);
@@ -1031,9 +1037,19 @@ async fn test_bridge_defi_stake_and_unstake_revoke_twice_e2e() -> Result<(), any
     }
     // The status should be Claimed now
     assert_eq!(status, BridgeActionStatus::Claimed, "Action should be claimed");
-    let amount_before_unstake = bridge_test_cluster
+    let amount_lp_before_unstake = bridge_test_cluster
         .bridge_client()
         .get_defi_holders_lp_token_amount(
+            address,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            target_chain,
+        )
+        .await.unwrap();
+    let amount_before_unstake = bridge_test_cluster
+        .bridge_client()
+        .get_defi_holders_amount(
             address,
             protocol_type,
             protocol_version,
@@ -1114,7 +1130,7 @@ async fn test_bridge_defi_stake_and_unstake_revoke_twice_e2e() -> Result<(), any
     // The status should be Claimed now
     assert_eq!(status, BridgeActionStatus::Claimed, "Action should be claimed");
     info!("unstake test completed");
-    let amount_after_unstake = bridge_test_cluster
+    let amount_lp_after_unstake = bridge_test_cluster
         .bridge_client()
         .get_defi_holders_lp_token_amount(
             address,
@@ -1124,9 +1140,29 @@ async fn test_bridge_defi_stake_and_unstake_revoke_twice_e2e() -> Result<(), any
             target_chain,
         )
         .await.unwrap();
+    let amount_after_unstake = bridge_test_cluster
+        .bridge_client()
+        .get_defi_holders_amount(
+            address,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            target_chain,
+        )
+        .await.unwrap();
+    info!("amount_lp_before_unstake: {:?} amount_lp_after_unstake: {:?} amount_lp_before_unstake - amount_lp_after_unstake: {}", amount_lp_before_unstake, amount_lp_after_unstake, amount_lp_before_unstake - amount_lp_after_unstake);
     info!("amount_before_unstake: {:?} amount_after_unstake: {:?} amount_before_unstake - amount_after_unstake: {}", amount_before_unstake, amount_after_unstake, amount_before_unstake - amount_after_unstake);
     assert!(amount_before_unstake>amount_after_unstake, "Amount should be less than before unstake");
     assert!(amount_before_unstake - amount_after_unstake == amount_after_fee, "Amount should be equal to amount after fee");
+    
+    let amount_lp_diff = amount_lp_before_unstake - amount_lp_after_unstake;
+    let amount_lp_diff_percent = amount_lp_diff as f64 / amount_lp_before_unstake as f64 * 100.0;
+    let amount_diff = amount_before_unstake - amount_after_unstake;
+    let amount_diff_percent = amount_diff as f64 / amount_before_unstake as f64 * 100.0;
+    info!("amount_lp_diff_percent: {:?}% amount_diff_percent: {:?}%", amount_lp_diff_percent, amount_diff_percent);
+    assert!(amount_lp_diff_percent == amount_diff_percent, "Amount LP diff percent should be equal to amount diff percent");
+    
+
     Ok(())
 }
 
@@ -1386,7 +1422,7 @@ async fn test_bridge_defi_stake_and_unstake_gt_lp_amount_e2e() -> Result<(), any
         assert_eq!(event.2,BridgeChainId::SuiCustom as u8);
         assert_eq!(event.3,event_seq_num); // from benfen
         assert_eq!(event.5,bridge_test_cluster.eth_env().contracts().arrow);
-        assert_eq!(event.6,0);
+        assert_eq!(event.6,amount_after_fee);
         assert_eq!(event.7,amount_after_fee);
         assert_eq!(event.8,protocol_type);
         assert_eq!(event.9,protocol_version);
@@ -1423,16 +1459,6 @@ async fn test_bridge_defi_stake_and_unstake_gt_lp_amount_e2e() -> Result<(), any
     }
     // The status should be Claimed now
     assert_eq!(status, BridgeActionStatus::Claimed, "Action should be claimed");
-    // let amount_before_unstake = bridge_test_cluster
-    //     .bridge_client()
-    //     .get_defi_holders_get_by_key_until_success(
-    //         bridge_test_cluster.sui_user_address(),
-    //         protocol_type,
-    //         protocol_version,
-    //         protocol_token_id,
-    //         bridge_test_cluster.eth_chain_id() as u8,
-    //     )
-    //     .await;
     info!("unstake test started");
     let _bridge_object_arg = bridge_test_cluster
         .bridge_client()
