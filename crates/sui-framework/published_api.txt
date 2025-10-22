@@ -7258,6 +7258,9 @@ defi_holders_add
 defi_holders_get
 	fun
 	0xb::bridge
+defi_holders_get_by_key
+	fun
+	0xb::bridge
 defi_holders_del
 	fun
 	0xb::bridge
