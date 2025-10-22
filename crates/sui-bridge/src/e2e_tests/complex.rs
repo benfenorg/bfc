@@ -8,6 +8,7 @@ use crate::e2e_tests::test_utils::{
     initiate_bridge_eth_to_sui, initiate_bridge_sui_to_eth, initiate_defi_bridge_unstake_sui_to_eth, BridgeTestCluster, BridgeTestClusterBuilder
 };
 use crate::events::TokenTransferApproved;
+use crate::sui_client::SuiClientInner;
 use crate::sui_transaction_builder::build_sui_transaction;
 use crate::types::{BridgeAction, EmergencyAction};
 use crate::types::{BridgeActionStatus, EmergencyActionType};
@@ -753,7 +754,25 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
     }
     // The status should be Claimed now
     assert_eq!(status, BridgeActionStatus::Claimed, "Action should be claimed");
+    let amount_before_unstake = bridge_test_cluster
+        .bridge_client()
+        .get_defi_holders_get_by_key_until_success(
+            bridge_test_cluster.sui_user_address(),
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            bridge_test_cluster.eth_chain_id() as u8,
+        )
+        .await;
     info!("unstake test started");
+    let bridge_object_arg = bridge_test_cluster
+        .bridge_client()
+        .get_mutable_bridge_object_arg_must_succeed()
+        .await;
+    let bridge_version_before = match bridge_object_arg {
+        sui_types::transaction::ObjectArg::SharedObject { initial_shared_version, .. } => initial_shared_version,
+        _ => panic!("Bridge object is not a shared object"),
+    };
     let events = bridge_test_cluster
         .new_bridge_events(
             HashSet::from_iter([
@@ -764,6 +783,7 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
         .await;
     assert!(!events.is_empty(), "Should have TokenTransferApproved event");
     assert_eq!(events.len(), 1);
+    let amount_after_fee = amount_after_fee / 10;
     initiate_defi_bridge_unstake_sui_to_eth(&bridge_test_cluster, protocol_type, protocol_version, protocol_token_id, amount_after_fee)
         .await
         .unwrap();
@@ -825,7 +845,18 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
     // The status should be Claimed now
     assert_eq!(status, BridgeActionStatus::Claimed, "Action should be claimed");
     info!("unstake test completed");
-
+    let amount_after_unstake = bridge_test_cluster
+        .bridge_client()
+        .get_defi_holders_get_by_key_until_success(
+            address,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            bridge_test_cluster.eth_chain_id() as u8,
+        )
+        .await;
+    info!("amount_before_unstake: {:?} amount_after_unstake: {:?} amount_before_unstake - amount_after_unstake: {}", amount_before_unstake, amount_after_unstake, amount_before_unstake - amount_after_unstake);
+    assert!(amount_before_unstake>amount_after_unstake, "Amount should be less than before unstake");
     Ok(())
 }
 
