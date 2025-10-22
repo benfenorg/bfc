@@ -54,7 +54,7 @@ interface ISuiBridge {
         uint64 originNonce, //benfen 生成的
         bytes senderAddress, // benfen 上用户的地址
         address recipientAddress, //资管合约地址
-        uint64 suiAdjustedAmount,  //0
+        uint64 suiAdjustedAmount,  
         uint64 suiLpTokenAmount, 
         uint64  protocolType,
         uint64 protocolVersion,

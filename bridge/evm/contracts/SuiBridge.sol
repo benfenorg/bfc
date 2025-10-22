@@ -230,7 +230,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             message.nonce,
             defiTransferPayload.senderAddress,
             investAddress,
-            0,
+            defiTransferPayload.amount,
             suiLpTokenAmount,
             defiTransferPayload.protocolType,
             defiTransferPayload.protocolVersion,
