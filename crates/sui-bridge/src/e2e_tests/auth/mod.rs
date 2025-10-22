@@ -17,6 +17,7 @@ use serde_json::{json, Value};
 use sui_json_rpc_api::{IndexerApiClient,  WriteApiClient};
 use sui_json_rpc_api::TransactionBuilderClient;
 use tokio::time::sleep;
+use tracing::info;
 
 #[allow(unused)]
 pub async fn auth_setup(test_cluster: &mut TestCluster, http_client: &mut HttpClient, address: SuiAddress, auth_key: &str) -> Result<(), Error> {
@@ -174,7 +175,7 @@ async fn add_auth_key(http_client: &HttpClient, address: SuiAddress, sui_key: &S
             Some(ExecuteTransactionRequestType::WaitForLocalExecution),
         )
         .await?;
-    // println!("add_auth_key tx_response is {:?}",tx_response);
+    info!("add_auth_key tx_response is {:?}",tx_response);
     Ok(())
 }
 
