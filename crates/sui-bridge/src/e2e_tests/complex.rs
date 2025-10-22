@@ -453,6 +453,37 @@ async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
     // The status should be Claimed now
     assert_eq!(status, BridgeActionStatus::Claimed, "Action should be claimed");
 
+    // Query and print defi_holders information
+    let defi_amount = bridge_test_cluster
+        .bridge_client()
+        .get_defi_holders_amount(
+            address,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            target_chain,
+        )
+        .await
+        .map_err(|e| anyhow::anyhow!("Failed to get defi holders amount: {:?}", e))?;
+
+    let defi_lp_token_amount = bridge_test_cluster
+        .bridge_client()
+        .get_defi_holders_lp_token_amount(
+            address,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            target_chain,
+        )
+        .await
+        .map_err(|e| anyhow::anyhow!("Failed to get defi holders lp token amount: {:?}", e))?;
+
+    println!("  Amount: {}", defi_amount);
+    println!("  LP Token Amount: {}", defi_lp_token_amount);
+    
+    assert!(defi_amount > 0, "Defi amount should be greater than 0");
+    assert!(defi_lp_token_amount > 0, "Defi LP token amount should be greater than 0");
+
     Ok(())
 }
 

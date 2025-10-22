@@ -398,6 +398,30 @@ impl SuiClientInner for SuiMockClient {
         unimplemented!()
     }
 
+    async fn get_defi_holders_amount(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _user_address: SuiAddress,
+        _protocol_type: u64,
+        _protocol_version: u64,
+        _protocol_token_id: u64,
+        _chain_id: u8,
+    ) -> Result<u64, BridgeError> {
+        Ok(0)
+    }
+
+    async fn get_defi_holders_lp_token_amount(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _user_address: SuiAddress,
+        _protocol_type: u64,
+        _protocol_version: u64,
+        _protocol_token_id: u64,
+        _chain_id: u8,
+    ) -> Result<u64, BridgeError> {
+        Ok(0)
+    }
+
     async fn execute_transaction_block_with_effects(
         &self,
         tx: Transaction,
