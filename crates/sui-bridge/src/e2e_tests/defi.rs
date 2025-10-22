@@ -93,7 +93,6 @@ async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
 
     // Step 2: Mint BUSD tokens for DeFi staking
     let busd_amount = 50_000_000_000u64; // 500 BUSD for testing
-    println!("Minting {} BUSD tokens for DeFi staking...", busd_amount);
     stable::mint_stable_coin_to_address(
         busd_amount,
         &http_client,
@@ -128,14 +127,6 @@ async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
     let protocol_version = 3u64; // Version 3
     let protocol_token_id = 3u64; // USDC token ID for DeFi protocol
     let stake_amount = busd_amount / 2; // Use half of the BUSD for staking
-
-    // Step 6: Call defi_stake Move function
-    info!("Calling defi_stake Move function with parameters:");
-    info!("  - Target chain: {}", target_chain);
-    info!("  - Protocol type: {}", protocol_type);
-    info!("  - Protocol version: {}", protocol_version);
-    info!("  - Protocol token ID: {}", protocol_token_id);
-    info!("  - Stake amount: {}", stake_amount);
 
     let mut builder = ProgrammableTransactionBuilder::new();
 
@@ -222,8 +213,6 @@ async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
         }
     }
 
-
-    println!("=== Step 4: Extract DefiTransferOutEvent from transaction ===");
     let events = tx_response.events.as_ref().expect("Should have events");
     let mut defi_event = None;
     let mut event_seq_num = 0u64;
@@ -284,7 +273,7 @@ async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
         assert_eq!(event.2,BridgeChainId::SuiCustom as u8);
         assert_eq!(event.3,event_seq_num); // from benfen
         assert_eq!(event.5,bridge_test_cluster.eth_env().contracts().arrow);
-        assert_eq!(event.6,0);
+        assert_eq!(event.6,amount_after_fee);
         assert_eq!(event.7,amount_after_fee);
         assert_eq!(event.8,protocol_type);
         assert_eq!(event.9,protocol_version);
