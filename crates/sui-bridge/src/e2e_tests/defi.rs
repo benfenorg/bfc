@@ -639,9 +639,19 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
     }
     // The status should be Claimed now
     assert_eq!(status, BridgeActionStatus::Claimed, "Action should be claimed");
-    let amount_before_unstake = bridge_test_cluster
+    let amount_lp_before_unstake = bridge_test_cluster
         .bridge_client()
         .get_defi_holders_lp_token_amount(
+            address,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            target_chain,
+        )
+        .await.unwrap();
+    let amount_before_unstake = bridge_test_cluster
+        .bridge_client()
+        .get_defi_holders_amount(
             address,
             protocol_type,
             protocol_version,
@@ -728,7 +738,7 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
         ).await;
     info!("bbking110 unstake events: {:?}", events);
     info!("unstake test completed");
-    let amount_after_unstake = bridge_test_cluster
+    let amount_lp_after_unstake = bridge_test_cluster
         .bridge_client()
         .get_defi_holders_lp_token_amount(
             address,
@@ -738,9 +748,22 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
             target_chain,
         )
         .await.unwrap();
+    let amount_after_unstake = bridge_test_cluster
+        .bridge_client()
+        .get_defi_holders_amount(
+            address,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            target_chain,
+        )
+        .await.unwrap();
     info!("amount_before_unstake: {:?} amount_after_unstake: {:?} amount_before_unstake - amount_after_unstake: {}", amount_before_unstake, amount_after_unstake, amount_before_unstake - amount_after_unstake);
+    assert!(amount_lp_before_unstake>amount_lp_after_unstake, "Amount LP should be less than before unstake");
+    assert!(amount_lp_before_unstake - amount_lp_after_unstake == amount_after_fee, "Amount LP should be equal to amount after fee");
     assert!(amount_before_unstake>amount_after_unstake, "Amount should be less than before unstake");
-    assert!(amount_before_unstake - amount_after_unstake == amount_after_fee, "Amount should be equal to amount after fee");
+    assert!(amount_before_unstake - amount_after_unstake == amount_lp_before_unstake - amount_lp_after_unstake, "Amount should be equal to amount LP after fee");
+
     Ok(())
 }
 
