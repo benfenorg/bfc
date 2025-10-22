@@ -762,6 +762,9 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
     assert!(amount_lp_before_unstake>amount_lp_after_unstake, "Amount LP should be less than before unstake");
     assert!(amount_lp_before_unstake - amount_lp_after_unstake == amount_after_fee, "Amount LP should be equal to amount after fee");
     assert!(amount_before_unstake>amount_after_unstake, "Amount should be less than before unstake");
+    info!("amount_lp_before_unstake: {:?} amount_lp_after_unstake: {:?} amount_lp_before_unstake - amount_lp_after_unstake: {}", amount_lp_before_unstake, amount_lp_after_unstake, amount_lp_before_unstake - amount_lp_after_unstake);
+    info!("amount_before_unstake: {:?} amount_after_unstake: {:?} amount_before_unstake - amount_after_unstake: {}", amount_before_unstake, amount_after_unstake, amount_before_unstake - amount_after_unstake);
+    //todo: check fee and decimal
     assert!(amount_before_unstake - amount_after_unstake == amount_lp_before_unstake - amount_lp_after_unstake, "Amount should be equal to amount LP after fee");
 
     Ok(())

@@ -749,6 +749,11 @@ title: Module `bridge::bridge`
 </dt>
 <dd>
 </dd>
+<dt>
+<code>fee: u64</code>
+</dt>
+<dd>
+</dd>
 </dl>
 
 
@@ -5349,7 +5354,7 @@ title: Module `bridge::bridge`
         <b>let</b> fee_coin=bfc_system_state.mint_stable&lt;BUSD&gt;(fee,cap, ctx);
         <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
     };
-    inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_del">defi_holders_del</a>(ctx.sender(), defi_protocol_key, principal, 0);
+    inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_del">defi_holders_del</a>(owner, defi_protocol_key, principal, 0);
     inner.token_transfer_records[key].claimed = <b>true</b>;
     emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferClaimed">TokenTransferClaimed</a> { message_key: key });
     emit(<a href="../bridge/bridge.md#bridge_bridge_DefiTokensUnstakeEvent">DefiTokensUnstakeEvent</a> {
@@ -5364,6 +5369,7 @@ title: Module `bridge::bridge`
         protocol_version: defi_payload.protocol_version_defi_in(),
         protocol_token_id: defi_payload.protocol_token_id_defi_in(),
         principal: principal,
+        fee: fee,
     });
     (option::none(), owner)
 }
