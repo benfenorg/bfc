@@ -3,7 +3,7 @@
 
 #[test_only]
 module bridge::defi_holders_test;
-    use bridge::bridge::{test_defi_holders_add, test_defi_holders_get, test_defi_holders_del, create_defi_protocol_key_for_testing, test_defi_holders_amount_get, DefiHolderInfo, test_defi_holders_info_amount_get, test_defi_holders_info_lp_token_amount_get};
+    use bridge::bridge::{test_defi_holders_add, test_defi_holders_get, test_defi_holders_del, create_defi_protocol_key_for_testing, test_defi_holders_amount_get, test_defi_holders_info_amount_get, test_defi_holders_info_lp_token_amount_get};
     use bridge::bridge_env::{create_env, create_bridge_default};
     use bridge::chain_ids;
 
@@ -562,17 +562,16 @@ module bridge::defi_holders_test;
         bridge.test_defi_holders_add(user_address, protocol_key, amount, amount);
 
         // Test that defi_holders_amount_get returns the correct amount
-        let retrieved_amount = bridge.test_defi_holders_amount_get(user_address, protocol_key);
+        let retrieved_amount = bridge.test_defi_holders_amount_get(user_address, 1, 1, 3, 0);
         assert!(retrieved_amount == amount, 0);
 
         // Test with a different user (should return 0)
         let other_user = @0x2;
-        let retrieved_amount = bridge.test_defi_holders_amount_get(other_user, protocol_key);
+        let retrieved_amount = bridge.test_defi_holders_amount_get(other_user, 1, 1, 3, 0);
         assert!(retrieved_amount == 0, 0);
 
         // Test with a different protocol key (should return 0)
-        let other_protocol_key = create_defi_protocol_key_for_testing(2, 1, 4, 0);
-        let retrieved_amount = bridge.test_defi_holders_amount_get(user_address, other_protocol_key);
+        let retrieved_amount = bridge.test_defi_holders_amount_get(user_address, 2, 1, 4, 0);
         assert!(retrieved_amount == 0, 0);
         
         bridge_wrap.return_bridge();
@@ -605,8 +604,8 @@ module bridge::defi_holders_test;
         assert!(test_defi_holders_info_lp_token_amount_get(&retrieved_info) == lp_token_amount, 0);
         
         // Verify using the public getter functions
-        assert!(bridge.defi_holders_amount_get(user_address, protocol_key) == amount, 0);
-        assert!(bridge.defi_holders_lp_token_amount_get(user_address, protocol_key) == lp_token_amount, 0);
+        assert!(bridge.defi_holders_amount_get(user_address, 1, 1, 3, 0) == amount, 0);
+        assert!(bridge.defi_holders_lp_token_amount_get(user_address, 1, 1, 3, 0) == lp_token_amount, 0);
 
         // Test merging with different values
         let amount2 = 500;
@@ -619,8 +618,8 @@ module bridge::defi_holders_test;
         assert!(test_defi_holders_info_lp_token_amount_get(&retrieved_info2) == (lp_token_amount + lp_token_amount2), 0);
         
         // Verify using the public getter functions
-        assert!(bridge.defi_holders_amount_get(user_address, protocol_key) == (amount + amount2), 0);
-        assert!(bridge.defi_holders_lp_token_amount_get(user_address, protocol_key) == (lp_token_amount + lp_token_amount2), 0);
+        assert!(bridge.defi_holders_amount_get(user_address, 1, 1, 3, 0) == (amount + amount2), 0);
+        assert!(bridge.defi_holders_lp_token_amount_get(user_address, 1, 1, 3, 0) == (lp_token_amount + lp_token_amount2), 0);
 
         // Test deletion with different values
         let del_amount = 300;
@@ -634,8 +633,8 @@ module bridge::defi_holders_test;
         assert!(test_defi_holders_info_lp_token_amount_get(&retrieved_info3) == (lp_token_amount + lp_token_amount2 - del_lp_token_amount), 0);
         
         // Verify using the public getter functions
-        assert!(bridge.defi_holders_amount_get(user_address, protocol_key) == (amount + amount2 - del_amount), 0);
-        assert!(bridge.defi_holders_lp_token_amount_get(user_address, protocol_key) == (lp_token_amount + lp_token_amount2 - del_lp_token_amount), 0);
+        assert!(bridge.defi_holders_amount_get(user_address, 1, 1, 3, 0) == (amount + amount2 - del_amount), 0);
+        assert!(bridge.defi_holders_lp_token_amount_get(user_address, 1, 1, 3, 0) == (lp_token_amount + lp_token_amount2 - del_lp_token_amount), 0);
 
         // Test edge case: zero values
         let zero_user = @0x2;
@@ -644,8 +643,8 @@ module bridge::defi_holders_test;
         assert!(test_defi_holders_info_lp_token_amount_get(&zero_info) == 0, 0);
         
         // Verify using the public getter functions
-        assert!(bridge.defi_holders_amount_get(zero_user, protocol_key) == 0, 0);
-        assert!(bridge.defi_holders_lp_token_amount_get(zero_user, protocol_key) == 0, 0);
+        assert!(bridge.defi_holders_amount_get(zero_user, 1, 1, 3, 0) == 0, 0);
+        assert!(bridge.defi_holders_lp_token_amount_get(zero_user, 1, 1, 3, 0) == 0, 0);
 
         bridge_wrap.return_bridge();
         env.destroy_env();

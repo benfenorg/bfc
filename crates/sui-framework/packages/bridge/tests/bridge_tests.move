@@ -2205,16 +2205,16 @@ fun test_defi_stake_success() {
     assert!(staked_events.length() == 1, 0);
 
     // Check that the defi_holders record was updated
-    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+
+    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
+    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
+    let holder_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
         protocol_type,
         protocol_version,
         protocol_token_id,
         source_chain
     );
-    
-    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
-    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
-    let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
     assert!(holder_amount == adjusted_amount, 0);
 
     bridge_wrap.return_bridge();
@@ -2336,17 +2336,17 @@ fun test_defi_stake_success_multiple_stakes_same_user() {
     bridge.approve_defi_transfer_in(message2, signatures2);
 
     // Check that the defi_holders record was updated with combined amount
-    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+
+    // When source_chain is eth_mainnet, amounts are adjusted by adjust_amount_usdc_usdt_in function
+    let adjusted_amount1 = test_adjust_amount_usdc_usdt_in(source_chain, 1000);
+    let adjusted_amount2 = test_adjust_amount_usdc_usdt_in(source_chain, 2000);
+    let holder_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
         protocol_type,
         protocol_version,
         protocol_token_id,
         source_chain
     );
-    
-    // When source_chain is eth_mainnet, amounts are adjusted by adjust_amount_usdc_usdt_in function
-    let adjusted_amount1 = test_adjust_amount_usdc_usdt_in(source_chain, 1000);
-    let adjusted_amount2 = test_adjust_amount_usdc_usdt_in(source_chain, 2000);
-    let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
     assert!(holder_amount == (adjusted_amount1 + adjusted_amount2), 0);
 
 
@@ -2427,31 +2427,36 @@ fun test_defi_stake_success_different_users_protocols() {
     bridge.approve_defi_transfer_in(message2, signatures2);
 
     // Check that the defi_holders records were updated correctly
-    let defi_protocol_key1 = bridge::bridge::create_defi_protocol_key_for_testing(
+
+    // When source_chain is eth_mainnet, amounts are adjusted by adjust_amount_usdc_usdt_in function
+    let adjusted_amount1 = test_adjust_amount_usdc_usdt_in(source_chain, amount1);
+    let adjusted_amount2 = test_adjust_amount_usdc_usdt_in(source_chain, amount2);
+    let user1_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(user1_address),
         protocol_type1,
         protocol_version1,
         protocol_token_id1,
         source_chain
     );
-    
-    let defi_protocol_key2 = bridge::bridge::create_defi_protocol_key_for_testing(
+    assert!(user1_amount == adjusted_amount1, 0);
+
+    let user2_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(user2_address),
         protocol_type2,
         protocol_version2,
         protocol_token_id2,
         source_chain
     );
-    
-    // When source_chain is eth_mainnet, amounts are adjusted by adjust_amount_usdc_usdt_in function
-    let adjusted_amount1 = test_adjust_amount_usdc_usdt_in(source_chain, amount1);
-    let adjusted_amount2 = test_adjust_amount_usdc_usdt_in(source_chain, amount2);
-    let user1_amount = bridge.defi_holders_amount_get(address::from_bytes(user1_address), defi_protocol_key1);
-    assert!(user1_amount == adjusted_amount1, 0);
-    
-    let user2_amount = bridge.defi_holders_amount_get(address::from_bytes(user2_address), defi_protocol_key2);
     assert!(user2_amount == adjusted_amount2, 0);
 
     // User 1 should not have any amount for protocol 2
-    let user1_amount_protocol2 = bridge.defi_holders_amount_get(address::from_bytes(user1_address), defi_protocol_key2);
+    let user1_amount_protocol2 = bridge.defi_holders_amount_get(
+        address::from_bytes(user1_address),
+        protocol_type2,
+        protocol_version2,
+        protocol_token_id2,
+        source_chain
+    );
     assert!(user1_amount_protocol2 == 0, 0);
 
     // Check that two DefiTokensStakedEvent events were emitted
@@ -2602,16 +2607,16 @@ fun test_defi_stake_complete_flow() {
     assert!(staked_events.length() == 1, 0);
 
     // Verify defi_holders record was updated
-    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+
+    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
+    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(target_chain, amount_after_fee);
+    let holder_amount = bridge.bridge_ref().defi_holders_amount_get(
+        address::from_bytes(sender_address),
         protocol_type,
         protocol_version,
         protocol_token_id,
         target_chain
     );
-    
-    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
-    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(target_chain, amount_after_fee);
-    let holder_amount = bridge.bridge_ref().defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
     assert!(holder_amount == adjusted_amount, 0);
 
     // Cleanup
@@ -2663,7 +2668,7 @@ fun test_defi_unstake() {
     // Call approve_defi_transfer_in which will internally call defi_stake_success
     let mut bridge_wrap = env.bridge(@0x0);
     let bridge = bridge_wrap.bridge_ref_mut();
-    
+
     bridge.approve_defi_transfer_in(message, signatures);
 
     // Check that the DefiTokensStakedEvent was emitted
@@ -2671,31 +2676,50 @@ fun test_defi_unstake() {
     assert!(staked_events.length() == 1, 0);
 
     // Check that the defi_holders record was updated
-    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+
+    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
+    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
+    let holder_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
         protocol_type,
         protocol_version,
         protocol_token_id,
-        source_chain,
+        source_chain
     );
-    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
-    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
-    let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
-    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
     assert!(holder_amount == adjusted_amount, 0);
     assert!(lp_token_amount == lp_token_amount, 0);
     //unstake start
     scenario.next_tx(@0xABCD);
     let ctx = env.ctx();
-    
+
     bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
     let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
     assert!(transfer_out_events.length() == 1, 0);
 
-    let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
-    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    let holder_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
     assert!(holder_amount == adjusted_amount, 0);
     assert!(lp_token_amount == 0, 0);
-    
+
     //unstake end
     bridge_wrap.return_bridge();
     // sui::test_scenario::return_shared(bfc_system_state);
@@ -2753,16 +2777,22 @@ fun test_defi_unstake_gt_stake_amount() {
     assert!(staked_events.length() == 1, 0);
 
     // Check that the defi_holders record was updated
-    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
+    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
+    let holder_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
         protocol_type,
         protocol_version,
         protocol_token_id,
-        source_chain,
+        source_chain
     );
-    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
-    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
-    let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
-    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
     assert!(holder_amount == adjusted_amount, 0);
     assert!(lp_token_amount == lp_token_amount, 0);
     //unstake start
@@ -2827,16 +2857,22 @@ fun test_defi_unstake_and_approve_defi_transfer_out(){
     assert!(staked_events.length() == 1, 0);
 
     // Check that the defi_holders record was updated
-    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
+    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
+    let holder_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
         protocol_type,
         protocol_version,
         protocol_token_id,
-        source_chain,
+        source_chain
     );
-    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
-    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
-    let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
-    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
     assert!(holder_amount == adjusted_amount, 0);
     assert!(lp_token_amount == lp_token_amount, 0);
     //unstake start
@@ -2847,13 +2883,25 @@ fun test_defi_unstake_and_approve_defi_transfer_out(){
     let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
     assert!(transfer_out_events.length() == 1, 0);
 
-    let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
-    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    let holder_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
     assert!(holder_amount == adjusted_amount, 0);
     assert!(lp_token_amount == 0, 0);
 
     // Check that the bridge record was stored
-    let mut bridge_inner = bridge.test_load_inner_mut();
+    let bridge_inner = bridge.test_load_inner_mut();
     let records = bridge_inner.inner_token_transfer_records_mut();
     assert!(records.length() == 2, 0);
     // let seq_num = bridge_inner.sequence_nums()[&message_types::defi()] - 1;
@@ -2935,16 +2983,22 @@ fun test_defi_unstake_limit_error(){
     assert!(staked_events.length() == 1, 0);
 
     // Check that the defi_holders record was updated
-    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
+    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
+    let holder_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
         protocol_type,
         protocol_version,
         protocol_token_id,
-        source_chain,
+        source_chain
     );
-    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
-    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
-    let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
-    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
     assert!(holder_amount == adjusted_amount, 0);
     assert!(lp_token_amount == lp_token_amount, 0);
     //unstake start
@@ -3009,16 +3063,22 @@ fun test_defi_unstake_gt_lp_amount(){
     assert!(staked_events.length() == 1, 0);
 
     // Check that the defi_holders record was updated
-    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
+    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
+    let holder_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
         protocol_type,
         protocol_version,
         protocol_token_id,
-        source_chain,
+        source_chain
     );
-    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
-    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
-    let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
-    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
     assert!(holder_amount == adjusted_amount, 0);
     assert!(lp_token_amount == lp_token_amount, 0);
     //unstake start
@@ -3083,16 +3143,22 @@ fun test_defi_unstake_and_approve_defi_transfer_in(){
     assert!(staked_events.length() == 1, 0);
 
     // Check that the defi_holders record was updated
-    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
+    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
+    let holder_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
         protocol_type,
         protocol_version,
         protocol_token_id,
-        source_chain,
+        source_chain
     );
-    // When source_chain is eth_mainnet, amount is adjusted by adjust_amount_usdc_usdt_in function
-    let adjusted_amount = bridge::bridge::test_adjust_amount_usdc_usdt_in(source_chain, amount);
-    let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
-    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
     assert!(holder_amount == adjusted_amount, 0);
     assert!(lp_token_amount == lp_token_amount, 0);
     //unstake start
@@ -3103,8 +3169,20 @@ fun test_defi_unstake_and_approve_defi_transfer_in(){
     let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
     assert!(transfer_out_events.length() == 1, 0);
 
-    let holder_amount = bridge.defi_holders_amount_get(address::from_bytes(sender_address), defi_protocol_key);
-    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    let holder_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    let lp_token_amount = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
     assert!(holder_amount == adjusted_amount, 0);
     assert!(lp_token_amount == 0, 0);
     scenario.next_tx(@0x0);
@@ -3629,13 +3707,13 @@ fun test_defi_unstake_exact_all_lp_tokens() {
     bridge.approve_defi_transfer_in(message, signatures);
 
     // Verify staking succeeded
-    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+    let holder_lp_amount = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
         protocol_type,
         protocol_version,
         protocol_token_id,
-        source_chain,
+        source_chain
     );
-    let holder_lp_amount = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
     assert!(holder_lp_amount == lp_token_amount, 0);
 
     // Unstake exactly all LP tokens
@@ -3645,7 +3723,13 @@ fun test_defi_unstake_exact_all_lp_tokens() {
     bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
 
     // Verify all LP tokens were unstaked
-    let remaining_lp = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    let remaining_lp = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
     assert!(remaining_lp == 0, 0);
 
     // Verify event was emitted
@@ -3726,13 +3810,13 @@ fun test_defi_multiple_stakes_partial_unstake() {
     bridge.approve_defi_transfer_in(message_2, signatures_2);
 
     // Verify total LP tokens
-    let defi_protocol_key = bridge::bridge::create_defi_protocol_key_for_testing(
+    let total_lp = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
         protocol_type,
         protocol_version,
         protocol_token_id,
-        source_chain,
+        source_chain
     );
-    let total_lp = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
     assert!(total_lp == lp_token_amount_1 + lp_token_amount_2, 0);
 
     // Partial unstake (only unstake amount from first stake)
@@ -3742,7 +3826,13 @@ fun test_defi_multiple_stakes_partial_unstake() {
     bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount_1, ctx);
 
     // Verify partial unstake
-    let remaining_lp = bridge.defi_holders_lp_token_amount_get(address::from_bytes(sender_address), defi_protocol_key);
+    let remaining_lp = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
     assert!(remaining_lp == lp_token_amount_2, 0);
 
     // Verify event was emitted
