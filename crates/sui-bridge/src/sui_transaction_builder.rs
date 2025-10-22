@@ -411,10 +411,6 @@ fn build_token_bridge_approve_transaction(
         func_name_message,
         func_name_approve,
         fast_path_selector,
-        protocol_type,
-        protocol_version,
-        protocol_token_id,
-        action_type,
     ) = match bridge_action {
         BridgeAction::SuiToEthBridgeAction(a) => {
             let bridge_event = a.sui_bridge_event;
@@ -430,10 +426,6 @@ fn build_token_bridge_approve_transaction(
                 0u16,
                 "create_token_bridge_message_v2",
                 "approve_token_transfer_v2",
-                None,
-                None,
-                None,
-                None,
                 None,
             )
         }
@@ -452,10 +444,6 @@ fn build_token_bridge_approve_transaction(
                 "create_defi_transfer_out_message",
                 "approve_defi_transfer_out",
                 None, // fast_path_selector - not used for defi out
-                Some(bridge_event.protocol_type),
-                Some(bridge_event.protocol_version),
-                Some(bridge_event.protocol_token_id),
-                Some(bridge_event.action_type),
             )
         }
         BridgeAction::EthSendBackBridgeAction(a) => {
@@ -472,10 +460,6 @@ fn build_token_bridge_approve_transaction(
                 bridge_event.event_idx,
                 "create_token_bridge_message_v2",
                 "approve_token_transfer_v2",
-                None,
-                None,
-                None,
-                None,
                 None,
             )
         }
@@ -494,10 +478,6 @@ fn build_token_bridge_approve_transaction(
                 "create_token_bridge_in_message",
                 "approve_token_transfer_in",
                 Some(bridge_event.fast_path_selector),
-                None,
-                None,
-                None,
-                None,
             )
         }
         _ => unreachable!(),
@@ -649,7 +629,7 @@ fn build_defi_bridge_approve_transaction(
         seq_num,
         sui_address,
         target_chain,
-        eth_address,
+        _eth_address,
         amount,
         tx_hash,
         event_idx,

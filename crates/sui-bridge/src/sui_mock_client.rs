@@ -6,6 +6,7 @@
 use crate::error::{BridgeError, BridgeResult};
 use crate::test_utils::DUMMY_MUTALBE_BRIDGE_OBJECT_ARG;
 use async_trait::async_trait;
+use tracing::info;
 use std::collections::{HashMap, VecDeque};
 use std::sync::atomic::AtomicU64;
 use std::sync::{Arc, Mutex};
@@ -225,6 +226,7 @@ impl SuiClientInner for SuiMockClient {
     }
 
     async fn get_mutable_bridge_object_arg(&self) -> Result<ObjectArg, Self::Error> {
+        info!("bbking120 get_mutable_bridge_object_arg");
         Ok(DUMMY_MUTALBE_BRIDGE_OBJECT_ARG)
     }
 
@@ -354,6 +356,18 @@ impl SuiClientInner for SuiMockClient {
         Ok(BridgeActionStatus::NotFound)
     }
 
+    async fn get_defi_holders_get_by_key(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _user_address: SuiAddress,
+        _protocol_type: u64,
+        _protocol_version: u64,
+        _protocol_token_id: u64,
+        _chain_id: u8,
+    ) -> Result<u64, BridgeError> {
+        Ok(0)
+    }
+
     async fn get_send_back_onchain_status(
         &self,
         _bridge_object_arg: ObjectArg,
@@ -396,6 +410,30 @@ impl SuiClientInner for SuiMockClient {
         _seq_number: u64,
     ) -> Result<Option<MoveTypeParsedDefiTransferOutMessage>, BridgeError> {
         unimplemented!()
+    }
+
+    async fn get_defi_holders_amount(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _user_address: SuiAddress,
+        _protocol_type: u64,
+        _protocol_version: u64,
+        _protocol_token_id: u64,
+        _chain_id: u8,
+    ) -> Result<u64, BridgeError> {
+        Ok(0)
+    }
+
+    async fn get_defi_holders_lp_token_amount(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _user_address: SuiAddress,
+        _protocol_type: u64,
+        _protocol_version: u64,
+        _protocol_token_id: u64,
+        _chain_id: u8,
+    ) -> Result<u64, BridgeError> {
+        Ok(0)
     }
 
     async fn execute_transaction_block_with_effects(

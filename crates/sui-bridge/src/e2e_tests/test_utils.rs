@@ -1756,6 +1756,7 @@ pub async fn initiate_defi_bridge_unstake_sui_to_eth(
     protocol_version: u64,
     protocol_token_id: u64,
     amount: u64,
+    revoke_twice: bool,
 ) -> Result<SuiToEthDefiBridgeAction, anyhow::Error> {
     let bridge_object_arg = bridge_test_cluster
         .bridge_client()
@@ -1773,6 +1774,7 @@ pub async fn initiate_defi_bridge_unstake_sui_to_eth(
         protocol_version,
         protocol_token_id,
         amount,
+        revoke_twice,
     )
     .await
     {
@@ -1967,6 +1969,7 @@ async fn defi_unstake_sui_to_eth_package(
     protocol_version: u64,
     protocol_token_id: u64,
     amount: u64,
+    revoke_twice: bool,
 ) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
     let mut builder = ProgrammableTransactionBuilder::new();
     let arg_target_chain = builder.pure(target_chain as u8).unwrap();
@@ -2002,7 +2005,13 @@ async fn defi_unstake_sui_to_eth_package(
             .unwrap(),
     );
     let tx = wallet_context.sign_transaction(&tx_data);
-    wallet_context.execute_transaction_may_fail(tx).await
+    let result1 = wallet_context.execute_transaction_may_fail(tx.clone()).await;
+    if revoke_twice {
+        tokio::time::sleep(tokio::time::Duration::from_secs(100)).await;
+        let result2 = wallet_context.execute_transaction_may_fail(tx.clone()).await;
+        return result2;
+    }
+    result1
 }
 
 async fn deposit_busd_to_sui_package(

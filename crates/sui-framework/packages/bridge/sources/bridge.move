@@ -1928,14 +1928,40 @@ module bridge::bridge {
         );
     }
 
-    public fun defi_holders_lp_token_amount_get(bridge: &Bridge, user_address: address, key: DefiProtocolKey): u64 {
+    public fun defi_holders_lp_token_amount_get(
+        bridge: &Bridge,
+        user_address: address,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8
+    ): u64 {
         let inner = load_inner(bridge);
+        let key = DefiProtocolKey {
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            chain_id,
+        };
         let defi_info = inner.defi_holders_get(user_address, key);
         defi_info.lp_token_amount
     }
 
-    public fun defi_holders_amount_get(bridge: &Bridge, user_address: address, key: DefiProtocolKey): u64 {
+    public fun defi_holders_amount_get(
+        bridge: &Bridge,
+        user_address: address,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8
+    ): u64 {
         let inner = load_inner(bridge);
+        let key = DefiProtocolKey {
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            chain_id,
+        };
         let defi_info = inner.defi_holders_get(user_address, key);
         defi_info.amount
     }
@@ -2978,8 +3004,15 @@ module bridge::bridge {
     }
 
     #[test_only]
-    public fun test_defi_holders_amount_get(bridge: &Bridge, user_address: address, key: DefiProtocolKey): u64 {
-        bridge.defi_holders_lp_token_amount_get(user_address, key)
+    public fun test_defi_holders_amount_get(
+        bridge: &Bridge,
+        user_address: address,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8
+    ): u64 {
+        bridge.defi_holders_lp_token_amount_get(user_address, protocol_type, protocol_version, protocol_token_id, chain_id)
     }
 
     /////////////////////////////////////////////////////

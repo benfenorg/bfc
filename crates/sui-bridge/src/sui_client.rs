@@ -6,6 +6,7 @@ use async_trait::async_trait;
 use ethers::utils::hex;
 use core::panic;
 use fastcrypto::traits::ToFromBytes;
+use move_core_types::account_address::AccountAddress;
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::str::from_utf8;
@@ -45,7 +46,7 @@ use sui_types::{
     Identifier,
 };
 use tokio::sync::OnceCell;
-use tracing::{error, warn};
+use tracing::{error, info, warn};
 use hex::encode as hex_encode;
 
 use crate::crypto::BridgeAuthorityPublicKey;
@@ -563,6 +564,48 @@ where
             .get_gas_data_panic_if_not_gas(gas_object_id)
             .await
     }
+
+    pub async fn get_defi_holders_amount(
+        &self,
+        user_address: SuiAddress,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) -> BridgeResult<u64> {
+        let bridge_object_arg = self.get_mutable_bridge_object_arg_must_succeed().await;
+        self.inner
+            .get_defi_holders_amount(
+                bridge_object_arg,
+                user_address,
+                protocol_type,
+                protocol_version,
+                protocol_token_id,
+                chain_id,
+            )
+            .await
+    }
+
+    pub async fn get_defi_holders_lp_token_amount(
+        &self,
+        user_address: SuiAddress,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) -> BridgeResult<u64> {
+        let bridge_object_arg = self.get_mutable_bridge_object_arg_must_succeed().await;
+        self.inner
+            .get_defi_holders_lp_token_amount(
+                bridge_object_arg,
+                user_address,
+                protocol_type,
+                protocol_version,
+                protocol_token_id,
+                chain_id,
+            )
+            .await
+    }
 }
 
 /// Use a trait to abstract over the SuiSDKClient and SuiMockClient for testing.
@@ -647,6 +690,16 @@ pub trait SuiClientInner: Send + Sync {
         seq_number: u64,
     ) -> Result<BridgeActionStatus, BridgeError>;
 
+    async fn get_defi_holders_get_by_key(
+        &self,
+        bridge_object_arg: ObjectArg,
+        user_address: SuiAddress,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) -> Result<u64, BridgeError>;
+
     async fn get_send_back_onchain_status(
         &self,
         bridge_object_arg: ObjectArg,
@@ -689,6 +742,26 @@ pub trait SuiClientInner: Send + Sync {
         &self,
         cap_id: ObjectID,
     ) -> anyhow::Result<ObjectRef>;
+
+    async fn get_defi_holders_amount(
+        &self,
+        bridge_object_arg: ObjectArg,
+        user_address: SuiAddress,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) -> Result<u64, BridgeError>;
+
+    async fn get_defi_holders_lp_token_amount(
+        &self,
+        bridge_object_arg: ObjectArg,
+        user_address: SuiAddress,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) -> Result<u64, BridgeError>;
 }
 
 #[async_trait]
@@ -871,6 +944,29 @@ impl SuiClientInner for SuiSdkClient {
         .and_then(|status_byte| BridgeActionStatus::try_from(status_byte).map_err(Into::into))
     }
 
+    async fn get_defi_holders_get_by_key(
+        &self,
+        bridge_object_arg: ObjectArg,
+        user_address: SuiAddress,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) -> Result<u64, BridgeError> {
+        dev_inspect_bridge_defi_holders::<u64>(
+            self,
+            bridge_object_arg,
+            user_address,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            chain_id, 
+            "defi_holders_get_by_key",
+        )
+        .await
+        .and_then(|status_byte| Ok(status_byte))    
+    }
+
     async fn get_send_back_onchain_status(
         &self,
         bridge_object_arg: ObjectArg,
@@ -1016,6 +1112,50 @@ impl SuiClientInner for SuiSdkClient {
             }
         }
     }
+
+    async fn get_defi_holders_amount(
+        &self,
+        bridge_object_arg: ObjectArg,
+        user_address: SuiAddress,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) -> Result<u64, BridgeError> {
+        dev_inspect_defi_holders::<u64>(
+            self,
+            bridge_object_arg,
+            user_address,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            chain_id,
+            "defi_holders_amount_get",
+        )
+        .await
+    }
+
+    async fn get_defi_holders_lp_token_amount(
+        &self,
+        bridge_object_arg: ObjectArg,
+        user_address: SuiAddress,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) -> Result<u64, BridgeError> {
+        dev_inspect_defi_holders::<u64>(
+            self,
+            bridge_object_arg,
+            user_address,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            chain_id,
+            "defi_holders_lp_token_amount_get",
+        )
+        .await
+    }
 }
 
 /// Helper function to dev-inspect `bridge::{function_name}` function
@@ -1050,6 +1190,70 @@ where
         .read_api()
         .dev_inspect_transaction_block(SuiAddress::ZERO, kind, None, None, None)
         .await?;
+    let DevInspectResults {
+        results, effects, ..
+    } = resp;
+    let Some(results) = results else {
+        return Err(BridgeError::Generic(format!(
+            "No results returned for '{}', effects: {:?}",
+            function_name, effects
+        )));
+    };
+    let return_values = &results
+        .first()
+        .ok_or(BridgeError::Generic(format!(
+            "No return values for '{}', results: {:?}",
+            function_name, results
+        )))?
+        .return_values;
+    let (value_bytes, _type_tag) = return_values.first().ok_or(BridgeError::Generic(format!(
+        "No first return value for '{}', results: {:?}",
+        function_name, results
+    )))?;
+    bcs::from_bytes::<T>(value_bytes).map_err(|e| {
+        BridgeError::Generic(format!(
+            "Failed to parse return value for '{}', error: {:?}, results: {:?}",
+            function_name, e, results
+        ))
+    })
+}
+
+async fn dev_inspect_bridge_defi_holders<T>(
+    sui_client: &SuiSdkClient,
+    bridge_object_arg: ObjectArg,
+    user_address: SuiAddress,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    chain_id: u8,
+    function_name: &str,
+) -> Result<T, BridgeError>
+where
+    T: DeserializeOwned,
+{
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::Object(bridge_object_arg),
+            CallArg::Pure(bcs::to_bytes(&user_address.to_vec()).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&protocol_type).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&protocol_version).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&protocol_token_id).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&chain_id).unwrap()),
+        ],
+        commands: vec![Command::move_call(
+            BRIDGE_PACKAGE_ID,
+            Identifier::new("bridge").unwrap(),
+            Identifier::new(function_name).unwrap(),
+            vec![],
+            vec![Argument::Input(0), Argument::Input(1), Argument::Input(2), Argument::Input(3), Argument::Input(4), Argument::Input(5)],
+        )],
+    };
+    let kind = TransactionKind::programmable(pt);
+    let resp = sui_client
+        .read_api()
+        .dev_inspect_transaction_block(SuiAddress::ZERO, kind, None, None, None)
+        .await?;
+    info!("bbking110 resp: {:?}", resp);
     let DevInspectResults {
         results, effects, ..
     } = resp;
@@ -1320,7 +1524,81 @@ where
     })
 }
 
+async fn dev_inspect_defi_holders<T>(
+    sui_client: &SuiSdkClient,
+    bridge_object_arg: ObjectArg,
+    user_address: SuiAddress,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    chain_id: u8,
+    function_name: &str,
+) -> Result<T, BridgeError>
+where
+    T: DeserializeOwned,
+{
+    // Convert SuiAddress to AccountAddress for Move's address type
+    let account_address = AccountAddress::from(user_address);
+
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::Object(bridge_object_arg),
+            CallArg::Pure(bcs::to_bytes(&account_address).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&protocol_type).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&protocol_version).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&protocol_token_id).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&chain_id).unwrap()),
+        ],
+        commands: vec![Command::move_call(
+            BRIDGE_PACKAGE_ID,
+            Identifier::new("bridge").unwrap(),
+            Identifier::new(function_name).unwrap(),
+            vec![],
+            vec![
+                Argument::Input(0),
+                Argument::Input(1),
+                Argument::Input(2),
+                Argument::Input(3),
+                Argument::Input(4),
+                Argument::Input(5),
+            ],
+        )],
+    };
+    let kind = TransactionKind::programmable(pt);
+    let resp = sui_client
+        .read_api()
+        .dev_inspect_transaction_block(SuiAddress::ZERO, kind, None, None, None)
+        .await?;
+    let DevInspectResults {
+        results, effects, ..
+    } = resp;
+    let Some(results) = results else {
+        return Err(BridgeError::Generic(format!(
+            "No results returned for '{}', effects: {:?}",
+            function_name, effects
+        )));
+    };
+    let return_values = &results
+        .first()
+        .ok_or(BridgeError::Generic(format!(
+            "No return values for '{}', results: {:?}",
+            function_name, results
+        )))?
+        .return_values;
+    let (value_bytes, _type_tag) = return_values.first().ok_or(BridgeError::Generic(format!(
+        "No first return value for '{}', results: {:?}",
+        function_name, results
+    )))?;
+    bcs::from_bytes::<T>(value_bytes).map_err(|e| {
+        BridgeError::Generic(format!(
+            "Failed to parse return value for '{}', error: {:?}, results: {:?}",
+            function_name, e, results
+        ))
+    })
+}
+
 #[cfg(test)]
+
 mod tests {
     use crate::crypto::BridgeAuthorityKeyPair;
     use crate::e2e_tests::test_utils::TestClusterWrapperBuilder;

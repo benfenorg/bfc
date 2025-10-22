@@ -4,8 +4,6 @@
 #[test_only]
 module bridge::defi_protocol_validation_test {
     use sui::test_scenario;
-    use sui::tx_context::TxContext;
-    use std::unit_test::assert_eq;
     use bridge::defi_protocols;
 
     #[test]
