@@ -2003,10 +2003,10 @@ async fn defi_unstake_sui_to_eth_package(
     );
     let tx = wallet_context.sign_transaction(&tx_data);
     let result1 = wallet_context.execute_transaction_may_fail(tx.clone()).await;
-    info!("bbking120 result1: {:?}", result1);
-    tokio::time::sleep(tokio::time::Duration::from_secs(100)).await;
-    let result2 = wallet_context.execute_transaction_may_fail(tx).await;
-    info!("bbking120 result2: {:?}", result2);
+    // info!("bbking120 result1: {:?}", result1);
+    // tokio::time::sleep(tokio::time::Duration::from_secs(100)).await;
+    // let result2 = wallet_context.execute_transaction_may_fail(tx).await;
+    // info!("bbking120 result2: {:?}", result2);
     result1
 }
 
