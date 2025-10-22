@@ -206,7 +206,7 @@ async fn test_sui_bridge_paused() {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 16)]
-async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(), anyhow::Error> {
+async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     // Setup bridge test env
     let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
@@ -218,13 +218,8 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
 
     let address = bridge_test_cluster.sui_user_address();
     let http_client = bridge_test_cluster.test_cluster.inner.rpc_client().clone();
-
-    // auth::auth_setup(&mut test_cluster, &mut http_client, address, "MINT-BUSD-right_key").await?;
-    // info!("Setting up authentication for BUSD minting...");
-
     let minter_address = bridge_test_cluster.minter_address.unwrap();
     let minter_key_pair = bridge_test_cluster.minter_key_pair.as_ref().unwrap();
-    println!("Using minter address: {}", minter_address);
 
     // Step 2: Mint BUSD tokens for DeFi staking
     let busd_amount = 50_000_000_000u64; // 500 BUSD for testing
@@ -238,7 +233,6 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
         address,
     )
     .await?;
-    println!("Minted {} BUSD tokens for DeFi staking to {}", busd_amount, address);
 
     // Step 3: Verify BUSD tokens were minted successfully
     let busd_objects = auth::do_get_owned_objects_with_filter(
@@ -250,11 +244,9 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
 
     let busd_coin = busd_objects.first().unwrap().object().unwrap();
     let busd_balance = auth::get_balance(busd_coin);
-    println!("BUSD balance before DeFi stake: {}", busd_balance);
     assert!(busd_balance > 0, "BUSD balance should be greater than 0");
 
     // Step 4: Get bridge object for DeFi staking
-    info!("Getting bridge object for DeFi operations...");
     let bridge_object_arg = bridge_test_cluster
         .bridge_client()
         .get_mutable_bridge_object_arg_must_succeed()
@@ -328,8 +320,6 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
     // Step 7: Sign and execute the DeFi stake transaction
     let tx = bridge_test_cluster.test_cluster.inner.wallet.sign_transaction(&tx_data);
     let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
-
-    println!("Executing DeFi stake transaction...");
     let tx_response = http_client
         .execute_transaction_block(
             tx_bytes,
@@ -338,7 +328,6 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
             Some(ExecuteTransactionRequestType::WaitForLocalExecution),
         )
         .await?;
-    println!("DeFi stake transaction executed: {:?}", tx_response);
 
     // Step 8: Verify transaction execution
     let effects = tx_response.effects.as_ref().unwrap();
@@ -353,17 +342,11 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
             false
         }
     };
-
     assert!(defi_stake_succeeded, "DeFi stake transaction should succeed");
-    println!("✅ DeFi stake transaction executed successfully!");
 
     //  Check for DeFi bridge events (if transaction was successful)
     if let Some(events) = &tx_response.events {
-        println!("Transaction emitted {} events", events.data.len());
-
         for (idx, event) in events.data.iter().enumerate() {
-            println!("Event {}: type={}, sender={:?}", idx, event.type_, event.sender);
-
             // Look for DeFi-related events
             if event.type_.address.to_string().contains("bridge") ||
                event.type_.module.as_str().contains("bridge") ||
@@ -382,35 +365,19 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
     let mut amount_after_fee=0;
 
     for (idx, event) in events.data.iter().enumerate() {
-        println!("Event {}: type={}", idx, event.type_);
-
         if event.type_.name.as_str() == "DefiTransferOutEvent" {
-            println!("🌉 Found DefiTransferOutEvent!");
             defi_event = Some(event.clone());
 
             // Parse event to get seq_num
             if let Ok(parsed_event) = bcs::from_bytes::<crate::events::MoveDefiTransferOutEvent>(&event.bcs.bytes()) {
                 event_seq_num = parsed_event.seq_num;
-                info!("  - Sequence number: {}", event_seq_num);
-                info!("  - Source chain: {}", parsed_event.source_chain);
-                info!("  - Target chain: {}", parsed_event.target_chain);
-                info!("  - Protocol type: {}", parsed_event.protocol_type);
-                info!("  - Protocol version: {}", parsed_event.protocol_version);
-                info!("  - Protocol token ID: {}", parsed_event.protocol_token_id);
-                info!("  - Amount after fee: {}", parsed_event.amount_after_fee);
                 amount_after_fee=parsed_event.amount_after_fee;
-                info!("  - Action type: {}", parsed_event.action_type);
             }
             break;
         }
     }
 
     assert!(defi_event.is_some(), "DefiTransferOutEvent should be emitted");
-    println!("✅ DefiTransferOutEvent confirmed with seq_num: {}", event_seq_num);
-
-    println!("=== Step 5: Wait for bridge cluster to automatically process DeFi action ===");
-    // Wait for bridge cluster to detect the event, get signatures, and approve
-    println!("Waiting for TokenTransferApproved event...");
 
     // Give bridge cluster enough time to process the action
     tokio::time::sleep(Duration::from_secs(15)).await;
@@ -425,9 +392,6 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
         .await;
 
     assert!(!events.is_empty(), "Should have TokenTransferApproved event");
-    println!("✅ Bridge cluster automatically approved the DeFi transfer");
-
-    println!("=== Step 6: Verify the bridge record was approved ===");
     // Verify the record has verified signatures now
     tokio::time::sleep(Duration::from_secs(2)).await;
 
@@ -445,18 +409,7 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
     // The status should be Approved (signatures verified) but not Claimed
     // because this is a Sui->Eth transfer that will be claimed on the Eth side
     assert_eq!(status, BridgeActionStatus::Approved, "Action should be approved");
-
-    println!("=== Test Summary ===");
-    println!("✅ Successfully completed full DeFi stake integration test:");
-    println!("  1. Minted BUSD tokens");
-    println!("  2. Called defi_stake Move function");
-    println!("  3. Detected DefiTransferOutEvent");
-    println!("  4. Bridge cluster automatically approved the DeFi transfer");
-    println!("  5. Verified action status is Approved");
-    println!("📊 BUSD minted: {}, Staked amount: {}", busd_amount, stake_amount);
-    println!("🎯 DeFi protocol: type={}, version={}, token_id={}", protocol_type, protocol_version, protocol_token_id);
-
-    // 在以太坊上投资已桥接的代币
+    
     let tx_response = invest_bridged_tokens_on_eth(&bridge_test_cluster, event_seq_num).await?;
     if let Some(log) = tx_response.logs.last() {
         let event = decode_tokens_staked_event(log)?;
@@ -473,8 +426,6 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
         assert_eq!(event.11,0);    
     }
 
-    // check claim on sui side
-    println!("=== Step 7: Wait for Sui side to process DeFi claim ===");
     // Poll until the DeFi action becomes Claimed (with a timeout)
     let mut attempts = 0;
     let max_attempts = 60; // ~2 minutes if sleeping 2s between polls
@@ -487,7 +438,6 @@ async fn test_bridge_defi_stake_with_approve_defi_transfer_out_e2e() -> Result<(
                 event_seq_num,
             )
             .await;
-        println!("DeFi transfer action status: {:?}", status);
         if status == BridgeActionStatus::Claimed {
             break;
         }
