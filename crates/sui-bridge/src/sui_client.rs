@@ -438,48 +438,6 @@ where
         }
     }
 
-    pub async fn get_defi_holders_get_by_key_until_success(
-        &self,
-        user_address: SuiAddress,
-        protocol_type: u64,
-        protocol_version: u64,
-        protocol_token_id: u64,
-        chain_id: u8,
-    ) -> u64 {
-        let mut timeout = 3;
-        loop {
-            let bridge_object_arg = self.get_mutable_bridge_object_arg_must_succeed().await;
-            let Ok(Ok(amount)) = retry_with_max_elapsed_time!(
-                self.inner.get_defi_holders_get_by_key(
-                    bridge_object_arg,
-                    user_address,
-                    protocol_type,
-                    protocol_version,
-                    protocol_token_id,
-                    chain_id
-                ),
-                Duration::from_secs(30)
-            ) else {
-                self.bridge_metrics
-                    .sui_rpc_errors
-                    .with_label_values(&["get_defi_holders_get_by_key"])
-                    .inc();
-                error!("/// The above code appears to be a comment in Rust programming language. It is
-                /// enclosed within /* */ and is used to provide information or explanations
-                /// about the code. In this case, it seems to be mentioning an issue or error
-                /// related to getting defi holders by key for a user address.
-                Failed to get defi holders get by key for user_address: {}, protocol_type: {}, protocol_version: {}, protocol_token_id: {}, chain_id: {}", "x", protocol_type, protocol_version, protocol_token_id, chain_id);
-                if timeout > 0 {
-                    timeout -= 1;
-                } else {
-                    return 0;
-                };
-                continue;
-            };
-            return amount;
-        }
-    }
-
     // TODO: this function is very slow (seconds) in tests, we need to optimize it
     pub async fn get_send_back_onchain_status_until_success(
         &self,

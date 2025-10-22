@@ -51,7 +51,7 @@ pub async fn auth_setup(test_cluster: &mut TestCluster, http_client: &mut HttpCl
             Some(ExecuteTransactionRequestType::WaitForLocalExecution),
         )
         .await?;
-    println!("auth_setup tx_response is {:?}",tx_response);
+    println!("auth_setup tx_response is {:?}", tx_response);
     assert!(tx_response.effects.unwrap().status().is_ok());
     let admin_cap_vec = get_owned_objects("0xc8::bfc_system_state_inner::BfcSystemAdminCap", http_client, address).await.unwrap();
     let admin_cap = admin_cap_vec.first().unwrap().object().unwrap();
@@ -83,7 +83,7 @@ async fn add_auth_key2(test_cluster: &TestCluster, http_client: &HttpClient, add
         .wallet
         .sign_transaction(&transaction_bytes1.to_data()?);
     let (tx_bytes1, signatures1) = tx1.to_tx_bytes_and_signatures();
-    let tx_response = http_client
+    let _tx_response = http_client
         .execute_transaction_block(
             tx_bytes1,
             signatures1,
@@ -91,7 +91,7 @@ async fn add_auth_key2(test_cluster: &TestCluster, http_client: &HttpClient, add
             Some(ExecuteTransactionRequestType::WaitForLocalExecution),
         )
         .await?;
-    // println!("add_auth_key tx_response is {:?}",tx_response);
+    info!("add_auth_key2 tx_response is {:?}",_tx_response);
     Ok(())
 }
 
@@ -167,7 +167,7 @@ async fn add_auth_key(http_client: &HttpClient, address: SuiAddress, sui_key: &S
         //     .wallet
         //     .sign_transaction(&transaction_bytes1.to_data()?);
     let (tx_bytes1, signatures1) = tx1.to_tx_bytes_and_signatures();
-    let tx_response = http_client
+    let _ = http_client
         .execute_transaction_block(
             tx_bytes1,
             signatures1,
@@ -175,7 +175,6 @@ async fn add_auth_key(http_client: &HttpClient, address: SuiAddress, sui_key: &S
             Some(ExecuteTransactionRequestType::WaitForLocalExecution),
         )
         .await?;
-    info!("add_auth_key tx_response is {:?}",tx_response);
     Ok(())
 }
 

@@ -629,7 +629,7 @@ fn build_defi_bridge_approve_transaction(
         seq_num,
         sui_address,
         target_chain,
-        eth_address,
+        _eth_address,
         amount,
         tx_hash,
         event_idx,
