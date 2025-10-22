@@ -4394,7 +4394,7 @@ title: Module `bridge::bridge`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_lp_token_amount_get">defi_holders_lp_token_amount_get</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, user_address: <b>address</b>, key: <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">bridge::bridge::DefiProtocolKey</a>): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_lp_token_amount_get">defi_holders_lp_token_amount_get</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, user_address: <b>address</b>, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, chain_id: u8): u64
 </code></pre>
 
 
@@ -4403,8 +4403,21 @@ title: Module `bridge::bridge`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_lp_token_amount_get">defi_holders_lp_token_amount_get</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>, user_address: <b>address</b>, key: <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>): u64 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_lp_token_amount_get">defi_holders_lp_token_amount_get</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    user_address: <b>address</b>,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    chain_id: u8
+): u64 {
     <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner">load_inner</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> key = <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a> {
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        chain_id,
+    };
     <b>let</b> defi_info = inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(user_address, key);
     defi_info.lp_token_amount
 }
@@ -4420,7 +4433,7 @@ title: Module `bridge::bridge`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_amount_get">defi_holders_amount_get</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, user_address: <b>address</b>, key: <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">bridge::bridge::DefiProtocolKey</a>): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_amount_get">defi_holders_amount_get</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, user_address: <b>address</b>, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, chain_id: u8): u64
 </code></pre>
 
 
@@ -4429,8 +4442,21 @@ title: Module `bridge::bridge`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_amount_get">defi_holders_amount_get</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>, user_address: <b>address</b>, key: <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>): u64 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_amount_get">defi_holders_amount_get</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    user_address: <b>address</b>,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    chain_id: u8
+): u64 {
     <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner">load_inner</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> key = <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a> {
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        chain_id,
+    };
     <b>let</b> defi_info = inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(user_address, key);
     defi_info.amount
 }
