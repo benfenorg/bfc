@@ -166,7 +166,7 @@ async fn test_execution() {
     // Call the executeTransactionBlock method and check that the response is valid.
     let response = test_cluster
         .execute_jsonrpc(
-            "sui_executeTransactionBlock".to_string(),
+            "bfc_executeTransactionBlock".to_string(),
             json!({
                 "tx_bytes": tx_bytes,
                 "signatures": sigs,
@@ -212,7 +212,7 @@ async fn test_execution_with_deprecated_mode() {
     // Call the executeTransactionBlock method and check that the response is valid.
     let response = test_cluster
         .execute_jsonrpc(
-            "sui_executeTransactionBlock".to_string(),
+            "bfc_executeTransactionBlock".to_string(),
             json!({
                 "tx_bytes": tx_bytes,
                 "signatures": sigs,
@@ -246,7 +246,7 @@ async fn test_execution_with_no_sigs() {
     // Call the executeTransactionBlock method and check that the response is valid.
     let response = test_cluster
         .execute_jsonrpc(
-            "sui_executeTransactionBlock".to_string(),
+            "bfc_executeTransactionBlock".to_string(),
             json!({
                 "tx_bytes": tx_bytes,
             }),
@@ -279,7 +279,7 @@ async fn test_execution_with_empty_sigs() {
     // Call the executeTransactionBlock method and check that the response is valid.
     let response = test_cluster
         .execute_jsonrpc(
-            "sui_executeTransactionBlock".to_string(),
+            "bfc_executeTransactionBlock".to_string(),
             json!({
                 "tx_bytes": tx_bytes,
                 "signatures": [],
@@ -312,7 +312,7 @@ async fn test_execution_with_aborted_tx() {
     // Call the executeTransactionBlock method and check that the response is valid.
     let response = test_cluster
         .execute_jsonrpc(
-            "sui_executeTransactionBlock".to_string(),
+            "bfc_executeTransactionBlock".to_string(),
             json!({
                 "tx_bytes": tx_bytes,
                 "signatures": sigs,
@@ -341,7 +341,7 @@ async fn test_dry_run() {
 
     let response = test_cluster
         .execute_jsonrpc(
-            "sui_dryRunTransactionBlock".to_string(),
+            "bfc_dryRunTransactionBlock".to_string(),
             json!({
                 "tx_bytes": tx_bytes,
             }),
@@ -362,7 +362,7 @@ async fn test_dry_run_with_invalid_tx() {
 
     let response = test_cluster
         .execute_jsonrpc(
-            "sui_dryRunTransactionBlock".to_string(),
+            "bfc_dryRunTransactionBlock".to_string(),
             json!({
                 "tx_bytes": "invalid_tx_bytes",
             }),
@@ -381,6 +381,7 @@ async fn test_dry_run_with_invalid_tx() {
 
 #[sim_test]
 async fn test_get_all_balances() {
+    telemetry_subscribers::init_for_testing();
     let test_cluster = FnDelegationTestCluster::new()
         .await
         .expect("Failed to create test cluster");
@@ -388,14 +389,14 @@ async fn test_get_all_balances() {
     let address = test_cluster.onchain_cluster.wallet.get_addresses()[1];
     let response = test_cluster
         .execute_jsonrpc(
-            "suix_getAllBalances".to_string(),
+            "bfcx_getAllBalances".to_string(),
             json!({ "owner": address.to_string().as_str()}),
         )
         .await
         .unwrap();
     // Only check that FN can return a valid response and not check the contents;
     // the contents is FN logic and thus should be tested on the FN side.
-    assert_eq!(response["result"][0]["coinType"], "0x2::sui::SUI");
+    assert_eq!(response["result"][0]["coinType"], "0x2::bfc::BFC");
     test_cluster.stopped().await;
 }
 
@@ -408,7 +409,7 @@ async fn test_get_all_balances_with_invalid_address() {
 
     let response = test_cluster
         .execute_jsonrpc(
-            "suix_getAllBalances".to_string(),
+            "bfcx_getAllBalances".to_string(),
             json!({ "owner": invalid_address }),
         )
         .await
