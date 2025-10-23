@@ -172,6 +172,8 @@ module bridge::bridge {
         protocol_type: u64,
         protocol_version: u64,
         protocol_token_id: u64,
+        principal: u64,
+        fee: u64,
     }
 
     public struct TokenSendBackEvent has copy, drop {
@@ -2527,7 +2529,7 @@ module bridge::bridge {
             let fee_coin=bfc_system_state.mint_stable<BUSD>(fee,cap, ctx);
             bridge_fee::deposit_fee(parent_id, fee_coin);
         };
-        inner.defi_holders_del(ctx.sender(), defi_protocol_key, principal, 0);
+        inner.defi_holders_del(owner, defi_protocol_key, principal, 0);
         inner.token_transfer_records[key].claimed = true;
         emit(TokenTransferClaimed { message_key: key });
         emit(DefiTokensUnstakeEvent {
@@ -2541,6 +2543,8 @@ module bridge::bridge {
             protocol_type: defi_payload.protocol_type_defi_in(),
             protocol_version: defi_payload.protocol_version_defi_in(),
             protocol_token_id: defi_payload.protocol_token_id_defi_in(),
+            principal: principal,
+            fee: fee,
         });
         (option::none(), owner)
     }
