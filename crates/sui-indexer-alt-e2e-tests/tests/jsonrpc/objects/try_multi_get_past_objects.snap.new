@@ -1,5 +1,6 @@
 ---
 source: external-crates/move/crates/move-transactional-test-runner/src/framework.rs
+assertion_line: 809
 ---
 processed 11 tasks
 
@@ -64,7 +65,7 @@ Checkpoint created: 1
 
 task 9, lines 37-52:
 //# run-jsonrpc
-Error: Unknown variable: obj_4_0
+Error: Unknown variable: obj_3_0
 Allowed variable mappings are {
     "A": "@A",
     "A_opt": "@A",
@@ -110,7 +111,7 @@ Allowed variable mappings are {
 
 task 10, lines 54-75:
 //# run-jsonrpc
-Error: Unknown variable: obj_3_0
+Error: Unknown variable: obj_4_0
 Allowed variable mappings are {
     "A": "@A",
     "A_opt": "@A",

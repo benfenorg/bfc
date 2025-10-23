@@ -67,7 +67,7 @@ Response: {
         "nextEpochStake": "20000000000000000",
         "nextEpochGasPrice": "100",
         "nextEpochCommissionRate": "200",
-        "stakingPoolId": "BFC8108c4502a2fe9d37495d2fc3d95f32be71d6743ec65356fc16ba64a1268260a5d4e",
+        "stakingPoolId": "BFCa501a4ad931815a8e2f506da8986ccd629baec0149570b40cf879e06a9860d11dc72",
         "stablePools": {
           "id": {
             "id": "BFC03a12ece9d98e5f09b414a71aa834d43120283d9c242118307f096019ea95f10f9c9"
@@ -82,7 +82,7 @@ Response: {
         "pendingStake": "0",
         "pendingTotalSuiWithdraw": "0",
         "pendingPoolTokenWithdraw": "0",
-        "exchangeRatesId": "BFCa501a4ad931815a8e2f506da8986ccd629baec0149570b40cf879e06a9860d11dc72",
+        "exchangeRatesId": "BFC8108c4502a2fe9d37495d2fc3d95f32be71d6743ec65356fc16ba64a1268260a5d4e",
         "exchangeRatesSize": "1"
       }
     ],
@@ -104,7 +104,7 @@ task 2, lines 12-14:
 //# programmable --sender A --inputs 1000000000 object(0x5) @validator_0
 //> 0: SplitCoins(Gas, [Input(0)]);
 //> 1: sui_system::sui_system::request_add_stake(Input(1), Result(0), Input(2))
-events: Event { package_id: sui_system, transaction_module: Identifier("sui_system"), sender: A, type_: StructTag { address: sui_system, module: Identifier("validator"), name: Identifier("StakingRequestEvent"), type_params: [] }, contents: [129, 8, 196, 80, 42, 47, 233, 211, 116, 149, 210, 252, 61, 149, 243, 43, 231, 29, 103, 67, 236, 101, 53, 111, 193, 107, 166, 74, 18, 104, 38, 10, 218, 131, 22, 109, 1, 175, 215, 221, 207, 138, 245, 248, 68, 244, 90, 170, 83, 244, 133, 72, 229, 17, 124, 35, 245, 162, 151, 140, 253, 66, 34, 68, 252, 204, 154, 66, 27, 187, 19, 193, 166, 106, 26, 169, 143, 10, 215, 80, 41, 237, 233, 72, 87, 119, 156, 105, 21, 180, 79, 148, 6, 139, 146, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 202, 154, 59, 0, 0, 0, 0] }
+events: Event { package_id: sui_system, transaction_module: Identifier("sui_system"), sender: A, type_: StructTag { address: sui_system, module: Identifier("validator"), name: Identifier("StakingRequestEvent"), type_params: [] }, contents: [165, 1, 164, 173, 147, 24, 21, 168, 226, 245, 6, 218, 137, 134, 204, 214, 41, 186, 236, 1, 73, 87, 11, 64, 207, 135, 158, 6, 169, 134, 13, 17, 218, 131, 22, 109, 1, 175, 215, 221, 207, 138, 245, 248, 68, 244, 90, 170, 83, 244, 133, 72, 229, 17, 124, 35, 245, 162, 151, 140, 253, 66, 34, 68, 252, 204, 154, 66, 27, 187, 19, 193, 166, 106, 26, 169, 143, 10, 215, 80, 41, 237, 233, 72, 87, 119, 156, 105, 21, 180, 79, 148, 6, 139, 146, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 202, 154, 59, 0, 0, 0, 0] }
 created: object(2,0), object(2,1)
 mutated: 0x0000000000000000000000000000000000000000000000000000000000000005, object(0,0)
 deleted: object(_)
@@ -175,7 +175,7 @@ Response: {
         "nextEpochStake": "20000001000000000",
         "nextEpochGasPrice": "100",
         "nextEpochCommissionRate": "200",
-        "stakingPoolId": "BFC8108c4502a2fe9d37495d2fc3d95f32be71d6743ec65356fc16ba64a1268260a5d4e",
+        "stakingPoolId": "BFCa501a4ad931815a8e2f506da8986ccd629baec0149570b40cf879e06a9860d11dc72",
         "stablePools": {
           "id": {
             "id": "BFC03a12ece9d98e5f09b414a71aa834d43120283d9c242118307f096019ea95f10f9c9"
@@ -190,7 +190,7 @@ Response: {
         "pendingStake": "1000000000",
         "pendingTotalSuiWithdraw": "0",
         "pendingPoolTokenWithdraw": "0",
-        "exchangeRatesId": "BFCa501a4ad931815a8e2f506da8986ccd629baec0149570b40cf879e06a9860d11dc72",
+        "exchangeRatesId": "BFC8108c4502a2fe9d37495d2fc3d95f32be71d6743ec65356fc16ba64a1268260a5d4e",
         "exchangeRatesSize": "1"
       }
     ],
@@ -273,7 +273,7 @@ Response: {
         "nextEpochStake": "20000001001000000",
         "nextEpochGasPrice": "100",
         "nextEpochCommissionRate": "200",
-        "stakingPoolId": "BFC8108c4502a2fe9d37495d2fc3d95f32be71d6743ec65356fc16ba64a1268260a5d4e",
+        "stakingPoolId": "BFCa501a4ad931815a8e2f506da8986ccd629baec0149570b40cf879e06a9860d11dc72",
         "stablePools": {
           "id": {
             "id": "BFC03a12ece9d98e5f09b414a71aa834d43120283d9c242118307f096019ea95f10f9c9"
@@ -288,7 +288,7 @@ Response: {
         "pendingStake": "0",
         "pendingTotalSuiWithdraw": "0",
         "pendingPoolTokenWithdraw": "0",
-        "exchangeRatesId": "BFCa501a4ad931815a8e2f506da8986ccd629baec0149570b40cf879e06a9860d11dc72",
+        "exchangeRatesId": "BFC8108c4502a2fe9d37495d2fc3d95f32be71d6743ec65356fc16ba64a1268260a5d4e",
         "exchangeRatesSize": "2"
       }
     ],
@@ -377,7 +377,7 @@ Response: {
         "nextEpochStake": "20000001001000000",
         "nextEpochGasPrice": "100",
         "nextEpochCommissionRate": "200",
-        "stakingPoolId": "BFC8108c4502a2fe9d37495d2fc3d95f32be71d6743ec65356fc16ba64a1268260a5d4e",
+        "stakingPoolId": "BFCa501a4ad931815a8e2f506da8986ccd629baec0149570b40cf879e06a9860d11dc72",
         "stablePools": {
           "id": {
             "id": "BFC03a12ece9d98e5f09b414a71aa834d43120283d9c242118307f096019ea95f10f9c9"
@@ -392,7 +392,7 @@ Response: {
         "pendingStake": "0",
         "pendingTotalSuiWithdraw": "0",
         "pendingPoolTokenWithdraw": "0",
-        "exchangeRatesId": "BFCa501a4ad931815a8e2f506da8986ccd629baec0149570b40cf879e06a9860d11dc72",
+        "exchangeRatesId": "BFC8108c4502a2fe9d37495d2fc3d95f32be71d6743ec65356fc16ba64a1268260a5d4e",
         "exchangeRatesSize": "2"
       }
     ],
@@ -475,7 +475,7 @@ Response: {
         "nextEpochStake": "20000001001000000",
         "nextEpochGasPrice": "100",
         "nextEpochCommissionRate": "200",
-        "stakingPoolId": "BFC8108c4502a2fe9d37495d2fc3d95f32be71d6743ec65356fc16ba64a1268260a5d4e",
+        "stakingPoolId": "BFCa501a4ad931815a8e2f506da8986ccd629baec0149570b40cf879e06a9860d11dc72",
         "stablePools": {
           "id": {
             "id": "BFC03a12ece9d98e5f09b414a71aa834d43120283d9c242118307f096019ea95f10f9c9"
@@ -490,7 +490,7 @@ Response: {
         "pendingStake": "0",
         "pendingTotalSuiWithdraw": "0",
         "pendingPoolTokenWithdraw": "0",
-        "exchangeRatesId": "BFCa501a4ad931815a8e2f506da8986ccd629baec0149570b40cf879e06a9860d11dc72",
+        "exchangeRatesId": "BFC8108c4502a2fe9d37495d2fc3d95f32be71d6743ec65356fc16ba64a1268260a5d4e",
         "exchangeRatesSize": "2"
       }
     ],

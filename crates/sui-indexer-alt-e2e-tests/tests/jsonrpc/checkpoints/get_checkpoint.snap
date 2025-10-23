@@ -70,7 +70,7 @@ Response: {
   "result": {
     "epoch": "0",
     "sequenceNumber": "0",
-    "digest": "5xHwry1ctra1nMP2SqGfdyN72f7h5hkBP5ryuyDYNPnE",
+    "digest": "FjU29iydqAnJKKfvEybhVXG7w1oYy2Rd4oBRuT7G9koz",
     "networkTotalTransactions": "1",
     "epochRollingBfcGasCostSummary": {
       "basePoint": 0,
@@ -83,10 +83,10 @@ Response: {
     "epochRollingStableGasCostSummaryMap": [],
     "timestampMs": "0",
     "transactions": [
-      "CkyZBXhNz4eoDwm25D66TZNYk6zok8WXf2rfonLsf5r8"
+      "2KePhD62LxDrfHvy7os9EN2Qe49BJbipUqD1KCSQi3yt"
     ],
     "checkpointCommitments": [],
-    "validatorSignature": "s1uEZBFWweVM8DdMK2LhTuS/r/wkrijb0SmrPVMb3UIf0SssrZJOOat1IPD7N8nI"
+    "validatorSignature": "qcBxiNSJUdsH7UNWKmmbTgVXPNDB7W7l3P8YVkohtUVn4FqwkL+U5dn9Yvnn6saW"
   }
 }
 
@@ -98,9 +98,9 @@ Response: {
   "result": {
     "epoch": "0",
     "sequenceNumber": "1",
-    "digest": "9qnfLo8UfetyQKiYwAkbrbwHr4atHMNvMqvmLrzQ4n1p",
+    "digest": "J7u7X6ZKKa1o79cWBPMEF82x9BH1eSNAPLaJZLHi8HUX",
     "networkTotalTransactions": "2",
-    "previousDigest": "5xHwry1ctra1nMP2SqGfdyN72f7h5hkBP5ryuyDYNPnE",
+    "previousDigest": "FjU29iydqAnJKKfvEybhVXG7w1oYy2Rd4oBRuT7G9koz",
     "epochRollingBfcGasCostSummary": {
       "basePoint": 0,
       "rate": 0,
@@ -112,10 +112,10 @@ Response: {
     "epochRollingStableGasCostSummaryMap": [],
     "timestampMs": "0",
     "transactions": [
-      "ECCjdxk7fkvpX6DBw7w75Ub8SKn7UognNEpvqk2ijeY4"
+      "9zXAaiZb8smifFWJLrG6iQimrqR5AdWoTEZMAomqY3Rw"
     ],
     "checkpointCommitments": [],
-    "validatorSignature": "q7eU/C5ryPraBqMq8ZWEItSuNeIRQ9U/Z9S95NWtpsnFscnKYILg8aLRmYHRvWrT"
+    "validatorSignature": "tTiQDFjVsQHo7hmM3BMLzHKdmm5u3/nl24HZ9eZrvvoZiAeITuG+0buLovu++VJJ"
   }
 }
 
@@ -127,9 +127,9 @@ Response: {
   "result": {
     "epoch": "0",
     "sequenceNumber": "2",
-    "digest": "DsJnehgvL6ANZMwo75aLbfw77saTuJCBfFEBkzDfxptM",
+    "digest": "HjbXHM5iTe4PE47M5nZ6BmiWz6MV5Z71DKNu4eGAWY1S",
     "networkTotalTransactions": "4",
-    "previousDigest": "9qnfLo8UfetyQKiYwAkbrbwHr4atHMNvMqvmLrzQ4n1p",
+    "previousDigest": "J7u7X6ZKKa1o79cWBPMEF82x9BH1eSNAPLaJZLHi8HUX",
     "epochRollingBfcGasCostSummary": {
       "basePoint": 0,
       "rate": 0,
@@ -142,10 +142,10 @@ Response: {
     "timestampMs": "1000",
     "transactions": [
       "8DFy3oTHn2RoG1nW7f6YNYrt4Hbrf6sQmDAAk8t9mFPi",
-      "5prVSXrCCg1PqViGLRScLDjhqJ9Ad2mTkkg5v2fcZPHS"
+      "9gCBbY44hcnagDRToeReAAp29zo4LazM4tntBmso7JQk"
     ],
     "checkpointCommitments": [],
-    "validatorSignature": "ixHD5hSGNhnQiTPGPBo7wmfVUaZoTK862+agbzU5Ev96wgVi8BeYHnaJvUmlOqOe"
+    "validatorSignature": "ig/Y5433xN3f9AnpdFp7SmD3lH2uIzd8RxJWKNwAcyGxh05HATx2bl5PD0+pO+2N"
   }
 }
 
@@ -157,9 +157,9 @@ Response: {
   "result": {
     "epoch": "0",
     "sequenceNumber": "3",
-    "digest": "9fJDiUVTLD3X738EuctxjcC5Zbc1A97VKJbJhEkHMwPs",
+    "digest": "66BoQw2qNtpny3WXybK92bJahebjjWc8CwZAmDPQC2u8",
     "networkTotalTransactions": "5",
-    "previousDigest": "DsJnehgvL6ANZMwo75aLbfw77saTuJCBfFEBkzDfxptM",
+    "previousDigest": "HjbXHM5iTe4PE47M5nZ6BmiWz6MV5Z71DKNu4eGAWY1S",
     "epochRollingBfcGasCostSummary": {
       "basePoint": 0,
       "rate": 0,
@@ -184,7 +184,7 @@ Response: {
       "P6McrDmaAGAJ1APZkjurZo2ArM7vJHvukBXMwwMt8TV"
     ],
     "checkpointCommitments": [],
-    "validatorSignature": "tlQ/Wnt6qBzU5RFUcHiGyKiDwX5w3lD4pkubhmAfUZZ5Klxj+edUB9rJwIlrqb2A"
+    "validatorSignature": "j6PfIBXXl0Srx1/1ODZEuS9TzdBllWUJnPWXj5WZ/Gnodb3QMOkG1R6k+iMeq0Bo"
   }
 }
 
@@ -196,9 +196,9 @@ Response: {
   "result": {
     "epoch": "1",
     "sequenceNumber": "4",
-    "digest": "Aohmtha8smZe6aJGGvK2AHB3pS5HSgPith3Ryf2FNLbS",
+    "digest": "GntPJPG9GPfF43ZDDeHY3izUzuSKZEp96GkbU8mmnoBa",
     "networkTotalTransactions": "8",
-    "previousDigest": "9fJDiUVTLD3X738EuctxjcC5Zbc1A97VKJbJhEkHMwPs",
+    "previousDigest": "66BoQw2qNtpny3WXybK92bJahebjjWc8CwZAmDPQC2u8",
     "epochRollingBfcGasCostSummary": {
       "basePoint": 0,
       "rate": 0,
@@ -210,11 +210,11 @@ Response: {
     "epochRollingStableGasCostSummaryMap": [],
     "timestampMs": "1000",
     "transactions": [
-      "2s2veDB2fcry2Fe6oaFTiSNzgn4RPMqpHT4GXw65ADfL",
-      "8pxYL97ZXWi1U9yTY9FBpJybe4fgfC4TMFhW1SAFYTWK",
-      "7B7kSfSiMGQFDvukLCgBE9VFX5n3fqconPijkqiEemxD"
+      "Cax3f9zBPYQmhv7LYjmJNC8HFTZP3uwcox7PLyxLsuGS",
+      "5qBAYr9LTNvdY3SyTx5oNgEnfL65oxoNgAj9ko1TAW1A",
+      "HMF8Ws4zyUCsFGigHKD5Ncfn4aYLGdRJ9WVoygz2AJ4e"
     ],
     "checkpointCommitments": [],
-    "validatorSignature": "rAoe/HT82C1clxyadNcV00RDakVmxsQZUTYT/tDRbInR61WHYGM2TOyaxFwhpxCK"
+    "validatorSignature": "uK+3Lov1vHxmYbf1LKkECNCxVI5y3r12T237WN4SX+74rArEaueqhP6xBfeu5ZiK"
   }
 }

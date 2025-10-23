@@ -67,28 +67,28 @@ Response: {
         "coinType": "0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC",
         "coinObjectId": "BFC4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185ca86a",
         "version": "3",
-        "digest": "Auuk3BGRTAMkJgUCUPtxFidgEGjzsu1YCotG42jvVjkU",
+        "digest": "7saCbJ2io4HwrKxMYdQAo1hz3s91vBJdiFJ5t8RKUXC3",
         "balance": "299999994065282",
-        "previousTransaction": "3t5o5wcRgFPkJUe4uuMQh2ZsjfHNMRJ4QjaiHY313chA"
+        "previousTransaction": "FV2XpwHQ1qY1jFUEMrmx4qAuLtJPh4BQCJtGk83QG3Z"
       },
       {
         "coinType": "0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC",
-        "coinObjectId": "BFCa7f7d46557cbca1ef5483d486fefb0810a7a6df6d017290f398b610b0731bfb44102",
-        "version": "3",
-        "digest": "pbNkZz4P9MZnpNgpyzivKAxHH3giwDGgcKj3uBykAR9",
-        "balance": "34",
-        "previousTransaction": "3t5o5wcRgFPkJUe4uuMQh2ZsjfHNMRJ4QjaiHY313chA"
-      },
-      {
-        "coinType": "0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC",
-        "coinObjectId": "BFC67e5220b648d1b2e6b373dd38fc7a2447f3b477b5a8062788c8471cf99fdbe790d8d",
+        "coinObjectId": "BFC755fe5e14d0fc76e9bb8b9ed7692a06ed87d609985a1b88323afc9cef389a443f4db",
         "version": "2",
-        "digest": "FzVEqgiEicnSBSx4NYJj4QYgNr4XQuKUUiaAYUfBcGpF",
+        "digest": "FhF3UgkHUDKEwzzaHTdMVNB8LrGXT89d75eoJH2PPotL",
         "balance": "12",
-        "previousTransaction": "EdgzKnichNNQsRLLSrwMkS6XsDDTWTgvgRUkWychcnJ6"
+        "previousTransaction": "3y6zrfgwn2dXaaZxpoGxqAyN88cwTVaUQf7BVnidVi3N"
+      },
+      {
+        "coinType": "0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC",
+        "coinObjectId": "BFC357a2c8d2371736897f40e95e53d47c65489d3cba3e6636338e9a0a07f7f645a6165",
+        "version": "3",
+        "digest": "43kyYASYXa3b1nmxUUVmp7Fz3zM98MEDPAcmS9hn6gf6",
+        "balance": "34",
+        "previousTransaction": "FV2XpwHQ1qY1jFUEMrmx4qAuLtJPh4BQCJtGk83QG3Z"
       }
     ],
-    "nextCursor": "IGflIgtkjRsuazc904/HokR/O0d7WoBieIyEcc+Z/b55AQAAAAAAAAABAAAAAAAAAA==",
+    "nextCursor": "IDV6LI0jcXNol/QOleU9R8ZUidPLo+ZjYzjpoKB/f2RaAQAAAAAAAAABAAAAAAAAAA==",
     "hasNextPage": false
   }
 }
@@ -113,20 +113,20 @@ Response: {
         "coinType": "0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC",
         "coinObjectId": "BFC4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185ca86a",
         "version": "4",
-        "digest": "Au6pu4Jf1Q75VArb2DPiy1BZDSG4WNM5qi6DmUoMzueb",
+        "digest": "D9Vj612EmtNiQ65gxhiNCtByhZ7QpiRErqpgAmg2BzuP",
         "balance": "299999993039138",
-        "previousTransaction": "ABkSDEzvtKSGwRTSiAYRBsqXpcFnvBCmFBgppDyWpEmB"
+        "previousTransaction": "DCZMLeXazjQExc5o95yFMXhBLc4ZqtuhR6sKqGoXwUyw"
       },
       {
         "coinType": "0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC",
-        "coinObjectId": "BFCa7f7d46557cbca1ef5483d486fefb0810a7a6df6d017290f398b610b0731bfb44102",
+        "coinObjectId": "BFC357a2c8d2371736897f40e95e53d47c65489d3cba3e6636338e9a0a07f7f645a6165",
         "version": "3",
-        "digest": "pbNkZz4P9MZnpNgpyzivKAxHH3giwDGgcKj3uBykAR9",
+        "digest": "43kyYASYXa3b1nmxUUVmp7Fz3zM98MEDPAcmS9hn6gf6",
         "balance": "34",
-        "previousTransaction": "3t5o5wcRgFPkJUe4uuMQh2ZsjfHNMRJ4QjaiHY313chA"
+        "previousTransaction": "FV2XpwHQ1qY1jFUEMrmx4qAuLtJPh4BQCJtGk83QG3Z"
       }
     ],
-    "nextCursor": "IKf31GVXy8oe9Ug9SG/vsIEKem320BcpDzmLYQsHMb+0AQAAAAAAAAABAAAAAAAAAA==",
+    "nextCursor": "IDV6LI0jcXNol/QOleU9R8ZUidPLo+ZjYzjpoKB/f2RaAQAAAAAAAAABAAAAAAAAAA==",
     "hasNextPage": false
   }
 }
@@ -142,20 +142,20 @@ Response: {
         "coinType": "0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC",
         "coinObjectId": "BFCdd6d983778a0e79298ed16ff6a02366dc727aeca638205f40474aa5f62697072c109",
         "version": "1",
-        "digest": "Dv8NDRefczvg9LJsUy6LtfszStrUfxsoPiyKxAwiD4de",
+        "digest": "Ci662iJUE7BtAbCVekF7RJohSphrwE6eXN8m17QhVuaA",
         "balance": "300000000000000",
-        "previousTransaction": "6txoBV98un4PJqKFFSfSahJMjVRsb2XMub3Wfp8bzFuy"
+        "previousTransaction": "3PPwE64hSpzwuEEBKE3s9rgWXZjraYE3j1F5sRKf2eb5"
       },
       {
         "coinType": "0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC",
-        "coinObjectId": "BFC67e5220b648d1b2e6b373dd38fc7a2447f3b477b5a8062788c8471cf99fdbe790d8d",
+        "coinObjectId": "BFC755fe5e14d0fc76e9bb8b9ed7692a06ed87d609985a1b88323afc9cef389a443f4db",
         "version": "4",
-        "digest": "BLCgCUHGjjaVeFGT9qzr8ADZ2CGuMyYud4u6GXpQVS19",
+        "digest": "2jepyhcR2Dqcg13idWgsMR2GVQD7AgbZUxJ88tS4UWTs",
         "balance": "12",
-        "previousTransaction": "ABkSDEzvtKSGwRTSiAYRBsqXpcFnvBCmFBgppDyWpEmB"
+        "previousTransaction": "DCZMLeXazjQExc5o95yFMXhBLc4ZqtuhR6sKqGoXwUyw"
       }
     ],
-    "nextCursor": "IGflIgtkjRsuazc904/HokR/O0d7WoBieIyEcc+Z/b55AgAAAAAAAAABAAAAAAAAAA==",
+    "nextCursor": "IHVf5eFND8dum7i57XaSoG7YfWCZhaG4gyOvyc7ziaRDAgAAAAAAAAABAAAAAAAAAA==",
     "hasNextPage": false
   }
 }

@@ -8,7 +8,7 @@ A: object(0,0)
 
 task 1, lines 12-81:
 //# publish --sender A
-events: Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("DisplayCreated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [68, 196, 236, 193, 134, 60, 28, 141, 12, 91, 21, 210, 106, 10, 147, 19, 12, 194, 184, 230, 105, 56, 204, 179, 119, 0, 85, 232, 20, 115, 91, 214] }, Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("VersionUpdated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [68, 196, 236, 193, 134, 60, 28, 141, 12, 91, 21, 210, 106, 10, 147, 19, 12, 194, 184, 230, 105, 56, 204, 179, 119, 0, 85, 232, 20, 115, 91, 214, 1, 0, 5, 3, 98, 97, 114, 5, 123, 98, 97, 114, 125, 7, 98, 97, 114, 95, 118, 97, 108, 9, 123, 98, 97, 114, 46, 118, 97, 108, 125, 3, 98, 97, 122, 5, 123, 98, 97, 122, 125, 3, 113, 117, 120, 5, 123, 113, 117, 120, 125, 3, 113, 117, 121, 5, 123, 113, 117, 121, 125] }
+events: Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("DisplayCreated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [118, 233, 205, 138, 24, 69, 108, 122, 42, 77, 122, 60, 161, 102, 126, 185, 161, 189, 148, 126, 80, 81, 146, 185, 205, 70, 29, 238, 105, 8, 67, 88] }, Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("VersionUpdated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [118, 233, 205, 138, 24, 69, 108, 122, 42, 77, 122, 60, 161, 102, 126, 185, 161, 189, 148, 126, 80, 81, 146, 185, 205, 70, 29, 238, 105, 8, 67, 88, 1, 0, 5, 3, 98, 97, 114, 5, 123, 98, 97, 114, 125, 7, 98, 97, 114, 95, 118, 97, 108, 9, 123, 98, 97, 114, 46, 118, 97, 108, 125, 3, 98, 97, 122, 5, 123, 98, 97, 122, 125, 3, 113, 117, 120, 5, 123, 113, 117, 120, 125, 3, 113, 117, 121, 5, 123, 113, 117, 121, 125] }
 created: object(1,0), object(1,1), object(1,2)
 mutated: object(0,0)
 gas summary: computation_cost: 1000000, storage_cost: 17799200,  storage_rebate: 0, non_refundable_storage_fee: 0
@@ -32,7 +32,7 @@ Response: {
   "id": 0,
   "error": {
     "code": -32603,
-    "message": "Internal Error: Failed to get object 0x3ac7efb6ed2f3147568845996f26dc1795fe3ddbcc56b1ab116a78540764c140 at latest version: Failed to deserialize object content: Failure serializing object in the requested format: \"Deserialized value too large\""
+    "message": "Internal Error: Failed to get object 0x923f79d2bda64141bd67643bf06b9a247380855df5bd14f84d8128ee6086334f at latest version: Failed to deserialize object content: Failure serializing object in the requested format: \"Deserialized value too large\""
   }
 }
 
@@ -43,9 +43,9 @@ Response: {
   "id": 1,
   "result": {
     "data": {
-      "objectId": "BFC3ac7efb6ed2f3147568845996f26dc1795fe3ddbcc56b1ab116a78540764c1409e93",
+      "objectId": "BFC923f79d2bda64141bd67643bf06b9a247380855df5bd14f84d8128ee6086334f6224",
       "version": "3",
-      "digest": "A9FNae2NS4u12DFkfadvwZnDMJ5wMcXUaM6HnFsGEVax",
+      "digest": "8W3xvntERg3gpXBPbrmVesFHZuQ5XDogGnuZRxLrxpBm",
       "display": {
         "data": {
           "bar_val": "42",

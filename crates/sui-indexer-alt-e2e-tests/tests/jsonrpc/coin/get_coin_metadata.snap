@@ -208,7 +208,7 @@ Response: {
     "symbol": "REAL",
     "description": "A coin that is real",
     "iconUrl": "https://real.com",
-    "id": "BFCf91b32a20d34da4d9fc43bd6fce74b8ec2d74e6bf5ccc5b38a2c6a02b473e7839b39"
+    "id": "BFC6560e5a64f85aeb8a45f16c7981f425f53417d26b089ebf5301eb0291d44adc6f22d"
   }
 }
 
@@ -223,7 +223,7 @@ Response: {
     "symbol": "FAKE",
     "description": "A coin that is fake",
     "iconUrl": "https://fake.com",
-    "id": "BFCc4fb489b3f40d697578f7bcdaea1981d3091f3619cab34551f03a6b1b99a82e6d601"
+    "id": "BFCf1ebb5cbe08fb1bbbc91dc9bb06a606cb830b3183f6f1b3628bc8f80ad7398672c1a"
   }
 }
 
@@ -267,7 +267,7 @@ Response: {
     "symbol": "REAL",
     "description": "A coin that is real",
     "iconUrl": "https://real.com",
-    "id": "BFCf91b32a20d34da4d9fc43bd6fce74b8ec2d74e6bf5ccc5b38a2c6a02b473e7839b39"
+    "id": "BFC6560e5a64f85aeb8a45f16c7981f425f53417d26b089ebf5301eb0291d44adc6f22d"
   }
 }
 
@@ -291,7 +291,7 @@ Response: {
     "symbol": "REAL",
     "description": "A coin that is real",
     "iconUrl": "https://real.com",
-    "id": "BFCf91b32a20d34da4d9fc43bd6fce74b8ec2d74e6bf5ccc5b38a2c6a02b473e7839b39"
+    "id": "BFC6560e5a64f85aeb8a45f16c7981f425f53417d26b089ebf5301eb0291d44adc6f22d"
   }
 }
 

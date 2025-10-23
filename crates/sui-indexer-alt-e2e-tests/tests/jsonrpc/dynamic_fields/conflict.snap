@@ -39,29 +39,29 @@ Response: {
   "id": 0,
   "result": {
     "data": {
-      "objectId": "BFC7fd23ad580a2a5d514712579951e78ff13bfa1d63ba990b48be425c4fc9153debcea",
+      "objectId": "BFC6dc3144f8a8686cbbfdcbde8341d4eb72bd992dbbf40fe533e0f00de00edaedf6016",
       "version": "3",
-      "digest": "FqbfKMQbBFarAaRNmzcEKKH2grRXW71pHeNVC26GraiQ",
-      "type": "0x2::dynamic_field::Field<u64, 0xd53d9a2eee97f3abb5eb8cee455a578e2a9d329f5219f66624789d9c4d515dd5::M::Value>",
+      "digest": "6J2tcTc826oBTx68baY3vAVnY1AdhRxPceA2HhjqKew5",
+      "type": "0x2::dynamic_field::Field<u64, 0x342d3e49ed479fb72c197ad41496ef793ea2433346903328d2377bd40e921563::M::Value>",
       "owner": {
-        "ObjectOwner": "BFCf6663754666c4ae251a8d293f8badcee63aa1ebb52eeebe186d014f160d27b3b3109"
+        "ObjectOwner": "BFCfae1c745c8530983ce987febc8bc0b506d123675680ed41f79b3dcd3a365585b981f"
       },
-      "previousTransaction": "A26ZQBWKnEB2BD8U8ZSh4uoKYnDr6CCUqwK825ohpNCW",
+      "previousTransaction": "3r8VWsV72CvMbEzCdXt6P9HHaQVgwtPpDF7inU9DJZgE",
       "storageRebate": "2021600",
       "content": {
         "dataType": "moveObject",
-        "type": "0x2::dynamic_field::Field<u64, 0xd53d9a2eee97f3abb5eb8cee455a578e2a9d329f5219f66624789d9c4d515dd5::M::Value>",
+        "type": "0x2::dynamic_field::Field<u64, 0x342d3e49ed479fb72c197ad41496ef793ea2433346903328d2377bd40e921563::M::Value>",
         "hasPublicTransfer": false,
         "fields": {
           "id": {
-            "id": "BFC7fd23ad580a2a5d514712579951e78ff13bfa1d63ba990b48be425c4fc9153debcea"
+            "id": "BFC6dc3144f8a8686cbbfdcbde8341d4eb72bd992dbbf40fe533e0f00de00edaedf6016"
           },
           "name": "42",
           "value": {
-            "type": "0xd53d9a2eee97f3abb5eb8cee455a578e2a9d329f5219f66624789d9c4d515dd5::M::Value",
+            "type": "0x342d3e49ed479fb72c197ad41496ef793ea2433346903328d2377bd40e921563::M::Value",
             "fields": {
               "id": {
-                "id": "BFCd56da1c7948920f64137beab15214de8cca65b17e2b5ea4c6eb3441f05fc238a4e34"
+                "id": "BFC43db645effa91349179ba7bc84ef31cfa346f3fdc2246a21a709eb8ef128a73a26e2"
               },
               "value": "43"
             }
