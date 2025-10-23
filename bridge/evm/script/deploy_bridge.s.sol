@@ -125,7 +125,7 @@ contract DeployBridge is Script {
                 console.log("bbking1");
                 deployConfig.suiDecimals[3] = 6;
                 deployConfig.suiDecimals[4] = 6;
-                deployConfig.suiDecimals[7] = 6;
+                deployConfig.suiDecimals[7] = 9;
             }else{
                 console.log("bbking2");
                 deployConfig.suiDecimals[3] = 9;
