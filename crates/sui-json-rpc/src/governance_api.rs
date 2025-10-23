@@ -4,7 +4,6 @@
 use std::cmp::max;
 use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
-
 use async_trait::async_trait;
 use cached::proc_macro::cached;
 use cached::SizedCache;
@@ -16,23 +15,23 @@ use tracing::{info, instrument};
 use mysten_metrics::spawn_monitored_task;
 use sui_core::authority::AuthorityState;
 use sui_json_rpc_api::{GovernanceReadApiOpenRpc, GovernanceReadApiServer, JsonRpcMetrics};
-use sui_json_rpc_types::{DelegatedStake, Stake, StakeStatus};
+use sui_json_rpc_types::{DelegatedStake,Stake, StakeStatus};
 use sui_json_rpc_types::{SuiCommittee, ValidatorApy, ValidatorApys};
 use sui_open_rpc::Module;
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::committee::EpochId;
-use sui_types::dynamic_field::get_dynamic_field_from_store;
+use sui_types::dynamic_field::{get_dynamic_field_from_store, Field};
 use sui_types::error::{SuiError, UserInputError};
 use sui_types::governance::StakedSui;
 use sui_types::id::ID;
 use sui_types::object::ObjectRead;
 use sui_types::sui_serde::BigInt;
-use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary;
-use sui_types::sui_system_state::PoolTokenExchangeRate;
+use sui_types::sui_system_state::sui_system_state_summary::{BagSummary, SuiSystemStateSummary};
+use sui_types::sui_system_state::{PoolStableTokenExchangeRate, PoolTokenExchangeRate};
 use sui_types::sui_system_state::SuiSystemStateTrait;
 use sui_types::sui_system_state::{get_validator_from_table, SuiSystemState};
 use sui_types::proposal::Proposal;
-
+use sui_types::sui_system_state::sui_system_state_inner_v1::StablePoolV1;
 use crate::authority_state::StateRead;
 use crate::error::{Error, RpcInterimResult, SuiRpcInputError};
 use crate::{with_tracing, ObjectProvider, SuiRpcModule};
@@ -404,10 +403,20 @@ async fn exchange_rates(
     let system_state = state.get_system_state()?;
     let system_state_summary: SuiSystemStateSummary = system_state.into_sui_system_state_summary();
 
+    let bfc_state = state.get_bfc_system_state()?;
+    let busd_rate = bfc_state.get_rate_map().get(&"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD".to_string());
+
     // Get validator rate tables
     let mut tables = vec![];
+    let mut stable_exchange_rate= HashMap::<String, PoolStableTokenExchangeRate>::new();
 
     for validator in system_state_summary.active_validators {
+        fill_stable_exchange_rate(
+            &state,
+            &mut stable_exchange_rate,
+            &validator.sui_address,
+            &validator.stable_pools).await?;
+
         tables.push((
             validator.sui_address,
             validator.staking_pool_id,
@@ -459,8 +468,23 @@ async fn exchange_rates(
                     exchange_rates_id,
                     &epoch,
                 )?;
-
-                Ok::<_, SuiError>((epoch, exchange_rate))
+                let key_ = format!("{}::{}", address, epoch);
+                if stable_exchange_rate.contains_key(&key_) && busd_rate.is_some() {
+                    let stable_rate = stable_exchange_rate.get(&key_).unwrap();
+                    //update exchange_rate with stable rate
+                    let busd_rate_ =  *busd_rate.unwrap();
+                    let sui_amount = (stable_rate.sui_amount() as u128 * busd_rate_ as u128 / 1_000_000_000u128) as u64;
+                    let pool_token_amount = (stable_rate.pool_token_amount() as u128 * busd_rate_ as u128 / 1_000_000_000u128) as u64;
+                    let exchange_rate_new = PoolTokenExchangeRate::new(
+                        //sui_amount
+                        sui_amount,
+                        // pool_token_amount:
+                        pool_token_amount,
+                    );
+                    Ok::<_, SuiError>((epoch, exchange_rate_new))
+                }else {
+                    Ok::<_, SuiError>((epoch, exchange_rate))
+                }
             })
             .collect::<Result<Vec<_>, _>>()?;
 
@@ -516,6 +540,59 @@ fn backfill_rates(
     filled_rates.reverse();
     filled_rates
 }
+
+async  fn fill_stable_exchange_rate(
+    state: &Arc<dyn StateRead>,
+    stable_exchange_rate_map: &mut HashMap<String, PoolStableTokenExchangeRate>,
+    validator_address: &SuiAddress,
+    stable_pools: &Option<BagSummary>,
+) -> Result<(), SuiError> {
+    if let Some(bag) = stable_pools {
+        let bag_id = *bag.id.clone().object_id();
+
+        let bag =  state.get_dynamic_fields(bag_id, None, 1)
+            .map_err(|e| SuiError::DynamicFieldReadError(e.to_string()))?;
+        let (busd_id, df) = bag.get(0).ok_or_else(|| SuiError::DynamicFieldReadError("bag is empty".to_string()))?;
+
+        let stable_pool_obj = state.get_object(&busd_id, &df.version).await
+            .map_err(|e| SuiError::DynamicFieldReadError(e.to_string()))?;
+
+        if let Some(move_object) = stable_pool_obj
+            .data
+            .try_as_move() {
+            let result: StablePoolV1 = bcs::from_bytes::<Field<String, StablePoolV1>>(move_object.contents())
+                .map_err(|err| SuiError::DynamicFieldReadError(err.to_string()))?
+                .value;
+            if result.stable_balance < 1 {// skip empty stable pool
+                return Ok(());
+            }
+
+            for df in state.get_dynamic_fields(
+                result.exchange_rates.id,
+                None,
+                result.exchange_rates.size as usize,
+            ).map_err(|e| SuiError::DynamicFieldReadError(e.to_string()))? {
+                let epoch: EpochId = bcs::from_bytes(&df.1.bcs_name).map_err(|e| {
+                    SuiError::ObjectDeserializationError {
+                        error: e.to_string(),
+                    }
+                })?;
+
+                let stable_exchange_rate: PoolStableTokenExchangeRate = get_dynamic_field_from_store(
+                    &state.get_object_store().as_ref(),
+                    result.exchange_rates.id,
+                    &epoch,
+                )?;
+                //insert into map
+                let key = format!("{}::{}", validator_address, epoch);
+                stable_exchange_rate_map.insert(key, stable_exchange_rate.clone());
+            }
+        }
+
+    }
+    Ok(())
+}
+
 
 impl SuiRpcModule for GovernanceReadApi {
     fn rpc(self) -> RpcModule<Self> {

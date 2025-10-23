@@ -1,28 +1,14 @@
 // Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { useMemo } from 'react';
+import { ENV_TO_API } from '_src/shared/api-env';
+import { useRpcData } from '@mysten/core';
 
 import useAppSelector from './useAppSelector';
 
 export const useChainData = () => {
-	const [activeApiEnv, activeRpcUrl] = useAppSelector(({ app }) => [app.apiEnv, app.customRPC]);
+	const [apiEnv, activeRpcUrl] = useAppSelector(({ app }) => [app.apiEnv, app.customRPC]);
+	const rpcUrl = ENV_TO_API[apiEnv];
 
-	return useMemo(() => {
-		if (activeApiEnv === 'customRPC') {
-			const url = new URL(activeRpcUrl as string);
-			if (url.origin === 'https://devrpc4.openblock.vip') {
-				return {
-					ANONYMOUS_SWAP_POOL:
-						'BFCf9a2b3794a667d5949f714b10c4c26967f9f74f01a0c5491445e1d4f7f2dbfb78aa1',
-				};
-			}
-			return {
-				ANONYMOUS_SWAP_POOL: '',
-			};
-		}
-		return {
-			ANONYMOUS_SWAP_POOL: '',
-		};
-	}, [activeApiEnv, activeRpcUrl]);
+	return useRpcData(rpcUrl || (activeRpcUrl as string));
 };

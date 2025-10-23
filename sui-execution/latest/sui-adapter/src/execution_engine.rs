@@ -87,6 +87,8 @@ mod checked {
     use sui_types::stable_coin::stable::checked::STABLE;
 
     const BFC_ROUND_V2_PROTOCOL_VERSION: u64 = 45;
+    const BFC_COLLECT_OTHER_GAS_EPOCH : u64 = 397;
+    const BFC_COLLECT_OTHER_GAS_SKIP_EPOCH : u64 = 398;
 
     /// If a transaction digest shows up in this list, when executing such transaction,
     /// we will always return `ExecutionError::CertificateDenied` without executing it (but still do
@@ -344,6 +346,8 @@ mod checked {
         // we must still ensure an effect is committed and all objects versions incremented
         let result = gas_charger.charge_input_objects(temporary_store);
 
+        let is_end_of_epoch_tx = transaction_kind.is_end_of_epoch_tx();
+        let epoch_id = tx_ctx.epoch();
         let result: ResultWithTimings<Mode::ExecutionResults, ExecutionError> =
             result.map_err(|e| (e, vec![])).and_then(
                 |()| -> ResultWithTimings<Mode::ExecutionResults, ExecutionError> {
@@ -427,6 +431,9 @@ mod checked {
         // to the 0x5 object so that it's not lost.
         temporary_store.conserve_unmetered_storage_rebate(gas_charger.unmetered_storage_rebate());
 
+        if is_end_of_epoch_tx &&(epoch_id== BFC_COLLECT_OTHER_GAS_EPOCH|| epoch_id == BFC_COLLECT_OTHER_GAS_SKIP_EPOCH){
+            return (cost_summary, result, timings);
+        }
         if let Err(e) = run_conservation_checks::<Mode>(
             temporary_store,
             gas_charger,
@@ -974,27 +981,29 @@ mod checked {
             // create rewards in stable coin
             let rewards_bfc;
             if STABLE::is_outer_gas_type(&type_tag,param.current_protocol_version.as_u64()) {
-                let stable_charge_arg = builder
-                    .input(CallArg::Pure(
-                        bcs::to_bytes(&calculate_add(
-                            gas_cost_summary.gas_by_stable.computation_cost, gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
-                    )).unwrap();
-                let rewards = builder.programmable_move_call(
-                    SUI_FRAMEWORK_PACKAGE_ID,
-                    BALANCE_MODULE_NAME.to_owned(),
-                    BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
-                    vec![type_tag.clone()],
-                    vec![stable_charge_arg],
-                );
-                // deposit to outer stable coin treasury
-                let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
-                builder.programmable_move_call(
-                    BFC_SYSTEM_PACKAGE_ID,
-                    BFC_SYSTEM_MODULE_NAME.to_owned(),
-                    BALANCE_DEPOSIT_STABLE_GAS_COIN_FUNCTION_NAME.to_owned(),
-                    vec![type_tag.clone()],
-                    vec![system_obj, rewards],
-                );
+                if param.epoch > BFC_COLLECT_OTHER_GAS_EPOCH {
+                    let stable_charge_arg = builder
+                        .input(CallArg::Pure(
+                            bcs::to_bytes(&calculate_add(
+                                gas_cost_summary.gas_by_stable.computation_cost, gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
+                        )).unwrap();
+                    let rewards = builder.programmable_move_call(
+                        SUI_FRAMEWORK_PACKAGE_ID,
+                        BALANCE_MODULE_NAME.to_owned(),
+                        BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
+                        vec![type_tag.clone()],
+                        vec![stable_charge_arg],
+                    );
+                    // deposit to outer stable coin treasury
+                    let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+                    builder.programmable_move_call(
+                        BFC_SYSTEM_PACKAGE_ID,
+                        BFC_SYSTEM_MODULE_NAME.to_owned(),
+                        BALANCE_DEPOSIT_STABLE_GAS_COIN_FUNCTION_NAME.to_owned(),
+                        vec![type_tag.clone()],
+                        vec![system_obj, rewards],
+                    );
+                }
 
                 //  withdraw bfc
                 let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
