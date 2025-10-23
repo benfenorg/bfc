@@ -698,7 +698,10 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
         assert_eq!(event.2,BridgeChainId::SuiCustom as u8);
         assert_eq!(event.3,event_seq_num+1); // from benfen
         assert_eq!(event.5,bridge_test_cluster.eth_env().contracts().arrow);
-        assert_eq!(event.6,amount_after_fee/1000);
+        let principal=amount_after_fee/1000;
+        //返回本金+利息
+        info!("principal: {:?} earned money: {:?}", principal, principal/10);
+        assert_eq!(event.6,principal+(principal/10));
         assert_eq!(event.7,amount_after_fee);
         assert_eq!(event.8,protocol_type);
         assert_eq!(event.9,protocol_version);

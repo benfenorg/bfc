@@ -261,3 +261,31 @@ module bridge::defi_protocols_test;
         test_utils::destroy(obj);
         test_scenario::end(scenario);
     }
+
+    #[test]
+    fun test_manage_fee_unstake_10_percent() {
+        let mut scenario = test_scenario::begin(@0x1);
+        let ctx = test_scenario::ctx(&mut scenario);
+        let mut obj = new(ctx);
+        defi_protocols::new_defi_protocol_config_for_testing(&mut obj.id,ctx);
+        defi_protocols::add_defi_protocol(&mut obj.id, PROTOCOL_TYPE_AAVE, PROTOCOL_VERSION_AAVE, PROTOCOL_TOKEN_ID_AAVE, ETH_MAINNET, FEE_TYPE_PERCENTAGE, FEE_RATE_PERCENTAGE, LIMIT_STAKE_AMOUNT, LIMIT_UNSTAKE_AMOUNT);
+        // 测试百分比费率
+        let (fee, _principal) = defi_protocols::manage_fee(
+            &obj.id,
+            PROTOCOL_TYPE_AAVE,
+            PROTOCOL_VERSION_AAVE,
+            PROTOCOL_TOKEN_ID_AAVE,
+            ETH_MAINNET,
+            4997500, // lp_amount_withdraw
+            5496000, // amount_withdraw
+            49975000000, // amount_in_record
+            49970002500 // lp_amount_in_record
+        );
+        //percentage=4997500/(4997500+49970002500)=0.0001
+        //赎回本金=49975000000*0.0001=4997500
+        //赎回利息=5496000-4997500=498500
+        //fee=498500*0.15=74775
+        assert_eq!(fee, 74775);
+        test_utils::destroy(obj);
+        test_scenario::end(scenario);
+    }
