@@ -597,6 +597,7 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
     let tx_response = invest_bridged_tokens_on_eth(&bridge_test_cluster, event_seq_num).await?;
     if let Some(log) = tx_response.logs.last() {
         let event = decode_tokens_staked_event(log)?;
+        info!("bbking110 staked event: {:?}", event);
         assert_eq!(event.0,BridgeChainId::EthCustom as u8);
         assert_eq!(event.1,0); //evm
         assert_eq!(event.2,BridgeChainId::SuiCustom as u8);

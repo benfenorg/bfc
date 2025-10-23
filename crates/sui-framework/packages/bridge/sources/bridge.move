@@ -110,8 +110,8 @@ module bridge::bridge {
     }
 
     public struct DefiHolderInfo has copy, store, drop {
-        amount: u64,
-        lp_token_amount: u64,
+        amount: u64,//busd amount,decimal is 9
+        lp_token_amount: u64,//lp token amount,decimal is 9
     }
 
 
