@@ -425,16 +425,20 @@ mod tests {
 
     #[tokio::test]
     async fn test_checkpoint_no_transaction() {
+
+
         //let (committee, full_checkpoint) = read_data().await;
         let (committee, full_checkpoint) = read_data_test_data("checkpoint_3051.json".to_string(),"checkpoint_3850.json".to_string()).await;
 
-
-        assert!(extract_verified_effects_and_events(
+        let txid = TransactionDigest::from_str("3ehEojjxHERMh3TsiWvBAVNJ7Rd1T8DLcM1eDyFQJFBc").unwrap();
+        let result = extract_verified_effects_and_events(
             &full_checkpoint,
             &committee,
-            TransactionDigest::from_str("2ehEojjxHERMh3TsiWvBAVNJ7Rd1T8DLcM1eDyFQJFBc").unwrap(),
-        )
-        .is_err());
+            txid);
+
+        assert!(result.is_err());
+        //println!("the result is {:?}", result);
+
     }
 
     #[tokio::test]
