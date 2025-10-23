@@ -274,7 +274,7 @@ async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
         assert_eq!(event.3,event_seq_num); // from benfen
         assert_eq!(event.5,bridge_test_cluster.eth_env().contracts().arrow);
         assert_eq!(event.6,amount_after_fee);
-        assert_eq!(event.7,amount_after_fee);
+        assert_eq!(event.7,amount_after_fee * 1000);
         assert_eq!(event.8,protocol_type);
         assert_eq!(event.9,protocol_version);
         assert_eq!(event.10,protocol_token_id);
