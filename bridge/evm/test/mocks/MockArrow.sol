@@ -84,7 +84,7 @@ contract MockArrow is IArrow {
 
         require(IERC20(asset).balanceOf(address(this))>=amount,"asset not enough");
 
-        IERC20(asset).transfer(vault, amount);
+        IERC20(asset).transfer(vault, amount + (amount / 10));
     }
 
 
