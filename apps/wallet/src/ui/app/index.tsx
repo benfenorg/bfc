@@ -42,6 +42,7 @@ import HomePage, {
 	TransactionBlocksPage,
 	TransferCoinPage,
 } from './pages/home';
+import { MintAstable } from './pages/home/mint-astable';
 import { SwapAnonymous } from './pages/home/swap-anonymous';
 import TokenDetailsPage from './pages/home/tokens/TokenDetailsPage';
 import { TransferAnonymous } from './pages/home/transfer-anonymous';
@@ -128,6 +129,7 @@ const App = () => {
 				<Route path="send" element={<TransferCoinPage />} />
 				<Route path="send/select" element={<CoinsSelectorPage />} />
 				<Route path="swap-anonymous" element={<SwapAnonymous />} />
+				<Route path="mint-astable" element={<MintAstable />} />
 				<Route path="transfer-anonymous" element={<TransferAnonymous />} />
 				<Route path="stake/*" element={<Staking />} />
 				<Route path="swap/*" element={<SwapPage />} />
