@@ -117,6 +117,8 @@ async fn transfer_with_account(
         rgp,
         sponsor_account.0,
     );
+
+
     let tx = if sender_account.0 == sponsor_account.0 {
         to_sender_signed_transaction(data, &sender_account.1)
     } else {
@@ -125,8 +127,11 @@ async fn transfer_with_account(
             vec![&sender_account.1, &sponsor_account.1],
         )
     };
+
+
     let epoch_store = state.epoch_store_for_testing();
     let tx = epoch_store.verify_transaction(tx).unwrap();
+
     state.handle_transaction(&epoch_store, tx).await
 }
 
@@ -502,6 +507,7 @@ async fn test_user_transaction_disabled_dynamic_check() {
     assert_denied(&transfer_with_account(&accounts[0], &accounts[0], &state).await);
 }
 
+use sui_types::base_types_bfc::bfc_address_util::{convert_to_bfc_address, convert_to_evm_address};
 #[tokio::test]
 async fn test_object_denied_dynamic_check() {
     // We need to create the authority state once to get one of the gas coin object IDs.
@@ -509,8 +515,15 @@ async fn test_object_denied_dynamic_check() {
     let accounts = get_accounts_and_coins(&network_config, &state);
     // Re-create the state such that we could specify a gas coin object to be denied.
     let obj_ref = accounts[0].2[0];
+
+    let address = obj_ref.0;
+    let bfc_address = convert_to_bfc_address(&*address.to_string());
+    println!("=======the bfc address is {}", bfc_address);
     let program = include_str!("data/dynamic_checks/object_denied.star")
-        .replace("$OBJECT_ID", &format!("{}", obj_ref.0));
+        .replace("$OBJECT_ID", &format!("{}", bfc_address));
+
+
+
     let state = reload_state_with_new_deny_config(
         &network_config,
         state,
@@ -520,7 +533,9 @@ async fn test_object_denied_dynamic_check() {
             .build(),
     )
     .await;
-    assert_denied(&transfer_with_account(&accounts[0], &accounts[0], &state).await);
+    let result = &transfer_with_account(&accounts[0],
+                                        &accounts[0], &state).await;
+    assert_denied(result);
 }
 
 #[tokio::test]
