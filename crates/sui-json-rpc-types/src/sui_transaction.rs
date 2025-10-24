@@ -1019,7 +1019,9 @@ impl TryFrom<TransactionEffects> for SuiTransactionBlockEffects {
                 },
                 events_digest: effect.events_digest().copied(),
                 dependencies: effect.dependencies().to_vec(),
-                abort_error: None,
+                abort_error: effect
+                    .move_abort()
+                    .map(|(abort, code)| SuiMoveAbort::new(abort, code)),
             },
         ))
     }
