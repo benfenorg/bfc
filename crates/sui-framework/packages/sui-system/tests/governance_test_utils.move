@@ -269,7 +269,7 @@ module sui_system::governance_test_utils {
             ctx
         );
         sui_system::request_add_stake(&mut system_state, coin::mint_for_testing<BFC>(init_stake_amount * MIST_PER_SUI, ctx), validator, ctx);
-        sui_system::request_add_validator_for_testing(&mut system_state, 0, ctx);
+        sui_system::request_add_validator_for_testing(&mut system_state, ctx);
         test_scenario::return_shared(system_state);
     }
 
@@ -318,7 +318,6 @@ module sui_system::governance_test_utils {
 
         sui_system::request_add_validator_for_testing(
             &mut system_state,
-            0,
             ctx
         );
         test_scenario::return_shared(system_state);

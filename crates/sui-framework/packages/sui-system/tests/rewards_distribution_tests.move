@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #[test_only]
-module sui_system::rewards_distribution_tests {
+module sui_system::rewards_distribution_tests;
     use sui::balance;
     use std::type_name;
     use sui::test_scenario::{Self, Scenario};
@@ -22,7 +22,6 @@ module sui_system::rewards_distribution_tests {
         total_busd_balance, advance_epoch_with_reward_amounts_with_stable_rate,
         assert_validator_non_self_stake_amounts_stable, assert_validator_self_stake_amounts_stable
     };
-    use sui::test_utils::assert_eq;
     use sui::address;
     use sui::vec_map;
     use bfc_system::busd::BUSD;
@@ -43,51 +42,44 @@ module sui_system::rewards_distribution_tests {
 
     const MIST_PER_SUI: u64 = 1_000_000_000;
 
-#[test]
-fun validator_rewards() {
-    let mut runner = test_runner::new()
+    #[test]
+    fun validator_rewards() {
+        let mut runner = test_runner::new()
         .sui_supply_amount(1000)
         .validators(vector[
-            validator_builder::new().initial_stake(100).sui_address(VALIDATOR_ADDR_1),
-            validator_builder::new().initial_stake(200).sui_address(VALIDATOR_ADDR_2),
-            validator_builder::new().initial_stake(300).sui_address(VALIDATOR_ADDR_3),
-            validator_builder::new().initial_stake(400).sui_address(VALIDATOR_ADDR_4),
+        validator_builder::new().initial_stake(100).sui_address(VALIDATOR_ADDR_1),
+        validator_builder::new().initial_stake(200).sui_address(VALIDATOR_ADDR_2),
+        validator_builder::new().initial_stake(300).sui_address(VALIDATOR_ADDR_3),
+        validator_builder::new().initial_stake(400).sui_address(VALIDATOR_ADDR_4),
         ])
         .build();
 
-    let opts = runner.advance_epoch_opts().computation_charge(100);
-    runner.advance_epoch(option::some(opts)).destroy_for_testing();
-        //get stable rate
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
-        let stable_rate = get_stable_rate(&system_state);
-        let pool_key = type_name::into_string(type_name::get<BUSD>());
-        let rate = vec_map::get(&stable_rate, &pool_key);
-        test_scenario::return_shared(system_state);
+        let opts = runner.advance_epoch_opts().computation_charge(100);
+        runner.advance_epoch(option::some(opts)).destroy_for_testing();
 
-    // check rewards distribution, 1:2:3:4
-    runner.system_tx!(|system, _| {
+        // check rewards distribution, 1:2:3:4
+        runner.system_tx!(|system, _| {
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 125 * MIST_PER_SUI);
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_2), 225 * MIST_PER_SUI);
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_3), 325 * MIST_PER_SUI);
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_4), 425 * MIST_PER_SUI);
-    });
+        });
 
-    runner.set_sender(VALIDATOR_ADDR_2).stake_with(VALIDATOR_ADDR_2, 720);
+        runner.set_sender(VALIDATOR_ADDR_2).stake_with(VALIDATOR_ADDR_2, 720);
 
-    stake_with_stable(VALIDATOR_ADDR_2, VALIDATOR_ADDR_2, 720*MIST_PER_SUI/(*rate), scenario);
-    let opts = runner.advance_epoch_opts().computation_charge(100);
-    runner.advance_epoch(option::some(opts)).destroy_for_testing();
+        let opts = runner.advance_epoch_opts().computation_charge(100);
+        runner.advance_epoch(option::some(opts)).destroy_for_testing();
 
-    // check rewards distribution, given that validator 2 has 920 SUI of stake now
-    runner.system_tx!(|system, _| {
+        // check rewards distribution, given that validator 2 has 920 SUI of stake now
+        runner.system_tx!(|system, _| {
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 150 * MIST_PER_SUI);
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_2), 970 * MIST_PER_SUI);
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_3), 350 * MIST_PER_SUI);
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_4), 450 * MIST_PER_SUI);
-    });
+        });
 
-    runner.finish();
-}
+        runner.finish();
+    }
 
     #[test]
     fun test_validator_rewards_with_stable() {
@@ -159,99 +151,88 @@ fun stake_subsidy() {
         test_scenario::end(scenario_val);
     }
 
-
-#[test]
-fun stake_rewards() {
-    let mut runner = test_runner::new()
+    #[test]
+    fun stake_rewards() {
+        let mut runner = test_runner::new()
         .sui_supply_amount(1000)
         .validators(vector[
-            validator_builder::new().initial_stake(100).sui_address(VALIDATOR_ADDR_1),
-            validator_builder::new().initial_stake(200).sui_address(VALIDATOR_ADDR_2),
-            validator_builder::new().initial_stake(300).sui_address(VALIDATOR_ADDR_3),
-            validator_builder::new().initial_stake(400).sui_address(VALIDATOR_ADDR_4),
+        validator_builder::new().initial_stake(100).sui_address(VALIDATOR_ADDR_1),
+        validator_builder::new().initial_stake(200).sui_address(VALIDATOR_ADDR_2),
+        validator_builder::new().initial_stake(300).sui_address(VALIDATOR_ADDR_3),
+        validator_builder::new().initial_stake(400).sui_address(VALIDATOR_ADDR_4),
         ])
         .build();
 
-    let validators = runner.genesis_validator_addresses();
+        let validators = runner.genesis_validator_addresses();
 
-    runner.set_sender(STAKER_ADDR_1).stake_with(VALIDATOR_ADDR_1, 200);
-    runner.set_sender(STAKER_ADDR_2).stake_with(VALIDATOR_ADDR_2, 100);
+        runner.set_sender(STAKER_ADDR_1).stake_with(VALIDATOR_ADDR_1, 200);
+        runner.set_sender(STAKER_ADDR_2).stake_with(VALIDATOR_ADDR_2, 100);
 
-    // advance epoch so that the stake is active
-    runner.advance_epoch(option::none()).destroy_for_testing();
+        // advance epoch so that the stake is active
+        runner.advance_epoch(option::none()).destroy_for_testing();
 
-    // check the total stake amount
-    runner.system_tx!(|system, _| {
+        // check the total stake amount
+        runner.system_tx!(|system, _| {
         // total stake
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 300 * MIST_PER_SUI);
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_2), 300 * MIST_PER_SUI);
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_3), 300 * MIST_PER_SUI);
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_4), 400 * MIST_PER_SUI);
-    });
+        });
 
-    // check total stake and rewards for each validator
-    assert_stake_rewards_for_addresses(
+        // check total stake and rewards for each validator
+        assert_stake_rewards_for_addresses(
         &mut runner,
         validators,
         vector[100 * MIST_PER_SUI, 200 * MIST_PER_SUI, 300 * MIST_PER_SUI, 400 * MIST_PER_SUI],
-    );
+        );
 
-    let opts = runner.advance_epoch_opts().computation_charge(120);
-    runner.advance_epoch(option::some(opts)).destroy_for_testing();
+        let opts = runner.advance_epoch_opts().computation_charge(120);
+        runner.advance_epoch(option::some(opts)).destroy_for_testing();
 
-    // check total stake and rewards for each validator
-    assert_stake_rewards_for_addresses(
+        // check total stake and rewards for each validator
+        assert_stake_rewards_for_addresses(
         &mut runner,
         validators,
         vector[110 * MIST_PER_SUI, 220 * MIST_PER_SUI, 330 * MIST_PER_SUI, 430 * MIST_PER_SUI],
-    );
+        );
 
-    runner.set_sender(STAKER_ADDR_1).unstake(0);
-    runner.set_sender(STAKER_ADDR_2).stake_with(VALIDATOR_ADDR_1, 600);
+        runner.set_sender(STAKER_ADDR_1).unstake(0);
+        runner.set_sender(STAKER_ADDR_2).stake_with(VALIDATOR_ADDR_1, 600);
 
-    // Each pool gets 30 SUI.
-    let opts = runner.advance_epoch_opts().computation_charge(120);
-    runner.advance_epoch(option::some(opts)).destroy_for_testing();
+        // Each pool gets 30 SUI.
+        let opts = runner.advance_epoch_opts().computation_charge(120);
+        runner.advance_epoch(option::some(opts)).destroy_for_testing();
 
-    assert_stake_rewards_for_addresses(
+        assert_stake_rewards_for_addresses(
         &mut runner,
         validators,
         vector[140 * MIST_PER_SUI, 240 * MIST_PER_SUI, 360 * MIST_PER_SUI, 460 * MIST_PER_SUI],
-    );
+        );
 
-    // staker 1 receives only 20 SUI of rewards, not 40 since we are using pre-epoch exchange rate.
-    assert_eq!(runner.set_sender(STAKER_ADDR_1).sui_balance(), 220 * MIST_PER_SUI);
+        // staker 1 receives only 20 SUI of rewards, not 40 since we are using pre-epoch exchange rate.
+        assert_eq!(runner.set_sender(STAKER_ADDR_1).sui_balance(), 220 * MIST_PER_SUI);
 
-    // staker 2 receives 20 SUI of rewards.
-    runner.set_sender(STAKER_ADDR_2).unstake(0);
-    assert_eq!(runner.set_sender(STAKER_ADDR_2).sui_balance(), 120 * MIST_PER_SUI);
+        // staker 2 receives 20 SUI of rewards.
+        runner.set_sender(STAKER_ADDR_2).unstake(0);
+        assert_eq!(runner.set_sender(STAKER_ADDR_2).sui_balance(), 120 * MIST_PER_SUI);
 
-    let opts = runner.advance_epoch_opts().computation_charge(40);
-    runner.advance_epoch(option::some(opts)).destroy_for_testing();
+        let opts = runner.advance_epoch_opts().computation_charge(40);
+        runner.advance_epoch(option::some(opts)).destroy_for_testing();
 
-        unstake(STAKER_ADDR_2, 0, scenario); // unstake 600 principal SUI
-        // additional 600 SUI of principal and 46 SUI of rewards withdrawn to Coin<BFC>
+        // unstake 600 principal SUI
+        runner.set_sender(STAKER_ADDR_2).unstake(0);
+
+        // additional 600 SUI of principal and 46 SUI of rewards withdrawn to Coin<SUI>
         // For this stake, the staking exchange rate is 100 : 140 and the unstaking
         // exchange rate is 528 : 750 -ish so the total sui withdraw will be:
         // (600 * 100 / 140) * 750 / 528 = ~608. Together with the 120 SUI we already have,
         // that would be about 728 SUI.
         // TODO: Come up with better numbers and clean it up!
-        assert_eq(total_sui_balance(STAKER_ADDR_2, scenario), 728108108107);
-        scenario_val.end();
+        assert_eq!(runner.set_sender(STAKER_ADDR_2).sui_balance(), 728108108107);
+
+        runner.finish();
     }
-    // unstake 600 principal SUI
-    runner.set_sender(STAKER_ADDR_2).unstake(0);
-
-    // additional 600 SUI of principal and 46 SUI of rewards withdrawn to Coin<BFC>
-    // For this stake, the staking exchange rate is 100 : 140 and the unstaking
-    // exchange rate is 528 : 750 -ish so the total sui withdraw will be:
-    // (600 * 100 / 140) * 750 / 528 = ~608. Together with the 120 SUI we already have,
-    // that would be about 728 SUI.
-    // TODO: Come up with better numbers and clean it up!
-    assert_eq!(runner.set_sender(STAKER_ADDR_2).sui_balance(), 728108108107);
-
-    runner.finish();
-}
 
     #[test]
     fun test_stake_stable_rewards() {
@@ -281,12 +262,12 @@ fun stake_rewards() {
         // Each pool gets 30 SUI.
         advance_epoch_with_reward_amounts_with_stable_rate(0, 120, scenario);
         // staker 1 receives only 20 SUI of rewards, not 40 since we are using pre-epoch exchange rate.
-        assert_eq(total_busd_balance(STAKER_ADDR_1, scenario), 200*MIST_PER_SUI/(*rate) * MIST_PER_SUI);
-        assert_eq(total_sui_balance(STAKER_ADDR_1, scenario)/MIST_PER_SUI, 0);
+        assert_eq!(total_busd_balance(STAKER_ADDR_1, scenario), 200*MIST_PER_SUI/(*rate) * MIST_PER_SUI);
+        assert_eq!(total_sui_balance(STAKER_ADDR_1, scenario)/MIST_PER_SUI, 0);
 
         unstake_stable(STAKER_ADDR_2, 0, scenario);
-        assert_eq(total_busd_balance(STAKER_ADDR_2, scenario), 100*MIST_PER_SUI/(*rate) * MIST_PER_SUI);
-        assert_eq(total_sui_balance(STAKER_ADDR_2, scenario)/MIST_PER_SUI, 9);
+        assert_eq!(total_busd_balance(STAKER_ADDR_2, scenario), 100*MIST_PER_SUI/(*rate) * MIST_PER_SUI);
+        assert_eq!(total_sui_balance(STAKER_ADDR_2, scenario)/MIST_PER_SUI, 9);
         test_scenario::end(scenario_val);
     }
 
@@ -578,10 +559,10 @@ fun rewards_slashing() {
         unstake_stable(STAKER_ADDR_2, 0, scenario);
 
         // Same analysis as above. Delegator 1 has 3 additional SUI, and 10% of staker 2's rewards are slashed.
-        assert_eq(total_busd_balance(STAKER_ADDR_1, scenario)/MIST_PER_SUI, busd);
-        assert_eq(total_sui_balance(STAKER_ADDR_1, scenario)/MIST_PER_SUI, 565 - 100 - 1);
-        assert_eq(total_busd_balance(STAKER_ADDR_2, scenario)/MIST_PER_SUI, busd);
-        assert_eq(total_sui_balance(STAKER_ADDR_2, scenario)/MIST_PER_SUI, 370 - 100 - 1);
+        assert_eq!(total_busd_balance(STAKER_ADDR_1, scenario)/MIST_PER_SUI, busd);
+        assert_eq!(total_sui_balance(STAKER_ADDR_1, scenario)/MIST_PER_SUI, 565 - 100 - 1);
+        assert_eq!(total_busd_balance(STAKER_ADDR_2, scenario)/MIST_PER_SUI, busd);
+        assert_eq!(total_sui_balance(STAKER_ADDR_2, scenario)/MIST_PER_SUI, 370 - 100 - 1);
 
         test_scenario::end(scenario_val);
     }
@@ -696,10 +677,10 @@ fun entire_rewards_slashing() {
         unstake_stable(STAKER_ADDR_2, 0, scenario);
 
         // Same analysis as above. Staker 1 has 150 additional SUI, and since all of staker 2's rewards are slashed she only gets back her principal.
-        assert_eq(total_busd_balance(STAKER_ADDR_1, scenario), 100 * MIST_PER_SUI);
-        assert_eq(total_sui_balance(STAKER_ADDR_1, scenario)/MIST_PER_SUI, staker1/MIST_PER_SUI);
-        assert_eq(total_busd_balance(STAKER_ADDR_2, scenario), 100 * MIST_PER_SUI);
-        assert_eq(total_sui_balance(STAKER_ADDR_2, scenario), 0);
+        assert_eq!(total_busd_balance(STAKER_ADDR_1, scenario), 100 * MIST_PER_SUI);
+        assert_eq!(total_sui_balance(STAKER_ADDR_1, scenario)/MIST_PER_SUI, staker1/MIST_PER_SUI);
+        assert_eq!(total_busd_balance(STAKER_ADDR_2, scenario), 100 * MIST_PER_SUI);
+        assert_eq!(total_sui_balance(STAKER_ADDR_2, scenario), 0);
 
         test_scenario::end(scenario_val);
     }
@@ -813,11 +794,11 @@ fun rewards_slashing_with_storage_fund() {
         unstake_stable(STAKER_ADDR_2, 0, scenario);
 
         // Staker 1 gets 320 * 1/4 = 80 SUI of rewards.
-        assert_eq(total_busd_balance(STAKER_ADDR_1, scenario), busd * MIST_PER_SUI);
-        assert_eq(total_sui_balance(STAKER_ADDR_1, scenario)/MIST_PER_SUI, 79);
+        assert_eq!(total_busd_balance(STAKER_ADDR_1, scenario), busd * MIST_PER_SUI);
+        assert_eq!(total_sui_balance(STAKER_ADDR_1, scenario)/MIST_PER_SUI, 79);
         // Staker 2 gets 300 * 1/5 * (1 - 20%) = 48 SUI of rewards.
-        assert_eq(total_busd_balance(STAKER_ADDR_2, scenario), busd * MIST_PER_SUI);
-        assert_eq(total_sui_balance(STAKER_ADDR_2, scenario)/MIST_PER_SUI, 47);
+        assert_eq!(total_busd_balance(STAKER_ADDR_2, scenario), busd * MIST_PER_SUI);
+        assert_eq!(total_sui_balance(STAKER_ADDR_2, scenario)/MIST_PER_SUI, 47);
 
         test_scenario::end(scenario_val);
     }
@@ -872,6 +853,19 @@ fun everyone_slashed() {
     runner.finish();
 }
 
+    fun validator_addrs() : vector<address> {
+        vector[VALIDATOR_ADDR_1, VALIDATOR_ADDR_2, VALIDATOR_ADDR_3, VALIDATOR_ADDR_4]
+    }
+
+    fun set_commission_rate_and_advance_epoch(addr: address, commission_rate: u64, scenario: &mut Scenario) {
+        scenario.next_tx(addr);
+        let mut system_state = scenario.take_shared<SuiSystemState>();
+        let ctx = scenario.ctx();
+        system_state.request_set_commission_rate(commission_rate, ctx);
+        test_scenario::return_shared(system_state);
+        advance_epoch(scenario);
+    }
+
     #[test]
     fun test_everyone_slashed_stable() {
         // This test is to make sure that if everyone is slashed, our protocol works as expected without aborting
@@ -903,10 +897,10 @@ fun everyone_slashed() {
         test_scenario::next_tx(scenario, @0x0);
         // Storage fund balance should increase by 4000 SUI.
         let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
-        assert_eq(sui_system::get_storage_fund_total_balance(&mut system_state), 4000 * MIST_PER_SUI);
+        assert_eq!(sui_system::get_storage_fund_total_balance(&mut system_state), 4000 * MIST_PER_SUI);
 
         // The entire 1000 SUI of storage rewards should go to the object rebate portion of the storage fund.
-        assert_eq(sui_system::get_storage_fund_object_rebates(&mut system_state), 1000 * MIST_PER_SUI);
+        assert_eq!(sui_system::get_storage_fund_object_rebates(&mut system_state), 1000 * MIST_PER_SUI);
 
         test_scenario::return_shared(system_state);
         test_scenario::end(scenario_val);
@@ -995,7 +989,7 @@ fun mul_rewards_withdraws_at_same_epoch() {
         {
             test_scenario::next_tx(scenario, @0x0);
             let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
-            assert_eq(sui_system::validator_stake_amount_with_stable_real_rate(&mut system_state, VALIDATOR_ADDR_1), 100 * MIST_PER_SUI);
+            assert_eq!(sui_system::validator_stake_amount_with_stable_real_rate(&mut system_state, VALIDATOR_ADDR_1), 100 * MIST_PER_SUI);
             test_scenario::return_shared(system_state);
         };
 
@@ -1003,7 +997,7 @@ fun mul_rewards_withdraws_at_same_epoch() {
         {
             test_scenario::next_tx(scenario, @0x0);
             let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
-            assert_eq(sui_system::validator_stake_amount_with_stable_real_rate(&mut system_state, VALIDATOR_ADDR_1), (100) * MIST_PER_SUI);
+            assert_eq!(sui_system::validator_stake_amount_with_stable_real_rate(&mut system_state, VALIDATOR_ADDR_1), (100) * MIST_PER_SUI);
             test_scenario::return_shared(system_state);
         };
 
@@ -1015,7 +1009,7 @@ fun mul_rewards_withdraws_at_same_epoch() {
             let stable_rate = get_stable_rate(&system_state);
             let pool_key = type_name::into_string(type_name::get<BUSD>());
             let rate = vec_map::get(&stable_rate, &pool_key);
-            assert_eq(sui_system::validator_stake_amount_with_stable_real_rate(&mut system_state, VALIDATOR_ADDR_1),
+            assert_eq!(sui_system::validator_stake_amount_with_stable_real_rate(&mut system_state, VALIDATOR_ADDR_1),
                 (100+10) * MIST_PER_SUI +
                     ((((220 *  MIST_PER_SUI) as u128) * (*rate as u128) / 1000000000) as u64)
             );
@@ -1030,7 +1024,7 @@ fun mul_rewards_withdraws_at_same_epoch() {
             let stable_rate = get_stable_rate(&system_state);
             let pool_key = type_name::into_string(type_name::get<BUSD>());
             let rate = vec_map::get(&stable_rate, &pool_key);
-            assert_eq(sui_system::validator_stake_amount_with_stable_real_rate(&mut system_state, VALIDATOR_ADDR_1),  (100+10) * MIST_PER_SUI +
+            assert_eq!(sui_system::validator_stake_amount_with_stable_real_rate(&mut system_state, VALIDATOR_ADDR_1),  (100+10) * MIST_PER_SUI +
                 ((((220 *  MIST_PER_SUI) as u128) * (*rate as u128) / 1000000000) as u64));
             test_scenario::return_shared(system_state);
         };
@@ -1047,7 +1041,7 @@ fun mul_rewards_withdraws_at_same_epoch() {
 
             let except = (100+10+30) * MIST_PER_SUI +
                 (((((220 + 480) *  MIST_PER_SUI) as u128) * (*rate as u128) / 1000000000) as u64);
-            assert_eq(except - sui_system::validator_stake_amount_with_stable_real_rate(&mut system_state, VALIDATOR_ADDR_1)<10, true, );
+            assert_eq!(except - sui_system::validator_stake_amount_with_stable_real_rate(&mut system_state, VALIDATOR_ADDR_1)<10, true, );
             test_scenario::return_shared(system_state);
         };
 
@@ -1065,7 +1059,7 @@ fun mul_rewards_withdraws_at_same_epoch() {
             let rate = vec_map::get(&stable_rate, &pool_key);
             let except = (100+10+30+70) * MIST_PER_SUI +
                 (((((220 + 480 + 130 + 390) *  MIST_PER_SUI) as u128) * (*rate as u128) / 1000000000) as u64);
-            assert_eq(except - sui_system::validator_stake_amount_with_stable_real_rate(&mut system_state, VALIDATOR_ADDR_1)<20, true);
+            assert_eq!(except - sui_system::validator_stake_amount_with_stable_real_rate(&mut system_state, VALIDATOR_ADDR_1)<20, true);
             test_scenario::return_shared(system_state);
         };
         stake_with_stable(STAKER_ADDR_3, VALIDATOR_ADDR_1, 280, scenario);
@@ -1082,7 +1076,7 @@ fun mul_rewards_withdraws_at_same_epoch() {
             let rate = vec_map::get(&stable_rate, &pool_key);
             let except = (100+10+30+70+110) * MIST_PER_SUI +
                 (((((220 + 480 + 130 + 390 + 280+1400) *  MIST_PER_SUI) as u128) * (*rate as u128) / 1000000000) as u64);
-            assert_eq(except - sui_system::validator_stake_amount_with_stable_real_rate(&mut system_state, VALIDATOR_ADDR_1) < 30, true);
+            assert_eq!(except - sui_system::validator_stake_amount_with_stable_real_rate(&mut system_state, VALIDATOR_ADDR_1) < 30, true);
             test_scenario::return_shared(system_state);
         };
 
@@ -1094,38 +1088,21 @@ fun mul_rewards_withdraws_at_same_epoch() {
         unstake_stable(STAKER_ADDR_3, 0, scenario);
         unstake_stable(STAKER_ADDR_4, 0, scenario);
 
-        assert_eq(total_busd_balance(STAKER_ADDR_1, scenario), (220 + 130) * MIST_PER_SUI);
-        assert_eq(total_busd_balance(STAKER_ADDR_2, scenario), (480) * MIST_PER_SUI);
-        assert_eq(total_busd_balance(STAKER_ADDR_3, scenario), (390 + 280) * MIST_PER_SUI);
-        assert_eq(total_busd_balance(STAKER_ADDR_4, scenario), 1400 * MIST_PER_SUI);
+        assert_eq!(total_busd_balance(STAKER_ADDR_1, scenario), (220 + 130) * MIST_PER_SUI);
+        assert_eq!(total_busd_balance(STAKER_ADDR_2, scenario), (480) * MIST_PER_SUI);
+        assert_eq!(total_busd_balance(STAKER_ADDR_3, scenario), (390 + 280) * MIST_PER_SUI);
+        assert_eq!(total_busd_balance(STAKER_ADDR_4, scenario), 1400 * MIST_PER_SUI);
 
         advance_epoch_with_reward_amounts(0, 0, scenario);
 
         test_scenario::next_tx(scenario, @0x0);
         let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         // Since all the stakes are gone the pool is empty except for the validator's original stake.
-        assert_eq(140 - sui_system::validator_stake_amount_with_stable_real_rate(&mut system_state, VALIDATOR_ADDR_1)/MIST_PER_SUI < 30, true);
+        assert_eq!(140 - sui_system::validator_stake_amount_with_stable_real_rate(&mut system_state, VALIDATOR_ADDR_1)/MIST_PER_SUI < 30, true);
         test_scenario::return_shared(system_state);
         test_scenario::end(scenario_val);
     }
 
-    #[test]
-    fun test_uncapped_rewards() {
-        let mut scenario_val = test_scenario::begin(@0x0);
-        let scenario = &mut scenario_val;
-
-        let ctx = scenario.ctx();
-        let mut validators = vector[];
-
-        let num_validators = 20;
-        let mut i = 0;
-        // Create a set of 20 validators, each with 481 + i * 2 SUI of stake.
-        // The stake total sums up to be 481 + 483 + ... + 517 + 519 = 1000 SUI.
-        while (i < num_validators) {
-            let validator = create_validator_for_testing(address::from_u256(i as u256), (481 + i * 2), ctx);
-            validators.push_back(validator);
-            i = i + 1;
-        };
 #[test]
 fun uncapped_rewards() {
     let num_validators = 20;
@@ -1145,7 +1122,7 @@ fun uncapped_rewards() {
     runner.system_tx!(|system, _| {
         num_validators.do!(|i| {
             let addr = address::from_u256(i as u256);
-            assert_eq(system_state.validator_stake_amount(addr), (962 + i * 4) * MIST_PER_SUI);
+            assert_eq!(system_state.validator_stake_amount(addr), (962 + i * 4) * MIST_PER_SUI);
             i = i + 1;
         };
         test_scenario::return_shared(system_state);
@@ -1180,7 +1157,7 @@ fun uncapped_rewards() {
         let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         while (i < num_validators) {
             let addr = address::from_u256((i as u256));
-            assert_eq(sui_system::validator_stake_amount_with_stable(&mut system_state, addr), (962 + i * 4) * MIST_PER_SUI);
+            assert_eq!(sui_system::validator_stake_amount_with_stable(&mut system_state, addr), (962 + i * 4) * MIST_PER_SUI);
             i = i + 1;
         };
         test_scenario::return_shared(system_state);
@@ -1399,12 +1376,21 @@ fun stake_subsidy_with_safe_mode_testnet() {
     runner.finish();
 }
 
-// TODO: potentially remove and inline this function.
-fun check_distribution_counter_invariant(system: &mut SuiSystemState, ctx: &TxContext) {
-    assert_eq!(ctx.epoch(), system.epoch());
-    // first subsidy distribution was at epoch 20, so counter should always be ahead by 20
-    assert_eq!(system.get_stake_subsidy_distribution_counter() + 20, ctx.epoch());
-}
+    fun report_validator(reporter: address, reportee: address, scenario: &mut Scenario) {
+        scenario.next_tx(reporter);
+        let mut system_state = scenario.take_shared<SuiSystemState>();
+        let cap = scenario.take_from_sender<UnverifiedValidatorOperationCap>();
+        system_state.report_validator(&cap, reportee);
+        scenario.return_to_sender(cap);
+        test_scenario::return_shared(system_state);
+    }
+
+    // TODO: potentially remove and inline this function.
+    fun check_distribution_counter_invariant(system: &mut SuiSystemState, ctx: &TxContext) {
+        assert_eq!(ctx.epoch(), system.epoch());
+        // first subsidy distribution was at epoch 20, so counter should always be ahead by 20
+        assert_eq!(system.get_stake_subsidy_distribution_counter() + 20, ctx.epoch());
+    }
 
 /// Utility function to assert that the stake rewards for a list of addresses are as expected.
 fun assert_stake_rewards_for_addresses(
@@ -1417,3 +1403,4 @@ fun assert_stake_rewards_for_addresses(
         assert_eq!(sum_rewards, expected_amount);
     });
 }
+

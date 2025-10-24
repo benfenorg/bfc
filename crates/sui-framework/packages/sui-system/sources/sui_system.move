@@ -54,8 +54,7 @@ module sui_system::sui_system {
     use bfc_system::bfc_system;
     use sui::dynamic_field;
     use sui::vec_map::VecMap;
-    use sui_system::stable_pool::{StakedStable};
-
+    use sui_system::stable_pool::{StakedStable, PoolStableTokenExchangeRate};
 
     #[test_only] use sui::balance;
     #[test_only]
@@ -589,7 +588,7 @@ public fun pool_exchange_rates(
 
 #[test_only]
 /// Calculate the rewards for a given staked SUI object.
-public fun calculate_rewards(self: &mut SuiSystemState, staked_sui: &StakedSui, epoch: u64): u64 {
+public fun calculate_rewards(self: &mut SuiSystemState, staked_sui: &StakedBfc, epoch: u64): u64 {
     let system_state = self.load_system_state_mut();
     let validator_address = system_state.validator_address_by_pool_id(&staked_sui.pool_id());
 
@@ -603,6 +602,14 @@ public fun calculate_rewards(self: &mut SuiSystemState, staked_sui: &StakedSui, 
     public fun active_validator_addresses(wrapper: &mut SuiSystemState): vector<address> {
         let self = load_system_state(wrapper);
         sui_system_state_inner::active_validator_addresses(self)
+    }
+
+    public fun pool_exchange_stable_rates<STABLE>(
+        wrapper: &mut SuiSystemState,
+        pool_id: &ID
+    ): &Table<u64, PoolStableTokenExchangeRate>  {
+        let self = load_system_state_mut(wrapper);
+        sui_system_state_inner::pool_exchange_stable_rates<STABLE>(self, pool_id)
     }
 
     // This function should be called at the end of an epoch, and advances the system to the next epoch.
@@ -778,12 +785,6 @@ public fun validator_stake_amount(wrapper: &mut SuiSystemState, validator_addr: 
     wrapper.load_system_state_mut().validator_stake_amount(validator_addr)
 }
 
-#[test_only]
-/// Returns the staking pool id of a given validator.
-/// Aborts if `validator_addr` is not an active validator.
-public fun validator_staking_pool_id(wrapper: &mut SuiSystemState, validator_addr: address): ID {
-    wrapper.load_system_state_mut().validator_staking_pool_id(validator_addr)
-}
     #[test_only]
     /// Returns the total amount staked with `validator_addr`.
     /// Aborts if `validator_addr` is not an active validator.
@@ -814,11 +815,6 @@ public fun validator_staking_pool_id(wrapper: &mut SuiSystemState, validator_add
         self.validator_staking_pool_id(validator_addr)
     }
 
-#[test_only]
-/// Returns reference to the staking pool mappings that map pool ids to active validator addresses
-public fun validator_staking_pool_mappings(wrapper: &mut SuiSystemState): &Table<ID, address> {
-    wrapper.load_system_state_mut().validator_staking_pool_mappings()
-}
     #[test_only]
     /// Returns the stable staking pool id of a given validator.
     public fun validator_stable_staking_pool_id<STABLE>(wrapper: &mut SuiSystemState, validator_addr: address): ID {
@@ -833,11 +829,6 @@ public fun validator_staking_pool_mappings(wrapper: &mut SuiSystemState): &Table
         self.validator_staking_pool_mappings()
     }
 
-#[test_only]
-/// Returns all the validators who are currently reporting `addr`
-public fun get_reporters_of(wrapper: &mut SuiSystemState, addr: address): VecSet<address> {
-    wrapper.load_system_state_mut().get_reporters_of(addr)
-}
     #[test_only]
     /// Returns reference to the stable staking pool mappings that map pool ids to active validator addresses
     public fun validator_stable_staking_pool_mappings(wrapper: &mut SuiSystemState): &Table<ID, address> {
@@ -896,18 +887,9 @@ public fun set_epoch_for_testing(wrapper: &mut SuiSystemState, epoch_num: u64) {
     wrapper.load_system_state_mut().set_epoch_for_testing(epoch_num)
 }
 
-#[test_only]
-public fun request_add_validator_for_testing(wrapper: &mut SuiSystemState, ctx: &TxContext) {
-    wrapper.load_system_state_mut().request_add_validator(ctx)
-}
     #[test_only]
-    public fun request_add_validator_for_testing(
-        wrapper: &mut SuiSystemState,
-        min_joining_stake_for_testing: u64,
-        ctx: &mut TxContext,
-    ) {
-        let self = load_system_state_mut(wrapper);
-        self.request_add_validator_for_testing(min_joining_stake_for_testing, ctx)
+    public fun request_add_validator_for_testing(wrapper: &mut SuiSystemState, ctx: &TxContext) {
+        wrapper.load_system_state_mut().request_add_validator(ctx)
     }
 
 #[test_only]

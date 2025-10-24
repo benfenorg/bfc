@@ -7,7 +7,7 @@ module sui_system::validator {
 
     use sui::bfc::BFC;
     use sui_system::validator_cap::{Self, ValidatorOperationCap};
-    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, FungibleStakedSui,  StakingPool, StakedBfc};
+    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, FungibleStakedSui, StakingPool, StakedBfc};
     use std::string::String;
     use std::ascii;
     use sui::balance::{Self, Balance};
@@ -42,87 +42,91 @@ module sui_system::validator {
     const MAX_U64: u128 = 18446744073709551615;
 
     /// Invalid proof_of_possession field in ValidatorMetadata
-const EInvalidProofOfPossession: u64 = 0;
-/// Invalid pubkey_bytes field in ValidatorMetadata
-const EMetadataInvalidPubkey: u64 = 1;
-/// Invalid network_pubkey_bytes field in ValidatorMetadata
-const EMetadataInvalidNetPubkey: u64 = 2;
-/// Invalid worker_pubkey_bytes field in ValidatorMetadata
-const EMetadataInvalidWorkerPubkey: u64 = 3;
-/// Invalid net_address field in ValidatorMetadata
-const EMetadataInvalidNetAddr: u64 = 4;
-/// Invalid p2p_address field in ValidatorMetadata
-const EMetadataInvalidP2pAddr: u64 = 5;
-/// Invalid primary_address field in ValidatorMetadata
-const EMetadataInvalidPrimaryAddr: u64 = 6;
-/// Invalid worker_address field in ValidatorMetadata
-const EMetadataInvalidWorkerAddr: u64 = 7;
-/// Commission rate set by the validator is higher than the threshold
-const ECommissionRateTooHigh: u64 = 8;
-/// Validator Metadata is too long
-const EValidatorMetadataExceedingLengthLimit: u64 = 9;
-/// Intended validator is not a candidate one.
-const ENotValidatorCandidate: u64 = 10;
-/// Stake amount is invalid or wrong.
-const EInvalidStakeAmount: u64 = 11;
-/// Function called during non-genesis times.
-const ECalledDuringNonGenesis: u64 = 12;
-/// New Capability is not created by the validator itself
-const ENewCapNotCreatedByValidatorItself: u64 = 100;
-/// Capability code is not valid
-const EInvalidCap: u64 = 101;
-/// Validator trying to set gas price higher than threshold.
-const EGasPriceHigherThanThreshold: u64 = 102;
+    const EInvalidProofOfPossession: u64 = 0;
+    /// Invalid pubkey_bytes field in ValidatorMetadata
+    const EMetadataInvalidPubkey: u64 = 1;
+    /// Invalid network_pubkey_bytes field in ValidatorMetadata
+    const EMetadataInvalidNetPubkey: u64 = 2;
+    /// Invalid worker_pubkey_bytes field in ValidatorMetadata
+    const EMetadataInvalidWorkerPubkey: u64 = 3;
+    /// Invalid net_address field in ValidatorMetadata
+    const EMetadataInvalidNetAddr: u64 = 4;
+    /// Invalid p2p_address field in ValidatorMetadata
+    const EMetadataInvalidP2pAddr: u64 = 5;
+    /// Invalid primary_address field in ValidatorMetadata
+    const EMetadataInvalidPrimaryAddr: u64 = 6;
+    /// Invalid worker_address field in ValidatorMetadata
+    const EMetadataInvalidWorkerAddr: u64 = 7;
+    /// Commission rate set by the validator is higher than the threshold
+    const ECommissionRateTooHigh: u64 = 8;
+    /// Validator Metadata is too long
+    const EValidatorMetadataExceedingLengthLimit: u64 = 9;
+    /// Intended validator is not a candidate one.
+    const ENotValidatorCandidate: u64 = 10;
+    /// Stake amount is invalid or wrong.
+    const EInvalidStakeAmount: u64 = 11;
+    /// Function called during non-genesis times.
+    const ECalledDuringNonGenesis: u64 = 12;
 
-// TODO: potentially move this value to onchain config.
-const MAX_COMMISSION_RATE: u64 = 2_000; // Max rate is 20%, which is 2000 base points
-const EInvalidCoinType: u64 =103;
-const MAX_VALIDATOR_METADATA_LENGTH: u64 = 256;
+    /// New Capability is not created by the validator itself
+    const ENewCapNotCreatedByValidatorItself: u64 = 100;
+    /// Capability code is not valid
+    const EInvalidCap: u64 = 101;
+    /// Validator trying to set gas price higher than threshold.
+    const EGasPriceHigherThanThreshold: u64 = 102;
 
-// TODO: Move this to onchain config when we have a good way to do it.
-/// Max gas price a validator can set is 100K MIST.
-const MAX_VALIDATOR_GAS_PRICE: u64 = 100_000;
+    // TODO: potentially move this value to onchain config.
+    const MAX_COMMISSION_RATE: u64 = 2_000;
+    // Max rate is 20%, which is 2000 base points
+    const EInvalidCoinType: u64 = 103;
+    const MAX_VALIDATOR_METADATA_LENGTH: u64 = 256;
 
-public struct ValidatorMetadata has store {
-    /// The Sui Address of the validator. This is the sender that created the Validator object,
-    /// and also the address to send validator/coins to during withdraws.
-    sui_address: address,
-    /// The public key bytes corresponding to the private key that the validator
-    /// holds to sign transactions. For now, this is the same as AuthorityName.
-    protocol_pubkey_bytes: vector<u8>,
-    /// The public key bytes corresponding to the private key that the validator
-    /// uses to establish TLS connections
-    network_pubkey_bytes: vector<u8>,
-    /// The public key bytes correstponding to the Narwhal Worker
-    worker_pubkey_bytes: vector<u8>,
-    /// This is a proof that the validator has ownership of the private key
-    proof_of_possession: vector<u8>,
-    /// A unique human-readable name of this validator.
-    name: String,
-    description: String,
-    image_url: Url,
-    project_url: Url,
-    /// The network address of the validator (could also contain extra info such as port, DNS and etc.).
-    net_address: String,
-    /// The address of the validator used for p2p activities such as state sync (could also contain extra info such as port, DNS and etc.).
-    p2p_address: String,
-    /// The address of the narwhal primary
-    primary_address: String,
-    /// The address of the narwhal worker
-    worker_address: String,
-    /// "next_epoch" metadata only takes effects in the next epoch.
-    /// If none, current value will stay unchanged.
-    next_epoch_protocol_pubkey_bytes: Option<vector<u8>>,
-    next_epoch_proof_of_possession: Option<vector<u8>>,
-    next_epoch_network_pubkey_bytes: Option<vector<u8>>,
-    next_epoch_worker_pubkey_bytes: Option<vector<u8>>,
-    next_epoch_net_address: Option<String>,
-    next_epoch_p2p_address: Option<String>,
-    next_epoch_primary_address: Option<String>,
-    next_epoch_worker_address: Option<String>,
-    /// Any extra fields that's not defined statically.
-    extra_fields: Bag,
-}
+    // TODO: Move this to onchain config when we have a good way to do it.
+    /// Max gas price a validator can set is 100K MIST.
+    const MAX_VALIDATOR_GAS_PRICE: u64 = 100_000;
+
+    public
+
+    struct ValidatorMetadata has store {
+        /// The Sui Address of the validator. This is the sender that created the Validator object,
+        /// and also the address to send validator/coins to during withdraws.
+        sui_address: address,
+        /// The public key bytes corresponding to the private key that the validator
+        /// holds to sign transactions. For now, this is the same as AuthorityName.
+        protocol_pubkey_bytes: vector<u8>,
+        /// The public key bytes corresponding to the private key that the validator
+        /// uses to establish TLS connections
+        network_pubkey_bytes: vector<u8>,
+        /// The public key bytes correstponding to the Narwhal Worker
+        worker_pubkey_bytes: vector<u8>,
+        /// This is a proof that the validator has ownership of the private key
+        proof_of_possession: vector<u8>,
+        /// A unique human-readable name of this validator.
+        name: String,
+        description: String,
+        image_url: Url,
+        project_url: Url,
+        /// The network address of the validator (could also contain extra info such as port, DNS and etc.).
+        net_address: String,
+        /// The address of the validator used for p2p activities such as state sync (could also contain extra info such as port, DNS and etc.).
+        p2p_address: String,
+        /// The address of the narwhal primary
+        primary_address: String,
+        /// The address of the narwhal worker
+        worker_address: String,
+        /// "next_epoch" metadata only takes effects in the next epoch.
+        /// If none, current value will stay unchanged.
+        next_epoch_protocol_pubkey_bytes: Option<vector<u8>>,
+        next_epoch_proof_of_possession: Option<vector<u8>>,
+        next_epoch_network_pubkey_bytes: Option<vector<u8>>,
+        next_epoch_worker_pubkey_bytes: Option<vector<u8>>,
+        next_epoch_net_address: Option<String>,
+        next_epoch_p2p_address: Option<String>,
+        next_epoch_primary_address: Option<String>,
+        next_epoch_worker_address: Option<String>,
+        /// Any extra fields that's not defined statically.
+        extra_fields: Bag,
+    }
 
     public struct Validator has store {
         /// Summary of the validator.
@@ -152,136 +156,140 @@ public struct ValidatorMetadata has store {
         extra_fields: Bag,
     }
 
-/// Event emitted when a new stake request is received.
-public struct StakingRequestEvent has copy, drop {
-    pool_id: ID,
-    validator_address: address,
-    staker_address: address,
-    epoch: u64,
-    amount: u64,
-}
+    /// Event emitted when a new stake request is received.
+    public
 
-/// Event emitted when a new unstake request is received.
-public struct UnstakingRequestEvent has copy, drop {
-    pool_id: ID,
-    validator_address: address,
-    staker_address: address,
-    stake_activation_epoch: u64,
-    unstaking_epoch: u64,
-    principal_amount: u64,
-    reward_amount: u64,
-}
-
-/// Event emitted when a staked SUI is converted to a fungible staked SUI.
-public struct ConvertingToFungibleStakedSuiEvent has copy, drop {
-    pool_id: ID,
-    stake_activation_epoch: u64,
-    staked_sui_principal_amount: u64,
-    fungible_staked_sui_amount: u64,
-}
-
-/// Event emitted when a fungible staked SUI is redeemed.
-public struct RedeemingFungibleStakedSuiEvent has copy, drop {
-    pool_id: ID,
-    fungible_staked_sui_amount: u64,
-    sui_amount: u64,
-}
-
-public(package) fun new_metadata(
-    sui_address: address,
-    protocol_pubkey_bytes: vector<u8>,
-    network_pubkey_bytes: vector<u8>,
-    worker_pubkey_bytes: vector<u8>,
-    proof_of_possession: vector<u8>,
-    name: String,
-    description: String,
-    image_url: Url,
-    project_url: Url,
-    net_address: String,
-    p2p_address: String,
-    primary_address: String,
-    worker_address: String,
-    extra_fields: Bag,
-): ValidatorMetadata {
-    ValidatorMetadata {
-        sui_address,
-        protocol_pubkey_bytes,
-        network_pubkey_bytes,
-        worker_pubkey_bytes,
-        proof_of_possession,
-        name,
-        description,
-        image_url,
-        project_url,
-        net_address,
-        p2p_address,
-        primary_address,
-        worker_address,
-        next_epoch_protocol_pubkey_bytes: option::none(),
-        next_epoch_network_pubkey_bytes: option::none(),
-        next_epoch_worker_pubkey_bytes: option::none(),
-        next_epoch_proof_of_possession: option::none(),
-        next_epoch_net_address: option::none(),
-        next_epoch_p2p_address: option::none(),
-        next_epoch_primary_address: option::none(),
-        next_epoch_worker_address: option::none(),
-        extra_fields,
+    struct StakingRequestEvent has copy, drop {
+        pool_id: ID,
+        validator_address: address,
+        staker_address: address,
+        epoch: u64,
+        amount: u64,
     }
-}
 
-public(package) fun new(
-    sui_address: address,
-    protocol_pubkey_bytes: vector<u8>,
-    network_pubkey_bytes: vector<u8>,
-    worker_pubkey_bytes: vector<u8>,
-    proof_of_possession: vector<u8>,
-    name: vector<u8>,
-    description: vector<u8>,
-    image_url: vector<u8>,
-    project_url: vector<u8>,
-    net_address: vector<u8>,
-    p2p_address: vector<u8>,
-    primary_address: vector<u8>,
-    worker_address: vector<u8>,
-    gas_price: u64,
-    commission_rate: u64,
-    ctx: &mut TxContext,
-): Validator {
-    assert!(
-        net_address.length() <= MAX_VALIDATOR_METADATA_LENGTH
-            && p2p_address.length() <= MAX_VALIDATOR_METADATA_LENGTH
-            && primary_address.length() <= MAX_VALIDATOR_METADATA_LENGTH
-            && worker_address.length() <= MAX_VALIDATOR_METADATA_LENGTH
-            && name.length() <= MAX_VALIDATOR_METADATA_LENGTH
-            && description.length() <= MAX_VALIDATOR_METADATA_LENGTH
-            && image_url.length() <= MAX_VALIDATOR_METADATA_LENGTH
-            && project_url.length() <= MAX_VALIDATOR_METADATA_LENGTH,
-        EValidatorMetadataExceedingLengthLimit,
-    );
-    assert!(commission_rate <= MAX_COMMISSION_RATE, ECommissionRateTooHigh);
-    assert!(gas_price < MAX_VALIDATOR_GAS_PRICE, EGasPriceHigherThanThreshold);
+    /// Event emitted when a new unstake request is received.
+    public struct UnstakingRequestEvent has copy, drop {
+        pool_id: ID,
+        validator_address: address,
+        staker_address: address,
+        stake_activation_epoch: u64,
+        unstaking_epoch: u64,
+        principal_amount: u64,
+        reward_amount: u64,
+    }
 
-    let metadata = new_metadata(
-        sui_address,
-        protocol_pubkey_bytes,
-        network_pubkey_bytes,
-        worker_pubkey_bytes,
-        proof_of_possession,
-        name.to_ascii_string().to_string(),
-        description.to_ascii_string().to_string(),
-        url::new_unsafe_from_bytes(image_url),
-        url::new_unsafe_from_bytes(project_url),
-        net_address.to_ascii_string().to_string(),
-        p2p_address.to_ascii_string().to_string(),
-        primary_address.to_ascii_string().to_string(),
-        worker_address.to_ascii_string().to_string(),
-        bag::new(ctx),
-    );
+    /// Event emitted when a staked SUI is converted to a fungible staked SUI.
+    public
 
-    // Checks that the keys & addresses & PoP are valid.
-    metadata.validate();
-    metadata.new_from_metadata(gas_price, commission_rate, ctx)
-}
+    struct ConvertingToFungibleStakedSuiEvent has copy, drop {
+        pool_id: ID,
+        stake_activation_epoch: u64,
+        staked_sui_principal_amount: u64,
+        fungible_staked_sui_amount: u64,
+    }
+
+    /// Event emitted when a fungible staked SUI is redeemed.
+    public struct RedeemingFungibleStakedSuiEvent has copy, drop {
+        pool_id: ID,
+        fungible_staked_sui_amount: u64,
+        sui_amount: u64,
+    }
+
+    public(package) fun new_metadata(
+        sui_address: address,
+        protocol_pubkey_bytes: vector<u8>,
+        network_pubkey_bytes: vector<u8>,
+        worker_pubkey_bytes: vector<u8>,
+        proof_of_possession: vector<u8>,
+        name: String,
+        description: String,
+        image_url: Url,
+        project_url: Url,
+        net_address: String,
+        p2p_address: String,
+        primary_address: String,
+        worker_address: String,
+        extra_fields: Bag,
+    ): ValidatorMetadata {
+        ValidatorMetadata {
+            sui_address,
+            protocol_pubkey_bytes,
+            network_pubkey_bytes,
+            worker_pubkey_bytes,
+            proof_of_possession,
+            name,
+            description,
+            image_url,
+            project_url,
+            net_address,
+            p2p_address,
+            primary_address,
+            worker_address,
+            next_epoch_protocol_pubkey_bytes: option::none(),
+            next_epoch_network_pubkey_bytes: option::none(),
+            next_epoch_worker_pubkey_bytes: option::none(),
+            next_epoch_proof_of_possession: option::none(),
+            next_epoch_net_address: option::none(),
+            next_epoch_p2p_address: option::none(),
+            next_epoch_primary_address: option::none(),
+            next_epoch_worker_address: option::none(),
+            extra_fields,
+        }
+    }
+
+    public(package) fun new(
+        sui_address: address,
+        protocol_pubkey_bytes: vector<u8>,
+        network_pubkey_bytes: vector<u8>,
+        worker_pubkey_bytes: vector<u8>,
+        proof_of_possession: vector<u8>,
+        name: vector<u8>,
+        description: vector<u8>,
+        image_url: vector<u8>,
+        project_url: vector<u8>,
+        net_address: vector<u8>,
+        p2p_address: vector<u8>,
+        primary_address: vector<u8>,
+        worker_address: vector<u8>,
+        gas_price: u64,
+        commission_rate: u64,
+        ctx: &mut TxContext,
+    ): Validator {
+        assert!(
+            net_address.length() <= MAX_VALIDATOR_METADATA_LENGTH
+                && p2p_address.length() <= MAX_VALIDATOR_METADATA_LENGTH
+                && primary_address.length() <= MAX_VALIDATOR_METADATA_LENGTH
+                && worker_address.length() <= MAX_VALIDATOR_METADATA_LENGTH
+                && name.length() <= MAX_VALIDATOR_METADATA_LENGTH
+                && description.length() <= MAX_VALIDATOR_METADATA_LENGTH
+                && image_url.length() <= MAX_VALIDATOR_METADATA_LENGTH
+                && project_url.length() <= MAX_VALIDATOR_METADATA_LENGTH,
+            EValidatorMetadataExceedingLengthLimit,
+        );
+        assert!(commission_rate <= MAX_COMMISSION_RATE, ECommissionRateTooHigh);
+        assert!(gas_price < MAX_VALIDATOR_GAS_PRICE, EGasPriceHigherThanThreshold);
+
+        let metadata = new_metadata(
+            sui_address,
+            protocol_pubkey_bytes,
+            network_pubkey_bytes,
+            worker_pubkey_bytes,
+            proof_of_possession,
+            name.to_ascii_string().to_string(),
+            description.to_ascii_string().to_string(),
+            url::new_unsafe_from_bytes(image_url),
+            url::new_unsafe_from_bytes(project_url),
+            net_address.to_ascii_string().to_string(),
+            p2p_address.to_ascii_string().to_string(),
+            primary_address.to_ascii_string().to_string(),
+            worker_address.to_ascii_string().to_string(),
+            bag::new(ctx),
+        );
+
+        // Checks that the keys & addresses & PoP are valid.
+        metadata.validate();
+        metadata.new_from_metadata(gas_price, commission_rate, ctx)
+    }
 
     /// Mark Validator's `StakingPool` as inactive by setting the `deactivation_epoch`.
     public(package) fun deactivate(self: &mut Validator, deactivation_epoch: u64) {
@@ -296,9 +304,9 @@ public(package) fun new(
 
 
     /// Activate Validator's `StakingPool` by setting the `activation_epoch`.
-public(package) fun activate(self: &mut Validator, activation_epoch: u64) {
-    self.staking_pool.activate_staking_pool(activation_epoch);
-}
+    public(package) fun activate(self: &mut Validator, activation_epoch: u64) {
+        self.staking_pool.activate_staking_pool(activation_epoch);
+    }
 
     public(package) fun activate_stable(self: &mut Validator, activation_epoch: u64) {
         activate_stable_<BUSD>(self, activation_epoch);
@@ -338,7 +346,7 @@ public(package) fun activate(self: &mut Validator, activation_epoch: u64) {
         stake: Balance<BFC>,
         staker_address: address,
         ctx: &mut TxContext,
-    ) : StakedBfc {
+    ): StakedBfc {
         let stake_amount = stake.value();
         assert!(stake_amount > 0, EInvalidStakeAmount);
         let stake_epoch = tx_context::epoch(ctx) + 1;
@@ -362,88 +370,88 @@ public(package) fun activate(self: &mut Validator, activation_epoch: u64) {
         staked_sui
     }
 
-public(package) fun convert_to_fungible_staked_sui(
-    self: &mut Validator,
-    staked_sui: StakedBfc,
-    ctx: &mut TxContext,
-): FungibleStakedSui {
-    let stake_activation_epoch = staked_sui.activation_epoch();
-    let staked_sui_principal_amount = staked_sui.amount();
-    let fungible_staked_sui = self.staking_pool.convert_to_fungible_staked_sui(staked_sui, ctx);
+    public(package) fun convert_to_fungible_staked_sui(
+        self: &mut Validator,
+        staked_sui: StakedBfc,
+        ctx: &mut TxContext,
+    ): FungibleStakedSui {
+        let stake_activation_epoch = staked_sui.activation_epoch();
+        let staked_sui_principal_amount = staked_sui.amount();
+        let fungible_staked_sui = self.staking_pool.convert_to_fungible_staked_sui(staked_sui, ctx);
 
-    event::emit(ConvertingToFungibleStakedSuiEvent {
-        pool_id: self.staking_pool_id(),
-        stake_activation_epoch,
-        staked_sui_principal_amount,
-        fungible_staked_sui_amount: fungible_staked_sui.value(),
-    });
+        event::emit(ConvertingToFungibleStakedSuiEvent {
+            pool_id: self.staking_pool_id(),
+            stake_activation_epoch,
+            staked_sui_principal_amount,
+            fungible_staked_sui_amount: fungible_staked_sui.value(),
+        });
 
-    fungible_staked_sui
-}
+        fungible_staked_sui
+    }
 
-public(package) fun redeem_fungible_staked_sui(
-    self: &mut Validator,
-    fungible_staked_sui: FungibleStakedSui,
-    ctx: &TxContext,
-): Balance<BFC> {
-    let fungible_staked_sui_amount = fungible_staked_sui.value();
-    let sui = self.staking_pool.redeem_fungible_staked_sui(fungible_staked_sui, ctx);
+    public(package) fun redeem_fungible_staked_sui(
+        self: &mut Validator,
+        fungible_staked_sui: FungibleStakedSui,
+        ctx: &TxContext,
+    ): Balance<BFC> {
+        let fungible_staked_sui_amount = fungible_staked_sui.value();
+        let sui = self.staking_pool.redeem_fungible_staked_sui(fungible_staked_sui, ctx);
 
-    self.next_epoch_stake = self.next_epoch_stake - sui.value();
+        self.next_epoch_stake = self.next_epoch_stake - sui.value();
 
-    event::emit(RedeemingFungibleStakedSuiEvent {
-        pool_id: self.staking_pool_id(),
-        fungible_staked_sui_amount,
-        sui_amount: sui.value(),
-    });
+        event::emit(RedeemingFungibleStakedSuiEvent {
+            pool_id: self.staking_pool_id(),
+            fungible_staked_sui_amount,
+            sui_amount: sui.value(),
+        });
 
-    sui
-}
+        sui
+    }
 
-/// Request to add stake to the validator's staking pool at genesis
-public(package) fun request_add_stake_at_genesis(
-    self: &mut Validator,
-    stake: Balance<BFC>,
-    staker_address: address,
-    ctx: &mut TxContext,
-) {
-    assert!(ctx.epoch() == 0, ECalledDuringNonGenesis);
-    let stake_amount = stake.value();
-    assert!(stake_amount > 0, EInvalidStakeAmount);
+    /// Request to add stake to the validator's staking pool at genesis
+    public(package) fun request_add_stake_at_genesis(
+        self: &mut Validator,
+        stake: Balance<BFC>,
+        staker_address: address,
+        ctx: &mut TxContext,
+    ) {
+        assert!(ctx.epoch() == 0, ECalledDuringNonGenesis);
+        let stake_amount = stake.value();
+        assert!(stake_amount > 0, EInvalidStakeAmount);
 
-    // 0 = genesis epoch
-    let staked_sui = self.staking_pool.request_add_stake(stake, 0, ctx);
+        // 0 = genesis epoch
+        let staked_sui = self.staking_pool.request_add_stake(stake, 0, ctx);
 
-    transfer::public_transfer(staked_sui, staker_address);
+        transfer::public_transfer(staked_sui, staker_address);
 
-    // Process stake right away
-    self.staking_pool.process_pending_stake();
-    self.next_epoch_stake = self.next_epoch_stake + stake_amount;
-}
+        // Process stake right away
+        self.staking_pool.process_pending_stake();
+        self.next_epoch_stake = self.next_epoch_stake + stake_amount;
+    }
 
-/// Request to withdraw stake from the validator's staking pool, processed at the end of the epoch.
-public(package) fun request_withdraw_stake(
-    self: &mut Validator,
-    staked_sui: StakedBfc,
-    ctx: &TxContext,
-): Balance<BFC> {
-    let principal_amount = staked_sui.amount();
-    let stake_activation_epoch = staked_sui.activation_epoch();
-    let withdrawn_stake = self.staking_pool.request_withdraw_stake(staked_sui, ctx);
-    let withdraw_amount = withdrawn_stake.value();
-    let reward_amount = withdraw_amount - principal_amount;
-    self.next_epoch_stake = self.next_epoch_stake - withdraw_amount;
-    event::emit(UnstakingRequestEvent {
-        pool_id: self.staking_pool_id(),
-        validator_address: self.metadata.sui_address,
-        staker_address: ctx.sender(),
-        stake_activation_epoch,
-        unstaking_epoch: ctx.epoch(),
-        principal_amount,
-        reward_amount,
-    });
-    withdrawn_stake
-}
+    /// Request to withdraw stake from the validator's staking pool, processed at the end of the epoch.
+    public(package) fun request_withdraw_stake(
+        self: &mut Validator,
+        staked_sui: StakedBfc,
+        ctx: &TxContext,
+    ): Balance<BFC> {
+        let principal_amount = staked_sui.amount();
+        let stake_activation_epoch = staked_sui.activation_epoch();
+        let withdrawn_stake = self.staking_pool.request_withdraw_stake(staked_sui, ctx);
+        let withdraw_amount = withdrawn_stake.value();
+        let reward_amount = withdraw_amount - principal_amount;
+        self.next_epoch_stake = self.next_epoch_stake - withdraw_amount;
+        event::emit(UnstakingRequestEvent {
+            pool_id: self.staking_pool_id(),
+            validator_address: self.metadata.sui_address,
+            staker_address: ctx.sender(),
+            stake_activation_epoch,
+            unstaking_epoch: ctx.epoch(),
+            principal_amount,
+            reward_amount,
+        });
+        withdrawn_stake
+    }
 
     #[allow(unused_mut_parameter)]
     public(package) fun request_withdraw_stable_stake<STABLE>(
@@ -451,18 +459,18 @@ public(package) fun request_withdraw_stake(
         staked_sui: StakedStable<STABLE>,
         rate: u64,
         ctx: &mut TxContext,
-    ) : (Balance<STABLE>, Balance<BFC>) {
+    ): (Balance<STABLE>, Balance<BFC>) {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
         let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
         let principal_amount = stable_pool::staked_sui_amount(&staked_sui);
         let stake_activation_epoch = stable_pool::stake_activation_epoch(&staked_sui);
         let (withdrawn_stake, reward) = stable_pool::request_withdraw_stake(pool, staked_sui, rate, ctx);
         let withdraw_amount = withdrawn_stake.value();
-        let reward_amount =reward.value();
+        let reward_amount = reward.value();
         let next_stable_stake = vec_map::try_get(&self.next_epoch_stable_stake, &pool_key);
         if (option::is_some(&next_stable_stake)) {
             let (_, next_stable) = vec_map::remove(&mut self.next_epoch_stable_stake, &pool_key);
-            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key,next_stable - withdraw_amount);
+            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, next_stable - withdraw_amount);
         };
         event::emit(
             UnstakingRequestEvent {
@@ -491,144 +499,149 @@ public(package) fun request_withdraw_stake(
         self.next_epoch_gas_price = new_price;
     }
 
-/// Set new gas price for the candidate validator.
-public(package) fun set_candidate_gas_price(
-    self: &mut Validator,
-    verified_cap: ValidatorOperationCap,
-    new_price: u64,
-) {
-    assert!(self.is_preactive(), ENotValidatorCandidate);
-    assert!(new_price < MAX_VALIDATOR_GAS_PRICE, EGasPriceHigherThanThreshold);
-    let validator_address = *verified_cap.verified_operation_cap_address();
-    assert!(validator_address == self.metadata.sui_address, EInvalidCap);
-    self.next_epoch_gas_price = new_price;
-    self.gas_price = new_price;
-}
+    /// Set new gas price for the candidate validator.
+    public(package) fun set_candidate_gas_price(
+        self: &mut Validator,
+        verified_cap: ValidatorOperationCap,
+        new_price: u64,
+    ) {
+        assert!(self.is_preactive(), ENotValidatorCandidate);
+        assert!(new_price < MAX_VALIDATOR_GAS_PRICE, EGasPriceHigherThanThreshold);
+        let validator_address = *verified_cap.verified_operation_cap_address();
+        assert!(validator_address == self.metadata.sui_address, EInvalidCap);
+        self.next_epoch_gas_price = new_price;
+        self.gas_price = new_price;
+    }
 
-/// Request to set new commission rate for the next epoch.
-public(package) fun request_set_commission_rate(self: &mut Validator, new_commission_rate: u64) {
-    assert!(new_commission_rate <= MAX_COMMISSION_RATE, ECommissionRateTooHigh);
-    self.next_epoch_commission_rate = new_commission_rate;
-}
+    /// Request to set new commission rate for the next epoch.
+    public(package) fun request_set_commission_rate(self: &mut Validator, new_commission_rate: u64) {
+        assert!(new_commission_rate <= MAX_COMMISSION_RATE, ECommissionRateTooHigh);
+        self.next_epoch_commission_rate = new_commission_rate;
+    }
 
-/// Set new commission rate for the candidate validator.
-public(package) fun set_candidate_commission_rate(self: &mut Validator, new_commission_rate: u64) {
-    assert!(self.is_preactive(), ENotValidatorCandidate);
-    assert!(new_commission_rate <= MAX_COMMISSION_RATE, ECommissionRateTooHigh);
-    self.commission_rate = new_commission_rate;
-}
+    /// Set new commission rate for the candidate validator.
+    public(package) fun set_candidate_commission_rate(self: &mut Validator, new_commission_rate: u64) {
+        assert!(self.is_preactive(), ENotValidatorCandidate);
+        assert!(new_commission_rate <= MAX_COMMISSION_RATE, ECommissionRateTooHigh);
+        self.commission_rate = new_commission_rate;
+    }
 
     /// Deposit stakes rewards into the validator's staking pool, called at the end of the epoch.
-    public(package) fun deposit_stake_rewards(self: &mut Validator, mut reward: Balance<BFC>, stable_rate: &VecMap<ascii::String, u64>) {
+    public(package) fun deposit_stake_rewards(
+        self: &mut Validator,
+        mut
+        reward: Balance<BFC>,
+        stable_rate: &VecMap<ascii::String, u64>
+    ) {
         let total_reward = balance::value(&reward);
         let mut bfc_reward;
         let mut stable_total_stake = vec_map::empty();
         let all_stable_total_stake = get_stable_staking_total(self, &mut stable_total_stake, stable_rate);
         if (all_stable_total_stake > 0) {
-            //distribute for bfc pool
-            let bfc_total_stake = stake_amount(self);
-            let all_total_stake = all_stable_total_stake + bfc_total_stake;
-            let bfc_dis_reward = (total_reward as u128) * (bfc_total_stake as u128) / (all_total_stake as u128);
-            staking_pool::deposit_rewards(&mut self.staking_pool, balance::split(&mut reward, (bfc_dis_reward as u64)));
-            bfc_reward = (bfc_dis_reward as u64);
+        //distribute for bfc pool
+        let bfc_total_stake = stake_amount(self);
+        let all_total_stake = all_stable_total_stake + bfc_total_stake;
+        let bfc_dis_reward = (total_reward as u128) * (bfc_total_stake as u128) / (all_total_stake as u128);
+        staking_pool::deposit_rewards(&mut self.staking_pool, balance::split(&mut reward, (bfc_dis_reward as u64)));
+        bfc_reward = (bfc_dis_reward as u64);
 
-            //distribute for stable pool
-            let stable_reward = distribute_stable_pool_reward<BUSD>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if (stable_reward > 0) {
-                deposit_stable_stake_rewards<BUSD>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
-            let stable_reward = distribute_stable_pool_reward<BARS>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if(stable_reward > 0) {
-                deposit_stable_stake_rewards<BARS>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
-            let stable_reward = distribute_stable_pool_reward<BAUD>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if(stable_reward > 0) {
-                deposit_stable_stake_rewards<BAUD>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
-            let stable_reward = distribute_stable_pool_reward<BBRL>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if(stable_reward > 0) {
-                deposit_stable_stake_rewards<BBRL>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
-            let stable_reward = distribute_stable_pool_reward<BCAD>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if(stable_reward > 0) {
-                deposit_stable_stake_rewards<BCAD>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
-            let stable_reward = distribute_stable_pool_reward<BEUR>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if(stable_reward > 0) {
-                deposit_stable_stake_rewards<BEUR>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
-            let stable_reward = distribute_stable_pool_reward<BGBP>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if(stable_reward > 0) {
-                deposit_stable_stake_rewards<BGBP>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
-            let stable_reward = distribute_stable_pool_reward<BIDR>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if(stable_reward > 0) {
-                deposit_stable_stake_rewards<BIDR>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
-            let stable_reward = distribute_stable_pool_reward<BINR>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if(stable_reward > 0) {
-                deposit_stable_stake_rewards<BINR>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
-            let stable_reward = distribute_stable_pool_reward<BKRW>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if(stable_reward > 0) {
-                deposit_stable_stake_rewards<BKRW>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
-            let stable_reward = distribute_stable_pool_reward<BMXN>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if(stable_reward > 0) {
-                deposit_stable_stake_rewards<BMXN>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
-            let stable_reward = distribute_stable_pool_reward<BRUB>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if(stable_reward > 0) {
-                deposit_stable_stake_rewards<BRUB>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
-            let stable_reward = distribute_stable_pool_reward<BSAR>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if(stable_reward > 0) {
-                deposit_stable_stake_rewards<BSAR>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
-            let stable_reward = distribute_stable_pool_reward<BTRY>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if(stable_reward > 0) {
-                deposit_stable_stake_rewards<BTRY>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
-            let stable_reward = distribute_stable_pool_reward<BZAR>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if(stable_reward > 0) {
-                deposit_stable_stake_rewards<BZAR>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
-            let stable_reward = distribute_stable_pool_reward<BJPY>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if(stable_reward > 0) {
-                deposit_stable_stake_rewards<BJPY>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
-            let stable_reward = distribute_stable_pool_reward<MGG>(&stable_total_stake,
-                total_reward, all_total_stake);
-            if(stable_reward > 0) {
-                deposit_stable_stake_rewards<MGG>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
-            };
+        //distribute for stable pool
+        let stable_reward = distribute_stable_pool_reward<BUSD>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<BUSD>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
+        let stable_reward = distribute_stable_pool_reward<BARS>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<BARS>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
+        let stable_reward = distribute_stable_pool_reward<BAUD>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<BAUD>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
+        let stable_reward = distribute_stable_pool_reward<BBRL>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<BBRL>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
+        let stable_reward = distribute_stable_pool_reward<BCAD>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<BCAD>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
+        let stable_reward = distribute_stable_pool_reward<BEUR>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<BEUR>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
+        let stable_reward = distribute_stable_pool_reward<BGBP>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<BGBP>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
+        let stable_reward = distribute_stable_pool_reward<BIDR>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<BIDR>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
+        let stable_reward = distribute_stable_pool_reward<BINR>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<BINR>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
+        let stable_reward = distribute_stable_pool_reward<BKRW>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<BKRW>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
+        let stable_reward = distribute_stable_pool_reward<BMXN>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<BMXN>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
+        let stable_reward = distribute_stable_pool_reward<BRUB>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<BRUB>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
+        let stable_reward = distribute_stable_pool_reward<BSAR>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<BSAR>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
+        let stable_reward = distribute_stable_pool_reward<BTRY>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<BTRY>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
+        let stable_reward = distribute_stable_pool_reward<BZAR>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<BZAR>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
+        let stable_reward = distribute_stable_pool_reward<BJPY>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<BJPY>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
+        let stable_reward = distribute_stable_pool_reward<MGG>(&stable_total_stake,
+        total_reward, all_total_stake);
+        if (stable_reward > 0) {
+        deposit_stable_stake_rewards<MGG>(self, balance::split(&mut reward, stable_reward), stable_reward, stable_rate);
+        };
 
-            let remainder = balance::value(&reward);
-            if (remainder > 0) {
-                staking_pool::deposit_rewards(&mut self.staking_pool, reward);
-                bfc_reward = bfc_reward + remainder;
-            } else {
-                balance::destroy_zero(reward);
-            };
+        let remainder = balance::value(&reward);
+        if (remainder > 0) {
+        staking_pool::deposit_rewards(&mut self.staking_pool, reward);
+        bfc_reward = bfc_reward + remainder;
+        } else {
+        balance::destroy_zero(reward);
+        };
         }else {
-            staking_pool::deposit_rewards(&mut self.staking_pool, reward);
-            bfc_reward = total_reward;
+        staking_pool::deposit_rewards(&mut self.staking_pool, reward);
+        bfc_reward = total_reward;
         };
 
         self.next_epoch_stake = self.next_epoch_stake + bfc_reward;
@@ -686,7 +699,7 @@ public(package) fun set_candidate_commission_rate(self: &mut Validator, new_comm
         let pool_key = type_name::into_string(type_name::get<STABLE>());
         let rate = vec_map::get(stable_rate, &pool_key);
         //todo rate is zero?
-        let stable_amount = (reward_amount as u128) *  (1000000000 as u128) / (*rate as u128);
+        let stable_amount = (reward_amount as u128) * (1000000000 as u128) / (*rate as u128);
         if (vec_map::contains(&self.next_epoch_stable_stake, &pool_key)) {
             let next_stake = vec_map::get_mut(&mut self.next_epoch_stable_stake, &pool_key);
             *next_stake = *next_stake + (stable_amount as u64);
@@ -699,12 +712,12 @@ public(package) fun set_candidate_commission_rate(self: &mut Validator, new_comm
     }
 
 
-/// Process pending stakes and withdraws, called at the end of the epoch.
-public(package) fun process_pending_stakes_and_withdraws(self: &mut Validator, ctx: &TxContext) {
-    self.staking_pool.process_pending_stakes_and_withdraws(ctx);
-    // TODO: bring this assertion back when we are ready.
-    // assert!(stake_amount(self) == self.next_epoch_stake, EInvalidStakeAmount);
-}
+    /// Process pending stakes and withdraws, called at the end of the epoch.
+    public(package) fun process_pending_stakes_and_withdraws(self: &mut Validator, ctx: &TxContext) {
+        self.staking_pool.process_pending_stakes_and_withdraws(ctx);
+        // TODO: bring this assertion back when we are ready.
+        // assert!(stake_amount(self) == self.next_epoch_stake, EInvalidStakeAmount);
+    }
 
     #[allow(unused_mut_parameter)]
     public(package) fun process_pending_all_stable_stakes_and_withdraws(self: &mut Validator, ctx: &mut TxContext) {
@@ -741,110 +754,110 @@ public(package) fun process_pending_stakes_and_withdraws(self: &mut Validator, c
         self.staking_pool.is_preactive()
     }
 
-public fun metadata(self: &Validator): &ValidatorMetadata {
-    &self.metadata
-}
+    public fun metadata(self: &Validator): &ValidatorMetadata {
+        &self.metadata
+    }
 
-public fun sui_address(self: &Validator): address {
-    self.metadata.sui_address
-}
+    public fun sui_address(self: &Validator): address {
+        self.metadata.sui_address
+    }
 
-public fun name(self: &Validator): &String {
-    &self.metadata.name
-}
+    public fun name(self: &Validator): &String {
+        &self.metadata.name
+    }
 
-public fun description(self: &Validator): &String {
-    &self.metadata.description
-}
+    public fun description(self: &Validator): &String {
+        &self.metadata.description
+    }
 
-public fun image_url(self: &Validator): &Url {
-    &self.metadata.image_url
-}
+    public fun image_url(self: &Validator): &Url {
+        &self.metadata.image_url
+    }
 
-public fun project_url(self: &Validator): &Url {
-    &self.metadata.project_url
-}
+    public fun project_url(self: &Validator): &Url {
+        &self.metadata.project_url
+    }
 
-public fun network_address(self: &Validator): &String {
-    &self.metadata.net_address
-}
+    public fun network_address(self: &Validator): &String {
+        &self.metadata.net_address
+    }
 
-public fun p2p_address(self: &Validator): &String {
-    &self.metadata.p2p_address
-}
+    public fun p2p_address(self: &Validator): &String {
+        &self.metadata.p2p_address
+    }
 
-public fun primary_address(self: &Validator): &String {
-    &self.metadata.primary_address
-}
+    public fun primary_address(self: &Validator): &String {
+        &self.metadata.primary_address
+    }
 
-public fun worker_address(self: &Validator): &String {
-    &self.metadata.worker_address
-}
+    public fun worker_address(self: &Validator): &String {
+        &self.metadata.worker_address
+    }
 
-public fun protocol_pubkey_bytes(self: &Validator): &vector<u8> {
-    &self.metadata.protocol_pubkey_bytes
-}
+    public fun protocol_pubkey_bytes(self: &Validator): &vector<u8> {
+        &self.metadata.protocol_pubkey_bytes
+    }
 
-public fun proof_of_possession(self: &Validator): &vector<u8> {
-    &self.metadata.proof_of_possession
-}
+    public fun proof_of_possession(self: &Validator): &vector<u8> {
+        &self.metadata.proof_of_possession
+    }
 
-public fun network_pubkey_bytes(self: &Validator): &vector<u8> {
-    &self.metadata.network_pubkey_bytes
-}
+    public fun network_pubkey_bytes(self: &Validator): &vector<u8> {
+        &self.metadata.network_pubkey_bytes
+    }
 
-public fun worker_pubkey_bytes(self: &Validator): &vector<u8> {
-    &self.metadata.worker_pubkey_bytes
-}
+    public fun worker_pubkey_bytes(self: &Validator): &vector<u8> {
+        &self.metadata.worker_pubkey_bytes
+    }
 
-public fun next_epoch_network_address(self: &Validator): &Option<String> {
-    &self.metadata.next_epoch_net_address
-}
+    public fun next_epoch_network_address(self: &Validator): &Option<String> {
+        &self.metadata.next_epoch_net_address
+    }
 
-public fun next_epoch_p2p_address(self: &Validator): &Option<String> {
-    &self.metadata.next_epoch_p2p_address
-}
+    public fun next_epoch_p2p_address(self: &Validator): &Option<String> {
+        &self.metadata.next_epoch_p2p_address
+    }
 
-public fun next_epoch_primary_address(self: &Validator): &Option<String> {
-    &self.metadata.next_epoch_primary_address
-}
+    public fun next_epoch_primary_address(self: &Validator): &Option<String> {
+        &self.metadata.next_epoch_primary_address
+    }
 
-public fun next_epoch_worker_address(self: &Validator): &Option<String> {
-    &self.metadata.next_epoch_worker_address
-}
+    public fun next_epoch_worker_address(self: &Validator): &Option<String> {
+        &self.metadata.next_epoch_worker_address
+    }
 
-public fun next_epoch_protocol_pubkey_bytes(self: &Validator): &Option<vector<u8>> {
-    &self.metadata.next_epoch_protocol_pubkey_bytes
-}
+    public fun next_epoch_protocol_pubkey_bytes(self: &Validator): &Option<vector<u8>> {
+        &self.metadata.next_epoch_protocol_pubkey_bytes
+    }
 
-public fun next_epoch_proof_of_possession(self: &Validator): &Option<vector<u8>> {
-    &self.metadata.next_epoch_proof_of_possession
-}
+    public fun next_epoch_proof_of_possession(self: &Validator): &Option<vector<u8>> {
+        &self.metadata.next_epoch_proof_of_possession
+    }
 
-public fun next_epoch_network_pubkey_bytes(self: &Validator): &Option<vector<u8>> {
-    &self.metadata.next_epoch_network_pubkey_bytes
-}
+    public fun next_epoch_network_pubkey_bytes(self: &Validator): &Option<vector<u8>> {
+        &self.metadata.next_epoch_network_pubkey_bytes
+    }
 
-public fun next_epoch_worker_pubkey_bytes(self: &Validator): &Option<vector<u8>> {
-    &self.metadata.next_epoch_worker_pubkey_bytes
-}
+    public fun next_epoch_worker_pubkey_bytes(self: &Validator): &Option<vector<u8>> {
+        &self.metadata.next_epoch_worker_pubkey_bytes
+    }
 
-public fun operation_cap_id(self: &Validator): &ID {
-    &self.operation_cap_id
-}
+    public fun operation_cap_id(self: &Validator): &ID {
+        &self.operation_cap_id
+    }
 
-public fun next_epoch_gas_price(self: &Validator): u64 {
-    self.next_epoch_gas_price
-}
+    public fun next_epoch_gas_price(self: &Validator): u64 {
+        self.next_epoch_gas_price
+    }
 
-#[deprecated(note = b"Use `total_stake` instead")]
-public fun total_stake_amount(self: &Validator): u64 {
-    self.staking_pool.sui_balance()
-}
+    #[deprecated(note = b"Use `total_stake` instead")]
+    public fun total_stake_amount(self: &Validator): u64 {
+        self.staking_pool.sui_balance()
+    }
 
-public fun stake_amount(self: &Validator): u64 {
-    self.staking_pool.sui_balance()
-}
+    public fun stake_amount(self: &Validator): u64 {
+        self.staking_pool.sui_balance()
+    }
 
     public fun stable_stake_amount<STABLE>(self: &Validator): u64 {
         stable_pool::stable_balance(get_stable_pool<STABLE>(&self.stable_pools))
@@ -854,10 +867,10 @@ public fun stake_amount(self: &Validator): u64 {
         stable_pool::rewards_pool(get_stable_pool<STABLE>(&self.stable_pools))
     }
 
-/// Return the total amount staked with this validator
-public fun total_stake(self: &Validator): u64 {
-    self.staking_pool.sui_balance()
-}
+    /// Return the total amount staked with this validator
+    public fun total_stake(self: &Validator): u64 {
+        self.staking_pool.sui_balance()
+    }
 
     public fun total_stake_with_all_stable(self: &Validator, stable_rate: VecMap<ascii::String, u64>): u64 {
         let mut total_stake = total_stake(self);
@@ -885,8 +898,8 @@ public fun total_stake(self: &Validator): u64 {
         self: &Validator,
         stable_stake: &mut VecMap<ascii::String, u64>,
         stable_rate: &VecMap<ascii::String, u64>
-    ):u64  {
-        let total =  stable_stake_amount<STABLE>(self);
+    ): u64 {
+        let total = stable_stake_amount<STABLE>(self);
         if (total > 0) {
             let pool_key = type_name::into_string(type_name::get<STABLE>());
             let rate = vec_map::get(stable_rate, &pool_key);
@@ -894,16 +907,16 @@ public fun total_stake(self: &Validator): u64 {
             vec_map::insert(stable_stake, pool_key, (total_stake as u64));
             (total_stake as u64)
         }else {
-         0
+            0
         }
     }
 
     public fun total_stake_of_stable<STABLE>(self: &Validator, stable_rate: VecMap<ascii::String, u64>): u64 {
-        let stable_stake =  stable_stake_amount<STABLE>(self);
+        let stable_stake = stable_stake_amount<STABLE>(self);
         if (stable_stake > 0) {
             let pool_key = type_name::into_string(type_name::get<STABLE>());
             let rate = vec_map::get(&stable_rate, &pool_key);
-            let total_stake = (stable_stake as u128) *  (*rate as u128) / (1000000000 as u128);
+            let total_stake = (stable_stake as u128) * (*rate as u128) / (1000000000 as u128);
             (total_stake as u64)
         } else {
             0
@@ -915,14 +928,14 @@ public fun total_stake(self: &Validator): u64 {
         self.voting_power
     }
 
-/// Set the voting power of this validator, called only from validator_set.
-public(package) fun set_voting_power(self: &mut Validator, new_voting_power: u64) {
-    self.voting_power = new_voting_power;
-}
+    /// Set the voting power of this validator, called only from validator_set.
+    public(package) fun set_voting_power(self: &mut Validator, new_voting_power: u64) {
+        self.voting_power = new_voting_power;
+    }
 
-public fun pending_stake_amount(self: &Validator): u64 {
-    self.staking_pool.pending_stake_amount()
-}
+    public fun pending_stake_amount(self: &Validator): u64 {
+        self.staking_pool.pending_stake_amount()
+    }
 
     public fun pending_stake_stable_amount<STABLE>(self: &Validator): u64 {
         stable_pool::pending_stake_amount(get_stable_pool<STABLE>(&self.stable_pools))
@@ -940,15 +953,18 @@ public fun pending_stake_amount(self: &Validator): u64 {
         self.gas_price
     }
 
-public fun commission_rate(self: &Validator): u64 {
-    self.commission_rate
-}
+    public fun commission_rate(self: &Validator): u64 {
+        self.commission_rate
+    }
 
-public fun pool_token_exchange_rate_at_epoch(self: &Validator, epoch: u64): PoolTokenExchangeRate {
-    self.staking_pool.pool_token_exchange_rate_at_epoch(epoch)
-}
+    public fun pool_token_exchange_rate_at_epoch(self: &Validator, epoch: u64): PoolTokenExchangeRate {
+        self.staking_pool.pool_token_exchange_rate_at_epoch(epoch)
+    }
 
-    public fun pool_stable_token_exchange_rate_at_epoch(self: &Validator, epoch: u64): vector<PoolStableTokenExchangeRate> {
+    public fun pool_stable_token_exchange_rate_at_epoch(
+        self: &Validator,
+        epoch: u64
+    ): vector<PoolStableTokenExchangeRate> {
         let mut vec_rate = vector::empty<PoolStableTokenExchangeRate>();
         vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BUSD>(get_stable_pool(&self.stable_pools), epoch), 0);
         vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BARS>(get_stable_pool(&self.stable_pools), epoch), 1);
@@ -974,22 +990,22 @@ public fun pool_token_exchange_rate_at_epoch(self: &Validator, epoch: u64): Pool
         object::id(&self.staking_pool)
     }
 
-// MUSTFIX: We need to check this when updating metadata as well.
-public fun is_duplicate(self: &Validator, other: &Validator): bool {
-    let self = &self.metadata;
-    let other = &other.metadata;
+    // MUSTFIX: We need to check this when updating metadata as well.
+    public fun is_duplicate(self: &Validator, other: &Validator): bool {
+        let self = &self.metadata;
+        let other = &other.metadata;
 
-    self.sui_address == other.sui_address
-        || self.name == other.name
-        || self.net_address == other.net_address
-        || self.p2p_address == other.p2p_address
-        || self.protocol_pubkey_bytes == other.protocol_pubkey_bytes
-        || self.network_pubkey_bytes == other.network_pubkey_bytes
-        || self.network_pubkey_bytes == other.worker_pubkey_bytes
-        || self.worker_pubkey_bytes == other.worker_pubkey_bytes
-        || self.worker_pubkey_bytes == other.network_pubkey_bytes
-        // All next epoch parameters.
-        || both_some_and_equal!(self.next_epoch_net_address, other.next_epoch_net_address)
+        self.sui_address == other.sui_address
+            || self.name == other.name
+            || self.net_address == other.net_address
+            || self.p2p_address == other.p2p_address
+            || self.protocol_pubkey_bytes == other.protocol_pubkey_bytes
+            || self.network_pubkey_bytes == other.network_pubkey_bytes
+            || self.network_pubkey_bytes == other.worker_pubkey_bytes
+            || self.worker_pubkey_bytes == other.worker_pubkey_bytes
+            || self.worker_pubkey_bytes == other.network_pubkey_bytes
+            // All next epoch parameters.
+            || both_some_and_equal!(self.next_epoch_net_address, other.next_epoch_net_address)
         || both_some_and_equal!(self.next_epoch_p2p_address, other.next_epoch_p2p_address)
         || both_some_and_equal!(self.next_epoch_protocol_pubkey_bytes, other.next_epoch_protocol_pubkey_bytes)
         || both_some_and_equal!(self.next_epoch_network_pubkey_bytes, other.next_epoch_network_pubkey_bytes)
@@ -1012,7 +1028,8 @@ public fun is_duplicate(self: &Validator, other: &Validator): bool {
         || other.next_epoch_network_pubkey_bytes.is_some_and!(|v| v == self.worker_pubkey_bytes)
         || other.next_epoch_worker_pubkey_bytes.is_some_and!(|v| v == self.worker_pubkey_bytes)
         || other.next_epoch_worker_pubkey_bytes.is_some_and!(|v| v == self.network_pubkey_bytes)
-}
+    }
+
     public fun stable_pool_id<STABLE>(self: &Validator): ID {
         object::id(get_stable_pool<STABLE>(&self.stable_pools))
     }
@@ -1026,7 +1043,7 @@ public fun is_duplicate(self: &Validator, other: &Validator): bool {
         stake: Balance<STABLE>,
         staker_address: address,
         ctx: &mut TxContext,
-    ) : StakedStable<STABLE> {
+    ): StakedStable<STABLE> {
         assert!(std::type_name::get<STABLE>() == std::type_name::get<BUSD>(), EInvalidCoinType);
         let stake_amount = stake.value();
         assert!(stake_amount > 0, EInvalidStakeAmount);
@@ -1061,312 +1078,316 @@ public fun is_duplicate(self: &Validator, other: &Validator): bool {
 
     fun get_stable_pool_mut<STABLE>(
         bag: &mut Bag,
-    ) :&mut StablePool<STABLE> {
+    ): &mut StablePool<STABLE> {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
         bag::borrow_mut<ascii::String, StablePool<STABLE>>(bag, pool_key)
     }
 
-    public(package) fun get_stable_pool<STABLE>(bag: &Bag) :&StablePool<STABLE> {
+    public(package) fun get_stable_pool<STABLE>(bag: &Bag): &StablePool<STABLE> {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
         bag::borrow<ascii::String, StablePool<STABLE>>(bag, pool_key)
     }
 
-    public fun all_stable_pool_id(self:&Validator): vector<ID> {
+    public fun all_stable_pool_id(self: &Validator): vector<ID> {
         let mut id_vec = vector[];
-        vector::insert(&mut id_vec ,stable_pool_id<BUSD>(self), 0);
-        vector::insert(&mut id_vec ,stable_pool_id<BARS>(self), 1);
-        vector::insert(&mut id_vec ,stable_pool_id<BAUD>(self), 2);
-        vector::insert(&mut id_vec ,stable_pool_id<BBRL>(self), 3);
-        vector::insert(&mut id_vec ,stable_pool_id<BCAD>(self), 4);
-        vector::insert(&mut id_vec ,stable_pool_id<BEUR>(self), 5);
-        vector::insert(&mut id_vec ,stable_pool_id<BGBP>(self), 6);
-        vector::insert(&mut id_vec ,stable_pool_id<BIDR>(self), 7);
-        vector::insert(&mut id_vec ,stable_pool_id<BINR>(self), 8);
-        vector::insert(&mut id_vec ,stable_pool_id<BJPY>(self), 9);
-        vector::insert(&mut id_vec ,stable_pool_id<BKRW>(self), 10);
-        vector::insert(&mut id_vec ,stable_pool_id<BMXN>(self), 11);
-        vector::insert(&mut id_vec ,stable_pool_id<BRUB>(self), 12);
-        vector::insert(&mut id_vec ,stable_pool_id<BSAR>(self), 13);
-        vector::insert(&mut id_vec ,stable_pool_id<BTRY>(self), 14);
-        vector::insert(&mut id_vec ,stable_pool_id<BZAR>(self), 15);
-        vector::insert(&mut id_vec ,stable_pool_id<MGG>(self), 16);
+        vector::insert(&mut id_vec, stable_pool_id<BUSD>(self), 0);
+        vector::insert(&mut id_vec, stable_pool_id<BARS>(self), 1);
+        vector::insert(&mut id_vec , stable_pool_id<BAUD>(self), 2);
+        vector::insert(&mut id_vec,stable_pool_id<BBRL>(self), 3);
+        vector::insert(&mut id_vec, stable_pool_id<BCAD>(self), 4);
+        vector::insert(&mut id_vec, stable_pool_id<BEUR>(self), 5);
+        vector::insert(&mut id_vec, stable_pool_id<BGBP>(self), 6);
+        vector::insert(&mut id_vec, stable_pool_id<BIDR>(self), 7);
+        vector::insert(&mut id_vec, stable_pool_id<BINR>(self), 8);
+        vector::insert(&mut id_vec, stable_pool_id<BJPY>(self), 9);
+        vector::insert(&mut id_vec, stable_pool_id<BKRW>(self), 10);
+        vector::insert(&mut id_vec, stable_pool_id<BMXN>(self), 11);
+        vector::insert(&mut id_vec , stable_pool_id<BRUB>(self), 12);
+        vector::insert(&mut id_vec,stable_pool_id<BSAR>(self), 13);
+        vector::insert(&mut id_vec, stable_pool_id<BTRY>(self), 14);
+        vector::insert(&mut id_vec, stable_pool_id<BZAR>(self), 15);
+        vector::insert(&mut id_vec, stable_pool_id<MGG>(self), 16);
         id_vec
     }
 
 
-macro fun both_some_and_equal<$T>($a: Option<$T>, $b: Option<$T>): bool {
+    macro fun both_some_and_equal<$T>($a: Option<$T>, $b: Option<$T>): bool {
     let (a, b) = ($a, $b);
     a.is_some_and!(|a| b.is_some_and!(|b| a == b))
 }
 
-// ==== Validator Metadata Management Functions ====
+    // ==== Validator Metadata Management Functions ====
 
-/// Create a new `UnverifiedValidatorOperationCap`, transfer to the validator,
-/// and registers it, thus revoking the previous cap's permission.
-public(package) fun new_unverified_validator_operation_cap_and_transfer(
-    self: &mut Validator,
-    ctx: &mut TxContext,
-) {
-    let sender = ctx.sender();
-    assert!(sender == self.metadata.sui_address, ENewCapNotCreatedByValidatorItself);
-    let new_id = validator_cap::new_unverified_validator_operation_cap_and_transfer(sender, ctx);
-    self.operation_cap_id = new_id;
-}
+    /// Create a new `UnverifiedValidatorOperationCap`, transfer to the validator,
+    /// and registers it, thus revoking the previous cap's permission.
+    public(package) fun new_unverified_validator_operation_cap_and_transfer(
+        self: &mut Validator,
+        ctx: &mut TxContext,
+    ) {
+        let sender = ctx.sender();
+        assert!(sender == self.metadata.sui_address, ENewCapNotCreatedByValidatorItself);
+        let new_id = validator_cap::new_unverified_validator_operation_cap_and_transfer(sender, ctx);
+        self.operation_cap_id = new_id;
+    }
 
-/// Update name of the validator.
-public(package) fun update_name(self: &mut Validator, name: vector<u8>) {
-    assert!(name.length() <= MAX_VALIDATOR_METADATA_LENGTH, EValidatorMetadataExceedingLengthLimit);
-    self.metadata.name = name.to_ascii_string().to_string();
-}
+    /// Update name of the validator.
+    public(package) fun update_name(self: &mut Validator, name: vector<u8>) {
+        assert!(name.length() <= MAX_VALIDATOR_METADATA_LENGTH, EValidatorMetadataExceedingLengthLimit);
+        self.metadata.name = name.to_ascii_string().to_string();
+    }
 
-/// Update description of the validator.
-public(package) fun update_description(self: &mut Validator, description: vector<u8>) {
-    assert!(
-        description.length() <= MAX_VALIDATOR_METADATA_LENGTH,
-        EValidatorMetadataExceedingLengthLimit,
-    );
-    self.metadata.description = description.to_ascii_string().to_string();
-}
+    /// Update description of the validator.
+    public(package) fun update_description(self: &mut Validator, description: vector<u8>) {
+        assert!(
+            description.length() <= MAX_VALIDATOR_METADATA_LENGTH,
+            EValidatorMetadataExceedingLengthLimit,
+        );
+        self.metadata.description = description.to_ascii_string().to_string();
+    }
 
-/// Update image url of the validator.
-public(package) fun update_image_url(self: &mut Validator, image_url: vector<u8>) {
-    assert!(
-        image_url.length() <= MAX_VALIDATOR_METADATA_LENGTH,
-        EValidatorMetadataExceedingLengthLimit,
-    );
-    self.metadata.image_url = url::new_unsafe_from_bytes(image_url);
-}
+    /// Update image url of the validator.
+    public(package) fun update_image_url(self: &mut Validator, image_url: vector<u8>) {
+        assert!(
+            image_url.length() <= MAX_VALIDATOR_METADATA_LENGTH,
+            EValidatorMetadataExceedingLengthLimit,
+        );
+        self.metadata.image_url = url::new_unsafe_from_bytes(image_url);
+    }
 
-/// Update project url of the validator.
-public(package) fun update_project_url(self: &mut Validator, project_url: vector<u8>) {
-    assert!(
-        project_url.length() <= MAX_VALIDATOR_METADATA_LENGTH,
-        EValidatorMetadataExceedingLengthLimit,
-    );
-    self.metadata.project_url = url::new_unsafe_from_bytes(project_url);
-}
+    /// Update project url of the validator.
+    public(package) fun update_project_url(self: &mut Validator, project_url: vector<u8>) {
+        assert!(
+            project_url.length() <= MAX_VALIDATOR_METADATA_LENGTH,
+            EValidatorMetadataExceedingLengthLimit,
+        );
+        self.metadata.project_url = url::new_unsafe_from_bytes(project_url);
+    }
 
-/// Update network address of this validator, taking effects from next epoch
-public(package) fun update_next_epoch_network_address(
-    self: &mut Validator,
-    net_address: vector<u8>,
-) {
-    assert!(
-        net_address.length() <= MAX_VALIDATOR_METADATA_LENGTH,
-        EValidatorMetadataExceedingLengthLimit,
-    );
-    let net_address = net_address.to_ascii_string().to_string();
-    self.metadata.next_epoch_net_address = option::some(net_address);
-    self.metadata.validate();
-}
+    /// Update network address of this validator, taking effects from next epoch
+    public(package) fun update_next_epoch_network_address(
+        self: &mut Validator,
+        net_address: vector<u8>,
+    ) {
+        assert!(
+            net_address.length() <= MAX_VALIDATOR_METADATA_LENGTH,
+            EValidatorMetadataExceedingLengthLimit,
+        );
+        let net_address = net_address.to_ascii_string().to_string();
+        self.metadata.next_epoch_net_address = option::some(net_address);
+        self.metadata.validate();
+    }
 
-/// Update network address of this candidate validator
-public(package) fun update_candidate_network_address(
-    self: &mut Validator,
-    net_address: vector<u8>,
-) {
-    assert!(self.is_preactive(), ENotValidatorCandidate);
-    assert!(
-        net_address.length() <= MAX_VALIDATOR_METADATA_LENGTH,
-        EValidatorMetadataExceedingLengthLimit,
-    );
-    let net_address = net_address.to_ascii_string().to_string();
-    self.metadata.net_address = net_address;
-    self.metadata.validate();
-}
+    /// Update network address of this candidate validator
+    public(package) fun update_candidate_network_address(
+        self: &mut Validator,
+        net_address: vector<u8>,
+    ) {
+        assert!(self.is_preactive(), ENotValidatorCandidate);
+        assert!(
+            net_address.length() <= MAX_VALIDATOR_METADATA_LENGTH,
+            EValidatorMetadataExceedingLengthLimit,
+        );
+        let net_address = net_address.to_ascii_string().to_string();
+        self.metadata.net_address = net_address;
+        self.metadata.validate();
+    }
 
-/// Update p2p address of this validator, taking effects from next epoch
-public(package) fun update_next_epoch_p2p_address(self: &mut Validator, p2p_address: vector<u8>) {
-    assert!(
-        p2p_address.length() <= MAX_VALIDATOR_METADATA_LENGTH,
-        EValidatorMetadataExceedingLengthLimit,
-    );
-    let p2p_address = p2p_address.to_ascii_string().to_string();
-    self.metadata.next_epoch_p2p_address = option::some(p2p_address);
-    self.metadata.validate();
-}
+    /// Update p2p address of this validator, taking effects from next epoch
+    public(package) fun update_next_epoch_p2p_address(self: &mut Validator, p2p_address: vector<u8>) {
+        assert!(
+            p2p_address.length() <= MAX_VALIDATOR_METADATA_LENGTH,
+            EValidatorMetadataExceedingLengthLimit,
+        );
+        let p2p_address = p2p_address.to_ascii_string().to_string();
+        self.metadata.next_epoch_p2p_address = option::some(p2p_address);
+        self.metadata.validate();
+    }
 
-/// Update p2p address of this candidate validator
-public(package) fun update_candidate_p2p_address(self: &mut Validator, p2p_address: vector<u8>) {
-    assert!(self.is_preactive(), ENotValidatorCandidate);
-    assert!(
-        p2p_address.length() <= MAX_VALIDATOR_METADATA_LENGTH,
-        EValidatorMetadataExceedingLengthLimit,
-    );
-    let p2p_address = p2p_address.to_ascii_string().to_string();
-    self.metadata.p2p_address = p2p_address;
-    self.metadata.validate();
-}
+    /// Update p2p address of this candidate validator
+    public(package) fun update_candidate_p2p_address(self: &mut Validator, p2p_address: vector<u8>) {
+        assert!(self.is_preactive(), ENotValidatorCandidate);
+        assert!(
+            p2p_address.length() <= MAX_VALIDATOR_METADATA_LENGTH,
+            EValidatorMetadataExceedingLengthLimit,
+        );
+        let p2p_address = p2p_address.to_ascii_string().to_string();
+        self.metadata.p2p_address = p2p_address;
+        self.metadata.validate();
+    }
 
-/// Update primary address of this validator, taking effects from next epoch
-public(package) fun update_next_epoch_primary_address(
-    self: &mut Validator,
-    primary_address: vector<u8>,
-) {
-    assert!(
-        primary_address.length() <= MAX_VALIDATOR_METADATA_LENGTH,
-        EValidatorMetadataExceedingLengthLimit,
-    );
-    let primary_address = primary_address.to_ascii_string().to_string();
-    self.metadata.next_epoch_primary_address = option::some(primary_address);
-    self.metadata.validate();
-}
+    /// Update primary address of this validator, taking effects from next epoch
+    public(package) fun update_next_epoch_primary_address(
+        self: &mut Validator,
+        primary_address: vector<u8>,
+    ) {
+        assert!(
+            primary_address.length() <= MAX_VALIDATOR_METADATA_LENGTH,
+            EValidatorMetadataExceedingLengthLimit,
+        );
+        let primary_address = primary_address.to_ascii_string().to_string();
+        self.metadata.next_epoch_primary_address = option::some(primary_address);
+        self.metadata.validate();
+    }
 
-/// Update primary address of this candidate validator
-public(package) fun update_candidate_primary_address(
-    self: &mut Validator,
-    primary_address: vector<u8>,
-) {
-    assert!(self.is_preactive(), ENotValidatorCandidate);
-    assert!(
-        primary_address.length() <= MAX_VALIDATOR_METADATA_LENGTH,
-        EValidatorMetadataExceedingLengthLimit,
-    );
-    let primary_address = primary_address.to_ascii_string().to_string();
-    self.metadata.primary_address = primary_address;
-    self.metadata.validate();
-}
+    /// Update primary address of this candidate validator
+    public(package) fun update_candidate_primary_address(
+        self: &mut Validator,
+        primary_address: vector<u8>,
+    ) {
+        assert!(self.is_preactive(), ENotValidatorCandidate);
+        assert!(
+            primary_address.length() <= MAX_VALIDATOR_METADATA_LENGTH,
+            EValidatorMetadataExceedingLengthLimit,
+        );
+        let primary_address = primary_address.to_ascii_string().to_string();
+        self.metadata.primary_address = primary_address;
+        self.metadata.validate();
+    }
 
-/// Update worker address of this validator, taking effects from next epoch
-public(package) fun update_next_epoch_worker_address(
-    self: &mut Validator,
-    worker_address: vector<u8>,
-) {
-    assert!(
-        worker_address.length() <= MAX_VALIDATOR_METADATA_LENGTH,
-        EValidatorMetadataExceedingLengthLimit,
-    );
-    let worker_address = worker_address.to_ascii_string().to_string();
-    self.metadata.next_epoch_worker_address = option::some(worker_address);
-    self.metadata.validate();
-}
+    /// Update worker address of this validator, taking effects from next epoch
+    public(package) fun update_next_epoch_worker_address(
+        self: &mut Validator,
+        worker_address: vector<u8>,
+    ) {
+        assert!(
+            worker_address.length() <= MAX_VALIDATOR_METADATA_LENGTH,
+            EValidatorMetadataExceedingLengthLimit,
+        );
+        let worker_address = worker_address.to_ascii_string().to_string();
+        self.metadata.next_epoch_worker_address = option::some(worker_address);
+        self.metadata.validate();
+    }
 
-/// Update worker address of this candidate validator
-public(package) fun update_candidate_worker_address(
-    self: &mut Validator,
-    worker_address: vector<u8>,
-) {
-    assert!(self.is_preactive(), ENotValidatorCandidate);
-    assert!(
-        worker_address.length() <= MAX_VALIDATOR_METADATA_LENGTH,
-        EValidatorMetadataExceedingLengthLimit,
-    );
-    let worker_address = worker_address.to_ascii_string().to_string();
-    self.metadata.worker_address = worker_address;
-    self.metadata.validate();
-}
+    /// Update worker address of this candidate validator
+    public(package) fun update_candidate_worker_address(
+        self: &mut Validator,
+        worker_address: vector<u8>,
+    ) {
+        assert!(self.is_preactive(), ENotValidatorCandidate);
+        assert!(
+            worker_address.length() <= MAX_VALIDATOR_METADATA_LENGTH,
+            EValidatorMetadataExceedingLengthLimit,
+        );
+        let worker_address = worker_address.to_ascii_string().to_string();
+        self.metadata.worker_address = worker_address;
+        self.metadata.validate();
+    }
 
-/// Update protocol public key of this validator, taking effects from next epoch
-public(package) fun update_next_epoch_protocol_pubkey(
-    self: &mut Validator,
-    protocol_pubkey: vector<u8>,
-    proof_of_possession: vector<u8>,
-) {
-    self.metadata.next_epoch_protocol_pubkey_bytes = option::some(protocol_pubkey);
-    self.metadata.next_epoch_proof_of_possession = option::some(proof_of_possession);
-    self.metadata.validate();
-}
+    /// Update protocol public key of this validator, taking effects from next epoch
+    public(package) fun update_next_epoch_protocol_pubkey(
+        self: &mut Validator,
+        protocol_pubkey: vector<u8>,
+        proof_of_possession: vector<u8>,
+    ) {
+        self.metadata.next_epoch_protocol_pubkey_bytes = option::some(protocol_pubkey);
+        self.metadata.next_epoch_proof_of_possession = option::some(proof_of_possession);
+        self.metadata.validate();
+    }
 
-/// Update protocol public key of this candidate validator
-public(package) fun update_candidate_protocol_pubkey(
-    self: &mut Validator,
-    protocol_pubkey: vector<u8>,
-    proof_of_possession: vector<u8>,
-) {
-    assert!(self.is_preactive(), ENotValidatorCandidate);
-    self.metadata.protocol_pubkey_bytes = protocol_pubkey;
-    self.metadata.proof_of_possession = proof_of_possession;
-    self.metadata.validate();
-}
+    /// Update protocol public key of this candidate validator
+    public(package) fun update_candidate_protocol_pubkey(
+        self: &mut Validator,
+        protocol_pubkey: vector<u8>,
+        proof_of_possession: vector<u8>,
+    ) {
+        assert!(self.is_preactive(), ENotValidatorCandidate);
+        self.metadata.protocol_pubkey_bytes = protocol_pubkey;
+        self.metadata.proof_of_possession = proof_of_possession;
+        self.metadata.validate();
+    }
 
-/// Update network public key of this validator, taking effects from next epoch
-public(package) fun update_next_epoch_network_pubkey(
-    self: &mut Validator,
-    network_pubkey: vector<u8>,
-) {
-    self.metadata.next_epoch_network_pubkey_bytes = option::some(network_pubkey);
-    self.metadata.validate();
-}
+    /// Update network public key of this validator, taking effects from next epoch
+    public(package) fun update_next_epoch_network_pubkey(
+        self: &mut Validator,
+        network_pubkey: vector<u8>,
+    ) {
+        self.metadata.next_epoch_network_pubkey_bytes = option::some(network_pubkey);
+        self.metadata.validate();
+    }
 
-/// Update network public key of this candidate validator
-public(package) fun update_candidate_network_pubkey(
-    self: &mut Validator,
-    network_pubkey: vector<u8>,
-) {
-    assert!(self.is_preactive(), ENotValidatorCandidate);
-    self.metadata.network_pubkey_bytes = network_pubkey;
-    self.metadata.validate();
-}
+    /// Update network public key of this candidate validator
+    public(package) fun update_candidate_network_pubkey(
+        self: &mut Validator,
+        network_pubkey: vector<u8>,
+    ) {
+        assert!(self.is_preactive(), ENotValidatorCandidate);
+        self.metadata.network_pubkey_bytes = network_pubkey;
+        self.metadata.validate();
+    }
 
-/// Update Narwhal worker public key of this validator, taking effects from next epoch
-public(package) fun update_next_epoch_worker_pubkey(
-    self: &mut Validator,
-    worker_pubkey: vector<u8>,
-) {
-    self.metadata.next_epoch_worker_pubkey_bytes = option::some(worker_pubkey);
-    self.metadata.validate();
-}
+    /// Update Narwhal worker public key of this validator, taking effects from next epoch
+    public(package) fun update_next_epoch_worker_pubkey(
+        self: &mut Validator,
+        worker_pubkey: vector<u8>,
+    ) {
+        self.metadata.next_epoch_worker_pubkey_bytes = option::some(worker_pubkey);
+        self.metadata.validate();
+    }
 
-/// Update Narwhal worker public key of this candidate validator
-public(package) fun update_candidate_worker_pubkey(
-    self: &mut Validator,
-    worker_pubkey: vector<u8>,
-) {
-    assert!(self.is_preactive(), ENotValidatorCandidate);
-    self.metadata.worker_pubkey_bytes = worker_pubkey;
-    self.metadata.validate();
-}
+    /// Update Narwhal worker public key of this candidate validator
+    public(package) fun update_candidate_worker_pubkey(
+        self: &mut Validator,
+        worker_pubkey: vector<u8>,
+    ) {
+        assert!(self.is_preactive(), ENotValidatorCandidate);
+        self.metadata.worker_pubkey_bytes = worker_pubkey;
+        self.metadata.validate();
+    }
 
-/// Effectutate all staged next epoch metadata for this validator.
-/// NOTE: this function SHOULD ONLY be called by validator_set when
-/// advancing an epoch.
-public(package) fun effectuate_staged_metadata(self: &mut Validator) {
-    do_extract!(&mut self.metadata.next_epoch_net_address, |v| {
+    /// Effectutate all staged next epoch metadata for this validator.
+    /// NOTE: this function SHOULD ONLY be called by validator_set when
+    /// advancing an epoch.
+    public(package) fun effectuate_staged_metadata(self: &mut Validator) {
+        do_extract!(&mut self.metadata.next_epoch_net_address, |v| {
         self.metadata.net_address = v
-    });
-    do_extract!(&mut self.metadata.next_epoch_p2p_address, |v| {
+        });
+        do_extract!(&mut self.metadata.next_epoch_p2p_address, |v| {
         self.metadata.p2p_address = v
-    });
-    do_extract!(&mut self.metadata.next_epoch_primary_address, |v| {
+        });
+        do_extract!(&mut self.metadata.next_epoch_primary_address, |v| {
         self.metadata.primary_address = v
-    });
-    do_extract!(&mut self.metadata.next_epoch_worker_address, |v| {
+        });
+        do_extract!(&mut self.metadata.next_epoch_worker_address, |v| {
         self.metadata.worker_address = v
-    });
-    do_extract!(&mut self.metadata.next_epoch_protocol_pubkey_bytes, |v| {
+        });
+        do_extract!(&mut self.metadata.next_epoch_protocol_pubkey_bytes, |v| {
         self.metadata.protocol_pubkey_bytes = v;
         self.metadata.proof_of_possession = self.metadata.next_epoch_proof_of_possession.extract();
-    });
-    do_extract!(&mut self.metadata.next_epoch_network_pubkey_bytes, |v| {
+        });
+        do_extract!(&mut self.metadata.next_epoch_network_pubkey_bytes, |v| {
         self.metadata.network_pubkey_bytes = v
-    });
-    do_extract!(&mut self.metadata.next_epoch_worker_pubkey_bytes, |v| {
+        });
+        do_extract!(&mut self.metadata.next_epoch_worker_pubkey_bytes, |v| {
         self.metadata.worker_pubkey_bytes = v
-    });
-}
+        });
+    }
 
-/// Helper macro which extracts the value from `Some` and applies `$f` to it.
-macro fun do_extract<$T>($o: &mut Option<$T>, $f: |$T|) {
+    /// Helper macro which extracts the value from `Some` and applies `$f` to it.
+    macro fun do_extract<$T>($o: &mut Option<$T>, $f: |$T|) {
     let o = $o;
     if (o.is_some()) {
-        $f(o.extract());
+    $f(o.extract());
     }
 }
 
-public use fun validate_metadata as ValidatorMetadata.validate;
+    public
 
-/// Aborts if validator metadata is valid
-public fun validate_metadata(metadata: &ValidatorMetadata) {
-    validate_metadata_bcs(bcs::to_bytes(metadata));
-}
+    use
 
-public native fun validate_metadata_bcs(metadata: vector<u8>);
+    fun validate_metadata as ValidatorMetadata.validate;
 
-public(package) fun get_staking_pool_ref(self: &Validator): &StakingPool {
-    &self.staking_pool
-}
+    /// Aborts if validator metadata is valid
+    public fun validate_metadata(metadata: &ValidatorMetadata) {
+        validate_metadata_bcs(bcs::to_bytes(metadata));
+    }
 
-    public(package) fun get_stable_pool_ref<STABLE>(self: &Validator) : &StablePool<STABLE> {
+    public native fun validate_metadata_bcs(metadata: vector<u8>);
+
+    public(package) fun get_staking_pool_ref(self: &Validator): &StakingPool {
+        &self.staking_pool
+    }
+
+    public(package) fun get_stable_pool_ref<STABLE>(self: &Validator): &StablePool<STABLE> {
         get_stable_pool<STABLE>(&self.stable_pools)
     }
 
@@ -1383,128 +1404,128 @@ public(package) fun get_staking_pool_ref(self: &Validator): &StakingPool {
         let mut stable_pools = bag::new(ctx);
 
         let mut pool_key = type_name::into_string(type_name::get<BUSD>());
-        bag::add<ascii::String, StablePool<BUSD>>(&mut stable_pools, pool_key,stable_pool::new<BUSD>(ctx));
+        bag::add<ascii::String, StablePool<BUSD>>(&mut stable_pools, pool_key, stable_pool::new<BUSD>(ctx));
         pool_key = type_name::into_string(type_name::get<BARS>());
-        bag::add<ascii::String, StablePool<BARS>>(&mut stable_pools, pool_key,stable_pool::new<BARS>(ctx));
+        bag::add<ascii::String, StablePool<BARS>>(&mut stable_pools, pool_key, stable_pool::new<BARS>(ctx));
         pool_key = type_name::into_string(type_name::get<BAUD>());
         bag::add<ascii::String, StablePool<BAUD>>(&mut stable_pools, pool_key,stable_pool::new<BAUD>(ctx));
         pool_key = type_name::into_string(type_name::get<BBRL>());
-        bag::add<ascii::String, StablePool<BBRL>>(&mut stable_pools, pool_key,stable_pool::new<BBRL>(ctx));
+        bag::add<ascii::String, StablePool<BBRL>>(&mut stable_pools, pool_key, stable_pool::new<BBRL>(ctx));
         pool_key = type_name::into_string(type_name::get<BCAD>());
-        bag::add<ascii::String, StablePool<BCAD>>(&mut stable_pools, pool_key,stable_pool::new<BCAD>(ctx));
+        bag::add<ascii::String, StablePool<BCAD>>(&mut stable_pools, pool_key, stable_pool::new<BCAD>(ctx));
         pool_key = type_name::into_string(type_name::get<BEUR>());
-        bag::add<ascii::String, StablePool<BEUR>>(&mut stable_pools, pool_key,stable_pool::new<BEUR>(ctx));
+        bag::add<ascii::String, StablePool<BEUR>>(&mut stable_pools, pool_key, stable_pool::new<BEUR>(ctx));
         pool_key = type_name::into_string(type_name::get<BGBP>());
-        bag::add<ascii::String, StablePool<BGBP>>(&mut stable_pools, pool_key,stable_pool::new<BGBP>(ctx));
+        bag::add<ascii::String, StablePool<BGBP>>(&mut stable_pools, pool_key, stable_pool::new<BGBP>(ctx));
         pool_key = type_name::into_string(type_name::get<BIDR>());
-        bag::add<ascii::String, StablePool<BIDR>>(&mut stable_pools, pool_key,stable_pool::new<BIDR>(ctx));
+        bag::add<ascii::String, StablePool<BIDR>>(&mut stable_pools, pool_key, stable_pool::new<BIDR>(ctx));
         pool_key = type_name::into_string(type_name::get<BINR>());
-        bag::add<ascii::String, StablePool<BINR>>(&mut stable_pools, pool_key,stable_pool::new<BINR>(ctx));
+        bag::add<ascii::String, StablePool<BINR>>(&mut stable_pools, pool_key, stable_pool::new<BINR>(ctx));
         pool_key = type_name::into_string(type_name::get<BJPY>());
-        bag::add<ascii::String, StablePool<BJPY>>(&mut stable_pools, pool_key,stable_pool::new<BJPY>(ctx));
+        bag::add<ascii::String, StablePool<BJPY>>(&mut stable_pools, pool_key, stable_pool::new<BJPY>(ctx));
         pool_key = type_name::into_string(type_name::get<BKRW>());
-        bag::add<ascii::String, StablePool<BKRW>>(&mut stable_pools, pool_key,stable_pool::new<BKRW>(ctx));
+        bag::add<ascii::String, StablePool<BKRW>>(&mut stable_pools, pool_key, stable_pool::new<BKRW>(ctx));
         pool_key = type_name::into_string(type_name::get<BMXN>());
-        bag::add<ascii::String, StablePool<BMXN>>(&mut stable_pools, pool_key,stable_pool::new<BMXN>(ctx));
+        bag::add<ascii::String, StablePool<BMXN>>(&mut stable_pools, pool_key, stable_pool::new<BMXN>(ctx));
         pool_key = type_name::into_string(type_name::get<BRUB>());
         bag::add<ascii::String, StablePool<BRUB>>(&mut stable_pools, pool_key,stable_pool::new<BRUB>(ctx));
         pool_key = type_name::into_string(type_name::get<BSAR>());
-        bag::add<ascii::String, StablePool<BSAR>>(&mut stable_pools, pool_key,stable_pool::new<BSAR>(ctx));
+        bag::add<ascii::String, StablePool<BSAR>>(&mut stable_pools, pool_key, stable_pool::new<BSAR>(ctx));
         pool_key = type_name::into_string(type_name::get<BTRY>());
-        bag::add<ascii::String, StablePool<BTRY>>(&mut stable_pools, pool_key,stable_pool::new<BTRY>(ctx));
+        bag::add<ascii::String, StablePool<BTRY>>(&mut stable_pools, pool_key, stable_pool::new<BTRY>(ctx));
         pool_key = type_name::into_string(type_name::get<BZAR>());
-        bag::add<ascii::String, StablePool<BZAR>>(&mut stable_pools, pool_key,stable_pool::new<BZAR>(ctx));
+        bag::add<ascii::String, StablePool<BZAR>>(&mut stable_pools, pool_key, stable_pool::new<BZAR>(ctx));
         pool_key = type_name::into_string(type_name::get<MGG>());
-        bag::add<ascii::String, StablePool<MGG>>(&mut stable_pools, pool_key,stable_pool::new<MGG>(ctx));
+        bag::add<ascii::String, StablePool<MGG>>(&mut stable_pools, pool_key, stable_pool::new<MGG>(ctx));
 
 
         let operation_cap_id = validator_cap::new_unverified_validator_operation_cap_and_transfer(sui_address, ctx);
         Validator {
-            metadata,
-            // Initialize the voting power to be 0.
-            // At the epoch change where this validator is actually added to the
-            // active validator set, the voting power will be updated accordingly.
-            voting_power: 0,
-            operation_cap_id,
-            gas_price,
-            staking_pool,
-            stable_pools,
-            commission_rate,
-            next_epoch_stake: 0,
-            next_epoch_stable_stake: vec_map::empty(),
-            next_epoch_gas_price: gas_price,
-            next_epoch_commission_rate: commission_rate,
-            extra_fields: bag::new(ctx),
+        metadata,
+        // Initialize the voting power to be 0.
+        // At the epoch change where this validator is actually added to the
+        // active validator set, the voting power will be updated accordingly.
+        voting_power: 0,
+        operation_cap_id,
+        gas_price,
+        staking_pool,
+        stable_pools,
+        commission_rate,
+        next_epoch_stake: 0,
+        next_epoch_stable_stake: vec_map::empty(),
+        next_epoch_gas_price: gas_price,
+        next_epoch_commission_rate: commission_rate,
+        extra_fields: bag::new(ctx),
         }
     }
 
-// CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.
-// Creates a validator - bypassing the proof of possession check and other metadata
-// validation in the process.
-// Note: `proof_of_possession` MUST be a valid signature using sui_address and
-// protocol_pubkey_bytes. To produce a valid PoP, run [fn test_proof_of_possession].
-#[test_only]
-public(package) fun new_for_testing(
-    sui_address: address,
-    protocol_pubkey_bytes: vector<u8>,
-    network_pubkey_bytes: vector<u8>,
-    worker_pubkey_bytes: vector<u8>,
-    proof_of_possession: vector<u8>,
-    name: vector<u8>,
-    description: vector<u8>,
-    image_url: vector<u8>,
-    project_url: vector<u8>,
-    net_address: vector<u8>,
-    p2p_address: vector<u8>,
-    primary_address: vector<u8>,
-    worker_address: vector<u8>,
-    initial_stake_option: Option<Balance<SUI>>,
-    gas_price: u64,
-    commission_rate: u64,
-    is_active_at_genesis: bool,
-    ctx: &mut TxContext,
-): Validator {
-    let mut validator = new_from_metadata(
+    // CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.
+    // Creates a validator - bypassing the proof of possession check and other metadata
+    // validation in the process.
+    // Note: `proof_of_possession` MUST be a valid signature using sui_address and
+    // protocol_pubkey_bytes. To produce a valid PoP, run [fn test_proof_of_possession].
+    #[test_only]
+    public(package) fun new_for_testing(
+        sui_address: address,
+        protocol_pubkey_bytes: vector<u8>,
+        network_pubkey_bytes: vector<u8>,
+        worker_pubkey_bytes: vector<u8>,
+        proof_of_possession: vector<u8>,
+        name: vector<u8>,
+        description: vector<u8>,
+        image_url: vector<u8>,
+        project_url: vector<u8>,
+        net_address: vector<u8>,
+        p2p_address: vector<u8>,
+        primary_address: vector<u8>,
+        worker_address: vector<u8>,
+        initial_stake_option: Option<Balance<BFC>>,
+        gas_price: u64,
+        commission_rate: u64,
+        is_active_at_genesis: bool,
+        ctx: &mut TxContext,
+    ): Validator {
+        let mut validator = new_from_metadata(
         new_metadata(
-            sui_address,
-            protocol_pubkey_bytes,
-            network_pubkey_bytes,
-            worker_pubkey_bytes,
-            proof_of_possession,
-            name.to_ascii_string().to_string(),
-            description.to_ascii_string().to_string(),
-            url::new_unsafe_from_bytes(image_url),
-            url::new_unsafe_from_bytes(project_url),
-            net_address.to_ascii_string().to_string(),
-            p2p_address.to_ascii_string().to_string(),
-            primary_address.to_ascii_string().to_string(),
-            worker_address.to_ascii_string().to_string(),
-            bag::new(ctx),
+        sui_address,
+        protocol_pubkey_bytes,
+        network_pubkey_bytes,
+        worker_pubkey_bytes,
+        proof_of_possession,
+        name.to_ascii_string().to_string(),
+        description.to_ascii_string().to_string(),
+        url::new_unsafe_from_bytes(image_url),
+        url::new_unsafe_from_bytes(project_url),
+        net_address.to_ascii_string().to_string(),
+        p2p_address.to_ascii_string().to_string(),
+        primary_address.to_ascii_string().to_string(),
+        worker_address.to_ascii_string().to_string(),
+        bag::new(ctx),
         ),
         gas_price,
         commission_rate,
         ctx,
-    );
-
-    // Add the validator's starting stake to the staking pool if there exists one.
-    initial_stake_option.do!(|balance| {
-        request_add_stake_at_genesis(
-            &mut validator,
-            balance,
-            sui_address, // give the stake to the validator
-            ctx,
         );
-    });
+
+        // Add the validator's starting stake to the staking pool if there exists one.
+        initial_stake_option.do!(|balance| {
+        request_add_stake_at_genesis(
+        &mut validator,
+        balance,
+        sui_address, // give the stake to the validator
+        ctx,
+        );
+        });
 
         if (is_active_at_genesis) {
-            activate(&mut validator, 0);
-            activate_stable(&mut validator, 0);
+        activate(&mut validator, 0);
+        activate_stable(&mut validator, 0);
         };
 
         validator
     }
 
-    public(package) fun rate_vec_map() : VecMap<ascii::String, u64> {
+    public(package) fun rate_vec_map(): VecMap<ascii::String, u64> {
         let mut rate_map = vec_map::empty<ascii::String, u64>();
         rate_map.insert(type_name::into_string(type_name::get<BUSD>()), 1000000000);
         rate_map.insert(type_name::into_string(type_name::get<BARS>()), 1000000000);

@@ -16,8 +16,12 @@ use sui_system::sui_system::{Self, SuiSystemState};
 use sui_system::sui_system_state_inner;
 use sui_system::validator::Validator;
 use sui_system::validator_builder::{Self, ValidatorBuilder};
+use bfc_system::bfc_system_tests::create_sui_system_state_for_testing_v2 as create_bfc_system_state;
 
 const MIST_PER_SUI: u64 = 1_000_000_000;
+
+const BFC_AMOUNT: u64 = 1_000_000_000_000_000_000;
+
 
 // === Test Runner Builder ===
 
@@ -102,10 +106,12 @@ public fun build(builder: TestRunnerBuilder): TestRunner {
             .build(scenario.ctx()),
     );
     let genesis_validator_addresses = validators.map_ref!(|v| v.sui_address());
+    let bfc_system_address = create_bfc_system_state(scenario.ctx(), BFC_AMOUNT);
 
     // create sui system state
     sui_system::create(
         object::new(scenario.ctx()), // it doesn't matter what ID sui system state has in tests
+        object::create_uid_from_address_for_test(bfc_system_address),
         validators,
         balance::create_for_testing<BFC>(storage_fund_amount.destroy_or!(0) * MIST_PER_SUI), // storage_fund
         protocol_version.destroy_or!(1), // protocol version
