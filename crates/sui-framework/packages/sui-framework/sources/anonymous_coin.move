@@ -203,13 +203,19 @@ module sui::anonymous_coin {
     /// Take a `Coin` worth of `value` from `Balance`.
     /// Aborts if `value > balance.value`
     public fun take<T>(
-        balance: &mut Anonymous_Balance<T>, value: u64, ctx: &mut TxContext,
+        balance: &mut Anonymous_Balance<T>,
+        value1: vector<u8>,
+        value2: vector<u8>,
+        ctx: &mut TxContext,
     ): Anonymous_Coin<T> {
+        let balance = create_by_value1_and_value2(value1, value2);
         Anonymous_Coin {
             id: object::new(ctx),
-            balance: balance.split(value)
+            balance: balance
         }
     }
+
+
 
     /// Put a `Coin<T>` to the `Balance<T>`.
     public fun put<T>(balance: &mut Anonymous_Balance<T>, coin: Anonymous_Coin<T>) {
@@ -233,6 +239,18 @@ module sui::anonymous_coin {
     ): Anonymous_Coin<T> {
         take(&mut self.balance, split_amount, ctx)
     }
+
+
+    public fun split_anonymous<T>(
+        self: &mut Anonymous_Coin<T>,
+        value1: vector<u8>,
+        value2: vector<u8>,
+        ctx: &mut TxContext
+    ): Anonymous_Coin<T> {
+        take(&mut self.balance, value1, value2, ctx)
+    }
+
+
 
     public fun compare<T>(self: &mut Anonymous_Coin<T>, amount: u64) : u8 {
         self.balance.compare(amount)

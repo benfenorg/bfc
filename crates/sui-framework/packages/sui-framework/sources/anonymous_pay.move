@@ -21,6 +21,17 @@ public entry fun split<T>(coin: &mut Anonymous_Coin<T>, split_amount: u64, ctx: 
     keep(coin.split(split_amount, ctx), ctx)
 }
 
+/// Split coin `self` to two coins, one with balance `split_amount`,
+/// and the remaining balance is left is `self`.
+public entry fun split_anonymous<T>(
+    coin: &mut Anonymous_Coin<T>,
+    value1: vector<u8>,
+    value2: vector<u8>,
+    ctx: &mut TxContext) {
+    keep(coin.split_anonymous(value1, value2, ctx), ctx)
+}
+
+
 /// Split coin `self` into multiple coins, each with balance specified
 /// in `split_amounts`. Remaining balance is left in `self`.
 public entry fun split_vec<T>(self: &mut Anonymous_Coin<T>, split_amounts: vector<u64>, ctx: &mut TxContext) {
@@ -43,8 +54,21 @@ public entry fun split_and_transfer<T>(
     recipient: address,
     ctx: &mut TxContext,
 ) {
-    transfer::public_transfer(c.split(amount, ctx), recipient)
+    //todo : add abort
+    //transfer::public_transfer(c.split(amount, ctx), recipient)
 }
+
+public entry fun split_and_transfer_anonymous<T>(
+    c: &mut Anonymous_Coin<T>,
+    value1: vector<u8>,
+    value2: vector<u8>,
+    recipient: address,
+    ctx: &mut TxContext,
+) {
+    transfer::public_transfer(c.split_anonymous(value1, value2, ctx), recipient)
+}
+
+
 
 /// Join `coin` into `self`. Re-exports `coin::join` function.
 /// Deprecated: you should call `coin.join(other)` directly.

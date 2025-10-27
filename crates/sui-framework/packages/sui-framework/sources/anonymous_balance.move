@@ -68,6 +68,25 @@ public fun create_by_value<T>(value: u64): Anonymous_Balance<T> {
     }
 }
 
+public fun create_by_value1_and_value2<T>(value1: vector<u8>, value2: vector<u8>): Anonymous_Balance<T> {
+    let mut encode_data = b"";
+    let balance_type = BALANCE_TYPE_SHARING;
+    let  version = 0;
+
+
+    vector::append(&mut encode_data, value1);
+    vector::append(&mut encode_data, b",");
+    vector::append(&mut encode_data, value2);
+
+    Anonymous_Balance {
+        value1: value1,
+        value2: value2,
+        encode_data,
+        balance_type: balance_type,
+        version: version
+    }
+}
+
 public fun value1<T>(self: &Anonymous_Balance<T>): vector<u8> {
     self.value1
 }
