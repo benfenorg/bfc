@@ -1124,6 +1124,11 @@ pub fn all_natives(silent: bool, protocol_config: &ProtocolConfig) -> NativeFunc
         ),
         (
             "hfe_ops",
+            "hfe_ops_compare_value1_and_value2",
+            make_native!(hfe_ops::hfe_ops_compare_value1_and_value2),
+        ),
+        (
+            "hfe_ops",
             "hfe_ops_encode_data",
             make_native!(hfe_ops::hfe_ops_encode_data),
         ),

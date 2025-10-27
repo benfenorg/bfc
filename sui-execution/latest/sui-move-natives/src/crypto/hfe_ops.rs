@@ -434,6 +434,111 @@ pub fn hfe_ops_encode_data(context: &mut NativeContext,
     }
 }
 
+pub fn hfe_ops_compare_value1_and_value2(
+    context: &mut NativeContext,
+    ty_args: Vec<Type>,
+    mut args: VecDeque<Value>,
+) -> PartialVMResult<NativeResult>{
+    let anonymous_compute_cost_params = &context
+        .extensions()
+        .get::<NativesCostTable>()
+        .anonymous_compute_cost_params
+        .clone();
+    // Charge the base cost for this oper
+    native_charge_gas_early_exit!(
+        context,
+        anonymous_compute_cost_params.anonymous_compute_cost_base
+    );
+
+
+    let cost = context.gas_used();
+
+    let anonymous_privatekey = context
+        .extensions()
+        .get::<NativesCostTable>()
+        .anonymous_privatekey
+        .clone().unwrap_or_default();
+    let enable_anonymous_rpc = &context
+        .extensions()
+        .get::<NativesCostTable>()
+        .enable_anonymous_rpc
+        .clone();
+    let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
+
+    let number4 = pop_arg!(args, Vec<u8>);
+    let number3 = pop_arg!(args, Vec<u8>);
+    let number2 = pop_arg!(args, Vec<u8>);
+    let number1 = pop_arg!(args, Vec<u8>);
+    let num1 = String::from_utf8(number1).unwrap_or_default();
+    let num2 = String::from_utf8(number2).unwrap_or_default();
+    let num3 = String::from_utf8(number3).unwrap_or_default();
+    let num4 = String::from_utf8(number4).unwrap_or_default();
+    if num1.is_empty() || num2.is_empty() || num3.is_empty() || num4.is_empty(){
+        return Ok(NativeResult::err(
+            cost,
+            INVALID_INPUT_ERROR,
+        ));
+    }
+    if *enable_anonymous_rpc == Some(true) {
+        match anonymous_rpc {
+            Some(mut v) => {
+                if v.is_empty() {
+                    return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS));
+                }
+                let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
+                let result = client.compare_value1_and_value2(num1, num2, num3, num4);
+                match result.success {
+                    true => {
+                        let result = result.value1.parse::<u8>();
+                        match result {
+                            Ok(result) => {
+                                Ok(NativeResult::ok(
+                                    cost,
+                                    smallvec![Value::u8(result)],
+                                ))
+                            }
+                            Err(_e) => {
+                                Ok(NativeResult::err(cost, INVALID_SERVER_RESPONSE_ERROR))
+                            }
+                        }
+                    }
+                    false => {
+                        Ok(NativeResult::err(cost, INVALID_SERVER_RESPONSE_ERROR))
+                    }
+                }
+            },
+            None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
+        }
+    } else {
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
+            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
+
+        let new_number1 = recover_value(num1, num2, mask);
+        let new_number2 = recover_value(num3, num4, mask);
+
+        if new_number1.is_err() || new_number2.is_err() {
+            return Ok(NativeResult::err(
+                cost,
+                ARITHMETIC_OVERFLOW_ERROR,
+            ));
+        }
+
+        let value_a = new_number1.unwrap();
+        let value_b = new_number2.unwrap();
+        let comparison = if value_a > value_b {
+            1
+        } else if value_a < value_b {
+            2
+        } else {
+            0
+        };
+        Ok(NativeResult::ok(
+            cost,
+            smallvec![Value::u8(comparison)],
+        ))
+    }
+}
+
 pub fn hfe_ops_compare_value(
     context: &mut NativeContext,
     _ty_args: Vec<Type>,
@@ -779,6 +884,34 @@ impl AnonymousClient {
         });
 
         match self.atto_http_post("bfcx_getAnonymousCompare", params, 3) {
+            Ok(response) => {
+                let result1 = response["result"]["result1"].as_str().unwrap();
+                AnonymousResult {
+                    success: true,
+                    error: None,
+                    value1: result1.to_string(),
+                    value2: "0".to_string(),
+                }
+            },
+            Err(e) => AnonymousResult {
+                success: false,
+                error: Some(e.to_string()),
+                value1: "0".to_string(),
+                value2: "0".to_string(),
+            },
+        }
+    }
+
+    pub fn compare_value1_and_value2(&self, value1: String, value2: String, value3: String, value4: String) -> AnonymousResult  {
+        let params = json!({
+            "value1": value1,
+            "value2": value2,
+            "value3": value3,
+            "value4": value4,
+
+        });
+
+        match self.atto_http_post("bfcx_getAnonymousCompare_value1_and_value2", params, 3) {
             Ok(response) => {
                 let result1 = response["result"]["result1"].as_str().unwrap();
                 AnonymousResult {

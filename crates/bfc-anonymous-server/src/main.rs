@@ -101,6 +101,15 @@ struct AnonymousCompareParams {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+struct AnonymousCompareValue1AndValue2Params {
+    value1: String,
+    value2: String,
+    value3: String,
+    value4: String,
+}
+
+
+#[derive(Debug, Deserialize, Serialize)]
 struct AnonymousSplitValueParams {
     value: u64,
 }
@@ -254,6 +263,7 @@ async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply,
         "bfcx_getAnonymousMinus" => handle_anonymous_minus(request).await,
         "bfcx_getAnonymousMultiply" => handle_anonymous_multiply(request).await,
         "bfcx_getAnonymousCompare" => handle_anonymous_compare(request).await,
+        "bfcx_getAnonymousCompare_value1_and_value2" => handle_anonymous_compare_value1_and_value2(request).await,
         "bfcx_getAnonymousEncodeData" => handle_anonymous_split_to_two_value(request).await,
         "bfcx_getAnonymousRestoreValue" => handle_anonymous_restore_value(request).await,
         "bfcx_getAnonymousRestoreValueArray" => handle_anonymous_restore_value_array(request).await,
@@ -1033,6 +1043,68 @@ async fn handle_anonymous_compare(request: JsonRpcRequest) -> JsonRpcResponse {
                                               Some(serde_json::json!({"error": e.to_string()})))
                     }
                 }
+            }
+            Err(e) => {
+                warn!("Invalid parameters for bfcx_getAnonymousCompare: {}", e);
+                create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+            }
+        },
+        None => {
+            create_error_response(request.id, -32602, "Missing params".to_string(), None)
+        }
+    }
+}
+
+async fn handle_anonymous_compare_value1_and_value2(request: JsonRpcRequest) -> JsonRpcResponse {
+    match request.params {
+        Some(params) => match serde_json::from_value::<AnonymousCompareValue1AndValue2Params>(params) {
+            Ok(compare_params) => {
+                let args_result = Args::try_parse();
+                let mut config_path : Option<String> = None;
+                if args_result.is_ok() {
+                    config_path = Some(args_result.unwrap().config);
+                }
+
+                let mask_secret = match get_mask_secret_from_config(config_path) {
+                    Ok(secret) => secret,
+                    Err(e) => {
+                        warn!("Failed to get mask secret from config: {}", e);
+                        return create_error_response(request.id,
+                                                     -32603,
+                                                     "Internal error: Failed to load configuration".to_string(),
+                                                     Some(serde_json::json!({"error": e.to_string()})));
+                    }
+                };
+
+                let new_value1 = recover_value(compare_params.value1, compare_params.value2, mask_secret);
+                let new_value2 = recover_value(compare_params.value3, compare_params.value4, mask_secret);
+                if new_value1.is_err() || new_value2.is_err() {
+                    warn!("Invalid parameters for bfcx_getAnonymousCompareValue1AndValue2");
+                    return create_error_response(request.id,
+                                          -32602,
+                                          "Invalid params".to_string(),
+                                          Some(serde_json::json!("error: recover failed")));
+                }
+                let value_a = new_value1.unwrap();
+                let value_b = new_value2.unwrap();
+                let comparison = if value_a > value_b {
+                    "1"
+                } else if value_a < value_b {
+                    "2"
+                } else {
+                    "0"
+                };
+                return JsonRpcResponse {
+                    jsonrpc: "2.0".to_string(),
+                    id: request.id,
+                    result: Some(serde_json::json!({
+                                "result1": comparison.to_string(),
+                                "result2": "0".to_string(),
+                                "operation": "anonymous_compare",
+                                "timestamp": chrono::Utc::now().timestamp()
+                            })),
+                    error: None,
+                };
             }
             Err(e) => {
                 warn!("Invalid parameters for bfcx_getAnonymousCompare: {}", e);

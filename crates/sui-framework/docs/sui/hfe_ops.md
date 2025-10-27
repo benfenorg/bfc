@@ -8,6 +8,7 @@ title: Module `sui::hfe_ops`
 -  [Function `hfe_ops_minus`](#sui_hfe_ops_hfe_ops_minus)
 -  [Function `hfe_ops_multiplied`](#sui_hfe_ops_hfe_ops_multiplied)
 -  [Function `hfe_ops_compare_value`](#sui_hfe_ops_hfe_ops_compare_value)
+-  [Function `hfe_ops_compare_value1_and_value2`](#sui_hfe_ops_hfe_ops_compare_value1_and_value2)
 -  [Function `hfe_ops_encode_data`](#sui_hfe_ops_hfe_ops_encode_data)
 -  [Function `hfe_ops_restore_value`](#sui_hfe_ops_hfe_ops_restore_value)
 
@@ -116,6 +117,33 @@ title: Module `sui::hfe_ops`
     input_1: vector&lt;u8&gt;,
     input_2: vector&lt;u8&gt;,
     input_3: u64,
+): u8;
+</code></pre>
+
+
+
+</details>
+
+<a name="sui_hfe_ops_hfe_ops_compare_value1_and_value2"></a>
+
+## Function `hfe_ops_compare_value1_and_value2`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_compare_value1_and_value2">hfe_ops_compare_value1_and_value2</a>(input_1: vector&lt;u8&gt;, input_2: vector&lt;u8&gt;, input_3: vector&lt;u8&gt;, input_4: vector&lt;u8&gt;): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>native</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_compare_value1_and_value2">hfe_ops_compare_value1_and_value2</a>(
+    input_1: vector&lt;u8&gt;,
+    input_2: vector&lt;u8&gt;,
+    input_3: vector&lt;u8&gt;,
+    input_4: vector&lt;u8&gt;,
 ): u8;
 </code></pre>
 

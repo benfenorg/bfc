@@ -27,10 +27,12 @@ tokens and coins. <code>Coin</code> can be described as a secure wrapper around
 -  [Function `balance_mut`](#sui_anonymous_coin_balance_mut)
 -  [Function `from_balance`](#sui_anonymous_coin_from_balance)
 -  [Function `into_balance`](#sui_anonymous_coin_into_balance)
+-  [Function `take_anonymous`](#sui_anonymous_coin_take_anonymous)
 -  [Function `take`](#sui_anonymous_coin_take)
 -  [Function `put`](#sui_anonymous_coin_put)
 -  [Function `join`](#sui_anonymous_coin_join)
 -  [Function `split`](#sui_anonymous_coin_split)
+-  [Function `split_anonymous`](#sui_anonymous_coin_split_anonymous)
 -  [Function `compare`](#sui_anonymous_coin_compare)
 -  [Function `zero`](#sui_anonymous_coin_zero)
 -  [Function `destry_zero`](#sui_anonymous_coin_destry_zero)
@@ -743,6 +745,40 @@ Destruct a Coin wrapper and keep the balance.
 
 </details>
 
+<a name="sui_anonymous_coin_take_anonymous"></a>
+
+## Function `take_anonymous`
+
+Take a <code>Coin</code> worth of <code>value</code> from <code>Balance</code>.
+Aborts if <code>value &gt; <a href="../sui/balance.md#sui_balance">balance</a>.value</code>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_take_anonymous">take_anonymous</a>&lt;T&gt;(<a href="../sui/balance.md#sui_balance">balance</a>: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, value1: vector&lt;u8&gt;, value2: vector&lt;u8&gt;, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_take_anonymous">take_anonymous</a>&lt;T&gt;(
+    <a href="../sui/balance.md#sui_balance">balance</a>: &<b>mut</b> Anonymous_Balance&lt;T&gt;,
+    value1: vector&lt;u8&gt;,
+    value2: vector&lt;u8&gt;,
+    ctx: &<b>mut</b> TxContext,
+): <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt; {
+    <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a> {
+        id: <a href="../sui/object.md#sui_object_new">object::new</a>(ctx),
+        <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_split_anonymous">split_anonymous</a>(value1, value2)
+    }
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="sui_anonymous_coin_take"></a>
 
 ## Function `take`
@@ -848,6 +884,35 @@ and the remaining balance is left is <code>self</code>.
     self: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;, split_amount: u64, ctx: &<b>mut</b> TxContext
 ): <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt; {
     <a href="../sui/anonymous_coin.md#sui_anonymous_coin_take">take</a>(&<b>mut</b> self.<a href="../sui/balance.md#sui_balance">balance</a>, split_amount, ctx)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="sui_anonymous_coin_split_anonymous"></a>
+
+## Function `split_anonymous`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_split_anonymous">split_anonymous</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, value1: vector&lt;u8&gt;, value2: vector&lt;u8&gt;, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_split_anonymous">split_anonymous</a>&lt;T&gt;(
+    self: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;,
+    value1: vector&lt;u8&gt;,
+    value2: vector&lt;u8&gt;,
+    ctx: &<b>mut</b> TxContext
+): <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt; {
+    <a href="../sui/anonymous_coin.md#sui_anonymous_coin_take_anonymous">take_anonymous</a>(&<b>mut</b> self.<a href="../sui/balance.md#sui_balance">balance</a>, value1, value2, ctx)
 }
 </code></pre>
 

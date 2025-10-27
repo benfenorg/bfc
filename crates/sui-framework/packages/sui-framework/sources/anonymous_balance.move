@@ -5,7 +5,8 @@
 /// module to allow balance operations and can be used to implement
 /// custom coins with `Supply` and `Balance`s.
 module sui::anonymous_balance;
-use sui::hfe_ops::{hfe_ops_add, hfe_ops_minus, hfe_ops_encode_data, hfe_ops_restore_value, hfe_ops_compare_value};
+use sui::hfe_ops::{hfe_ops_add, hfe_ops_minus, hfe_ops_encode_data, hfe_ops_restore_value, hfe_ops_compare_value, hfe_ops_compare_value1_and_value2
+};
 
 /// Allows calling `.into_coin()` on a `Balance` to turn it into a coin.
 public use fun sui::anonymous_coin::from_balance as Anonymous_Balance.into_coin;
@@ -190,6 +191,24 @@ public fun split<T>(self: &mut Anonymous_Balance<T>, value: u64): Anonymous_Bala
 
     anonymous_coin_value
 }
+
+/// Split a `Balance` and take a sub balance from it.
+public fun split_anonymous<T>(self: &mut Anonymous_Balance<T>,  value1: vector<u8>,  value2: vector<u8>): Anonymous_Balance<T> {
+    let compare_result: u8 = hfe_ops_compare_value1_and_value2(self.value1, self.value2, value1, value2);
+    assert!(compare_result != DEFAULT_COMPARE_RESULT_LESS_THAN, ENotEnough);
+    let anonymous_coin_value = create_by_value1_and_value2(value1, value2);
+
+    let (val0, val1) = hfe_ops_minus(self.value1, self.value2,
+        anonymous_coin_value.value1, anonymous_coin_value.value2);
+
+    self.value1 = val0;
+    self.value2 = val1;
+
+    self.update_encode_data();
+
+    anonymous_coin_value
+}
+
 
 // Withdraw all balance. After this the remaining balance must be 0.
 // public fun withdraw_all<T>(self: &mut Anonymous_Balance<T>): Anonymous_Balance<T> {

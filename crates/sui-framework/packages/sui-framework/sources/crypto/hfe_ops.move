@@ -28,6 +28,14 @@ public native fun hfe_ops_compare_value(
     input_3: u64,
 ): u8;
 
+
+public native fun hfe_ops_compare_value1_and_value2(
+    input_1: vector<u8>,
+    input_2: vector<u8>,
+    input_3: vector<u8>,
+    input_4: vector<u8>,
+): u8;
+
 public native fun hfe_ops_encode_data(
     value: u64,
 ): (vector<u8>, vector<u8>);

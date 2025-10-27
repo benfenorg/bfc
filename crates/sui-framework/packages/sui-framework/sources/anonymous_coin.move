@@ -12,7 +12,6 @@ module sui::anonymous_coin {
     use sui::deny_list::DenyList;
     use std::type_name;
     use sui::coin::{Coin, Self};
-
     // Allows calling `.split_vec(amounts, ctx)` on `coin`
     public use fun sui::anonymous_pay::split_vec as Anonymous_Coin.split_vec;
 
@@ -202,19 +201,29 @@ module sui::anonymous_coin {
 
     /// Take a `Coin` worth of `value` from `Balance`.
     /// Aborts if `value > balance.value`
-    public fun take<T>(
+    public fun take_anonymous<T>(
         balance: &mut Anonymous_Balance<T>,
         value1: vector<u8>,
         value2: vector<u8>,
         ctx: &mut TxContext,
     ): Anonymous_Coin<T> {
-        let balance = create_by_value1_and_value2(value1, value2);
         Anonymous_Coin {
             id: object::new(ctx),
-            balance: balance
+            balance: balance.split_anonymous(value1, value2)
         }
     }
 
+    /// Take a `Coin` worth of `value` from `Balance`.
+    /// Aborts if `value > balance.value`
+    public fun take<T>(
+        balance: &mut Anonymous_Balance<T>, value: u64, ctx: &mut TxContext,
+    ): Anonymous_Coin<T> {
+
+        Anonymous_Coin {
+            id: object::new(ctx),
+            balance: balance.split(value)
+        }
+    }
 
 
     /// Put a `Coin<T>` to the `Balance<T>`.
@@ -240,14 +249,13 @@ module sui::anonymous_coin {
         take(&mut self.balance, split_amount, ctx)
     }
 
-
     public fun split_anonymous<T>(
         self: &mut Anonymous_Coin<T>,
         value1: vector<u8>,
         value2: vector<u8>,
         ctx: &mut TxContext
     ): Anonymous_Coin<T> {
-        take(&mut self.balance, value1, value2, ctx)
+        take_anonymous(&mut self.balance, value1, value2, ctx)
     }
 
 

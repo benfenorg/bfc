@@ -49,10 +49,10 @@ public entry fun split_vec<T>(self: &mut Anonymous_Coin<T>, split_amounts: vecto
 /// Send `amount` units of `c` to `recipient`
 /// Aborts with `EVALUE` if `amount` is greater than or equal to `amount`
 public entry fun split_and_transfer<T>(
-    c: &mut Anonymous_Coin<T>,
-    amount: u64,
-    recipient: address,
-    ctx: &mut TxContext,
+    _c: &mut Anonymous_Coin<T>,
+    _amount: u64,
+    _recipient: address,
+    _ctx: &mut TxContext,
 ) {
     //should not use this 
     abort 99

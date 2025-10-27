@@ -8,8 +8,10 @@ This module provides handy functionality for wallets and <code>sui::Coin</code> 
 -  [Constants](#@Constants_0)
 -  [Function `keep`](#sui_anonymous_pay_keep)
 -  [Function `split`](#sui_anonymous_pay_split)
+-  [Function `split_anonymous`](#sui_anonymous_pay_split_anonymous)
 -  [Function `split_vec`](#sui_anonymous_pay_split_vec)
 -  [Function `split_and_transfer`](#sui_anonymous_pay_split_and_transfer)
+-  [Function `split_and_transfer_anonymous`](#sui_anonymous_pay_split_and_transfer_anonymous)
 -  [Function `join`](#sui_anonymous_pay_join)
 -  [Function `join_vec`](#sui_anonymous_pay_join_vec)
 -  [Function `join_vec_and_transfer`](#sui_anonymous_pay_join_vec_and_transfer)
@@ -112,6 +114,36 @@ and the remaining balance is left is <code>self</code>.
 
 </details>
 
+<a name="sui_anonymous_pay_split_anonymous"></a>
+
+## Function `split_anonymous`
+
+Split coin <code>self</code> to two coins, one with balance <code>split_amount</code>,
+and the remaining balance is left is <code>self</code>.
+
+
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_pay.md#sui_anonymous_pay_split_anonymous">split_anonymous</a>&lt;T&gt;(<a href="../sui/coin.md#sui_coin">coin</a>: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, value1: vector&lt;u8&gt;, value2: vector&lt;u8&gt;, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_pay.md#sui_anonymous_pay_split_anonymous">split_anonymous</a>&lt;T&gt;(
+    <a href="../sui/coin.md#sui_coin">coin</a>: &<b>mut</b> Anonymous_Coin&lt;T&gt;,
+    value1: vector&lt;u8&gt;,
+    value2: vector&lt;u8&gt;,
+    ctx: &<b>mut</b> TxContext) {
+    <a href="../sui/anonymous_pay.md#sui_anonymous_pay_keep">keep</a>(<a href="../sui/coin.md#sui_coin">coin</a>.<a href="../sui/anonymous_pay.md#sui_anonymous_pay_split_anonymous">split_anonymous</a>(value1, value2, ctx), ctx)
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="sui_anonymous_pay_split_vec"></a>
 
 ## Function `split_vec`
@@ -154,7 +186,7 @@ Send <code>amount</code> units of <code>c</code> to <code>recipient</code>
 Aborts with <code>EVALUE</code> if <code>amount</code> is greater than or equal to <code>amount</code>
 
 
-<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_pay.md#sui_anonymous_pay_split_and_transfer">split_and_transfer</a>&lt;T&gt;(c: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, amount: u64, recipient: <b>address</b>, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_pay.md#sui_anonymous_pay_split_and_transfer">split_and_transfer</a>&lt;T&gt;(_c: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, _amount: u64, _recipient: <b>address</b>, _ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -164,12 +196,45 @@ Aborts with <code>EVALUE</code> if <code>amount</code> is greater than or equal 
 
 
 <pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_pay.md#sui_anonymous_pay_split_and_transfer">split_and_transfer</a>&lt;T&gt;(
+    _c: &<b>mut</b> Anonymous_Coin&lt;T&gt;,
+    _amount: u64,
+    _recipient: <b>address</b>,
+    _ctx: &<b>mut</b> TxContext,
+) {
+    //should not <b>use</b> this
+    <b>abort</b> 99
+    //todo : add <b>abort</b>
+    //<a href="../sui/transfer.md#sui_transfer_public_transfer">transfer::public_transfer</a>(c.<a href="../sui/anonymous_pay.md#sui_anonymous_pay_split">split</a>(amount, ctx), recipient)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="sui_anonymous_pay_split_and_transfer_anonymous"></a>
+
+## Function `split_and_transfer_anonymous`
+
+
+
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_pay.md#sui_anonymous_pay_split_and_transfer_anonymous">split_and_transfer_anonymous</a>&lt;T&gt;(c: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, value1: vector&lt;u8&gt;, value2: vector&lt;u8&gt;, recipient: <b>address</b>, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_pay.md#sui_anonymous_pay_split_and_transfer_anonymous">split_and_transfer_anonymous</a>&lt;T&gt;(
     c: &<b>mut</b> Anonymous_Coin&lt;T&gt;,
-    amount: u64,
+    value1: vector&lt;u8&gt;,
+    value2: vector&lt;u8&gt;,
     recipient: <b>address</b>,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <a href="../sui/transfer.md#sui_transfer_public_transfer">transfer::public_transfer</a>(c.<a href="../sui/anonymous_pay.md#sui_anonymous_pay_split">split</a>(amount, ctx), recipient)
+    <a href="../sui/transfer.md#sui_transfer_public_transfer">transfer::public_transfer</a>(c.<a href="../sui/anonymous_pay.md#sui_anonymous_pay_split_anonymous">split_anonymous</a>(value1, value2, ctx), recipient)
 }
 </code></pre>
 
