@@ -182,6 +182,35 @@ impl AnonymousClient {
         }
     }
 
+
+    pub async fn test_compare_value1_value2(&self, value1: String, value2: String, value3: String, value4: String) -> TestResult {
+        let params = json!({
+            "value1": value1,
+            "value2": value2,
+            "value3": value3,
+            "value4": value4,
+        });
+
+        match self
+            .send_rpc_request("bfcx_getAnonymousCompare_value1_and_value2", params, 4)
+            .await
+        {
+            Ok(response) => TestResult {
+                method: "bfcx_getAnonymousCompare_value1_and_value2".to_string(),
+                success: true,
+                response: Some(response),
+                error: None,
+            },
+            Err(e) => TestResult {
+                method: "bfcx_getAnonymousCompare_value1_and_value2".to_string(),
+                success: false,
+                response: None,
+                error: Some(e.to_string()),
+            },
+        }
+    }
+
+
     pub async fn test_restore_value_array(
         &self,
         value1: Vec<u8>,
@@ -530,6 +559,54 @@ mod tests {
         let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
         let split_result_0 = client.test_split(20).await.response.unwrap();
         info!("Split 20 Result: {:?}", split_result_0);
+
+    }
+
+
+    #[tokio::test]
+    async fn test_client_compare_value1_and_value2() {
+        let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
+
+        let server = AnonymousServer::new(None);
+        let _server_handle = tokio::spawn(async move {
+            if let Err(e) = server.start(addr).await {
+                eprintln!("Server error: {:?}", e);
+            }
+        });
+
+        let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
+        let split_result_0 = client.test_split(20).await.response.unwrap();
+        info!("Split 20 Result: {:?}", split_result_0);
+
+        let split_result_1 = client.test_split(10).await.response.unwrap();
+        info!("Split 20 Result: {:?}", split_result_1);
+
+
+        //test 20 > 10
+        let compare_result = client
+            .test_compare_value1_value2(
+                split_result_0["result"]["result1"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+                split_result_0["result"]["result2"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+                split_result_1["result"]["result1"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+                split_result_1["result"]["result2"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned()
+            )
+            .await
+            .response
+            .unwrap();
+        info!("Compare Result: {:?}", compare_result);
+
 
     }
 
