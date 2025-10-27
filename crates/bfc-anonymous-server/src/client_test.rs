@@ -517,6 +517,23 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_client_encode_data() {
+        let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
+
+        let server = AnonymousServer::new(None);
+        let _server_handle = tokio::spawn(async move {
+            if let Err(e) = server.start(addr).await {
+                eprintln!("Server error: {:?}", e);
+            }
+        });
+
+        let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
+        let split_result_0 = client.test_split(20).await.response.unwrap();
+        info!("Split 20 Result: {:?}", split_result_0);
+
+    }
+
+    #[tokio::test]
     async fn test_client_without_server() {
         let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
         assert_eq!(client.base_url, "http://localhost:9010");

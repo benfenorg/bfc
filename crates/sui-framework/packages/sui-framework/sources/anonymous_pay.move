@@ -54,6 +54,8 @@ public entry fun split_and_transfer<T>(
     recipient: address,
     ctx: &mut TxContext,
 ) {
+    //should not use this 
+    abort 99
     //todo : add abort
     //transfer::public_transfer(c.split(amount, ctx), recipient)
 }
