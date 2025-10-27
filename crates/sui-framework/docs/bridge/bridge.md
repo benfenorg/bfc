@@ -1707,6 +1707,15 @@ title: Module `bridge::bridge`
 
 
 
+<a name="bridge_bridge_EDefiStakeAmountNotEnough"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_EDefiStakeAmountNotEnough">EDefiStakeAmountNotEnough</a>: u64 = 66;
+</code></pre>
+
+
+
 <a name="bridge_bridge_EDefiUnstakeAmountNotEnough"></a>
 
 
@@ -2698,7 +2707,11 @@ title: Module `bridge::bridge`
     <b>let</b> (inner, bridge_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
     <b>assert</b>!(<a href="../bridge/defi_protocols.md#bridge_defi_protocols_is_valid_protocol">defi_protocols::is_valid_protocol</a>(bridge_id, protocol_type, protocol_version, protocol_token_id, target_chain), <a href="../bridge/bridge.md#bridge_bridge_EDefiProtocolConfigNotFound">EDefiProtocolConfigNotFound</a>);
     <b>let</b> token_amount = token.balance().value();
-    <b>assert</b>!(token_amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
+    <b>if</b> (inner.chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>()) {
+        <b>assert</b>!(token_amount &gt;= 100 * 1_000_000_000, <a href="../bridge/bridge.md#bridge_bridge_EDefiStakeAmountNotEnough">EDefiStakeAmountNotEnough</a>);
+    } <b>else</b> {
+        <b>assert</b>!(token_amount &gt;= 1000, <a href="../bridge/bridge.md#bridge_bridge_EDefiStakeAmountNotEnough">EDefiStakeAmountNotEnough</a>);
+    };
     // 检查质押金额是否超过协议限制
     <b>let</b> protocol_info = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_get_protocol_info">defi_protocols::get_protocol_info</a>(bridge_id, protocol_type, protocol_version, protocol_token_id, target_chain);
     <b>assert</b>!(token_amount &lt;= <a href="../bridge/defi_protocols.md#bridge_defi_protocols_limit_stake_amount">defi_protocols::limit_stake_amount</a>(&protocol_info), <a href="../bridge/bridge.md#bridge_bridge_ETransferLimit">ETransferLimit</a>);
