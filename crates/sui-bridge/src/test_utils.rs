@@ -160,6 +160,7 @@ pub fn get_test_sui_to_eth_defi_bridge_action(
     protocol_version: Option<u64>,
     protocol_token_id: Option<u64>,
     action_type: Option<u8>,
+    principal_amount: Option<u64>,
 ) -> BridgeAction {
     BridgeAction::SuiToEthDefiBridgeAction(SuiToEthDefiBridgeAction {
         sui_tx_digest: sui_tx_digest.unwrap_or_else(TransactionDigest::random),
@@ -176,6 +177,7 @@ pub fn get_test_sui_to_eth_defi_bridge_action(
             protocol_version: protocol_version.unwrap_or(1),
             protocol_token_id: protocol_token_id.unwrap_or(5),
             action_type: action_type.unwrap_or(0),
+            principal_amount: principal_amount.unwrap_or(1000_000),
         },
     })
 }

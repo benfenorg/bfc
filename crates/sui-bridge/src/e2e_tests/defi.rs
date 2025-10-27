@@ -159,6 +159,7 @@ async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
         ],
     );
     let pt = builder.finish();
+    info!("bbking110 pt: {:?}", pt);
     let gas = bridge_test_cluster.test_cluster.inner
         .wallet
         .get_one_gas_object_owned_by_address(address)
@@ -176,6 +177,7 @@ async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
 
     // Step 7: Sign and execute the DeFi stake transaction
     let tx = bridge_test_cluster.test_cluster.inner.wallet.sign_transaction(&tx_data);
+    info!("bbking111 tx: {:?}", tx);
     let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
     let tx_response = http_client
         .execute_transaction_block(
@@ -185,7 +187,7 @@ async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
             Some(ExecuteTransactionRequestType::WaitForLocalExecution),
         )
         .await?;
-
+    info!("bbking112 tx_response: {:?}", tx_response);
     // Step 8: Verify transaction execution
     let effects = tx_response.effects.as_ref().unwrap();
     let defi_stake_succeeded = match effects.status() {
@@ -227,6 +229,7 @@ async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
             if let Ok(parsed_event) = bcs::from_bytes::<crate::events::MoveDefiTransferOutEvent>(&event.bcs.bytes()) {
                 event_seq_num = parsed_event.seq_num;
                 amount_after_fee=parsed_event.amount_after_fee;
+                info!("bbking113 parsed_event: {:?}", parsed_event);
             }
             break;
         }
@@ -830,7 +833,7 @@ async fn test_bridge_defi_stake_and_unstake_revoke_twice_e2e() -> Result<(), any
         .await;
 
     // Step 5: Setup DeFi staking parameters
-    let target_chain = 12u8; // ETH Custom chain (matches defi_protocols::initial_defi_protocol)
+    let target_chain = 12u8; // ETH Custom chain (matches`` defi_protocols::initial_defi_protocol)
     let protocol_type = 1u64; // AAVE protocol type
     let protocol_version = 3u64; // Version 3
     let protocol_token_id = 3u64; // USDC token ID for DeFi protocol

@@ -607,6 +607,11 @@ title: Module `bridge::bridge`
 </dt>
 <dd>
 </dd>
+<dt>
+<code>principal_amount: u64</code>
+</dt>
+<dd>
+</dd>
 </dl>
 
 
@@ -1734,6 +1739,15 @@ title: Module `bridge::bridge`
 
 
 
+<a name="bridge_bridge_EDefiUnstakePrincipalNotEnough"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_EDefiUnstakePrincipalNotEnough">EDefiUnstakePrincipalNotEnough</a>: u64 = 67;
+</code></pre>
+
+
+
 <a name="bridge_bridge_EDuplicateRefund"></a>
 
 
@@ -2563,7 +2577,8 @@ title: Module `bridge::bridge`
         protocol_type,
         protocol_version,
         protocol_token_id,
-        <a href="../bridge/bridge.md#bridge_bridge_UNSTAKE">UNSTAKE</a>
+        <a href="../bridge/bridge.md#bridge_bridge_UNSTAKE">UNSTAKE</a>,
+        principal
     );
     // Store pending <a href="../bridge/bridge.md#bridge_bridge">bridge</a> request
     inner.token_transfer_records.push_back(
@@ -2587,6 +2602,7 @@ title: Module `bridge::bridge`
             protocol_version: protocol_version,
             protocol_token_id: protocol_token_id,
             action_type: <a href="../bridge/bridge.md#bridge_bridge_UNSTAKE">UNSTAKE</a>,
+            principal_amount: principal,
         },
     );
 }
@@ -2736,7 +2752,8 @@ title: Module `bridge::bridge`
         protocol_type,
         protocol_version,
         protocol_token_id,
-        <a href="../bridge/bridge.md#bridge_bridge_STAKE">STAKE</a>
+        <a href="../bridge/bridge.md#bridge_bridge_STAKE">STAKE</a>,
+        after_fee_amount
     );
     bfc_system_state.burn_stable(token, ctx);
     inner.token_transfer_records.push_back(
@@ -2760,6 +2777,7 @@ title: Module `bridge::bridge`
             protocol_version,
             protocol_token_id: protocol_token_id,
             action_type: <a href="../bridge/bridge.md#bridge_bridge_STAKE">STAKE</a>,
+            principal_amount: after_fee_amount,
         },
     );
 }
@@ -5367,7 +5385,7 @@ title: Module `bridge::bridge`
         <b>let</b> fee_coin=bfc_system_state.mint_stable&lt;BUSD&gt;(fee,cap, ctx);
         <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
     };
-    inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_del">defi_holders_del</a>(owner, defi_protocol_key, principal, 0);
+    <b>assert</b>!(inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_del">defi_holders_del</a>(owner, defi_protocol_key, principal, 0), <a href="../bridge/bridge.md#bridge_bridge_EDefiUnstakePrincipalNotEnough">EDefiUnstakePrincipalNotEnough</a>);
     inner.token_transfer_records[key].claimed = <b>true</b>;
     emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferClaimed">TokenTransferClaimed</a> { message_key: key });
     emit(<a href="../bridge/bridge.md#bridge_bridge_DefiTokensUnstakeEvent">DefiTokensUnstakeEvent</a> {

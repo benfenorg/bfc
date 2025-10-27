@@ -570,6 +570,11 @@ title: Module `bridge::message`
 </dt>
 <dd>
 </dd>
+<dt>
+<code>principal_amount: u64</code>
+</dt>
+<dd>
+</dd>
 </dl>
 
 
@@ -648,6 +653,11 @@ title: Module `bridge::message`
 </dd>
 <dt>
 <code>lp_token_amount: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>principal_amount: u64</code>
 </dt>
 <dd>
 </dd>
@@ -3553,7 +3563,7 @@ Update Sui token message
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_defi_transfer_in_message">create_defi_transfer_in_message</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8, <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64, benfen_address: vector&lt;u8&gt;, target_chain: u8, <a href="../bridge/message.md#bridge_message_amount">amount</a>: u64, tx_hash: vector&lt;u8&gt;, event_idx: u16, fast_path_selector: u8, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, original_seq_num: u64, action_type: u8, lp_token_amount: u64): <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_defi_transfer_in_message">create_defi_transfer_in_message</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8, <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64, benfen_address: vector&lt;u8&gt;, target_chain: u8, <a href="../bridge/message.md#bridge_message_amount">amount</a>: u64, tx_hash: vector&lt;u8&gt;, event_idx: u16, fast_path_selector: u8, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, original_seq_num: u64, action_type: u8, lp_token_amount: u64, principal_amount: u64): <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>
 </code></pre>
 
 
@@ -3577,6 +3587,7 @@ Update Sui token message
     original_seq_num: u64,
     action_type: u8,
     lp_token_amount:u64,
+    principal_amount: u64,
 ): <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>{
     <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>);
     <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(target_chain);
@@ -3598,6 +3609,7 @@ Update Sui token message
     <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&original_seq_num)));
     <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back(action_type);
     <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&lp_token_amount)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&principal_amount)));
     <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a> {
         <a href="../bridge/message.md#bridge_message_message_type">message_type</a>: <a href="../bridge/message_types.md#bridge_message_types_defi">message_types::defi</a>(),
         <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
@@ -3618,7 +3630,7 @@ Update Sui token message
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_defi_transfer_out_message">create_defi_transfer_out_message</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8, <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64, sender_address: vector&lt;u8&gt;, target_chain: u8, <a href="../bridge/message.md#bridge_message_amount">amount</a>: u64, tx_hash: vector&lt;u8&gt;, event_idx: u16, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, action_type: u8): <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_defi_transfer_out_message">create_defi_transfer_out_message</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8, <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64, sender_address: vector&lt;u8&gt;, target_chain: u8, <a href="../bridge/message.md#bridge_message_amount">amount</a>: u64, tx_hash: vector&lt;u8&gt;, event_idx: u16, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, action_type: u8, principal_amount: u64): <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>
 </code></pre>
 
 
@@ -3639,6 +3651,7 @@ Update Sui token message
     protocol_version: u64,
     protocol_token_id: u64,
     action_type: u8,
+    principal_amount: u64,
 ): <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>{
     <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>);
     <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(target_chain);
@@ -3657,6 +3670,8 @@ Update Sui token message
     <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&protocol_version)));
     <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&protocol_token_id)));
     <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back(action_type);
+    //principal <a href="../bridge/message.md#bridge_message_amount">amount</a>
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&principal_amount)));
     <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a> {
         <a href="../bridge/message.md#bridge_message_message_type">message_type</a>: <a href="../bridge/message_types.md#bridge_message_types_defi">message_types::defi</a>(),
         <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
@@ -3701,6 +3716,7 @@ Update Sui token message
     <b>let</b> action_type = bcs.peel_u8();
     <b>let</b> lp_token_amount = <a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
     <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(target_chain);
+    <b>let</b> principal_amount = <a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
     <b>assert</b>!(bcs.into_remainder_bytes().is_empty(), <a href="../bridge/message.md#bridge_message_ETrailingBytes">ETrailingBytes</a>);
     <a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a> {
         sender_address,
@@ -3715,6 +3731,7 @@ Update Sui token message
         original_seq_num,
         action_type,
         lp_token_amount,
+        principal_amount,
     }
 }
 </code></pre>
@@ -3750,6 +3767,7 @@ Update Sui token message
     <b>let</b> protocol_token_id = <a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
     <b>let</b> action_type = bcs.peel_u8();
     <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(target_chain);
+    <b>let</b> principal_amount = <a href="../bridge/message.md#bridge_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> bcs);
     <b>assert</b>!(bcs.into_remainder_bytes().is_empty(), <a href="../bridge/message.md#bridge_message_ETrailingBytes">ETrailingBytes</a>);
     <a href="../bridge/message.md#bridge_message_DefiTransferOutPayload">DefiTransferOutPayload</a> {
         sender_address,
@@ -3760,7 +3778,8 @@ Update Sui token message
         protocol_type,
         protocol_version,
         protocol_token_id,
-        action_type
+        action_type,
+        principal_amount
     }
 }
 </code></pre>
