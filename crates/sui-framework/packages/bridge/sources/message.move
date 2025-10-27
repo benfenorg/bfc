@@ -108,6 +108,7 @@ module bridge::message {
         protocol_version: u64,
         protocol_token_id: u64,
         action_type: u8, // 0:stake, 1:unstake
+        principal_amount: u64,
     }
 
     public struct DefiTransferInPayload has drop {
@@ -123,6 +124,7 @@ module bridge::message {
         original_seq_num: u64,
         action_type: u8, // 0:stake, 1:unstake
         lp_token_amount: u64,
+        principal_amount: u64,
     }
 
     public struct TokenTransferInPayload has drop {
@@ -1297,6 +1299,7 @@ module bridge::message {
         original_seq_num: u64,
         action_type: u8,
         lp_token_amount:u64,
+        principal_amount: u64,
     ): BridgeMessage{
         chain_ids::assert_valid_chain_id(source_chain);
         chain_ids::assert_valid_chain_id(target_chain);
@@ -1321,6 +1324,7 @@ module bridge::message {
         payload.append(reverse_bytes(bcs::to_bytes(&original_seq_num)));
         payload.push_back(action_type);
         payload.append(reverse_bytes(bcs::to_bytes(&lp_token_amount)));
+        payload.append(reverse_bytes(bcs::to_bytes(&principal_amount)));
         BridgeMessage {
             message_type: message_types::defi(),
             message_version: CURRENT_MESSAGE_VERSION,
@@ -1342,6 +1346,7 @@ module bridge::message {
         protocol_version: u64,
         protocol_token_id: u64,
         action_type: u8,
+        principal_amount: u64,
     ): BridgeMessage{
         chain_ids::assert_valid_chain_id(source_chain);
         chain_ids::assert_valid_chain_id(target_chain);
@@ -1363,7 +1368,8 @@ module bridge::message {
         payload.append(reverse_bytes(bcs::to_bytes(&protocol_version)));
         payload.append(reverse_bytes(bcs::to_bytes(&protocol_token_id)));
         payload.push_back(action_type);
-
+        //principal amount
+        payload.append(reverse_bytes(bcs::to_bytes(&principal_amount)));
         BridgeMessage {
             message_type: message_types::defi(),
             message_version: CURRENT_MESSAGE_VERSION,
@@ -1388,6 +1394,7 @@ module bridge::message {
         let action_type = bcs.peel_u8();
         let lp_token_amount = peel_u64_be(&mut bcs);
         chain_ids::assert_valid_chain_id(target_chain);
+        let principal_amount = peel_u64_be(&mut bcs);
         assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
 
         DefiTransferInPayload {
@@ -1403,6 +1410,7 @@ module bridge::message {
             original_seq_num,
             action_type,
             lp_token_amount,
+            principal_amount,
         }
     }
 
@@ -1418,6 +1426,7 @@ module bridge::message {
         let protocol_token_id = peel_u64_be(&mut bcs);
         let action_type = bcs.peel_u8();
         chain_ids::assert_valid_chain_id(target_chain);
+        let principal_amount = peel_u64_be(&mut bcs);
         assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
 
         DefiTransferOutPayload {
@@ -1429,7 +1438,8 @@ module bridge::message {
             protocol_type,
             protocol_version,
             protocol_token_id,
-            action_type
+            action_type,
+            principal_amount
         }
     }
 
@@ -2004,6 +2014,7 @@ module bridge::message {
         protocol_version: u64,
         protocol_token_id: u64,
         action_type: u8,
+        principal_amount: u64,
     ): DefiTransferOutPayload {
         DefiTransferOutPayload {
             sender_address,
@@ -2015,6 +2026,7 @@ module bridge::message {
             protocol_version,
             protocol_token_id,
             action_type,
+            principal_amount,
         }
     }
 
@@ -2032,6 +2044,7 @@ module bridge::message {
         original_seq_num: u64,
         action_type: u8, // 0:stake, 1:unstake
         lp_token_amount:u64,
+        principal_amount: u64,
     ): DefiTransferInPayload {
         DefiTransferInPayload {
             sender_address,
@@ -2046,6 +2059,7 @@ module bridge::message {
             original_seq_num,
             action_type,
             lp_token_amount,
+            principal_amount,
         }
     }
 

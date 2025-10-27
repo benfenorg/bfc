@@ -1937,7 +1937,8 @@ fun test_defi_stake_and_approve_defi_transfer_out_full_flow() {
         protocol_type,
         protocol_version,
         protocol_token_id,
-        STAKE
+        STAKE,
+        amount_after_fee/1000
     );
 
     // Create signatures while we still have access to the env
@@ -2188,7 +2189,8 @@ fun test_defi_stake_success() {
         protocol_token_id,
         0u64,
         STAKE,
-        100
+        100,
+        amount
     );
 
     // Create signatures
@@ -2254,7 +2256,8 @@ fun test_defi_stake_success_bridge_paused() {
         protocol_token_id,
         0u64,
         STAKE,
-        100
+        100,
+        amount
     );
 
     // Create signatures
@@ -2301,7 +2304,8 @@ fun test_defi_stake_success_multiple_stakes_same_user() {
         protocol_token_id,
         0u64,
         STAKE,
-        100
+        100,
+        amount1
     );
 
     let signatures1 = sign_message_with(&env, message1, vector[0, 1, 2]);
@@ -2328,7 +2332,8 @@ fun test_defi_stake_success_multiple_stakes_same_user() {
         protocol_token_id,
         0u64,
         STAKE,
-        100
+        100,
+        amount2
     );
 
     let signatures2 = sign_message_with(&env, message2, vector[0, 1, 2]);
@@ -2388,7 +2393,8 @@ fun test_defi_stake_success_different_users_protocols() {
         protocol_token_id1,
         0u64,
         STAKE,
-        100
+        100,
+        amount1
     );
 
     let signatures1 = sign_message_with(&env, message1, vector[0, 1, 2]);
@@ -2419,7 +2425,8 @@ fun test_defi_stake_success_different_users_protocols() {
         protocol_token_id2,
         0u64,
         STAKE,
-        100
+        100,
+        amount2
     );
 
     let signatures2 = sign_message_with(&env, message2, vector[0, 1, 2]);
@@ -2561,7 +2568,8 @@ fun test_defi_stake_complete_flow() {
         protocol_type,
         protocol_version,
         protocol_token_id,
-        STAKE
+        STAKE,
+        amount_after_fee / 1000,
     );
 
     // Create signatures for the defi transfer out message
@@ -2593,7 +2601,8 @@ fun test_defi_stake_complete_flow() {
         protocol_token_id,
         lp_token_amount,
         STAKE, // action type
-        bridge_seq_num // original sequence number from sui
+        bridge_seq_num, // original sequence number from sui
+        amount_after_fee
     );
 
     // Create signatures for the defi transfer in message
@@ -2659,7 +2668,8 @@ fun test_defi_unstake() {
         protocol_token_id,
         0u64,
         STAKE,
-        lp_token_amount
+        lp_token_amount,
+        amount
     );
 
     // Create signatures
@@ -2760,7 +2770,8 @@ fun test_defi_unstake_gt_stake_amount() {
         protocol_token_id,
         0u64,
         STAKE,
-        lp_token_amount
+        lp_token_amount,
+        amount
     );
 
     // Create signatures
@@ -2840,7 +2851,8 @@ fun test_defi_unstake_and_approve_defi_transfer_out(){
         protocol_token_id,
         0u64,
         STAKE,
-        lp_token_amount
+        lp_token_amount,
+        amount
     );
 
     // Create signatures
@@ -2966,7 +2978,8 @@ fun test_defi_unstake_limit_error(){
         protocol_token_id,
         0u64,
         STAKE,
-        lp_token_amount
+        lp_token_amount,
+        amount
     );
 
     // Create signatures
@@ -3046,7 +3059,8 @@ fun test_defi_unstake_gt_lp_amount(){
         protocol_token_id,
         0u64,
         STAKE,
-        lp_token_amount
+        lp_token_amount,
+        amount
     );
 
     // Create signatures
@@ -3126,7 +3140,8 @@ fun test_defi_unstake_and_approve_defi_transfer_in(){
         protocol_token_id,
         0u64,
         STAKE,
-        lp_token_amount
+        lp_token_amount,
+        amount
     );
 
     // Create signatures
@@ -3207,7 +3222,8 @@ fun test_defi_unstake_and_approve_defi_transfer_in(){
         protocol_token_id,
         0u64,
         UNSTAKE,
-        lp_token_amount
+        lp_token_amount,
+        lp_token_amount,
     );
     // Create signatures
     let signatures_in = sign_message_with_mut(&mut env, message_in, vector[0, 1, 2]);
@@ -3322,7 +3338,8 @@ fun test_defi_unstake_zero_amount() {
         protocol_token_id,
         0u64,
         STAKE,
-        lp_token_amount
+        lp_token_amount,
+        amount,
     );
 
     let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
@@ -3377,7 +3394,8 @@ fun test_defi_unstake_invalid_protocol_token() {
         protocol_token_id,
         0u64,
         STAKE,
-        lp_token_amount
+        lp_token_amount,
+        amount,
     );
 
     let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
@@ -3433,7 +3451,8 @@ fun test_defi_unstake_when_bridge_paused() {
         protocol_token_id,
         0u64,
         STAKE,
-        lp_token_amount
+        lp_token_amount,
+        amount,
     );
 
     let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
@@ -3543,7 +3562,8 @@ fun test_defi_unstake_invalid_route() {
         protocol_token_id,
         0u64,
         STAKE,
-        lp_token_amount
+        lp_token_amount,
+        amount,
     );
 
     let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
@@ -3600,7 +3620,8 @@ fun test_defi_unstake_unsupported_chain_protocol() {
         protocol_token_id,
         0u64,
         STAKE,
-        lp_token_amount
+        lp_token_amount,
+        amount,
     );
 
     let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
@@ -3704,7 +3725,8 @@ fun test_defi_unstake_exact_all_lp_tokens() {
         protocol_token_id,
         0u64,
         STAKE,
-        lp_token_amount
+        lp_token_amount,
+        amount,
     );
 
     let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
@@ -3782,7 +3804,8 @@ fun test_defi_multiple_stakes_partial_unstake() {
         protocol_token_id,
         0u64,
         STAKE,
-        lp_token_amount_1
+        lp_token_amount_1,
+        amount_1
     );
 
     let signatures_1 = sign_message_with(&env, message_1, vector[0, 1, 2]);
@@ -3811,7 +3834,8 @@ fun test_defi_multiple_stakes_partial_unstake() {
         protocol_token_id,
         0u64,
         STAKE,
-        lp_token_amount_2
+        lp_token_amount_2,
+        amount_2
     );
 
     let signatures_2 = sign_message_with_mut(&mut env, message_2, vector[0, 1, 2]);

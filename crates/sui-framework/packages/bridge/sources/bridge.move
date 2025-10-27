@@ -147,6 +147,7 @@ module bridge::bridge {
         protocol_version: u64,
         protocol_token_id: u64,
         action_type: u8,
+        principal_amount: u64,
     }
 
     public struct DefiTokensStakedEvent has copy, drop {
@@ -265,6 +266,7 @@ module bridge::bridge {
     const EDefiLimitError: u64 = 64;
     const EDefiUnstakeAmountNotEnoughForDel: u64 = 65;
     const EDefiStakeAmountNotEnough: u64 = 66;
+    const EDefiUnstakePrincipalNotEnough: u64 = 67;
 
 
     const CURRENT_VERSION: u64 = 1;
@@ -556,7 +558,8 @@ module bridge::bridge {
             protocol_type, 
             protocol_version, 
             protocol_token_id,
-            UNSTAKE
+            UNSTAKE,
+            principal
         );
         // Store pending bridge request
         inner.token_transfer_records.push_back(
@@ -581,6 +584,7 @@ module bridge::bridge {
                 protocol_version: protocol_version,
                 protocol_token_id: protocol_token_id,
                 action_type: UNSTAKE,
+                principal_amount: principal,
             },
         );
     }
@@ -704,7 +708,8 @@ module bridge::bridge {
             protocol_type,
             protocol_version,
             protocol_token_id,
-            STAKE
+            STAKE,
+            after_fee_amount
         );
 
         bfc_system_state.burn_stable(token, ctx);
@@ -731,6 +736,7 @@ module bridge::bridge {
                 protocol_version,
                 protocol_token_id: protocol_token_id,
                 action_type: STAKE,
+                principal_amount: after_fee_amount,
             },
         );
     }
@@ -2534,7 +2540,7 @@ module bridge::bridge {
             let fee_coin=bfc_system_state.mint_stable<BUSD>(fee,cap, ctx);
             bridge_fee::deposit_fee(parent_id, fee_coin);
         };
-        inner.defi_holders_del(owner, defi_protocol_key, principal, 0);
+        assert!(inner.defi_holders_del(owner, defi_protocol_key, principal, 0), EDefiUnstakePrincipalNotEnough);
         inner.token_transfer_records[key].claimed = true;
         emit(TokenTransferClaimed { message_key: key });
         emit(DefiTokensUnstakeEvent {
