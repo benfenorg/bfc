@@ -224,7 +224,7 @@ impl CoinReadApiServer for CoinReadApi {
         if coin_type.eq("0x2::abfc::ABFC") {
             let abfc_metadata = SuiCoinMetadata {
                 decimals: 9,
-                name: "ABFC".to_string(),
+                name: "ABfc".to_string(),
                 symbol: "ABFC".to_string(),
                 description: "".to_string(),
                 icon_url: None,
