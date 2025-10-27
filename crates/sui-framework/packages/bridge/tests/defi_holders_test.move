@@ -93,6 +93,42 @@ module bridge::defi_holders_test;
     }
 
     #[test]
+    fun test_defi_holders_delete_partial() {
+        let mut env = create_env(chain_ids::sui_custom());
+        env.create_bridge_default();
+        
+        let user_address = @0x1;
+        let protocol_key = create_defi_protocol_key_for_testing(1, 1, 3, 0);
+        let initial_amount = 1_000_000_000;
+        let del_amount = 300_000_000;
+        let del_amount_2 = 700_000_000;
+
+        let mut bridge_wrap = env.bridge(user_address);
+        let bridge = bridge_wrap.bridge_ref_mut();
+
+        bridge.test_defi_holders_add(user_address, protocol_key, initial_amount, initial_amount);
+
+        // Test successful deletion
+        let result = bridge.test_defi_holders_del(user_address, protocol_key, 0, del_amount);
+        assert!(result, 0); // Should return true for successful deletion
+        let result = bridge.test_defi_holders_del(user_address, protocol_key, del_amount, 0);
+        assert!(result, 0); // Should return true for successful deletion
+
+        let result = bridge.test_defi_holders_del(user_address, protocol_key, 0, del_amount_2);
+        assert!(result, 0); // Should return true for successful deletion
+        let result = bridge.test_defi_holders_del(user_address, protocol_key, del_amount_2, 0);
+        assert!(result, 0); // Should return true for successful deletion
+
+        
+
+        let zero_info = bridge.test_defi_holders_get(user_address, protocol_key);
+        assert!(test_defi_holders_info_amount_get(&zero_info) == 0, 0);
+        
+        bridge_wrap.return_bridge();
+        env.destroy_env();
+    }
+
+    #[test]
     fun test_defi_holders_del_excess() {
         let mut env = create_env(chain_ids::sui_custom());
         env.create_bridge_default();
