@@ -264,6 +264,7 @@ module bridge::bridge {
     const EDefiProtocolConfigNotFound: u64 = 63;
     const EDefiLimitError: u64 = 64;
     const EDefiUnstakeAmountNotEnoughForDel: u64 = 65;
+    const EDefiStakeAmountNotEnough: u64 = 66;
 
 
     const CURRENT_VERSION: u64 = 1;
@@ -669,7 +670,11 @@ module bridge::bridge {
         assert!(defi_protocols::is_valid_protocol(bridge_id, protocol_type, protocol_version, protocol_token_id, target_chain), EDefiProtocolConfigNotFound);
 
         let token_amount = token.balance().value();
-        assert!(token_amount > 0, ETokenValueIsZero);
+        if (inner.chain_id == chain_ids::sui_mainnet()) {
+            assert!(token_amount >= 100 * 1_000_000_000, EDefiStakeAmountNotEnough);
+        } else {
+            assert!(token_amount >= 1000, EDefiStakeAmountNotEnough);
+        };
         
         // 检查质押金额是否超过协议限制
         let protocol_info = defi_protocols::get_protocol_info(bridge_id, protocol_type, protocol_version, protocol_token_id, target_chain);
@@ -2891,6 +2896,16 @@ module bridge::bridge {
     //////////////////////////////////////////////////////
     // Test functions
     //
+
+    #[test_only]
+    public fun get_defi_transfer_out_event_amount_before_fee(event: &DefiTransferOutEvent): u64 {
+        event.amount_before_fee
+    }
+
+    #[test_only]
+    public fun get_defi_transfer_out_event_amount_after_fee(event: &DefiTransferOutEvent): u64 {
+        event.amount_after_fee
+    }
 
     #[test_only]
     public fun add_external_coin_admin_for_testing(

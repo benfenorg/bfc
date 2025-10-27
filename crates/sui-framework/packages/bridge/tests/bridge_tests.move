@@ -3241,7 +3241,7 @@ fun test_defi_unstake_and_approve_defi_transfer_in(){
 
 // Zero amount stake - should fail with ETokenValueIsZero
 #[test]
-#[expected_failure(abort_code = bridge::bridge::ETokenValueIsZero)]
+#[expected_failure(abort_code = bridge::bridge::EDefiStakeAmountNotEnough)]
 fun test_defi_stake_zero_amount() {
     let mut env = create_env(chain_ids::sui_custom());
     env.create_bridge_default();
@@ -3633,7 +3633,7 @@ fun test_defi_stake_minimum_amount() {
     let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
     let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
     let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
-    let amount = 1u64; // Minimum amount (1 unit)
+    let amount = 1000u64; // Minimum amount (1 unit)
 
     scenario.next_tx(@0x0);
     let coin = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount, &cap, scenario.ctx());
