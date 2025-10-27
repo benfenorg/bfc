@@ -225,7 +225,7 @@ impl CoinReadApiServer for CoinReadApi {
             let abfc_metadata = SuiCoinMetadata {
                 decimals: 9,
                 name: "ABFC".to_string(),
-                symbol: "ABfc".to_string(),
+                symbol: "ABFC".to_string(),
                 description: "".to_string(),
                 icon_url: None,
                 id: None,
