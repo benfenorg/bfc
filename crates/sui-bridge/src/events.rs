@@ -72,6 +72,7 @@ pub struct MoveDefiTransferOutEvent {
     pub protocol_version: u64,
     pub protocol_token_id: u64,
     pub action_type: u8,
+    pub principal_amount: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -291,7 +292,7 @@ pub struct UpdateTokenPriceEvent {
 }
 
 // Sanitized version of MoveTokenDepositedEvent
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)] 
 pub struct EmittedSuiToEthTokenBridgeV1 {
     pub nonce: u64,
     pub sui_chain_id: BridgeChainId,
@@ -318,6 +319,7 @@ pub struct EmittedSuiToEthDefiBridgeV1 {
     pub protocol_version: u64,
     pub protocol_token_id: u64,
     pub action_type: u8,
+    pub principal_amount: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
@@ -590,6 +592,7 @@ impl TryFrom<MoveDefiTransferOutEvent> for EmittedSuiToEthDefiBridgeV1 {
             protocol_version: event.protocol_version,
             protocol_token_id: event.protocol_token_id,
             action_type: event.action_type,
+            principal_amount: event.principal_amount,
         })
     }
 }

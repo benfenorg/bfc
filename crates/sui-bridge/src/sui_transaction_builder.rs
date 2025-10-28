@@ -642,6 +642,7 @@ fn build_defi_bridge_approve_transaction(
         fast_path_selector,
         lp_token_amount,
         original_seq_num,
+        principal_amount,
     ) = match bridge_action {
         BridgeAction::SuiToEthDefiBridgeAction(a) => {
             let bridge_event = a.sui_bridge_event;
@@ -663,6 +664,7 @@ fn build_defi_bridge_approve_transaction(
                 None, //fast_path_selector
                 0u64, //lp_token_amount
                 0u64, //original_seq_num
+                bridge_event.principal_amount,
             )
         }
         BridgeAction::EthToSuiDefiBridgeAction(a) => {
@@ -685,6 +687,7 @@ fn build_defi_bridge_approve_transaction(
                 Some(bridge_event.fast_path_selector),
                 bridge_event.lp_token_amount,
                 bridge_event.original_seq_num,
+                0,//todo: @lifei add principal amount
             )
         }
         _ => unreachable!(),
@@ -710,7 +713,7 @@ fn build_defi_bridge_approve_transaction(
             sui_address, e
         ))
     })?;
-
+    let principal_amount = builder.pure(principal_amount).unwrap();
     let arg_msg = match func_name_message {
         "create_defi_transfer_out_message" => {
             
@@ -731,6 +734,7 @@ fn build_defi_bridge_approve_transaction(
                 protocol_version,
                 protocol_token_id_arg,
                 action_type_arg,
+                principal_amount,
             ],
         )},
         "create_defi_transfer_in_message" => {
@@ -755,6 +759,7 @@ fn build_defi_bridge_approve_transaction(
                     original_seq_num,
                     action_type_arg,
                     lp_token_amount,
+                    principal_amount,
                 ],
             )
         }
@@ -2712,6 +2717,7 @@ mod tests {
             Some(1),       // protocol_version
             Some(5),       // protocol_token_id (USDC)
             Some(0),       // action_type: STAKE = 0, UNSTAKE = 1
+            Some(1000_000), // principal_amount
         );
 
         // Test transaction building only (since we can't easily set up DeFi protocols in test)

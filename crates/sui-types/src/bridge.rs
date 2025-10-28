@@ -835,6 +835,7 @@ pub struct MoveTypeDefiTransferOutPayload {
     pub protocol_version: u64,
     pub protocol_token_id: u64,
     pub action_type: u8,
+    pub principal_amount: u64,
 }
 
 /// Rust version of the Move message::ParsedTokenTransferMessage type.

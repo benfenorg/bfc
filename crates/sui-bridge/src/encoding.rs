@@ -187,6 +187,9 @@ impl BridgeMessageEncoding for SuiToEthDefiBridgeAction {
         //add action type
         bytes.push(e.action_type as u8);
 
+        //add principal amount
+        bytes.extend_from_slice(&e.principal_amount.to_be_bytes());
+
         bytes
     }
 }
@@ -395,7 +398,9 @@ impl BridgeMessageEncoding for EthToSuiDefiBridgeAction {
         bytes.push(e.action_type as u8);
         // Add lp token amount
         bytes.extend_from_slice(&e.lp_token_amount.to_be_bytes());
-
+        // Add principal amount
+        //todo: @lifei add principal amount
+        // bytes.extend_from_slice(&e.principal_amount.to_be_bytes());
         bytes
     }
 }
