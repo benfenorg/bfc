@@ -50,10 +50,6 @@ public fun create_by_value<T>(value: u64): Anonymous_Balance<T> {
     let balance_type = BALANCE_TYPE_SHARING;
     let version = 0;
 
-    //todo: use hfe_ops to split the value into two parts
-    // let value1 = value/2;
-    // let value2 = value - value1;
-
     let (value1, value2)   = hfe_ops_encode_data(value);
     vector::append(&mut encode_data, value1);
     vector::append(&mut encode_data, b",");

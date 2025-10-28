@@ -618,9 +618,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_client_restore_value_array(){
-        let subscriber = fmt::Subscriber::new();
-        tracing::subscriber::set_global_default(subscriber)
-            .expect("Failed to set tracing subscriber");
+        // let subscriber = fmt::Subscriber::new();
+        // tracing::subscriber::set_global_default(subscriber)
+        //     .expect("Failed to set tracing subscriber");
 
         //let args = Args::parse();
         let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
@@ -686,9 +686,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_client_restore_value_for_zklogin(){
-        let subscriber = fmt::Subscriber::new();
-        tracing::subscriber::set_global_default(subscriber)
-            .expect("Failed to set tracing subscriber");
+        // let subscriber = fmt::Subscriber::new();
+        // tracing::subscriber::set_global_default(subscriber)
+        //     .expect("Failed to set tracing subscriber");
 
         //let args = Args::parse();
         let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
@@ -715,9 +715,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_client_restore_value_array_for_zklogin(){
-        let subscriber = fmt::Subscriber::new();
-        tracing::subscriber::set_global_default(subscriber)
-            .expect("Failed to set tracing subscriber");
+        // let subscriber = fmt::Subscriber::new();
+        // tracing::subscriber::set_global_default(subscriber)
+        //     .expect("Failed to set tracing subscriber");
 
         //let args = Args::parse();
         let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
@@ -744,9 +744,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_client_with_server() -> anyhow::Result<()> {
-        let subscriber = fmt::Subscriber::new();
-        tracing::subscriber::set_global_default(subscriber)
-            .expect("Failed to set tracing subscriber");
+        // let subscriber = fmt::Subscriber::new();
+        // tracing::subscriber::set_global_default(subscriber)
+        //     .expect("Failed to set tracing subscriber");
 
         //let args = Args::parse();
         let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();

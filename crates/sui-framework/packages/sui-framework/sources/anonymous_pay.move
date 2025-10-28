@@ -32,33 +32,8 @@ public entry fun split_anonymous<T>(
 }
 
 
-/// Split coin `self` into multiple coins, each with balance specified
-/// in `split_amounts`. Remaining balance is left in `self`.
-public entry fun split_vec<T>(self: &mut Anonymous_Coin<T>, split_amounts: vector<u64>, ctx: &mut TxContext) {
-    let
-    ( mut
-    i,
-    len) =
-    (0, split_amounts.length());
-    while (i < len) {
-        split(self, split_amounts[i], ctx);
-        i = i + 1;
-    };
-}
 
-/// Send `amount` units of `c` to `recipient`
-/// Aborts with `EVALUE` if `amount` is greater than or equal to `amount`
-public entry fun split_and_transfer<T>(
-    _c: &mut Anonymous_Coin<T>,
-    _amount: u64,
-    _recipient: address,
-    _ctx: &mut TxContext,
-) {
-    //should not use this 
-    abort 99
-    //todo : add abort
-    //transfer::public_transfer(c.split(amount, ctx), recipient)
-}
+
 
 public entry fun split_and_transfer_anonymous<T>(
     c: &mut Anonymous_Coin<T>,
@@ -80,21 +55,27 @@ public entry fun join<T>(self: &mut Anonymous_Coin<T>, coin: Anonymous_Coin<T>) 
 
 /// Join everything in `coins` with `self`
 public entry fun join_vec<T>(self: &mut Anonymous_Coin<T>, mut coins: vector<Anonymous_Coin<T>>) {
-let ( mut i, len) = (0, coins.length());
-while (i < len) {
-let coin = coins.pop_back();
-self.join(coin);
-i = i + 1
-};
-// safe because we've drained the vector
-coins.destroy_empty()
+    abort 99
 }
 
 /// Join a vector of `Coin` into a single object and transfer it to `receiver`.
 public entry fun join_vec_and_transfer<T>( mut coins: vector<Anonymous_Coin<T>>, receiver: address) {
-assert!(coins.length() > 0, ENoCoins);
+    abort 99
+}
 
-let mut self = coins.pop_back();
-join_vec(&mut self, coins);
-transfer::public_transfer(self, receiver)
+/// Split coin `self` into multiple coins, each with balance specified
+/// in `split_amounts`. Remaining balance is left in `self`.
+public entry fun split_vec<T>(self: &mut Anonymous_Coin<T>, split_amounts: vector<u64>, ctx: &mut TxContext) {
+    abort 99;
+}
+/// Send `amount` units of `c` to `recipient`
+/// Aborts with `EVALUE` if `amount` is greater than or equal to `amount`
+public entry fun split_and_transfer<T>(
+    _c: &mut Anonymous_Coin<T>,
+    _amount: u64,
+    _recipient: address,
+    _ctx: &mut TxContext,
+) {
+    //should not use this
+    abort 99
 }

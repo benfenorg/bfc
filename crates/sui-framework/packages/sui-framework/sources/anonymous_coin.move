@@ -64,15 +64,6 @@ module sui::anonymous_coin {
         })
     }
 
-    // entry public fun swap_out<T1, T2>(anonymous_coin: Anonymous_Coin<T1>,  swap_pool :&mut SwapPool<T1, T2>, signatures: vector<u8>, id: address, publickey: vector<u8>,  ctx: &mut TxContext) {
-    //     let value = anonymous_coin.balance.value(signatures, id, publickey);
-    //     join(&mut swap_pool.anonymous_coin, anonymous_coin);
-    //
-    //     assert!(value <= swap_pool.max_availalbe_normal_coin, ENotEnough);
-    //     let normal_coin =coin::split(&mut swap_pool.normal_coin, value , ctx);
-    //     swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin - value;
-    //     transfer::public_transfer(normal_coin, tx_context::sender(ctx));
-    // }
 
     entry public fun swap_out_with_amount<T1, T2>(mut anonymous_coin: Anonymous_Coin<T1>,
                                                   swap_out_amount: u64,
