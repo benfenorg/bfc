@@ -492,11 +492,11 @@ The index into the deny list vector for the <code><a href="../sui/coin.md#sui_co
                                               swap_pool: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_SwapPool">SwapPool</a>&lt;T1, T2&gt;,
                                               ctx: &<b>mut</b> TxContext) {
     <b>assert</b>!(swap_out_amount &lt;= swap_pool.max_availalbe_normal_coin, <a href="../sui/anonymous_coin.md#sui_anonymous_coin_ENotEnough">ENotEnough</a>);
-    <b>let</b> compare_result = <a href="../sui/anonymous_coin.md#sui_anonymous_coin">anonymous_coin</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_compare">compare</a>(swap_out_amount);
+    <b>let</b> compare_result = <a href="../sui/anonymous_coin.md#sui_anonymous_coin">anonymous_coin</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_compare">compare</a>(swap_out_amount, ctx.sender());
     <b>let</b> swap_out_acoin = <a href="../sui/anonymous_coin.md#sui_anonymous_coin">anonymous_coin</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_split">split</a>(swap_out_amount, ctx);
-    <a href="../sui/anonymous_coin.md#sui_anonymous_coin_join">join</a>(&<b>mut</b> swap_pool.<a href="../sui/anonymous_coin.md#sui_anonymous_coin">anonymous_coin</a>, swap_out_acoin);
+    <a href="../sui/anonymous_coin.md#sui_anonymous_coin_join">join</a>(&<b>mut</b> swap_pool.<a href="../sui/anonymous_coin.md#sui_anonymous_coin">anonymous_coin</a>, swap_out_acoin, ctx);
     <b>if</b> (compare_result == 0) {
-        <a href="../sui/anonymous_coin.md#sui_anonymous_coin">anonymous_coin</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_destry_zero">destry_zero</a>();
+        <a href="../sui/anonymous_coin.md#sui_anonymous_coin">anonymous_coin</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_destry_zero">destry_zero</a>(ctx.sender());
     } <b>else</b> {
         <a href="../sui/transfer.md#sui_transfer_public_transfer">transfer::public_transfer</a>(<a href="../sui/anonymous_coin.md#sui_anonymous_coin">anonymous_coin</a>, <a href="../sui/tx_context.md#sui_tx_context_sender">tx_context::sender</a>(ctx));
     };
@@ -770,7 +770,7 @@ Aborts if <code>value &gt; <a href="../sui/balance.md#sui_balance">balance</a>.v
 ): <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt; {
     <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a> {
         id: <a href="../sui/object.md#sui_object_new">object::new</a>(ctx),
-        <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_split_anonymous">split_anonymous</a>(value1, value2)
+        <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_split_anonymous">split_anonymous</a>(value1, value2, ctx.sender())
     }
 }
 </code></pre>
@@ -801,7 +801,7 @@ Aborts if <code>value &gt; <a href="../sui/balance.md#sui_balance">balance</a>.v
 ): <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt; {
     <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a> {
         id: <a href="../sui/object.md#sui_object_new">object::new</a>(ctx),
-        <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_split">split</a>(value)
+        <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_split">split</a>(value, ctx.sender())
     }
 }
 </code></pre>
@@ -817,7 +817,7 @@ Aborts if <code>value &gt; <a href="../sui/balance.md#sui_balance">balance</a>.v
 Put a <code>Coin&lt;T&gt;</code> to the <code>Balance&lt;T&gt;</code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_put">put</a>&lt;T&gt;(<a href="../sui/balance.md#sui_balance">balance</a>: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, <a href="../sui/coin.md#sui_coin">coin</a>: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_put">put</a>&lt;T&gt;(<a href="../sui/balance.md#sui_balance">balance</a>: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, <a href="../sui/coin.md#sui_coin">coin</a>: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -826,8 +826,8 @@ Put a <code>Coin&lt;T&gt;</code> to the <code>Balance&lt;T&gt;</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_put">put</a>&lt;T&gt;(<a href="../sui/balance.md#sui_balance">balance</a>: &<b>mut</b> Anonymous_Balance&lt;T&gt;, <a href="../sui/coin.md#sui_coin">coin</a>: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;) {
-    <a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_join">join</a>(<a href="../sui/anonymous_coin.md#sui_anonymous_coin_into_balance">into_balance</a>(<a href="../sui/coin.md#sui_coin">coin</a>));
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_put">put</a>&lt;T&gt;(<a href="../sui/balance.md#sui_balance">balance</a>: &<b>mut</b> Anonymous_Balance&lt;T&gt;, <a href="../sui/coin.md#sui_coin">coin</a>: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;, ctx: &<b>mut</b> TxContext) {
+    <a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_join">join</a>(<a href="../sui/anonymous_coin.md#sui_anonymous_coin_into_balance">into_balance</a>(<a href="../sui/coin.md#sui_coin">coin</a>), ctx.sender());
 }
 </code></pre>
 
@@ -843,7 +843,7 @@ Consume the coin <code>c</code> and add its value to <code>self</code>.
 Aborts if <code>c.value + self.value &gt; U64_MAX</code>
 
 
-<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_join">join</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, c: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;)
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_join">join</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, c: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -852,10 +852,10 @@ Aborts if <code>c.value + self.value &gt; U64_MAX</code>
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_join">join</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;, c: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;) {
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_join">join</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;, c: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;, ctx: &<b>mut</b> TxContext) {
     <b>let</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a> { id, <a href="../sui/balance.md#sui_balance">balance</a> } = c;
     id.delete();
-    self.<a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_join">join</a>(<a href="../sui/balance.md#sui_balance">balance</a>);
+    self.<a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_join">join</a>(<a href="../sui/balance.md#sui_balance">balance</a>, ctx.sender());
 }
 </code></pre>
 
@@ -926,7 +926,7 @@ and the remaining balance is left is <code>self</code>.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_compare">compare</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, amount: u64): u8
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_compare">compare</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, amount: u64, owner: <b>address</b>): u8
 </code></pre>
 
 
@@ -935,8 +935,8 @@ and the remaining balance is left is <code>self</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_compare">compare</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;, amount: u64) : u8 {
-    self.<a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_compare">compare</a>(amount)
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_compare">compare</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;, amount: u64, owner: <b>address</b>) : u8 {
+    self.<a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_compare">compare</a>(amount, owner)
 }
 </code></pre>
 
@@ -962,7 +962,7 @@ bids/payments or preemptively making empty balances.
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_zero">zero</a>&lt;T&gt;(ctx: &<b>mut</b> TxContext): <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt; {
-    <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a> { id: <a href="../sui/object.md#sui_object_new">object::new</a>(ctx), <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_zero">anonymous_balance::zero</a>() }
+    <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a> { id: <a href="../sui/object.md#sui_object_new">object::new</a>(ctx), <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_zero">anonymous_balance::zero</a>(ctx) }
 }
 </code></pre>
 
@@ -977,7 +977,7 @@ bids/payments or preemptively making empty balances.
 Destroy a coin with value zero
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_destry_zero">destry_zero</a>&lt;T&gt;(c: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_destry_zero">destry_zero</a>&lt;T&gt;(c: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, owner: <b>address</b>)
 </code></pre>
 
 
@@ -986,10 +986,10 @@ Destroy a coin with value zero
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_destry_zero">destry_zero</a>&lt;T&gt;(c: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;) {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_destry_zero">destry_zero</a>&lt;T&gt;(c: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;, owner: <b>address</b>) {
     <b>let</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a> { id, <a href="../sui/balance.md#sui_balance">balance</a> } = c;
     id.delete();
-    <a href="../sui/balance.md#sui_balance">balance</a>.destroy_zero()
+    <a href="../sui/balance.md#sui_balance">balance</a>.destroy_zero(owner)
 }
 </code></pre>
 
@@ -1165,7 +1165,7 @@ in <code>cap</code> accordingly.
 ): <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt; {
     <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a> {
         id: <a href="../sui/object.md#sui_object_new">object::new</a>(ctx),
-        <a href="../sui/balance.md#sui_balance">balance</a>: cap.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_total_supply">total_supply</a>.increase_supply(value)
+        <a href="../sui/balance.md#sui_balance">balance</a>: cap.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_total_supply">total_supply</a>.increase_supply(value, ctx)
     }
 }
 </code></pre>
@@ -1183,7 +1183,7 @@ supply in <code>cap</code> accordingly.
 Aborts if <code>value</code> + <code>cap.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_total_supply">total_supply</a></code> >= U64_MAX
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_mint_balance">mint_balance</a>&lt;T&gt;(cap: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_TreasuryCap">sui::anonymous_coin::TreasuryCap</a>&lt;T&gt;, value: u64): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_mint_balance">mint_balance</a>&lt;T&gt;(cap: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_TreasuryCap">sui::anonymous_coin::TreasuryCap</a>&lt;T&gt;, value: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
 </code></pre>
 
 
@@ -1193,9 +1193,9 @@ Aborts if <code>value</code> + <code>cap.<a href="../sui/anonymous_coin.md#sui_a
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_mint_balance">mint_balance</a>&lt;T&gt;(
-    cap: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;, value: u64
+    cap: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;, value: u64, ctx: &<b>mut</b> TxContext
 ): Anonymous_Balance&lt;T&gt; {
-    cap.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_total_supply">total_supply</a>.increase_supply(value)
+    cap.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_total_supply">total_supply</a>.increase_supply(value, ctx)
 }
 </code></pre>
 
@@ -1211,7 +1211,7 @@ Destroy the coin <code>c</code> and decrease the total supply in <code>cap</code
 accordingly.
 
 
-<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_burn">burn</a>&lt;T&gt;(cap: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_TreasuryCap">sui::anonymous_coin::TreasuryCap</a>&lt;T&gt;, c: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, signatures: vector&lt;u8&gt;, anonymous_coin_id: <b>address</b>, publickey: vector&lt;u8&gt;): u64
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_burn">burn</a>&lt;T&gt;(cap: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_TreasuryCap">sui::anonymous_coin::TreasuryCap</a>&lt;T&gt;, c: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, signatures: vector&lt;u8&gt;, anonymous_coin_id: <b>address</b>, publickey: vector&lt;u8&gt;, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): u64
 </code></pre>
 
 
@@ -1225,11 +1225,12 @@ accordingly.
     c: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;,
     signatures: vector&lt;u8&gt;,
     anonymous_coin_id: <b>address</b>,
-    publickey: vector&lt;u8&gt;
+    publickey: vector&lt;u8&gt;,
+    ctx: &<b>mut</b> TxContext,
 ): u64 {
     <b>let</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a> { id, <a href="../sui/balance.md#sui_balance">balance</a> } = c;
     id.delete();
-    cap.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_total_supply">total_supply</a>.decrease_supply(<a href="../sui/balance.md#sui_balance">balance</a>, signatures, anonymous_coin_id, publickey)
+    cap.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_total_supply">total_supply</a>.decrease_supply(<a href="../sui/balance.md#sui_balance">balance</a>, signatures, anonymous_coin_id, publickey, ctx.sender())
 }
 </code></pre>
 

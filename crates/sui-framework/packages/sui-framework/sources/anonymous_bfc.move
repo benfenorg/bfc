@@ -45,7 +45,7 @@ fun new(ctx: &mut TxContext): Anonymous_Balance<ABFC> {
     transfer::public_freeze_object(metadata);
 
     let mut supply = treasury.treasury_into_supply();
-    let total_sui = supply.increase_supply(TOTAL_SUPPLY_MIST);
+    let total_sui = supply.increase_supply(TOTAL_SUPPLY_MIST, ctx);
     supply.destroy_supply();
     total_sui
 }

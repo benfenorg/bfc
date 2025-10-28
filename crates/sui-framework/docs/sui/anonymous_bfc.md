@@ -129,7 +129,7 @@ This should be called only once during genesis creation.
     );
     <a href="../sui/transfer.md#sui_transfer_public_freeze_object">transfer::public_freeze_object</a>(metadata);
     <b>let</b> <b>mut</b> supply = treasury.treasury_into_supply();
-    <b>let</b> total_sui = supply.increase_supply(<a href="../sui/anonymous_bfc.md#sui_abfc_TOTAL_SUPPLY_MIST">TOTAL_SUPPLY_MIST</a>);
+    <b>let</b> total_sui = supply.increase_supply(<a href="../sui/anonymous_bfc.md#sui_abfc_TOTAL_SUPPLY_MIST">TOTAL_SUPPLY_MIST</a>, ctx);
     supply.destroy_supply();
     total_sui
 }

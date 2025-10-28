@@ -6,9 +6,6 @@ module sui::anonymous_pay;
 
 use sui::anonymous_coin::Anonymous_Coin;
 
-/// For when empty vector is supplied into join function.
-const ENoCoins: u64 = 0;
-
 #[allow(lint(self_transfer))]
 /// Transfer `c` to the sender of the current transaction
 public fun keep<T>(c: Anonymous_Coin<T>, ctx: &TxContext) {
@@ -49,24 +46,24 @@ public entry fun split_and_transfer_anonymous<T>(
 
 /// Join `coin` into `self`. Re-exports `coin::join` function.
 /// Deprecated: you should call `coin.join(other)` directly.
-public entry fun join<T>(self: &mut Anonymous_Coin<T>, coin: Anonymous_Coin<T>) {
-    self.join(coin)
+public entry fun join<T>(self: &mut Anonymous_Coin<T>, coin: Anonymous_Coin<T>, ctx: &mut TxContext) {
+    self.join(coin, ctx)
 }
 
 /// Join everything in `coins` with `self`
-public entry fun join_vec<T>(self: &mut Anonymous_Coin<T>, mut coins: vector<Anonymous_Coin<T>>) {
+public entry fun join_vec<T>(_self: &mut Anonymous_Coin<T>, mut _coins: vector<Anonymous_Coin<T>>) {
     abort 99
 }
 
 /// Join a vector of `Coin` into a single object and transfer it to `receiver`.
-public entry fun join_vec_and_transfer<T>( mut coins: vector<Anonymous_Coin<T>>, receiver: address) {
+public entry fun join_vec_and_transfer<T>( mut _coins: vector<Anonymous_Coin<T>>, _receiver: address) {
     abort 99
 }
 
 /// Split coin `self` into multiple coins, each with balance specified
 /// in `split_amounts`. Remaining balance is left in `self`.
-public entry fun split_vec<T>(self: &mut Anonymous_Coin<T>, split_amounts: vector<u64>, ctx: &mut TxContext) {
-    abort 99;
+public entry fun split_vec<T>(_self: &mut Anonymous_Coin<T>, _split_amounts: vector<u64>, _ctx: &mut TxContext) {
+    abort 99
 }
 /// Send `amount` units of `c` to `recipient`
 /// Aborts with `EVALUE` if `amount` is greater than or equal to `amount`

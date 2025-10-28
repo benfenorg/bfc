@@ -2371,12 +2371,6 @@ split
 split_anonymous
 	public entry fun
 	0x2::anonymous_pay
-split_vec
-	public entry fun
-	0x2::anonymous_pay
-split_and_transfer
-	public entry fun
-	0x2::anonymous_pay
 split_and_transfer_anonymous
 	public entry fun
 	0x2::anonymous_pay
@@ -2387,6 +2381,12 @@ join_vec
 	public entry fun
 	0x2::anonymous_pay
 join_vec_and_transfer
+	public entry fun
+	0x2::anonymous_pay
+split_vec
+	public entry fun
+	0x2::anonymous_pay
+split_and_transfer
 	public entry fun
 	0x2::anonymous_pay
 AuthenticatorState

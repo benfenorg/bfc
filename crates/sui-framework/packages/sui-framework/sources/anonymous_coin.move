@@ -70,12 +70,12 @@ module sui::anonymous_coin {
                                                   swap_pool: &mut SwapPool<T1, T2>,
                                                   ctx: &mut TxContext) {
         assert!(swap_out_amount <= swap_pool.max_availalbe_normal_coin, ENotEnough);
-        let compare_result = anonymous_coin.compare(swap_out_amount);
+        let compare_result = anonymous_coin.compare(swap_out_amount, ctx.sender());
         let swap_out_acoin = anonymous_coin.split(swap_out_amount, ctx);
-        join(&mut swap_pool.anonymous_coin, swap_out_acoin);
+        join(&mut swap_pool.anonymous_coin, swap_out_acoin, ctx);
 
         if (compare_result == 0) {
-            anonymous_coin.destry_zero();
+            anonymous_coin.destry_zero(ctx.sender());
         } else {
             transfer::public_transfer(anonymous_coin, tx_context::sender(ctx));
         };
@@ -200,7 +200,7 @@ module sui::anonymous_coin {
     ): Anonymous_Coin<T> {
         Anonymous_Coin {
             id: object::new(ctx),
-            balance: balance.split_anonymous(value1, value2)
+            balance: balance.split_anonymous(value1, value2, ctx.sender())
         }
     }
 
@@ -212,24 +212,24 @@ module sui::anonymous_coin {
 
         Anonymous_Coin {
             id: object::new(ctx),
-            balance: balance.split(value)
+            balance: balance.split(value, ctx.sender())
         }
     }
 
 
     /// Put a `Coin<T>` to the `Balance<T>`.
-    public fun put<T>(balance: &mut Anonymous_Balance<T>, coin: Anonymous_Coin<T>) {
-        balance.join(into_balance(coin));
+    public fun put<T>(balance: &mut Anonymous_Balance<T>, coin: Anonymous_Coin<T>, ctx: &mut TxContext) {
+        balance.join(into_balance(coin), ctx.sender());
     }
 
     // === Base Coin functionality ===
 
     /// Consume the coin `c` and add its value to `self`.
     /// Aborts if `c.value + self.value > U64_MAX`
-    public entry fun join<T>(self: &mut Anonymous_Coin<T>, c: Anonymous_Coin<T>) {
+    public entry fun join<T>(self: &mut Anonymous_Coin<T>, c: Anonymous_Coin<T>, ctx: &mut TxContext) {
         let Anonymous_Coin { id, balance } = c;
         id.delete();
-        self.balance.join(balance);
+        self.balance.join(balance, ctx.sender());
     }
 
     /// Split coin `self` to two coins, one with balance `split_amount`,
@@ -251,21 +251,21 @@ module sui::anonymous_coin {
 
 
 
-    public fun compare<T>(self: &mut Anonymous_Coin<T>, amount: u64) : u8 {
-        self.balance.compare(amount)
+    public fun compare<T>(self: &mut Anonymous_Coin<T>, amount: u64, owner: address) : u8 {
+        self.balance.compare(amount, owner)
     }
 
     /// Make any Coin with a zero value. Useful for placeholding
     /// bids/payments or preemptively making empty balances.
     public fun zero<T>(ctx: &mut TxContext): Anonymous_Coin<T> {
-        Anonymous_Coin { id: object::new(ctx), balance: anonymous_balance::zero() }
+        Anonymous_Coin { id: object::new(ctx), balance: anonymous_balance::zero(ctx) }
     }
 
     /// Destroy a coin with value zero
-    public fun destry_zero<T>(c: Anonymous_Coin<T>) {
+    public fun destry_zero<T>(c: Anonymous_Coin<T>, owner: address) {
         let Anonymous_Coin { id, balance } = c;
         id.delete();
-        balance.destroy_zero()
+        balance.destroy_zero(owner)
     }
 
     // === Registering new coin types and managing the coin supply ===
@@ -369,7 +369,7 @@ module sui::anonymous_coin {
     ): Anonymous_Coin<T> {
         Anonymous_Coin {
             id: object::new(ctx),
-            balance: cap.total_supply.increase_supply(value)
+            balance: cap.total_supply.increase_supply(value, ctx)
         }
     }
 
@@ -377,9 +377,9 @@ module sui::anonymous_coin {
     /// supply in `cap` accordingly.
     /// Aborts if `value` + `cap.total_supply` >= U64_MAX
     public fun mint_balance<T>(
-        cap: &mut TreasuryCap<T>, value: u64
+        cap: &mut TreasuryCap<T>, value: u64, ctx: &mut TxContext
     ): Anonymous_Balance<T> {
-        cap.total_supply.increase_supply(value)
+        cap.total_supply.increase_supply(value, ctx)
     }
 
     /// Destroy the coin `c` and decrease the total supply in `cap`
@@ -389,11 +389,12 @@ module sui::anonymous_coin {
         c: Anonymous_Coin<T>,
         signatures: vector<u8>,
         anonymous_coin_id: address,
-        publickey: vector<u8>
+        publickey: vector<u8>,
+        ctx: &mut TxContext,
     ): u64 {
         let Anonymous_Coin { id, balance } = c;
         id.delete();
-        cap.total_supply.decrease_supply(balance, signatures, anonymous_coin_id, publickey)
+        cap.total_supply.decrease_supply(balance, signatures, anonymous_coin_id, publickey, ctx.sender())
     }
 
     /// Adds the given address to the deny list, preventing it from interacting with the specified
@@ -555,7 +556,7 @@ module sui::anonymous_coin {
     #[test_only]
     /// Mint coins of any type for (obviously!) testing purposes only
     public fun mint_for_testing<T>(value: u64, ctx: &mut TxContext): Anonymous_Coin<T> {
-        Anonymous_Coin { id: object::new(ctx), balance: anonymous_balance::create_for_testing(value) }
+        Anonymous_Coin { id: object::new(ctx), balance: anonymous_balance::create_for_testing(value, ctx.sender()) }
     }
 
     #[test_only]

@@ -31,6 +31,7 @@ custom coins with <code><a href="../sui/anonymous_balance.md#sui_anonymous_balan
 
 <pre><code><b>use</b> <a href="../std/vector.md#std_vector">std::vector</a>;
 <b>use</b> <a href="../sui/hfe_ops.md#sui_hfe_ops">sui::hfe_ops</a>;
+<b>use</b> <a href="../sui/tx_context.md#sui_tx_context">sui::tx_context</a>;
 </code></pre>
 
 
@@ -171,7 +172,7 @@ For when an overflow is happening on Supply operations.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_create_by_value">create_by_value</a>&lt;T&gt;(value: u64): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_create_by_value">create_by_value</a>&lt;T&gt;(value: u64, owner: <b>address</b>): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
 </code></pre>
 
 
@@ -180,14 +181,11 @@ For when an overflow is happening on Supply operations.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_create_by_value">create_by_value</a>&lt;T&gt;(value: u64): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_create_by_value">create_by_value</a>&lt;T&gt;(value: u64, owner: <b>address</b>): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
     <b>let</b> <b>mut</b> encode_data = b"";
     <b>let</b> balance_type = <a href="../sui/anonymous_balance.md#sui_anonymous_balance_BALANCE_TYPE_SHARING">BALANCE_TYPE_SHARING</a>;
     <b>let</b> version = 0;
-    //todo: <b>use</b> <a href="../sui/hfe_ops.md#sui_hfe_ops">hfe_ops</a> to <a href="../sui/anonymous_balance.md#sui_anonymous_balance_split">split</a> the value into two parts
-    // <b>let</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a> = value/2;
-    // <b>let</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a> = value - <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>;
-    <b>let</b> (<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>)   = hfe_ops_encode_data(value);
+    <b>let</b> (<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>)   = hfe_ops_encode_data(value, owner);
     vector::append(&<b>mut</b> encode_data, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>);
     vector::append(&<b>mut</b> encode_data, b",");
     vector::append(&<b>mut</b> encode_data, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>);
@@ -370,7 +368,7 @@ Create a new supply for type T.
 Increase supply by <code>value</code> and create a new <code>Balance&lt;T&gt;</code> with this value.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_increase_supply">increase_supply</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Supply">sui::anonymous_balance::Supply</a>&lt;T&gt;, value: u64): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_increase_supply">increase_supply</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Supply">sui::anonymous_balance::Supply</a>&lt;T&gt;, value: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
 </code></pre>
 
 
@@ -379,10 +377,10 @@ Increase supply by <code>value</code> and create a new <code>Balance&lt;T&gt;</c
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_increase_supply">increase_supply</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Supply">Supply</a>&lt;T&gt;, value: u64): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_increase_supply">increase_supply</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Supply">Supply</a>&lt;T&gt;, value: u64, ctx: &<b>mut</b> TxContext): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
     <b>assert</b>!(value &lt; (18446744073709551615u64 - self.value), <a href="../sui/anonymous_balance.md#sui_anonymous_balance_EOverflow">EOverflow</a>);
     self.value = self.value + value;
-    <a href="../sui/anonymous_balance.md#sui_anonymous_balance_create_by_value">create_by_value</a>(value)
+    <a href="../sui/anonymous_balance.md#sui_anonymous_balance_create_by_value">create_by_value</a>(value, ctx.sender())
 }
 </code></pre>
 
@@ -397,7 +395,7 @@ Increase supply by <code>value</code> and create a new <code>Balance&lt;T&gt;</c
 Burn a Balance<T> and decrease Supply<T>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_decrease_supply">decrease_supply</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Supply">sui::anonymous_balance::Supply</a>&lt;T&gt;, <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, signatures: vector&lt;u8&gt;, id: <b>address</b>, publickey: vector&lt;u8&gt;): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_decrease_supply">decrease_supply</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Supply">sui::anonymous_balance::Supply</a>&lt;T&gt;, <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, signatures: vector&lt;u8&gt;, id: <b>address</b>, publickey: vector&lt;u8&gt;, owner: <b>address</b>): u64
 </code></pre>
 
 
@@ -411,7 +409,8 @@ Burn a Balance<T> and decrease Supply<T>.
     <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;,
     signatures: vector&lt;u8&gt;,
     id: <b>address</b>,
-    publickey: vector&lt;u8&gt;
+    publickey: vector&lt;u8&gt;,
+    owner: <b>address</b>,
 ): u64 {
     <b>let</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a> {
         encode_data: _,
@@ -420,7 +419,7 @@ Burn a Balance<T> and decrease Supply<T>.
         <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>,
         <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>
     } = <a href="../sui/balance.md#sui_balance">balance</a>;
-    <b>let</b> value = hfe_ops_restore_value(<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, signatures, id, publickey);
+    <b>let</b> value = hfe_ops_restore_value(<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, signatures, id, publickey, owner);
     <b>assert</b>!(self.value &gt;= value, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_EOverflow">EOverflow</a>);
     self.value = self.value - value;
     value
@@ -438,7 +437,7 @@ Burn a Balance<T> and decrease Supply<T>.
 Create a zero <code>Balance</code> for type <code>T</code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_zero">zero</a>&lt;T&gt;(): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_zero">zero</a>&lt;T&gt;(ctx: &<a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
 </code></pre>
 
 
@@ -447,8 +446,8 @@ Create a zero <code>Balance</code> for type <code>T</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_zero">zero</a>&lt;T&gt;(): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
-    <a href="../sui/anonymous_balance.md#sui_anonymous_balance_create_by_value">create_by_value</a>(0)
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_zero">zero</a>&lt;T&gt;(ctx: &TxContext): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
+    <a href="../sui/anonymous_balance.md#sui_anonymous_balance_create_by_value">create_by_value</a>(0, ctx.sender())
 }
 </code></pre>
 
@@ -492,7 +491,7 @@ Create a zero <code>Balance</code> for type <code>T</code>.
 Join two balances together.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_join">join</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;): (vector&lt;u8&gt;, vector&lt;u8&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_join">join</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, owner: <b>address</b>): (vector&lt;u8&gt;, vector&lt;u8&gt;)
 </code></pre>
 
 
@@ -501,7 +500,7 @@ Join two balances together.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_join">join</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;): (vector&lt;u8&gt;, vector&lt;u8&gt;) {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_join">join</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, owner: <b>address</b>): (vector&lt;u8&gt;, vector&lt;u8&gt;) {
     <b>let</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a> {
         encode_data: _,
         version: _,
@@ -510,7 +509,7 @@ Join two balances together.
         <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>
     } = <a href="../sui/balance.md#sui_balance">balance</a>;
     <b>let</b> (val0, val1) = hfe_ops_add(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>,
-        <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>);
+        <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, owner);
     self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a> = val0;
     self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a> = val1;
     self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_update_encode_data">update_encode_data</a>();
@@ -528,7 +527,7 @@ Join two balances together.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_compare">compare</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, value: u64): u8
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_compare">compare</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, value: u64, owner: <b>address</b>): u8
 </code></pre>
 
 
@@ -537,8 +536,8 @@ Join two balances together.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_compare">compare</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, value: u64): u8 {
-    hfe_ops_compare_value(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, value)
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_compare">compare</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, value: u64, owner: <b>address</b>): u8 {
+    hfe_ops_compare_value(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, value, owner)
 }
 </code></pre>
 
@@ -553,7 +552,7 @@ Join two balances together.
 Split a <code>Balance</code> and take a sub balance from it.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_split">split</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, value: u64): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_split">split</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, value: u64, owner: <b>address</b>): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
 </code></pre>
 
 
@@ -562,12 +561,12 @@ Split a <code>Balance</code> and take a sub balance from it.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_split">split</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, value: u64): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
-    <b>let</b> compare_result: u8 = hfe_ops_compare_value(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, value);
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_split">split</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, value: u64, owner: <b>address</b>): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
+    <b>let</b> compare_result: u8 = hfe_ops_compare_value(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, value, owner);
     <b>assert</b>!(compare_result != <a href="../sui/anonymous_balance.md#sui_anonymous_balance_DEFAULT_COMPARE_RESULT_LESS_THAN">DEFAULT_COMPARE_RESULT_LESS_THAN</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_ENotEnough">ENotEnough</a>);
-    <b>let</b> anonymous_coin_value = <a href="../sui/anonymous_balance.md#sui_anonymous_balance_create_by_value">create_by_value</a>(value);
+    <b>let</b> anonymous_coin_value = <a href="../sui/anonymous_balance.md#sui_anonymous_balance_create_by_value">create_by_value</a>(value, owner);
     <b>let</b> (val0, val1) = hfe_ops_minus(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>,
-        anonymous_coin_value.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, anonymous_coin_value.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>);
+        anonymous_coin_value.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, anonymous_coin_value.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, owner);
     self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a> = val0;
     self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a> = val1;
     self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_update_encode_data">update_encode_data</a>();
@@ -586,7 +585,7 @@ Split a <code>Balance</code> and take a sub balance from it.
 Split a <code>Balance</code> and take a sub balance from it.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_split_anonymous">split_anonymous</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>: vector&lt;u8&gt;, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>: vector&lt;u8&gt;): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_split_anonymous">split_anonymous</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>: vector&lt;u8&gt;, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>: vector&lt;u8&gt;, owner: <b>address</b>): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
 </code></pre>
 
 
@@ -595,12 +594,12 @@ Split a <code>Balance</code> and take a sub balance from it.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_split_anonymous">split_anonymous</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;,  <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>: vector&lt;u8&gt;,  <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>: vector&lt;u8&gt;): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
-    <b>let</b> compare_result: u8 = hfe_ops_compare_value1_and_value2(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>);
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_split_anonymous">split_anonymous</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;,  <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>: vector&lt;u8&gt;,  <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>: vector&lt;u8&gt;, owner: <b>address</b>): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
+    <b>let</b> compare_result: u8 = hfe_ops_compare_value1_and_value2(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, owner);
     <b>assert</b>!(compare_result != <a href="../sui/anonymous_balance.md#sui_anonymous_balance_DEFAULT_COMPARE_RESULT_LESS_THAN">DEFAULT_COMPARE_RESULT_LESS_THAN</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_ENotEnough">ENotEnough</a>);
     <b>let</b> anonymous_coin_value = <a href="../sui/anonymous_balance.md#sui_anonymous_balance_create_by_value1_and_value2">create_by_value1_and_value2</a>(<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>);
     <b>let</b> (val0, val1) = hfe_ops_minus(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>,
-        anonymous_coin_value.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, anonymous_coin_value.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>);
+        anonymous_coin_value.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, anonymous_coin_value.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, owner);
     self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a> = val0;
     self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a> = val1;
     self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_update_encode_data">update_encode_data</a>();
@@ -619,7 +618,7 @@ Split a <code>Balance</code> and take a sub balance from it.
 Destroy a zero <code>Balance</code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_destroy_zero">destroy_zero</a>&lt;T&gt;(<a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_destroy_zero">destroy_zero</a>&lt;T&gt;(<a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, owner: <b>address</b>)
 </code></pre>
 
 
@@ -628,8 +627,8 @@ Destroy a zero <code>Balance</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_destroy_zero">destroy_zero</a>&lt;T&gt;(<a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;) {
-    <b>let</b> compare_result = hfe_ops_compare_value(<a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, <a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, 0);
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_destroy_zero">destroy_zero</a>&lt;T&gt;(<a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, owner: <b>address</b>) {
+    <b>let</b> compare_result = hfe_ops_compare_value(<a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, <a href="../sui/balance.md#sui_balance">balance</a>.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, 0, owner);
     <b>assert</b>!(compare_result == 0, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_ENonZero">ENonZero</a>);
     <b>let</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a> {
         encode_data: _,
