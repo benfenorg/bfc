@@ -85,9 +85,7 @@ public fun create_by_value1_and_value2<T>(value1: vector<u8>, value2: vector<u8>
 }
 
 
-public fun prepare_for_tranfer<T>(self: &Anonymous_Balance<T>):  &Anonymous_Balance<T>{
 
-}
 
 public fun value1<T>(self: &Anonymous_Balance<T>): vector<u8> {
     self.value1
@@ -264,10 +262,12 @@ public fun create_supply_for_testing<T>(): Supply<T> {
 
 #[test_only]
 public fun compare_anoymous_coin(input1: vector<u8>, input2: vector<u8>, input3: u64): u8 {
-    hfe_ops_compare_value(input1, input2, input3)
+    let owner : address = @0x1;
+    hfe_ops_compare_value(input1, input2, input3, owner)
 }
 
 #[test_only]
 public fun anoymous_coin_split_value(input1: u64): (vector<u8>, vector<u8>) {
-    hfe_ops_encode_data(input1)
+    let owner : address = @0x1;
+    hfe_ops_encode_data(input1, owner)
 }

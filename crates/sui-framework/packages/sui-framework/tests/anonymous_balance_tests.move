@@ -15,21 +15,21 @@ module sui::anonymous_coin_balance_tests {
     #[test]
     fun type_morphing() {
         let mut scenario = test_scenario::begin(@0x1);
-
-        let balance = anonymous_balance::zero<ABFC>();
+        let owner = @0x1;
+        let balance = anonymous_balance::zero<ABFC>(scenario.ctx());
         let coin = balance.into_coin(scenario.ctx());
         let balance = coin.into_balance();
-        balance.destroy_zero();
+        balance.destroy_zero(owner);
 
         let mut coin = anonymous_coin::mint_for_testing<ABFC>(100, scenario.ctx());
         let balance_mut = anonymous_coin::balance_mut(&mut coin);
-        let sub_balance = balance_mut.split(50);
+        let sub_balance = balance_mut.split(50, owner);
 
         debug::print(&sub_balance.get_encode_data());
         //debug::print(&coin.into_balance().get_encode_data());
 
         let mut balance = coin.into_balance();
-        balance.join(sub_balance);
+        balance.join(sub_balance, owner);
 
         let coin = balance.into_coin(scenario.ctx());
         anonymous_pay::keep(coin, scenario.ctx());
@@ -38,12 +38,14 @@ module sui::anonymous_coin_balance_tests {
 
     #[test]
     fun test_balance() {
-        let mut balance = anonymous_balance::zero<ABFC>();
+        let mut scenario = test_scenario::begin(@0x1);
+        let owner = @0x01;
+        let mut balance = anonymous_balance::zero<ABFC>(scenario.ctx());
         debug::print(&b"balance before join()".to_string());
         debug::print(&balance.get_encode_data());
-        let another = anonymous_balance::create_for_testing(1000);
+        let another = anonymous_balance::create_for_testing(1000, owner);
 
-        balance.join(another);
+        balance.join(another, owner);
 
         debug::print(&b"balance after join()".to_string());
         debug::print(&balance.get_encode_data());
@@ -51,16 +53,17 @@ module sui::anonymous_coin_balance_tests {
         debug::print(&balance.value2());
 
 
-        let balance1 = balance.split(333);
-        let balance2 = balance.split(333);
-        let balance3 = balance.split(334);
+        let balance1 = balance.split(333, owner);
+        let balance2 = balance.split(333, owner);
+        let balance3 = balance.split(334, owner);
         debug::print(&b"balance after split()".to_string());
         debug::print(&balance1.get_encode_data());
         debug::print(&balance3.get_encode_data());
-        balance.destroy_zero();
+        balance.destroy_zero(owner);
 
         test_utils::destroy(balance1);
         test_utils::destroy(balance2);
        test_utils::destroy(balance3);
+    scenario.end();
     }
 }
