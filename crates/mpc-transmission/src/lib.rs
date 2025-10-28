@@ -14,7 +14,8 @@ use rand::random;
 use crate::error::SecretSharingError;
 pub use field::GF256;
 pub use share::Share;
-
+use move_core_types::account_address::AccountAddress;
+use fastcrypto::hash::HashFunction;
 // Re-export two_party_share functions
 pub use two_party_share::{recover_two_shares, split_to_two_value, recover_value};
 
@@ -195,7 +196,7 @@ pub fn recover_secret_with_xor(
 /// # Returns
 /// - `Ok(u64)`: The parsed mask secret value
 /// - `Err`: If the config file doesn't exist, is invalid, or the private key cannot be parsed
-pub fn get_mask_secret_from_config(config_path: Option<String>) -> Result<u64, Box<dyn std::error::Error>> {
+pub fn get_mask_secret_from_config(config_path: Option<String>, userAddress: AccountAddress) -> Result<u64, Box<dyn std::error::Error>> {
     let config = config_path.unwrap_or("".parse().unwrap());
     let pre_path = get_sui_config_directory();
     let mut path = pre_path.join("bfc_anonymous_config.yaml");
@@ -222,7 +223,20 @@ pub fn get_mask_secret_from_config(config_path: Option<String>) -> Result<u64, B
             .map_err(|e| anyhow!("Failed to parse private key as decimal: {}", e))?
     };
 
+    let salt = get_user_address_salt(userAddress);
+    let mask_secret = mask_secret.wrapping_add(salt);
+
+
     Ok(mask_secret)
+}
+
+
+pub fn get_user_address_salt(address: AccountAddress) -> u64{
+    let hash = fastcrypto::hash::Blake2b256::digest(address.into_bytes());
+    let encode = hex::encode(hash);
+    let num = u64::from_str_radix(&encode[0..16], 16).unwrap();
+    num
+
 }
 
 pub fn get_zklogin_rpc_address_from_config(config_path: Option<String>) -> Result<String, Box<dyn std::error::Error>> {

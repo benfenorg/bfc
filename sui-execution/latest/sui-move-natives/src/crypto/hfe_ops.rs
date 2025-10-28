@@ -27,7 +27,8 @@ use serde_json::Value as JsonValue;
 use tracing::info;
 use anyhow::anyhow;
 use attohttpc::post;
-
+use fastcrypto::hash::HashFunction;
+use mpc_transmission::get_user_address_salt;
 
 #[derive(Clone)]
 pub struct AnonymousComputeCostParams {
@@ -83,10 +84,13 @@ pub fn hfe_ops_add(
     info!("anonymous_rpc{:?}", anonymous_rpc.clone());
     info!("enable-anonymous-rpc{:?}", enable_anonymous_rpc.clone());
 
+
+    let owner = pop_arg!(args, AccountAddress);
     let number4 = pop_arg!(args, Vec<u8>);
     let number3 = pop_arg!(args, Vec<u8>);
     let number2 = pop_arg!(args, Vec<u8>);
     let number1 = pop_arg!(args, Vec<u8>);
+
     let num1 = String::from_utf8(number1).unwrap_or_default();
     let num2 = String::from_utf8(number2).unwrap_or_default();
     let num3 = String::from_utf8(number3).unwrap_or_default();
@@ -123,8 +127,8 @@ pub fn hfe_ops_add(
             None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
         }
     } else {
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
-            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey, owner)
+            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string(), owner).unwrap());
 
         info!("hfe_ops_add calculate in local");
         let value1_share = recover_two_shares(num1, num2);
@@ -159,8 +163,6 @@ pub fn hfe_ops_minus(
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult>{
 
-    ////todo: add result overflow defense.
-
 
     let anonymous_compute_cost_params = &context
         .extensions()
@@ -185,6 +187,9 @@ pub fn hfe_ops_minus(
         .enable_anonymous_rpc
         .clone();
     let cost = context.gas_used();
+
+    let owner = pop_arg!(args, AccountAddress);
+
     let number4 = pop_arg!(args, Vec<u8>);
     let number3 = pop_arg!(args, Vec<u8>);
     let number2 = pop_arg!(args, Vec<u8>);
@@ -224,8 +229,8 @@ pub fn hfe_ops_minus(
             None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
         }
     } else {
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
-            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey, owner)
+            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string(), owner).unwrap());
 
         info!("hfe_ops_minus calculate in local");
         let value1_share = recover_two_shares(num1, num2);
@@ -292,6 +297,9 @@ pub fn hfe_ops_multiplied(
         .enable_anonymous_rpc
         .clone();
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
+
+    let owner = pop_arg!(args, AccountAddress);
+
     let number4 = pop_arg!(args, Vec<u8>);
     let number3 = pop_arg!(args, Vec<u8>);
     let number2 = pop_arg!(args, Vec<u8>);
@@ -332,8 +340,8 @@ pub fn hfe_ops_multiplied(
         }
     } else {
         info!("hfe_ops_minus calculate in local");
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
-            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey, owner)
+            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string(), owner).unwrap());
 
         let value1_share =  recover_two_shares(num1, num2);
         let value2_share =  recover_two_shares(num3, num4);
@@ -384,6 +392,7 @@ pub fn hfe_ops_encode_data(context: &mut NativeContext,
         anonymous_compute_cost_params.anonymous_compute_cost_base
     );
 
+    let owner = pop_arg!(args, AccountAddress);
     let value = pop_arg!(args, u64);
     let cost = context.gas_used();
 
@@ -423,8 +432,8 @@ pub fn hfe_ops_encode_data(context: &mut NativeContext,
             None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
         }
     } else {
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
-            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey, owner)
+            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string(), owner).unwrap());
 
         let (result1, result2) = split_to_two_value(value, mask);
         Ok(NativeResult::ok(
@@ -464,6 +473,9 @@ pub fn hfe_ops_compare_value1_and_value2(
         .enable_anonymous_rpc
         .clone();
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
+
+
+    let owner = pop_arg!(args, AccountAddress);
 
     let number4 = pop_arg!(args, Vec<u8>);
     let number3 = pop_arg!(args, Vec<u8>);
@@ -510,8 +522,8 @@ pub fn hfe_ops_compare_value1_and_value2(
             None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
         }
     } else {
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
-            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey, owner)
+            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string(), owner).unwrap());
 
         let new_number1 = recover_value(num1, num2, mask);
         let new_number2 = recover_value(num3, num4, mask);
@@ -569,6 +581,9 @@ pub fn hfe_ops_compare_value(
         .enable_anonymous_rpc
         .clone();
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
+
+    let owner = pop_arg!(args, AccountAddress);
+
     let number3 = pop_arg!(args, u64);
 
     let number2 = pop_arg!(args, Vec<u8>);
@@ -613,8 +628,8 @@ pub fn hfe_ops_compare_value(
             None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
         }
     } else {
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
-            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey, owner)
+            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string(), owner).unwrap());
 
         match recover_value(num1, num2, mask) {
             Ok(value_a) => {
@@ -659,6 +674,9 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
         context,
         anonymous_compute_cost_params.anonymous_compute_cost_base
     );
+
+    let owner = pop_arg!(args, AccountAddress);
+
     let publickey = pop_arg!(args, Vec<u8>);
     let id = pop_arg!(args, AccountAddress);
     let signature= pop_arg!(args, Vec<u8>);
@@ -712,8 +730,8 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
             None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
         }
     } else {
-        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
-            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
+        let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey, owner)
+            .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string(), owner).unwrap());
 
         match recover_value(num1, num2, mask) {
             Ok(value) => {
@@ -1035,7 +1053,7 @@ fn test_get_anonymous_add() -> (){
     }
 }
 
-pub fn get_mask_secret_from_anonymous_privatekey(private_key_str: String) -> Result<u64, Box<dyn std::error::Error>> {
+pub fn get_mask_secret_from_anonymous_privatekey(private_key_str: String, userAddress: AccountAddress) -> Result<u64, Box<dyn std::error::Error>> {
     // Parse the private key string to u64
     // Handle both hex format (0x...) and decimal format
     let mask_secret = if private_key_str.starts_with("0x") || private_key_str.starts_with("0X") {
@@ -1048,5 +1066,19 @@ pub fn get_mask_secret_from_anonymous_privatekey(private_key_str: String) -> Res
             .map_err(|e| anyhow!("Failed to parse private key as decimal: {}", e))?
     };
 
+    let salt = get_user_address_salt(userAddress);
+    let mask_secret = mask_secret.wrapping_add(salt);
+
+
     Ok(mask_secret)
+}
+
+
+#[test]
+pub fn get_account_address(){
+    let address = AccountAddress::from_hex_literal("0x847998d7a801abb749e5698865f4d2b1f82a0453c4fc31962878b5e5e4c3406e").unwrap();
+   let num = get_user_address_salt(address);
+    println!("num:{}", num);
+
+    assert_eq!(num, 2835591981614551602);
 }

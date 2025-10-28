@@ -28,6 +28,8 @@ use tracing_subscriber::fmt;
 use warp::Filter;
 use fastcrypto::hash::HashFunction;
 use mpc_transmission::get_zklogin_rpc_address_from_config;
+use sui_types::object::Owner;
+
 const PERSONAL_MESSAGE_PREFIX: &[u8; 3] = &[3, 0, 0];
 
 
@@ -75,6 +77,7 @@ struct AnonymousAddParams {
     value2: String,
     value3: String,
     value4: String,
+    owner: AccountAddress,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -83,6 +86,7 @@ struct AnonymousMinusParams {
     value2: String,
     value3: String,
     value4: String,
+    owner: AccountAddress
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -91,6 +95,7 @@ struct AnonymousMultiplyParams {
     value2: String,
     value3: String,
     value4: String,
+    owner: AccountAddress
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -98,6 +103,7 @@ struct AnonymousCompareParams {
     value1: String,
     value2: String,
     value3: u64,
+    owner: AccountAddress
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -106,12 +112,14 @@ struct AnonymousCompareValue1AndValue2Params {
     value2: String,
     value3: String,
     value4: String,
+    owner: AccountAddress
 }
 
 
 #[derive(Debug, Deserialize, Serialize)]
 struct AnonymousSplitValueParams {
     value: u64,
+    owner: AccountAddress
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -121,23 +129,8 @@ struct AnonymousRestoreValueParams {
     signature: Vec<u8>,
     objectid: String,
     publickey: Vec<u8>,
+    owner: AccountAddress
 }
-
-#[derive(Debug, Deserialize, Serialize)]
-struct AnonymousRestoreZKLoginParams {
-    value1: Vec<u8>,
-    value2: Vec<u8>,
-    signature: ZkVerifyRequest,
-    objectid: String,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct AnonymousRestoreArrayParamsZKLoginParams {
-    anonymous_restore_array: Vec<AnonymousRestoreElementParams>,
-    signature: ZkVerifyRequest,
-    object_ids: String,
-}
-
 #[derive(Debug, Deserialize, Serialize)]
 struct AnonymousRestoreElementParams {
     value1: Vec<u8>,
@@ -150,7 +143,27 @@ struct AnonymousRestoreArrayParams {
     anonymous_restore_array: Vec<AnonymousRestoreElementParams>,
     signature: Vec<u8>,
     publickey: Vec<u8>,
+    owner: AccountAddress
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+struct AnonymousRestoreZKLoginParams {
+    value1: Vec<u8>,
+    value2: Vec<u8>,
+    signature: ZkVerifyRequest,
+    objectid: String,
+    owner: AccountAddress
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct AnonymousRestoreArrayParamsZKLoginParams {
+    anonymous_restore_array: Vec<AnonymousRestoreElementParams>,
+    signature: ZkVerifyRequest,
+    object_ids: String,
+    owner: AccountAddress
+}
+
+
 
 
 #[derive(Debug)]
@@ -309,7 +322,8 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
                     config_path = Some(args_result.unwrap().config);
                 }
 
-                let mask_secret = match get_mask_secret_from_config(config_path) {
+                let user_address = add_params.owner;
+                let mask_secret = match get_mask_secret_from_config(config_path, user_address) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
@@ -373,7 +387,8 @@ async fn handle_anonymous_minus(request: JsonRpcRequest) -> JsonRpcResponse {
                     config_path = Some(args_result.unwrap().config);
                 }
 
-                let mask_secret = match get_mask_secret_from_config(config_path) {
+                let user_address = minus_params.owner;
+                let mask_secret = match get_mask_secret_from_config(config_path,user_address) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
@@ -435,7 +450,8 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
                 if args_result.is_ok() {
                     config_path = Some(args_result.unwrap().config);
                 }
-                let mask_secret = match get_mask_secret_from_config(config_path) {
+                let user_address = multiply_params.owner;
+                let mask_secret = match get_mask_secret_from_config(config_path, user_address) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
@@ -551,7 +567,9 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                     if args_result.is_ok() {
                         config_path = Some(args_result.unwrap().config);
                     }
-                    let mask_secret = match get_mask_secret_from_config(config_path) {
+
+                    let user_address = restore_value_params.owner;
+                    let mask_secret = match get_mask_secret_from_config(config_path, user_address) {
                         Ok(secret) => secret,
                         Err(e) => {
                             warn!("Failed to get mask secret from config: {}", e);
@@ -640,7 +658,8 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
                                                      Some(serde_json::json!({"error": "verify signature or get owner address failed"})));
                     }
 
-                    let mask_secret = match get_mask_secret_from_config(config_path) {
+                    let user_address = restore_value_params.owner;
+                    let mask_secret = match get_mask_secret_from_config(config_path, user_address) {
                         Ok(secret) => secret,
                         Err(e) => {
                             warn!("Failed to get mask secret from config: {}", e);
@@ -760,7 +779,8 @@ async fn handle_anonymous_restore_value_for_zklogin_address(request: JsonRpcRequ
                                                      Some(serde_json::json!({"error": "verify signature or get owner address failed"})));
                     }
 
-                    let mask_secret = match get_mask_secret_from_config(config_path) {
+                    let user_address = restore_value_params.owner;
+                    let mask_secret = match get_mask_secret_from_config(config_path, user_address) {
                         Ok(secret) => secret,
                         Err(e) => {
                             warn!("Failed to get mask secret from config: {}", e);
@@ -898,7 +918,9 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
                 if args_result.is_ok() {
                     config_path = Some(args_result.unwrap().config);
                 }
-                let mask_secret = match get_mask_secret_from_config(config_path) {
+
+                let user_address = anonymous_restore_value_array.owner;
+                let mask_secret = match get_mask_secret_from_config(config_path, user_address) {
                     Ok(secret) => secret,
                     Err(e) => {
                         info!("get_mask_secret_from_config failed, caused by: {}", e);
@@ -956,7 +978,8 @@ async fn handle_anonymous_split_to_two_value(request: JsonRpcRequest) -> JsonRpc
                 if args_result.is_ok() {
                     config_path = Some(args_result.unwrap().config);
                 }
-                let mask_secret = match get_mask_secret_from_config(config_path) {
+                let user_address = split_to_two_value_params.owner;
+                let mask_secret = match get_mask_secret_from_config(config_path, user_address) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
@@ -1001,8 +1024,8 @@ async fn handle_anonymous_compare(request: JsonRpcRequest) -> JsonRpcResponse {
                 if args_result.is_ok() {
                     config_path = Some(args_result.unwrap().config);
                 }
-
-                let mask_secret = match get_mask_secret_from_config(config_path) {
+                let user_address = compare_params.owner;
+                let mask_secret = match get_mask_secret_from_config(config_path, user_address) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
@@ -1064,8 +1087,8 @@ async fn handle_anonymous_compare_value1_and_value2(request: JsonRpcRequest) -> 
                 if args_result.is_ok() {
                     config_path = Some(args_result.unwrap().config);
                 }
-
-                let mask_secret = match get_mask_secret_from_config(config_path) {
+                let user_address = compare_params.owner;
+                let mask_secret = match get_mask_secret_from_config(config_path, user_address) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
