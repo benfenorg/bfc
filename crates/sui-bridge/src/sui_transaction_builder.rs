@@ -687,7 +687,7 @@ fn build_defi_bridge_approve_transaction(
                 Some(bridge_event.fast_path_selector),
                 bridge_event.lp_token_amount,
                 bridge_event.original_seq_num,
-                0,//todo: @lifei add principal amount
+                bridge_event.principal_amount,
             )
         }
         _ => unreachable!(),

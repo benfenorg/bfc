@@ -250,6 +250,7 @@ pub struct EthToSuiDefiBridgeV1 {
     pub original_seq_num: u64,
     pub sui_adjusted_amount: u64,
     pub lp_token_amount: u64,
+    pub principal_amount: u64,
 }
 
 impl EthToSuiDefiBridgeV1 {
@@ -317,6 +318,7 @@ impl TryFrom<&TokensStakedFilter> for EthToSuiDefiBridgeV1 {
             original_seq_num: event.origin_nonce,
             sui_adjusted_amount: event.sui_adjusted_amount,
             lp_token_amount: event.sui_lp_token_amount,
+            principal_amount: event.principal_amount,
         })
     }
 }
@@ -340,6 +342,7 @@ impl TryFrom<&TokensUnStakedFilter> for EthToSuiDefiBridgeV1 {
             original_seq_num: event.origin_nonce,
             sui_adjusted_amount: event.sui_adjusted_amount,
             lp_token_amount: event.sui_lp_token_amount,
+            principal_amount: event.principal_amount,
         })
     }
 }

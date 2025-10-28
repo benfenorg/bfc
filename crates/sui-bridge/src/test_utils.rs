@@ -213,6 +213,7 @@ pub fn get_test_eth_to_sui_defi_bridge_action(
             action_type: action_type.unwrap_or(0),
             original_seq_num: original_seq_num.unwrap_or(0),
             lp_token_amount: lp_token_amount.unwrap_or(0),
+            principal_amount: lp_token_amount.unwrap_or(0),
         },
     })
 }
