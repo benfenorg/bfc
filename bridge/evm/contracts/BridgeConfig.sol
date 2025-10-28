@@ -217,9 +217,6 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         require(suiDecimal > 0, "BridgeConfig: Invalid Sui decimal");
         require(tokenPrice > 0, "BridgeConfig: Invalid token price");
 
-        uint8 erc20Decimals = IERC20Metadata(tokenAddress).decimals();
-        //require(erc20Decimals >= suiDecimal, "BridgeConfig: Invalid Sui decimal");
-
         supportedTokens[tokenID] = Token(tokenAddress, suiDecimal, native);
         tokenPrices[tokenID] = tokenPrice;
     }

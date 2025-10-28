@@ -533,7 +533,7 @@ library BridgeUtils {
 
         // extract tx hash from payload
         // Calculate transaction hash length (remaining bytes minus fixed-size fields at the end)
-        uint256 txHashLength = _payload.length - offset - 2 - 8 - 8 - 8 - 1; // -2 eventIdx, -8 protocolType, -8 protocolVersion, -8 protocolTokenID, -1 actionType
+        uint256 txHashLength = _payload.length - offset - 2 - 8 - 8 - 8 - 1 - 8; // -2 eventIdx, -8 protocolType, -8 protocolVersion, -8 protocolTokenID, -1 actionType, -8 principalAmount
         bytes memory txHash = new bytes(txHashLength);
         for (uint256 i; i < txHashLength; i++) {
             txHash[i] = _payload[i + offset];
@@ -571,7 +571,7 @@ library BridgeUtils {
         // extract actionType (uint8)
         uint8 actionType = uint8(_payload[offset]);
 
-           offset += 1;
+        offset += 1;
 
         // extract principalAmount (uint64)
         uint64 principalAmount;
