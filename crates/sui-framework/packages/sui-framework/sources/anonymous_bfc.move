@@ -51,6 +51,7 @@ fun new(ctx: &mut TxContext): Anonymous_Balance<ABFC> {
 }
 
 public entry fun transfer(c: anonymous_coin::Anonymous_Coin<ABFC>, recipient: address) {
+    //prepare..
     transfer::public_transfer(c, recipient)
 }
 

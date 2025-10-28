@@ -84,6 +84,11 @@ public fun create_by_value1_and_value2<T>(value1: vector<u8>, value2: vector<u8>
     }
 }
 
+
+public fun prepare_for_tranfer<T>(self: &Anonymous_Balance<T>):  &Anonymous_Balance<T>{
+
+}
+
 public fun value1<T>(self: &Anonymous_Balance<T>): vector<u8> {
     self.value1
 }

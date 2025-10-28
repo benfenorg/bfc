@@ -74,6 +74,7 @@ module bfc_system::bfc_system {
         admin: address,
         ctx: &mut TxContext
     ){
+        //prepare for new owner..
         transfer::public_transfer(abfc_balance.into_coin(ctx), admin);
     }
 

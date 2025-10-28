@@ -46,6 +46,15 @@ public native fun hfe_ops_encode_data(
     owner: address,
 ): (vector<u8>, vector<u8>);
 
+
+public native fun hfe_ops_update_encode_data(
+    input_1: vector<u8>,
+    input_2: vector<u8>,
+    old_owner: address,
+    new_owner: address,
+): (vector<u8>, vector<u8>);
+
+
 public native fun hfe_ops_restore_value(
     value1: vector<u8>,
     value2: vector<u8>,
