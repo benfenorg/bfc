@@ -399,8 +399,7 @@ impl BridgeMessageEncoding for EthToSuiDefiBridgeAction {
         // Add lp token amount
         bytes.extend_from_slice(&e.lp_token_amount.to_be_bytes());
         // Add principal amount
-        //todo: @lifei add principal amount
-        // bytes.extend_from_slice(&e.principal_amount.to_be_bytes());
+        bytes.extend_from_slice(&e.principal_amount.to_be_bytes());
         bytes
     }
 }
