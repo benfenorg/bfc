@@ -2727,24 +2727,25 @@ title: Module `bridge::bridge`
     <b>assert</b>!(is_busd, <a href="../bridge/bridge.md#bridge_bridge_EOnlySupportBusd">EOnlySupportBusd</a>);
     <b>let</b> fee = <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(bridge_id, target_chain <b>as</b> u64, protocol_token_id, token_amount);
     <b>assert</b>!(token_amount &gt; fee, <a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
-    <b>let</b> amount_after_fee = token_amount - fee;
+    <b>let</b> amount_after_fee_busd = token_amount - fee;
     <b>let</b> fee_coin = token.split&lt;T&gt;(fee, ctx);
     <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(bridge_id, fee_coin);
-    <b>let</b> after_fee_amount = <a href="../bridge/bridge.md#bridge_bridge_adjust_amount_busd_out">adjust_amount_busd_out</a>(target_chain, amount_after_fee);
+    <b>let</b> amount_after_fee = <a href="../bridge/bridge.md#bridge_bridge_adjust_amount_busd_out">adjust_amount_busd_out</a>(target_chain, amount_after_fee_busd);
+    //principal amount is busd,decimal is 9
     <b>let</b> bridge_seq_num = inner.<a href="../bridge/bridge.md#bridge_bridge_get_current_seq_num_and_increment">get_current_seq_num_and_increment</a>(<a href="../bridge/message_types.md#bridge_message_types_defi">message_types::defi</a>());
     <b>let</b> <a href="../bridge/message.md#bridge_message">message</a> = <a href="../bridge/message.md#bridge_message_create_defi_transfer_out_message">message::create_defi_transfer_out_message</a>(
         inner.chain_id,
         bridge_seq_num,
         address::to_bytes(ctx.sender()),
         target_chain,
-        after_fee_amount,
+        amount_after_fee,
         hex::decode(b""),
         0u16,
         protocol_type,
         protocol_version,
         protocol_token_id,
         <a href="../bridge/bridge.md#bridge_bridge_STAKE">STAKE</a>,
-        after_fee_amount
+        amount_after_fee_busd,
     );
     bfc_system_state.burn_stable(token, ctx);
     inner.token_transfer_records.push_back(
@@ -2763,12 +2764,12 @@ title: Module `bridge::bridge`
             sender_address: address::to_bytes(ctx.sender()),
             target_chain,
             amount_before_fee: before_fee_amount,
-            amount_after_fee: after_fee_amount,
+            amount_after_fee: amount_after_fee,
             protocol_type,
             protocol_version,
             protocol_token_id: protocol_token_id,
             action_type: <a href="../bridge/bridge.md#bridge_bridge_STAKE">STAKE</a>,
-            principal_amount: after_fee_amount,
+            principal_amount: amount_after_fee_busd,
         },
     );
 }

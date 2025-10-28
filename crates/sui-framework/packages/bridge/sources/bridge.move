@@ -692,11 +692,12 @@ module bridge::bridge {
 
         let fee = bridge_fee::calculate_cross_out_fee_amount(bridge_id, target_chain as u64, protocol_token_id, token_amount);
         assert!(token_amount > fee, EInputAmountLteBridgeFee);
-        let amount_after_fee = token_amount - fee;
+        let amount_after_fee_busd = token_amount - fee;
         let fee_coin = token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(bridge_id, fee_coin);
 
-        let after_fee_amount = adjust_amount_busd_out(target_chain, amount_after_fee);
+        let amount_after_fee = adjust_amount_busd_out(target_chain, amount_after_fee_busd);
+        //principal amount is busd,decimal is 9
 
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::defi());
         let message = message::create_defi_transfer_out_message(
@@ -704,14 +705,14 @@ module bridge::bridge {
             bridge_seq_num,
             address::to_bytes(ctx.sender()),
             target_chain,
-            after_fee_amount,
+            amount_after_fee,
             hex::decode(b""),
             0u16,
             protocol_type,
             protocol_version,
             protocol_token_id,
             STAKE,
-            after_fee_amount
+            amount_after_fee_busd,
         );
 
         bfc_system_state.burn_stable(token, ctx);
@@ -733,12 +734,12 @@ module bridge::bridge {
                 sender_address: address::to_bytes(ctx.sender()),
                 target_chain,
                 amount_before_fee: before_fee_amount,
-                amount_after_fee: after_fee_amount,
+                amount_after_fee: amount_after_fee,
                 protocol_type,
                 protocol_version,
                 protocol_token_id: protocol_token_id,
                 action_type: STAKE,
-                principal_amount: after_fee_amount,
+                principal_amount: amount_after_fee_busd,
             },
         );
     }

@@ -281,7 +281,7 @@ async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
         assert_eq!(event.8,protocol_type);
         assert_eq!(event.9,protocol_version);
         assert_eq!(event.10,protocol_token_id);
-        assert_eq!(event.11,amount_after_fee);
+        assert_eq!(event.11,amount_after_fee*1000);
         assert_eq!(event.12,0);    
     }
 
@@ -368,7 +368,7 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
     println!("Using minter address: {}", minter_address);
 
     // Step 2: Mint BUSD tokens for DeFi staking
-    let busd_amount = 50_000_000_000u64; // 500 BUSD for testing
+    let busd_amount = 50_000_000_000u64; // 50 BUSD for testing
     println!("Minting {} BUSD tokens for DeFi staking...", busd_amount);
     stable::mint_stable_coin_to_address(
         busd_amount,
@@ -541,6 +541,7 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
                 info!("  - Amount after fee: {}", parsed_event.amount_after_fee);
                 amount_after_fee=parsed_event.amount_after_fee;
                 info!("  - Action type: {}", parsed_event.action_type);
+                info!("defitag100  - Principal amount: {}", parsed_event.principal_amount);
             }
             break;
         }
@@ -601,18 +602,21 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
     let tx_response = invest_bridged_tokens_on_eth(&bridge_test_cluster, event_seq_num).await?;
     if let Some(log) = tx_response.logs.last() {
         let event = decode_tokens_staked_event(log)?;
-        // info!("bbking110 staked event: {:?}", event);
+        info!("defitag100 evm staked principal amount: {:?}", event.11);
         assert_eq!(event.0,BridgeChainId::EthCustom as u8);
         assert_eq!(event.1,0); //evm
         assert_eq!(event.2,BridgeChainId::SuiCustom as u8);
         assert_eq!(event.3,event_seq_num); // from benfen
         assert_eq!(event.5,bridge_test_cluster.eth_env().contracts().arrow);
+        //amount in usdt,decimal is 6
         assert_eq!(event.6,amount_after_fee);
+        //lp amount,decimal is 9
         assert_eq!(event.7,amount_after_fee*1000);
         assert_eq!(event.8,protocol_type);
         assert_eq!(event.9,protocol_version);
         assert_eq!(event.10,protocol_token_id);
-        assert_eq!(event.11,amount_after_fee);
+        //principal amount in busd,decimal is 9
+        assert_eq!(event.11,amount_after_fee*1000);
         assert_eq!(event.12,0);    
     }
 
@@ -665,6 +669,8 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
             target_chain,
         )
         .await.unwrap();
+    
+    info!("defitag100 amount_before_unstake: {:?}", amount_before_unstake);
     info!("unstake test started");
     let events = bridge_test_cluster
         .new_bridge_events(
@@ -676,6 +682,7 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
         .await;
     assert!(!events.is_empty(), "Should have TokenTransferApproved event");
     assert_eq!(events.len(), 1);
+    //withdraw amount is amount_after_fee/10
     let amount_after_fee = amount_after_fee / 10;
     initiate_defi_bridge_unstake_sui_to_eth(&bridge_test_cluster, protocol_type, protocol_version, protocol_token_id, amount_after_fee,false)
         .await
@@ -690,15 +697,15 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
         .await;
     // There are exactly 2 approved events,one for unstake and one for stake
     assert_eq!(events.len(), 1);
-    info!("unstake events: {:?}", events[0]);
+    info!("defitag100 sui unstake events: {:?}", events[0]);
     info!("unstake benfen approved");
     // 在以太坊上投资已桥接的代币
     let tx_response = invest_bridged_tokens_on_eth(&bridge_test_cluster, event_seq_num+1).await?;
-    info!("unstake tx response: {:?}", tx_response);
+    info!("defitag100 evm unstake tx response: {:?}", tx_response);
 
     if let Some(log) = tx_response.logs.last() {
         let event = decode_tokens_unstaked_event(log)?;
-        info!("Event data - source chain: {}, nonce: {}, dest chain: {}, origin nonce: {}, recipient: {:?}, sender: {}, adjusted amount: {}, LP amount: {}, protocol type: {}, version: {}, token ID: {}, principal: {}, action: {}", 
+        info!("defitag100 Event data - source chain: {}, nonce: {}, dest chain: {}, origin nonce: {}, recipient: {:?}, sender: {}, adjusted amount: {}, LP amount: {}, protocol type: {}, version: {}, token ID: {}, principal: {}, action: {}", 
             event.0, event.1, event.2, event.3, event.4, event.5, event.6, event.7, event.8, event.9, event.10, event.11, event.12);
         assert_eq!(event.0,BridgeChainId::EthCustom as u8);
         assert_eq!(event.1,event_seq_num+1); //evm
@@ -1040,11 +1047,12 @@ async fn test_bridge_defi_stake_and_unstake_revoke_twice_e2e() -> Result<(), any
         assert_eq!(event.3,event_seq_num); // from benfen
         assert_eq!(event.5,bridge_test_cluster.eth_env().contracts().arrow);
         assert_eq!(event.6,amount_after_fee);
-        assert_eq!(event.7,amount_after_fee);
+        assert_eq!(event.7,amount_after_fee*1000);
         assert_eq!(event.8,protocol_type);
         assert_eq!(event.9,protocol_version);
         assert_eq!(event.10,protocol_token_id);
-        assert_eq!(event.11,0);    
+        assert_eq!(event.11,amount_after_fee*1000);  
+        assert_eq!(event.12,0);    
     }
 
     // check claim on sui side
@@ -1142,7 +1150,8 @@ async fn test_bridge_defi_stake_and_unstake_revoke_twice_e2e() -> Result<(), any
         assert_eq!(event.8,protocol_type);
         assert_eq!(event.9,protocol_version);
         assert_eq!(event.10,protocol_token_id);
-        assert_eq!(event.11,1);
+        assert_eq!(event.11,amount_after_fee);
+        assert_eq!(event.12,1);
     }
     info!("unstake event decoded");
     let mut attempts = 0;
@@ -1465,11 +1474,12 @@ async fn test_bridge_defi_stake_and_unstake_gt_lp_amount_e2e() -> Result<(), any
         assert_eq!(event.3,event_seq_num); // from benfen
         assert_eq!(event.5,bridge_test_cluster.eth_env().contracts().arrow);
         assert_eq!(event.6,amount_after_fee);
-        assert_eq!(event.7,amount_after_fee);
+        assert_eq!(event.7,amount_after_fee*1000);
         assert_eq!(event.8,protocol_type);
         assert_eq!(event.9,protocol_version);
         assert_eq!(event.10,protocol_token_id);
-        assert_eq!(event.11,0);    
+        assert_eq!(event.11,amount_after_fee*1000);  
+        assert_eq!(event.12,0);    
     }
 
     // check claim on sui side
@@ -1516,9 +1526,10 @@ async fn test_bridge_defi_stake_and_unstake_gt_lp_amount_e2e() -> Result<(), any
         .await;
     assert!(!events.is_empty(), "Should have TokenTransferApproved event");
     assert_eq!(events.len(), 1);
-    let amount_after_fee = amount_after_fee+100;
+    let amount_after_fee = amount_after_fee*1000+100;
     let result = initiate_defi_bridge_unstake_sui_to_eth(&bridge_test_cluster, protocol_type, protocol_version, protocol_token_id, amount_after_fee,false)
         .await;
+    info!("defitag100 result: {:?}", result);
     let err = result.unwrap_err();
     info!("bbking110 error: {:?}", err);
     assert!(err.to_string().contains("Sui TX error"), "Error should be Sui TX error");
