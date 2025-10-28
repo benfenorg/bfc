@@ -2071,6 +2071,9 @@ hfe_ops_multiplied
 hfe_ops_compare_value
 	public fun
 	0x2::hfe_ops
+hfe_ops_compare_value1_and_value2
+	public fun
+	0x2::hfe_ops
 hfe_ops_encode_data
 	public fun
 	0x2::hfe_ops
@@ -2084,6 +2087,9 @@ Anonymous_Balance
 	public struct
 	0x2::anonymous_balance
 create_by_value
+	public fun
+	0x2::anonymous_balance
+create_by_value1_and_value2
 	public fun
 	0x2::anonymous_balance
 value1
@@ -2120,6 +2126,9 @@ compare
 	public fun
 	0x2::anonymous_balance
 split
+	public fun
+	0x2::anonymous_balance
+split_anonymous
 	public fun
 	0x2::anonymous_balance
 destroy_zero
@@ -2185,6 +2194,9 @@ from_balance
 into_balance
 	public fun
 	0x2::anonymous_coin
+take_anonymous
+	public fun
+	0x2::anonymous_coin
 take
 	public fun
 	0x2::anonymous_coin
@@ -2195,6 +2207,9 @@ join
 	public entry fun
 	0x2::anonymous_coin
 split
+	public fun
+	0x2::anonymous_coin
+split_anonymous
 	public fun
 	0x2::anonymous_coin
 compare
@@ -2353,10 +2368,16 @@ keep
 split
 	public entry fun
 	0x2::anonymous_pay
+split_anonymous
+	public entry fun
+	0x2::anonymous_pay
 split_vec
 	public entry fun
 	0x2::anonymous_pay
 split_and_transfer
+	public entry fun
+	0x2::anonymous_pay
+split_and_transfer_anonymous
 	public entry fun
 	0x2::anonymous_pay
 join
