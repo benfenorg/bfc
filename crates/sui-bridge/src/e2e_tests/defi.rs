@@ -1541,7 +1541,7 @@ fn decode_tokens_staked_event(
 
     // 校验事件签名
     let expected_sig = ethers::utils::keccak256(
-        b"TokensStaked(uint8,uint64,uint8,uint64,bytes,address,uint64,uint64,uint64,uint64,uint64,uint8)",
+        b"TokensStaked(uint8,uint64,uint8,uint64,bytes,address,uint64,uint64,uint64,uint64,uint64,uint64,uint8)",
     );
     if log.topics.len() < 4 || log.topics[0] != H256::from(expected_sig) {
         return Err(anyhow!("not a TokensStaked event (signature mismatch)"));
@@ -1670,7 +1670,7 @@ fn decode_tokens_unstaked_event(
 
     // 校验事件签名
     let expected_sig = ethers::utils::keccak256(
-        b"TokensUnStaked(uint8,uint64,uint8,uint64,bytes,address,uint64,uint64,uint64,uint64,uint64,uint8)",
+        b"TokensUnStaked(uint8,uint64,uint8,uint64,bytes,address,uint64,uint64,uint64,uint64,uint64,uint64,uint8)",
     );
     if log.topics.len() < 4 || log.topics[0] != H256::from(expected_sig) {
         return Err(anyhow!("not a TokensUnStaked event (signature mismatch)"));

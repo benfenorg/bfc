@@ -217,264 +217,275 @@ contract InvestTest is BridgeBaseTest, ISuiBridge {
             assertEq(abalance-bbalance,amount);
     }
 
-//     function testInvestStakedUSDCVerifyTokensStakedEvent() public {
-//             //部署invest 合约
-//             MockArrow arrow = new MockArrow(address(vault));
-//             uint64 protocolType = 1;
-//             uint64 tokenID = BridgeUtils.USDC;
-//             uint64 lpTokenId = 100;
-//             uint64 originNonce = 1;
+    function testInvestStakedUSDCVerifyTokensStakedEvent() public {
+            //部署invest 合约
+            MockArrow arrow = new MockArrow(address(vault));
+            uint64 protocolType = 1;
+            uint64 tokenID = BridgeUtils.USDC;
+            uint64 lpTokenId = 100;
+            uint64 originNonce = 1;
 
-//             address lpToken = createLpToken();
-//             //设置lp token
-//             //1 aave 2 compound
-//             arrow.setLpToken(1,USDC, lpToken);
-//             //给资管合约 mint lpToken
-//             mintLpToken(lpToken, address(arrow), 1000000000000000);
-//             //添加lp token
-//             addLpToken(lpToken, lpTokenId);
+            address lpToken = createLpToken();
+            //设置lp token
+            //1 aave 2 compound
+            arrow.setLpToken(1,USDC, lpToken);
+            //给资管合约 mint lpToken
+            mintLpToken(lpToken, address(arrow), 1000000000000000);
+            //添加lp token
+            addLpToken(lpToken, lpTokenId);
 
-//             //添加lp token id
-//             addLpTokenID(protocolType, tokenID, lpTokenId);
-//             //设置invest合约
-//             setInvestContract(address(arrow));
+            //添加lp token id
+            addLpTokenID(protocolType, tokenID, lpTokenId);
+            //设置invest合约
+            setInvestContract(address(arrow));
 
-//             //构造stake calldata
-//             changePrank(USDCWhale);
-//             IERC20(USDC).transfer(address(vault), 100_000_000);
-//             changePrank(deployer);
+            //构造stake calldata
+            changePrank(USDCWhale);
+            IERC20(USDC).transfer(address(vault), 100_000_000);
+            changePrank(deployer);
 
-//             // Create Defi payload
-//             uint8 senderAddressLength = 32;
-//             bytes memory senderAddress = abi.encode(0);
-//             uint8 targetChain = chainID;
-//             uint8 recipientAddressLength = 20;
-//             address recipientAddress = bridgerA;
-//             uint64 amount = 1_000_000;
-//             uint16 eventIdx = 0;
-//             //uint64 protocolType=1; 
-//             uint64 protocolVersion=1;
-//             uint64 protocolTokenID=tokenID;
-//             uint8 actionType=0;
+            // Create Defi payload
+            uint8 senderAddressLength = 32;
+            bytes memory senderAddress = abi.encode(0);
+            uint8 targetChain = chainID;
+            uint8 recipientAddressLength = 20;
+            address recipientAddress = bridgerA;
+            uint64 amount = 1_000_000;
+            uint16 eventIdx = 0;
+            //uint64 protocolType=1; 
+            uint64 protocolVersion=1;
+            uint64 protocolTokenID=tokenID;
+            uint8 actionType=0;
+            uint64 principalAmount=1_000_000;
 
-//             bytes memory payload = abi.encodePacked(
-//                 senderAddressLength,
-//                 senderAddress,
-//                 targetChain,
-//                 amount,
-//                 new bytes(0),
-//                 eventIdx,
-//                 protocolType,
-//                 protocolVersion,
-//                 protocolTokenID,
-//                 actionType
-//             );
+            
 
-//             // Create Defi message
-//             BridgeUtils.Message memory message = BridgeUtils.Message({
-//                 messageType: BridgeUtils.DEFI,
-//                 version: 1,
-//                 nonce: originNonce,
-//                 chainID: 0,
-//                 payload: payload
-//             });
+            bytes memory payload = abi.encodePacked(
+                senderAddressLength,
+                senderAddress,
+                targetChain,
+                amount,
+                new bytes(0),
+                eventIdx,
+                protocolType,
+                protocolVersion,
+                protocolTokenID,
+                actionType,
+                principalAmount
+            );
 
-
-//             bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
-//             bytes32 messageHash = keccak256(encodedMessage);
-
-//             //signatures
-//             bytes[] memory signatures = new bytes[](4);
-
-//             signatures[0] = getSignature(messageHash, committeeMemberPkA);
-//             signatures[1] = getSignature(messageHash, committeeMemberPkB);
-//             signatures[2] = getSignature(messageHash, committeeMemberPkC);
-//             signatures[3] = getSignature(messageHash, committeeMemberPkD);
-
-//             uint256 bbalance=IERC20(lpToken).balanceOf(address(vault));
+            // Create Defi message
+            BridgeUtils.Message memory message = BridgeUtils.Message({
+                messageType: BridgeUtils.DEFI,
+                version: 1,
+                nonce: originNonce,
+                chainID: 0,
+                payload: payload
+            });
 
 
-//             //期望事件
+            bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+            bytes32 messageHash = keccak256(encodedMessage);
 
-//             vm.expectEmit(true, true, true, true);
-//             // emit Invested(0, USDC, 1_000_000);
-//             emit TokensStaked(
-//                 1,// evm
-//                 0, //nonce from evm
-//                 0, //destination chain id (from benfen)
-//                 originNonce, //origin nonce(from benfen)
-//                 senderAddress, //senderAddress
-//                 address(arrow), //recipientAddress (mock arrow)
-//                 0, //erc20AdjustedAmount
-//                 amount, //erc20lpTokenAmount
-//                 protocolType,
-//                 protocolVersion,
-//                 protocolTokenID,
-//                 actionType
-//             );
-//             //调用
-//             bridge.investBridgedTokensWithSignatures(signatures, message);
+            //signatures
+            bytes[] memory signatures = new bytes[](4);
 
-//             uint256 abalance=IERC20(lpToken).balanceOf(address(vault));
+            signatures[0] = getSignature(messageHash, committeeMemberPkA);
+            signatures[1] = getSignature(messageHash, committeeMemberPkB);
+            signatures[2] = getSignature(messageHash, committeeMemberPkC);
+            signatures[3] = getSignature(messageHash, committeeMemberPkD);
 
-//             assertEq(abalance-bbalance,amount);
-
-//     }
-
-//     function testInvestStakedUSDCVerifyTokensStakedeTwiceEvent() public {
-//             //部署invest 合约
-//             MockArrow arrow = new MockArrow(address(vault));
-//             uint64 protocolType = 1;
-//             uint64 tokenID = BridgeUtils.USDC;
-//             uint64 lpTokenId = 100;
-
-//             uint64 firstOriginNonce = 100;
-//             uint64 secondOriginNonce = 50;
+            uint256 bbalance=IERC20(lpToken).balanceOf(address(vault));
 
 
-//             address lpToken = createLpToken();
-//             //设置lp token
-//             //1 aave 2 compound
-//             arrow.setLpToken(1,USDC, lpToken);
-//             //给资管合约 mint lpToken
-//             mintLpToken(lpToken, address(arrow), 1000000000000000);
-//             //添加lp token
-//             addLpToken(lpToken, lpTokenId);
+            //期望事件
 
-//             //添加lp token id
-//             addLpTokenID(protocolType, tokenID, lpTokenId);
-//             //设置invest合约
-//             setInvestContract(address(arrow));
+            vm.expectEmit(true, true, true, true);
+            // emit Invested(0, USDC, 1_000_000);
+            emit TokensStaked(
+                1,// evm
+                0, //nonce from evm
+                0, //destination chain id (from benfen)
+                originNonce, //origin nonce(from benfen)
+                senderAddress, //senderAddress
+                address(arrow), //recipientAddress (mock arrow)
+                amount, //erc20AdjustedAmount
+                amount, //erc20lpTokenAmount
+                protocolType,
+                protocolVersion,
+                protocolTokenID,
+                principalAmount,
+                actionType
+            );
+            //调用
+            bridge.investBridgedTokensWithSignatures(signatures, message);
 
-//             //构造stake calldata
-//             changePrank(USDCWhale);
-//             IERC20(USDC).transfer(address(vault), 100_000_000);
-//             changePrank(deployer);
+            uint256 abalance=IERC20(lpToken).balanceOf(address(vault));
 
-//             // Create Defi payload
-//             uint8 senderAddressLength = 32;
-//             bytes memory senderAddress = abi.encode(0);
-//             uint8 targetChain = chainID;
-//             uint8 recipientAddressLength = 20;
-//             address recipientAddress = bridgerA;
-//             uint64 amount = 1_000_000;
-//             uint16 eventIdx = 0;
-//             //uint64 protocolType=1; 
-//             uint64 protocolVersion=1;
-//             uint64 protocolTokenID=tokenID;
-//             uint8 actionType=0;
+            assertEq(abalance-bbalance,amount);
 
-//             bytes memory payload = abi.encodePacked(
-//                 senderAddressLength,
-//                 senderAddress,
-//                 targetChain,
-//                 amount,
-//                 new bytes(0),
-//                 eventIdx,
-//                 protocolType,
-//                 protocolVersion,
-//                 protocolTokenID,
-//                 actionType
-//             );
+    }
 
-//             // Create Defi message
-//             BridgeUtils.Message memory message = BridgeUtils.Message({
-//                 messageType: BridgeUtils.DEFI,
-//                 version: 1,
-//                 nonce: firstOriginNonce,
-//                 chainID: 0,
-//                 payload: payload
-//             });
+    function testInvestStakedUSDCVerifyTokensStakedeTwiceEvent() public {
+            //部署invest 合约
+            MockArrow arrow = new MockArrow(address(vault));
+            uint64 protocolType = 1;
+            uint64 tokenID = BridgeUtils.USDC;
+            uint64 lpTokenId = 100;
+
+            uint64 firstOriginNonce = 100;
+            uint64 secondOriginNonce = 50;
 
 
-//             bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
-//             bytes32 messageHash = keccak256(encodedMessage);
+            address lpToken = createLpToken();
+            //设置lp token
+            //1 aave 2 compound
+            arrow.setLpToken(1,USDC, lpToken);
+            //给资管合约 mint lpToken
+            mintLpToken(lpToken, address(arrow), 1000000000000000);
+            //添加lp token
+            addLpToken(lpToken, lpTokenId);
 
-//             //signatures
-//             bytes[] memory signatures = new bytes[](4);
+            //添加lp token id
+            addLpTokenID(protocolType, tokenID, lpTokenId);
+            //设置invest合约
+            setInvestContract(address(arrow));
 
-//             signatures[0] = getSignature(messageHash, committeeMemberPkA);
-//             signatures[1] = getSignature(messageHash, committeeMemberPkB);
-//             signatures[2] = getSignature(messageHash, committeeMemberPkC);
-//             signatures[3] = getSignature(messageHash, committeeMemberPkD);
+            //构造stake calldata
+            changePrank(USDCWhale);
+            IERC20(USDC).transfer(address(vault), 100_000_000);
+            changePrank(deployer);
 
-//             uint256 bbalance=IERC20(lpToken).balanceOf(address(vault));
-
-
-//             //期望事件
-
-//             vm.expectEmit(true, true, true, true);
-//             // emit Invested(0, USDC, 1_000_000);
-//             emit TokensStaked(
-//                 1,// evm
-//                 0, //nonce from evm
-//                 0, //destination chain id (from benfen)
-//                 firstOriginNonce, //origin nonce(from benfen) first
-//                 senderAddress, //senderAddress
-//                 address(arrow), //recipientAddress (mock arrow)
-//                 0, //erc20AdjustedAmount
-//                 amount, //erc20lpTokenAmount
-//                 protocolType,
-//                 protocolVersion,
-//                 protocolTokenID,
-//                 actionType
-//             );
-//             //调用
-//             bridge.investBridgedTokensWithSignatures(signatures, message);
-
-//             uint256 abalance=IERC20(lpToken).balanceOf(address(vault));
-
-//             assertEq(abalance-bbalance,amount);
+            // Create Defi payload
+            uint8 senderAddressLength = 32;
+            bytes memory senderAddress = abi.encode(0);
+            uint8 targetChain = chainID;
+            uint8 recipientAddressLength = 20;
+            address recipientAddress = bridgerA;
+            uint64 amount = 1_000_000;
+            uint16 eventIdx = 0;
+            //uint64 protocolType=1; 
+            uint64 protocolVersion=1;
+            uint64 protocolTokenID=tokenID;
+            uint8 actionType=0;
+            uint64 principalAmount=1_000_000;
 
 
 
-//             message = BridgeUtils.Message({
-//                 messageType: BridgeUtils.DEFI,
-//                 version: 1,
-//                 nonce: secondOriginNonce,
-//                 chainID: 0,
-//                 payload: payload
-//             });
+            bytes memory payload = abi.encodePacked(
+                senderAddressLength,
+                senderAddress,
+                targetChain,
+                amount,
+                new bytes(0),
+                eventIdx,
+                protocolType,
+                protocolVersion,
+                protocolTokenID,
+                principalAmount,
+                actionType
+            );
+
+            // Create Defi message
+            BridgeUtils.Message memory message = BridgeUtils.Message({
+                messageType: BridgeUtils.DEFI,
+                version: 1,
+                nonce: firstOriginNonce,
+                chainID: 0,
+                payload: payload
+            });
 
 
-//             encodedMessage = BridgeUtils.encodeMessage(message);
-//             messageHash = keccak256(encodedMessage);
+            bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+            bytes32 messageHash = keccak256(encodedMessage);
 
-//             //signatures
-//             // bytes[] memory signatures = new bytes[](4);
+            //signatures
+            bytes[] memory signatures = new bytes[](4);
 
-//             signatures[0] = getSignature(messageHash, committeeMemberPkA);
-//             signatures[1] = getSignature(messageHash, committeeMemberPkB);
-//             signatures[2] = getSignature(messageHash, committeeMemberPkC);
-//             signatures[3] = getSignature(messageHash, committeeMemberPkD);
+            signatures[0] = getSignature(messageHash, committeeMemberPkA);
+            signatures[1] = getSignature(messageHash, committeeMemberPkB);
+            signatures[2] = getSignature(messageHash, committeeMemberPkC);
+            signatures[3] = getSignature(messageHash, committeeMemberPkD);
 
-//             bbalance=IERC20(lpToken).balanceOf(address(vault));
+            uint256 bbalance=IERC20(lpToken).balanceOf(address(vault));
 
 
-//             //期望事件
+            //期望事件
 
-//             vm.expectEmit(true, true, true, true);
-//             emit TokensStaked(
-//                 1,// evm
-//                 1, //nonce from evm (第二笔已经递增)
-//                 0, //destination chain id (from benfen)
-//                 secondOriginNonce, //origin nonce(from benfen) second
-//                 senderAddress, //senderAddress
-//                 address(arrow), //recipientAddress (mock arrow)
-//                 0, //erc20AdjustedAmount
-//                 amount, //erc20lpTokenAmount
-//                 protocolType,
-//                 protocolVersion,
-//                 protocolTokenID,
-//                 actionType
-//             );
-//             //调用
-//             bridge.investBridgedTokensWithSignatures(signatures, message);
+            vm.expectEmit(true, true, true, true);
+            // emit Invested(0, USDC, 1_000_000);
+            emit TokensStaked(
+                1,// evm
+                0, //nonce from evm
+                0, //destination chain id (from benfen)
+                firstOriginNonce, //origin nonce(from benfen) first
+                senderAddress, //senderAddress
+                address(arrow), //recipientAddress (mock arrow)
+                amount, //erc20AdjustedAmount
+                amount, //erc20lpTokenAmount
+                protocolType,
+                protocolVersion,
+                protocolTokenID,
+                principalAmount,
+                actionType
+            );
+            //调用
+            bridge.investBridgedTokensWithSignatures(signatures, message);
 
-//             abalance=IERC20(lpToken).balanceOf(address(vault));
+            uint256 abalance=IERC20(lpToken).balanceOf(address(vault));
 
-//             assertEq(abalance-bbalance,amount);
-//     } 
+            assertEq(abalance-bbalance,amount);
+
+
+
+            message = BridgeUtils.Message({
+                messageType: BridgeUtils.DEFI,
+                version: 1,
+                nonce: secondOriginNonce,
+                chainID: 0,
+                payload: payload
+            });
+
+
+            encodedMessage = BridgeUtils.encodeMessage(message);
+            messageHash = keccak256(encodedMessage);
+
+            //signatures
+            // bytes[] memory signatures = new bytes[](4);
+
+            signatures[0] = getSignature(messageHash, committeeMemberPkA);
+            signatures[1] = getSignature(messageHash, committeeMemberPkB);
+            signatures[2] = getSignature(messageHash, committeeMemberPkC);
+            signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+            bbalance=IERC20(lpToken).balanceOf(address(vault));
+
+
+            //期望事件
+
+            vm.expectEmit(true, true, true, true);
+            emit TokensStaked(
+                1,// evm
+                1, //nonce from evm (第二笔已经递增)
+                0, //destination chain id (from benfen)
+                secondOriginNonce, //origin nonce(from benfen) second
+                senderAddress, //senderAddress
+                address(arrow), //recipientAddress (mock arrow)
+                amount, //erc20AdjustedAmount
+                amount, //erc20lpTokenAmount
+                protocolType,
+                protocolVersion,
+                protocolTokenID,
+                principalAmount,
+                actionType
+            );
+            //调用
+            bridge.investBridgedTokensWithSignatures(signatures, message);
+
+            abalance=IERC20(lpToken).balanceOf(address(vault));
+
+            assertEq(abalance-bbalance,amount);
+    } 
 
 //     function testInvestStakedUSDCUseTwiceSignatures() public {
 //             //部署invest 合约
