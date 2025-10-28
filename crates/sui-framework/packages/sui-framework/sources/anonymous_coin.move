@@ -382,20 +382,20 @@ module sui::anonymous_coin {
         cap.total_supply.increase_supply(value, ctx)
     }
 
-    /// Destroy the coin `c` and decrease the total supply in `cap`
-    /// accordingly.
-    public entry fun burn<T>(
-        cap: &mut TreasuryCap<T>,
-        c: Anonymous_Coin<T>,
-        signatures: vector<u8>,
-        anonymous_coin_id: address,
-        publickey: vector<u8>,
-        ctx: &mut TxContext,
-    ): u64 {
-        let Anonymous_Coin { id, balance } = c;
-        id.delete();
-        cap.total_supply.decrease_supply(balance, signatures, anonymous_coin_id, publickey, ctx.sender())
-    }
+    // /// Destroy the coin `c` and decrease the total supply in `cap`
+    // /// accordingly.
+    // public entry fun burn<T>(
+    //     cap: &mut TreasuryCap<T>,
+    //     c: Anonymous_Coin<T>,
+    //     signatures: vector<u8>,
+    //     anonymous_coin_id: address,
+    //     publickey: vector<u8>,
+    //     ctx: &mut TxContext,
+    // ): u64 {
+    //     let Anonymous_Coin { id, balance } = c;
+    //     id.delete();
+    //     cap.total_supply.decrease_supply(balance, signatures, anonymous_coin_id, publickey, ctx.sender())
+    // }
 
     /// Adds the given address to the deny list, preventing it from interacting with the specified
     /// coin type as an input to a transaction. Additionally at the start of the next epoch, the

@@ -5,7 +5,8 @@
 /// module to allow balance operations and can be used to implement
 /// custom coins with `Supply` and `Balance`s.
 module sui::anonymous_balance;
-use sui::hfe_ops::{hfe_ops_add, hfe_ops_minus, hfe_ops_encode_data, hfe_ops_restore_value, hfe_ops_compare_value, hfe_ops_compare_value1_and_value2
+use sui::hfe_ops::{hfe_ops_add, hfe_ops_minus, hfe_ops_encode_data, hfe_ops_compare_value,
+    hfe_ops_compare_value1_and_value2, hfe_ops_restore_anonymous_value
 };
 
 /// Allows calling `.into_coin()` on a `Balance` to turn it into a coin.
@@ -84,8 +85,10 @@ public fun create_by_value1_and_value2<T>(value1: vector<u8>, value2: vector<u8>
     }
 }
 
-
-
+public fun prepare_for_tranfer<T>(self: &Anonymous_Balance<T>, ctx: &TxContext,):  Anonymous_Balance<T> {
+    let vaule = hfe_ops_restore_anonymous_value(self.value1, self.value2, ctx.sender());
+    create_by_value(vaule, ctx.sender())
+}
 
 public fun value1<T>(self: &Anonymous_Balance<T>): vector<u8> {
     self.value1
@@ -116,27 +119,27 @@ public fun increase_supply<T>(self: &mut Supply<T>, value: u64, ctx: &mut TxCont
     create_by_value(value, ctx.sender())
 }
 
-/// Burn a Balance<T> and decrease Supply<T>.
-public fun decrease_supply<T>(
-    self: &mut Supply<T>,
-    balance: Anonymous_Balance<T>,
-    signatures: vector<u8>,
-    id: address,
-    publickey: vector<u8>,
-    owner: address,
-): u64 {
-    let Anonymous_Balance {
-        encode_data: _,
-        version: _,
-        balance_type: _,
-        value1: value1,
-        value2: value2
-    } = balance;
-    let value = hfe_ops_restore_value(value1, value2, signatures, id, publickey, owner);
-    assert!(self.value >= value, EOverflow);
-    self.value = self.value - value;
-    value
-}
+// /// Burn a Balance<T> and decrease Supply<T>.
+// public fun decrease_supply<T>(
+//     self: &mut Supply<T>,
+//     balance: Anonymous_Balance<T>,
+//     signatures: vector<u8>,
+//     id: address,
+//     publickey: vector<u8>,
+//     owner: address,
+// ): u64 {
+//     let Anonymous_Balance {
+//         encode_data: _,
+//         version: _,
+//         balance_type: _,
+//         value1: value1,
+//         value2: value2
+//     } = balance;
+//     let value = hfe_ops_restore_value(value1, value2, signatures, id, publickey, owner);
+//     assert!(self.value >= value, EOverflow);
+//     self.value = self.value - value;
+//     value
+// }
 
 /// Create a zero `Balance` for type `T`.
 public fun zero<T>(ctx: &TxContext): Anonymous_Balance<T> {

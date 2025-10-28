@@ -12,13 +12,13 @@ custom coins with <code><a href="../sui/anonymous_balance.md#sui_anonymous_balan
 -  [Constants](#@Constants_0)
 -  [Function `create_by_value`](#sui_anonymous_balance_create_by_value)
 -  [Function `create_by_value1_and_value2`](#sui_anonymous_balance_create_by_value1_and_value2)
+-  [Function `prepare_for_tranfer`](#sui_anonymous_balance_prepare_for_tranfer)
 -  [Function `value1`](#sui_anonymous_balance_value1)
 -  [Function `value2`](#sui_anonymous_balance_value2)
 -  [Function `get_encode_data`](#sui_anonymous_balance_get_encode_data)
 -  [Function `supply_value`](#sui_anonymous_balance_supply_value)
 -  [Function `create_supply`](#sui_anonymous_balance_create_supply)
 -  [Function `increase_supply`](#sui_anonymous_balance_increase_supply)
--  [Function `decrease_supply`](#sui_anonymous_balance_decrease_supply)
 -  [Function `zero`](#sui_anonymous_balance_zero)
 -  [Function `update_encode_data`](#sui_anonymous_balance_update_encode_data)
 -  [Function `join`](#sui_anonymous_balance_join)
@@ -239,6 +239,31 @@ For when an overflow is happening on Supply operations.
 
 </details>
 
+<a name="sui_anonymous_balance_prepare_for_tranfer"></a>
+
+## Function `prepare_for_tranfer`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_prepare_for_tranfer">prepare_for_tranfer</a>&lt;T&gt;(self: &<a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, ctx: &<a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_prepare_for_tranfer">prepare_for_tranfer</a>&lt;T&gt;(self: &<a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, ctx: &TxContext,):  <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
+    <b>let</b> vaule = hfe_ops_restore_anonymous_value(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, ctx.sender());
+    <a href="../sui/anonymous_balance.md#sui_anonymous_balance_create_by_value">create_by_value</a>(vaule, ctx.sender())
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="sui_anonymous_balance_value1"></a>
 
 ## Function `value1`
@@ -381,48 +406,6 @@ Increase supply by <code>value</code> and create a new <code>Balance&lt;T&gt;</c
     <b>assert</b>!(value &lt; (18446744073709551615u64 - self.value), <a href="../sui/anonymous_balance.md#sui_anonymous_balance_EOverflow">EOverflow</a>);
     self.value = self.value + value;
     <a href="../sui/anonymous_balance.md#sui_anonymous_balance_create_by_value">create_by_value</a>(value, ctx.sender())
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="sui_anonymous_balance_decrease_supply"></a>
-
-## Function `decrease_supply`
-
-Burn a Balance<T> and decrease Supply<T>.
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_decrease_supply">decrease_supply</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Supply">sui::anonymous_balance::Supply</a>&lt;T&gt;, <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, signatures: vector&lt;u8&gt;, id: <b>address</b>, publickey: vector&lt;u8&gt;, owner: <b>address</b>): u64
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_decrease_supply">decrease_supply</a>&lt;T&gt;(
-    self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Supply">Supply</a>&lt;T&gt;,
-    <a href="../sui/balance.md#sui_balance">balance</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;,
-    signatures: vector&lt;u8&gt;,
-    id: <b>address</b>,
-    publickey: vector&lt;u8&gt;,
-    owner: <b>address</b>,
-): u64 {
-    <b>let</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a> {
-        encode_data: _,
-        version: _,
-        balance_type: _,
-        <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>,
-        <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>: <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>
-    } = <a href="../sui/balance.md#sui_balance">balance</a>;
-    <b>let</b> value = hfe_ops_restore_value(<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, signatures, id, publickey, owner);
-    <b>assert</b>!(self.value &gt;= value, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_EOverflow">EOverflow</a>);
-    self.value = self.value - value;
-    value
 }
 </code></pre>
 
