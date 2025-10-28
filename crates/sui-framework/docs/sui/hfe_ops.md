@@ -10,7 +10,7 @@ title: Module `sui::hfe_ops`
 -  [Function `hfe_ops_compare_value`](#sui_hfe_ops_hfe_ops_compare_value)
 -  [Function `hfe_ops_compare_value1_and_value2`](#sui_hfe_ops_hfe_ops_compare_value1_and_value2)
 -  [Function `hfe_ops_encode_data`](#sui_hfe_ops_hfe_ops_encode_data)
--  [Function `hfe_ops_restore_value`](#sui_hfe_ops_hfe_ops_restore_value)
+-  [Function `hfe_ops_restore_anonymous_value`](#sui_hfe_ops_hfe_ops_restore_anonymous_value)
 
 
 <pre><code></code></pre>
@@ -181,13 +181,13 @@ title: Module `sui::hfe_ops`
 
 </details>
 
-<a name="sui_hfe_ops_hfe_ops_restore_value"></a>
+<a name="sui_hfe_ops_hfe_ops_restore_anonymous_value"></a>
 
-## Function `hfe_ops_restore_value`
+## Function `hfe_ops_restore_anonymous_value`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_restore_value">hfe_ops_restore_value</a>(value1: vector&lt;u8&gt;, value2: vector&lt;u8&gt;, signature: vector&lt;u8&gt;, id: <b>address</b>, publickey: vector&lt;u8&gt;, owner: <b>address</b>): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_restore_anonymous_value">hfe_ops_restore_anonymous_value</a>(value1: vector&lt;u8&gt;, value2: vector&lt;u8&gt;, owner: <b>address</b>): u64
 </code></pre>
 
 
@@ -196,12 +196,9 @@ title: Module `sui::hfe_ops`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>native</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_restore_value">hfe_ops_restore_value</a>(
+<pre><code><b>public</b> <b>native</b> <b>fun</b> <a href="../sui/hfe_ops.md#sui_hfe_ops_hfe_ops_restore_anonymous_value">hfe_ops_restore_anonymous_value</a>(
     value1: vector&lt;u8&gt;,
     value2: vector&lt;u8&gt;,
-    signature: vector&lt;u8&gt;,
-    id: <b>address</b>,
-    publickey: vector&lt;u8&gt;,
     owner: <b>address</b>,
 ): u64;
 </code></pre>

@@ -3,6 +3,7 @@ use serde_json::{json, Value};
 use std::error::Error;
 use std::str::FromStr;
 use log::info;
+use move_core_types::account_address::AccountAddress;
 use sui_types::base_types::SuiAddress;
 use crate::utils::ZkVerifyRequest;
 
@@ -64,11 +65,13 @@ impl AnonymousClient {
         value3: String,
         value4: String,
     ) -> TestResult {
+        let owner = AccountAddress::from_hex_literal("0x1").unwrap();
         let params = json!({
             "value1": value1,
             "value2": value2,
             "value3": value3,
             "value4": value4,
+            "owner": owner,
         });
 
         match self
@@ -97,11 +100,13 @@ impl AnonymousClient {
         value3: String,
         value4: String,
     ) -> TestResult {
+        let owner = AccountAddress::from_hex_literal("0x1").unwrap();
         let params = json!({
             "value1": value1,
             "value2": value2,
             "value3": value3,
             "value4": value4,
+            "owner": owner,
         });
 
         match self
@@ -130,11 +135,13 @@ impl AnonymousClient {
         value3: String,
         value4: String,
     ) -> TestResult {
+        let owner = AccountAddress::from_hex_literal("0x1").unwrap();
         let params = json!({
             "value1": value1,
             "value2": value2,
             "value3": value3,
             "value4": value4,
+            "owner": owner,
         });
 
         match self
@@ -157,10 +164,12 @@ impl AnonymousClient {
     }
 
     pub async fn test_compare(&self, value1: String, value2: String, value3: u64) -> TestResult {
+        let owner = AccountAddress::from_hex_literal("0x1").unwrap();
         let params = json!({
             "value1": value1,
             "value2": value2,
             "value3": value3,
+            "owner": owner,
         });
 
         match self
@@ -184,11 +193,13 @@ impl AnonymousClient {
 
 
     pub async fn test_compare_value1_value2(&self, value1: String, value2: String, value3: String, value4: String) -> TestResult {
+        let owner = AccountAddress::from_hex_literal("0x1").unwrap();
         let params = json!({
             "value1": value1,
             "value2": value2,
             "value3": value3,
             "value4": value4,
+            "owner": owner,
         });
 
         match self
@@ -219,9 +230,10 @@ impl AnonymousClient {
         objectid: String,
         publickey: Vec<u8>,
     ) -> TestResult {
-
+        let owner = AccountAddress::from_hex_literal("0x1").unwrap();
         let params = Value::Object(
             serde_json::Map::from_iter([
+                ("owner".to_string(), json!(owner)),
                 ("publickey".to_string(), json!(publickey)),
                 ("signature".to_string(), json!(signature)),
                 ("anonymous_restore_array".to_string(), Value::Array(vec![
@@ -267,8 +279,11 @@ impl AnonymousClient {
         objectid2: String,
         object_id_list: String,
     ) -> TestResult {
+
+        let owner = AccountAddress::from_hex_literal("0x1").unwrap();
         let params = Value::Object(
             serde_json::Map::from_iter([
+                ("owner".to_string(), json!(owner)),
                 ("object_ids".to_string(), Value::String(object_id_list.clone())),
                 ("signature".to_string(), json!(signature)),
                 ("anonymous_restore_array".to_string(), Value::Array(vec![
@@ -312,11 +327,13 @@ impl AnonymousClient {
         signature: ZkVerifyRequest,
         objectid: String,
     ) -> TestResult {
+        let owner = AccountAddress::from_hex_literal("0x1").unwrap();
         let params = json!({
             "value1": value1,
             "value2": value2,
             "signature": signature,
             "objectid": objectid,
+            "owner": owner,
         });
 
         match self
@@ -346,12 +363,14 @@ impl AnonymousClient {
         objectid: String,
         publickey: Vec<u8>,
     ) -> TestResult {
+        let owner = AccountAddress::from_hex_literal("0x1").unwrap();
         let params = json!({
             "value1": value1,
             "value2": value2,
             "signature": signature,
             "objectid": objectid,
             "publickey": publickey,
+            "owner": owner,
         });
 
         match self
@@ -374,8 +393,10 @@ impl AnonymousClient {
     }
 
     pub async fn test_split(&self, value: u64) -> TestResult {
+        let user_address = AccountAddress::from_hex_literal("0x1").unwrap();
         let params = json!({
             "value": value,
+            "owner": user_address,
         });
 
         match self
@@ -547,6 +568,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_client_encode_data() {
+
         let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
 
         let server = AnonymousServer::new(None);
@@ -558,7 +580,7 @@ mod tests {
 
         let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
         let split_result_0 = client.test_split(20).await.response.unwrap();
-        info!("Split 20 Result: {:?}", split_result_0);
+        println!("Split 20 Result: {:?}", split_result_0);
 
     }
 
@@ -605,7 +627,7 @@ mod tests {
             .await
             .response
             .unwrap();
-        info!("Compare Result: {:?}", compare_result);
+        println!("Compare Result: {:?}", compare_result);
 
 
     }

@@ -2077,7 +2077,7 @@ hfe_ops_compare_value1_and_value2
 hfe_ops_encode_data
 	public fun
 	0x2::hfe_ops
-hfe_ops_restore_value
+hfe_ops_restore_anonymous_value
 	public fun
 	0x2::hfe_ops
 Supply
@@ -2090,6 +2090,9 @@ create_by_value
 	public fun
 	0x2::anonymous_balance
 create_by_value1_and_value2
+	public fun
+	0x2::anonymous_balance
+update_anonymous_balance
 	public fun
 	0x2::anonymous_balance
 value1
@@ -2108,9 +2111,6 @@ create_supply
 	public fun
 	0x2::anonymous_balance
 increase_supply
-	public fun
-	0x2::anonymous_balance
-decrease_supply
 	public fun
 	0x2::anonymous_balance
 zero
@@ -2235,9 +2235,6 @@ mint
 	0x2::anonymous_coin
 mint_balance
 	public fun
-	0x2::anonymous_coin
-burn
-	public entry fun
 	0x2::anonymous_coin
 deny_list_v2_add
 	public fun

@@ -70,11 +70,11 @@ module bfc_system::bfc_system {
     //spec module { pragma verify = false; }
 
     public(package) fun allocate_abfc(
-        abfc_balance: Anonymous_Balance<ABFC>,
+        mut abfc_balance: Anonymous_Balance<ABFC>,
         admin: address,
         ctx: &mut TxContext
     ){
-        //prepare for new owner..
+        abfc_balance.update_anonymous_balance(admin, ctx);
         transfer::public_transfer(abfc_balance.into_coin(ctx), admin);
     }
 

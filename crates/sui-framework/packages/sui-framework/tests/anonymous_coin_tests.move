@@ -123,7 +123,7 @@ module sui::anonymous_coin_tests {
 		    scenario.ctx()
 	    );
 
-        let balance = treasury.mint_balance<COIN_TESTS>(1000);
+        let balance = treasury.mint_balance<COIN_TESTS>(1000, scenario.ctx());
         let coin = anonymous_coin::from_balance(balance, scenario.ctx());
         // restore value after transfer
         // let value = coin.value();

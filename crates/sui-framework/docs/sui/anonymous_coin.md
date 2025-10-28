@@ -41,7 +41,6 @@ tokens and coins. <code>Coin</code> can be described as a secure wrapper around
 -  [Function `migrate_regulated_currency_to_v2`](#sui_anonymous_coin_migrate_regulated_currency_to_v2)
 -  [Function `mint`](#sui_anonymous_coin_mint)
 -  [Function `mint_balance`](#sui_anonymous_coin_mint_balance)
--  [Function `burn`](#sui_anonymous_coin_burn)
 -  [Function `deny_list_v2_add`](#sui_anonymous_coin_deny_list_v2_add)
 -  [Function `deny_list_v2_remove`](#sui_anonymous_coin_deny_list_v2_remove)
 -  [Function `deny_list_v2_contains_current_epoch`](#sui_anonymous_coin_deny_list_v2_contains_current_epoch)
@@ -1196,41 +1195,6 @@ Aborts if <code>value</code> + <code>cap.<a href="../sui/anonymous_coin.md#sui_a
     cap: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;, value: u64, ctx: &<b>mut</b> TxContext
 ): Anonymous_Balance&lt;T&gt; {
     cap.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_total_supply">total_supply</a>.increase_supply(value, ctx)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="sui_anonymous_coin_burn"></a>
-
-## Function `burn`
-
-Destroy the coin <code>c</code> and decrease the total supply in <code>cap</code>
-accordingly.
-
-
-<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_burn">burn</a>&lt;T&gt;(cap: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_TreasuryCap">sui::anonymous_coin::TreasuryCap</a>&lt;T&gt;, c: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, signatures: vector&lt;u8&gt;, anonymous_coin_id: <b>address</b>, publickey: vector&lt;u8&gt;, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): u64
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_burn">burn</a>&lt;T&gt;(
-    cap: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;,
-    c: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;,
-    signatures: vector&lt;u8&gt;,
-    anonymous_coin_id: <b>address</b>,
-    publickey: vector&lt;u8&gt;,
-    ctx: &<b>mut</b> TxContext,
-): u64 {
-    <b>let</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a> { id, <a href="../sui/balance.md#sui_balance">balance</a> } = c;
-    id.delete();
-    cap.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_total_supply">total_supply</a>.decrease_supply(<a href="../sui/balance.md#sui_balance">balance</a>, signatures, anonymous_coin_id, publickey, ctx.sender())
 }
 </code></pre>
 

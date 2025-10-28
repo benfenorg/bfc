@@ -5,7 +5,8 @@
 /// module to allow balance operations and can be used to implement
 /// custom coins with `Supply` and `Balance`s.
 module sui::anonymous_balance;
-use sui::hfe_ops::{hfe_ops_add, hfe_ops_minus, hfe_ops_encode_data, hfe_ops_restore_value, hfe_ops_compare_value, hfe_ops_compare_value1_and_value2
+use sui::hfe_ops::{hfe_ops_add, hfe_ops_minus, hfe_ops_encode_data, hfe_ops_compare_value,
+    hfe_ops_compare_value1_and_value2, hfe_ops_restore_anonymous_value
 };
 
 /// Allows calling `.into_coin()` on a `Balance` to turn it into a coin.
@@ -84,9 +85,16 @@ public fun create_by_value1_and_value2<T>(value1: vector<u8>, value2: vector<u8>
     }
 }
 
-
-public fun prepare_for_tranfer<T>(self: &Anonymous_Balance<T>):  &Anonymous_Balance<T>{
-
+public fun update_anonymous_balance<T>(self: &mut Anonymous_Balance<T>, new_owner: address, ctx: &TxContext) {
+    let value = hfe_ops_restore_anonymous_value(self.value1, self.value2, ctx.sender());
+    let mut encode_data = b"";
+    let (value1, value2)  = hfe_ops_encode_data(value, new_owner);
+    vector::append(&mut encode_data, value1);
+    vector::append(&mut encode_data, b",");
+    vector::append(&mut encode_data, value2);
+    self.encode_data = encode_data;
+    self.value1 = value1;
+    self.value2 = value2;
 }
 
 public fun value1<T>(self: &Anonymous_Balance<T>): vector<u8> {
@@ -118,27 +126,27 @@ public fun increase_supply<T>(self: &mut Supply<T>, value: u64, ctx: &mut TxCont
     create_by_value(value, ctx.sender())
 }
 
-/// Burn a Balance<T> and decrease Supply<T>.
-public fun decrease_supply<T>(
-    self: &mut Supply<T>,
-    balance: Anonymous_Balance<T>,
-    signatures: vector<u8>,
-    id: address,
-    publickey: vector<u8>,
-    owner: address,
-): u64 {
-    let Anonymous_Balance {
-        encode_data: _,
-        version: _,
-        balance_type: _,
-        value1: value1,
-        value2: value2
-    } = balance;
-    let value = hfe_ops_restore_value(value1, value2, signatures, id, publickey, owner);
-    assert!(self.value >= value, EOverflow);
-    self.value = self.value - value;
-    value
-}
+// /// Burn a Balance<T> and decrease Supply<T>.
+// public fun decrease_supply<T>(
+//     self: &mut Supply<T>,
+//     balance: Anonymous_Balance<T>,
+//     signatures: vector<u8>,
+//     id: address,
+//     publickey: vector<u8>,
+//     owner: address,
+// ): u64 {
+//     let Anonymous_Balance {
+//         encode_data: _,
+//         version: _,
+//         balance_type: _,
+//         value1: value1,
+//         value2: value2
+//     } = balance;
+//     let value = hfe_ops_restore_value(value1, value2, signatures, id, publickey, owner);
+//     assert!(self.value >= value, EOverflow);
+//     self.value = self.value - value;
+//     value
+// }
 
 /// Create a zero `Balance` for type `T`.
 public fun zero<T>(ctx: &TxContext): Anonymous_Balance<T> {
@@ -264,10 +272,12 @@ public fun create_supply_for_testing<T>(): Supply<T> {
 
 #[test_only]
 public fun compare_anoymous_coin(input1: vector<u8>, input2: vector<u8>, input3: u64): u8 {
-    hfe_ops_compare_value(input1, input2, input3)
+    let owner : address = @0x1;
+    hfe_ops_compare_value(input1, input2, input3, owner)
 }
 
 #[test_only]
 public fun anoymous_coin_split_value(input1: u64): (vector<u8>, vector<u8>) {
-    hfe_ops_encode_data(input1)
+    let owner : address = @0x1;
+    hfe_ops_encode_data(input1, owner)
 }
