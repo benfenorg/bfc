@@ -2727,7 +2727,7 @@ fun test_defi_unstake() {
         protocol_token_id,
         source_chain
     );
-    assert!(holder_amount == adjusted_amount, 0);
+    assert!(holder_amount == 0, 0);
     assert!(lp_token_amount == 0, 0);
 
     //unstake end
@@ -2894,6 +2894,8 @@ fun test_defi_unstake_and_approve_defi_transfer_out(){
     bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
     let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
     assert!(transfer_out_events.length() == 1, 0);
+    let principal_amount = bridge::bridge::get_defi_transfer_out_event_principal_amount(transfer_out_events.borrow(0));
+    assert!(principal_amount == amount*1000, 0);
 
     let holder_amount = bridge.defi_holders_amount_get(
         address::from_bytes(sender_address),
@@ -2909,7 +2911,7 @@ fun test_defi_unstake_and_approve_defi_transfer_out(){
         protocol_token_id,
         source_chain
     );
-    assert!(holder_amount == adjusted_amount, 0);
+    assert!(holder_amount == 0, 0);
     assert!(lp_token_amount == 0, 0);
 
     // Check that the bridge record was stored
@@ -3198,14 +3200,14 @@ fun test_defi_unstake_and_approve_defi_transfer_in(){
         protocol_token_id,
         source_chain
     );
-    assert!(holder_amount == adjusted_amount, 0);
+    assert!(holder_amount == 0, 0);
     assert!(lp_token_amount == 0, 0);
     scenario.next_tx(@0x0);
     let chain_id_evm = chain_ids::eth_custom();
     let chain_id_sui = chain_ids::sui_custom();
     let seq_num_1 = 1;
     let address_sui = address::to_bytes(@0x0);
-    let amount_retake = 1000;
+    let amount_retake = 1100;
     let lp_token_amount = 1000_000_000_000;
     // Create a BridgeMessage for defi transfer in
     let message_in = message::create_defi_transfer_in_message(
@@ -3223,7 +3225,7 @@ fun test_defi_unstake_and_approve_defi_transfer_in(){
         0u64,
         UNSTAKE,
         lp_token_amount,
-        lp_token_amount,
+        amount*1000,
     );
     // Create signatures
     let signatures_in = sign_message_with_mut(&mut env, message_in, vector[0, 1, 2]);
@@ -3238,6 +3240,14 @@ fun test_defi_unstake_and_approve_defi_transfer_in(){
     bridge.claim_and_transfer_busd_for_defi<BUSDFAKER>(&mut bfc_system_state, &clock, chain_id_evm, seq_num_1, &cap, ctx);
     let transfer_in_events = sui::event::events_by_type<bridge::bridge::DefiTokensUnstakeEvent>();
     assert!(transfer_in_events.length() == 1, 0);
+    let principal_amount = bridge::bridge::get_defi_tokens_unstake_event_principal_amount(transfer_in_events.borrow(0));
+    let fee_actual = bridge::bridge::get_defi_tokens_unstake_event_fee(transfer_in_events.borrow(0));
+    std::debug::print(&fee_actual);
+    let fee_maybe=(amount_retake-amount)*1000*15/100;
+    std::debug::print(&fee_maybe);
+    assert!(fee_actual == fee_maybe, 0);
+
+    assert!(principal_amount == amount*1000, 0);
     let holder_amount = bridge.defi_holders_amount_get(
         address::from_bytes(sender_address),
         protocol_type,

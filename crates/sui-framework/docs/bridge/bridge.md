@@ -1739,15 +1739,6 @@ title: Module `bridge::bridge`
 
 
 
-<a name="bridge_bridge_EDefiUnstakePrincipalNotEnough"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_EDefiUnstakePrincipalNotEnough">EDefiUnstakePrincipalNotEnough</a>: u64 = 67;
-</code></pre>
-
-
-
 <a name="bridge_bridge_EDuplicateRefund"></a>
 
 
@@ -2526,7 +2517,7 @@ title: Module `bridge::bridge`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_unstake">defi_unstake</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, target_chain: u8, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, amount: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_unstake">defi_unstake</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, target_chain: u8, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, lp_amount: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2541,14 +2532,14 @@ title: Module `bridge::bridge`
     protocol_type: u64,
     protocol_version: u64,
     protocol_token_id: u64,
-    amount: u64,
+    lp_amount: u64,
     ctx: &<b>mut</b> TxContext
 ) {
     <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
     <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>assert</b>!(<a href="../bridge/chain_ids.md#bridge_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="../bridge/bridge.md#bridge_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
     <b>let</b> bridge_seq_num = inner.<a href="../bridge/bridge.md#bridge_bridge_get_current_seq_num_and_increment">get_current_seq_num_and_increment</a>(<a href="../bridge/message_types.md#bridge_message_types_defi">message_types::defi</a>());
-    <b>assert</b>!(amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
+    <b>assert</b>!(lp_amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
     <b>assert</b>!(protocol_token_id == <a href="../bridge/bridge.md#bridge_bridge_TOKEN_ID_USDC">TOKEN_ID_USDC</a> || protocol_token_id == <a href="../bridge/bridge.md#bridge_bridge_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, <a href="../bridge/bridge.md#bridge_bridge_EOnlySupportUsdcOrUsdt">EOnlySupportUsdcOrUsdt</a>);
     <b>assert</b>!(<a href="../bridge/tokenlist.md#bridge_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(parent_id, target_chain <b>as</b> u64, protocol_token_id),<a href="../bridge/bridge.md#bridge_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
     <b>let</b> defi_protocol_key = <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>{
@@ -2559,26 +2550,26 @@ title: Module `bridge::bridge`
     };
     <b>assert</b>!(<a href="../bridge/defi_protocols.md#bridge_defi_protocols_is_valid_protocol">defi_protocols::is_valid_protocol</a>(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain), <a href="../bridge/bridge.md#bridge_bridge_EDefiProtocolConfigNotFound">EDefiProtocolConfigNotFound</a>);
     <b>let</b> defi_info = inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(ctx.sender(), defi_protocol_key);
-    <b>assert</b>!(defi_info.lp_token_amount &gt;= amount, <a href="../bridge/bridge.md#bridge_bridge_EDefiUnstakeAmountNotEnough">EDefiUnstakeAmountNotEnough</a>);
-    <b>assert</b>!(inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_del">defi_holders_del</a>(ctx.sender(), defi_protocol_key, 0, amount), <a href="../bridge/bridge.md#bridge_bridge_EDefiUnstakeAmountNotEnoughForDel">EDefiUnstakeAmountNotEnoughForDel</a>);
-    //tips: defi_info_updated is the latest defi info, so we can <b>use</b> it to calculate the principal
-    <b>let</b> defi_info_updated = inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(ctx.sender(), defi_protocol_key);
-    <b>let</b> defi_protocol_info = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_get_protocol_info">defi_protocols::get_protocol_info</a>(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain);
-    <b>let</b> (_fee, principal) = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_manage_fee">defi_protocols::manage_fee</a>(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain, amount, 0, defi_info_updated.amount, defi_info_updated.lp_token_amount);
+    <b>assert</b>!(defi_info.lp_token_amount &gt;= lp_amount, <a href="../bridge/bridge.md#bridge_bridge_EDefiUnstakeAmountNotEnough">EDefiUnstakeAmountNotEnough</a>);
+    //calculate principal amount
+    <b>let</b> principal_amount = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_calculate_withdraw_principal_amount">defi_protocols::calculate_withdraw_principal_amount</a>(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain, lp_amount, defi_info.lp_token_amount, defi_info.amount);
+    <b>assert</b>!(principal_amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
+    <b>assert</b>!(inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_del">defi_holders_del</a>(ctx.sender(), defi_protocol_key, principal_amount, lp_amount), <a href="../bridge/bridge.md#bridge_bridge_EDefiUnstakeAmountNotEnoughForDel">EDefiUnstakeAmountNotEnoughForDel</a>);
     //check limit
-    <b>assert</b>!(defi_protocol_info.limit_unstake_amount() &gt;= principal, <a href="../bridge/bridge.md#bridge_bridge_EDefiLimitError">EDefiLimitError</a>);
+    <b>let</b> defi_protocol_info = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_get_protocol_info">defi_protocols::get_protocol_info</a>(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain);
+    <b>assert</b>!(defi_protocol_info.limit_unstake_amount() &gt;= principal_amount, <a href="../bridge/bridge.md#bridge_bridge_EDefiLimitError">EDefiLimitError</a>);
     <b>let</b> <a href="../bridge/message.md#bridge_message">message</a> = <a href="../bridge/message.md#bridge_message_create_defi_transfer_out_message">message::create_defi_transfer_out_message</a>(
         inner.chain_id,
         bridge_seq_num,
         address::to_bytes(ctx.sender()),
         target_chain,
-        amount,
+        lp_amount,
         hex::decode(b""), 0u16,
         protocol_type,
         protocol_version,
         protocol_token_id,
         <a href="../bridge/bridge.md#bridge_bridge_UNSTAKE">UNSTAKE</a>,
-        principal
+        principal_amount
     );
     // Store pending <a href="../bridge/bridge.md#bridge_bridge">bridge</a> request
     inner.token_transfer_records.push_back(
@@ -2596,13 +2587,13 @@ title: Module `bridge::bridge`
             source_chain: inner.chain_id,
             sender_address: address::to_bytes(ctx.sender()),
             target_chain,
-            amount_before_fee: amount,
-            amount_after_fee: amount,
+            amount_before_fee: lp_amount,
+            amount_after_fee: lp_amount,
             protocol_type: protocol_type,
             protocol_version: protocol_version,
             protocol_token_id: protocol_token_id,
             action_type: <a href="../bridge/bridge.md#bridge_bridge_UNSTAKE">UNSTAKE</a>,
-            principal_amount: principal,
+            principal_amount: principal_amount,
         },
     );
 }
@@ -5359,23 +5350,22 @@ title: Module `bridge::bridge`
         emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferLimitExceed">TokenTransferLimitExceed</a> { message_key: key });
         <b>return</b> (option::none(), owner)
     };
-    <b>let</b> defi_protocol_key = <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a> {
-        protocol_type: defi_payload.protocol_type_defi_in(),
-        protocol_version: defi_payload.protocol_version_defi_in(),
-        protocol_token_id: defi_payload.protocol_token_id_defi_in(),
-        chain_id: source_chain,
-    };
-    <b>let</b> defi_info = inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(owner, defi_protocol_key);
-    <b>let</b> (fee, principal)=<a href="../bridge/defi_protocols.md#bridge_defi_protocols_manage_fee">defi_protocols::manage_fee</a>(
+    // <b>let</b> defi_protocol_key = <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a> {
+    //     protocol_type: defi_payload.protocol_type_defi_in(),
+    //     protocol_version: defi_payload.protocol_version_defi_in(),
+    //     protocol_token_id: defi_payload.protocol_token_id_defi_in(),
+    //     chain_id: source_chain,
+    // };
+    // <b>let</b> _defi_info = inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(owner, defi_protocol_key);
+    <b>let</b> fee = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_manage_fee_v2">defi_protocols::manage_fee_v2</a>(
         parent_id,
-    defi_payload.protocol_type_defi_in(),
-    defi_payload.protocol_version_defi_in(),
-    defi_payload.protocol_token_id_defi_in(),
-    source_chain,
-    defi_payload.lp_token_amount_defi_in(),
-    amount,
-    defi_info.amount,
-    defi_info.lp_token_amount);
+        defi_payload.protocol_type_defi_in(),
+        defi_payload.protocol_version_defi_in(),
+        defi_payload.protocol_token_id_defi_in(),
+        source_chain,
+        defi_payload.principal_amount_defi_in(),
+        amount
+    );
     <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
     <b>let</b> amount_after_fee=amount-fee;
     // claim from <a href="../bridge/treasury.md#bridge_treasury">treasury</a>
@@ -5385,7 +5375,6 @@ title: Module `bridge::bridge`
         <b>let</b> fee_coin=bfc_system_state.mint_stable&lt;BUSD&gt;(fee,cap, ctx);
         <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
     };
-    <b>assert</b>!(inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_del">defi_holders_del</a>(owner, defi_protocol_key, principal, 0), <a href="../bridge/bridge.md#bridge_bridge_EDefiUnstakePrincipalNotEnough">EDefiUnstakePrincipalNotEnough</a>);
     inner.token_transfer_records[key].claimed = <b>true</b>;
     emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferClaimed">TokenTransferClaimed</a> { message_key: key });
     emit(<a href="../bridge/bridge.md#bridge_bridge_DefiTokensUnstakeEvent">DefiTokensUnstakeEvent</a> {
@@ -5399,7 +5388,7 @@ title: Module `bridge::bridge`
         protocol_type: defi_payload.protocol_type_defi_in(),
         protocol_version: defi_payload.protocol_version_defi_in(),
         protocol_token_id: defi_payload.protocol_token_id_defi_in(),
-        principal: principal,
+        principal: defi_payload.principal_amount_defi_in(),
         fee: fee,
     });
     (option::none(), owner)

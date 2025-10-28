@@ -6262,6 +6262,9 @@ protocol_token_id_defi_in
 original_seq_num_defi_in
 	public fun
 	0xb::message
+principal_amount_defi_in
+	public fun
+	0xb::message
 action_type_defi_in
 	public fun
 	0xb::message
@@ -6767,6 +6770,12 @@ delete_defi_protocol
 	public(package) fun
 	0xb::defi_protocols
 manage_fee
+	public(package) fun
+	0xb::defi_protocols
+manage_fee_v2
+	public(package) fun
+	0xb::defi_protocols
+calculate_withdraw_principal_amount
 	public(package) fun
 	0xb::defi_protocols
 new

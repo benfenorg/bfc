@@ -1643,6 +1643,10 @@ module bridge::message {
         self.original_seq_num
     }
 
+    public fun principal_amount_defi_in(self: &DefiTransferInPayload): u64 {
+        self.principal_amount
+    }
+
     public fun action_type_defi_in(self: &DefiTransferInPayload): u8 {
         self.action_type
     }

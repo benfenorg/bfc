@@ -690,6 +690,7 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
         .await;
     // There are exactly 2 approved events,one for unstake and one for stake
     assert_eq!(events.len(), 1);
+    info!("unstake events: {:?}", events[0]);
     info!("unstake benfen approved");
     // 在以太坊上投资已桥接的代币
     let tx_response = invest_bridged_tokens_on_eth(&bridge_test_cluster, event_seq_num+1).await?;
@@ -697,7 +698,8 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
 
     if let Some(log) = tx_response.logs.last() {
         let event = decode_tokens_unstaked_event(log)?;
-        info!("unstaked event: {:?}", event);
+        info!("Event data - source chain: {}, nonce: {}, dest chain: {}, origin nonce: {}, recipient: {:?}, sender: {}, adjusted amount: {}, LP amount: {}, protocol type: {}, version: {}, token ID: {}, principal: {}, action: {}", 
+            event.0, event.1, event.2, event.3, event.4, event.5, event.6, event.7, event.8, event.9, event.10, event.11, event.12);
         assert_eq!(event.0,BridgeChainId::EthCustom as u8);
         assert_eq!(event.1,event_seq_num+1); //evm
         assert_eq!(event.2,BridgeChainId::SuiCustom as u8);
@@ -711,7 +713,9 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
         assert_eq!(event.8,protocol_type);
         assert_eq!(event.9,protocol_version);
         assert_eq!(event.10,protocol_token_id);
-        assert_eq!(event.11,1);
+        assert_eq!(event.11,amount_after_fee);
+
+        assert_eq!(event.12,1);
     }
     info!("unstake event decoded");
     let mut attempts = 0;
@@ -1124,7 +1128,7 @@ async fn test_bridge_defi_stake_and_unstake_revoke_twice_e2e() -> Result<(), any
 
     if let Some(log) = tx_response.logs.last() {
         let event = decode_tokens_unstaked_event(log)?;
-        info!("unstaked event: {:?}", event);
+        // info!("unstaked event: {}", event);
         assert_eq!(event.0,BridgeChainId::EthCustom as u8);
         assert_eq!(event.1,event_seq_num+1); //evm
         assert_eq!(event.2,BridgeChainId::SuiCustom as u8);
@@ -1673,6 +1677,7 @@ fn decode_tokens_unstaked_event(
     u64,                       // protocolType
     u64,                       // protocolVersion
     u64,                       // protocolTokenId
+    u64,                       // principalAmount
     u8,                        // actionType
 )> {
     use anyhow::anyhow;
@@ -1718,6 +1723,7 @@ fn decode_tokens_unstaked_event(
             ParamType::Uint(64),  // protocolType
             ParamType::Uint(64),  // protocolVersion
             ParamType::Uint(64),  // protocolTokenId
+            ParamType::Uint(64),  // principalAmount
             ParamType::Uint(8),   // actionType
         ],
         &log.data.0,
@@ -1769,7 +1775,13 @@ fn decode_tokens_unstaked_event(
         .ok_or_else(|| anyhow!("protocolTokenId decode error"))?
         .as_u64();
 
-    let action_type = tokens[8]
+    let principal_amount = tokens[8]
+        .clone()
+        .into_uint()
+        .ok_or_else(|| anyhow!("principalAmount decode error"))?
+        .as_u64();
+
+    let action_type = tokens[9]
         .clone()
         .into_uint()
         .ok_or_else(|| anyhow!("actionType decode error"))?
@@ -1787,6 +1799,7 @@ fn decode_tokens_unstaked_event(
         protocol_type,
         protocol_version,
         protocol_token_id,
+        principal_amount,
         action_type,
     ))
 }
