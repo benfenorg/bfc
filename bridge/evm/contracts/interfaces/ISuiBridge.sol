@@ -59,7 +59,9 @@ interface ISuiBridge {
         uint64  protocolType,
         uint64 protocolVersion,
         uint64 protocolTokenId,
+        uint64 principalAmount,
         uint8 actionType
+        
     );
 
 
@@ -76,6 +78,7 @@ interface ISuiBridge {
         uint64  protocolType,
         uint64 protocolVersion,
         uint64 protocolTokenId,
+        uint64 principalAmount,
         uint8 actionType
     );
 

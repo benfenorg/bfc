@@ -86,6 +86,7 @@ library BridgeUtils {
         uint64 protocolVersion;
         uint64 protocolTokenID;
         uint8 actionType;
+        uint64 principalAmount;
     }
 
     /* ========== CONSTANTS ========== */
@@ -494,7 +495,7 @@ library BridgeUtils {
         pure
         returns (DefiTransferPayload memory)
     {
-        require(_payload.length >= 59, "BridgeUtils: DefiTransferPayload must be at least 59 bytes");
+        require(_payload.length >= 67, "BridgeUtils: DefiTransferPayload must be at least 67 bytes");
 
         uint8 senderAddressLength = uint8(_payload[0]);
 
@@ -569,6 +570,16 @@ library BridgeUtils {
 
         // extract actionType (uint8)
         uint8 actionType = uint8(_payload[offset]);
+
+           offset += 1;
+
+        // extract principalAmount (uint64)
+        uint64 principalAmount;
+        assembly {
+            principalAmount := shr(192, mload(add(add(_payload, 0x20), offset)))
+        }
+        // offset += 8;
+
         
         return DefiTransferPayload(
             senderAddressLength,
@@ -580,7 +591,8 @@ library BridgeUtils {
             protocolType,
             protocolVersion,
             protocolTokenID,
-            actionType
+            actionType,
+            principalAmount
         );
     }
 

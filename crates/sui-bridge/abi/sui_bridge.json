@@ -750,6 +750,12 @@
                 "internalType": "uint64"
             },
             {
+                "name": "principalAmount",
+                "type": "uint64",
+                "indexed": false,
+                "internalType": "uint64"
+            },
+            {
                 "name": "actionType",
                 "type": "uint8",
                 "indexed": false,
@@ -824,6 +830,12 @@
             },
             {
                 "name": "protocolTokenId",
+                "type": "uint64",
+                "indexed": false,
+                "internalType": "uint64"
+            },
+            {
+                "name": "principalAmount",
                 "type": "uint64",
                 "indexed": false,
                 "internalType": "uint64"

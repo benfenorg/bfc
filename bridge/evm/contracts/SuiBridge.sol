@@ -235,6 +235,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             defiTransferPayload.protocolType,
             defiTransferPayload.protocolVersion,
             defiTransferPayload.protocolTokenID,
+            defiTransferPayload.principalAmount,
             defiTransferPayload.actionType
         );
         nonces[BridgeUtils.DEFI]++;
@@ -299,6 +300,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             defiTransferPayload.protocolType,
             defiTransferPayload.protocolVersion,
             defiTransferPayload.protocolTokenID,
+            defiTransferPayload.principalAmount,
             defiTransferPayload.actionType
         );
         nonces[BridgeUtils.DEFI]++;
