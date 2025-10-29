@@ -307,10 +307,9 @@ impl TransactionExecutionApi {
             transaction_effects.all_removed_objects(),
         )
         .await?;
-
         for object_change in &object_changes {
-            let object_changes_str = format!("{}", object_change);
-            if object_changes_str.contains("anonymous_coin") {
+            let object_changes_str = format!("{:?}", object_change);
+            if object_changes_str.contains("module: Identifier(\"anonymous_coin\")") {
                 let effects = SuiTransactionBlockEffects::default_for_anonymous_coin(
                     txn_digest, SuiExecutionStatus::Success);
 
@@ -332,8 +331,6 @@ impl TransactionExecutionApi {
             balance_changes,
             input: resp.input,
         };
-
-
         Ok(response)
     }
 }
