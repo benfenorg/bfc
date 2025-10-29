@@ -48,6 +48,7 @@ module bridge::bridge {
     use bridge::message::amount;
     use bridge::message::to_parsed_defi_transfer_out_message;
     use bridge::message::ParsedDefiTransferOutMessage;
+    use bridge::defi_protocols::add_defi_protocol;
     //  stable coin id
     const TOKEN_ID_USDC: u64 = 3;
     const TOKEN_ID_USDT: u64 = 4;
@@ -481,6 +482,98 @@ module bridge::bridge {
             &route,
             limit
         );
+    }
+
+    public fun update_defi_protocol_info(
+        bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
+        cap: &BfcSystemModifyCap,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+        fee_type: u8,
+        fee_rate: u64,
+        limit_stake_amount: u64,
+        limit_unstake_amount: u64,
+        ctx: &mut TxContext,
+    ) {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
+        defi_protocols::add_defi_protocol(
+            parent_id, 
+            protocol_type, 
+            protocol_version, 
+            protocol_token_id, 
+            chain_id, 
+            fee_type, 
+            fee_rate, 
+            limit_stake_amount, 
+            limit_unstake_amount
+        );
+    }
+
+    public fun delete_defi_protocol_info(
+        bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
+        cap: &BfcSystemModifyCap,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+        ctx: &mut TxContext,
+    ) {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
+        defi_protocols::delete_defi_protocol(parent_id, protocol_type, protocol_version, protocol_token_id, chain_id);
+    }
+
+    public fun get_defi_protocol_info_stake_limit(
+        bridge: &mut Bridge,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ): u64 {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        let protocol_info = defi_protocols::get_protocol_info(parent_id, protocol_type, protocol_version, protocol_token_id, chain_id);
+        defi_protocols::limit_stake_amount(&protocol_info)
+    }
+
+    public fun get_defi_protocol_info_unstake_limit(
+        bridge: &mut Bridge,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ): u64 {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        let protocol_info = defi_protocols::get_protocol_info(parent_id, protocol_type, protocol_version, protocol_token_id, chain_id);
+        defi_protocols::limit_unstake_amount(&protocol_info)
+    }
+
+    public fun get_defi_protocol_info_fee_rate(
+        bridge: &mut Bridge,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ): u64 {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        let protocol_info = defi_protocols::get_protocol_info(parent_id, protocol_type, protocol_version, protocol_token_id, chain_id);
+        defi_protocols::fee_rate(&protocol_info)
+    }
+    
+    public fun get_defi_protocol_info_fee_type(
+        bridge: &mut Bridge,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ): u8 {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        let protocol_info = defi_protocols::get_protocol_info(parent_id, protocol_type, protocol_version, protocol_token_id, chain_id);
+        defi_protocols::fee_type(&protocol_info)
     }
 
     //////////////////////////////////////////////////////
