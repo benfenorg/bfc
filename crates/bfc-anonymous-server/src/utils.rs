@@ -2,14 +2,15 @@ use crate::parse_response;
 use anyhow::anyhow;
 use fastcrypto::ed25519::Ed25519PublicKey;
 use fastcrypto::traits::ToFromBytes;
-use move_core_types::account_address::AccountAddress;
 use serde::{Deserialize, Serialize};
 use serde_json::{json};
 use tracing::info;
 use mpc_transmission::get_sui_config_directory;
 use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
 use sui_types::base_types::SuiAddress;
+use fastcrypto::hash::{HashFunction};
 
+const PERSONAL_MESSAGE_PREFIX: &[u8; 3] = &[3, 0, 0];
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ZkVerifyRequest {
     pub signature: String,
@@ -24,6 +25,35 @@ pub struct ZkVerifyRequest {
 struct ZkVerifyResponse {
     result: bool,
     message: String,
+}
+
+pub fn write_unsigned_leb128(out: &mut [u8], mut value: u64) -> usize {
+    let mut i = 0;
+    loop {
+        if value < 0x80 {
+            out[i] = value as u8;
+            i += 1;
+            break;
+        } else {
+            out[i] = ((value & 0x7F) | 0x80) as u8;
+            value >>= 7;
+            i += 1;
+        }
+    }
+    i
+}
+
+pub fn create_sign_message(message: String) -> Vec<u8> {
+    let mut intent_data = Vec::new();
+    intent_data.extend_from_slice(PERSONAL_MESSAGE_PREFIX);
+    let len = message.len() as u64;
+    let mut buffer = [0u8; 10];
+    let length = write_unsigned_leb128(&mut buffer, len);
+    intent_data.extend_from_slice(&buffer[..length]);
+    intent_data.extend_from_slice(message.as_bytes());
+
+    let digest = fastcrypto::hash::Blake2b256::digest(intent_data);
+    return digest.to_vec();
 }
 
 pub async fn verify_zklogin_signature(

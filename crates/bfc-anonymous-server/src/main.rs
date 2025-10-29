@@ -26,11 +26,9 @@ use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 use tracing::{info, warn};
 use tracing_subscriber::fmt;
 use warp::Filter;
-use fastcrypto::hash::HashFunction;
+
 use mpc_transmission::get_zklogin_rpc_address_from_config;
-
-const PERSONAL_MESSAGE_PREFIX: &[u8; 3] = &[3, 0, 0];
-
+use crate::utils::create_sign_message;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -119,6 +117,7 @@ struct AnonymousCompareValue1AndValue2Params {
 struct AnonymousSplitValueParams {
     value: u64,
     owner: AccountAddress,
+    publickey: Vec<u8>,
     signature: Vec<u8>,
 }
 
@@ -512,23 +511,12 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                     let signature = restore_value_params.signature;
                     let objectid = restore_value_params.objectid;
 
-                    let mut intent_data = Vec::new();
-                    intent_data.extend_from_slice(PERSONAL_MESSAGE_PREFIX);
-                    let len = objectid.len() as u64;
-                    let mut buffer = [0u8; 10];
-                    let length = write_unsigned_leb128(&mut buffer, len);
-                    intent_data.extend_from_slice(&buffer[..length]);
-                    intent_data.extend_from_slice(objectid.as_bytes());
-
-                    let digest = fastcrypto::hash::Blake2b256::digest(intent_data);
-                    let logdata = hex::encode(digest.as_ref());
-
-                    info!("handle_anonymous_restore_value intent data: {}", logdata);
+                    let message = create_sign_message(objectid.clone());
 
                     let mut pass_verify_signature = verify_signature(
                         &restore_value_params.publickey,
                         &*signature,
-                        digest.as_ref()
+                        message.as_slice(),
                     )
                         .is_ok();
                     info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
@@ -860,22 +848,12 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
                 object_ids = format!("{}{}", object_ids, anonymous_restore_value.objectid);
             }
 
-            let mut intent_data = Vec::new();
-            intent_data.extend_from_slice(PERSONAL_MESSAGE_PREFIX);
-            let len = object_ids.len() as u64;
-            let mut buffer = [0u8; 10];
-            let length = write_unsigned_leb128(&mut buffer, len);
-            intent_data.extend_from_slice(&buffer[..length]);
-            intent_data.extend_from_slice(object_ids.as_bytes());
-            println!("value array before {:?}", hex::encode(intent_data.clone()));
-
-            let digest = fastcrypto::hash::Blake2b256::digest(intent_data);
-            println!("value array after{:?}", hex::encode(digest));
+            let message = create_sign_message(object_ids.clone());
 
             let mut pass_authentication = verify_signature(
                 &anonymous_restore_value_array.publickey,
                 &*anonymous_restore_value_array.signature,
-                digest.as_ref(),
+                message.as_slice(),
             ).is_ok();
             if pass_authentication == false {
                 warn!(
@@ -1026,6 +1004,41 @@ async fn handle_anonymous_encode_data_for_client(request: JsonRpcRequest) -> Jso
     match request.params {
         Some(params) => match serde_json::from_value::<AnonymousSplitValueParams>(params) {
             Ok(split_to_two_value_params) => {
+
+                let signature = split_to_two_value_params.signature;
+                let message = create_sign_message(split_to_two_value_params.value.to_string());
+                let mut pass_verify_signature = verify_signature(
+                    &split_to_two_value_params.publickey,
+                    &*signature,
+                    message.as_slice(),
+                ) .is_ok();
+
+                info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
+                if pass_verify_signature == true {
+                    info!("handle_anonymous_restore_value pass verify signature");
+                    let publickey_from_send = public_key_bytes_to_sui_address(
+                        split_to_two_value_params.publickey.clone(),
+                    );
+                    if publickey_from_send.is_err() {
+                        info!("failed public key to sui address: {:?}", publickey_from_send.err());
+                        pass_verify_signature = false;
+                    } else {
+                        let sui_address_from_send = publickey_from_send.unwrap();
+                        let sui_account_address_from_send =
+                            AccountAddress::from(sui_address_from_send);
+                        let owner_evm_address =
+                            convert_to_evm_address(split_to_two_value_params.owner.to_string().clone());
+                        pass_verify_signature = owner_evm_address
+                            == sui_account_address_from_send.to_hex_with_hex_head();
+                    }
+                }
+
+                if pass_verify_signature == false {
+                    return create_error_response(request.id,
+                                                 -32603,
+                                                 "Verify signature or get owner address failed".to_string(),
+                                                 Some(serde_json::json!({"error": "verify signature or get owner address failed"})));
+                }
 
                 let args_result = Args::try_parse();
                 let mut config_path : Option<String> = None;
@@ -1204,20 +1217,4 @@ async fn handle_ping(request: JsonRpcRequest) -> JsonRpcResponse {
         })),
         error: None,
     }
-}
-
-pub fn write_unsigned_leb128(out: &mut [u8], mut value: u64) -> usize {
-    let mut i = 0;
-    loop {
-        if value < 0x80 {
-            out[i] = value as u8;
-            i += 1;
-            break;
-        } else {
-            out[i] = ((value & 0x7F) | 0x80) as u8;
-            value >>= 7;
-            i += 1;
-        }
-    }
-    i
 }

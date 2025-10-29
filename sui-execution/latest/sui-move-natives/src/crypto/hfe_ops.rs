@@ -1146,7 +1146,7 @@ fn test_get_anonymous_add() -> (){
     }
 }
 
-pub fn get_mask_secret_from_anonymous_privatekey(private_key_str: String, userAddress: AccountAddress) -> Result<u64, Box<dyn std::error::Error>> {
+pub fn get_mask_secret_from_anonymous_privatekey(private_key_str: String, user_address: AccountAddress) -> Result<u64, Box<dyn std::error::Error>> {
     // Parse the private key string to u64
     // Handle both hex format (0x...) and decimal format
     let mask_secret = if private_key_str.starts_with("0x") || private_key_str.starts_with("0X") {
@@ -1159,7 +1159,7 @@ pub fn get_mask_secret_from_anonymous_privatekey(private_key_str: String, userAd
             .map_err(|e| anyhow!("Failed to parse private key as decimal: {}", e))?
     };
 
-    let salt = get_user_address_salt(userAddress);
+    let salt = get_user_address_salt(user_address);
     let mask_secret = mask_secret.wrapping_add(salt);
 
 
