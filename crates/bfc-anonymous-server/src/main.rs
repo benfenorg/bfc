@@ -28,7 +28,6 @@ use tracing_subscriber::fmt;
 use warp::Filter;
 use fastcrypto::hash::HashFunction;
 use mpc_transmission::get_zklogin_rpc_address_from_config;
-use sui_types::object::Owner;
 
 const PERSONAL_MESSAGE_PREFIX: &[u8; 3] = &[3, 0, 0];
 
