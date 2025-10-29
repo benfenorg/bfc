@@ -21,10 +21,6 @@ module sui::anonymous_coin {
     // Allows calling `.split_and_transfer(amount, recipient, ctx)` on `coin`
     public use fun sui::anonymous_pay::split_and_transfer as Anonymous_Coin.split_and_transfer;
 
-    // Allows calling `.divide_and_keep(n, ctx)` on `coin`
-
-
-    //fun sui::anonymous_pay::divide_and_keep as Anonymous_Coin.divide_and_keep;
 
     // A type passed to create_supply is not a one-time witness.
     const EBadWitness: u64 = 0;
@@ -92,6 +88,7 @@ module sui::anonymous_coin {
         swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin + value;
 
         let anonymous_coin = split(&mut swap_pool.anonymous_coin, value, ctx);
+        //kakaxi: need prepare...
         transfer::public_transfer(anonymous_coin, tx_context::sender(ctx));
     }
 

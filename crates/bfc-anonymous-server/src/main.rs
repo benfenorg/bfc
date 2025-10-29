@@ -119,7 +119,8 @@ struct AnonymousCompareValue1AndValue2Params {
 #[derive(Debug, Deserialize, Serialize)]
 struct AnonymousSplitValueParams {
     value: u64,
-    owner: AccountAddress
+    owner: AccountAddress,
+    signature: Vec<u8>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -272,12 +273,17 @@ async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply,
     );
 
     let response = match request.method.as_str() {
+        //only internal can use this APIs, for fullnode to do mpc calculation, Can not expose to outside
         "bfcx_getAnonymousAdd" => handle_anonymous_add(request).await,
         "bfcx_getAnonymousMinus" => handle_anonymous_minus(request).await,
         "bfcx_getAnonymousMultiply" => handle_anonymous_multiply(request).await,
         "bfcx_getAnonymousCompare" => handle_anonymous_compare(request).await,
         "bfcx_getAnonymousCompare_value1_and_value2" => handle_anonymous_compare_value1_and_value2(request).await,
-        "bfcx_getAnonymousEncodeData" => handle_anonymous_split_to_two_value(request).await,
+        "bfcx_getAnonymousEncodeData" => handle_anonymous_encode_data(request).await,
+
+
+        //outside can use this APIs
+        "bfcx_getAnonymousEncodeDataForClient" => handle_anonymous_encode_data_for_client(request).await,
         "bfcx_getAnonymousRestoreValue" => handle_anonymous_restore_value(request).await,
         "bfcx_getAnonymousRestoreValueArray" => handle_anonymous_restore_value_array(request).await,
         "bfcx_getAnonymousRestoreValueForZKloginAddress" => handle_anonymous_restore_value_for_zklogin_address(request).await,
@@ -968,7 +974,56 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
 
 
 
-async fn handle_anonymous_split_to_two_value(request: JsonRpcRequest) -> JsonRpcResponse {
+async fn handle_anonymous_encode_data(request: JsonRpcRequest) -> JsonRpcResponse {
+    match request.params {
+        Some(params) => match serde_json::from_value::<AnonymousSplitValueParams>(params) {
+            Ok(split_to_two_value_params) => {
+
+                let args_result = Args::try_parse();
+                let mut config_path : Option<String> = None;
+                if args_result.is_ok() {
+                    config_path = Some(args_result.unwrap().config);
+                }
+                let user_address = split_to_two_value_params.owner;
+                let mask_secret = match get_mask_secret_from_config(config_path, user_address) {
+                    Ok(secret) => secret,
+                    Err(e) => {
+                        warn!("Failed to get mask secret from config: {}", e);
+                        return create_error_response(request.id,
+                                                     -32603,
+                                                     "Internal error: Failed to load configuration".to_string(),
+                                                     Some(serde_json::json!({"error": e.to_string()})));
+                    }
+                };
+
+                let value = split_to_two_value_params.value;
+                let (result1, result2) = split_to_two_value(value, mask_secret);
+                JsonRpcResponse {
+                    jsonrpc: "2.0".to_string(),
+                    id: request.id,
+                    result: Some(serde_json::json!({
+                        "result1": result1,
+                        "result2": result2,
+                        "operation": "anonymous_split_to_two_value",
+                        "timestamp": chrono::Utc::now().timestamp()
+                    })),
+                    error: None,
+                }
+            }
+            Err(e) => {
+                warn!("Invalid parameters for bfcx_getAnonymousEncodeData: {}", e);
+                create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+            }
+        },
+        None => {
+            create_error_response(request.id, -32602, "Missing params".to_string(), None)
+        }
+    }
+}
+
+
+
+async fn handle_anonymous_encode_data_for_client(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
         Some(params) => match serde_json::from_value::<AnonymousSplitValueParams>(params) {
             Ok(split_to_two_value_params) => {
