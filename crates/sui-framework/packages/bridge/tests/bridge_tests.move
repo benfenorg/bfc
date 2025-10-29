@@ -1938,7 +1938,7 @@ fun test_defi_stake_and_approve_defi_transfer_out_full_flow() {
         protocol_version,
         protocol_token_id,
         STAKE,
-        amount_after_fee/1000
+        amount_after_fee
     );
 
     // Create signatures while we still have access to the env
@@ -2569,7 +2569,7 @@ fun test_defi_stake_complete_flow() {
         protocol_version,
         protocol_token_id,
         STAKE,
-        amount_after_fee / 1000,
+        amount_after_fee,
     );
 
     // Create signatures for the defi transfer out message
