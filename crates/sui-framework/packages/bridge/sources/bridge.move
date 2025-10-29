@@ -48,7 +48,6 @@ module bridge::bridge {
     use bridge::message::amount;
     use bridge::message::to_parsed_defi_transfer_out_message;
     use bridge::message::ParsedDefiTransferOutMessage;
-    use bridge::defi_protocols::add_defi_protocol;
     //  stable coin id
     const TOKEN_ID_USDC: u64 = 3;
     const TOKEN_ID_USDT: u64 = 4;
@@ -563,7 +562,7 @@ module bridge::bridge {
         let protocol_info = defi_protocols::get_protocol_info(parent_id, protocol_type, protocol_version, protocol_token_id, chain_id);
         defi_protocols::fee_rate(&protocol_info)
     }
-    
+
     public fun get_defi_protocol_info_fee_type(
         bridge: &mut Bridge,
         protocol_type: u64,

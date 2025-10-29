@@ -7039,6 +7039,24 @@ init_token_list
 update_external_out_limit
 	public fun
 	0xb::bridge
+update_defi_protocol_info
+	public fun
+	0xb::bridge
+delete_defi_protocol_info
+	public fun
+	0xb::bridge
+get_defi_protocol_info_stake_limit
+	public fun
+	0xb::bridge
+get_defi_protocol_info_unstake_limit
+	public fun
+	0xb::bridge
+get_defi_protocol_info_fee_rate
+	public fun
+	0xb::bridge
+get_defi_protocol_info_fee_type
+	public fun
+	0xb::bridge
 committee_registration
 	public fun
 	0xb::bridge

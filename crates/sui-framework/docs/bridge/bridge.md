@@ -38,6 +38,12 @@ title: Module `bridge::bridge`
 -  [Function `migrate`](#bridge_bridge_migrate)
 -  [Function `init_token_list`](#bridge_bridge_init_token_list)
 -  [Function `update_external_out_limit`](#bridge_bridge_update_external_out_limit)
+-  [Function `update_defi_protocol_info`](#bridge_bridge_update_defi_protocol_info)
+-  [Function `delete_defi_protocol_info`](#bridge_bridge_delete_defi_protocol_info)
+-  [Function `get_defi_protocol_info_stake_limit`](#bridge_bridge_get_defi_protocol_info_stake_limit)
+-  [Function `get_defi_protocol_info_unstake_limit`](#bridge_bridge_get_defi_protocol_info_unstake_limit)
+-  [Function `get_defi_protocol_info_fee_rate`](#bridge_bridge_get_defi_protocol_info_fee_rate)
+-  [Function `get_defi_protocol_info_fee_type`](#bridge_bridge_get_defi_protocol_info_fee_type)
 -  [Function `committee_registration`](#bridge_bridge_committee_registration)
 -  [Function `update_node_url`](#bridge_bridge_update_node_url)
 -  [Function `register_foreign_token`](#bridge_bridge_register_foreign_token)
@@ -2417,6 +2423,218 @@ title: Module `bridge::bridge`
         &route,
         limit
     );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_update_defi_protocol_info"></a>
+
+## Function `update_defi_protocol_info`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_defi_protocol_info">update_defi_protocol_info</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, bfc_system_state: &<a href="../bfc_system/bfc_system.md#bfc_system_bfc_system_BfcSystemState">bfc_system::bfc_system::BfcSystemState</a>, cap: &<a href="../bfc_system/bfc_system_state_inner.md#bfc_system_bfc_system_state_inner_BfcSystemModifyCap">bfc_system::bfc_system_state_inner::BfcSystemModifyCap</a>, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, chain_id: u8, fee_type: u8, fee_rate: u64, limit_stake_amount: u64, limit_unstake_amount: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_defi_protocol_info">update_defi_protocol_info</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &BfcSystemState,
+    cap: &BfcSystemModifyCap,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    chain_id: u8,
+    fee_type: u8,
+    fee_rate: u64,
+    limit_stake_amount: u64,
+    limit_unstake_amount: u64,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> (_,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>assert</b>!(bfc_system_state.verify_capability(cap, ctx), <a href="../bridge/bridge.md#bridge_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>);
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_add_defi_protocol">defi_protocols::add_defi_protocol</a>(
+        parent_id,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        chain_id,
+        fee_type,
+        fee_rate,
+        limit_stake_amount,
+        limit_unstake_amount
+    );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_delete_defi_protocol_info"></a>
+
+## Function `delete_defi_protocol_info`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_delete_defi_protocol_info">delete_defi_protocol_info</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, bfc_system_state: &<a href="../bfc_system/bfc_system.md#bfc_system_bfc_system_BfcSystemState">bfc_system::bfc_system::BfcSystemState</a>, cap: &<a href="../bfc_system/bfc_system_state_inner.md#bfc_system_bfc_system_state_inner_BfcSystemModifyCap">bfc_system::bfc_system_state_inner::BfcSystemModifyCap</a>, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, chain_id: u8, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_delete_defi_protocol_info">delete_defi_protocol_info</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &BfcSystemState,
+    cap: &BfcSystemModifyCap,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    chain_id: u8,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> (_,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>assert</b>!(bfc_system_state.verify_capability(cap, ctx), <a href="../bridge/bridge.md#bridge_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>);
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_delete_defi_protocol">defi_protocols::delete_defi_protocol</a>(parent_id, protocol_type, protocol_version, protocol_token_id, chain_id);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_defi_protocol_info_stake_limit"></a>
+
+## Function `get_defi_protocol_info_stake_limit`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_defi_protocol_info_stake_limit">get_defi_protocol_info_stake_limit</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, chain_id: u8): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_defi_protocol_info_stake_limit">get_defi_protocol_info_stake_limit</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    chain_id: u8,
+): u64 {
+    <b>let</b> (_,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> protocol_info = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_get_protocol_info">defi_protocols::get_protocol_info</a>(parent_id, protocol_type, protocol_version, protocol_token_id, chain_id);
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_limit_stake_amount">defi_protocols::limit_stake_amount</a>(&protocol_info)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_defi_protocol_info_unstake_limit"></a>
+
+## Function `get_defi_protocol_info_unstake_limit`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_defi_protocol_info_unstake_limit">get_defi_protocol_info_unstake_limit</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, chain_id: u8): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_defi_protocol_info_unstake_limit">get_defi_protocol_info_unstake_limit</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    chain_id: u8,
+): u64 {
+    <b>let</b> (_,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> protocol_info = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_get_protocol_info">defi_protocols::get_protocol_info</a>(parent_id, protocol_type, protocol_version, protocol_token_id, chain_id);
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_limit_unstake_amount">defi_protocols::limit_unstake_amount</a>(&protocol_info)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_defi_protocol_info_fee_rate"></a>
+
+## Function `get_defi_protocol_info_fee_rate`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_defi_protocol_info_fee_rate">get_defi_protocol_info_fee_rate</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, chain_id: u8): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_defi_protocol_info_fee_rate">get_defi_protocol_info_fee_rate</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    chain_id: u8,
+): u64 {
+    <b>let</b> (_,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> protocol_info = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_get_protocol_info">defi_protocols::get_protocol_info</a>(parent_id, protocol_type, protocol_version, protocol_token_id, chain_id);
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_fee_rate">defi_protocols::fee_rate</a>(&protocol_info)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_defi_protocol_info_fee_type"></a>
+
+## Function `get_defi_protocol_info_fee_type`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_defi_protocol_info_fee_type">get_defi_protocol_info_fee_type</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, chain_id: u8): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_defi_protocol_info_fee_type">get_defi_protocol_info_fee_type</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    chain_id: u8,
+): u8 {
+    <b>let</b> (_,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> protocol_info = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_get_protocol_info">defi_protocols::get_protocol_info</a>(parent_id, protocol_type, protocol_version, protocol_token_id, chain_id);
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_fee_type">defi_protocols::fee_type</a>(&protocol_info)
 }
 </code></pre>
 
