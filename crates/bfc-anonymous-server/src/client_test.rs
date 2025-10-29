@@ -203,17 +203,17 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousCompare_value1_and_value2", params, 4)
+            .send_rpc_request("bfcx_getAnonymousCompareValue1AndValue2", params, 4)
             .await
         {
             Ok(response) => TestResult {
-                method: "bfcx_getAnonymousCompare_value1_and_value2".to_string(),
+                method: "bfcx_getAnonymousCompareValue1AndValue2".to_string(),
                 success: true,
                 response: Some(response),
                 error: None,
             },
             Err(e) => TestResult {
-                method: "bfcx_getAnonymousCompare_value1_and_value2".to_string(),
+                method: "bfcx_getAnonymousCompareValue1AndValue2".to_string(),
                 success: false,
                 response: None,
                 error: Some(e.to_string()),

@@ -277,7 +277,7 @@ async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply,
         "bfcx_getAnonymousMinus" => handle_anonymous_minus(request).await,
         "bfcx_getAnonymousMultiply" => handle_anonymous_multiply(request).await,
         "bfcx_getAnonymousCompare" => handle_anonymous_compare(request).await,
-        "bfcx_getAnonymousCompare_value1_and_value2" => handle_anonymous_compare_value1_and_value2(request).await,
+        "bfcx_getAnonymousCompareValue1AndValue2" => handle_anonymous_compare_value1_and_value2(request).await,
         "bfcx_getAnonymousEncodeData" => handle_anonymous_encode_data(request).await,
 
 

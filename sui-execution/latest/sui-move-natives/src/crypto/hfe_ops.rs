@@ -1022,7 +1022,7 @@ impl AnonymousClient {
 
         });
 
-        match self.atto_http_post("bfcx_getAnonymousCompare_value1_and_value2", params, 3) {
+        match self.atto_http_post("bfcx_getAnonymousCompareValue1AndValue2", params, 3) {
             Ok(response) => {
                 let result1 = response["result"]["result1"].as_str().unwrap();
                 AnonymousResult {
