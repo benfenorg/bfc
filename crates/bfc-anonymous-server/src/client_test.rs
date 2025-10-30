@@ -34,6 +34,7 @@ impl AnonymousClient {
         method: &str,
         params: Value,
         id: u64,
+        path: &str,
     ) -> Result<Value, Box<dyn Error>> {
         let request_body = json!({
             "jsonrpc": "2.0",
@@ -46,7 +47,7 @@ impl AnonymousClient {
 
         let response = self
             .client
-            .post(&format!("{}/rpc", self.base_url))
+            .post(&format!("{}/{}", self.base_url, path))
             .header("Content-Type", "application/json")
             .json(&request_body)
             .send()
@@ -75,7 +76,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousAdd", params, 1)
+            .send_rpc_request("bfcx_getAnonymousAdd", params, 1, "rpc_internal")
             .await
         {
             Ok(response) => TestResult {
@@ -110,7 +111,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousMinus", params, 2)
+            .send_rpc_request("bfcx_getAnonymousMinus", params, 2, "rpc_internal")
             .await
         {
             Ok(response) => TestResult {
@@ -145,7 +146,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousMultiply", params, 3)
+            .send_rpc_request("bfcx_getAnonymousMultiply", params, 3, "rpc_internal")
             .await
         {
             Ok(response) => TestResult {
@@ -173,7 +174,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousCompare", params, 4)
+            .send_rpc_request("bfcx_getAnonymousCompare", params, 4, "rpc_internal")
             .await
         {
             Ok(response) => TestResult {
@@ -203,7 +204,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousCompareValue1AndValue2", params, 4)
+            .send_rpc_request("bfcx_getAnonymousCompareValue1AndValue2", params, 4, "rpc_internal")
             .await
         {
             Ok(response) => TestResult {
@@ -252,7 +253,7 @@ impl AnonymousClient {
         );
 
         match self
-            .send_rpc_request("bfcx_getAnonymousRestoreValueArray", params, 4)
+            .send_rpc_request("bfcx_getAnonymousRestoreValueArray", params, 4, "rpc")
             .await
         {
             Ok(response) => TestResult {
@@ -302,7 +303,7 @@ impl AnonymousClient {
         );
 
         match self
-            .send_rpc_request("bfcx_getAnonymousRestoreValueArrayForZKloginAddress", params, 4)
+            .send_rpc_request("bfcx_getAnonymousRestoreValueArrayForZKloginAddress", params, 4, "rpc")
             .await
         {
             Ok(response) => TestResult {
@@ -337,7 +338,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousRestoreValueForZKloginAddress", params, 4)
+            .send_rpc_request("bfcx_getAnonymousRestoreValueForZKloginAddress", params, 4, "rpc")
             .await
         {
             Ok(response) => TestResult {
@@ -374,7 +375,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousRestoreValue", params, 4)
+            .send_rpc_request("bfcx_getAnonymousRestoreValue", params, 4, "rpc")
             .await
         {
             Ok(response) => TestResult {
@@ -400,7 +401,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousEncodeData", params, 4)
+            .send_rpc_request("bfcx_getAnonymousEncodeData", params, 4, "rpc_internal")
             .await
         {
             Ok(response) => TestResult {
@@ -419,7 +420,7 @@ impl AnonymousClient {
     }
 
     pub async fn test_ping(&self) -> TestResult {
-        match self.send_rpc_request("bfcx_ping", json!({}), 5).await {
+        match self.send_rpc_request("bfcx_ping", json!({}), 5, "rpc").await {
             Ok(response) => TestResult {
                 method: "bfcx_ping".to_string(),
                 success: true,
@@ -443,15 +444,15 @@ impl AnonymousClient {
 
         let object_id_list = "BFCa4e7d3832d6ccf20f72f831bc164c5afc6ad2d03081101b098297b4c4cf6d3743ac8BFCa6eecddaabb11bef34c99e982e6f74d9c3820d3bf87220ec3f208a360b77223f5fd0";
         let publickey_bytes = hex_to_bytes(publickey);
-        let signature = "BQNNMTAwNjc1MzY4Nzc3NjU0NDM2MTcxMTYzMDYyNDU3MTgwNzQ3NzY2MDMxMDc5MTc4NjE4ODQ5NTAyNDA4MDI5NjE5MzE0OTAzNjYwMjFNMjA3NTY3NDc2MDI4NzM5MDkxNDAwOTg4NDMwNzMyOTQ4NTUyNjUyNTg2MzM5OTI2NTIyNjA4MTY2ODU3MDgzMzE3NTU0Mjc4MTE1OTABMQMCTTIxNzEyOTU0MDI2Nzk5ODI2NDEwMDY2MTY5MzcyNzU3MTE1OTY3MDU1ODUzNjY4NjYyOTY5ODc1MTI4NDA5MDY3NzgwNTUyNDYwNzYxTDk1MTc2MzI3MDY3ODYwMzAxMDA1ODYzMTc4MDg5OTI1MTcyODYyNzk5MDYzNDExNTAyOTUyODQ3NDQ3OTcyMTM4MjMzNDY5NDEzNTICSzUzMTQ2NTU4NDMwNDAyMDk3NzAyNzQwNjgyMTA3NzYzNDYwNjQ0NTE1MzU2NjI1MjAwODY1NDM2ODY2Mzk3ODkyMzEzMTM4MTU0MkwzNjQ3NzUxMjgzOTMxNDUzNjcxNDIxNDkzMzI5NzkxOTk2MzE4MzI3NzU4MTg1NDk1ODIyNzE5NTg0MDU1OTI5NzU4NDYwNDUxMjc1AgExATADTTE5MTYzOTQwNDc4MTY2MzU3NzA5Nzg4NTQyMzAzNzk2NTY4OTE2Njg2MDE4OTcxNjE5NzU3MjQ5MTIxNTUzMTM2NTYyMTk5NTM3NjQxTTE1NTM4Mzk1NDEwNzA0NjA0NjkyNzg5OTE4NzE5NzAwNDM2NjM0Mjc2OTM2Nzk2MDc1MDE2MTQ1MzU5MzU0Nzc1NjAzNzkyODg0MzY1ATExeUpwYzNNaU9pSm9kSFJ3Y3pvdkwyRmpZMjkxYm5SekxtZHZiMmRzWlM1amIyMGlMQwFmZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNkltTTRZV0kzTVRVek1EazNNbUppWVRJd1lqUTVaamM0WVRBNVl6azROVEpqTkRObVpqa3hNVGdpTENKMGVYQWlPaUpLVjFRaWZRTTE2MjcxMjcyODMwMTA3NjU0NDczNDYxNzQ5Nzc4NjM0NjIzMDg0NTAzNzM0MDM3ODIzNTc1MTYwMDA5Mzg1MjU2NTQyNzYzNzY5Nzg3jwEAAAAAAABhAGuV3qp3Eg57tOYbo66khJbEmgKIwUzI/dOtJPx9VSafpW2moEtI4MoJUh9XmizMvqeTaQVKVg9F/CezODR7Dg4F1NcBhOWa2gnuk4QCZSIUzY7bgZesXwl6+Cb1ahmmYQ==";
-        let byte = "QkZDYTRlN2QzODMyZDZjY2YyMGY3MmY4MzFiYzE2NGM1YWZjNmFkMmQwMzA4MTEwMWIwOTgyOTdiNGM0Y2Y2ZDM3NDNhYzhCRkNhNmVlY2RkYWFiYjExYmVmMzRjOTllOTgyZTZmNzRkOWMzODIwZDNiZjg3MjIwZWMzZjIwOGEzNjBiNzcyMjNmNWZkMA==".to_string();
+        let signature = "BQNNMTg0MTk0NTMzNDY1NTIzMjA3MTI1MTU4OTI4NzE2NDU0MTE0MTQxMTA4MTYxNjE2MzcwMTcyMzE4NzYzMzI5ODY1NTE4NDM3MjgxMThNMTc0Mjg1NDc2MTkwMTQyODAxMTMzMTcxODA2Njc2NjU5ODk4NDYxNTkxOTYyODQ3MDYxMTY4NTEwNzM0OTkwNzkwMDIzMTkzODkwNzMBMQMCTTE3ODUzNjY4OTA0NjA4NzUwMDEzMDIzOTAzODU5MTg5MjUwNzA5MjMzNjg0NjczNjg3MzA4NjcyMDA5MTAyNTkxNDM4NTMzNzg1OTk4TTE0MTA2MzI0Njk1OTI0NTgyMDU0NzY1NDcyODExMTE3NzgzNjk4ODM3MjQxMDkyNTg0NjUwMDI1NTI0NDEwOTk1NzU0Njc5MTAxNTUxAkw2NjI1Mjc3OTA2NzcwOTQxMDgwMjMwODEyMTExMDUxOTExMjU2MzUzMzYzOTE2NTk4ODYzOTI5MjMwMjIxNTgxMDI0NzMyNjA2NzczTTE1MDgyMzcxOTQzNDIwNTAxNzI3MzY2NTQ1NzgxMDQwNzk0MTk3NjQ5NDU1MjIxNDYwNzczNTc3ODU3NTg5NzkxMDcwMzcwMjEzNzE0AgExATADSzIzNzQ4NTUzNzMxNjgxNTk3NDI2MDMwOTM1MDc3NTU1NzY2Nzc3OTQ3OTc3OTgyMjgyOTMyNzIwNTIxMzQwNzY3NzgyNTA3MTA0N00xNTg3MDcwMDQzMDk2NzAzMDA0NjI1MjQ0NTYwOTYzMTI3ODQ1NDk3ODg1NDE1OTAxNDgxMjExNDM0NzM4MTExNzc4NzI3MTQ3MTY5NwExMXlKcGMzTWlPaUpvZEhSd2N6b3ZMMkZqWTI5MWJuUnpMbWR2YjJkc1pTNWpiMjBpTEMBZmV5SmhiR2NpT2lKU1V6STFOaUlzSW10cFpDSTZJamc0TkRnNU1qRXlNbVV5T1RNNVptUXhaak14TXpjMVlqSmlNell6WldNNE1UVTNNak5pWW1JaUxDSjBlWEFpT2lKS1YxUWlmUUwzMDA0NDUyNDMzOTUzNDc3NDY4Mjk3MTI4MDIyMjYwMjEyODIyNjk0MjM5MzMwNTU4OTE5ODc3OTM5ODA2MjAyOTgzMDk5ODkyODU1rwEAAAAAAABhANpFQhyM8aC5Kpwc36oVLQMufXEtbzHyHZHExy73Fki5JmSORe63A2L4ZAMaHHZmE+/6TCoqnWEbJI+VwAEIqQwg/J1PkdfE2/sruj/vZ5unh5gbotMAgFOdpb3P1+CniA==";
+        let byte = "QkZDOGMyOTM4ZjFmMzJjODBhY2M1NDhiM2FhNjI2ZDcxNzE2M2Y4MDU4OTdiNTg2ZTBkODE5YTg4NzU0ZTNmYWMyYzAwZWM6ODdMWVRja1BqQTE5WTdqNHpDaHVSamFuY3hVdEFSdXdsUEtQVHMwLVhPdlg5RW1RSUVGdkNaa2V6OWIxenJUYw==".to_string();
         let signature_bytes= ZkVerifyRequest {
             signature: signature.to_string(),
             bytes: byte, // abs token objectid
             intent_scope: 3,
             cur_epoch: None,
             cur_rpc_url : Some("https://testrpc.benfen.org/".to_string()),
-            author: "BFC8c92533545c7f97e7491ea0049c9efdd25f43bf18fe56e92b4ce4b40d05165be80f1".to_string(),
+            author: "BFC8c2938f1f32c80acc548b3aa626d717163f805897b586e0d819a88754e3fac2c00ec".to_string(),
         };
 
         let restore_result = self
@@ -465,25 +466,24 @@ impl AnonymousClient {
 
     async fn test_recover_with_signature_for_zklogin(&self, share1: String, share2: String) -> u64 {
         // test restore 20
-        let signature = "80361ef8ca66108d1fb68ac81970cc9f7315ca6b1dea0bc493059603faffc8bcdcc7644b2ec55b8e48fe613b30e9b534000ef9e1b626f9f5bdf9519e7b7cef04";
         let publickey = "8496d3d932986b43bb64b5d5c7548d5c97a73aebf4301447f3746680b2114ae1";
 
         let object_id = SuiAddress::from_str(
-            "0xa6eecddaabb11bef34c99e982e6f74d9c3820d3bf87220ec3f208a360b77223f",
+            "0x9637bea020496db9fa40583c2ce3a52fcefdf71bd7a0edcf89861677da15af6b",
         )
             .unwrap()
             .to_string();
 
         let publickey_bytes = hex_to_bytes(publickey);
-        let signature = "BQNMMjgzMzYwMjYzNTk1NTYyMjM3NjczOTA3OTk2NzgwMjgzMzI2NjA1NDU2NDkxMzk2NTQ5MDQ5NTE2NDIwNzc0ODY2MTIxNDQ0MTk1NkwyNDc1OTEyOTUxNTAxNTUwOTExMTk0MjIzNTA1ODMxMDMyNzQzNDUzNDkyNDc1NDQ1OTEyODYwNzMyMTE1NjM4MTIxNTYzNTQzNzAwATEDAk0xNTAxNDc1MzAzNjkyODg4NzY2MTg1MTA3NzgzNDYwNDM5MjU2NTQxODk0OTU0MzE0OTY4OTY3NjE4MDIwMDQzOTI1OTU2MjIyMTk0Mk0xMTU5NDA2NzI0ODU4NzAyNjQxMzc4NjY4Mzk0NTc5MDg4MzY3OTg4Nzg1ODc1MDgyMzkwMTExNDkyMjg1MDYzMzg4MjU3ODUzNDA4OAJMNDQ2NzM4NjUwODU1NTQxMjU5NjUyODAxMzc5NjMyMjI3MTA2NDUwNzUyNDM1NjM0ODI3Nzg1NjA5MjM1MjU3MTk3MzMyOTg1MTc5M00xNDUzOTc2Mzk2MDg5Mzc4MDM2Nzk5Njg5NTAwMzI2NDg4MzkxMDM4NjgyNzE3NjE4OTk5MTQwMDIyNTM4MTQ5MzUxMTIwMTY3NDEyMQIBMQEwA0szMjk3MjM2MDkyNDcxMTkxNjc2MDU3MzM2MTE2MjQ3MzE0MDgxMDkyMTg1MDU2NjgzNzU4ODgzMTA4NzA3ODk4MDk1OTQ3OTE2NDlNMTYwMjA5OTAyNjQ5MTMxMzg4NDk3ODU2MTI2Mjk4NjQ3NDU1OTEzNDAwODE2ODE0OTk5NjAxNzYxNTgzNzIzMDQzNjEzMTE1MjA4NDMBMTF5SnBjM01pT2lKb2RIUndjem92TDJGalkyOTFiblJ6TG1kdmIyZHNaUzVqYjIwaUxDAWZleUpoYkdjaU9pSlNVekkxTmlJc0ltdHBaQ0k2SW1NNFlXSTNNVFV6TURrM01tSmlZVEl3WWpRNVpqYzRZVEE1WXprNE5USmpORE5tWmpreE1UZ2lMQ0owZVhBaU9pSktWMVFpZlFNMTYyNzEyNzI4MzAxMDc2NTQ0NzM0NjE3NDk3Nzg2MzQ2MjMwODQ1MDM3MzQwMzc4MjM1NzUxNjAwMDkzODUyNTY1NDI3NjM3Njk3ODeMAQAAAAAAAGEAjtxMFS4GFnahbYxmI8teVbo2iLHRlMiveOdoh0rfKW4mTjA2YlJ3DOA3sSMVfGWnQPg/H1KgwDOl/t/GUiFhB56JP/IwBKtUjNOnocmfTmLDPvOKHyeHN00Rv0xh8XIF".to_string();
-        let byte = "MHhhNmVlY2RkYWFiYjExYmVmMzRjOTllOTgyZTZmNzRkOWMzODIwZDNiZjg3MjIwZWMzZjIwOGEzNjBiNzcyMjNm".to_string();
+        let signature = "BQNNMTg0MTk0NTMzNDY1NTIzMjA3MTI1MTU4OTI4NzE2NDU0MTE0MTQxMTA4MTYxNjE2MzcwMTcyMzE4NzYzMzI5ODY1NTE4NDM3MjgxMThNMTc0Mjg1NDc2MTkwMTQyODAxMTMzMTcxODA2Njc2NjU5ODk4NDYxNTkxOTYyODQ3MDYxMTY4NTEwNzM0OTkwNzkwMDIzMTkzODkwNzMBMQMCTTE3ODUzNjY4OTA0NjA4NzUwMDEzMDIzOTAzODU5MTg5MjUwNzA5MjMzNjg0NjczNjg3MzA4NjcyMDA5MTAyNTkxNDM4NTMzNzg1OTk4TTE0MTA2MzI0Njk1OTI0NTgyMDU0NzY1NDcyODExMTE3NzgzNjk4ODM3MjQxMDkyNTg0NjUwMDI1NTI0NDEwOTk1NzU0Njc5MTAxNTUxAkw2NjI1Mjc3OTA2NzcwOTQxMDgwMjMwODEyMTExMDUxOTExMjU2MzUzMzYzOTE2NTk4ODYzOTI5MjMwMjIxNTgxMDI0NzMyNjA2NzczTTE1MDgyMzcxOTQzNDIwNTAxNzI3MzY2NTQ1NzgxMDQwNzk0MTk3NjQ5NDU1MjIxNDYwNzczNTc3ODU3NTg5NzkxMDcwMzcwMjEzNzE0AgExATADSzIzNzQ4NTUzNzMxNjgxNTk3NDI2MDMwOTM1MDc3NTU1NzY2Nzc3OTQ3OTc3OTgyMjgyOTMyNzIwNTIxMzQwNzY3NzgyNTA3MTA0N00xNTg3MDcwMDQzMDk2NzAzMDA0NjI1MjQ0NTYwOTYzMTI3ODQ1NDk3ODg1NDE1OTAxNDgxMjExNDM0NzM4MTExNzc4NzI3MTQ3MTY5NwExMXlKcGMzTWlPaUpvZEhSd2N6b3ZMMkZqWTI5MWJuUnpMbWR2YjJkc1pTNWpiMjBpTEMBZmV5SmhiR2NpT2lKU1V6STFOaUlzSW10cFpDSTZJamc0TkRnNU1qRXlNbVV5T1RNNVptUXhaak14TXpjMVlqSmlNell6WldNNE1UVTNNak5pWW1JaUxDSjBlWEFpT2lKS1YxUWlmUUwzMDA0NDUyNDMzOTUzNDc3NDY4Mjk3MTI4MDIyMjYwMjEyODIyNjk0MjM5MzMwNTU4OTE5ODc3OTM5ODA2MjAyOTgzMDk5ODkyODU1rwEAAAAAAABhANpFQhyM8aC5Kpwc36oVLQMufXEtbzHyHZHExy73Fki5JmSORe63A2L4ZAMaHHZmE+/6TCoqnWEbJI+VwAEIqQwg/J1PkdfE2/sruj/vZ5unh5gbotMAgFOdpb3P1+CniA==".to_string();
+        let byte = "QkZDOGMyOTM4ZjFmMzJjODBhY2M1NDhiM2FhNjI2ZDcxNzE2M2Y4MDU4OTdiNTg2ZTBkODE5YTg4NzU0ZTNmYWMyYzAwZWM6ODdMWVRja1BqQTE5WTdqNHpDaHVSamFuY3hVdEFSdXdsUEtQVHMwLVhPdlg5RW1RSUVGdkNaa2V6OWIxenJUYw==".to_string();
         let signature_bytes= ZkVerifyRequest {
             signature: signature,
             bytes: byte, // abfc token objectid
             intent_scope: 3,
             cur_epoch: None,
             cur_rpc_url : Some("https://testrpc.benfen.org/".to_string()),
-            author: "BFC8c92533545c7f97e7491ea0049c9efdd25f43bf18fe56e92b4ce4b40d05165be80f1".to_string(),
+            author: "BFC8c2938f1f32c80acc548b3aa626d717163f805897b586e0d819a88754e3fac2c00ec".to_string(),
         };
 
         let restore_result = self
@@ -550,7 +550,8 @@ fn hex_to_bytes(hex: &str) -> Vec<u8> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{write_unsigned_leb128, AnonymousServer};
+    use crate::{AnonymousServer};
+    use crate::utils::write_unsigned_leb128;
     use std::net::SocketAddr;
     use tracing::info;
     use tracing_subscriber::fmt;

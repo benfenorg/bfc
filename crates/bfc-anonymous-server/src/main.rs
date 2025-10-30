@@ -112,6 +112,11 @@ struct AnonymousCompareValue1AndValue2Params {
     owner: AccountAddress
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+struct AnonymousSplitValueInternalParams {
+    value: u64,
+    owner: AccountAddress,
+}
 
 #[derive(Debug, Deserialize, Serialize)]
 struct AnonymousSplitValueParams {
@@ -244,12 +249,18 @@ fn create_routes() -> impl Filter<Extract = impl warp::Reply, Error = warp::Reje
     let rpc_route = warp::path("rpc")
         .and(warp::post())
         .and(warp::body::json())
-        .and_then(handle_rpc_request)
+        .and_then(handle_rpc_request_for_client)
         .with(cors.clone());
 
     let health_route = warp::path("health")
         .and(warp::get())
         .map(|| warp::reply::with_status("OK", warp::http::StatusCode::OK))
+        .with(cors.clone());
+
+    let rpc_route_internal = warp::path("rpc_internal")
+        .and(warp::post())
+        .and(warp::body::json())
+        .and_then(handle_rpc_request_internal)
         .with(cors.clone());
 
     let info_route = warp::path::end()
@@ -260,17 +271,20 @@ fn create_routes() -> impl Filter<Extract = impl warp::Reply, Error = warp::Reje
                 "version": "0.1.0",
                 "endpoints": {
                     "rpc": "/rpc",
-                    "health": "/health"
+                    "health": "/health",
+                    "rpc_internal" : "/rpc_internal"
+
                 }
             });
             warp::reply::json(&info)
         })
         .with(cors);
 
-    rpc_route.or(health_route).or(info_route)
+
+    rpc_route.or(health_route).or(info_route).or(rpc_route_internal)
 }
 
-async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply, Rejection> {
+async fn handle_rpc_request_internal(request: JsonRpcRequest) -> Result<impl warp::Reply, Rejection> {
 
     info!(
         "Received RPC request: method={}, id={:?}",
@@ -285,8 +299,32 @@ async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply,
         "bfcx_getAnonymousCompare" => handle_anonymous_compare(request).await,
         "bfcx_getAnonymousCompareValue1AndValue2" => handle_anonymous_compare_value1_and_value2(request).await,
         "bfcx_getAnonymousEncodeData" => handle_anonymous_encode_data(request).await,
+        _ => JsonRpcResponse {
+            jsonrpc: "2.0".to_string(),
+            id: request.id,
+            result: None,
+            error: Some(JsonRpcError {
+                code: -32601,
+                message: "Method not found".to_string(),
+                data: None,
+            }),
+        },
+    };
 
+    if response.error.is_some() {
+        return Err(warp::reject::custom(RpcError( anyhow!("handle_rpc_request failed, caused by {}", response.error.unwrap().message))))
+    }
+    Ok(warp::reply::json(&response))
+}
 
+async fn handle_rpc_request_for_client(request: JsonRpcRequest) -> Result<impl warp::Reply, Rejection> {
+
+    info!(
+        "Received RPC request: method={}, id={:?}",
+        request.method, request.id
+    );
+
+    let response = match request.method.as_str() {
         //outside can use this APIs
         "bfcx_getAnonymousEncodeDataForClient" => handle_anonymous_encode_data_for_client(request).await,
         "bfcx_getAnonymousRestoreValue" => handle_anonymous_restore_value(request).await,
@@ -826,9 +864,9 @@ async fn handle_anonymous_restore_value_for_zklogin_address(request: JsonRpcRequ
 
                     let mut pass_verify_signature = verify_zklogin_signature(
                         signature,
-                        zklogin_address
+                        zklogin_address.clone()
                     ).await.is_ok();
-                    info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
+                    info!("temporary skip check, important todo need object ownership check to continue restore value1!!!!! {:?}", pass_verify_signature);
 
                     if pass_verify_signature == true {
                         info!("handle_anonymous_restore_value pass verify signature");
@@ -1030,7 +1068,7 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
 
 async fn handle_anonymous_encode_data(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
-        Some(params) => match serde_json::from_value::<AnonymousSplitValueParams>(params) {
+        Some(params) => match serde_json::from_value::<AnonymousSplitValueInternalParams>(params) {
             Ok(split_to_two_value_params) => {
 
                 let args_result = Args::try_parse();
