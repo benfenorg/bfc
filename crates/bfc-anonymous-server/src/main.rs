@@ -866,8 +866,8 @@ async fn handle_anonymous_restore_value_for_zklogin_address(request: JsonRpcRequ
                         signature,
                         zklogin_address.clone()
                     ).await.is_ok();
-                    info!("temporary skip check, important todo need object ownership check to continue restore value1!!!!! {:?}", pass_verify_signature);
-
+                    info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
+                    
                     if pass_verify_signature == true {
                         info!("handle_anonymous_restore_value pass verify signature");
                         match get_object_owneraddress(objectid.clone()).await {
