@@ -758,7 +758,7 @@ module bridge::bridge {
         bridge: &mut Bridge,
         bfc_system_state: &mut BfcSystemState,
         target_chain: u8,
-        mut token: Coin<T>,
+        token: Coin<T>,
         protocol_type: u64,
         protocol_version: u64,
         protocol_token_id: u64,
@@ -782,13 +782,7 @@ module bridge::bridge {
         let is_busd = type_name::get<T>() == type_name::get<BUSD>();
         assert!(is_busd, EOnlySupportBusd);
 
-        let fee = bridge_fee::calculate_cross_out_fee_amount(bridge_id, target_chain as u64, protocol_token_id, token_amount);
-        assert!(token_amount > fee, EInputAmountLteBridgeFee);
-        let amount_after_fee_busd = token_amount - fee;
-        let fee_coin = token.split<T>(fee, ctx);
-        bridge_fee::deposit_fee(bridge_id, fee_coin);
-
-        let amount_after_fee = adjust_amount_busd_out(target_chain, amount_after_fee_busd);
+        let amount_after_fee = adjust_amount_busd_out(target_chain, token_amount);
         //principal amount is busd,decimal is 9
 
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::defi());
@@ -804,7 +798,7 @@ module bridge::bridge {
             protocol_version,
             protocol_token_id,
             STAKE,
-            amount_after_fee_busd,
+            token_amount,
         );
 
         bfc_system_state.burn_stable(token, ctx);
@@ -831,7 +825,7 @@ module bridge::bridge {
                 protocol_version,
                 protocol_token_id: protocol_token_id,
                 action_type: STAKE,
-                principal_amount: amount_after_fee_busd,
+                principal_amount: token_amount,
             },
         );
     }

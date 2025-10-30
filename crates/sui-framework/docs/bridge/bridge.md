@@ -2923,7 +2923,7 @@ title: Module `bridge::bridge`
     <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
     bfc_system_state: &<b>mut</b> BfcSystemState,
     target_chain: u8,
-    <b>mut</b> token: Coin&lt;T&gt;,
+    token: Coin&lt;T&gt;,
     protocol_type: u64,
     protocol_version: u64,
     protocol_token_id: u64,
@@ -2943,12 +2943,7 @@ title: Module `bridge::bridge`
     <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>let</b> is_busd = type_name::get&lt;T&gt;() == type_name::get&lt;BUSD&gt;();
     <b>assert</b>!(is_busd, <a href="../bridge/bridge.md#bridge_bridge_EOnlySupportBusd">EOnlySupportBusd</a>);
-    <b>let</b> fee = <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(bridge_id, target_chain <b>as</b> u64, protocol_token_id, token_amount);
-    <b>assert</b>!(token_amount &gt; fee, <a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
-    <b>let</b> amount_after_fee_busd = token_amount - fee;
-    <b>let</b> fee_coin = token.split&lt;T&gt;(fee, ctx);
-    <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(bridge_id, fee_coin);
-    <b>let</b> amount_after_fee = <a href="../bridge/bridge.md#bridge_bridge_adjust_amount_busd_out">adjust_amount_busd_out</a>(target_chain, amount_after_fee_busd);
+    <b>let</b> amount_after_fee = <a href="../bridge/bridge.md#bridge_bridge_adjust_amount_busd_out">adjust_amount_busd_out</a>(target_chain, token_amount);
     //principal amount is busd,decimal is 9
     <b>let</b> bridge_seq_num = inner.<a href="../bridge/bridge.md#bridge_bridge_get_current_seq_num_and_increment">get_current_seq_num_and_increment</a>(<a href="../bridge/message_types.md#bridge_message_types_defi">message_types::defi</a>());
     <b>let</b> <a href="../bridge/message.md#bridge_message">message</a> = <a href="../bridge/message.md#bridge_message_create_defi_transfer_out_message">message::create_defi_transfer_out_message</a>(
@@ -2963,7 +2958,7 @@ title: Module `bridge::bridge`
         protocol_version,
         protocol_token_id,
         <a href="../bridge/bridge.md#bridge_bridge_STAKE">STAKE</a>,
-        amount_after_fee_busd,
+        token_amount,
     );
     bfc_system_state.burn_stable(token, ctx);
     inner.token_transfer_records.push_back(
@@ -2987,7 +2982,7 @@ title: Module `bridge::bridge`
             protocol_version,
             protocol_token_id: protocol_token_id,
             action_type: <a href="../bridge/bridge.md#bridge_bridge_STAKE">STAKE</a>,
-            principal_amount: amount_after_fee_busd,
+            principal_amount: token_amount,
         },
     );
 }
