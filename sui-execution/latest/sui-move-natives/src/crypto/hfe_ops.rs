@@ -703,29 +703,28 @@ pub fn hfe_ops_restore_anonymous_value(context: &mut NativeContext,
     }
 
     if *enable_anonymous_rpc == Some(true) {
-        // match anonymous_rpc {
-        //     Some(mut v) => {
-        //         if v.is_empty() {
-        //             return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS));
-        //         }
-        //         let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
-        //         let result = client.restore_value(num1, num2, signature, id, publickey);
-        //         match result.success {
-        //             true => {
-        //                 Ok(NativeResult::ok(
-        //                     cost,
-        //                     smallvec![Value::u64(result.value1.parse::<u64>().expect("Failed to parse number"))],
-        //                 ))
-        //             }
-        //             false => {
-        //                 Ok(NativeResult::err(cost, INVALID_SERVER_RESPONSE_ERROR))
-        //             }
-        //         }
-        //     },
-        //     None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
-        //
-        // }
-        Ok(NativeResult::err(cost, INVALID_SERVER_RESPONSE_ERROR))
+        match anonymous_rpc {
+            Some(mut v) => {
+                if v.is_empty() {
+                    return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS));
+                }
+                let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
+                let result = client.restore_anonymous_value_internal(num1, num2, owner);
+                match result.success {
+                    true => {
+                        Ok(NativeResult::ok(
+                            cost,
+                            smallvec![Value::u64(result.value1.parse::<u64>().expect("Failed to parse number"))],
+                        ))
+                    }
+                    false => {
+                        Ok(NativeResult::err(cost, INVALID_SERVER_RESPONSE_ERROR))
+                    }
+                }
+            },
+            None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
+
+        }
     } else {
         let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey, owner)
             .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string(), owner).unwrap());
@@ -932,16 +931,43 @@ impl AnonymousClient {
         }
     }
 
-    pub fn restore_value(&self, value1: String, value2: String, signature : Vec<u8>, id: AccountAddress, publickey: Vec<u8>) -> AnonymousResult  {
+    // pub fn restore_value(&self, value1: String, value2: String, signature : Vec<u8>, id: AccountAddress, publickey: Vec<u8>) -> AnonymousResult  {
+    //     let params = json!({
+    //         "value1": value1,
+    //         "value2": value2,
+    //         "signature": signature,
+    //         "objectid" : id.to_hex_literal(),
+    //         "publickey": publickey,
+    //     });
+    //
+    //     match self.atto_http_post("bfcx_getAnonymousRestoreValue", params, 3) {
+    //         Ok(response) => {
+    //
+    //             let result1 = response["result"]["result1"].as_u64().unwrap();
+    //             AnonymousResult {
+    //                 success: true,
+    //                 error: None,
+    //                 value1: result1.to_string(),
+    //                 value2: "0".to_string(),
+    //             }
+    //         },
+    //         Err(e) => AnonymousResult {
+    //             success: false,
+    //             error: Some(e.to_string()),
+    //             value1: "0".to_string(),
+    //             value2: "0".to_string(),
+    //         },
+    //     }
+    // }
+
+    pub fn restore_anonymous_value_internal(&self, value1: String, value2: String, owner: AccountAddress) -> AnonymousResult  {
         let params = json!({
             "value1": value1,
             "value2": value2,
-            "signature": signature,
-            "objectid" : id.to_hex_literal(),
-            "publickey": publickey,
+            "owner": owner,
         });
 
-        match self.atto_http_post("bfcx_getAnonymousRestoreValue", params, 3) {
+        match self.atto_http_post("bfcx_getAnonymousRestoreValueInternal", params, 3) {
             Ok(response) => {
 
                 let result1 = response["result"]["result1"].as_u64().unwrap();
