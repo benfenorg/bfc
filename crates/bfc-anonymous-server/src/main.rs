@@ -867,7 +867,7 @@ async fn handle_anonymous_restore_value_for_zklogin_address(request: JsonRpcRequ
                         zklogin_address.clone()
                     ).await.is_ok();
                     info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
-                    
+
                     if pass_verify_signature == true {
                         info!("handle_anonymous_restore_value pass verify signature");
                         match get_object_owneraddress(objectid.clone()).await {
@@ -1119,7 +1119,6 @@ async fn handle_anonymous_encode_data_for_client(request: JsonRpcRequest) -> Jso
     match request.params {
         Some(params) => match serde_json::from_value::<AnonymousSplitValueParams>(params) {
             Ok(split_to_two_value_params) => {
-
                 let signature = split_to_two_value_params.signature;
                 let message = create_sign_message(split_to_two_value_params.value.to_string());
                 let mut pass_verify_signature = verify_signature(
@@ -1141,9 +1140,7 @@ async fn handle_anonymous_encode_data_for_client(request: JsonRpcRequest) -> Jso
                         let sui_address_from_send = publickey_from_send.unwrap();
                         let sui_account_address_from_send =
                             AccountAddress::from(sui_address_from_send);
-                        let owner_evm_address =
-                            convert_to_evm_address(split_to_two_value_params.owner.to_string().clone());
-                        pass_verify_signature = owner_evm_address
+                        pass_verify_signature = split_to_two_value_params.owner.to_string()
                             == sui_account_address_from_send.to_hex_with_hex_head();
                     }
                 }
