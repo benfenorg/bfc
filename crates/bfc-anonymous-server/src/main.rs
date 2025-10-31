@@ -1140,8 +1140,8 @@ async fn handle_anonymous_encode_data_for_client(request: JsonRpcRequest) -> Jso
                         let sui_address_from_send = publickey_from_send.unwrap();
                         let sui_account_address_from_send =
                             AccountAddress::from(sui_address_from_send);
-                        pass_verify_signature = split_to_two_value_params.owner.to_string()
-                            == sui_account_address_from_send.to_hex_with_hex_head();
+                        pass_verify_signature = split_to_two_value_params.owner
+                            == sui_account_address_from_send;
                     }
                 }
 
