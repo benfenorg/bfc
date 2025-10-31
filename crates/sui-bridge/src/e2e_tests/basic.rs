@@ -1114,6 +1114,12 @@ async fn test_add_lp_token_on_evm(){
     assert_eq!(eth_receipt.status.unwrap().as_u64(), 1);
 
 
+    //Verify
+    let lp_token_id = bridge_test_cluster
+        .eth_env().get_protocol_type_lp_token_id(0, 4)
+        .await;
+
+    assert_eq!(lp_token_id, 10000);
 
 } 
 
@@ -1127,11 +1133,12 @@ async  fn test_update_invest_address(){
         .with_num_validators(3)
         .build()
         .await;
+    let invest_address=EthAddress::from_str("0x1234567890123456789012345678901234567890").unwrap();
     let update_action =
         BridgeAction::UpdateInvestAddressAction(UpdateInvestAddressAction {
             nonce: 0,
             chain_id: BridgeChainId::EthCustom,
-            invest_address: EthAddress::from_str("0x1234567890123456789012345678901234567890").unwrap(),
+            invest_address: invest_address,
     });
 
     bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
@@ -1170,11 +1177,11 @@ async  fn test_update_invest_address(){
     assert_eq!(eth_receipt.status.unwrap().as_u64(), 1);
 
     //Verify
-    let lp_token_id = bridge_test_cluster
-        .eth_env().get_protocol_type_lp_token_id(0, 3)
+    let expect_invest_addr = bridge_test_cluster
+        .eth_env().get_invest_address()
         .await;
 
-    assert_eq!(lp_token_id, 10000);
+    assert_eq!(expect_invest_addr, invest_address);
 
 
 }
