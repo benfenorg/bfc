@@ -6262,6 +6262,9 @@ protocol_token_id_defi_in
 original_seq_num_defi_in
 	public fun
 	0xb::message
+principal_amount_defi_in
+	public fun
+	0xb::message
 action_type_defi_in
 	public fun
 	0xb::message
@@ -6769,6 +6772,12 @@ delete_defi_protocol
 manage_fee
 	public(package) fun
 	0xb::defi_protocols
+manage_fee_v2
+	public(package) fun
+	0xb::defi_protocols
+calculate_withdraw_principal_amount
+	public(package) fun
+	0xb::defi_protocols
 new
 	public fun
 	0xb::defi_protocols
@@ -7028,6 +7037,24 @@ init_token_list
 	public fun
 	0xb::bridge
 update_external_out_limit
+	public fun
+	0xb::bridge
+update_defi_protocol_info
+	public fun
+	0xb::bridge
+delete_defi_protocol_info
+	public fun
+	0xb::bridge
+get_defi_protocol_info_stake_limit
+	public fun
+	0xb::bridge
+get_defi_protocol_info_unstake_limit
+	public fun
+	0xb::bridge
+get_defi_protocol_info_fee_rate
+	public fun
+	0xb::bridge
+get_defi_protocol_info_fee_type
 	public fun
 	0xb::bridge
 committee_registration

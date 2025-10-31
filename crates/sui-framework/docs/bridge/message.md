@@ -139,6 +139,7 @@ title: Module `bridge::message`
 -  [Function `protocol_version_defi_in`](#bridge_message_protocol_version_defi_in)
 -  [Function `protocol_token_id_defi_in`](#bridge_message_protocol_token_id_defi_in)
 -  [Function `original_seq_num_defi_in`](#bridge_message_original_seq_num_defi_in)
+-  [Function `principal_amount_defi_in`](#bridge_message_principal_amount_defi_in)
 -  [Function `action_type_defi_in`](#bridge_message_action_type_defi_in)
 -  [Function `emergency_op_type`](#bridge_message_emergency_op_type)
 -  [Function `blocklist_type`](#bridge_message_blocklist_type)
@@ -4981,6 +4982,30 @@ Update Sui token message
 
 <pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_original_seq_num_defi_in">original_seq_num_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a>): u64 {
     self.original_seq_num
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_principal_amount_defi_in"></a>
+
+## Function `principal_amount_defi_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_principal_amount_defi_in">principal_amount_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">bridge::message::DefiTransferInPayload</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_principal_amount_defi_in">principal_amount_defi_in</a>(self: &<a href="../bridge/message.md#bridge_message_DefiTransferInPayload">DefiTransferInPayload</a>): u64 {
+    self.principal_amount
 }
 </code></pre>
 

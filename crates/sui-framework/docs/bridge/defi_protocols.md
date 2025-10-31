@@ -16,6 +16,8 @@ title: Module `bridge::defi_protocols`
 -  [Function `add_defi_protocol`](#bridge_defi_protocols_add_defi_protocol)
 -  [Function `delete_defi_protocol`](#bridge_defi_protocols_delete_defi_protocol)
 -  [Function `manage_fee`](#bridge_defi_protocols_manage_fee)
+-  [Function `manage_fee_v2`](#bridge_defi_protocols_manage_fee_v2)
+-  [Function `calculate_withdraw_principal_amount`](#bridge_defi_protocols_calculate_withdraw_principal_amount)
 -  [Function `new`](#bridge_defi_protocols_new)
 -  [Function `get_protocol_info`](#bridge_defi_protocols_get_protocol_info)
 -  [Function `is_valid_protocol`](#bridge_defi_protocols_is_valid_protocol)
@@ -601,6 +603,107 @@ token id 映射表
         ((profit * (protocol_info.<a href="../bridge/defi_protocols.md#bridge_defi_protocols_fee_rate">fee_rate</a> <b>as</b> u256)) / 1_000_000_000) <b>as</b> u64
     };
     (fee, principal <b>as</b> u64)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_defi_protocols_manage_fee_v2"></a>
+
+## Function `manage_fee_v2`
+
+计算管理费用
+返回值：(管理费用, 赎回本金)
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_manage_fee_v2">manage_fee_v2</a>(parent_id: &<a href="../sui/object.md#sui_object_UID">sui::object::UID</a>, <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_type">protocol_type</a>: u64, <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_version">protocol_version</a>: u64, <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_token_id">protocol_token_id</a>: u64, <a href="../bridge/defi_protocols.md#bridge_defi_protocols_chain_id">chain_id</a>: u8, principal_amount: u64, amount_withdraw: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_manage_fee_v2">manage_fee_v2</a>(
+    parent_id: &UID,
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_type">protocol_type</a>: u64,
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_version">protocol_version</a>: u64,
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_token_id">protocol_token_id</a>: u64,
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_chain_id">chain_id</a>: u8,
+    principal_amount: u64,
+    amount_withdraw: u64,
+): u64 {
+    <b>let</b> self=<a href="../bridge/defi_protocols.md#bridge_defi_protocols_borrow">borrow</a>(parent_id);
+    <b>let</b> config_key = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_DefiProtocolKey">DefiProtocolKey</a> { <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_type">protocol_type</a>, <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_version">protocol_version</a>, <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_token_id">protocol_token_id</a>, <a href="../bridge/defi_protocols.md#bridge_defi_protocols_chain_id">chain_id</a> };
+    <b>assert</b>!(self.protocol_info_map.contains(config_key), <a href="../bridge/defi_protocols.md#bridge_defi_protocols_EDefiProtocolConfigNotFound">EDefiProtocolConfigNotFound</a>);
+    <b>let</b> protocol_info = self.protocol_info_map.<a href="../bridge/defi_protocols.md#bridge_defi_protocols_borrow">borrow</a>(config_key);
+    <b>let</b> principal_amount_u256 = principal_amount <b>as</b> u256;
+    <b>let</b> amount_withdraw_u256 = amount_withdraw <b>as</b> u256;
+    <b>let</b> profit = <b>if</b> (amount_withdraw_u256&gt;principal_amount_u256) {
+        amount_withdraw_u256-principal_amount_u256
+    } <b>else</b> {
+        0u256
+    };
+    //计算管理费用
+    <b>let</b> fee: u64 = <b>if</b> (protocol_info.<a href="../bridge/defi_protocols.md#bridge_defi_protocols_fee_type">fee_type</a> == <a href="../bridge/defi_protocols.md#bridge_defi_protocols_FEE_TYPE_FIXED">FEE_TYPE_FIXED</a>) {
+        <b>if</b> (profit &gt; (protocol_info.<a href="../bridge/defi_protocols.md#bridge_defi_protocols_fee_rate">fee_rate</a> <b>as</b> u256)) {
+            protocol_info.<a href="../bridge/defi_protocols.md#bridge_defi_protocols_fee_rate">fee_rate</a>
+        } <b>else</b> {
+            profit <b>as</b> u64
+        }
+    } <b>else</b> {
+        ((profit * (protocol_info.<a href="../bridge/defi_protocols.md#bridge_defi_protocols_fee_rate">fee_rate</a> <b>as</b> u256)) / 1_000_000_000) <b>as</b> u64
+    };
+    fee
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_defi_protocols_calculate_withdraw_principal_amount"></a>
+
+## Function `calculate_withdraw_principal_amount`
+
+计算赎回本金
+返回值：赎回本金
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_calculate_withdraw_principal_amount">calculate_withdraw_principal_amount</a>(parent_id: &<a href="../sui/object.md#sui_object_UID">sui::object::UID</a>, <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_type">protocol_type</a>: u64, <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_version">protocol_version</a>: u64, <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_token_id">protocol_token_id</a>: u64, <a href="../bridge/defi_protocols.md#bridge_defi_protocols_chain_id">chain_id</a>: u8, lp_amount_withdraw: u64, lp_amount_in_total: u64, principal_amount_total: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_calculate_withdraw_principal_amount">calculate_withdraw_principal_amount</a>(
+    parent_id: &UID,
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_type">protocol_type</a>: u64,
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_version">protocol_version</a>: u64,
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_token_id">protocol_token_id</a>: u64,
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_chain_id">chain_id</a>: u8,
+    lp_amount_withdraw: u64,
+    lp_amount_in_total: u64,
+    principal_amount_total: u64,
+): u64 {
+    <b>let</b> self=<a href="../bridge/defi_protocols.md#bridge_defi_protocols_borrow">borrow</a>(parent_id);
+    <b>let</b> config_key = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_DefiProtocolKey">DefiProtocolKey</a> { <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_type">protocol_type</a>, <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_version">protocol_version</a>, <a href="../bridge/defi_protocols.md#bridge_defi_protocols_protocol_token_id">protocol_token_id</a>, <a href="../bridge/defi_protocols.md#bridge_defi_protocols_chain_id">chain_id</a> };
+    <b>assert</b>!(self.protocol_info_map.contains(config_key), <a href="../bridge/defi_protocols.md#bridge_defi_protocols_EDefiProtocolConfigNotFound">EDefiProtocolConfigNotFound</a>);
+    <b>let</b> lp_amount_withdraw_u256 = lp_amount_withdraw <b>as</b> u256;
+    <b>let</b> lp_amount_in_total_u256 = lp_amount_in_total <b>as</b> u256;
+    <b>let</b> principal_amount_total_u256 = principal_amount_total <b>as</b> u256;
+    <b>let</b> lp_decimal=10000;
+    //赎回的LP占比
+    <b>let</b> lp_percent=lp_amount_withdraw_u256*lp_decimal/lp_amount_in_total_u256;
+    //赎回的本金
+    <b>let</b> principal=principal_amount_total_u256*lp_percent/lp_decimal;
+    principal <b>as</b> u64
 }
 </code></pre>
 

@@ -200,6 +200,70 @@ module bridge::defi_protocols {
         (fee, principal as u64)
     }
 
+    /// 计算管理费用
+    /// 返回值：(管理费用, 赎回本金)
+    public(package) fun manage_fee_v2(
+        parent_id: &UID,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+        principal_amount: u64,
+        amount_withdraw: u64,
+    ): u64 {
+        let self=borrow(parent_id);
+        let config_key = DefiProtocolKey { protocol_type, protocol_version, protocol_token_id, chain_id };
+        assert!(self.protocol_info_map.contains(config_key), EDefiProtocolConfigNotFound);
+        let protocol_info = self.protocol_info_map.borrow(config_key);
+
+        let principal_amount_u256 = principal_amount as u256;
+        let amount_withdraw_u256 = amount_withdraw as u256;
+        let profit = if (amount_withdraw_u256>principal_amount_u256) {
+            amount_withdraw_u256-principal_amount_u256
+        } else {
+            0u256
+        };
+
+        //计算管理费用
+        let fee: u64 = if (protocol_info.fee_type == FEE_TYPE_FIXED) {
+            if (profit > (protocol_info.fee_rate as u256)) {
+                protocol_info.fee_rate
+            } else {
+                profit as u64
+            }
+        } else {
+            ((profit * (protocol_info.fee_rate as u256)) / 1_000_000_000) as u64
+        };
+        fee
+    }
+
+    /// 计算赎回本金
+    /// 返回值：赎回本金
+    public(package) fun calculate_withdraw_principal_amount(
+        parent_id: &UID,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+        lp_amount_withdraw: u64,
+        lp_amount_in_total: u64,
+        principal_amount_total: u64,        
+    ): u64 {
+        let self=borrow(parent_id);
+        let config_key = DefiProtocolKey { protocol_type, protocol_version, protocol_token_id, chain_id };
+        assert!(self.protocol_info_map.contains(config_key), EDefiProtocolConfigNotFound);
+
+        let lp_amount_withdraw_u256 = lp_amount_withdraw as u256;
+        let lp_amount_in_total_u256 = lp_amount_in_total as u256;
+        let principal_amount_total_u256 = principal_amount_total as u256;
+        let lp_decimal=10000;
+        //赎回的LP占比
+        let lp_percent=lp_amount_withdraw_u256*lp_decimal/lp_amount_in_total_u256;
+        //赎回的本金
+        let principal=principal_amount_total_u256*lp_percent/lp_decimal;
+        principal as u64
+    }
+
 
 
     /// 创建新的用户限额管理器
