@@ -52,8 +52,19 @@ impl AnonymousClient {
             .send()
             .await?;
 
+        let status = response.status();
         let response_text = response.text().await?;
-        let response_json: Value = serde_json::from_str(&response_text)?;
+        
+        if !status.is_success() {
+            return Err(format!("HTTP error {}: {}", status, response_text).into());
+        }
+        
+        let response_json: Value = match serde_json::from_str(&response_text) {
+            Ok(json) => json,
+            Err(e) => {
+                return Err(format!("Failed to parse JSON response: {}. Response text: {}", e, response_text).into());
+            }
+        };
 
         Ok(response_json)
     }
@@ -72,6 +83,7 @@ impl AnonymousClient {
             "value3": value3,
             "value4": value4,
             "owner": owner,
+            "user_id": 1u64,
         });
 
         match self
@@ -107,6 +119,7 @@ impl AnonymousClient {
             "value3": value3,
             "value4": value4,
             "owner": owner,
+            "user_id": 1u64,
         });
 
         match self
@@ -142,6 +155,7 @@ impl AnonymousClient {
             "value3": value3,
             "value4": value4,
             "owner": owner,
+            "user_id": 1u64,
         });
 
         match self
@@ -392,11 +406,14 @@ impl AnonymousClient {
         }
     }
 
-    pub async fn test_split(&self, value: u64) -> TestResult {
+    pub async fn test_split(&self, value: u64, user_id: u64) -> TestResult {
         let user_address = AccountAddress::from_hex_literal("0x1").unwrap();
         let params = json!({
             "value": value,
             "owner": user_address,
+            "user_id": user_id,
+            "publickey": Vec::<u8>::new(),
+            "signature": Vec::<u8>::new(),
         });
 
         match self
@@ -553,7 +570,6 @@ mod tests {
     use crate::{write_unsigned_leb128, AnonymousServer};
     use std::net::SocketAddr;
     use tracing::info;
-    use tracing_subscriber::fmt;
 
     #[tokio::test]
     async fn test_blake2b_hash() {
@@ -579,7 +595,15 @@ mod tests {
         });
 
         let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
-        let split_result_0 = client.test_split(20).await.response.unwrap();
+        
+        // Wait for server to be ready by pinging it first
+        let ping_result = client.test_ping().await;
+        assert!(ping_result.success, "Server ping failed: {:?}", ping_result.error);
+        info!("Ping Result: {:?}", ping_result.response);
+        
+        let split_result = client.test_split(20, 1).await;
+        assert!(split_result.success, "test_split failed: {:?}", split_result.error);
+        let split_result_0 = split_result.response.expect("test_split returned None response");
         println!("Split 20 Result: {:?}", split_result_0);
 
     }
@@ -597,10 +621,10 @@ mod tests {
         });
 
         let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
-        let split_result_0 = client.test_split(20).await.response.unwrap();
+        let split_result_0 = client.test_split(20, 1).await.response.unwrap();
         info!("Split 20 Result: {:?}", split_result_0);
 
-        let split_result_1 = client.test_split(10).await.response.unwrap();
+        let split_result_1 = client.test_split(10, 1).await.response.unwrap();
         info!("Split 20 Result: {:?}", split_result_1);
 
 
@@ -661,7 +685,7 @@ mod tests {
 
 
         // test split first
-        let split_result_0 = client.test_split(20).await.response.unwrap();
+        let split_result_0 = client.test_split(20, 1).await.response.unwrap();
         info!("Split 20 Result: {:?}", split_result_0);
 
 
@@ -724,7 +748,7 @@ mod tests {
         });
 
         let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
-        let split_result_0 = client.test_split(20).await.response.unwrap();
+        let split_result_0 = client.test_split(20, 1).await.response.unwrap();
         info!("Split 20 Result: {:?}", split_result_0);
 
         let add_result = client
@@ -753,7 +777,7 @@ mod tests {
         });
 
         let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
-        let split_result_0 = client.test_split(20).await.response.unwrap();
+        let split_result_0 = client.test_split(20, 1).await.response.unwrap();
         info!("Split 20 Result: {:?}", split_result_0);
 
         let add_result = client
@@ -786,14 +810,14 @@ mod tests {
         info!("Ping Result: {:?}", ping_result);
 
         // test split first
-        let split_result_0 = client.test_split(20).await.response.unwrap();
+        let split_result_0 = client.test_split(20, 1).await.response.unwrap();
         info!("Split 20 Result: {:?}", split_result_0);
-        let split_result_1 = client.test_split(10).await.response.unwrap();
+        let split_result_1 = client.test_split(10, 1).await.response.unwrap();
         info!("Split 10 Result: {:?}", split_result_1);
 
-        let split_result_0_repeat = client.test_split(20).await.response.unwrap();
+        let split_result_0_repeat = client.test_split(20, 1).await.response.unwrap();
         info!("Split 20 Result repeat: {:?}", split_result_0);
-        let split_result_1_repeat = client.test_split(10).await.response.unwrap();
+        let split_result_1_repeat = client.test_split(10, 1).await.response.unwrap();
         info!("Split 10 Result repeat: {:?}", split_result_1);
 
         assert_eq!(split_result_0["result"]["result1"], split_result_0_repeat["result"]["result1"]);
@@ -805,7 +829,7 @@ mod tests {
 
 
         //test 20 + 10
-        let add_result = client
+        let add_result_response = client
             .test_add(
                 split_result_0["result"]["result1"]
                     .as_str()
@@ -824,9 +848,9 @@ mod tests {
                     .unwrap()
                     .to_owned(),
             )
-            .await
-            .response
-            .unwrap();
+            .await;
+        assert!(add_result_response.success, "test_add failed: {:?}", add_result_response.error);
+        let add_result = add_result_response.response.expect("test_add returned None response");
         info!("Add Result: {:?}", add_result);
         let add_result = client
             .test_recover_with_signature(
@@ -838,7 +862,7 @@ mod tests {
         assert_eq!(add_result, 30);
 
         //test 20 - 10
-        let minus_result = client
+        let minus_result_response = client
             .test_minus(
                 split_result_0["result"]["result1"]
                     .as_str()
@@ -857,9 +881,9 @@ mod tests {
                     .unwrap()
                     .to_owned(),
             )
-            .await
-            .response
-            .unwrap();
+            .await;
+        assert!(minus_result_response.success, "test_minus failed: {:?}", minus_result_response.error);
+        let minus_result = minus_result_response.response.expect("test_minus returned None response");
         info!("Minus Result: {:?}", minus_result);
         let minus_result = client
             .test_recover_with_signature(
@@ -877,7 +901,7 @@ mod tests {
         assert_eq!(minus_result, 10);
 
         //test 20 * 10
-        let multiply_result = client
+        let multiply_result_response = client
             .test_multiply(
                 split_result_0["result"]["result1"]
                     .as_str()
@@ -896,9 +920,9 @@ mod tests {
                     .unwrap()
                     .to_owned(),
             )
-            .await
-            .response
-            .unwrap();
+            .await;
+        assert!(multiply_result_response.success, "test_multiply failed: {:?}", multiply_result_response.error);
+        let multiply_result = multiply_result_response.response.expect("test_multiply returned None response");
         info!("Multiply Result: {:?}", multiply_result);
 
         let multiply_result = client

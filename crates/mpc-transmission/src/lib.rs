@@ -1,10 +1,10 @@
+use anyhow::anyhow;
 #[allow(unused_imports)]
 // Standard library imports
 use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
 use std::path::PathBuf;
 use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
-use anyhow::anyhow;
 
 // External crate imports
 #[allow(unused_imports)]
@@ -12,12 +12,12 @@ use rand::random;
 
 // Re-export sharks crate
 use crate::error::SecretSharingError;
-pub use field::GF256;
-pub use share::Share;
-use move_core_types::account_address::AccountAddress;
 use fastcrypto::hash::HashFunction;
+pub use field::GF256;
+use move_core_types::account_address::AccountAddress;
+pub use share::Share;
 // Re-export two_party_share functions
-pub use two_party_share::{recover_two_shares, split_to_two_value, recover_value};
+pub use two_party_share::{recover_two_shares, recover_value, split_to_two_value};
 
 // Local module declarations
 pub mod error;
@@ -196,7 +196,10 @@ pub fn recover_secret_with_xor(
 /// # Returns
 /// - `Ok(u64)`: The parsed mask secret value
 /// - `Err`: If the config file doesn't exist, is invalid, or the private key cannot be parsed
-pub fn get_mask_secret_from_config(config_path: Option<String>, userAddress: AccountAddress) -> Result<u64, Box<dyn std::error::Error>> {
+pub fn get_mask_secret_from_config(
+    config_path: Option<String>,
+    user_address: AccountAddress,
+) -> Result<u64, Box<dyn std::error::Error>> {
     let config = config_path.unwrap_or("".parse().unwrap());
     let pre_path = get_sui_config_directory();
     let mut path = pre_path.join("bfc_anonymous_config.yaml");
@@ -208,7 +211,8 @@ pub fn get_mask_secret_from_config(config_path: Option<String>, userAddress: Acc
     let config = AnonymousPrivateKeyConfig::from_yaml_file(&path)?;
 
     // Get the private key string from config
-    let private_key_str = config.anonymous_privatekey
+    let private_key_str = config
+        .anonymous_privatekey
         .ok_or_else(|| anyhow!("Anonymous private key not found in configuration"))?;
 
     // Parse the private key string to u64
@@ -219,27 +223,27 @@ pub fn get_mask_secret_from_config(config_path: Option<String>, userAddress: Acc
             .map_err(|e| anyhow!("Failed to parse private key as hex: {}", e))?
     } else {
         // Parse as decimal
-        private_key_str.parse::<u64>()
+        private_key_str
+            .parse::<u64>()
             .map_err(|e| anyhow!("Failed to parse private key as decimal: {}", e))?
     };
 
-    let salt = get_user_address_salt(userAddress);
+    let salt = get_user_address_salt(user_address);
     let mask_secret = mask_secret.wrapping_add(salt);
-
 
     Ok(mask_secret)
 }
 
-
-pub fn get_user_address_salt(address: AccountAddress) -> u64{
+pub fn get_user_address_salt(address: AccountAddress) -> u64 {
     let hash = fastcrypto::hash::Blake2b256::digest(address.into_bytes());
     let encode = hex::encode(hash);
     let num = u64::from_str_radix(&encode[0..16], 16).unwrap();
     num
-
 }
 
-pub fn get_zklogin_rpc_address_from_config(config_path: Option<String>) -> Result<String, Box<dyn std::error::Error>> {
+pub fn get_zklogin_rpc_address_from_config(
+    config_path: Option<String>,
+) -> Result<String, Box<dyn std::error::Error>> {
     let config = config_path.unwrap_or("".parse().unwrap());
     let pre_path = get_sui_config_directory();
     let mut path = pre_path.join("bfc_anonymous_config.yaml");
@@ -251,7 +255,8 @@ pub fn get_zklogin_rpc_address_from_config(config_path: Option<String>) -> Resul
     let config = AnonymousPrivateKeyConfig::from_yaml_file(&path)?;
 
     // Get the private key string from config
-    let rpc_address = config.zklogin_verify_rpc_path
+    let rpc_address = config
+        .zklogin_verify_rpc_path
         .ok_or_else(|| anyhow!("zklogin rpc address in configuration"))?;
 
     Ok(rpc_address)
