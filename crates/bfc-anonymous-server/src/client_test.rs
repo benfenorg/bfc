@@ -356,6 +356,39 @@ impl AnonymousClient {
         }
     }
 
+    pub async fn test_encode_data_for_client(
+        &self,
+        value: u64,
+        signature: Vec<u8>,
+        owner: String,
+        publickey: Vec<u8>,
+    ) -> TestResult {
+        let params = json!({
+            "value": value,
+            "signature": signature,
+            "publickey": publickey,
+            "owner": owner,
+        });
+
+        match self
+            .send_rpc_request("bfcx_getAnonymousEncodeDataForClient", params, 4, "rpc")
+            .await
+        {
+            Ok(response) => TestResult {
+                method: "bfcx_getAnonymousEncodeDataForClient".to_string(),
+                success: true,
+                response: Some(response),
+                error: None,
+            },
+            Err(e) => TestResult {
+                method: "bfcx_getAnonymousEncodeDataForClient".to_string(),
+                success: false,
+                response: None,
+                error: Some(e.to_string()),
+            },
+        }
+    }
+
     pub async fn test_restore_value(
         &self,
         value1: Vec<u8>,
@@ -495,6 +528,7 @@ impl AnonymousClient {
         restore_result["result"]["result1"].as_u64().unwrap()
     }
 
+
     async fn test_recover_with_signature(&self, share1: String, share2: String) -> u64 {
         // test restore 20
         let signature = "80361ef8ca66108d1fb68ac81970cc9f7315ca6b1dea0bc493059603faffc8bcdcc7644b2ec55b8e48fe613b30e9b534000ef9e1b626f9f5bdf9519e7b7cef04";
@@ -555,6 +589,7 @@ mod tests {
     use std::net::SocketAddr;
     use tracing::info;
     use tracing_subscriber::fmt;
+    use crate::client_test::hex_to_bytes;
 
     #[tokio::test]
     async fn test_blake2b_hash() {
@@ -583,6 +618,29 @@ mod tests {
         let split_result_0 = client.test_split(20).await.response.unwrap();
         println!("Split 20 Result: {:?}", split_result_0);
 
+    }
+
+    #[tokio::test]
+    async fn test_client_encode_data_for_client() {
+
+        let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
+
+        let server = AnonymousServer::new(None);
+        let _server_handle = tokio::spawn(async move {
+            if let Err(e) = server.start(addr).await {
+                eprintln!("Server error: {:?}", e);
+            }
+        });
+
+        let signature = "4385a68699cc6a3fad8aaa0660f557773767f054c9d451b2cf3bdd956c54e15bc75d766851c0dafd523fe0b8086910717b5c48fba3a342a3387bc43411581c04";
+        let signature_bytes = hex_to_bytes(signature);
+        let owner = "0xfc171f86c07b0311a347d7e71b261c684848becbececec78802f1bf8a599f729";
+        let publickey = "8496d3d932986b43bb64b5d5c7548d5c97a73aebf4301447f3746680b2114ae1";
+        let publickey_bytes = hex_to_bytes(publickey);
+
+        let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
+        let encode_value = client.test_encode_data_for_client(10000000, signature_bytes, owner.to_string(), publickey_bytes).await.response.unwrap();
+        println!("encode value: {:?}", encode_value);
     }
 
 
