@@ -75,6 +75,7 @@ struct AnonymousAddParams {
     value3: String,
     value4: String,
     owner: AccountAddress,
+    user_id: u64
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -83,7 +84,8 @@ struct AnonymousMinusParams {
     value2: String,
     value3: String,
     value4: String,
-    owner: AccountAddress
+    owner: AccountAddress,
+    user_id: u64
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -92,7 +94,8 @@ struct AnonymousMultiplyParams {
     value2: String,
     value3: String,
     value4: String,
-    owner: AccountAddress
+    owner: AccountAddress,
+    user_id: u64
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -122,6 +125,7 @@ struct AnonymousSplitValueInternalParams {
 struct AnonymousSplitValueParams {
     value: u64,
     owner: AccountAddress,
+    user_id: u64,
     publickey: Vec<u8>,
     signature: Vec<u8>,
 }
@@ -360,11 +364,6 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
                 println!("add_params.value2:{}", add_params.value2);
                 println!("add_params.value3:{}", add_params.value3);
                 println!("add_params.value4:{}", add_params.value4);
-                let value1_share = recover_two_shares(add_params.value1, add_params.value2);
-                let value2_share = recover_two_shares(add_params.value3, add_params.value4);
-                if value1_share.is_err() || value2_share.is_err() {
-                    return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": "invalid params"})));
-                }
 
                 let args_result = Args::try_parse();
                 let mut config_path : Option<String> = None;
@@ -384,13 +383,19 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
                     }
                 };
 
+                let value1_share = recover_two_shares(add_params.value1, add_params.value2, mask_secret);
+                let value2_share = recover_two_shares(add_params.value3, add_params.value4, mask_secret);
+                if value1_share.is_err() || value2_share.is_err() {
+                    return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": "invalid params"})));
+                }
+
                 match add_two_shared_secrets(
                     value1_share.unwrap(),
                     value2_share.unwrap(),
                     mask_secret,
                 ) {
                     Ok(result) => {
-                        let (result1, result2) = split_to_two_value(result, mask_secret);
+                        let (result1, result2) = split_to_two_value(result, add_params.user_id, mask_secret);
                         JsonRpcResponse {
                             jsonrpc: "2.0".to_string(),
                             id: request.id,
@@ -424,13 +429,6 @@ async fn handle_anonymous_minus(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
         Some(params) => match serde_json::from_value::<AnonymousMinusParams>(params) {
             Ok(minus_params) => {
-                let value1_share = recover_two_shares(minus_params.value1, minus_params.value2);
-                let value2_share = recover_two_shares(minus_params.value3, minus_params.value4);
-                if value1_share.is_err() || value2_share.is_err() {
-                    return create_error_response(request.id, -32602, "Invalid params".to_string(),
-                                                 Some(serde_json::json!({"error": "invalid params"})));
-                }
-
                 let args_result = Args::try_parse();
                 let mut config_path : Option<String> = None;
                 if args_result.is_ok() {
@@ -446,13 +444,20 @@ async fn handle_anonymous_minus(request: JsonRpcRequest) -> JsonRpcResponse {
                     }
                 };
 
+                let value1_share = recover_two_shares(minus_params.value1, minus_params.value2, mask_secret);
+                let value2_share = recover_two_shares(minus_params.value3, minus_params.value4, mask_secret);
+                if value1_share.is_err() || value2_share.is_err() {
+                    return create_error_response(request.id, -32602, "Invalid params".to_string(),
+                                                 Some(serde_json::json!({"error": "invalid params"})));
+                }
+
                 match sub_two_shared_secrets(
                     value1_share.unwrap(),
                     value2_share.unwrap(),
                     mask_secret,
                 ) {
                     Ok(result) => {
-                        let (result1, result2) = split_to_two_value(result, mask_secret);
+                        let (result1, result2) = split_to_two_value(result, minus_params.user_id, mask_secret);
                         JsonRpcResponse {
                             jsonrpc: "2.0".to_string(),
                             id: request.id,
@@ -486,15 +491,6 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
         Some(params) => match serde_json::from_value::<AnonymousMultiplyParams>(params) {
             Ok(multiply_params) => {
-                let value1_share =
-                    recover_two_shares(multiply_params.value1, multiply_params.value2);
-                let value2_share =
-                    recover_two_shares(multiply_params.value3, multiply_params.value4);
-                if value1_share.is_err() || value2_share.is_err() {
-                    return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": "invalid params"})));
-
-                }
-
                 let args_result = Args::try_parse();
                 let mut config_path : Option<String> = None;
                 if args_result.is_ok() {
@@ -512,13 +508,22 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
                     }
                 };
 
+                let value1_share =
+                    recover_two_shares(multiply_params.value1, multiply_params.value2, mask_secret);
+                let value2_share =
+                    recover_two_shares(multiply_params.value3, multiply_params.value4, mask_secret);
+                if value1_share.is_err() || value2_share.is_err() {
+                    return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": "invalid params"})));
+
+                }
+
                 match mul_two_shared_secrets(
                     value1_share.unwrap(),
                     value2_share.unwrap(),
                     mask_secret,
                 ) {
                     Ok(result) => {
-                        let (result1, result2) = split_to_two_value(result, mask_secret);
+                        let (result1, result2) = split_to_two_value(result, multiply_params.user_id, mask_secret);
                         JsonRpcResponse {
                             jsonrpc: "2.0".to_string(),
                             id: request.id,
@@ -1089,7 +1094,7 @@ async fn handle_anonymous_encode_data(request: JsonRpcRequest) -> JsonRpcRespons
                 };
 
                 let value = split_to_two_value_params.value;
-                let (result1, result2) = split_to_two_value(value, mask_secret);
+                let (result1, result2) = split_to_two_value(value, split_to_two_value_params.user_id, mask_secret);
                 JsonRpcResponse {
                     jsonrpc: "2.0".to_string(),
                     id: request.id,
@@ -1170,7 +1175,7 @@ async fn handle_anonymous_encode_data_for_client(request: JsonRpcRequest) -> Jso
                 };
 
                 let value = split_to_two_value_params.value;
-                let (result1, result2) = split_to_two_value(value, mask_secret);
+                let (result1, result2) = split_to_two_value(value, split_to_two_value_params.user_id, mask_secret);
                 JsonRpcResponse {
                     jsonrpc: "2.0".to_string(),
                     id: request.id,

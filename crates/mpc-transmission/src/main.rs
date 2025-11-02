@@ -204,7 +204,9 @@ fn verify_basic_byte_sharing() -> Result<(), SecretSharingError> {
         // Verify all combination recovery results are the same
         for i in 1..all_results.len() {
             if all_results[0] != all_results[i] {
-                println!("❌ Failed - different share combinations have inconsistent recovery results");
+                println!(
+                    "❌ Failed - different share combinations have inconsistent recovery results"
+                );
                 return Err(SecretSharingError::RecoveryFailed(
                     "different share combinations have inconsistent recovery results".to_string(),
                 ));
@@ -316,7 +318,10 @@ fn verify_deterministic_behavior() -> Result<(), SecretSharingError> {
         } else {
             // Verify identical to first generated shares
             if all_share_sets[0].len() != all_share_sets[i].len() {
-                println!("❌ Failed - {}th generation has different number of shares", i + 1);
+                println!(
+                    "❌ Failed - {}th generation has different number of shares",
+                    i + 1
+                );
                 return Err(SecretSharingError::RecoveryFailed(
                     "inconsistent number of shares".to_string(),
                 ));
@@ -351,7 +356,10 @@ fn verify_deterministic_behavior() -> Result<(), SecretSharingError> {
 
                 for (k, (y0, yi)) in share0.y.iter().zip(sharei.y.iter()).enumerate() {
                     if y0.0 != yi.0 {
-                        println!("      ❌ Share{} y[{}] different: {} vs {}", j, k, y0.0, yi.0);
+                        println!(
+                            "      ❌ Share{} y[{}] different: {} vs {}",
+                            j, k, y0.0, yi.0
+                        );
                         all_match = false;
                     }
                 }
@@ -360,7 +368,9 @@ fn verify_deterministic_behavior() -> Result<(), SecretSharingError> {
             if all_match {
                 println!("      ✅ All shares completely consistent");
             } else {
-                return Err(SecretSharingError::RecoveryFailed("shares inconsistent".to_string()));
+                return Err(SecretSharingError::RecoveryFailed(
+                    "shares inconsistent".to_string(),
+                ));
             }
         }
     }
@@ -419,7 +429,10 @@ fn verify_deterministic_behavior() -> Result<(), SecretSharingError> {
 
                 for (k, (y0, yi)) in share0.y.iter().zip(sharei.y.iter()).enumerate() {
                     if y0.0 != yi.0 {
-                        println!("      ❌ Share{} y[{}] different: {} vs {}", j, k, y0.0, yi.0);
+                        println!(
+                            "      ❌ Share{} y[{}] different: {} vs {}",
+                            j, k, y0.0, yi.0
+                        );
                         all_match = false;
                     }
                 }
@@ -525,7 +538,9 @@ fn verify_precision_preservation() -> Result<(), SecretSharingError> {
                         recovered,
                         value
                     );
-                    return Err(SecretSharingError::RecoveryFailed("precision loss".to_string()));
+                    return Err(SecretSharingError::RecoveryFailed(
+                        "precision loss".to_string(),
+                    ));
                 }
 
                 // Bit-level verification
@@ -645,7 +660,11 @@ fn test_number_30_xor_shares() -> Result<(), SecretSharingError> {
             first_round.iter().zip(round_shares.iter()).enumerate()
         {
             if first_share.x.0 != current_share.x.0 || first_share.y != current_share.y {
-                println!("  Round {} share {} different from round 1", round_idx + 1, share_idx);
+                println!(
+                    "  Round {} share {} different from round 1",
+                    round_idx + 1,
+                    share_idx
+                );
                 all_identical = false;
             }
         }
@@ -701,7 +720,10 @@ fn test_number_30_xor_shares() -> Result<(), SecretSharingError> {
 
     println!("\n🎯 Test summary:");
     println!("  - Original number: {}", secret_number);
-    println!("  - Share configuration: threshold {}, total {}", threshold, total_shares);
+    println!(
+        "  - Share configuration: threshold {}, total {}",
+        threshold, total_shares
+    );
     println!("  - XOR mask: {}", mask);
     println!("  - Determinism: ✅ 10 generations completely consistent");
     println!("  - Recovery accuracy: ✅ 100% success rate");
