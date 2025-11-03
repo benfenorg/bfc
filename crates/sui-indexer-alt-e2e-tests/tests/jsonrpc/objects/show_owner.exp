@@ -60,9 +60,9 @@ Response: {
   "result": {
     "status": "VersionFound",
     "details": {
-      "objectId": "BFCab800c3b00766efa15318ba8f282d37073778f6019ad7e5106c8adec6f1df5bdd403",
+      "objectId": "BFCa5b98f5e2a30b475d77be23bb5bd25605d72abfc7fa4d3d21ad0b1768c3ff5acb7e1",
       "version": "2",
-      "digest": "5rHB2AKBpwVw4Njgkop7xgeAxAGL8eK7Kjup7r4wF4B1",
+      "digest": "DmaVBmcxAj9jufnXFRTq832uWFCTxf71uX4Fba8RAMSP",
       "owner": {
         "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
       }
@@ -78,9 +78,9 @@ Response: {
   "result": {
     "status": "VersionFound",
     "details": {
-      "objectId": "BFC23e497a4908032ee64c765a9ba25880bcf427ca94d5ae7699f3e613439c5fc757131",
+      "objectId": "BFCc303ac99e4e4d221a918092c8ea0927dcfaccf8d03a48564fde12d3ed31fda6e00b1",
       "version": "3",
-      "digest": "7Fnj4fEs1arWE2YsjrzKjBikXRG2QH7rfEq7fKheChKZ",
+      "digest": "A8Sr62NYjGtNSR3sjtBLJjmCSeDvL3JrFwUAXfFc9ni2",
       "owner": {
         "AddressOwner": "BFCa7b032703878aa74c3126935789fd1d4d7e111d5911b09247d6963061c312b5a5cf9"
       }
@@ -100,12 +100,12 @@ Allowed variable mappings are {
     "bfc_system_opt": "0xc8",
     "bridge": "0xb",
     "bridge_opt": "0xb",
-    "digest_1": "9UMTuHchq1WCHwNNADp21wRNL7zsM9UTJZ7Xsnwo4rhy",
-    "digest_2": "APSkLmf8R3XCrXGuP4ph6imFVbH4rPduqqmPecaR1yxC",
-    "digest_3": "4p5iXWmaGYDR6ZccYjMP3cVDNBVjByWEyH3wqLqsDyEg",
-    "digest_4": "46on87zwgpz2PXRo6ooTyTEQ9AqXWWGwYZCwQHFAefCZ",
-    "digest_5": "5YLk7nYZ74K98RA6FeQtm5XqujX3wp32fF4vxzv6Qs6x",
-    "digest_6": "A4DwxoDtdTtZQRZ7SGK11o1Y7DJSj6w9SSsYeYgiBsPr",
+    "digest_1": "8BuUFdJ7qwcs9DeZxB4HGkFuEaECpsDpSCagNt7hFZbK",
+    "digest_2": "Crbz95whXgUnnssYg36LaceQoZJJFrNUwoPx8j2Yyf6r",
+    "digest_3": "9MmLSzA4a6sMSSv67UNCW6FuB3H4oBTsk6dNAvRBcqkU",
+    "digest_4": "Acb41nV8ARv7Y5a3jUcA7ESrtPsou4LGfNE5kzuauWRs",
+    "digest_5": "5Bj7RWH1uRchxQeAGZHf5gNgVx8LJrc9AtgyB2uyhp5",
+    "digest_6": "FNxdy3A3iMsduLKfruY6izNoNQBjwKhVuB8uTDQgVsRq",
     "obj_0_0": "object(0,0)",
     "obj_0_0_opt": "object(0,0)",
     "obj_0_1": "object(0,1)",
@@ -144,12 +144,12 @@ Allowed variable mappings are {
     "bfc_system_opt": "0xc8",
     "bridge": "0xb",
     "bridge_opt": "0xb",
-    "digest_1": "9UMTuHchq1WCHwNNADp21wRNL7zsM9UTJZ7Xsnwo4rhy",
-    "digest_2": "APSkLmf8R3XCrXGuP4ph6imFVbH4rPduqqmPecaR1yxC",
-    "digest_3": "4p5iXWmaGYDR6ZccYjMP3cVDNBVjByWEyH3wqLqsDyEg",
-    "digest_4": "46on87zwgpz2PXRo6ooTyTEQ9AqXWWGwYZCwQHFAefCZ",
-    "digest_5": "5YLk7nYZ74K98RA6FeQtm5XqujX3wp32fF4vxzv6Qs6x",
-    "digest_6": "A4DwxoDtdTtZQRZ7SGK11o1Y7DJSj6w9SSsYeYgiBsPr",
+    "digest_1": "8BuUFdJ7qwcs9DeZxB4HGkFuEaECpsDpSCagNt7hFZbK",
+    "digest_2": "Crbz95whXgUnnssYg36LaceQoZJJFrNUwoPx8j2Yyf6r",
+    "digest_3": "9MmLSzA4a6sMSSv67UNCW6FuB3H4oBTsk6dNAvRBcqkU",
+    "digest_4": "Acb41nV8ARv7Y5a3jUcA7ESrtPsou4LGfNE5kzuauWRs",
+    "digest_5": "5Bj7RWH1uRchxQeAGZHf5gNgVx8LJrc9AtgyB2uyhp5",
+    "digest_6": "FNxdy3A3iMsduLKfruY6izNoNQBjwKhVuB8uTDQgVsRq",
     "obj_0_0": "object(0,0)",
     "obj_0_0_opt": "object(0,0)",
     "obj_0_1": "object(0,1)",
@@ -184,11 +184,11 @@ Response: {
   "result": {
     "status": "VersionFound",
     "details": {
-      "objectId": "BFC311a7467322fc3085f395f914b19511fc97c7561b81e1f13b7b6c7b14ffd4097d01c",
+      "objectId": "BFC30d2b3d44d88428ce9f20948b9adab7efc647c83b1f57a2e931adb094d53168baf7c",
       "version": "7",
-      "digest": "BfrrcMG5Zk8mTX54PTAjc4kpznTVg9vQntUhX2Pskecc",
+      "digest": "5t7aaCw3RW4gBSnpxiGajaiwwPBMYaEr7jEJLHguDucf",
       "owner": {
-        "ObjectOwner": "BFC38fea9725b7b8eda8ed48b874fbd7df2746a259973863d86ed1913f434bff3eeb8ad"
+        "ObjectOwner": "BFC6ac5895b0c5ba98a5934af5a1d61ea6a79e9875b6f71b87f2c7c67d7bf1f43d13c75"
       }
     }
   }
