@@ -13,6 +13,10 @@ fn get_num_encoded(mask_secret: u64) -> Vec<u8> {
         .to_vec()
 }
 
+fn get_xor_mask(len: usize) -> Vec<u8> {
+    (0..len).map(|i| if i % 2 == 0 { 0 } else { 1 }).collect()
+}
+
 fn u64_to_bytes(value: u64) -> Vec<u8> {
     value.to_le_bytes().to_vec()
 }
@@ -77,7 +81,7 @@ fn unshuffle_data(data: &[u8], inverse_permutation: &[usize]) -> Vec<u8> {
     unshuffled
 }
 
-fn encode_share_data(share_data: Vec<u8>, mask_secret: u64, user_id: u64) -> Vec<u8> {
+fn encode_share_data(share_data: Vec<u8>, mask_secret: u64, user_id: u64, index: u8) -> Vec<u8> {
     let mut num_encoded = get_num_encoded(mask_secret);
     let mut user_id_bytes = u64_to_bytes(user_id);
     // The length of result_data is twice that of share_data, meaning each byte in share_data corresponds to two bytes in result_data
@@ -106,15 +110,38 @@ fn encode_share_data(share_data: Vec<u8>, mask_secret: u64, user_id: u64) -> Vec
         }
     }
 
-    // Apply shuffle permutation to the final result
-    let (forward_permutation, _) = generate_shuffle_permutations(result_data.len(), mask_secret);
-    shuffle_data(&result_data, &forward_permutation)
+    if index == 0 {
+        // Apply shuffle permutation to the final result
+        let (forward_permutation, _) =
+            generate_shuffle_permutations(result_data.len(), mask_secret);
+        shuffle_data(&result_data, &forward_permutation)
+    } else {
+        let xor_mask = get_xor_mask(result_data.len());
+        result_data
+            .iter()
+            .zip(xor_mask.iter())
+            .map(|(a, b)| a ^ b)
+            .collect::<Vec<u8>>()
+    }
 }
 
-fn decode_share_data(share_data: Vec<u8>, mask_secret: u64) -> Result<Vec<u8>, SecretSharingError> {
-    // First, unshuffle the data to restore original order
-    let (_, inverse_permutation) = generate_shuffle_permutations(share_data.len(), mask_secret);
-    let unshuffled_data = unshuffle_data(&share_data, &inverse_permutation);
+fn decode_share_data(
+    share_data: Vec<u8>,
+    mask_secret: u64,
+    index: u8,
+) -> Result<Vec<u8>, SecretSharingError> {
+    let unshuffled_data = if index == 0 {
+        // Unshuffle the data to restore original order
+        let (_, inverse_permutation) = generate_shuffle_permutations(share_data.len(), mask_secret);
+        unshuffle_data(&share_data, &inverse_permutation)
+    } else {
+        let xor_mask = get_xor_mask(share_data.len());
+        share_data
+            .iter()
+            .zip(xor_mask.iter())
+            .map(|(a, b)| a ^ b)
+            .collect::<Vec<u8>>()
+    };
 
     let num_encoded = get_num_encoded(mask_secret);
     let mut result_data = Vec::with_capacity(unshuffled_data.len() / 2);
@@ -133,8 +160,8 @@ pub fn split_to_two_value(value: u64, user_id: u64, mask_secret: u64) -> (String
     let shares = generate_shares_with_xor(value, THRESHOLD, TOTAL_SHARES, mask_secret).unwrap();
     let share1: Vec<u8> = (&shares[0]).into();
     let share2: Vec<u8> = (&shares[1]).into();
-    let encoded_share1 = encode_share_data(share1, mask_secret, user_id);
-    let encoded_share2 = encode_share_data(share2, mask_secret, user_id);
+    let encoded_share1 = encode_share_data(share1, mask_secret, user_id, 0);
+    let encoded_share2 = encode_share_data(share2, mask_secret, user_id, 1);
     (hex::encode(encoded_share1), hex::encode(encoded_share2))
 }
 
@@ -158,8 +185,8 @@ pub fn recover_two_shares(
     let encoded_value2: Vec<u8> =
         hex::decode(value2).map_err(|e| SecretSharingError::InvalidShare(e.to_string()))?;
 
-    let decoded_value1 = decode_share_data(encoded_value1, mask_secret)?;
-    let decoded_value2 = decode_share_data(encoded_value2, mask_secret)?;
+    let decoded_value1 = decode_share_data(encoded_value1, mask_secret, 0)?;
+    let decoded_value2 = decode_share_data(encoded_value2, mask_secret, 1)?;
 
     let share1: Share = decoded_value1.as_slice().try_into().map_err(|_| {
         SecretSharingError::InvalidShare("value1 convert to share failed".to_string())
@@ -268,8 +295,8 @@ mod tests {
         let mask_secret = 0x1234567890ABCDEFu64;
         let user_id = 1u64;
 
-        let encoded = encode_share_data(share_data.clone(), mask_secret, user_id);
-        let decoded = decode_share_data(encoded, mask_secret).unwrap();
+        let encoded = encode_share_data(share_data.clone(), mask_secret, user_id, 0);
+        let decoded = decode_share_data(encoded, mask_secret, 0).unwrap();
 
         assert_eq!(decoded, share_data);
     }
