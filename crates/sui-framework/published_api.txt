@@ -2092,9 +2092,6 @@ create_by_value
 create_by_value1_and_value2
 	public fun
 	0x2::anonymous_balance
-update_anonymous_balance
-	public fun
-	0x2::anonymous_balance
 value1
 	public fun
 	0x2::anonymous_balance

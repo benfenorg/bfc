@@ -529,6 +529,7 @@ The index into the deny list vector for the <code><a href="../sui/coin.md#sui_co
     <a href="../sui/coin.md#sui_coin_join">coin::join</a>(&<b>mut</b> swap_pool.normal_coin, <a href="../sui/coin.md#sui_coin">coin</a>);
     swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin + value;
     <b>let</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin">anonymous_coin</a> = <a href="../sui/anonymous_coin.md#sui_anonymous_coin_split">split</a>(&<b>mut</b> swap_pool.<a href="../sui/anonymous_coin.md#sui_anonymous_coin">anonymous_coin</a>, value, ctx);
+    //kakaxi: need prepare...
     <a href="../sui/transfer.md#sui_transfer_public_transfer">transfer::public_transfer</a>(<a href="../sui/anonymous_coin.md#sui_anonymous_coin">anonymous_coin</a>, <a href="../sui/tx_context.md#sui_tx_context_sender">tx_context::sender</a>(ctx));
 }
 </code></pre>

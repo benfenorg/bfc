@@ -155,7 +155,8 @@ This should be called only once during genesis creation.
 
 
 <pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/transfer.md#sui_transfer">transfer</a>(c: <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;<a href="../sui/anonymous_bfc.md#sui_abfc_ABFC">ABFC</a>&gt;, recipient: <b>address</b>) {
-    //prepare..
+    //prepare..todo
+    //kakaxi: need prepare...
     <a href="../sui/transfer.md#sui_transfer_public_transfer">transfer::public_transfer</a>(c, recipient)
 }
 </code></pre>

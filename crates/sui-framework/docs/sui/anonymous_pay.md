@@ -64,6 +64,7 @@ Transfer <code>c</code> to the sender of the current transaction
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_pay.md#sui_anonymous_pay_keep">keep</a>&lt;T&gt;(c: Anonymous_Coin&lt;T&gt;, ctx: &TxContext) {
+    //check sender != reciver, prepare change the value1 and value2.
     <a href="../sui/transfer.md#sui_transfer_public_transfer">transfer::public_transfer</a>(c, ctx.sender())
 }
 </code></pre>
@@ -150,6 +151,8 @@ and the remaining balance is left is <code>self</code>.
     recipient: <b>address</b>,
     ctx: &<b>mut</b> TxContext,
 ) {
+    //todo: prepare <b>for</b> <a href="../sui/transfer.md#sui_transfer">transfer</a> change owner ship
+    //kakaxi: need prepare...
     <a href="../sui/transfer.md#sui_transfer_public_transfer">transfer::public_transfer</a>(c.<a href="../sui/anonymous_pay.md#sui_anonymous_pay_split_anonymous">split_anonymous</a>(value1, value2, ctx), recipient)
 }
 </code></pre>

@@ -6,7 +6,7 @@
 /// custom coins with `Supply` and `Balance`s.
 module sui::anonymous_balance;
 use sui::hfe_ops::{hfe_ops_add, hfe_ops_minus, hfe_ops_encode_data, hfe_ops_compare_value,
-    hfe_ops_compare_value1_and_value2, hfe_ops_restore_anonymous_value
+    hfe_ops_compare_value1_and_value2
 };
 
 /// Allows calling `.into_coin()` on a `Balance` to turn it into a coin.
@@ -83,18 +83,6 @@ public fun create_by_value1_and_value2<T>(value1: vector<u8>, value2: vector<u8>
         balance_type: balance_type,
         version: version
     }
-}
-
-public fun update_anonymous_balance<T>(self: &mut Anonymous_Balance<T>, new_owner: address, ctx: &TxContext) {
-    let value = hfe_ops_restore_anonymous_value(self.value1, self.value2, ctx.sender());
-    let mut encode_data = b"";
-    let (value1, value2)  = hfe_ops_encode_data(value, new_owner);
-    vector::append(&mut encode_data, value1);
-    vector::append(&mut encode_data, b",");
-    vector::append(&mut encode_data, value2);
-    self.encode_data = encode_data;
-    self.value1 = value1;
-    self.value2 = value2;
 }
 
 public fun value1<T>(self: &Anonymous_Balance<T>): vector<u8> {

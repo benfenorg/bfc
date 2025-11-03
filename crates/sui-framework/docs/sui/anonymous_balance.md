@@ -12,7 +12,6 @@ custom coins with <code><a href="../sui/anonymous_balance.md#sui_anonymous_balan
 -  [Constants](#@Constants_0)
 -  [Function `create_by_value`](#sui_anonymous_balance_create_by_value)
 -  [Function `create_by_value1_and_value2`](#sui_anonymous_balance_create_by_value1_and_value2)
--  [Function `update_anonymous_balance`](#sui_anonymous_balance_update_anonymous_balance)
 -  [Function `value1`](#sui_anonymous_balance_value1)
 -  [Function `value2`](#sui_anonymous_balance_value2)
 -  [Function `get_encode_data`](#sui_anonymous_balance_get_encode_data)
@@ -232,38 +231,6 @@ For when an overflow is happening on Supply operations.
         balance_type: balance_type,
         version: version
     }
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="sui_anonymous_balance_update_anonymous_balance"></a>
-
-## Function `update_anonymous_balance`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_update_anonymous_balance">update_anonymous_balance</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">sui::anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, new_owner: <b>address</b>, ctx: &<a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_update_anonymous_balance">update_anonymous_balance</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, new_owner: <b>address</b>, ctx: &TxContext) {
-    <b>let</b> value = hfe_ops_restore_anonymous_value(self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>, ctx.sender());
-    <b>let</b> <b>mut</b> encode_data = b"";
-    <b>let</b> (<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>)  = hfe_ops_encode_data(value, new_owner);
-    vector::append(&<b>mut</b> encode_data, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>);
-    vector::append(&<b>mut</b> encode_data, b",");
-    vector::append(&<b>mut</b> encode_data, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>);
-    self.encode_data = encode_data;
-    self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a> = <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>;
-    self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a> = <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>;
 }
 </code></pre>
 
