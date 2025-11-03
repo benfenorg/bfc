@@ -12,7 +12,7 @@ mod encode_tests {
     fn test_encode_decode_share_data_roundtrip() {
         let start_value = 200000002u64;
 
-        for extend_value in 0..10000 {
+        for extend_value in 0..10*10000 {
            let test_value = start_value + extend_value;
             let mask_secret = 0x00033344555u64;
             let user_id = random();
@@ -21,8 +21,8 @@ mod encode_tests {
             let decoded_value = recover_value(encoded1.clone(), encode2.clone(), mask_secret).unwrap();
 
             assert_eq!(test_value, decoded_value);
-            println!("test value: {}, decoded value: {}", test_value, decoded_value);
-            println!("=====------encode1: {}, encode2: {}", encoded1, encode2);
+            //println!("test value: {}, decoded value: {}", test_value, decoded_value);
+            println!("encode1: {}, encode2: {}", encoded1, encode2);
 
         }
     }
