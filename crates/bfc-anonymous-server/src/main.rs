@@ -75,7 +75,6 @@ struct AnonymousAddParams {
     value3: String,
     value4: String,
     owner: AccountAddress,
-    user_id: u64
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -85,7 +84,6 @@ struct AnonymousMinusParams {
     value3: String,
     value4: String,
     owner: AccountAddress,
-    user_id: u64
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -95,7 +93,6 @@ struct AnonymousMultiplyParams {
     value3: String,
     value4: String,
     owner: AccountAddress,
-    user_id: u64
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -125,7 +122,6 @@ struct AnonymousSplitValueInternalParams {
 struct AnonymousSplitValueParams {
     value: u64,
     owner: AccountAddress,
-    user_id: u64,
     publickey: Vec<u8>,
     signature: Vec<u8>,
 }
@@ -395,7 +391,7 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
                     mask_secret,
                 ) {
                     Ok(result) => {
-                        let (result1, result2) = split_to_two_value(result, add_params.user_id, mask_secret);
+                        let (result1, result2) = split_to_two_value(result,get_user_address_salt(add_params.owner), mask_secret);
                         JsonRpcResponse {
                             jsonrpc: "2.0".to_string(),
                             id: request.id,
@@ -457,7 +453,7 @@ async fn handle_anonymous_minus(request: JsonRpcRequest) -> JsonRpcResponse {
                     mask_secret,
                 ) {
                     Ok(result) => {
-                        let (result1, result2) = split_to_two_value(result, minus_params.user_id, mask_secret);
+                        let (result1, result2) = split_to_two_value(result, get_user_address_salt(minus_params.owner), mask_secret);
                         JsonRpcResponse {
                             jsonrpc: "2.0".to_string(),
                             id: request.id,
@@ -523,7 +519,7 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
                     mask_secret,
                 ) {
                     Ok(result) => {
-                        let (result1, result2) = split_to_two_value(result, multiply_params.user_id, mask_secret);
+                        let (result1, result2) = split_to_two_value(result, get_user_address_salt(multiply_params.owner), mask_secret);
                         JsonRpcResponse {
                             jsonrpc: "2.0".to_string(),
                             id: request.id,
@@ -1175,7 +1171,8 @@ async fn handle_anonymous_encode_data_for_client(request: JsonRpcRequest) -> Jso
                 };
 
                 let value = split_to_two_value_params.value;
-                let (result1, result2) = split_to_two_value(value, split_to_two_value_params.user_id, mask_secret);
+
+                let (result1, result2) = split_to_two_value(value, get_user_address_salt(split_to_two_value_params.owner), mask_secret);
                 JsonRpcResponse {
                     jsonrpc: "2.0".to_string(),
                     id: request.id,
@@ -1189,7 +1186,7 @@ async fn handle_anonymous_encode_data_for_client(request: JsonRpcRequest) -> Jso
                 }
             }
             Err(e) => {
-                warn!("Invalid parameters for bfcx_getAnonymousEncodeData: {}", e);
+                warn!("Invalid parameters for bfcx_getAnonymousEncodeDataForClient: {}", e);
                 create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
             }
         },
