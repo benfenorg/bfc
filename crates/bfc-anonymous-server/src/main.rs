@@ -15,7 +15,7 @@ use crate::utils::{get_object_owneraddress, verify_zklogin_signature, ZkVerifyRe
 use crate::utils::public_key_bytes_to_sui_address;
 use clap::Parser;
 use move_core_types::account_address::AccountAddress;
-use mpc_transmission::{get_sui_config_directory, two_party_share::{
+use mpc_transmission::{get_sui_config_directory, get_user_address_salt, two_party_share::{
     add_two_shared_secrets, mul_two_shared_secrets, recover_two_shares, recover_value,
     split_to_two_value, sub_two_shared_secrets,
 }};
@@ -1094,7 +1094,7 @@ async fn handle_anonymous_encode_data(request: JsonRpcRequest) -> JsonRpcRespons
                 };
 
                 let value = split_to_two_value_params.value;
-                let (result1, result2) = split_to_two_value(value, split_to_two_value_params.user_id, mask_secret);
+                let (result1, result2) = split_to_two_value(value, get_user_address_salt(split_to_two_value_params.owner), mask_secret);
                 JsonRpcResponse {
                     jsonrpc: "2.0".to_string(),
                     id: request.id,
