@@ -198,7 +198,6 @@ pub fn recover_secret_with_xor(
 /// - `Err`: If the config file doesn't exist, is invalid, or the private key cannot be parsed
 pub fn get_mask_secret_from_config(
     config_path: Option<String>,
-    user_address: AccountAddress,
 ) -> Result<u64, Box<dyn std::error::Error>> {
     let config = config_path.unwrap_or("".parse().unwrap());
     let pre_path = get_sui_config_directory();
@@ -227,9 +226,6 @@ pub fn get_mask_secret_from_config(
             .parse::<u64>()
             .map_err(|e| anyhow!("Failed to parse private key as decimal: {}", e))?
     };
-
-    let salt = get_user_address_salt(user_address);
-    let mask_secret = mask_secret.wrapping_add(salt);
 
     Ok(mask_secret)
 }
