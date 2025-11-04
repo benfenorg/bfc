@@ -27,7 +27,7 @@ use serde_json::Value as JsonValue;
 use tracing::info;
 use anyhow::anyhow;
 use attohttpc::post;
-use fastcrypto::hash::HashFunction;
+//use fastcrypto::hash::HashFunction;
 use mpc_transmission::get_user_address_salt;
 
 #[derive(Clone)]
@@ -445,7 +445,7 @@ pub fn hfe_ops_encode_data(context: &mut NativeContext,
 
 pub fn hfe_ops_compare_value1_and_value2(
     context: &mut NativeContext,
-    ty_args: Vec<Type>,
+    _ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult>{
     let anonymous_compute_cost_params = &context
@@ -475,7 +475,7 @@ pub fn hfe_ops_compare_value1_and_value2(
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
 
 
-    let owner = pop_arg!(args, AccountAddress);
+    let _owner = pop_arg!(args, AccountAddress);
 
     let number4 = pop_arg!(args, Vec<u8>);
     let number3 = pop_arg!(args, Vec<u8>);
@@ -580,9 +580,10 @@ pub fn hfe_ops_compare_value(
         .get::<NativesCostTable>()
         .enable_anonymous_rpc
         .clone();
+
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
 
-    let owner = pop_arg!(args, AccountAddress);
+    let _owner = pop_arg!(args, AccountAddress);
 
     let number3 = pop_arg!(args, u64);
 
