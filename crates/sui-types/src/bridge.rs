@@ -434,7 +434,6 @@ pub struct BridgeInnerV1 {
     pub refund_records: LinkedTable<MoveTypeRefundMessageKey>,
     pub refund_admins: VecSet<String>,
     // pub bfc_system_id: UID,
-    pub defi_holders: LinkedTable<SuiAddress>,
 }
 
 impl BridgeTrait for BridgeInnerV1 {
