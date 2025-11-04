@@ -6949,6 +6949,9 @@ BridgeInner
 DefiProtocolKey
 	public struct
 	0xb::bridge
+DefiHoldersKey
+	public struct
+	0xb::bridge
 DefiHolderInfo
 	public struct
 	0xb::bridge
@@ -7277,6 +7280,18 @@ execute_add_tokens_on_sui
 	fun
 	0xb::bridge
 get_current_seq_num_and_increment
+	fun
+	0xb::bridge
+ensure_defi_holders_initialized
+	fun
+	0xb::bridge
+get_defi_holders_table_mut
+	fun
+	0xb::bridge
+get_defi_holders_table
+	fun
+	0xb::bridge
+defi_holders_table_exists
 	fun
 	0xb::bridge
 defi_holders_add

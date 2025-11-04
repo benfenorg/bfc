@@ -7,6 +7,7 @@ title: Module `bridge::bridge`
 -  [Struct `Bridge`](#bridge_bridge_Bridge)
 -  [Struct `BridgeInner`](#bridge_bridge_BridgeInner)
 -  [Struct `DefiProtocolKey`](#bridge_bridge_DefiProtocolKey)
+-  [Struct `DefiHoldersKey`](#bridge_bridge_DefiHoldersKey)
 -  [Struct `DefiHolderInfo`](#bridge_bridge_DefiHolderInfo)
 -  [Struct `TokenDepositedEvent`](#bridge_bridge_TokenDepositedEvent)
 -  [Struct `TokenDepositedEventV2`](#bridge_bridge_TokenDepositedEventV2)
@@ -118,6 +119,10 @@ title: Module `bridge::bridge`
 -  [Function `execute_remove_token_on_token_list`](#bridge_bridge_execute_remove_token_on_token_list)
 -  [Function `execute_add_tokens_on_sui`](#bridge_bridge_execute_add_tokens_on_sui)
 -  [Function `get_current_seq_num_and_increment`](#bridge_bridge_get_current_seq_num_and_increment)
+-  [Function `ensure_defi_holders_initialized`](#bridge_bridge_ensure_defi_holders_initialized)
+-  [Function `get_defi_holders_table_mut`](#bridge_bridge_get_defi_holders_table_mut)
+-  [Function `get_defi_holders_table`](#bridge_bridge_get_defi_holders_table)
+-  [Function `defi_holders_table_exists`](#bridge_bridge_defi_holders_table_exists)
 -  [Function `defi_holders_add`](#bridge_bridge_defi_holders_add)
 -  [Function `defi_holders_get`](#bridge_bridge_defi_holders_get)
 -  [Function `defi_holders_del`](#bridge_bridge_defi_holders_del)
@@ -348,11 +353,6 @@ title: Module `bridge::bridge`
 </dt>
 <dd>
 </dd>
-<dt>
-<code>defi_holders: <a href="../sui/linked_table.md#sui_linked_table_LinkedTable">sui::linked_table::LinkedTable</a>&lt;<b>address</b>, <a href="../sui/vec_map.md#sui_vec_map_VecMap">sui::vec_map::VecMap</a>&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">bridge::bridge::DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">bridge::bridge::DefiHolderInfo</a>&gt;&gt;</code>
-</dt>
-<dd>
-</dd>
 </dl>
 
 
@@ -394,6 +394,27 @@ title: Module `bridge::bridge`
 </dt>
 <dd>
 </dd>
+</dl>
+
+
+</details>
+
+<a name="bridge_bridge_DefiHoldersKey"></a>
+
+## Struct `DefiHoldersKey`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/bridge.md#bridge_bridge_DefiHoldersKey">DefiHoldersKey</a> <b>has</b> <b>copy</b>, drop, store
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
 </dl>
 
 
@@ -1700,6 +1721,15 @@ title: Module `bridge::bridge`
 
 
 
+<a name="bridge_bridge_EDefiHoldersNotInitialized"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_EDefiHoldersNotInitialized">EDefiHoldersNotInitialized</a>: u64 = 67;
+</code></pre>
+
+
+
 <a name="bridge_bridge_EDefiLimitError"></a>
 
 
@@ -2280,7 +2310,6 @@ title: Module `bridge::bridge`
         paused: <b>false</b>,
         refund_records: linked_table::new(ctx),
         refund_admins: vec_set::empty(),
-        defi_holders: linked_table::new(ctx),
     };
     <b>let</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a> = <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a> {
         id,
@@ -2351,6 +2380,7 @@ title: Module `bridge::bridge`
     <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
     ctx: &<b>mut</b> TxContext
 ){
+    <a href="../bridge/bridge.md#bridge_bridge_ensure_defi_holders_initialized">ensure_defi_holders_initialized</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
     <a href="../bridge/defi_protocols.md#bridge_defi_protocols_registry">defi_protocols::registry</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
     <a href="../bridge/defi_protocols.md#bridge_defi_protocols_initial_defi_protocol">defi_protocols::initial_defi_protocol</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id);
 }
@@ -2767,12 +2797,12 @@ title: Module `bridge::bridge`
         chain_id: target_chain,
     };
     <b>assert</b>!(<a href="../bridge/defi_protocols.md#bridge_defi_protocols_is_valid_protocol">defi_protocols::is_valid_protocol</a>(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain), <a href="../bridge/bridge.md#bridge_bridge_EDefiProtocolConfigNotFound">EDefiProtocolConfigNotFound</a>);
-    <b>let</b> defi_info = inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(ctx.sender(), defi_protocol_key);
+    <b>let</b> defi_info = <a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(parent_id, ctx.sender(), defi_protocol_key);
     <b>assert</b>!(defi_info.lp_token_amount &gt;= lp_amount, <a href="../bridge/bridge.md#bridge_bridge_EDefiUnstakeAmountNotEnough">EDefiUnstakeAmountNotEnough</a>);
     //calculate principal amount
     <b>let</b> principal_amount = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_calculate_withdraw_principal_amount">defi_protocols::calculate_withdraw_principal_amount</a>(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain, lp_amount, defi_info.lp_token_amount, defi_info.amount);
     <b>assert</b>!(principal_amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
-    <b>assert</b>!(inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_del">defi_holders_del</a>(ctx.sender(), defi_protocol_key, principal_amount, lp_amount), <a href="../bridge/bridge.md#bridge_bridge_EDefiUnstakeAmountNotEnoughForDel">EDefiUnstakeAmountNotEnoughForDel</a>);
+    <b>assert</b>!(<a href="../bridge/bridge.md#bridge_bridge_defi_holders_del">defi_holders_del</a>(parent_id, ctx.sender(), defi_protocol_key, principal_amount, lp_amount), <a href="../bridge/bridge.md#bridge_bridge_EDefiUnstakeAmountNotEnoughForDel">EDefiUnstakeAmountNotEnoughForDel</a>);
     //check limit
     <b>let</b> defi_protocol_info = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_get_protocol_info">defi_protocols::get_protocol_info</a>(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain);
     <b>assert</b>!(defi_protocol_info.limit_unstake_amount() &gt;= principal_amount, <a href="../bridge/bridge.md#bridge_bridge_EDefiLimitError">EDefiLimitError</a>);
@@ -2998,7 +3028,7 @@ title: Module `bridge::bridge`
 
 
 
-<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_stake_success">defi_stake_success</a>(inner: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_BridgeInner">bridge::bridge::BridgeInner</a>, seq_num: u64, original_seq_num: u64, sender_address: vector&lt;u8&gt;, protocol_chain: u8, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, amount: u64, lp_token_amount: u64)
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_stake_success">defi_stake_success</a>(inner: &<a href="../bridge/bridge.md#bridge_bridge_BridgeInner">bridge::bridge::BridgeInner</a>, bridge_id: &<b>mut</b> <a href="../sui/object.md#sui_object_UID">sui::object::UID</a>, seq_num: u64, original_seq_num: u64, sender_address: vector&lt;u8&gt;, protocol_chain: u8, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, amount: u64, lp_token_amount: u64)
 </code></pre>
 
 
@@ -3008,7 +3038,8 @@ title: Module `bridge::bridge`
 
 
 <pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_stake_success">defi_stake_success</a>(
-    inner: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_BridgeInner">BridgeInner</a>,
+    inner: &<a href="../bridge/bridge.md#bridge_bridge_BridgeInner">BridgeInner</a>,
+    bridge_id: &<b>mut</b> UID,
     seq_num: u64,
     original_seq_num: u64,
     sender_address: vector&lt;u8&gt;,
@@ -3020,18 +3051,17 @@ title: Module `bridge::bridge`
     lp_token_amount: u64,
 ) {
     <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
-    <b>let</b> bridge_id = inner.chain_id;
     <b>let</b> key = <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>{
         protocol_type: protocol_type,
         protocol_version: protocol_version,
         protocol_token_id: protocol_token_id,
         chain_id: protocol_chain,
     };
-    <a href="../bridge/bridge.md#bridge_bridge_defi_holders_add">defi_holders_add</a>(inner, address::from_bytes(sender_address), key, amount, lp_token_amount);
+    <a href="../bridge/bridge.md#bridge_bridge_defi_holders_add">defi_holders_add</a>(bridge_id, address::from_bytes(sender_address), key, amount, lp_token_amount);
     emit(<a href="../bridge/bridge.md#bridge_bridge_DefiTokensStakedEvent">DefiTokensStakedEvent</a> {
         original_seq_num,
         seq_num,
-        source_chain: bridge_id,
+        source_chain: inner.chain_id,
         sender_address,
         target_chain: protocol_chain,
         protocol_type,
@@ -3691,7 +3721,7 @@ title: Module `bridge::bridge`
     <a href="../bridge/message.md#bridge_message">message</a>: BridgeMessage,
     signatures: vector&lt;vector&lt;u8&gt;&gt;,
 ) {
-    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut">load_inner_mut</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> (inner, bridge_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
     <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     // verify signatures
     inner.<a href="../bridge/committee.md#bridge_committee">committee</a>.verify_signatures(<a href="../bridge/message.md#bridge_message">message</a>, signatures);
@@ -3717,6 +3747,7 @@ title: Module `bridge::bridge`
         <b>let</b> amount = <a href="../bridge/bridge.md#bridge_bridge_adjust_amount_usdc_usdt_in">adjust_amount_usdc_usdt_in</a>(<a href="../bridge/message.md#bridge_message">message</a>.source_chain(), defi_payload.amount_defi_in());
         <a href="../bridge/bridge.md#bridge_bridge_defi_stake_success">defi_stake_success</a>(
             inner,
+            bridge_id,
              <a href="../bridge/message.md#bridge_message">message</a>.seq_num(),
              defi_payload.original_seq_num_defi_in(),
              defi_payload.sender_address_defi_in(),
@@ -4657,14 +4688,13 @@ title: Module `bridge::bridge`
     protocol_token_id: u64,
     chain_id: u8
 ): u64 {
-    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner">load_inner</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
     <b>let</b> key = <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a> {
         protocol_type,
         protocol_version,
         protocol_token_id,
         chain_id,
     };
-    <b>let</b> defi_info = inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(user_address, key);
+    <b>let</b> defi_info = <a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(&<a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, user_address, key);
     defi_info.lp_token_amount
 }
 </code></pre>
@@ -4696,14 +4726,13 @@ title: Module `bridge::bridge`
     protocol_token_id: u64,
     chain_id: u8
 ): u64 {
-    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner">load_inner</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
     <b>let</b> key = <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a> {
         protocol_type,
         protocol_version,
         protocol_token_id,
         chain_id,
     };
-    <b>let</b> defi_info = inner.<a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(user_address, key);
+    <b>let</b> defi_info = <a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(&<a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, user_address, key);
     defi_info.amount
 }
 </code></pre>
@@ -6165,13 +6194,13 @@ title: Module `bridge::bridge`
 
 </details>
 
-<a name="bridge_bridge_defi_holders_add"></a>
+<a name="bridge_bridge_ensure_defi_holders_initialized"></a>
 
-## Function `defi_holders_add`
+## Function `ensure_defi_holders_initialized`
 
 
 
-<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_add">defi_holders_add</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_BridgeInner">bridge::bridge::BridgeInner</a>, user_address: <b>address</b>, key: <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">bridge::bridge::DefiProtocolKey</a>, amount: u64, lp_token_amount: u64)
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_ensure_defi_holders_initialized">ensure_defi_holders_initialized</a>(bridge_id: &<b>mut</b> <a href="../sui/object.md#sui_object_UID">sui::object::UID</a>, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -6180,12 +6209,113 @@ title: Module `bridge::bridge`
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_add">defi_holders_add</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_BridgeInner">BridgeInner</a>, user_address: <b>address</b>, key: <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, amount: u64, lp_token_amount: u64) {
-    <b>if</b> (!linked_table::contains(&<a href="../bridge/bridge.md#bridge_bridge">bridge</a>.defi_holders, user_address)) {
-        <b>let</b> new_table = vec_map::empty&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a>&gt;();
-        linked_table::push_back(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.defi_holders, user_address, new_table);
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_ensure_defi_holders_initialized">ensure_defi_holders_initialized</a>(bridge_id: &<b>mut</b> UID, ctx: &<b>mut</b> TxContext) {
+    <b>if</b> (!dynamic_field::exists_(bridge_id, <a href="../bridge/bridge.md#bridge_bridge_DefiHoldersKey">DefiHoldersKey</a>{})) {
+        dynamic_field::add(bridge_id, <a href="../bridge/bridge.md#bridge_bridge_DefiHoldersKey">DefiHoldersKey</a>{}, linked_table::new&lt;<b>address</b>, VecMap&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a>&gt;&gt;(ctx));
     };
-    <b>let</b> user_protocol_table = linked_table::borrow_mut(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.defi_holders, user_address);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_defi_holders_table_mut"></a>
+
+## Function `get_defi_holders_table_mut`
+
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_defi_holders_table_mut">get_defi_holders_table_mut</a>(bridge_id: &<b>mut</b> <a href="../sui/object.md#sui_object_UID">sui::object::UID</a>): &<b>mut</b> <a href="../sui/linked_table.md#sui_linked_table_LinkedTable">sui::linked_table::LinkedTable</a>&lt;<b>address</b>, <a href="../sui/vec_map.md#sui_vec_map_VecMap">sui::vec_map::VecMap</a>&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">bridge::bridge::DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">bridge::bridge::DefiHolderInfo</a>&gt;&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_defi_holders_table_mut">get_defi_holders_table_mut</a>(bridge_id: &<b>mut</b> UID): &<b>mut</b> LinkedTable&lt;<b>address</b>, VecMap&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a>&gt;&gt; {
+    <b>assert</b>!(dynamic_field::exists_(bridge_id, <a href="../bridge/bridge.md#bridge_bridge_DefiHoldersKey">DefiHoldersKey</a>{}), <a href="../bridge/bridge.md#bridge_bridge_EDefiHoldersNotInitialized">EDefiHoldersNotInitialized</a>);
+    dynamic_field::borrow_mut&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiHoldersKey">DefiHoldersKey</a>, LinkedTable&lt;<b>address</b>, VecMap&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a>&gt;&gt;&gt;(bridge_id, <a href="../bridge/bridge.md#bridge_bridge_DefiHoldersKey">DefiHoldersKey</a>{})
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_defi_holders_table"></a>
+
+## Function `get_defi_holders_table`
+
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_defi_holders_table">get_defi_holders_table</a>(bridge_id: &<a href="../sui/object.md#sui_object_UID">sui::object::UID</a>): &<a href="../sui/linked_table.md#sui_linked_table_LinkedTable">sui::linked_table::LinkedTable</a>&lt;<b>address</b>, <a href="../sui/vec_map.md#sui_vec_map_VecMap">sui::vec_map::VecMap</a>&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">bridge::bridge::DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">bridge::bridge::DefiHolderInfo</a>&gt;&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_defi_holders_table">get_defi_holders_table</a>(bridge_id: &UID): &LinkedTable&lt;<b>address</b>, VecMap&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a>&gt;&gt; {
+    <b>assert</b>!(dynamic_field::exists_(bridge_id, <a href="../bridge/bridge.md#bridge_bridge_DefiHoldersKey">DefiHoldersKey</a>{}), <a href="../bridge/bridge.md#bridge_bridge_EDefiHoldersNotInitialized">EDefiHoldersNotInitialized</a>);
+    dynamic_field::borrow&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiHoldersKey">DefiHoldersKey</a>, LinkedTable&lt;<b>address</b>, VecMap&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a>&gt;&gt;&gt;(bridge_id, <a href="../bridge/bridge.md#bridge_bridge_DefiHoldersKey">DefiHoldersKey</a>{})
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_defi_holders_table_exists"></a>
+
+## Function `defi_holders_table_exists`
+
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_table_exists">defi_holders_table_exists</a>(bridge_id: &<a href="../sui/object.md#sui_object_UID">sui::object::UID</a>): bool
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_table_exists">defi_holders_table_exists</a>(bridge_id: &UID): bool {
+    dynamic_field::exists_(bridge_id, <a href="../bridge/bridge.md#bridge_bridge_DefiHoldersKey">DefiHoldersKey</a>{})
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_defi_holders_add"></a>
+
+## Function `defi_holders_add`
+
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_add">defi_holders_add</a>(bridge_id: &<b>mut</b> <a href="../sui/object.md#sui_object_UID">sui::object::UID</a>, user_address: <b>address</b>, key: <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">bridge::bridge::DefiProtocolKey</a>, amount: u64, lp_token_amount: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_add">defi_holders_add</a>(bridge_id: &<b>mut</b> UID, user_address: <b>address</b>, key: <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, amount: u64, lp_token_amount: u64) {
+    <b>let</b> defi_holders = <a href="../bridge/bridge.md#bridge_bridge_get_defi_holders_table_mut">get_defi_holders_table_mut</a>(bridge_id);
+    <b>if</b> (!linked_table::contains(defi_holders, user_address)) {
+        <b>let</b> new_table = vec_map::empty&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a>&gt;();
+        linked_table::push_back(defi_holders, user_address, new_table);
+    };
+    <b>let</b> user_protocol_table = linked_table::borrow_mut(defi_holders, user_address);
     <b>if</b> (vec_map::contains&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a>&gt;(user_protocol_table, &key)) {
         <b>let</b> current_value = vec_map::get_mut&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a>&gt;(user_protocol_table, &key);
         current_value.amount = current_value.amount + amount;
@@ -6207,7 +6337,7 @@ title: Module `bridge::bridge`
 
 
 
-<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_BridgeInner">bridge::bridge::BridgeInner</a>, user_address: <b>address</b>, key: <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">bridge::bridge::DefiProtocolKey</a>): <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">bridge::bridge::DefiHolderInfo</a>
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(bridge_id: &<a href="../sui/object.md#sui_object_UID">sui::object::UID</a>, user_address: <b>address</b>, key: <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">bridge::bridge::DefiProtocolKey</a>): <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">bridge::bridge::DefiHolderInfo</a>
 </code></pre>
 
 
@@ -6216,11 +6346,15 @@ title: Module `bridge::bridge`
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_BridgeInner">BridgeInner</a>, user_address: <b>address</b>, key: <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>): <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a> {
-    <b>if</b> (!linked_table::contains(&<a href="../bridge/bridge.md#bridge_bridge">bridge</a>.defi_holders, user_address)) {
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(bridge_id: &UID, user_address: <b>address</b>, key: <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>): <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a> {
+    <b>if</b> (!<a href="../bridge/bridge.md#bridge_bridge_defi_holders_table_exists">defi_holders_table_exists</a>(bridge_id)) {
         <b>return</b> <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a> { amount: 0, lp_token_amount: 0 }
     };
-    <b>let</b> user_protocol_table = linked_table::borrow(&<a href="../bridge/bridge.md#bridge_bridge">bridge</a>.defi_holders, user_address);
+    <b>let</b> defi_holders = <a href="../bridge/bridge.md#bridge_bridge_get_defi_holders_table">get_defi_holders_table</a>(bridge_id);
+    <b>if</b> (!linked_table::contains(defi_holders, user_address)) {
+        <b>return</b> <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a> { amount: 0, lp_token_amount: 0 }
+    };
+    <b>let</b> user_protocol_table = linked_table::borrow(defi_holders, user_address);
     <b>if</b> (!vec_map::contains&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a>&gt;(user_protocol_table, &key)) {
         <b>return</b> <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a> { amount: 0, lp_token_amount: 0 }
     };
@@ -6238,7 +6372,7 @@ title: Module `bridge::bridge`
 
 
 
-<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_del">defi_holders_del</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_BridgeInner">bridge::bridge::BridgeInner</a>, user_address: <b>address</b>, key: <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">bridge::bridge::DefiProtocolKey</a>, amount: u64, lp_token_amount: u64): bool
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_del">defi_holders_del</a>(bridge_id: &<b>mut</b> <a href="../sui/object.md#sui_object_UID">sui::object::UID</a>, user_address: <b>address</b>, key: <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">bridge::bridge::DefiProtocolKey</a>, amount: u64, lp_token_amount: u64): bool
 </code></pre>
 
 
@@ -6247,12 +6381,13 @@ title: Module `bridge::bridge`
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_del">defi_holders_del</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_BridgeInner">BridgeInner</a>, user_address: <b>address</b>, key: <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, amount: u64, lp_token_amount: u64): bool {
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_holders_del">defi_holders_del</a>(bridge_id: &<b>mut</b> UID, user_address: <b>address</b>, key: <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, amount: u64, lp_token_amount: u64): bool {
+    <b>let</b> defi_holders = <a href="../bridge/bridge.md#bridge_bridge_get_defi_holders_table_mut">get_defi_holders_table_mut</a>(bridge_id);
     // If user doesn't exist in defi_holders, <b>return</b> <b>false</b>
-    <b>if</b> (!linked_table::contains(&<a href="../bridge/bridge.md#bridge_bridge">bridge</a>.defi_holders, user_address)) {
+    <b>if</b> (!linked_table::contains(defi_holders, user_address)) {
         <b>return</b> <b>false</b>
     };
-    <b>let</b> user_protocol_table = linked_table::borrow_mut(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.defi_holders, user_address);
+    <b>let</b> user_protocol_table = linked_table::borrow_mut(defi_holders, user_address);
     // If protocol key doesn't exist <b>for</b> this user, <b>return</b> <b>false</b>
     <b>if</b> (!vec_map::contains&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a>&gt;(user_protocol_table, &key)) {
         <b>return</b> <b>false</b>
@@ -6271,7 +6406,7 @@ title: Module `bridge::bridge`
     };
     // If user's protocol table is now empty, clean it up
     <b>if</b> (vec_map::is_empty&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a>&gt;(user_protocol_table)) {
-        <b>let</b> removed_table = linked_table::remove(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.defi_holders, user_address);
+        <b>let</b> removed_table = linked_table::remove(defi_holders, user_address);
         vec_map::destroy_empty&lt;<a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>, <a href="../bridge/bridge.md#bridge_bridge_DefiHolderInfo">DefiHolderInfo</a>&gt;(removed_table);
     };
     // Operation successful
