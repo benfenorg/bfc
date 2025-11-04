@@ -445,7 +445,6 @@ module bridge::bridge {
         }
     }
 
-    #[allow(unused_function)]
     public entry fun migrate(
         bridge: &mut Bridge,
         ctx: &mut TxContext
