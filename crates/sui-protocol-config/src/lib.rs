@@ -18,7 +18,7 @@ use tracing::{info, warn};
 
 /// The minimum and maximum protocol versions supported by this build.
 const MIN_PROTOCOL_VERSION: u64 = 1;
-const MAX_PROTOCOL_VERSION: u64 = 76;
+const MAX_PROTOCOL_VERSION: u64 = 77;
 
 // Record history of protocol version allocations here:
 //
@@ -3282,6 +3282,9 @@ impl ProtocolConfig {
                     cfg.feature_flags.anonymous_coin_open = true;
                     cfg.anonymous_compute_cost_base = Some(2000);
 
+                }
+                77 => {
+                    cfg.max_age_of_jwk_in_epochs = Some(365)
                 }
 
                 // Use this template when making changes:

@@ -3,7 +3,6 @@
 
 mod tests {
     use fastcrypto::encoding::{Base64, Encoding};
-
     use bfc_zklogin_simple_rpc::zk_verification::verify_zk_login_sig;
 
     #[tokio::test]

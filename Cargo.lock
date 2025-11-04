@@ -4925,7 +4925,7 @@ dependencies = [
 [[package]]
 name = "fastcrypto"
 version = "0.1.8"
-source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=9519ebc20064e1a93d16918d2759f63195cf0bf3#9519ebc20064e1a93d16918d2759f63195cf0bf3"
+source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=ab21028762732d642055aafd64e5f4b408ea9fcf#ab21028762732d642055aafd64e5f4b408ea9fcf"
 dependencies = [
  "aes",
  "aes-gcm",
@@ -4979,7 +4979,7 @@ dependencies = [
 [[package]]
 name = "fastcrypto-derive"
 version = "0.1.3"
-source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=9519ebc20064e1a93d16918d2759f63195cf0bf3#9519ebc20064e1a93d16918d2759f63195cf0bf3"
+source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=ab21028762732d642055aafd64e5f4b408ea9fcf#ab21028762732d642055aafd64e5f4b408ea9fcf"
 dependencies = [
  "quote 1.0.37",
  "syn 1.0.107",
@@ -4988,7 +4988,7 @@ dependencies = [
 [[package]]
 name = "fastcrypto-tbls"
 version = "0.1.0"
-source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=9519ebc20064e1a93d16918d2759f63195cf0bf3#9519ebc20064e1a93d16918d2759f63195cf0bf3"
+source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=ab21028762732d642055aafd64e5f4b408ea9fcf#ab21028762732d642055aafd64e5f4b408ea9fcf"
 dependencies = [
  "bcs",
  "digest 0.10.7",
@@ -5007,7 +5007,7 @@ dependencies = [
 [[package]]
 name = "fastcrypto-vdf"
 version = "0.1.0"
-source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=9519ebc20064e1a93d16918d2759f63195cf0bf3#9519ebc20064e1a93d16918d2759f63195cf0bf3"
+source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=ab21028762732d642055aafd64e5f4b408ea9fcf#ab21028762732d642055aafd64e5f4b408ea9fcf"
 dependencies = [
  "bcs",
  "fastcrypto",
@@ -5024,7 +5024,7 @@ dependencies = [
 [[package]]
 name = "fastcrypto-zkp"
 version = "0.1.3"
-source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=9519ebc20064e1a93d16918d2759f63195cf0bf3#9519ebc20064e1a93d16918d2759f63195cf0bf3"
+source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=ab21028762732d642055aafd64e5f4b408ea9fcf#ab21028762732d642055aafd64e5f4b408ea9fcf"
 dependencies = [
  "ark-bn254",
  "ark-ec",
