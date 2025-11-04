@@ -46,13 +46,6 @@ public native fun hfe_ops_encode_data(
     owner: address,
 ): (vector<u8>, vector<u8>);
 
-
-public native fun hfe_ops_restore_anonymous_value(
-    value1: vector<u8>,
-    value2: vector<u8>,
-    owner: address,
-): u64;
-
 // public native fun hfe_ops_restore_value(
 //     value1: vector<u8>,
 //     value2: vector<u8>,

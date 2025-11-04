@@ -1133,11 +1133,6 @@ pub fn all_natives(silent: bool, protocol_config: &ProtocolConfig) -> NativeFunc
             make_native!(hfe_ops::hfe_ops_encode_data),
         ),
 
-        (
-            "hfe_ops",
-            "hfe_ops_restore_anonymous_value",
-            make_native!(hfe_ops::hfe_ops_restore_anonymous_value),
-        ),
     ];
     let sui_framework_natives_iter =
         sui_framework_natives

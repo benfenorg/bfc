@@ -2077,9 +2077,6 @@ hfe_ops_compare_value1_and_value2
 hfe_ops_encode_data
 	public fun
 	0x2::hfe_ops
-hfe_ops_restore_anonymous_value
-	public fun
-	0x2::hfe_ops
 Supply
 	public struct
 	0x2::anonymous_balance

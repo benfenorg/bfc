@@ -328,7 +328,6 @@ async fn handle_rpc_request_for_client(request: JsonRpcRequest) -> Result<impl w
         //outside can use this APIs
         "bfcx_getAnonymousEncodeDataForClient" => handle_anonymous_encode_data_for_client(request).await,
         "bfcx_getAnonymousRestoreValue" => handle_anonymous_restore_value(request).await,
-        "bfcx_getAnonymousRestoreValueInternal" => handle_anonymous_restore_value_internal(request).await,
         "bfcx_getAnonymousRestoreValueArray" => handle_anonymous_restore_value_array(request).await,
         "bfcx_getAnonymousRestoreValueForZKloginAddress" => handle_anonymous_restore_value_for_zklogin_address(request).await,
         "bfcx_getAnonymousRestoreValueArrayForZKloginAddress" => handle_anonymous_restore_value_array_for_zklogin_address(request).await,
@@ -544,74 +543,6 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
             create_error_response(request.id, -32602, "Missing params".to_string(), None)
         }
     }
-}
-
-#[warn(unused_assignments)]
-async fn handle_anonymous_restore_value_internal(request: JsonRpcRequest) -> JsonRpcResponse {
-    match request.params {
-        Some(params) => {
-            match serde_json::from_value::<AnonymousRestoreValueInternalParams>(params) {
-                Ok(restore_value_params) => {
-                    let args_result = Args::try_parse();
-                    let mut config_path : Option<String> = None;
-                    if args_result.is_ok() {
-                        config_path = Some(args_result.unwrap().config);
-                    }
-
-                    let mask_secret = match get_mask_secret_from_config(config_path) {
-                        Ok(secret) => secret,
-                        Err(e) => {
-                            warn!("Failed to get mask secret from config: {}", e);
-                            return create_error_response(request.id,
-                                                         -32603,
-                                                         "Internal error: Failed to load configuration".to_string(),
-                                                         Some(serde_json::json!({"error": e.to_string()})));
-                        }
-                    };
-
-                    let data1 = restore_value_params.value1;
-                    let data2 = restore_value_params.value2;
-                    info!("data1 len: {}, data2 len: {}", data1.len(), data2.len());
-
-                    let data_str1 = String::from_utf8(data1).unwrap_or_default();
-                    let data_str2 = String::from_utf8(data2).unwrap_or_default();
-                    info!("=== data_str1: {}, data_str2: {} ===", data_str1, data_str2);
-
-                    match recover_value(data_str1, data_str2, mask_secret) {
-                        Ok(value) => JsonRpcResponse {
-                            jsonrpc: "2.0".to_string(),
-                            id: request.id,
-                            result: Some(serde_json::json!({
-                                "result1": value,
-                                "result2": 0,
-                                "operation": "anonymous_restore_value_internal",
-                                "timestamp": chrono::Utc::now().timestamp()
-                            })),
-                            error: None,
-                        },
-                        Err(e) => {
-                            warn!(
-                                "process recover_value_internal error, caused by: {}",
-                                e
-                            );
-                            create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
-                        }
-                    }
-                }
-                Err(e) => {
-                    warn!(
-                        "Invalid parameters for bfcx_getAnonymousRestoreValueInternal: {}",
-                        e
-                    );
-                    create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
-                }
-            }
-        }
-        None => {
-            create_error_response(request.id, -32602, "Missing params".to_string(), None)
-        }
-    }
-
 }
 
 #[warn(unused_assignments)]
