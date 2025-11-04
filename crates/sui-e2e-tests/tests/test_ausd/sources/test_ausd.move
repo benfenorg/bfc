@@ -1,4 +1,4 @@
-module test_ausd::testabfc {
+module test_ausd::test_ausd {
     use sui::anonymous_balance::Anonymous_Balance;
     use sui::anonymous_coin;
     use sui::anonymous_coin::{Anonymous_Coin, TreasuryCap};
@@ -21,16 +21,16 @@ module test_ausd::testabfc {
     const TOTAL_SUPPLY_MIST: u64 = 1_0000_0000__000_000_000;
 
     /// Name of the coin
-    public struct TESTABFC has drop {}
+    public struct TEST_AUSD has drop {}
 
 
-    fun init(witness: TESTABFC, ctx: &mut TxContext) {
-        let (treasury_cap, metadata) = anonymous_coin::create_currency<TESTABFC>(
+    fun init(witness: TEST_AUSD, ctx: &mut TxContext) {
+        let (treasury_cap, metadata) = anonymous_coin::create_currency<TEST_AUSD>(
             witness,
             8, // decimals
-            b"TESTABFC",
-            b"TESTABFC",
-            b"TESTABFC for testing",
+            b"TEST_AUSD",
+            b"TEST_AUSD",
+            b"TEST_AUSD for testing",
             option::none(),
             ctx
         );
@@ -39,7 +39,7 @@ module test_ausd::testabfc {
     }
 
     public fun mint(
-        treasury_cap: &mut TreasuryCap<TESTABFC>,
+        treasury_cap: &mut TreasuryCap<TEST_AUSD>,
         amount: u64,
         recipient: address,
         ctx: &mut TxContext

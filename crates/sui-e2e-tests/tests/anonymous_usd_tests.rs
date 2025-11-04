@@ -33,11 +33,17 @@ async fn sim_test_do_publish_anonymous_test_usd(){
         .await;
     let http_client = test_cluster.rpc_client().clone();
     let address = test_cluster.get_address_0();
+
+    println!("==========before publish=======");
+
     let (package, _change_objs)
         = publish_coin::do_publish(&mut test_cluster,"tests/test_ausd").await.unwrap();
 
+
+    println!("==========after publish=======");
+
     //mint
-    publish_coin::do_mint_anonymous(&mut test_cluster,package,30000000000000000).await;
+    publish_coin::do_mint_ausd(&mut test_cluster,package,30000000000000000).await;
 
 
 
@@ -46,7 +52,7 @@ async fn sim_test_do_publish_anonymous_test_usd(){
         info!("=========sui object response: {:?}", data.object().unwrap().type_.as_ref().unwrap());
     }
 
-    let filter=format!("{}{}{}","0x2::anonymous_coin::Anonymous_Coin<",package,"::testabfc::TESTABFC>");
+    let filter=format!("{}{}{}","0x2::anonymous_coin::Anonymous_Coin<",package,"::test_ausd::TEST_AUSD>");
 
     info!("=======the filter is {:?}", filter);
     let abfc_objects =
@@ -80,7 +86,7 @@ async fn sim_test_mint_ausd() -> Result<(), anyhow::Error>{
     //mint
     let move_call_response = publish_coin::do_mint_anonymous(&mut test_cluster,package,30000000000000000).await;
 
-    let filter=format!("{}{}{}","0x2::anonymous_coin::Anonymous_Coin<",package,"::testabfc::TESTABFC>");
+    let filter=format!("{}{}{}","0x2::anonymous_coin::Anonymous_Coin<",package,"::test_ausd::TEST_AUSD>");
     let abfc_objects =
         do_get_owned_objects_with_filter(&*filter, &http_client, address).await.unwrap();
     let testabfc_object = abfc_objects.first().unwrap().object().unwrap();
