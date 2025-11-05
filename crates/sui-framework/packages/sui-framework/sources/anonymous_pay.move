@@ -9,7 +9,6 @@ use sui::anonymous_coin::Anonymous_Coin;
 #[allow(lint(self_transfer))]
 /// Transfer `c` to the sender of the current transaction
 public fun keep<T>(c: Anonymous_Coin<T>, ctx: &TxContext) {
-    //check sender != reciver, prepare change the value1 and value2.
     transfer::public_transfer(c, ctx.sender())
 }
 
@@ -40,8 +39,6 @@ public entry fun split_and_transfer_anonymous<T>(
     recipient: address,
     ctx: &mut TxContext,
 ) {
-    //todo: prepare for transfer change owner ship
-    //kakaxi: need prepare...
     transfer::public_transfer(c.split_anonymous(value1, value2, ctx), recipient)
 }
 

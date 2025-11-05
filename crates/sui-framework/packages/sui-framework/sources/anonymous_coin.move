@@ -88,7 +88,6 @@ module sui::anonymous_coin {
         swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin + value;
 
         let anonymous_coin = split(&mut swap_pool.anonymous_coin, value, ctx);
-        //kakaxi: need prepare...
         transfer::public_transfer(anonymous_coin, tx_context::sender(ctx));
     }
 
