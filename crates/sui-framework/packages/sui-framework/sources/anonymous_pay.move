@@ -51,8 +51,15 @@ public entry fun join<T>(self: &mut Anonymous_Coin<T>, coin: Anonymous_Coin<T>, 
 }
 
 /// Join everything in `coins` with `self`
-public entry fun join_vec<T>(_self: &mut Anonymous_Coin<T>, mut _coins: vector<Anonymous_Coin<T>>) {
-    abort 99
+public entry fun join_vec<T>(self: &mut Anonymous_Coin<T>, mut coins: vector<Anonymous_Coin<T>>, ctx: &mut TxContext) {
+    let ( mut i, len) = (0, coins.length());
+    while (i < len) {
+        let coin = coins.pop_back();
+        self.join(coin, ctx);
+        i = i + 1
+    };
+    // safe because we've drained the vector
+    coins.destroy_empty()
 }
 
 /// Join a vector of `Coin` into a single object and transfer it to `receiver`.
