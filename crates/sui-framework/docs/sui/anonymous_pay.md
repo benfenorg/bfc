@@ -194,7 +194,7 @@ Deprecated: you should call <code><a href="../sui/coin.md#sui_coin">coin</a>.<a 
 Join everything in <code>coins</code> with <code>self</code>
 
 
-<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_pay.md#sui_anonymous_pay_join_vec">join_vec</a>&lt;T&gt;(_self: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, _coins: vector&lt;<a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;&gt;)
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_pay.md#sui_anonymous_pay_join_vec">join_vec</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, coins: vector&lt;<a href="../sui/anonymous_coin.md#sui_anonymous_coin_Anonymous_Coin">sui::anonymous_coin::Anonymous_Coin</a>&lt;T&gt;&gt;, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -203,8 +203,15 @@ Join everything in <code>coins</code> with <code>self</code>
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_pay.md#sui_anonymous_pay_join_vec">join_vec</a>&lt;T&gt;(_self: &<b>mut</b> Anonymous_Coin&lt;T&gt;, <b>mut</b> _coins: vector&lt;Anonymous_Coin&lt;T&gt;&gt;) {
-    <b>abort</b> 99
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../sui/anonymous_pay.md#sui_anonymous_pay_join_vec">join_vec</a>&lt;T&gt;(self: &<b>mut</b> Anonymous_Coin&lt;T&gt;, <b>mut</b> coins: vector&lt;Anonymous_Coin&lt;T&gt;&gt;, ctx: &<b>mut</b> TxContext) {
+    <b>let</b> ( <b>mut</b> i, len) = (0, coins.length());
+    <b>while</b> (i &lt; len) {
+        <b>let</b> <a href="../sui/coin.md#sui_coin">coin</a> = coins.pop_back();
+        self.<a href="../sui/anonymous_pay.md#sui_anonymous_pay_join">join</a>(<a href="../sui/coin.md#sui_coin">coin</a>, ctx);
+        i = i + 1
+    };
+    // safe because we've drained the vector
+    coins.destroy_empty()
 }
 </code></pre>
 
