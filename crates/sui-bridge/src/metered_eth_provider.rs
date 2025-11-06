@@ -101,20 +101,4 @@ mod tests {
             1
         );
     }
-
-    #[tokio::test]
-    async fn test_log_index() {
-        let metrics = Arc::new(BridgeMetrics::new(&Registry::new()));
-        let provider = new_metered_eth_provider("https://cosmological-yolo-wind.quiknode.pro/d846ca17f6a04cf3e75e705d44d86d6a32490197", metrics.clone()).unwrap();
-
-        // 将十六进制字符串转换为字节数组
-        let tx_hash_bytes = Hex::decode("0x22f4224ee9504ca6df0bc287627b0d2407107ed50b0cbc92b4a3bdad5b17459a").unwrap();
-        let tx_hash = H256::from_slice(&tx_hash_bytes[..32]); // 确保切片长度为 32 字节
-
-        let receipt = provider.get_transaction_receipt(tx_hash).await.unwrap().unwrap();
-        println!("receipt: {:?}", receipt);
-        println!("receipt.logs.len(): {}", receipt.logs.len());
-        let log = receipt.logs.get(0).unwrap();
-        println!("log: {:?}", log);
-    }
 }
