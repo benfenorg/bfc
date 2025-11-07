@@ -14,6 +14,7 @@ use crate::signature::verify_signature;
 use crate::utils::{convert_value_array_to_string, get_object_owneraddress, verify_zklogin_signature, ZkVerifyRequest};
 use crate::utils::public_key_bytes_to_sui_address;
 use clap::Parser;
+use fastcrypto::encoding::{Base64, Encoding};
 use move_core_types::account_address::AccountAddress;
 use mpc_transmission::{get_sui_config_directory, get_user_address_salt, two_party_share::{
     add_two_shared_secrets, mul_two_shared_secrets, recover_two_shares, recover_value,
@@ -696,7 +697,8 @@ async fn handle_anonymous_encode_data_array_for_zklogin_address(request: JsonRpc
                 };
 
                 let value_array = convert_value_array_to_string(&encode_to_two_value_params.value_array);
-                if  !signature.bytes.eq(&value_array) {
+                let value = Base64::encode(value_array);
+                if  !signature.bytes.eq(&value) {
                     warn!(
                         "authentication failed for bfcx_getAnonymousEncodeDataArrayForZKloginAddress"
                         );
