@@ -133,3 +133,30 @@ pub fn public_key_bytes_to_sui_address(pubkey_bytes: Vec<u8>) -> Result<SuiAddre
     Ok(SuiAddress::from(&ed25519_pk))
 }
 
+pub fn convert_value_array_to_string(value_array: &Vec<u64>) -> String {
+    let with_comma: String = value_array.iter()
+        .map(|x| x.to_string())
+        .collect::<Vec<String>>()
+        .join(",");
+    with_comma
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::utils::convert_value_array_to_string;
+
+    #[tokio::test]
+    async fn test_convert_value_array_to_string() {
+        let input : Vec<u64> = vec![1, 2, 3];
+        let result = "1,2,3";
+        assert_eq!(convert_value_array_to_string(&input), result);
+
+        let input : Vec<u64> = vec![1];
+        let result = "1";
+        assert_eq!(convert_value_array_to_string(&input), result);
+
+        let input : Vec<u64> = vec![1000,10000, 100000];
+        let result = "1000,10000,100000";
+        assert_eq!(convert_value_array_to_string(&input), result);
+    }
+}

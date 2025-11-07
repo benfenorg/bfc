@@ -11,7 +11,7 @@ use warp::Rejection;
 
 use crate::bfc_object::parse_response;
 use crate::signature::verify_signature;
-use crate::utils::{get_object_owneraddress, verify_zklogin_signature, ZkVerifyRequest};
+use crate::utils::{convert_value_array_to_string, get_object_owneraddress, verify_zklogin_signature, ZkVerifyRequest};
 use crate::utils::public_key_bytes_to_sui_address;
 use clap::Parser;
 use move_core_types::account_address::AccountAddress;
@@ -26,7 +26,6 @@ use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 use tracing::{info, warn};
 use tracing_subscriber::fmt;
 use warp::Filter;
-use warp::reply::Json;
 use mpc_transmission::get_zklogin_rpc_address_from_config;
 use crate::utils::create_sign_message;
 
@@ -1134,7 +1133,10 @@ async fn handle_anonymous_encode_data_array_for_client(request: JsonRpcRequest) 
         Some(params) => match serde_json::from_value::<AnonymousEncodeValueArrayParams>(params) {
             Ok(encode_to_two_value_params) => {
                 let signature = encode_to_two_value_params.signature;
-                let message = create_sign_message(format!("{:?}", encode_to_two_value_params.value_array));
+
+                let message = create_sign_message(
+                    convert_value_array_to_string(&encode_to_two_value_params.value_array));
+
                 let mut pass_verify_signature = verify_signature(
                     &encode_to_two_value_params.publickey,
                     &*signature,
