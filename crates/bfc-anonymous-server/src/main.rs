@@ -26,7 +26,7 @@ use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 use tracing::{info, warn};
 use tracing_subscriber::fmt;
 use warp::Filter;
-
+use warp::reply::Json;
 use mpc_transmission::get_zklogin_rpc_address_from_config;
 use crate::utils::create_sign_message;
 
@@ -113,14 +113,22 @@ struct AnonymousCompareValue1AndValue2Params {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct AnonymousSplitValueInternalParams {
+struct AnonymousEncodeValueInternalParams {
     value: u64,
     owner: AccountAddress,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct AnonymousSplitValueParams {
+struct AnonymousEncodeValueParams {
     value: u64,
+    owner: AccountAddress,
+    publickey: Vec<u8>,
+    signature: Vec<u8>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct AnonymousEncodeValueArrayParams {
+    value_array: Vec<u64>,
     owner: AccountAddress,
     publickey: Vec<u8>,
     signature: Vec<u8>,
@@ -327,6 +335,8 @@ async fn handle_rpc_request_for_client(request: JsonRpcRequest) -> Result<impl w
     let response = match request.method.as_str() {
         //outside can use this APIs
         "bfcx_getAnonymousEncodeDataForClient" => handle_anonymous_encode_data_for_client(request).await,
+        "bfcx_getAnonymousEncodeDataArrayForClient" => handle_anonymous_encode_data_array_for_client(request).await,
+        
         "bfcx_getAnonymousRestoreValue" => handle_anonymous_restore_value(request).await,
         "bfcx_getAnonymousRestoreValueArray" => handle_anonymous_restore_value_array(request).await,
         "bfcx_getAnonymousRestoreValueForZKloginAddress" => handle_anonymous_restore_value_for_zklogin_address(request).await,
@@ -992,8 +1002,8 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
 
 async fn handle_anonymous_encode_data(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
-        Some(params) => match serde_json::from_value::<AnonymousSplitValueInternalParams>(params) {
-            Ok(split_to_two_value_params) => {
+        Some(params) => match serde_json::from_value::<AnonymousEncodeValueInternalParams>(params) {
+            Ok(encode_to_two_value_params) => {
 
                 let args_result = Args::try_parse();
                 let mut config_path : Option<String> = None;
@@ -1011,15 +1021,15 @@ async fn handle_anonymous_encode_data(request: JsonRpcRequest) -> JsonRpcRespons
                     }
                 };
 
-                let value = split_to_two_value_params.value;
-                let (result1, result2) = split_to_two_value(value, get_user_address_salt(split_to_two_value_params.owner), mask_secret);
+                let value = encode_to_two_value_params.value;
+                let (result1, result2) = split_to_two_value(value, get_user_address_salt(encode_to_two_value_params.owner), mask_secret);
                 JsonRpcResponse {
                     jsonrpc: "2.0".to_string(),
                     id: request.id,
                     result: Some(serde_json::json!({
                         "result1": result1,
                         "result2": result2,
-                        "operation": "anonymous_split_to_two_value",
+                        "operation": "anonymous_encode_to_two_value",
                         "timestamp": chrono::Utc::now().timestamp()
                     })),
                     error: None,
@@ -1040,12 +1050,12 @@ async fn handle_anonymous_encode_data(request: JsonRpcRequest) -> JsonRpcRespons
 
 async fn handle_anonymous_encode_data_for_client(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
-        Some(params) => match serde_json::from_value::<AnonymousSplitValueParams>(params) {
-            Ok(split_to_two_value_params) => {
-                let signature = split_to_two_value_params.signature;
-                let message = create_sign_message(split_to_two_value_params.value.to_string());
+        Some(params) => match serde_json::from_value::<AnonymousEncodeValueParams>(params) {
+            Ok(encode_to_two_value_params) => {
+                let signature = encode_to_two_value_params.signature;
+                let message = create_sign_message(encode_to_two_value_params.value.to_string());
                 let mut pass_verify_signature = verify_signature(
-                    &split_to_two_value_params.publickey,
+                    &encode_to_two_value_params.publickey,
                     &*signature,
                     message.as_slice(),
                 ) .is_ok();
@@ -1054,7 +1064,7 @@ async fn handle_anonymous_encode_data_for_client(request: JsonRpcRequest) -> Jso
                 if pass_verify_signature == true {
                     info!("handle_anonymous_restore_value pass verify signature");
                     let publickey_from_send = public_key_bytes_to_sui_address(
-                        split_to_two_value_params.publickey.clone(),
+                        encode_to_two_value_params.publickey.clone(),
                     );
                     if publickey_from_send.is_err() {
                         info!("failed public key to sui address: {:?}", publickey_from_send.err());
@@ -1063,7 +1073,7 @@ async fn handle_anonymous_encode_data_for_client(request: JsonRpcRequest) -> Jso
                         let sui_address_from_send = publickey_from_send.unwrap();
                         let sui_account_address_from_send =
                             AccountAddress::from(sui_address_from_send);
-                        pass_verify_signature = split_to_two_value_params.owner
+                        pass_verify_signature = encode_to_two_value_params.owner
                             == sui_account_address_from_send;
                     }
                 }
@@ -1091,16 +1101,16 @@ async fn handle_anonymous_encode_data_for_client(request: JsonRpcRequest) -> Jso
                     }
                 };
 
-                let value = split_to_two_value_params.value;
+                let value = encode_to_two_value_params.value;
 
-                let (result1, result2) = split_to_two_value(value, get_user_address_salt(split_to_two_value_params.owner), mask_secret);
+                let (result1, result2) = split_to_two_value(value, get_user_address_salt(encode_to_two_value_params.owner), mask_secret);
                 JsonRpcResponse {
                     jsonrpc: "2.0".to_string(),
                     id: request.id,
                     result: Some(serde_json::json!({
                         "result1": result1,
                         "result2": result2,
-                        "operation": "anonymous_split_to_two_value",
+                        "operation": "anonymous_encode_to_two_value",
                         "timestamp": chrono::Utc::now().timestamp()
                     })),
                     error: None,
@@ -1117,6 +1127,94 @@ async fn handle_anonymous_encode_data_for_client(request: JsonRpcRequest) -> Jso
     }
 }
 
+
+
+async fn handle_anonymous_encode_data_array_for_client(request: JsonRpcRequest) -> JsonRpcResponse {
+    match request.params {
+        Some(params) => match serde_json::from_value::<AnonymousEncodeValueArrayParams>(params) {
+            Ok(encode_to_two_value_params) => {
+                let signature = encode_to_two_value_params.signature;
+                let message = create_sign_message(format!("{:?}", encode_to_two_value_params.value_array));
+                let mut pass_verify_signature = verify_signature(
+                    &encode_to_two_value_params.publickey,
+                    &*signature,
+                    message.as_slice(),
+                ) .is_ok();
+
+                info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
+                if pass_verify_signature == true {
+                    info!("handle_anonymous_restore_value pass verify signature");
+                    let publickey_from_send = public_key_bytes_to_sui_address(
+                        encode_to_two_value_params.publickey.clone(),
+                    );
+                    if publickey_from_send.is_err() {
+                        info!("failed public key to sui address: {:?}", publickey_from_send.err());
+                        pass_verify_signature = false;
+                    } else {
+                        let sui_address_from_send = publickey_from_send.unwrap();
+                        let sui_account_address_from_send =
+                            AccountAddress::from(sui_address_from_send);
+                        pass_verify_signature = encode_to_two_value_params.owner
+                            == sui_account_address_from_send;
+                    }
+                }
+
+                if pass_verify_signature == false {
+                    return create_error_response(request.id,
+                                                 -32603,
+                                                 "Verify signature or get owner address failed".to_string(),
+                                                 Some(serde_json::json!({"error": "verify signature or get owner address failed"})));
+                }
+
+                let args_result = Args::try_parse();
+                let mut config_path : Option<String> = None;
+                if args_result.is_ok() {
+                    config_path = Some(args_result.unwrap().config);
+                }
+                let mask_secret = match get_mask_secret_from_config(config_path) {
+                    Ok(secret) => secret,
+                    Err(e) => {
+                        warn!("Failed to get mask secret from config: {}", e);
+                        return create_error_response(request.id,
+                                                     -32603,
+                                                     "Internal error: Failed to load configuration".to_string(),
+                                                     Some(serde_json::json!({"error": e.to_string()})));
+                    }
+                };
+
+                let mut result_array = Vec::new();
+                for value in encode_to_two_value_params.value_array {
+                    let (result1, result2) =
+                        split_to_two_value(value,
+                                           get_user_address_salt(encode_to_two_value_params.owner),
+                                           mask_secret);
+                    result_array.push(serde_json::json!({
+                        "result1": result1,
+                        "result2": result2
+                    }));
+                }
+                JsonRpcResponse {
+                    jsonrpc: "2.0".to_string(),
+                    id: request.id,
+                    result: Some(serde_json::json!({
+                        "result1": result_array,
+                        "result2": 0,
+                        "operation": "anonymous_encode_to_two_value",
+                        "timestamp": chrono::Utc::now().timestamp()
+                    })),
+                    error: None,
+                }
+            }
+            Err(e) => {
+                warn!("Invalid parameters for bfcx_getAnonymousEncodeDataArrayForClient: {}", e);
+                create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+            }
+        },
+        None => {
+            create_error_response(request.id, -32602, "Missing params".to_string(), None)
+        }
+    }
+}
 async fn handle_anonymous_compare(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
         Some(params) => match serde_json::from_value::<AnonymousCompareParams>(params) {
