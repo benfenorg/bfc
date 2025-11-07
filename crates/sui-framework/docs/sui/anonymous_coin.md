@@ -422,6 +422,15 @@ The index into the deny list vector for the <code><a href="../sui/coin.md#sui_co
 
 
 
+<a name="sui_anonymous_coin_EBalanceNotAllowZero"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_EBalanceNotAllowZero">EBalanceNotAllowZero</a>: u64 = 4;
+</code></pre>
+
+
+
 <a name="sui_anonymous_coin_EGlobalPauseNotAllowed"></a>
 
 
@@ -490,6 +499,7 @@ The index into the deny list vector for the <code><a href="../sui/coin.md#sui_co
                                               swap_out_amount: u64,
                                               swap_pool: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_SwapPool">SwapPool</a>&lt;T1, T2&gt;,
                                               ctx: &<b>mut</b> TxContext) {
+    <b>assert</b>!(swap_out_amount != 0, <a href="../sui/anonymous_coin.md#sui_anonymous_coin_EBalanceNotAllowZero">EBalanceNotAllowZero</a>);
     <b>assert</b>!(swap_out_amount &lt;= swap_pool.max_availalbe_normal_coin, <a href="../sui/anonymous_coin.md#sui_anonymous_coin_ENotEnough">ENotEnough</a>);
     <b>let</b> compare_result = <a href="../sui/anonymous_coin.md#sui_anonymous_coin">anonymous_coin</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_compare">compare</a>(swap_out_amount, ctx.sender());
     <b>let</b> swap_out_acoin = <a href="../sui/anonymous_coin.md#sui_anonymous_coin">anonymous_coin</a>.<a href="../sui/anonymous_coin.md#sui_anonymous_coin_split">split</a>(swap_out_amount, ctx);
@@ -526,10 +536,10 @@ The index into the deny list vector for the <code><a href="../sui/coin.md#sui_co
 
 <pre><code><b>entry</b> <b>public</b> <b>fun</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_swap_in">swap_in</a>&lt;T1, T2&gt;(<a href="../sui/coin.md#sui_coin">coin</a>: Coin&lt;T2&gt;, swap_pool: &<b>mut</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin_SwapPool">SwapPool</a>&lt;T1, T2&gt;, ctx: &<b>mut</b> TxContext) {
     <b>let</b> value = <a href="../sui/coin.md#sui_coin_balance">coin::balance</a>(&<a href="../sui/coin.md#sui_coin">coin</a>).value();
+    <b>assert</b>!(value != 0, <a href="../sui/anonymous_coin.md#sui_anonymous_coin_EBalanceNotAllowZero">EBalanceNotAllowZero</a>);
     <a href="../sui/coin.md#sui_coin_join">coin::join</a>(&<b>mut</b> swap_pool.normal_coin, <a href="../sui/coin.md#sui_coin">coin</a>);
     swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin + value;
     <b>let</b> <a href="../sui/anonymous_coin.md#sui_anonymous_coin">anonymous_coin</a> = <a href="../sui/anonymous_coin.md#sui_anonymous_coin_split">split</a>(&<b>mut</b> swap_pool.<a href="../sui/anonymous_coin.md#sui_anonymous_coin">anonymous_coin</a>, value, ctx);
-    //kakaxi: need prepare...
     <a href="../sui/transfer.md#sui_transfer_public_transfer">transfer::public_transfer</a>(<a href="../sui/anonymous_coin.md#sui_anonymous_coin">anonymous_coin</a>, <a href="../sui/tx_context.md#sui_tx_context_sender">tx_context::sender</a>(ctx));
 }
 </code></pre>

@@ -33,6 +33,9 @@ module sui::anonymous_coin {
     //    b"Kill switch was not allowed at the creation of the DenyCapV2";
     const EGlobalPauseNotAllowed: u64 = 3;
 
+    // A type passed to create_supply is not a one-time witness.
+    const EBalanceNotAllowZero: u64 = 4;
+
     /// A coin of type `T` worth `value`. Transferable and storable
     public struct Anonymous_Coin<phantom T> has key, store {
         id: UID,
@@ -65,6 +68,7 @@ module sui::anonymous_coin {
                                                   swap_out_amount: u64,
                                                   swap_pool: &mut SwapPool<T1, T2>,
                                                   ctx: &mut TxContext) {
+        assert!(swap_out_amount != 0, EBalanceNotAllowZero);
         assert!(swap_out_amount <= swap_pool.max_availalbe_normal_coin, ENotEnough);
         let compare_result = anonymous_coin.compare(swap_out_amount, ctx.sender());
         let swap_out_acoin = anonymous_coin.split(swap_out_amount, ctx);
@@ -83,6 +87,8 @@ module sui::anonymous_coin {
 
     entry public fun swap_in<T1, T2>(coin: Coin<T2>, swap_pool: &mut SwapPool<T1, T2>, ctx: &mut TxContext) {
         let value = coin::balance(&coin).value();
+        assert!(value != 0, EBalanceNotAllowZero);
+
         coin::join(&mut swap_pool.normal_coin, coin);
 
         swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin + value;
