@@ -134,6 +134,13 @@ struct AnonymousEncodeValueArrayParams {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+struct AnonymousEncodeValueArrayForZkloginAddressParams {
+    value_array: Vec<u64>,
+    owner: AccountAddress,
+    signature: ZkVerifyRequest,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 struct AnonymousRestoreValueInternalParams {
     value1: Vec<u8>,
     value2: Vec<u8>,
@@ -335,7 +342,8 @@ async fn handle_rpc_request_for_client(request: JsonRpcRequest) -> Result<impl w
         //outside can use this APIs
         "bfcx_getAnonymousEncodeDataForClient" => handle_anonymous_encode_data_for_client(request).await,
         "bfcx_getAnonymousEncodeDataArrayForClient" => handle_anonymous_encode_data_array_for_client(request).await,
-        
+        "bfcx_getAnonymousEncodeDataArrayForZKloginAddress" => handle_anonymous_encode_data_array_for_zklogin_address(request).await,
+
         "bfcx_getAnonymousRestoreValue" => handle_anonymous_restore_value(request).await,
         "bfcx_getAnonymousRestoreValueArray" => handle_anonymous_restore_value_array(request).await,
         "bfcx_getAnonymousRestoreValueForZKloginAddress" => handle_anonymous_restore_value_for_zklogin_address(request).await,
@@ -662,6 +670,92 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                 }
             }
         }
+        None => {
+            create_error_response(request.id, -32602, "Missing params".to_string(), None)
+        }
+    }
+}
+
+async fn handle_anonymous_encode_data_array_for_zklogin_address(request: JsonRpcRequest) -> JsonRpcResponse {
+    match request.params {
+        Some(params) => match serde_json::from_value::<AnonymousEncodeValueArrayForZkloginAddressParams>(params) {
+            Ok(encode_to_two_value_params) => {
+                let signature = encode_to_two_value_params.signature;
+                let args_result = Args::try_parse();
+                let mut config_path: Option<String> = None;
+                if args_result.is_ok() {
+                    config_path = Some(args_result.unwrap().config);
+                }
+
+                let zklogin_address = match get_zklogin_rpc_address_from_config(config_path.clone()) {
+                    Ok(address) => address,
+                    Err(e) => {
+                        warn!("Failed to get zklogin address from config: {}", e);
+                        return create_error_response(request.id, -32603, "Internal error: Failed to load configuration".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+                    }
+                };
+
+                let value_array = convert_value_array_to_string(&encode_to_two_value_params.value_array);
+                if  !signature.bytes.eq(&value_array) {
+                    warn!(
+                        "authentication failed for bfcx_getAnonymousEncodeDataArrayForZKloginAddress"
+                        );
+                    return create_error_response(request.id, -32602, "authentication failed".to_string(), None);
+                }
+
+                let pass_verify_signature = verify_zklogin_signature(
+                    signature,
+                    zklogin_address
+                ).await.is_ok();
+
+
+                if pass_verify_signature == false {
+                    return create_error_response(request.id,
+                                                 -32603,
+                                                 "Verify signature or get owner address failed".to_string(),
+                                                 Some(serde_json::json!({"error": "verify signature or get owner address failed"})));
+                }
+
+                let mask_secret = match get_mask_secret_from_config(config_path) {
+                    Ok(secret) => secret,
+                    Err(e) => {
+                        warn!("Failed to get mask secret from config: {}", e);
+                        return create_error_response(request.id,
+                                                     -32603,
+                                                     "Internal error: Failed to load configuration".to_string(),
+                                                     Some(serde_json::json!({"error": e.to_string()})));
+                    }
+                };
+
+
+                let mut result_array = Vec::new();
+                for value in encode_to_two_value_params.value_array {
+                    let (result1, result2) =
+                        split_to_two_value(value,
+                                           get_user_address_salt(encode_to_two_value_params.owner),
+                                           mask_secret);
+                    result_array.push(serde_json::json!({
+                        "result1": result1,
+                        "result2": result2
+                    }));
+                }
+                JsonRpcResponse {
+                    jsonrpc: "2.0".to_string(),
+                    id: request.id,
+                    result: Some(serde_json::json!({
+                        "result1": result_array,
+                        "result2": 0,
+                        "operation": "anonymous_encode_to_two_value",
+                        "timestamp": chrono::Utc::now().timestamp()
+                    })),
+                    error: None,
+                }
+            }
+            Err(e) => {
+                warn!("Invalid parameters for bfcx_getAnonymousEncodeDataArrayForClient: {}", e);
+                create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+            }
+        },
         None => {
             create_error_response(request.id, -32602, "Missing params".to_string(), None)
         }
