@@ -300,7 +300,7 @@ token id 映射表
 
 
 
-<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_LIMIT_STAKE_AMOUNT">LIMIT_STAKE_AMOUNT</a>: u64 = 100000000000000;
+<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_LIMIT_STAKE_AMOUNT">LIMIT_STAKE_AMOUNT</a>: u64 = 2000000000000000;
 </code></pre>
 
 
@@ -309,7 +309,7 @@ token id 映射表
 
 
 
-<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_LIMIT_UNSTAKE_AMOUNT">LIMIT_UNSTAKE_AMOUNT</a>: u64 = 100000000000000;
+<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_LIMIT_UNSTAKE_AMOUNT">LIMIT_UNSTAKE_AMOUNT</a>: u64 = 2000000000000000;
 </code></pre>
 
 

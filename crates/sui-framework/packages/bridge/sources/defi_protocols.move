@@ -21,8 +21,8 @@ module bridge::defi_protocols {
     const PROTOCOL_TOKEN_ID_USDC: u64 = 3;
     const PROTOCOL_TOKEN_ID_USDT: u64 = 4;
 
-    const LIMIT_STAKE_AMOUNT: u64 = 100_000_000_000_000;
-    const LIMIT_UNSTAKE_AMOUNT: u64 = 100_000_000_000_000;
+    const LIMIT_STAKE_AMOUNT: u64 = 2_000_000_000_000_000;
+    const LIMIT_UNSTAKE_AMOUNT: u64 = 2_000_000_000_000_000;
     
 
     /// token id 映射表
