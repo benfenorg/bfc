@@ -775,17 +775,17 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
                         config_path = Some(args_result.unwrap().config);
                     }
 
-                    let zklogin_address = match get_zklogin_rpc_address_from_config(config_path.clone()) {
+                    let zklogin_rpc_address = match get_zklogin_rpc_address_from_config(config_path.clone()) {
                         Ok(address) => address,
                         Err(e) => {
-                            warn!("Failed to get zklogin address from config: {}", e);
+                            warn!("Failed to get zklogin rpc address from config: {}", e);
                             return create_error_response(request.id, -32603, "Internal error: Failed to load configuration".to_string(), Some(serde_json::json!({"error": e.to_string()})))
                         }
                     };
 
                     let pass_verify_signature = verify_zklogin_signature(
                         signature,
-                        zklogin_address
+                        zklogin_rpc_address
                     ).await.is_ok();
                     info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
 
@@ -882,10 +882,10 @@ async fn handle_anonymous_restore_value_for_zklogin_address(request: JsonRpcRequ
                         config_path = Some(args_result.unwrap().config);
                     }
 
-                    let zklogin_address = match get_zklogin_rpc_address_from_config(config_path.clone()) {
+                    let zklogin_rpc_address = match get_zklogin_rpc_address_from_config(config_path.clone()) {
                         Ok(address) => address,
                         Err(e) => {
-                            warn!("Failed to get zklogin address from config: {}", e);
+                            warn!("Failed to get zklogin rpc address from config: {}", e);
                             return create_error_response(request.id, -32603, "Internal error: Failed to load configuration".to_string(), Some(serde_json::json!({"error": e.to_string()})))
                         }
                     };
@@ -893,7 +893,7 @@ async fn handle_anonymous_restore_value_for_zklogin_address(request: JsonRpcRequ
 
                     let mut pass_verify_signature = verify_zklogin_signature(
                         signature,
-                        zklogin_address.clone()
+                        zklogin_rpc_address.clone()
                     ).await.is_ok();
                     info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
 
@@ -901,6 +901,7 @@ async fn handle_anonymous_restore_value_for_zklogin_address(request: JsonRpcRequ
                         info!("handle_anonymous_restore_value pass verify signature");
                         match get_object_owneraddress(objectid.clone()).await {
                             Ok(owner_address_value) => {
+                                //
                                 pass_verify_signature = author.eq(&owner_address_value);
                             }
                             Err(error) => {

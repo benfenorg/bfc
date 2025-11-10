@@ -14,7 +14,7 @@ const PERSONAL_MESSAGE_PREFIX: &[u8; 3] = &[3, 0, 0];
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ZkVerifyRequest {
     pub signature: String,
-    pub bytes: String, // abfc token objectid
+    pub bytes: String, // "hello world" ==> base64
     pub intent_scope: u8,
     pub cur_epoch: Option<u64>,
     pub cur_rpc_url : Option<String>,
