@@ -771,6 +771,7 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
             match serde_json::from_value::<AnonymousRestoreArrayParamsZKLoginParams>(params) {
                 Ok(restore_value_params) => {
                     let signature = restore_value_params.signature;
+                    let signature_bytes = signature.bytes.clone();
                     let args_result = Args::try_parse();
                     let mut config_path: Option<String> = None;
                     if args_result.is_ok() {
@@ -833,7 +834,9 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
                         }
                     }
 
-                    if object_ids != restore_value_params.object_ids {
+
+
+                    if !signature_bytes.eq(&Base64::encode(object_ids)) {
                         warn!(
                         "authentication failed for bfcx_getAnonymousRestoreArrayParamsZKLoginParams"
                         );
@@ -878,6 +881,12 @@ async fn handle_anonymous_restore_value_for_zklogin_address(request: JsonRpcRequ
                     let author = restore_value_params.signature.author.clone();
                     let signature = restore_value_params.signature;
                     let objectid = restore_value_params.objectid;
+
+                    if  !signature.bytes.eq(&Base64::encode(objectid.clone())) {
+                        warn!("authentication failed for bfcx_getAnonymousRestoreValueForZKloginAddress");
+                        return create_error_response(request.id, -32602, "signature bytes failed".to_string(), None);
+                    }
+
                     let args_result = Args::try_parse();
                     let mut config_path: Option<String> = None;
                     if args_result.is_ok() {
