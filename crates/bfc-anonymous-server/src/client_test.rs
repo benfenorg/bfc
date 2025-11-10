@@ -370,36 +370,34 @@ impl AnonymousClient {
         }
     }
 
-    pub async fn test_restore_value(
-        &self,
-        value1: Vec<u8>,
-        value2: Vec<u8>,
-        signature: Vec<u8>,
-        objectid: String,
-        publickey: Vec<u8>,
-    ) -> TestResult {
-        let owner = AccountAddress::from_hex_literal("0x1").unwrap();
-        let params = json!({
-            "value1": value1,
-            "value2": value2,
-            "signature": signature,
-            "objectid": objectid,
-            "publickey": publickey,
-            "owner": owner,
-        });
+    pub async fn test_encode_data_array(&self,
+                                        value: Vec<u64>,
+                                        owner: AccountAddress,
+                                        signature: Vec<u8>,
+                                        objectid: String,
+                                        publickey: Vec<u8>) -> TestResult {
+        let params = Value::Object(
+            serde_json::Map::from_iter([
+                ("owner".to_string(), json!(owner)),
+                ("publickey".to_string(), json!(publickey)),
+                ("signature".to_string(), json!(signature)),
+                ("value_array".to_string(), json!(value)),
+
+            ])
+        );
 
         match self
-            .send_rpc_request("bfcx_getAnonymousRestoreValue", params, 4, "rpc")
+            .send_rpc_request("bfcx_getAnonymousEncodeDataArrayForClient", params, 4, "rpc")
             .await
         {
             Ok(response) => TestResult {
-                method: "bfcx_getAnonymousRestoreValue".to_string(),
+                method: "bfcx_getAnonymousEncodeDataArrayForClient".to_string(),
                 success: true,
                 response: Some(response),
                 error: None,
             },
             Err(e) => TestResult {
-                method: "bfcx_getAnonymousRestoreValue".to_string(),
+                method: "bfcx_getAnonymousEncodeDataArrayForClient".to_string(),
                 success: false,
                 response: None,
                 error: Some(e.to_string()),
@@ -456,20 +454,20 @@ impl AnonymousClient {
     async fn test_recover_array_with_signature_for_zklogin(&self, share1: String, share2: String) -> Result<Vec<u64>, serde_json::error::Error> {
         // test restore 20
         let publickey = "8496d3d932986b43bb64b5d5c7548d5c97a73aebf4301447f3746680b2114ae1";
-        let object_id1 = "BFCa4e7d3832d6ccf20f72f831bc164c5afc6ad2d03081101b098297b4c4cf6d3743ac8";
-        let object_id2 = "BFCa6eecddaabb11bef34c99e982e6f74d9c3820d3bf87220ec3f208a360b77223f5fd0";
+        let object_id1 = "BFC47c715b758d549e531baf6ef516b1fa716f766e312a209123bdc9acd7cb5810374dc";
+        let object_id2 = "BFCa861988889cf31134ee643746cc2b768ef7409a4c579f3b7ff4ce4ce6ccfcc7b9e63";
 
         let object_id_list = "BFCa4e7d3832d6ccf20f72f831bc164c5afc6ad2d03081101b098297b4c4cf6d3743ac8BFCa6eecddaabb11bef34c99e982e6f74d9c3820d3bf87220ec3f208a360b77223f5fd0";
         let publickey_bytes = hex_to_bytes(publickey);
-        let signature = "BQNNMTg0MTk0NTMzNDY1NTIzMjA3MTI1MTU4OTI4NzE2NDU0MTE0MTQxMTA4MTYxNjE2MzcwMTcyMzE4NzYzMzI5ODY1NTE4NDM3MjgxMThNMTc0Mjg1NDc2MTkwMTQyODAxMTMzMTcxODA2Njc2NjU5ODk4NDYxNTkxOTYyODQ3MDYxMTY4NTEwNzM0OTkwNzkwMDIzMTkzODkwNzMBMQMCTTE3ODUzNjY4OTA0NjA4NzUwMDEzMDIzOTAzODU5MTg5MjUwNzA5MjMzNjg0NjczNjg3MzA4NjcyMDA5MTAyNTkxNDM4NTMzNzg1OTk4TTE0MTA2MzI0Njk1OTI0NTgyMDU0NzY1NDcyODExMTE3NzgzNjk4ODM3MjQxMDkyNTg0NjUwMDI1NTI0NDEwOTk1NzU0Njc5MTAxNTUxAkw2NjI1Mjc3OTA2NzcwOTQxMDgwMjMwODEyMTExMDUxOTExMjU2MzUzMzYzOTE2NTk4ODYzOTI5MjMwMjIxNTgxMDI0NzMyNjA2NzczTTE1MDgyMzcxOTQzNDIwNTAxNzI3MzY2NTQ1NzgxMDQwNzk0MTk3NjQ5NDU1MjIxNDYwNzczNTc3ODU3NTg5NzkxMDcwMzcwMjEzNzE0AgExATADSzIzNzQ4NTUzNzMxNjgxNTk3NDI2MDMwOTM1MDc3NTU1NzY2Nzc3OTQ3OTc3OTgyMjgyOTMyNzIwNTIxMzQwNzY3NzgyNTA3MTA0N00xNTg3MDcwMDQzMDk2NzAzMDA0NjI1MjQ0NTYwOTYzMTI3ODQ1NDk3ODg1NDE1OTAxNDgxMjExNDM0NzM4MTExNzc4NzI3MTQ3MTY5NwExMXlKcGMzTWlPaUpvZEhSd2N6b3ZMMkZqWTI5MWJuUnpMbWR2YjJkc1pTNWpiMjBpTEMBZmV5SmhiR2NpT2lKU1V6STFOaUlzSW10cFpDSTZJamc0TkRnNU1qRXlNbVV5T1RNNVptUXhaak14TXpjMVlqSmlNell6WldNNE1UVTNNak5pWW1JaUxDSjBlWEFpT2lKS1YxUWlmUUwzMDA0NDUyNDMzOTUzNDc3NDY4Mjk3MTI4MDIyMjYwMjEyODIyNjk0MjM5MzMwNTU4OTE5ODc3OTM5ODA2MjAyOTgzMDk5ODkyODU1rwEAAAAAAABhANpFQhyM8aC5Kpwc36oVLQMufXEtbzHyHZHExy73Fki5JmSORe63A2L4ZAMaHHZmE+/6TCoqnWEbJI+VwAEIqQwg/J1PkdfE2/sruj/vZ5unh5gbotMAgFOdpb3P1+CniA==";
-        let byte = "QkZDOGMyOTM4ZjFmMzJjODBhY2M1NDhiM2FhNjI2ZDcxNzE2M2Y4MDU4OTdiNTg2ZTBkODE5YTg4NzU0ZTNmYWMyYzAwZWM6ODdMWVRja1BqQTE5WTdqNHpDaHVSamFuY3hVdEFSdXdsUEtQVHMwLVhPdlg5RW1RSUVGdkNaa2V6OWIxenJUYw==".to_string();
+        let signature = "BQNNMTA4ODc1MDgzMTU3Njk5NDk2NDUzMDAzODM4MjkyMDc2OTYxNDU0OTkzMjQ2MjAxMzgzODg3MzIxMTk5MDg1MzA3NTY2MTQ2OTkxNDFNMjA2NDU4MjM4NDA1NDEzMDQ5Nzc1ODk0MTc0ODM4NjYwMDAwOTczMjIwNzMwODIxNTUzODczMDY4OTQ4ODg4NDgyMDMzMDYyMTY4NDQBMQMCTTE1MjM0NTAxMjExODc2MDExNDMzMDcxNDQyNjM3MjI5MjYzMzk1NzQ2OTI3MzkxMjU1NDcyMDk4NDc2MzI0MTg3NzQwMDg0OTI2NDkyTTIwMzY2MjA1MTMwNTU2NzA1MzI1MDAwNzQ4NzUwNzQyNzcyODEzNDAwMzc2MDUxMTQwMzE5NjAzNTU2NTQ2MDg2MDMyNDUzNTc1MTUxAkwzOTAzODA3NDEyNjQ3MjY2NjIxNzU2NTc1NDc0NzQzMjc2OTkxMjY2NTEyODI1NTYyNTExNjE0OTE1MzQyMDMwMDg0NTczMjYzMTA0TDMzNTU1NjI0NDMxMzAzODA5MTcyMzkyNzkyMzAzMjQ5OTcwMzA3NDQ0NTAyODAzODA1NTMzNzYwMzYxNjc0OTYwMzczODgwMTU2OTkCATEBMANNMTEwOTc3NjU2NzE3MTk0ODE3NjIzODg0MTgyNTIwMTY0MDM2NjE1NjY5MTk3NDkxOTQyMTA3NDA0NDEyNTQzMDE3MzE2NDM1MDA5NjJNMTc5MDQ5NDQ2ODQ2MjkwNjAzNzk5OTkxOTk0NzYwMDk5MzY5ODE1Njg1MzAzNzkwOTYyMzg3ODczODg0NTUzMTE0NzQ5MjY0NjI4NDABMTF5SnBjM01pT2lKb2RIUndjem92TDJGalkyOTFiblJ6TG1kdmIyZHNaUzVqYjIwaUxDAWZleUpoYkdjaU9pSlNVekkxTmlJc0ltdHBaQ0k2SWpSbVpXSTBOR1l3WmpkaE4yVXlOMk0zWXpRd016TTNPV0ZtWmpJd1lXWTFZemhqWmpVeVpHTWlMQ0owZVhBaU9pSktWMVFpZlFNMTYyNzEyNzI4MzAxMDc2NTQ0NzM0NjE3NDk3Nzg2MzQ2MjMwODQ1MDM3MzQwMzc4MjM1NzUxNjAwMDkzODUyNTY1NDI3NjM3Njk3ODeKAQAAAAAAAGEArPANz4Ki4LFjpA5qYIfSw4nRwumL3A+4a/5xBtrZsVlu70sQMBD+cQzkd6gEjTJRyOHNK0F7xxtg+PYdeZ7zCaN106ftoGFcqhnmRz0MY+XjNnWO05bdY5vs01T4bgoz".to_string();
+        let byte = "QkZDNDdjNzE1Yjc1OGQ1NDllNTMxYmFmNmVmNTE2YjFmYTcxNmY3NjZlMzEyYTIwOTEyM2JkYzlhY2Q3Y2I1ODEwMzc0ZGNCRkNhODYxOTg4ODg5Y2YzMTEzNGVlNjQzNzQ2Y2MyYjc2OGVmNzQwOWE0YzU3OWYzYjdmZjRjZTRjZTZjY2ZjYzdiOWU2Mw==".to_string();
         let signature_bytes= ZkVerifyRequest {
             signature: signature.to_string(),
             bytes: byte, // abs token objectid
             intent_scope: 3,
             cur_epoch: None,
             cur_rpc_url : Some("https://testrpc.benfen.org/".to_string()),
-            author: "BFC8c2938f1f32c80acc548b3aa626d717163f805897b586e0d819a88754e3fac2c00ec".to_string(),
+            author: "0x8c92533545c7f97e7491ea0049c9efdd25f43bf18fe56e92b4ce4b40d05165be".to_string(),
         };
 
         let restore_result = self
@@ -513,28 +511,7 @@ impl AnonymousClient {
     }
 
 
-    async fn test_recover_with_signature(&self, share1: String, share2: String) -> u64 {
-        // test restore 20
-        let signature = "80361ef8ca66108d1fb68ac81970cc9f7315ca6b1dea0bc493059603faffc8bcdcc7644b2ec55b8e48fe613b30e9b534000ef9e1b626f9f5bdf9519e7b7cef04";
-        let publickey = "8496d3d932986b43bb64b5d5c7548d5c97a73aebf4301447f3746680b2114ae1";
 
-        let object_id = SuiAddress::from_str(
-            "0xd4c2360f11b1608f3be0b8d89bc97ff3047378dbc34d0b3976f40e6392496fd5",
-        )
-        .unwrap()
-        .to_string();
-
-        let signature_bytes = hex_to_bytes(signature);
-        let publickey_bytes = hex_to_bytes(publickey);
-        
-        let restore_result = self
-            .test_restore_value(share1.into_bytes(), share2.into_bytes(), signature_bytes, object_id, publickey_bytes)
-            .await
-            .response
-            .unwrap();
-
-        restore_result["result"]["result1"].as_u64().unwrap()
-    }
     async fn test_recover_array_with_signature(&self, share1: String, share2: String) -> Result<Vec<u64>, serde_json::error::Error> {
         // test restore 20
         let signature = "be916feb774aa5ca80e72db8d9952003608adec00604108c18fbcb205095ab2e9ede1b032c6c6ac1bdc3110d425e64f977e313e4b3b57d81f6066bfe227e6f06";
@@ -571,6 +548,7 @@ mod tests {
     use crate::{AnonymousServer};
     use crate::utils::write_unsigned_leb128;
     use std::net::SocketAddr;
+    use move_core_types::account_address::AccountAddress;
     use tracing::info;
     use tracing_subscriber::fmt;
     use crate::client_test::hex_to_bytes;
@@ -610,6 +588,37 @@ mod tests {
         let split_result_0 = split_result.response.expect("test_split returned None response");
         println!("Split 20 Result: {:?}", split_result_0);
 
+    }
+
+    #[tokio::test]
+    async fn test_client_encode_data_array_for_client() {
+        let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
+        let server = AnonymousServer::new(None);
+        let _server_handle = tokio::spawn(async move {
+            if let Err(e) = server.start(addr).await {
+                eprintln!("Server error: {:?}", e);
+            }
+        });
+
+        let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
+
+        // Wait for server to be ready by pinging it first
+        let ping_result = client.test_ping().await;
+        assert!(ping_result.success, "Server ping failed: {:?}", ping_result.error);
+        info!("Ping Result: {:?}", ping_result.response);
+
+        let vec = vec![1000000000];
+        let signature = "993473e0c9f7f7a1487e25a8fc3ddf4adc495d0d4a8aab97e4279d4dcac4dfebcd1e170627ac36aebd57de362019a89c4c2305ef957848a80c19d30f150c8f03";
+        let signature_bytes = hex_to_bytes(signature);
+        let object_id_list = "BFCa4e7d3832d6ccf20f72f831bc164c5afc6ad2d03081101b098297b4c4cf6d3743ac8BFCa6eecddaabb11bef34c99e982e6f74d9c3820d3bf87220ec3f208a360b77223f5fd0";
+        let publickey = "e674db6a6027824dd9ed453808ee034bc75b5fe661ae6483dafffe1b062f7073";
+        let publickey_bytes = hex_to_bytes(publickey);
+        let owner = AccountAddress::from_hex_literal("0x6f0f9a9a72f7d48b8fcbfa09ebb61123d847aaad5760297d68c64795bad514b1").unwrap();
+
+        let split_result = client.test_encode_data_array(vec, owner, signature_bytes, object_id_list.to_string(), publickey_bytes).await;
+        assert!(split_result.success, "test_split failed: {:?}", split_result.error);
+        let split_result_0 = split_result.response.expect("test_split returned None response");
+        println!("Split 20 Result: {:?}", split_result_0);
     }
 
     #[tokio::test]
@@ -827,13 +836,13 @@ mod tests {
         let add_result = add_result_response.response.expect("test_add returned None response");
         info!("Add Result: {:?}", add_result);
         let add_result = client
-            .test_recover_with_signature(
+            .test_compare(
                 add_result["result"]["result1"].as_str().unwrap().to_owned(),
                 add_result["result"]["result2"].as_str().unwrap().to_owned(),
+                30,
             )
             .await;
-        info!("Add Result recover to u64:{}", add_result);
-        assert_eq!(add_result, 30);
+
 
         //test 20 - 10
         let minus_result_response = client
@@ -860,7 +869,7 @@ mod tests {
         let minus_result = minus_result_response.response.expect("test_minus returned None response");
         info!("Minus Result: {:?}", minus_result);
         let minus_result = client
-            .test_recover_with_signature(
+            .test_compare(
                 minus_result["result"]["result1"]
                     .as_str()
                     .unwrap()
@@ -869,10 +878,10 @@ mod tests {
                     .as_str()
                     .unwrap()
                     .to_owned(),
+                10,
             )
             .await;
-        info!("Minus Result recover to u64:{}", minus_result);
-        assert_eq!(minus_result, 10);
+
 
         //test 20 * 10
         let multiply_result_response = client
@@ -900,7 +909,7 @@ mod tests {
         info!("Multiply Result: {:?}", multiply_result);
 
         let multiply_result = client
-            .test_recover_with_signature(
+            .test_compare(
                 multiply_result["result"]["result1"]
                     .as_str()
                     .unwrap()
@@ -909,11 +918,10 @@ mod tests {
                     .as_str()
                     .unwrap()
                     .to_owned(),
+                200,
             )
             .await;
-        info!("Multiply Result recover to u64:{}", multiply_result);
-        assert_eq!(multiply_result, 200);
-
+        
         //test 20 > 5
         let compare_result = client
             .test_compare(
