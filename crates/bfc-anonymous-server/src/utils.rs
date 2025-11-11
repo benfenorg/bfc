@@ -133,7 +133,7 @@ pub fn public_key_bytes_to_sui_address(pubkey_bytes: Vec<u8>) -> Result<SuiAddre
     Ok(SuiAddress::from(&ed25519_pk))
 }
 
-pub fn convert_value_array_to_string(value_array: &Vec<u64>) -> String {
+pub fn convert_value_array_to_string(value_array: &Vec<String>) -> String {
     let with_comma: String = value_array.iter()
         .map(|x| x.to_string())
         .collect::<Vec<String>>()

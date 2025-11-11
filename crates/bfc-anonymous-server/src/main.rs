@@ -128,7 +128,7 @@ struct AnonymousEncodeValueParams {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct AnonymousEncodeValueArrayParams {
-    value_array: Vec<u64>,
+    value_array: Vec<String>,
     owner: AccountAddress,
     publickey: Vec<u8>,
     signature: Vec<u8>,
@@ -136,7 +136,7 @@ struct AnonymousEncodeValueArrayParams {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct AnonymousEncodeValueArrayForZkloginAddressParams {
-    value_array: Vec<u64>,
+    value_array: Vec<String>,
     owner: AccountAddress,
     signature: ZkVerifyRequest,
 }
@@ -578,6 +578,16 @@ async fn handle_anonymous_encode_data_array_for_zklogin_address(request: JsonRpc
                     }
                 };
 
+                let value_array_result: Result<Vec<u64>, _> = encode_to_two_value_params
+                    .value_array.iter().map(|s| s.parse()).collect();
+                if value_array_result.is_err() {
+                    return create_error_response(request.id,
+                                                 -32603,
+                                                 "Invalid input".to_string(),
+                                                 Some(serde_json::json!({"error": "Invalid input, failed to parse to u64"})));
+                }
+                let value_array_u64 = value_array_result.unwrap();
+
                 let value_array = convert_value_array_to_string(&encode_to_two_value_params.value_array);
                 let value = Base64::encode(value_array);
                 if  !signature.bytes.eq(&value) {
@@ -613,7 +623,7 @@ async fn handle_anonymous_encode_data_array_for_zklogin_address(request: JsonRpc
 
 
                 let mut result_array = Vec::new();
-                for value in encode_to_two_value_params.value_array {
+                for value in value_array_u64 {
                     let (result1, result2) =
                         split_to_two_value(value,
                                            get_user_address_salt(encode_to_two_value_params.owner),
@@ -926,8 +936,19 @@ async fn handle_anonymous_encode_data_array_for_client(request: JsonRpcRequest) 
             Ok(encode_to_two_value_params) => {
                 let signature = encode_to_two_value_params.signature;
 
+                let value_array_result: Result<Vec<u64>, _> = encode_to_two_value_params
+                    .value_array.iter().map(|s| s.parse()).collect();
+                if value_array_result.is_err() {
+                    return create_error_response(request.id,
+                                                 -32603,
+                                                 "Invalid input".to_string(),
+                                                 Some(serde_json::json!({"error": "Invalid input, failed to parse to u64"})));
+                }
+                let value_array_u64 = value_array_result.unwrap();
+
                 let message = create_sign_message(
-                    convert_value_array_to_string(&encode_to_two_value_params.value_array));
+                    convert_value_array_to_string(&encode_to_two_value_params
+                        .value_array));
 
                 let mut pass_verify_signature = verify_signature(
                     &encode_to_two_value_params.publickey,
@@ -977,7 +998,7 @@ async fn handle_anonymous_encode_data_array_for_client(request: JsonRpcRequest) 
                 };
 
                 let mut result_array = Vec::new();
-                for value in encode_to_two_value_params.value_array {
+                for value in value_array_u64 {
                     let (result1, result2) =
                         split_to_two_value(value,
                                            get_user_address_salt(encode_to_two_value_params.owner),
