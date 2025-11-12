@@ -930,7 +930,11 @@ mod tests {
             )
             .await;
 
-  
+        let add_result = add_result.response.expect("test_add returned None response");
+        info!("Add Result: {:?}", add_result);
+        assert_eq!(add_result["result"]["result1"], "0");
+
+
         //test 20 - 10
         let minus_result_response = client
             .test_minus(
@@ -968,7 +972,9 @@ mod tests {
                 10,
             )
             .await;
-
+        let test_add_result = minus_result.response.expect("test_minius returned None response");
+        info!("Minus Result: {:?}", test_add_result);
+        assert_eq!(test_add_result["result"]["result1"], "0");
 
         //test 20 * 10
         let multiply_result_response = client
@@ -1008,7 +1014,12 @@ mod tests {
                 200,
             )
             .await;
-        
+
+        let test_multiply_result = multiply_result.response.expect("test_add returned None response");
+        info!("Add Result: {:?}", test_multiply_result);
+        assert_eq!(test_multiply_result["result"]["result1"], "0");
+
+
         //test 20 > 5
         let compare_result = client
             .test_compare(
