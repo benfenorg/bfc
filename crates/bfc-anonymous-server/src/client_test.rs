@@ -2,7 +2,6 @@ use reqwest;
 use serde_json::{json, Value};
 use std::error::Error;
 use std::str::FromStr;
-use std::string::String;
 use log::info;
 use move_core_types::account_address::AccountAddress;
 use sui_types::base_types::SuiAddress;
@@ -610,9 +609,7 @@ mod tests {
     use crate::utils::write_unsigned_leb128;
     use std::net::SocketAddr;
     use move_core_types::account_address::AccountAddress;
-    use serde_json::Value::String;
     use tracing::info;
-    use tracing_subscriber::fmt;
     use crate::client_test::hex_to_bytes;
 
     #[tokio::test]
@@ -654,6 +651,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_client_encode_data_array_for_client() {
+        use std::string::String;
         let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
         let server = AnonymousServer::new(None);
         let _server_handle = tokio::spawn(async move {
@@ -832,10 +830,13 @@ mod tests {
                 split_result_0["result"]["result2"].as_str().unwrap().to_owned(),
             )
             .await;
+
+        assert!(add_result.is_ok());
     }
 
     #[tokio::test]
     async fn test_encode_data_for_zklogin(){
+        use std::string::String;
         // let subscriber = fmt::Subscriber::new();
         // tracing::subscriber::set_global_default(subscriber)
         //     .expect("Failed to set tracing subscriber");
@@ -929,7 +930,7 @@ mod tests {
             )
             .await;
 
-
+  
         //test 20 - 10
         let minus_result_response = client
             .test_minus(
