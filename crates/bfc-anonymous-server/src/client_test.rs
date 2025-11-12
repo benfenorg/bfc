@@ -2,6 +2,7 @@ use reqwest;
 use serde_json::{json, Value};
 use std::error::Error;
 use std::str::FromStr;
+use std::string::String;
 use log::info;
 use move_core_types::account_address::AccountAddress;
 use sui_types::base_types::SuiAddress;
@@ -371,7 +372,7 @@ impl AnonymousClient {
     }
 
     pub async fn test_encode_data_array(&self,
-                                        value: Vec<u64>,
+                                        value: Vec<String>,
                                         owner: AccountAddress,
                                         signature: Vec<u8>,
                                         objectid: String,
@@ -398,6 +399,46 @@ impl AnonymousClient {
             },
             Err(e) => TestResult {
                 method: "bfcx_getAnonymousEncodeDataArrayForClient".to_string(),
+                success: false,
+                response: None,
+                error: Some(e.to_string()),
+            },
+        }
+    }
+
+    pub async fn test_encode_data_array_for_zklogin(&self,
+                                        value: Vec<String>,
+                                        owner: AccountAddress,
+                                        signature: ZkVerifyRequest) -> TestResult {
+
+        let json_array: Value = Value::Array(
+            value
+                .into_iter()
+                .map(Value::String)
+                .collect()
+        );
+
+
+        let params = Value::Object(
+            serde_json::Map::from_iter([
+                ("owner".to_string(), json!(owner)),
+                ("signature".to_string(), json!(signature)),
+                ("value_array".to_string(), json!(json_array)),
+            ])
+        );
+
+        match self
+            .send_rpc_request("bfcx_getAnonymousEncodeDataArrayForZKloginAddress", params, 4, "rpc")
+            .await
+        {
+            Ok(response) => TestResult {
+                method: "bfcx_getAnonymousEncodeDataArrayForZKloginAddress".to_string(),
+                success: true,
+                response: Some(response),
+                error: None,
+            },
+            Err(e) => TestResult {
+                method: "bfcx_getAnonymousEncodeDataArrayForZKloginAddress".to_string(),
                 success: false,
                 response: None,
                 error: Some(e.to_string()),
@@ -449,6 +490,26 @@ impl AnonymousClient {
                 error: Some(e.to_string()),
             },
         }
+    }
+
+    async fn test_encode_data_array_with_signature_for_zklogin(&self, value : Vec<String>) -> TestResult {
+        let signature = "BQNNMTUyNzczMDQzNTY4ODY3ODExMDI3MTIzMTM5NDU3ODYwMzAzNjI1MjEyODU4Mzg5OTQxNzE4Nzc3MjA3MzY3NjgwNzQ2NTI5MzA0MjFNMjEyNzU0MDk1NDEzMTA2OTYxNDQyNDA5NDQ0NzU3ODM3NTUxNjA2NTM3NTEwMTg1Nzc1MzI1MjM4NDA4Njk0Mjg0MTM4ODcxOTU5MTEBMQMCTTEyNDI1NDAxOTAyMjI3NzYwODczMjY4NTgzNTczNjQ3ODY0NzQzNDM2NzQ4MTY3MDA3NDk1NDA3NTU5MjI3Nzc2NjE1MzM1MzI1MjMzTDUyMjM4NTQyMDY0NjU2OTgwNTI5MjgxMjM5OTg4MjQ0ODcxMDgwNTE3MTUyNzA0MDM4NjEzNTY2MDEwNjUxMDk3MTQ5NzM3NTQ3MDECTDcyMDgxNTMzNTk4MzQ5NzYyMjg3MzI2MzA0ODM5NjM2NzEyNjM2OTIxNzI0NzQ0NTg0NDMyMDEzMDAxMDczOTg1OTk0MjkxNDg5ODlNMTMwNTI3MDQ4MDQ3NDgxNDU1ODkwMDI1OTU5NTcwODU1MzMwMzE1NTc0MTcxMTUzMDgwODMzNzExMTA2OTcyNzIwMDY2MjkxOTQxNTkCATEBMANNMTk2NDA3MjU4NjI4ODY0OTkzMTE1NDIyMzQ3MDI0MTU1MDc2MDc1MjQ0NTMzNDE4NTYxODkwODA1MzQ1MzQ5NjM4Mjk3OTU0MjkxNDNMNDU3OTI3MTAyMTg5NzQwMjcyMDE0MTgxMjI4MTA0OTE3Mjk2MjAyNTQyNzkyNjU3MTcwNjA2ODcyMTk4Mzc5NzE3MzU4NTQxMDIyNAExMXlKcGMzTWlPaUpvZEhSd2N6b3ZMMkZqWTI5MWJuUnpMbWR2YjJkc1pTNWpiMjBpTEMBZmV5SmhiR2NpT2lKU1V6STFOaUlzSW10cFpDSTZJalJtWldJME5HWXdaamRoTjJVeU4yTTNZelF3TXpNM09XRm1aakl3WVdZMVl6aGpaalV5WkdNaUxDSjBlWEFpT2lKS1YxUWlmUU0xNjI3MTI3MjgzMDEwNzY1NDQ3MzQ2MTc0OTc3ODYzNDYyMzA4NDUwMzczNDAzNzgyMzU3NTE2MDAwOTM4NTI1NjU0Mjc2Mzc2OTc4N4kBAAAAAAAAYQD6rQDMXyHOgTZriGFhoo2kZTJm3wMdOhhJ6grSEJEEUnkKOWJjJ/32jOQZn30zLYsDk9t7qQRkIaXFpLNeVrUK1AOWWqwvXa6U4LDD6ZhU979QOp2XBQDyAA/aUkas+oQ=".to_string();
+        let byte = "MTAwMDAwMDAwMA==".to_string();
+        let signature_bytes= ZkVerifyRequest {
+            signature: signature.to_string(),
+            bytes: byte, // abs token objectid
+            intent_scope: 3,
+            cur_epoch: None,
+            cur_rpc_url : Some("https://testrpc.benfen.org/".to_string()),
+            author: "0x8c92533545c7f97e7491ea0049c9efdd25f43bf18fe56e92b4ce4b40d05165be".to_string(),
+        };
+
+        let owner = AccountAddress::from_hex_literal("0x8c92533545c7f97e7491ea0049c9efdd25f43bf18fe56e92b4ce4b40d05165be").unwrap();
+
+        let restore_result = self
+            .test_encode_data_array_for_zklogin(value, owner, signature_bytes)
+            .await;
+        restore_result
     }
 
     async fn test_recover_array_with_signature_for_zklogin(&self, share1: String, share2: String) -> Result<Vec<u64>, serde_json::error::Error> {
@@ -549,6 +610,7 @@ mod tests {
     use crate::utils::write_unsigned_leb128;
     use std::net::SocketAddr;
     use move_core_types::account_address::AccountAddress;
+    use serde_json::Value::String;
     use tracing::info;
     use tracing_subscriber::fmt;
     use crate::client_test::hex_to_bytes;
@@ -607,7 +669,8 @@ mod tests {
         assert!(ping_result.success, "Server ping failed: {:?}", ping_result.error);
         info!("Ping Result: {:?}", ping_result.response);
 
-        let vec = vec![1000000000];
+        let vec = vec![String::from("1000000000")];
+
         let signature = "993473e0c9f7f7a1487e25a8fc3ddf4adc495d0d4a8aab97e4279d4dcac4dfebcd1e170627ac36aebd57de362019a89c4c2305ef957848a80c19d30f150c8f03";
         let signature_bytes = hex_to_bytes(signature);
         let object_id_list = "BFCa4e7d3832d6ccf20f72f831bc164c5afc6ad2d03081101b098297b4c4cf6d3743ac8BFCa6eecddaabb11bef34c99e982e6f74d9c3820d3bf87220ec3f208a360b77223f5fd0";
@@ -769,6 +832,29 @@ mod tests {
                 split_result_0["result"]["result2"].as_str().unwrap().to_owned(),
             )
             .await;
+    }
+
+    #[tokio::test]
+    async fn test_encode_data_for_zklogin(){
+        // let subscriber = fmt::Subscriber::new();
+        // tracing::subscriber::set_global_default(subscriber)
+        //     .expect("Failed to set tracing subscriber");
+
+        //let args = Args::parse();
+        let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
+
+        info!("the address is {:?}", addr);
+        let server = AnonymousServer::new(None);
+        let _server_handle = tokio::spawn(async move {
+            if let Err(e) = server.start(addr).await {
+                eprintln!("Server error: {:?}", e);
+            }
+        });
+
+        let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
+        let split_result_0 = client.test_encode_data_array_with_signature_for_zklogin(vec![String::from("1000000000")]).await.response.unwrap();
+        info!("Split 20 Result: {:?}", split_result_0);
+
     }
 
     #[tokio::test]

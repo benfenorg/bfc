@@ -147,15 +147,15 @@ mod tests {
 
     #[tokio::test]
     async fn test_convert_value_array_to_string() {
-        let input : Vec<u64> = vec![1, 2, 3];
+        let input : Vec<String> = vec![String::from("1"), String::from("2"), String::from("3")];
         let result = "1,2,3";
         assert_eq!(convert_value_array_to_string(&input), result);
 
-        let input : Vec<u64> = vec![1];
+        let input : Vec<String> = vec![String::from("1")];
         let result = "1";
         assert_eq!(convert_value_array_to_string(&input), result);
 
-        let input : Vec<u64> = vec![1000,10000, 100000];
+        let input : Vec<String> = vec![String::from("1000"),String::from("10000"), String::from("100000")];
         let result = "1000,10000,100000";
         assert_eq!(convert_value_array_to_string(&input), result);
     }
