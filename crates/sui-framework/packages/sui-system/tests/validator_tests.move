@@ -157,28 +157,15 @@ module sui_system::validator_tests {
         let withdrawn_balance = validator
         .request_withdraw_stake(staked_sui, runner.ctx())
         .destroy_for_testing();
-=======
     // take initial stake out of inventory
     runner.owned_tx!<StakedBfc>(|staked_sui| {
     let withdrawn_balance = validator
     .request_withdraw_stake(staked_sui, runner.ctx())
     .destroy_for_testing();
->>>>>>> Stashed changes
 
-        assert_eq!(withdrawn_balance, initial_stake);
-        assert_eq!(validator.total_stake(), initial_stake);
-        assert_eq!(validator.pending_stake_amount(), added_stake);
-        assert_eq!(validator.pending_stake_withdraw_amount(), initial_stake);
-
-<<<<<<< Updated upstream
-        // trigger the state change and pending processing
-        validator.deposit_stake_rewards(balance::zero(), &rate_vec_map());
-        validator.process_pending_stakes_and_withdraws(runner.ctx());
-=======
     // trigger the state change and pending processing
     validator.deposit_stake_rewards(balance::zero(), &rate_vec_map());
     validator.process_pending_stakes_and_withdraws(runner.ctx());
->>>>>>> Stashed changes
 
         assert_eq!(validator.total_stake(), added_stake);
         assert_eq!(validator.pending_stake_amount(), 0);
@@ -205,13 +192,8 @@ module sui_system::validator_tests {
         let stake = validator::request_add_stable_stake<BUSD>(&mut validator, new_stake, sender, ctx);
         transfer::public_transfer(stake, sender);
 
-<<<<<<< Updated upstream
         assert!(validator::total_stake(&validator) == 1_000_000_000, 0);
         assert_eq!(validator::pending_stake_stable_amount<BUSD>(&validator), 30_000_000_000);
-=======
-            assert!(validator::total_stake(&validator) == 1_000_000_000, 0);
-            assert_eq!(validator::pending_stake_stable_amount<BUSD>(&validator), 30_000_000_000);
->>>>>>> Stashed changes
         };
 
         test_scenario::next_tx(scenario, sender);
@@ -223,43 +205,25 @@ module sui_system::validator_tests {
         transfer::public_transfer(coin::from_balance<BUSD>(withdrawn_balance, ctx), sender);
         transfer::public_transfer(coin::from_balance(bfc, ctx), sender);
 
-<<<<<<< Updated upstream
         assert!(validator::total_stake(&validator) == 1_000_000_000, 0);
         assert_eq!(validator::pending_stake_stable_amount<BUSD>(&validator), 30_000_000_000);
-=======
-            assert!(validator::total_stake(&validator) == 1_000_000_000, 0);
-            assert_eq!(validator::pending_stake_stable_amount<BUSD>(&validator), 30_000_000_000);
->>>>>>> Stashed changes
 
         validator::deposit_stake_rewards(&mut validator, balance::zero(), &rate_vec_map());
 
         // Calling `process_pending_stakes_and_withdraws` will withdraw the coin and transfer to sender.
         validator::process_pending_stakes_and_withdraws(&mut validator, ctx);
 
-<<<<<<< Updated upstream
         assert_eq!(validator::total_stake_with_all_stable(&validator, rate_vec_map()), 1_000_000_000);
         assert!(validator::pending_stake_amount(&validator) == 0, 0);
         assert!(validator::pending_stake_withdraw_amount(&validator) == 0, 0);
-=======
-            assert_eq!(validator::total_stake_with_all_stable(&validator, rate_vec_map()), 1_000_000_000);
-            assert!(validator::pending_stake_amount(&validator) == 0, 0);
-            assert!(validator::pending_stake_withdraw_amount(&validator) == 0, 0);
->>>>>>> Stashed changes
         };
 
         test_scenario::next_tx(scenario, sender);
         {
-<<<<<<< Updated upstream
         let coin_ids = test_scenario::ids_for_sender<Coin<BUSD>>(scenario);
         let withdraw = test_scenario::take_from_sender_by_id<Coin<BUSD>>(scenario, *vector::borrow(&coin_ids, 0));
         assert_eq!(coin::value(&withdraw), 30_000_000_000);
         test_scenario::return_to_sender(scenario, withdraw);
-=======
-            let coin_ids = test_scenario::ids_for_sender<Coin<BUSD>>(scenario);
-            let withdraw = test_scenario::take_from_sender_by_id<Coin<BUSD>>(scenario, *vector::borrow(&coin_ids, 0));
-            assert_eq!(coin::value(&withdraw), 30_000_000_000);
-            test_scenario::return_to_sender(scenario, withdraw);
->>>>>>> Stashed changes
         };
 
         test_utils::destroy(validator);

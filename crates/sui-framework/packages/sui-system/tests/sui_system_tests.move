@@ -55,7 +55,6 @@ module sui_system::sui_system_tests {
 
 const MIST_PER_SUI: u64 = 1_000_000_000;
 
->>>>>>> Stashed changes
 // Scenario: perform a series of report and undo report operations on a validator.
 // Guarantees that:
 // - report records are persisted across epochs.
@@ -65,19 +64,12 @@ const MIST_PER_SUI: u64 = 1_000_000_000;
 #[test]
 fun validator_rewards() {
     let mut runner = test_runner::new()
-<<<<<<< Updated upstream
-    .validators(vector[
-    validator_builder::new().sui_address(@1),
-    validator_builder::new().sui_address(@2),
-    validator_builder::new().sui_address(@3),
-=======
     .sui_supply_amount(1000)
     .validators(vector[
     validator_builder::new().initial_stake(100).sui_address(VALIDATOR_ADDR_1),
     validator_builder::new().initial_stake(200).sui_address(VALIDATOR_ADDR_2),
     validator_builder::new().initial_stake(300).sui_address(VALIDATOR_ADDR_3),
     validator_builder::new().initial_stake(400).sui_address(VALIDATOR_ADDR_4),
->>>>>>> Stashed changes
     ])
     .build();
 
@@ -86,7 +78,6 @@ fun validator_rewards() {
 
     // check rewards distribution, 1:2:3:4
     runner.system_tx!(|system, _| {
-<<<<<<< Updated upstream
     assert_eq!(system.get_reporters_of(@2).into_keys(), vector[@1])
     });
 
@@ -142,7 +133,6 @@ fun validator_rewards() {
     assert!(system.get_reporters_of(@2).is_empty());
     });
 
-=======
     assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 125 * MIST_PER_SUI);
     assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_2), 225 * MIST_PER_SUI);
     assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_3), 325 * MIST_PER_SUI);
@@ -162,7 +152,6 @@ fun validator_rewards() {
     assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_4), 450 * MIST_PER_SUI);
     });
 
->>>>>>> Stashed changes
     runner.finish();
 }
 
@@ -716,7 +705,6 @@ fun convert_to_fungible_staked_sui_and_redeem(stake: u16) {
         test_scenario::return_shared(system_state);
         scenario_val.end();
     }
->>>>>>> Stashed changes
 }
 
 #[test]

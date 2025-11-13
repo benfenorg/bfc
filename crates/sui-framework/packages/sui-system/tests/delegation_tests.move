@@ -401,7 +401,7 @@ fun add_remove_stake_flow() {
         };
         scenario_val.end();
     }
->>>>>>> Stashed changes
+
 #[test]
 fun remove_stake_post_active_flow_no_rewards() {
     remove_stake_post_active_flow(false)
@@ -554,7 +554,6 @@ fun add_remove_stake_flow() {
 
 
 
->>>>>>> Stashed changes
 // Scenario:
 // 1. Stake 100 SUI to VALIDATOR_ADDR_1
 // 2. Advance epoch

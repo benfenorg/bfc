@@ -1275,8 +1275,7 @@ module sui_system::sui_system_state_inner {
         self.validators.request_add_validator_candidate(validator, ctx);
     }
 }
-<<<<<<< Updated upstream
-=======
+
 
 public(package) fun store_execution_time_estimates(
     self: &mut SuiSystemStateInnerV2,
@@ -1416,4 +1415,3 @@ public(package) fun request_add_validator_candidate_for_testing(
 macro fun mul_div($a: u64, $b: u64, $c: u64): u64 {
     (($a as u128) * ($b as u128) / ($c as u128)) as u64
 }
->>>>>>> Stashed changes

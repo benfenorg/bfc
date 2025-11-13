@@ -499,16 +499,9 @@ module sui_system::validator_set_tests {
     }
 
     #[test]
-<<<<<<< Updated upstream
-    fun add_candidate_then_remove() {
-        let mut scenario_val = test_scenario::begin(@0x0);
-        let scenario = &mut scenario_val;
-        let ctx = scenario.ctx();
-=======
     fun add_validator_with_min_voting_power() {
         let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
->>>>>>> Stashed changes
 
         // Create 2 validators, with stake 9_997 and stake 3
         let validator1 = create_validator_with_initial_stake(@0x1, 1, 9_997, true, scenario.ctx());
@@ -521,9 +514,7 @@ module sui_system::validator_set_tests {
         scenario.next_tx(@0x2);
         let num_validators = validator_set.active_validators().length();
 
-<<<<<<< Updated upstream
         let pool_id_2 = staking_pool_id(&validator2);
-=======
         // Try to add a validator with the min voting power. it should work
         validator_set.request_add_validator_candidate(validator2, scenario.ctx());
         assert!(validator_set.is_validator_candidate(@0x2));
@@ -553,7 +544,6 @@ fun add_candidate_then_remove() {
     let validator2 = create_validator(@0x2, 2, 1, false, ctx);
 
     let pool_id_2 = staking_pool_id(&validator2);
->>>>>>> Stashed changes
 
         // Create a validator set with only the first validator in it.
         let mut validator_set = validator_set::new(vector[validator1], ctx);
