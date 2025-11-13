@@ -499,16 +499,61 @@ module sui_system::validator_set_tests {
     }
 
     #[test]
+<<<<<<< Updated upstream
     fun add_candidate_then_remove() {
         let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
         let ctx = scenario.ctx();
+=======
+    fun add_validator_with_min_voting_power() {
+        let mut scenario_val = test_scenario::begin(@0x0);
+        let scenario = &mut scenario_val;
+>>>>>>> Stashed changes
 
-        // Create 2 validators, with stake 100 and 200.
-        let validator1 = create_validator(@0x1, 1, 1, true, ctx);
-        let validator2 = create_validator(@0x2, 2, 1, false, ctx);
+        // Create 2 validators, with stake 9_997 and stake 3
+        let validator1 = create_validator_with_initial_stake(@0x1, 1, 9_997, true, scenario.ctx());
+        let min_stake = 3; // need at least 3 voting power to join
+        let validator2 = create_validator_with_initial_stake(@0x2, 2, min_stake, false, scenario.ctx());
+        // Create a validator set with only the first validator in it
+        let mut validator_set = validator_set::new(vector[validator1], scenario.ctx());
+        advance_epoch_with_dummy_rewards(&mut validator_set, scenario);
+        skip_to_min_stake_v2_final_thresholds(scenario);
+        scenario.next_tx(@0x2);
+        let num_validators = validator_set.active_validators().length();
 
+<<<<<<< Updated upstream
         let pool_id_2 = staking_pool_id(&validator2);
+=======
+        // Try to add a validator with the min voting power. it should work
+        validator_set.request_add_validator_candidate(validator2, scenario.ctx());
+        assert!(validator_set.is_validator_candidate(@0x2));
+
+        validator_set.request_add_validator(scenario.ctx());
+        advance_epoch_with_dummy_rewards(&mut validator_set, scenario);
+        assert!(validator_set.is_active_validator(@0x1));
+        assert!(validator_set.is_active_validator(@0x2));
+        assert!(validator_set.total_stake() == 10_000 * MIST_PER_SUI);
+        // epoch change should emit one ValidatorEpochInfoEvent per validator and one ValidatorJoinEvent for the new validator
+        let effects = scenario.next_tx(@0xB);
+        assert_eq(effects.num_user_events(), num_validators + 1);
+
+        test_utils::destroy(validator_set);
+        scenario_val.end();
+    }
+
+
+#[test]
+fun add_candidate_then_remove() {
+    let mut scenario_val = test_scenario::begin(@0x0);
+    let scenario = &mut scenario_val;
+    let ctx = scenario.ctx();
+
+    // Create 2 validators, with stake 100 and 200.
+    let validator1 = create_validator(@0x1, 1, 1, true, ctx);
+    let validator2 = create_validator(@0x2, 2, 1, false, ctx);
+
+    let pool_id_2 = staking_pool_id(&validator2);
+>>>>>>> Stashed changes
 
         // Create a validator set with only the first validator in it.
         let mut validator_set = validator_set::new(vector[validator1], ctx);
@@ -562,6 +607,14 @@ fun request_add_then_pull_stake() {
     test_utils::destroy(validator_set);
     test_utils::destroy(bal);
     scenario_val.end();
+}
+
+// skip to the final values for voting power thresholds
+fun skip_to_min_stake_v2_final_thresholds(scenario: &mut Scenario) {
+    let min_stake_v2_phase_length = 14;
+    let num_phases = 3;
+    let epoch = scenario.ctx().epoch();
+    scenario.skip_to_epoch(epoch + min_stake_v2_phase_length * num_phases)
 }
 
 #[test]

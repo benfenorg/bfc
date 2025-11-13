@@ -1275,3 +1275,145 @@ module sui_system::sui_system_state_inner {
         self.validators.request_add_validator_candidate(validator, ctx);
     }
 }
+<<<<<<< Updated upstream
+=======
+
+public(package) fun store_execution_time_estimates(
+    self: &mut SuiSystemStateInnerV2,
+    estimates: vector<u8>,
+) {
+    let key = EXTRA_FIELD_EXECUTION_TIME_ESTIMATES_KEY;
+    if (self.extra_fields.contains(key)) {
+        self.extra_fields.remove<_, vector<u8>>(key);
+    };
+    self.extra_fields.add(key, estimates);
+}
+
+#[test_only]
+/// Return the current validator set
+public(package) fun validators(self: &SuiSystemStateInnerV2): &ValidatorSet {
+    &self.validators
+}
+
+#[test_only]
+public(package) fun validators_mut(self: &mut SuiSystemStateInnerV2): &mut ValidatorSet {
+    &mut self.validators
+}
+
+#[test_only]
+/// Return the currently active validator by address
+public(package) fun active_validator_by_address(
+    self: &SuiSystemStateInnerV2,
+    validator_address: address,
+): &Validator {
+    self.validators().get_active_validator_ref(validator_address)
+}
+
+#[test_only]
+/// Return the currently pending validator by address
+public(package) fun pending_validator_by_address(
+    self: &SuiSystemStateInnerV2,
+    validator_address: address,
+): &Validator {
+    self.validators().get_pending_validator_ref(validator_address)
+}
+
+#[test_only]
+/// Return the currently candidate validator by address
+public(package) fun candidate_validator_by_address(
+    self: &SuiSystemStateInnerV2,
+    validator_address: address,
+): &Validator {
+    validators(self).get_candidate_validator_ref(validator_address)
+}
+
+#[test_only]
+public(package) fun get_stake_subsidy_distribution_counter(self: &SuiSystemStateInnerV2): u64 {
+    self.stake_subsidy.get_distribution_counter()
+}
+
+#[test_only]
+public(package) fun set_epoch_for_testing(self: &mut SuiSystemStateInnerV2, epoch_num: u64) {
+    self.epoch = epoch_num
+}
+
+#[test_only]
+public(package) fun request_add_validator_for_testing(
+    self: &mut SuiSystemStateInnerV2,
+    min_joining_stake_for_testing: u64,
+    ctx: &mut TxContext,
+) {
+    assert!(
+        self.validators.next_epoch_validator_count() < self.parameters.max_validator_count,
+        ELimitExceeded,
+    );
+
+    self.validators.request_add_validator(ctx);
+}
+
+#[test_only]
+public(package) fun set_stake_subsidy_distribution_counter(
+    self: &mut SuiSystemStateInnerV2,
+    counter: u64,
+) {
+    self.stake_subsidy.set_distribution_counter(counter)
+}
+
+#[test_only]
+public(package) fun epoch_duration_ms(self: &SuiSystemStateInnerV2): u64 {
+    self.parameters.epoch_duration_ms
+}
+
+// CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.  Creates a
+// candidate validator - bypassing the proof of possession check and other metadata validation
+// in the process.
+#[test_only]
+public(package) fun request_add_validator_candidate_for_testing(
+    // CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.  Creates a
+    // candidate validator - bypassing the proof of possession check and other metadata validation
+    // in the process.
+    self: &mut SuiSystemStateInnerV2,
+    pubkey_bytes: vector<u8>,
+    network_pubkey_bytes: vector<u8>,
+    worker_pubkey_bytes: vector<u8>,
+    proof_of_possession: vector<u8>,
+    name: vector<u8>,
+    description: vector<u8>,
+    image_url: vector<u8>,
+    project_url: vector<u8>,
+    net_address: vector<u8>,
+    p2p_address: vector<u8>,
+    primary_address: vector<u8>,
+    worker_address: vector<u8>,
+    gas_price: u64,
+    commission_rate: u64,
+    ctx: &mut TxContext,
+) {
+    let validator = validator::new_for_testing(
+        ctx.sender(),
+        pubkey_bytes,
+        network_pubkey_bytes,
+        worker_pubkey_bytes,
+        proof_of_possession,
+        name,
+        description,
+        image_url,
+        project_url,
+        net_address,
+        p2p_address,
+        primary_address,
+        worker_address,
+        option::none(),
+        gas_price,
+        commission_rate,
+        false, // not an initial validator active at genesis
+        ctx,
+    );
+
+    self.validators.request_add_validator_candidate(validator, ctx);
+}
+
+macro fun mul_div($a: u64, $b: u64, $c: u64): u64 {
+    (($a as u128) * ($b as u128) / ($c as u128)) as u64
+}
+>>>>>>> Stashed changes

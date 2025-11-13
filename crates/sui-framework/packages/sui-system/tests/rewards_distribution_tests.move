@@ -28,7 +28,6 @@ module sui_system::rewards_distribution_tests;
     use sui_system::governance_test_utils;
     use sui_system::test_runner;
     use sui_system::validator_builder;
-    use std::unit_test::assert_eq;
 
     const VALIDATOR_ADDR_1: address = @0x1;
     const VALIDATOR_ADDR_2: address = @0x2;
@@ -59,10 +58,17 @@ module sui_system::rewards_distribution_tests;
 
         // check rewards distribution, 1:2:3:4
         runner.system_tx!(|system, _| {
+<<<<<<< Updated upstream
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 125 * MIST_PER_SUI);
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_2), 225 * MIST_PER_SUI);
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_3), 325 * MIST_PER_SUI);
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_4), 425 * MIST_PER_SUI);
+=======
+        assert_eq(system.validator_stake_amount(VALIDATOR_ADDR_1), 125 * MIST_PER_SUI);
+        assert_eq(system.validator_stake_amount(VALIDATOR_ADDR_2), 225 * MIST_PER_SUI);
+        assert_eq(system.validator_stake_amount(VALIDATOR_ADDR_3), 325 * MIST_PER_SUI);
+        assert_eq(system.validator_stake_amount(VALIDATOR_ADDR_4), 425 * MIST_PER_SUI);
+>>>>>>> Stashed changes
         });
 
         runner.set_sender(VALIDATOR_ADDR_2).stake_with(VALIDATOR_ADDR_2, 720);
@@ -72,10 +78,17 @@ module sui_system::rewards_distribution_tests;
 
         // check rewards distribution, given that validator 2 has 920 SUI of stake now
         runner.system_tx!(|system, _| {
+<<<<<<< Updated upstream
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 150 * MIST_PER_SUI);
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_2), 970 * MIST_PER_SUI);
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_3), 350 * MIST_PER_SUI);
         assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_4), 450 * MIST_PER_SUI);
+=======
+        assert_eq(system.validator_stake_amount(VALIDATOR_ADDR_1), 150 * MIST_PER_SUI);
+        assert_eq(system.validator_stake_amount(VALIDATOR_ADDR_2), 970 * MIST_PER_SUI);
+        assert_eq(system.validator_stake_amount(VALIDATOR_ADDR_3), 350 * MIST_PER_SUI);
+        assert_eq(system.validator_stake_amount(VALIDATOR_ADDR_4), 450 * MIST_PER_SUI);
+>>>>>>> Stashed changes
         });
 
         runner.finish();
@@ -979,6 +992,10 @@ fun mul_rewards_withdraws_at_same_epoch() {
     });
 
     runner.finish();
+}
+
+fun validator_addrs() : vector<address> {
+    vector[VALIDATOR_ADDR_1, VALIDATOR_ADDR_2, VALIDATOR_ADDR_3, VALIDATOR_ADDR_4]
 }
 
     #[test]

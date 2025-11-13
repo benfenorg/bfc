@@ -6,6 +6,7 @@
 // `rewards_distribution_tests`.
 
 #[test_only]
+<<<<<<< Updated upstream
 module sui_system::sui_system_tests;
 
 use std::unit_test::assert_eq;
@@ -26,24 +27,66 @@ use bfc_system::bjpy::BJPY;
 use bfc_system::busd::BUSD;
 
 #[test]
+=======
+module sui_system::sui_system_tests {
+    use sui::test_scenario::{Self, Scenario};
+    use sui::bfc::BFC;
+    use sui::coin::Self;
+    use sui_system::governance_test_utils::{add_validator_full_flow, advance_epoch, remove_validator, set_up_sui_system_state, create_sui_system_state_for_testing, stake_with, unstake};
+
+    use sui_system::sui_system::{Self, SuiSystemState};
+    use sui_system::sui_system_state_inner;
+    use sui_system::validator::{Self, Validator};
+    use sui_system::validator_set::{Self,EInvalidCap};
+    use sui_system::validator_cap::UnverifiedValidatorOperationCap;
+    use sui::vec_set;
+    use sui_system::test_runner;
+    use sui_system::validator_builder;
+    use sui::table;
+    use sui::balance;
+    use sui::test_utils::{assert_eq, destroy};
+    use sui::url;
+    use std::string;
+    use std::ascii;
+    use bfc_system::bars::BARS;
+    use bfc_system::bbrl::BBRL;
+    use bfc_system::bjpy::BJPY;
+    use bfc_system::busd::BUSD;
+
+const MIST_PER_SUI: u64 = 1_000_000_000;
+
+>>>>>>> Stashed changes
 // Scenario: perform a series of report and undo report operations on a validator.
 // Guarantees that:
 // - report records are persisted across epochs.
 // - report records are removed when a validator is removed.
 // - report records are removed when a validator leaves.
 // - duplicate report operations are ignored.
-fun report_validator() {
+#[test]
+fun validator_rewards() {
     let mut runner = test_runner::new()
+<<<<<<< Updated upstream
     .validators(vector[
     validator_builder::new().sui_address(@1),
     validator_builder::new().sui_address(@2),
     validator_builder::new().sui_address(@3),
+=======
+    .sui_supply_amount(1000)
+    .validators(vector[
+    validator_builder::new().initial_stake(100).sui_address(VALIDATOR_ADDR_1),
+    validator_builder::new().initial_stake(200).sui_address(VALIDATOR_ADDR_2),
+    validator_builder::new().initial_stake(300).sui_address(VALIDATOR_ADDR_3),
+    validator_builder::new().initial_stake(400).sui_address(VALIDATOR_ADDR_4),
+>>>>>>> Stashed changes
     ])
     .build();
 
-    // Validator 1 reports validator 2
-    runner.set_sender(@1).report_validator(@2);
+    let opts = runner.advance_epoch_opts().computation_charge(100);
+    runner.advance_epoch(option::some(opts)).destroy_for_testing();
+
+    // check rewards distribution, 1:2:3:4
     runner.system_tx!(|system, _| {
+<<<<<<< Updated upstream
     assert_eq!(system.get_reporters_of(@2).into_keys(), vector[@1])
     });
 
@@ -99,6 +142,27 @@ fun report_validator() {
     assert!(system.get_reporters_of(@2).is_empty());
     });
 
+=======
+    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 125 * MIST_PER_SUI);
+    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_2), 225 * MIST_PER_SUI);
+    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_3), 325 * MIST_PER_SUI);
+    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_4), 425 * MIST_PER_SUI);
+    });
+
+    runner.set_sender(VALIDATOR_ADDR_2).stake_with(VALIDATOR_ADDR_2, 720);
+
+    let opts = runner.advance_epoch_opts().computation_charge(100);
+    runner.advance_epoch(option::some(opts)).destroy_for_testing();
+
+    // check rewards distribution, given that validator 2 has 920 SUI of stake now
+    runner.system_tx!(|system, _| {
+    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 150 * MIST_PER_SUI);
+    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_2), 970 * MIST_PER_SUI);
+    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_3), 350 * MIST_PER_SUI);
+    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_4), 450 * MIST_PER_SUI);
+    });
+
+>>>>>>> Stashed changes
     runner.finish();
 }
 
@@ -616,7 +680,43 @@ fun convert_to_fungible_staked_sui_and_redeem(stake: u16) {
     assert_eq!(pool.sui_balance(), 100 * MIST_PER_SUI);
     });
 
+<<<<<<< Updated upstream
     runner.finish();
+=======
+        let sui = system_state.redeem_fungible_staked_sui(
+            fungible_staked_sui,
+            scenario.ctx()
+        );
+
+        assert!(sui.value() == 100_000_000_000, 0);
+
+        test_scenario::return_shared(system_state);
+
+        advance_epoch(scenario);
+
+        sui::test_utils::destroy(sui);
+        scenario_val.end();
+    }
+
+    #[test]
+    fun test_request_add_stable_stake(){
+        let mut scenario_val = test_scenario::begin(@0x0);
+        let scenario = &mut scenario_val;
+        // Epoch duration is set to be 42 here.
+        set_up_sui_system_state(vector[@0x1, @0x2]);
+        scenario.next_tx(@0x0);
+        let mut system_state = scenario.take_shared<SuiSystemState>();
+        // This should abort with code 1
+        sui_system::request_add_stable_stake<BJPY>(
+        &mut system_state,
+        coin::mint_for_testing(100_000_000_000, scenario.ctx()),
+        @0x1,
+        scenario.ctx()
+        );
+        test_scenario::return_shared(system_state);
+        scenario_val.end();
+    }
+>>>>>>> Stashed changes
 }
 
 #[test]

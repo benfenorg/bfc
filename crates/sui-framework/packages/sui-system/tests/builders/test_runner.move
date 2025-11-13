@@ -19,6 +19,7 @@ use sui_system::validator_builder::{Self, ValidatorBuilder};
 use bfc_system::bfc_system_tests::create_sui_system_state_for_testing_v2 as create_bfc_system_state;
 
 const MIST_PER_SUI: u64 = 1_000_000_000;
+const BFC_AMOUNT: u64 = 1_000_000_000_000_000_000;
 
 const BFC_AMOUNT: u64 = 1_000_000_000_000_000_000;
 
@@ -108,6 +109,7 @@ public fun build(builder: TestRunnerBuilder): TestRunner {
     let genesis_validator_addresses = validators.map_ref!(|v| v.sui_address());
     let bfc_system_address = create_bfc_system_state(scenario.ctx(), BFC_AMOUNT);
 
+    let bfc_system_address = create_bfc_system_state(ctx, BFC_AMOUNT);
     // create sui system state
     sui_system::create(
         object::new(scenario.ctx()), // it doesn't matter what ID sui system state has in tests

@@ -245,6 +245,7 @@ fun split_nonentry_below_threshold() {
 //     test_scenario::end(scenario_val);
 // }
 
+<<<<<<< Updated upstream
 
 #[test]
 // Scenario:
@@ -355,6 +356,52 @@ fun add_remove_stake_flow() {
 //     test_scenario::end(scenario_val);
 // }
 
+=======
+    #[test]
+    #[expected_failure(abort_code = stable_pool::EIncompatibleStakedSui)]
+    fun test_join_different_epochs_stable() {
+        set_up_sui_system_state();
+        let mut scenario_val = test_scenario::begin(STAKER_ADDR_1);
+        let scenario = &mut scenario_val;
+        // Create two instances of staked sui w/ different epoch activations
+        governance_test_utils::stake_with_stable(STAKER_ADDR_1, VALIDATOR_ADDR_1, 60, scenario);
+        governance_test_utils::advance_epoch(scenario);
+        governance_test_utils::stake_with_stable(STAKER_ADDR_1, VALIDATOR_ADDR_1, 60, scenario);
+
+        // Verify that these cannot be merged
+        test_scenario::next_tx(scenario, STAKER_ADDR_1);
+        {
+            let staked_sui_ids = test_scenario::ids_for_sender<StakedStable<BUSD>>(scenario);
+            let mut part1 = test_scenario::take_from_sender_by_id<StakedStable<BUSD>>(scenario, *vector::borrow(&staked_sui_ids, 0));
+            let part2 = test_scenario::take_from_sender_by_id<StakedStable<BUSD>>(scenario, *vector::borrow(&staked_sui_ids, 1));
+
+            stable_pool::join_staked_sui(&mut part1, part2);
+
+            test_scenario::return_to_sender(scenario, part1);
+        };
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = staking_pool::EStakedSuiBelowThreshold)]
+    fun test_split_below_threshold() {
+        set_up_sui_system_state();
+        let mut scenario_val = test_scenario::begin(STAKER_ADDR_1);
+        let scenario = &mut scenario_val;
+        // Stake 2 SUI
+        stake_with(STAKER_ADDR_1, VALIDATOR_ADDR_1, 2, scenario);
+
+        scenario.next_tx(STAKER_ADDR_1);
+        {
+            let mut staked_sui = scenario.take_from_sender<StakedBfc>();
+            let ctx = scenario.ctx();
+            // The remaining amount after splitting is below the threshold so this should fail.
+            staked_sui.split_to_sender(1 * MIST_PER_SUI + 1, ctx);
+            scenario.return_to_sender(staked_sui);
+        };
+        scenario_val.end();
+    }
+>>>>>>> Stashed changes
 #[test]
 fun remove_stake_post_active_flow_no_rewards() {
     remove_stake_post_active_flow(false)
@@ -432,6 +479,82 @@ fun remove_stake_post_active_flow_with_rewards() {
     remove_stake_post_active_flow(true)
 }
 
+<<<<<<< Updated upstream
+=======
+    #[test]
+    #[expected_failure(abort_code = stable_pool::EStakedSuiBelowThreshold)]
+    fun test_split_nonentry_below_threshold_stable() {
+        set_up_sui_system_state();
+        let mut scenario_val = test_scenario::begin(STAKER_ADDR_1);
+        let scenario = &mut scenario_val;
+        // Stake 2 SUI
+        governance_test_utils::stake_with_stable(STAKER_ADDR_1, VALIDATOR_ADDR_1, 2, scenario);
+
+        test_scenario::next_tx(scenario, STAKER_ADDR_1);
+        {
+            let mut staked_sui = test_scenario::take_from_sender<StakedStable<BUSD>>(scenario);
+            let ctx = test_scenario::ctx(scenario);
+            // The remaining amount after splitting is below the threshold so this should fail.
+            let stake = stable_pool::split(&mut staked_sui, 1 * MIST_PER_SUI + 1, ctx);
+            test_utils::destroy(stake);
+            test_scenario::return_to_sender(scenario, staked_sui);
+        };
+        test_scenario::end(scenario_val);
+    }
+
+#[test]
+// Scenario:
+// 1. Stake 60 SUI to VALIDATOR_ADDR_1
+// 2. Check that the stake is not yet added to the validator
+// 3. Advance epoch
+// 4. Check that the stake is added to the validator
+// 5. Withdraw the stake and advance epoch
+// 6. Check that the stake is not added to the validator again
+fun add_remove_stake_flow() {
+    let mut runner = test_runner::new()
+    .validators(vector[
+    validator_builder::new().initial_stake(100).sui_address(VALIDATOR_ADDR_1),
+    validator_builder::new().initial_stake(100).sui_address(VALIDATOR_ADDR_2),
+    ])
+    .build();
+
+    // Stake 60 SUI to the validator.
+    runner.set_sender(STAKER_ADDR_1).stake_with(VALIDATOR_ADDR_1, 60);
+
+    // Check that the stake is NOT yet added to the validator.
+    runner.system_tx!(|system, _| {
+    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 100 * MIST_PER_SUI);
+    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_2), 100 * MIST_PER_SUI);
+    });
+
+    // Advance epoch. Stake is now added to the validator.
+    runner.advance_epoch(option::none()).destroy_for_testing();
+
+    // Withdraw the stake.
+    runner.set_sender(STAKER_ADDR_1);
+    runner.owned_tx!<StakedBfc>(|stake| {
+    runner.system_tx!(|system, ctx| {
+    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 160 * MIST_PER_SUI);
+    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_2), 100 * MIST_PER_SUI);
+
+    system.request_withdraw_stake(stake, ctx);
+
+    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 160 * MIST_PER_SUI);
+    });
+    });
+
+    // Advance epoch. Stake is now removed from the validator.
+    runner.advance_epoch(option::none()).destroy_for_testing();
+    runner.system_tx!(|system, _| {
+    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 100 * MIST_PER_SUI);
+    });
+
+    runner.finish();
+}
+
+
+
+>>>>>>> Stashed changes
 // Scenario:
 // 1. Stake 100 SUI to VALIDATOR_ADDR_1
 // 2. Advance epoch
@@ -498,6 +621,80 @@ fun remove_stake_post_active_flow(should_distribute_rewards: bool) {
 
     runner.finish();
 }
+
+#[test]
+fun test_add_remove_stable_stake_flow() {
+    set_up_sui_system_state();
+    let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
+    let scenario = &mut scenario_val;
+
+    test_scenario::next_tx(scenario, STAKER_ADDR_1);
+    {
+    let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+    let system_state_mut_ref = &mut system_state;
+
+    let ctx = test_scenario::ctx(scenario);
+
+    // Create a stake to VALIDATOR_ADDR_1.
+    sui_system::request_add_stable_stake<BUSD>(
+    system_state_mut_ref, coin::mint_for_testing(60 * MIST_PER_SUI, ctx), VALIDATOR_ADDR_1, ctx);
+
+    assert!(sui_system::validator_stake_amount_with_stable(system_state_mut_ref, VALIDATOR_ADDR_1) == 100 * MIST_PER_SUI, 101);
+    assert!(sui_system::validator_stake_amount_with_stable(system_state_mut_ref, VALIDATOR_ADDR_2) == 100 * MIST_PER_SUI, 102);
+
+    test_scenario::return_shared(system_state);
+    };
+
+    governance_test_utils::advance_epoch(scenario);
+
+    test_scenario::next_tx(scenario, STAKER_ADDR_1);
+    {
+
+    let staked_sui = test_scenario::take_from_sender<StakedStable<BUSD>>(scenario);
+    assert!(stable_pool::staked_sui_amount(&staked_sui) == 60 * MIST_PER_SUI, 105);
+
+
+    let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+    let system_state_mut_ref = &mut system_state;
+
+    assert!(sui_system::validator_stake_amount_with_stable(system_state_mut_ref, VALIDATOR_ADDR_1) == 699999866740, 103);
+    assert!(sui_system::validator_stake_amount_with_stable(system_state_mut_ref, VALIDATOR_ADDR_2) == 100 * MIST_PER_SUI, 104);
+
+    let ctx = test_scenario::ctx(scenario);
+
+    // Unstake from VALIDATOR_ADDR_1
+    sui_system::request_withdraw_stable_stake(system_state_mut_ref, staked_sui, ctx);
+
+    assert!(sui_system::validator_stake_amount_with_stable(system_state_mut_ref, VALIDATOR_ADDR_1) == 699999866740, 107);
+    test_scenario::return_shared(system_state);
+    };
+
+    governance_test_utils::advance_epoch(scenario);
+
+    test_scenario::next_tx(scenario, STAKER_ADDR_1);
+    {
+    let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+    assert!(sui_system::validator_stake_amount_with_stable(&mut system_state, VALIDATOR_ADDR_1) == 100 * MIST_PER_SUI, 107);
+    test_scenario::return_shared(system_state);
+    };
+    test_scenario::end(scenario_val);
+}
+
+#[test]
+fun test_remove_stake_post_active_flow_no_rewards() {
+    test_remove_stake_post_active_flow(false)
+}
+
+#[test]
+fun test_remove_stake_post_active_flow_no_rewards_stable() {
+    test_remove_stake_post_active_flow(false)
+}
+
+#[test]
+fun test_remove_stake_post_active_flow_with_rewards() {
+    test_remove_stake_post_active_flow(true)
+}
+
 
 #[test]
 fun earns_rewards_at_last_epoch() {
