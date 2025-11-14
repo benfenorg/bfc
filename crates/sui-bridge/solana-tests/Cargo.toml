@@ -1,0 +1,16 @@
+[package]
+name = "sui-bridge-solana-tests"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+anchor-client = "0.29.0"
+solana-sdk = "=1.18.26"
+solana-program = "=1.18.26"
+solana-test-validator = "=1.18.26"
+tokio = { version = "1", features = ["full"] }
+anyhow = "1.0"
+
+[build-dependencies]
+anchor_client_gen = "0.1.2"
