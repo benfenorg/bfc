@@ -75,10 +75,8 @@ use solana_sdk::{
     signer::Signer, system_program,
     pubkey::Pubkey,
 };
-use anchor_lang::prelude::*;
-use std::rc::Rc;
 anchor_lang::declare_program!(benfen_bridge);
-use benfen_bridge::{client::accounts, client::args,accounts::BridgeConfig};
+use benfen_bridge::{client::accounts, client::args, accounts::BridgeConfig};
 // use anyhow::bail;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
@@ -189,6 +187,8 @@ async fn test_solana_test_cluster_builder() -> anyhow::Result<()> {
 
     println!("initialize_ix bridge config");
 
+    let solana_chain_id: u8 = 61; // SOLANA_TESTNET - this bridge is deployed on Solana
+    
     let initialize_ix = program
         .request()
         .accounts(accounts::InitializeBridgeConfig {
@@ -196,7 +196,7 @@ async fn test_solana_test_cluster_builder() -> anyhow::Result<()> {
             payer: payer.pubkey(),
             system_program: system_program::ID,
         })
-        .args(args::InitializeBridgeConfig { chain_id: 2 })
+        .args(args::InitializeBridgeConfig { chain_id: solana_chain_id })
         .instructions()?
         .remove(0);
 
@@ -212,14 +212,271 @@ async fn test_solana_test_cluster_builder() -> anyhow::Result<()> {
     println!("Transaction confirmed: {}", signature);
 
     let bridge_config_account = program.account::<BridgeConfig>(bridge_config_pda).await?; 
-    assert_eq!(bridge_config_account.chain_id, 2);
-    println!("BridgeConfig account initialized with chain_id: {}", bridge_config_account.chain_id);
+    assert_eq!(bridge_config_account.chain_id, solana_chain_id);
+    println!("BridgeConfig account initialized with chain_id: {} (Solana Testnet)", bridge_config_account.chain_id);
 
+    // Initialize Committee
+    println!("\n=== Initializing Committee ===");
     
+    // Committee PDA
+    let (committee_pda, _committee_bump) = Pubkey::find_program_address(
+        &[b"committee", bridge_config_pda.as_ref()],
+        &program.id()
+    );
+    
+    println!("Committee PDA: {}", committee_pda);
+
+    // Prepare committee data (same as in TypeScript tests)
+    let committee_addresses: Vec<[u8; 20]> = vec![
+        hex_to_bytes("cc8523b50a78941c292375ff29a211219f7cdbde"),
+        hex_to_bytes("8cd6629c915bdc850e02753450212e6c6b8d300a"),
+        hex_to_bytes("a762327fcc2d31190069870ac9b88ce29b137ff4"),
+        hex_to_bytes("e9b649b2578e932366f14933f743ddb7c08bfbb1"),
+    ];
+    
+    let stakes: Vec<u16> = vec![2500, 2500, 2500, 2500];
+    let min_stake_required: u16 = 7500;
+
+    // Create initialize committee instruction
+    let initialize_committee_ix = program
+        .request()
+        .accounts(accounts::InitializeCommittee {
+            payer: payer.pubkey(),
+            committee: committee_pda,
+            bridge_config: bridge_config_pda,
+            system_program: system_program::ID,
+        })
+        .args(args::InitializeCommittee {
+            addresses: committee_addresses.clone(),
+            stakes: stakes.clone(),
+            min_stake_required,
+        })
+        .instructions()?
+        .remove(0);
+
+    println!("\nSend transaction with initialize committee instruction");
+
+    let committee_signature = program
+        .request()
+        .instruction(initialize_committee_ix)
+        .signer(payer.clone())
+        .send()
+        .await?;
+
+    println!("Committee transaction confirmed: {}", committee_signature);
+
+    // Verify committee account exists
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+    let committee_account_info = connection.get_account(&committee_pda)?;
+    assert!(committee_account_info.data.len() > 0);
+    println!("Committee account created successfully at: {}", committee_pda);
+    println!("Committee account data length: {} bytes", committee_account_info.data.len());
+
+    // Initialize Message Verifier
+    println!("\n=== Initializing Message Verifier ===");
+    
+    // Message Verifier PDA
+    let (message_verifier_pda, _message_verifier_bump) = Pubkey::find_program_address(
+        &[b"message_verifier", committee_pda.as_ref()],
+        &program.id()
+    );
+    
+    println!("Message Verifier PDA: {}", message_verifier_pda);
+
+    // Create initialize message verifier instruction
+    let initialize_message_verifier_ix = program
+        .request()
+        .accounts(accounts::InitializeMessageVerifier {
+            payer: payer.pubkey(),
+            verifier: message_verifier_pda,
+            committee: committee_pda,
+            system_program: system_program::ID,
+        })
+        .args(args::InitializeMessageVerifier {})
+        .instructions()?
+        .remove(0);
+
+    println!("\nSend transaction with initialize message verifier instruction");
+
+    let message_verifier_signature = program
+        .request()
+        .instruction(initialize_message_verifier_ix)
+        .signer(payer.clone())
+        .send()
+        .await?;
+
+    println!("Message Verifier transaction confirmed: {}", message_verifier_signature);
+
+    // Verify message verifier account exists
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+    let message_verifier_account_info = connection.get_account(&message_verifier_pda)?;
+    assert!(message_verifier_account_info.data.len() > 0);
+    println!("Message Verifier account created successfully at: {}", message_verifier_pda);
+    println!("Message Verifier account data length: {} bytes", message_verifier_account_info.data.len());
+
+    // Initialize Bridge Limiter
+    println!("\n=== Initializing Bridge Limiter ===");
+    
+    // Chain ID for Benfen testnet
+    let target_chain_id: u8 = 2; // BENFEN_TESTNET
+    
+    // Chain Limit PDA
+    let (chain_limit_pda, _chain_limit_bump) = Pubkey::find_program_address(
+        &[b"chain_limit", &[target_chain_id], bridge_config_pda.as_ref()],
+        &program.id()
+    );
+    
+    println!("Chain Limit PDA: {}", chain_limit_pda);
+    println!("Target chain ID: {}", target_chain_id);
+
+    // Limit parameters
+    let limit: u64 = 1_000_000;
+    let max_usd_limit: u64 = 1_000_000;
+
+    // Create initialize bridge limiter instruction
+    let initialize_bridge_limiter_ix = program
+        .request()
+        .accounts(accounts::InitializeBridgeLimiter {
+            payer: payer.pubkey(),
+            chain_limit: chain_limit_pda,
+            bridge_config: bridge_config_pda,
+            committee: committee_pda,
+            system_program: system_program::ID,
+        })
+        .args(args::InitializeBridgeLimiter {
+            chain_id: target_chain_id,
+            limit,
+            max_usd_limit,
+        })
+        .instructions()?
+        .remove(0);
+
+    println!("\nSend transaction with initialize bridge limiter instruction");
+
+    let bridge_limiter_signature = program
+        .request()
+        .instruction(initialize_bridge_limiter_ix)
+        .signer(payer.clone())
+        .send()
+        .await?;
+
+    println!("Bridge Limiter transaction confirmed: {}", bridge_limiter_signature);
+
+    // Verify chain limit account exists
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+    let chain_limit_account_info = connection.get_account(&chain_limit_pda)?;
+    assert!(chain_limit_account_info.data.len() > 0);
+    println!("Chain Limit account created successfully at: {}", chain_limit_pda);
+    println!("Chain Limit account data length: {} bytes", chain_limit_account_info.data.len());
+    println!("Chain limit: {}, Max USD limit: {}", limit, max_usd_limit);
+
+    // Initialize Benfen Bridge
+    println!("\n=== Initializing Benfen Bridge ===");
+    
+    // Benfen Bridge PDA
+    let (benfen_bridge_pda, _benfen_bridge_bump) = Pubkey::find_program_address(
+        &[b"benfen_bridge", committee_pda.as_ref()],
+        &program.id()
+    );
+    
+    println!("Benfen Bridge PDA: {}", benfen_bridge_pda);
+
+    // Create initialize benfen bridge instruction
+    let initialize_benfen_bridge_ix = program
+        .request()
+        .accounts(accounts::InitializeBenfenBridge {
+            authority: payer.pubkey(),
+            bridge: benfen_bridge_pda,
+            bridge_config: bridge_config_pda,
+            committee: committee_pda,
+            system_program: system_program::ID,
+        })
+        .args(args::InitializeBenfenBridge {})
+        .instructions()?
+        .remove(0);
+
+    println!("\nSend transaction with initialize benfen bridge instruction");
+
+    let benfen_bridge_signature = program
+        .request()
+        .instruction(initialize_benfen_bridge_ix)
+        .signer(payer.clone())
+        .send()
+        .await?;
+
+    println!("Benfen Bridge transaction confirmed: {}", benfen_bridge_signature);
+
+    // Verify benfen bridge account exists
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+    let benfen_bridge_account_info = connection.get_account(&benfen_bridge_pda)?;
+    assert!(benfen_bridge_account_info.data.len() > 0);
+    println!("Benfen Bridge account created successfully at: {}", benfen_bridge_pda);
+    println!("Benfen Bridge account data length: {} bytes", benfen_bridge_account_info.data.len());
+
+    // Initialize Upgrade Authority
+    println!("\n=== Initializing Upgrade Authority ===");
+    
+    // Upgrade Authority PDA
+    let (upgrade_authority_pda, _upgrade_authority_bump) = Pubkey::find_program_address(
+        &[b"upgrade_authority", committee_pda.as_ref()],
+        &program.id()
+    );
+    
+    println!("Upgrade Authority PDA: {}", upgrade_authority_pda);
+
+    // Create initialize upgrade authority instruction
+    let initialize_upgrade_authority_ix = program
+        .request()
+        .accounts(accounts::InitializeUpgradeAuthority {
+            payer: payer.pubkey(),
+            upgrade_authority: upgrade_authority_pda,
+            committee: committee_pda,
+            system_program: system_program::ID,
+        })
+        .args(args::InitializeUpgradeAuthority {
+            enabled: true,
+        })
+        .instructions()?
+        .remove(0);
+
+    println!("\nSend transaction with initialize upgrade authority instruction");
+
+    let upgrade_authority_signature = program
+        .request()
+        .instruction(initialize_upgrade_authority_ix)
+        .signer(payer.clone())
+        .send()
+        .await?;
+
+    println!("Upgrade Authority transaction confirmed: {}", upgrade_authority_signature);
+
+    // Verify upgrade authority account exists
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+    let upgrade_authority_account_info = connection.get_account(&upgrade_authority_pda)?;
+    assert!(upgrade_authority_account_info.data.len() > 0);
+    println!("Upgrade Authority account created successfully at: {}", upgrade_authority_pda);
+    println!("Upgrade Authority account data length: {} bytes", upgrade_authority_account_info.data.len());
+    println!("Upgrade Authority enabled: true");
 
     validator.kill().unwrap();
     validator.wait().unwrap();
     Ok(())
+}
+
+// Helper function to convert hex string to [u8; 20]
+fn hex_to_bytes(hex: &str) -> [u8; 20] {
+    let hex = if hex.starts_with("0x") {
+        &hex[2..]
+    } else {
+        hex
+    };
+    
+    let mut bytes = [0u8; 20];
+    for i in 0..20 {
+        bytes[i] = u8::from_str_radix(&hex[i * 2..i * 2 + 2], 16)
+            .expect("Invalid hex string");
+    }
+    bytes
 }
 
 // fn initialize_solana_bridge_config()
