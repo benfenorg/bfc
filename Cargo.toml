@@ -375,8 +375,8 @@ unexpected_cfgs = { level = "warn", check-cfg = [
 # Dependencies that should be kept in sync through the whole workspace
 [workspace.dependencies]
 anyhow = "1.0.71"
-arrow = "52"
-arrow-array = "52"
+arrow = "51"  # 降级到 51 避免与 chrono 0.4.39+ 冲突
+arrow-array = "51"
 arc-swap = { version = "1.5.1", features = ["serde"] }
 assert_cmd = "2.0.6"
 async-graphql = "=7.0.1"
@@ -416,6 +416,7 @@ backoff = { version = "0.4.0", features = [
 ] }
 base64 = "0.21.2"
 base64-url = "2"
+base64ct = "=1.6.0"  # 锁定版本避免 edition2024
 bcs = "0.1.4"
 better_any = "0.1.1"
 bimap = "0.6.2"
@@ -426,7 +427,7 @@ bytes = { version = "1.5.0", features = ["serde"] }
 cached = "0.43.0"
 camino = "1.1.1"
 cfg-if = "1.0.0"
-chrono = { version = "0.4.26", features = ["clock", "serde"] }
+chrono = { version = "=0.4.39", features = ["clock", "serde"] }  # 锁定到 0.4.39，arrow 51 与之兼容
 clap = { version = "4.4", features = ["derive", "wrap_help"] }
 codespan-reporting = "0.11.1"
 collectable = "0.0.2"
@@ -483,11 +484,12 @@ hashbrown = "0.12"
 hdrhistogram = "7.5.1"
 hex = "0.4.3"
 hex-literal = "0.3.4"
+home = "=0.5.9"  # 锁定版本避免 edition2024
 http = "1"
 http-body = "1"
 humantime = "2.1.0"
-hyper = "1"
-hyper-util = "0.1.6"
+hyper = "=1.6.0"  # 兼容 hyper-util 0.1.12
+hyper-util = "=0.1.12"  # 兼容 solana-client 和 axum-server
 hyper-rustls = { version = "0.27", default-features = false, features = [
     "webpki-roots",
     "http1",
@@ -536,7 +538,7 @@ object_store = { version = "0.10", features = ["aws", "gcp", "azure", "http"] }
 once_cell = "1.18.0"
 ouroboros = "0.17"
 parking_lot = "0.12.1"
-parquet = "52"
+parquet = "51"  # 降级到 51 与 arrow 版本保持一致
 pin-project-lite = "0.2.13"
 pkcs8 = { version = "0.9.0", features = ["std"] }
 pprof = { version = "0.14.0", features = ["cpp", "frame-pointer"] }
@@ -606,7 +608,7 @@ simple-server-timing-header = "0.1.1"
 slip10_ed25519 = "0.1.3"
 smallvec = "1.10.0"
 snap = "1.1.0"
-snowflake-api = "0.9.0"
+snowflake-api = "0.8.0"  # 降级到 0.8 以兼容 arrow 51
 static_assertions = "1.1.0"
 strum = { version = "0.24", features = ["derive"] }
 strum_macros = "0.24.3"
@@ -678,7 +680,8 @@ webpki = { version = "0.102", package = "rustls-webpki", features = [
 wiremock = "0.5"
 x509-parser = { version = "0.14.0", features = ["verify"] }
 zstd = "0.12.3"
-zeroize = "1.6.0"
+zeroize = "1.8"
+variant_count = "=1.1.0"  # 锁定版本避免 edition2024
 versions = "4.1.0"
 linked-hash-map = "0.5.6"
 shlex = "1.3.0"
@@ -754,6 +757,7 @@ sui-archival = { path = "crates/sui-archival" }
 sui-authority-aggregation = { path = "crates/sui-authority-aggregation" }
 sui-benchmark = { path = "crates/sui-benchmark" }
 sui-bridge = { path = "crates/sui-bridge" }
+sui-bridge-solana = {path = "crates/sui-bridge/solana-tests"}
 sui-cluster-test = { path = "crates/sui-cluster-test" }
 sui-config = { path = "crates/sui-config" }
 sui-core = { path = "crates/sui-core" }
@@ -859,3 +863,6 @@ spinners = "4.1.0"
 include_dir = "0.7.3"
 
 [patch.crates-io]
+async-graphql = { git = "https://github.com/amnn/async-graphql", branch = "v7.0.1-react-18-graphiql-4" }
+async-graphql-axum = { git = "https://github.com/amnn/async-graphql", branch = "v7.0.1-react-18-graphiql-4" }
+async-graphql-value = { git = "https://github.com/amnn/async-graphql", branch = "v7.0.1-react-18-graphiql-4" }
