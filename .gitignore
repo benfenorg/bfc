@@ -76,3 +76,9 @@ docs/content/references/framework/**
 lcov.info
 
 .sparse
+
+# solana
+test-ledger/
+test-ledger/**
+crates/sui-bridge/test-ledger/*
+crates/sui-bridge/test-ledger/**

@@ -97,8 +97,8 @@ fn start_local_validator(
     program_id: &str, 
     program_path: &str
 ) -> Child {
-  fs::create_dir_all("/tmp/solana-test-ledger").expect("failed to create /tmp/solana-test-ledger file");
-  let child = Command::new("solana-test-validator")
+    fs::create_dir_all("/tmp/solana-test-ledger").expect("failed to create /tmp/solana-test-ledger file");
+    let child = Command::new("solana-test-validator")
     .arg("--ledger")
     .arg("/tmp/solana-test-ledger")
     .arg("--reset")
