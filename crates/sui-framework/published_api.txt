@@ -1258,6 +1258,9 @@ pool_exchange_rates
 active_validator_addresses
 	public fun
 	0x3::sui_system
+pool_exchange_stable_rates
+	public fun
+	0x3::sui_system
 advance_epoch
 	fun
 	0x3::sui_system

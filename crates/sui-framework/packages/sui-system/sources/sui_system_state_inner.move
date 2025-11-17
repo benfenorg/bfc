@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-module sui_system::sui_system_state_inner {
+module sui_system::sui_system_state_inner;
     use std::ascii;
     use sui::balance::{Self, Balance};
     use sui::coin::{Self,Coin};
@@ -1274,19 +1274,7 @@ module sui_system::sui_system_state_inner {
 
         self.validators.request_add_validator_candidate(validator, ctx);
     }
-}
 
-
-public(package) fun store_execution_time_estimates(
-    self: &mut SuiSystemStateInnerV2,
-    estimates: vector<u8>,
-) {
-    let key = EXTRA_FIELD_EXECUTION_TIME_ESTIMATES_KEY;
-    if (self.extra_fields.contains(key)) {
-        self.extra_fields.remove<_, vector<u8>>(key);
-    };
-    self.extra_fields.add(key, estimates);
-}
 
 #[test_only]
 /// Return the current validator set
@@ -1410,8 +1398,4 @@ public(package) fun request_add_validator_candidate_for_testing(
     );
 
     self.validators.request_add_validator_candidate(validator, ctx);
-}
-
-macro fun mul_div($a: u64, $b: u64, $c: u64): u64 {
-    (($a as u128) * ($b as u128) / ($c as u128)) as u64
 }

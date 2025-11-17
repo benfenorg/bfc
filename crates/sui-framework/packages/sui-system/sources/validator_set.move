@@ -217,20 +217,6 @@ public(package) fun new(init_active_validators: vector<Validator>, ctx: &mut TxC
     validators
 }
 
-/// Return `true` if a  candidate validator with `stake` will have sufficeint voting power to join the validator set
-fun can_join(self: &ValidatorSet, stake: u64, ctx: &TxContext): bool {
-    let (min_joining_voting_power, _, _) = self.get_voting_power_thresholds(ctx);
-
-    // if the validator will have at least `min_joining_voting_power` after joining, they can join.
-    // this formula comes from SIP-39: https://github.com/sui-foundation/sips/blob/main/sips/sip-39.md
-    let future_total_stake = self.total_stake + stake;
-    let future_validator_voting_power = voting_power::derive_raw_voting_power(
-        stake,
-        future_total_stake,
-    );
-    future_validator_voting_power >= min_joining_voting_power
-}
-
 // ==== functions to add or remove validators ====
 
 /// Called by `sui_system` to add a new validator candidate.
