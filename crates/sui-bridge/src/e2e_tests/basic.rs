@@ -31,6 +31,7 @@ use sui_json_rpc_types::SuiObjectDataOptions;
 // use ethers::types::Address;
 use ethers::types::Address as EthAddress;
 use sui_config::local_ip_utils::get_available_port;
+use std::fs;
 
 
 use crate::types::{
@@ -96,6 +97,7 @@ fn start_local_validator(
     program_id: &str, 
     program_path: &str
 ) -> Child {
+  fs::create_dir_all("/tmp/solana-test-ledger").expect("failed to create /tmp/solana-test-ledger file");
   let child = Command::new("solana-test-validator")
     .arg("--ledger")
     .arg("/tmp/solana-test-ledger")
