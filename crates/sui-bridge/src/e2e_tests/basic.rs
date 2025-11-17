@@ -50,7 +50,7 @@ use sui_types::crypto::get_key_pair;
 use test_cluster::TestClusterBuilder;
 
 use std::path::Path;
-
+use std::path::PathBuf;
 use std::sync::Arc;
 use sui_json_rpc_types::{SuiExecutionStatus, SuiTransactionBlockEffectsAPI};
 use sui_types::bridge::{
@@ -59,6 +59,19 @@ use sui_types::bridge::{
 };
 use sui_types::{TypeTag, SUI_BRIDGE_OBJECT_ID};
 use tracing::info;
+
+use anchor_client::{Client, Cluster};
+use solana_client::rpc_client::RpcClient;
+use solana_sdk::{
+    commitment_config::CommitmentConfig, native_token::LAMPORTS_PER_SOL, signature::Keypair,
+    signature::read_keypair_file,
+    signer::Signer, system_program,
+    pubkey::Pubkey,
+};
+use anchor_lang::prelude::*;
+use std::rc::Rc;
+declare_program!(benfen_bridge);
+use benfen_bridge::{client::accounts, client::args,accounts::BridgeConfig};
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_eth_test_cluster_builder() {
@@ -70,6 +83,58 @@ async fn test_eth_test_cluster_builder() {
         .with_num_validators(3)
         .build_eth_env()
         .await;
+}
+
+fn start_local_validator(program_id: &str, program_path: &str) -> Child {
+  let child = Command::new("solana-test-validator")
+    .arg("--ledger")
+    .arg("/data3/solana/.solana/")
+    .arg("--reset")
+    .arg("--quiet")
+    .arg("--bpf-program")
+    .arg(program_id.to_string())
+    .arg(program_path)
+    .spawn()
+    .unwrap();
+    child
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+async fn test_solana_test_cluster_builder() -> anyhow::Result<()> {
+    telemetry_subscribers::init_for_testing();
+
+    let program_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../bridge/solana/target/deploy/benfen_bridge.so");
+    let program_id_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../bridge/solana/target/deploy/benfen_bridge-keypair.json");
+    if !program_path.exists() {
+    // Provide a helpful message if the program is not built.
+    // The user can build it by running `anchor build` in `bridge/solana`.
+    // Note: This test will still fail to compile if the program is not built,
+    // because the generated code depends on it.
+        println!(
+            "Program binary not found at {:?}. Run `anchor build` in `bridge/solana` first.",
+            program_path
+        );
+            return;
+    }
+
+    if !program_id_path.exists() {
+        println!(
+            "Program id file not found at {:?}. Run `anchor build` in `bridge/solana` first.",
+            program_id_path
+        );
+        return;
+    }
+
+    let program_keypair =
+    read_keypair_file(program_id_path.to_str().unwrap())
+        .expect("Failed to read program keypair");
+
+
+
+    let program_id = "benfen_bridge";
+
+
+    Ok(())
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]

@@ -58,6 +58,11 @@ test-cluster = { workspace = true, optional = true }
 bs58 = "0.4.0"
 hex = "0.4.3"
 sha2 = "0.10.2"
+anchor-client = { version = "0.32.1", features = ["async"] }
+anchor-lang = "0.32.1"
+bytemuck = { version = "1.20.0", features = ["min_const_generics"] }
+solana-client = "=2.3.13"
+solana-sdk = "=2.3.1"
 
 [dev-dependencies]
 sui-config.workspace = true
