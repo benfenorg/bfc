@@ -30,6 +30,8 @@ use crate::sui_transaction_builder::{
 use sui_json_rpc_types::SuiObjectDataOptions;
 // use ethers::types::Address;
 use ethers::types::Address as EthAddress;
+use sui_config::local_ip_utils::get_available_port;
+
 
 use crate::types::{
     AddExternalCoinAdminAction, AddExternalCoinTargetAction, AddExternalCoinWitnessAction,
@@ -60,6 +62,10 @@ use sui_types::bridge::{
 use sui_types::{TypeTag, SUI_BRIDGE_OBJECT_ID};
 use tracing::info;
 
+use std::process::Child;
+use std::thread;
+use std::process::{Command};
+
 use anchor_client::{Client, Cluster};
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::{
@@ -70,8 +76,9 @@ use solana_sdk::{
 };
 use anchor_lang::prelude::*;
 use std::rc::Rc;
-declare_program!(benfen_bridge);
+anchor_lang::declare_program!(benfen_bridge);
 use benfen_bridge::{client::accounts, client::args,accounts::BridgeConfig};
+// use anyhow::bail;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_eth_test_cluster_builder() {
@@ -85,36 +92,52 @@ async fn test_eth_test_cluster_builder() {
         .await;
 }
 
-fn start_local_validator(program_id: &str, program_path: &str) -> Child {
+fn start_local_validator(
+    program_id: &str, 
+    program_path: &str
+) -> Child {
   let child = Command::new("solana-test-validator")
     .arg("--ledger")
-    .arg("/data3/solana/.solana/")
+    .arg("/tmp/solana-test-ledger")
     .arg("--reset")
     .arg("--quiet")
     .arg("--bpf-program")
-    .arg(program_id.to_string())
+    .arg(program_id)
     .arg(program_path)
     .spawn()
     .unwrap();
+
+    //thread::sleep(Duration::from_secs(5));
+
+    let url = format!("http://127.0.0.1:8899");
+    let rpc = RpcClient::new(url);
+
+    for _ in 0..20 {  // 最多等 20 次（10 秒）
+        if rpc.get_health().is_ok() {
+            println!("solana-test-validator is ready");
+            break;
+        }
+        thread::sleep(Duration::from_millis(500));
+    }
+
     child
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_solana_test_cluster_builder() -> anyhow::Result<()> {
     telemetry_subscribers::init_for_testing();
-
-    let program_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../bridge/solana/target/deploy/benfen_bridge.so");
-    let program_id_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../bridge/solana/target/deploy/benfen_bridge-keypair.json");
+    let program_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/benfen_bridge.so");
+    let program_id_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/benfen_bridge-keypair.json");
     if !program_path.exists() {
-    // Provide a helpful message if the program is not built.
-    // The user can build it by running `anchor build` in `bridge/solana`.
-    // Note: This test will still fail to compile if the program is not built,
-    // because the generated code depends on it.
+        // Provide a helpful message if the program is not built.
+        // The user can build it by running `anchor build` in `bridge/solana`.
+        // Note: This test will still fail to compile if the program is not built,
+        // because the generated code depends on it.
         println!(
             "Program binary not found at {:?}. Run `anchor build` in `bridge/solana` first.",
             program_path
         );
-            return;
+        return Err(anyhow::anyhow!("program not built"));
     }
 
     if !program_id_path.exists() {
@@ -122,20 +145,82 @@ async fn test_solana_test_cluster_builder() -> anyhow::Result<()> {
             "Program id file not found at {:?}. Run `anchor build` in `bridge/solana` first.",
             program_id_path
         );
-        return;
+        return Err(anyhow::anyhow!("program keypair not found"));
     }
-
     let program_keypair =
-    read_keypair_file(program_id_path.to_str().unwrap())
+        read_keypair_file(program_id_path.to_str().unwrap())
         .expect("Failed to read program keypair");
 
+    let program_id = program_keypair.pubkey().to_string();
+
+    let mut validator=start_local_validator(&program_id, program_path.to_str().unwrap());
 
 
-    let program_id = "benfen_bridge";
+    //调用初始化方法
+     let connection = RpcClient::new_with_commitment(
+        "http://127.0.0.1:8899",
+        CommitmentConfig::confirmed(),
+    );
 
+    // Single payer for all operations
+    let payer = Arc::new(Keypair::new());
 
+    println!("\nRequesting 1 SOL airdrop to payer");
+    let sig = connection.request_airdrop(&payer.pubkey(), LAMPORTS_PER_SOL)?;
+    connection.confirm_transaction_with_commitment(&sig, CommitmentConfig::confirmed())?;
+
+    tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+
+    println!("Airdrop confirmed!");
+
+    let client = Client::new_with_options(
+        Cluster::Localnet,
+        payer.clone(),               
+        CommitmentConfig::confirmed(),
+    );
+
+    let program = client.program(benfen_bridge::ID)?;
+
+    // PDA
+    let (bridge_config_pda, _bump) =
+        Pubkey::find_program_address(&[b"bridge_config"], &program.id());
+
+    println!("initialize_ix bridge config");
+
+    let initialize_ix = program
+        .request()
+        .accounts(accounts::InitializeBridgeConfig {
+            bridge_config: bridge_config_pda,
+            payer: payer.pubkey(),
+            system_program: system_program::ID,
+        })
+        .args(args::InitializeBridgeConfig { chain_id: 2 })
+        .instructions()?
+        .remove(0);
+
+    println!("\nSend transaction with initialize bridge config instruction");
+
+    let signature = program
+        .request()
+        .instruction(initialize_ix)
+        .signer(payer.clone())       // Arc<Keypair>
+        .send()
+        .await?;
+
+    println!("Transaction confirmed: {}", signature);
+
+    let bridge_config_account = program.account::<BridgeConfig>(bridge_config_pda).await?; 
+    assert_eq!(bridge_config_account.chain_id, 2);
+    println!("BridgeConfig account initialized with chain_id: {}", bridge_config_account.chain_id);
+
+    
+
+    validator.kill().unwrap();
+    validator.wait().unwrap();
     Ok(())
 }
+
+// fn initialize_solana_bridge_config()
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_sui_test_cluster_builder() {

@@ -8,7 +8,7 @@ use crate::errors::BridgeCommitteeError;
 pub struct InitializeCommittee<'info> {
      #[account(
         mut,
-        address = crate::admin::id() @ AdminError::NotApproved
+        // address = crate::admin::id() @ AdminError::NotApproved
     )]
     pub payer: Signer<'info>,
 

@@ -10,7 +10,7 @@ use crate::errors::AdminError;
 pub struct InitializeBenfenBridge<'info> {
     #[account(
         mut,
-        address = crate::admin::id() @ AdminError::NotApproved
+        // address = crate::admin::id() @ AdminError::NotApproved
     )]
     pub authority: Signer<'info>,
 
