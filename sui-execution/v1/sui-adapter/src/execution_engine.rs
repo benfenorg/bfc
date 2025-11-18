@@ -651,6 +651,12 @@ mod checked {
                             assert!(protocol_config.random_beacon());
                             builder = setup_randomness_state_create(builder);
                         }
+
+                        EndOfEpochTransactionKind::AnonymousStateCreate =>{
+                            panic!(
+                                "EndOfEpochTransactionKind::AnonymousTokenStateCreate should not exist in v1"
+                            );
+                        }
                         EndOfEpochTransactionKind::DenyListStateCreate => {
                             assert!(protocol_config.enable_coin_deny_list_v1());
                             builder = setup_coin_deny_list_state_create(builder);
@@ -1219,6 +1225,8 @@ mod checked {
             .expect("Unable to generate randomness_state_create transaction!");
         builder
     }
+
+
 
     fn setup_authenticator_state_update(
         update: AuthenticatorStateUpdate,

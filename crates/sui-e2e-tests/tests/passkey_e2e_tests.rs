@@ -324,7 +324,7 @@ async fn test_passkey_fails_to_verify_sig() {
 }
 
 #[sim_test]
-async fn test_passkey_fails_wrong_author() {
+async fn sim_test_passkey_fails_wrong_author() {
     let test_cluster = TestClusterBuilder::new().build().await;
     // Modify sender that receives gas and construct test txn.
     let response =

@@ -13,3 +13,4 @@ pub mod hmac;
 pub mod poseidon;
 pub mod vdf;
 pub mod zklogin;
+pub mod hfe_ops;

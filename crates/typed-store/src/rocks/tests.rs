@@ -11,7 +11,7 @@ use serde::Deserialize;
 fn temp_dir() -> std::path::PathBuf {
     tempfile::tempdir()
         .expect("Failed to open temporary directory")
-        .into_path()
+        .keep()
 }
 
 // A wrapper that holds different type of iterators for testing purpose. We use it to get same

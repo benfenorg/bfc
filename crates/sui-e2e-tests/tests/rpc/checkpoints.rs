@@ -425,7 +425,7 @@ async fn sim_subscribe_checkpoint() {
     use sui_rpc_api::proto::node::v2alpha::subscription_service_client::SubscriptionServiceClient;
     use sui_rpc_api::proto::node::v2alpha::SubscribeCheckpointsRequest;
     use tokio_stream::StreamExt;
-    use tracing::{info, warn};
+    use tracing::{info};
     
 
     telemetry_subscribers::init_for_testing();

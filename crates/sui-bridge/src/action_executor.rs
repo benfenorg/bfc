@@ -745,7 +745,6 @@ mod tests {
     use prometheus::Registry;
     use std::collections::{BTreeMap, HashMap};
     use std::str::FromStr;
-    use diesel::row::NamedRow;
     use sui_json_rpc_types::SuiTransactionBlockEffects;
     use sui_json_rpc_types::SuiTransactionBlockEvents;
     use sui_json_rpc_types::{SuiEvent, SuiTransactionBlockResponse};
@@ -956,7 +955,7 @@ mod tests {
             .contains_key(&action.digest()));
 
         // Now let it succeed
-        let mut event = SuiEvent::random_for_testing();
+        let event = SuiEvent::random_for_testing();
         //event.type_ = TokenTransferClaimed.get("").unwrap().clone();
         let events = vec![event];
         mock_transaction_response(
@@ -1025,7 +1024,7 @@ mod tests {
         );
 
         // Mock the transaction to be successfully executed
-        let mut event = SuiEvent::random_for_testing();
+        let event = SuiEvent::random_for_testing();
         //event.type_ = TokenTransferClaimed.get("").unwrap().clone();
         let events = vec![event];
         mock_transaction_response(
@@ -1158,7 +1157,7 @@ mod tests {
         .unwrap();
         let tx_digest = get_tx_digest(tx_data, &dummy_sui_key);
 
-        let mut event = SuiEvent::random_for_testing();
+        let event = SuiEvent::random_for_testing();
         //event.type_ = TokenTransferClaimed.get("").unwrap().clone();
         let events = vec![event];
         mock_transaction_response(

@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::path::PathBuf;
 use self::{
     address::{AddressFromBytesCostParams, AddressFromU256CostParams, AddressToU256CostParams},
     config::ConfigReadSettingImplCostParams,
@@ -36,7 +37,7 @@ use self::{
     validator::ValidatorValidateMetadataBcsCostParams,
     curve::CurveDxCostParams
 };
-use crate::crypto::group_ops;
+use crate::crypto::{group_ops, hfe_ops};
 use crate::crypto::group_ops::GroupOpsCostParams;
 use crate::crypto::poseidon::PoseidonBN254CostParams;
 use crate::crypto::zklogin;
@@ -61,8 +62,10 @@ use move_vm_types::{
 };
 use std::sync::Arc;
 use sui_protocol_config::ProtocolConfig;
+use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
 use sui_types::{MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use transfer::TransferReceiveObjectInternalCostParams;
+use crate::crypto::hfe_ops::AnonymousComputeCostParams;
 
 mod address;
 mod config;
@@ -172,10 +175,19 @@ pub struct NativesCostTable {
 
     // Receive object
     pub transfer_receive_object_internal_cost_params: TransferReceiveObjectInternalCostParams,
+
+    pub anonymous_privatekey: Option<String>,
+    pub anonymous_rpc: Option<Vec<String>>,
+    // anonymous_cost
+    pub anonymous_compute_cost_params: AnonymousComputeCostParams,
+
+    pub enable_anonymous_rpc: Option<bool>,
 }
 
 impl NativesCostTable {
     pub fn from_protocol_config(protocol_config: &ProtocolConfig) -> NativesCostTable {
+        let path = get_sui_config_directory().join("bfc_anonymous_config.yaml");
+        let config = AnonymousPrivateKeyConfig::from_yaml_file(&path).unwrap_or(AnonymousPrivateKeyConfig::default());
         Self {
             address_from_bytes_cost_params: AddressFromBytesCostParams {
                 address_from_bytes_cost_base: protocol_config.address_from_bytes_cost_base().into(),
@@ -660,7 +672,23 @@ impl NativesCostTable {
                     .vdf_hash_to_input_cost_as_option()
                     .map(Into::into),
             },
+            anonymous_privatekey: config.anonymous_privatekey,
+            anonymous_rpc: config.anonymous_rpc,
+            anonymous_compute_cost_params: AnonymousComputeCostParams {
+                anonymous_compute_cost_base: protocol_config
+                    .anonymous_compute_cost_base()
+                    .into(),
+            },
+
+            enable_anonymous_rpc: config.enable_anonymous_rpc,
         }
+    }
+}
+
+fn get_sui_config_directory() -> PathBuf {
+    match dirs::home_dir() {
+        Some(v) => v.join(".bfc").join("bfc_config"),
+        None => panic!("Cannot obtain home directory path"),
     }
 }
 
@@ -1073,6 +1101,38 @@ pub fn all_natives(silent: bool, protocol_config: &ProtocolConfig) -> NativeFunc
             "secp256k1_keypair_from_seed",
             make_native!(ecdsa_k1::secp256k1_keypair_from_seed),
         ),
+
+        (
+            "hfe_ops",
+            "hfe_ops_add",
+            make_native!(hfe_ops::hfe_ops_add),
+        ),
+        (
+            "hfe_ops",
+            "hfe_ops_minus",
+            make_native!(hfe_ops::hfe_ops_minus),
+        ),
+        (
+            "hfe_ops",
+            "hfe_ops_multiplied",
+            make_native!(hfe_ops::hfe_ops_multiplied),
+        ),
+        (
+            "hfe_ops",
+            "hfe_ops_compare_value",
+            make_native!(hfe_ops::hfe_ops_compare_value),
+        ),
+        (
+            "hfe_ops",
+            "hfe_ops_compare_value1_and_value2",
+            make_native!(hfe_ops::hfe_ops_compare_value1_and_value2),
+        ),
+        (
+            "hfe_ops",
+            "hfe_ops_encode_data",
+            make_native!(hfe_ops::hfe_ops_encode_data),
+        ),
+
     ];
     let sui_framework_natives_iter =
         sui_framework_natives

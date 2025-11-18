@@ -259,6 +259,36 @@ impl TestTransactionBuilder {
         )
     }
 
+    pub fn call_mint_test_anonymous_coin(self, package_id:ObjectID, treasury_cap: ObjectRef, amount:u64, recipient: SuiAddress) -> Self {
+
+        self.move_call(
+            package_id,
+            "testabfc",
+            "mint",
+            vec![
+                CallArg::Object(ObjectArg::ImmOrOwnedObject(treasury_cap)),
+                CallArg::Pure(bcs::to_bytes(&amount).unwrap()),
+                CallArg::Pure(bcs::to_bytes(&recipient).unwrap()),
+            ],
+        )
+    }
+
+
+    pub fn call_mint_test_ausd_coin(self, package_id:ObjectID, treasury_cap: ObjectRef, amount:u64, recipient: SuiAddress) -> Self {
+
+        self.move_call(
+            package_id,
+            "test_ausd",
+            "mint",
+            vec![
+                CallArg::Object(ObjectArg::ImmOrOwnedObject(treasury_cap)),
+                CallArg::Pure(bcs::to_bytes(&amount).unwrap()),
+                CallArg::Pure(bcs::to_bytes(&recipient).unwrap()),
+            ],
+        )
+    }
+
+
     pub fn call_stable_withdraw_stake(self, staked_coin: ObjectRef, tags: Vec<TypeTag>) -> Self {
         self.move_call_with_tag(
             SUI_SYSTEM_PACKAGE_ID,

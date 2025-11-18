@@ -71,6 +71,8 @@ members = [
   "consensus/core",
   "crates/anemo-benchmark",
   "crates/bin-version",
+  "crates/bfc-anonymous-server",
+  "crates/mpc-transmission",
   "crates/mysten-common",
   "crates/mysten-metrics",
   "crates/mysten-network",
@@ -317,12 +319,12 @@ members = [
     "sui-execution/v1/sui-verifier",
     "sui-execution/v2/sui-adapter",
     "sui-execution/v2/sui-move-natives",
-    "sui-execution/v2/sui-verifier",
+    "sui-execution/v2/sui-verifier", "crates/bfc-anonymous-slave-server",
 ]
 
 [workspace.package]
 # This version string will be inherited by sui-core, sui-faucet, sui-node, sui-tools, sui-sdk, sui-move-build, and sui crates.
-version = "1.24.0"
+version = "1.24.2"
 
 [profile.release]
 # debug = 1 means line charts only, which is minimum needed for good stack traces
@@ -737,6 +739,7 @@ sui-sdk-transaction-builder = { git = "https://github.com/hellokittyboy-code/bfc
 ### Workspace Members ###
 anemo-benchmark = { path = "crates/anemo-benchmark" }
 bin-version = { path = "crates/bin-version" }
+mpc-transmission = { path = "crates/mpc-transmission" }
 mysten-common = { path = "crates/mysten-common" }
 mysten-metrics = { path = "crates/mysten-metrics" }
 mysten-network = { path = "crates/mysten-network" }

@@ -703,7 +703,7 @@ mod tests {
         let kp = bridge_test_cluster.bridge_authority_key(0);
 
         // prepare node config (server only)
-        let tmp_dir = tempdir().unwrap().into_path();
+        let tmp_dir = tempdir().unwrap().keep();
         let db_path = tmp_dir.join("client_db");
         let authority_key_path = "test_starting_bridge_node_bridge_authority_key";
         let server_listen_port = get_available_port("127.0.0.1");
@@ -767,7 +767,7 @@ mod tests {
         let kp = bridge_test_cluster.bridge_authority_key(0);
 
         // prepare node config (server + client)
-        let tmp_dir = tempdir().unwrap().into_path();
+        let tmp_dir = tempdir().unwrap().keep();
         let db_path = tmp_dir.join("test_starting_bridge_node_with_client_db");
         let authority_key_path = "test_starting_bridge_node_with_client_bridge_authority_key";
         let server_listen_port = get_available_port("127.0.0.1");
@@ -875,7 +875,7 @@ mod tests {
         let kp = bridge_test_cluster.bridge_authority_key(0);
 
         // prepare node config (server + client)
-        let tmp_dir = tempdir().unwrap().into_path();
+        let tmp_dir = tempdir().unwrap().keep();
         let db_path =
             tmp_dir.join("test_starting_bridge_node_with_client_and_separate_client_key_db");
         let authority_key_path =

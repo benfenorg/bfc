@@ -102,7 +102,7 @@ async fn sim_test_genesis() -> Result<(), anyhow::Error> {
         .flat_map(|r| r.map(|file| file.file_name().to_str().unwrap().to_owned()))
         .collect::<Vec<_>>();
 
-    assert_eq!(10, files.len());
+    assert_eq!(11, files.len());
     assert!(files.contains(&SUI_CLIENT_CONFIG.to_string()));
     assert!(files.contains(&SUI_NETWORK_CONFIG.to_string()));
     assert!(files.contains(&SUI_FULLNODE_CONFIG.to_string()));

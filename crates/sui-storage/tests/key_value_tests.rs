@@ -369,11 +369,12 @@ mod simtests {
     use axum::{body::Body, extract::Request, extract::State, response::Response};
     use std::net::SocketAddr;
     use std::sync::Mutex;
-    use std::time::{Duration, Instant};
-    use sui_macros::sim_test;
-    use sui_simulator::configs::constant_latency_ms;
+    //use std::time::{Duration, Instant};
+    //use sui_macros::sim_test;
+    //use sui_simulator::configs::constant_latency_ms;
     use tracing::info;
 
+    #[allow(dead_code)]
     async fn svc(
         State(state): State<Arc<Mutex<HashMap<String, Vec<u8>>>>>,
         request: Request<Body>,
@@ -391,6 +392,7 @@ mod simtests {
         }
     }
 
+    #[allow(dead_code)]
     async fn test_server(data: Arc<Mutex<HashMap<String, Vec<u8>>>>) {
         let handle = sui_simulator::runtime::Handle::current();
         let builder = handle.create_node();
