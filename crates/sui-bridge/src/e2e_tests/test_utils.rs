@@ -94,6 +94,19 @@ use tap::TapFallible;
 use tempfile::tempdir;
 use test_cluster::TestCluster;
 use test_cluster::TestClusterBuilder;
+use solana_sdk::{
+    commitment_config::CommitmentConfig, native_token::LAMPORTS_PER_SOL, signature::Keypair,
+    signature::read_keypair_file,
+    signer::Signer, system_program,
+    pubkey::Pubkey,
+};
+anchor_lang::declare_program!(benfen_bridge);
+use benfen_bridge::{client::accounts, client::args, accounts::BridgeConfig, accounts::Committee};
+
+use anchor_client::{Client, Cluster};
+use solana_client::rpc_client::RpcClient;
+
+
 
 const BRIDGE_COMMITTEE_NAME: &str = "BridgeCommittee";
 const SUI_BRIDGE_NAME: &str = "SuiBridge";
@@ -116,19 +129,23 @@ pub struct BridgeTestCluster {
     pub test_cluster: TestClusterWrapper,
     bridge_client: SuiBridgeClient,
     eth_environment: EthBridgeEnvironment,
+    sol_environment: SolanaBridgeEnvironment,
     bridge_node_handles: Option<Vec<JoinHandle<()>>>,
     approved_governance_actions_for_next_start: Option<Vec<Vec<BridgeAction>>>,
     bridge_tx_cursor: Option<TransactionDigest>,
     eth_chain_id: BridgeChainId,
     sui_chain_id: BridgeChainId,
+    solana_chain_id: BridgeChainId,
 }
 
 pub struct BridgeTestClusterBuilder {
     with_eth_env: bool,
+    with_solana_env: bool,
     with_bridge_cluster: bool,
     num_validators: usize,
     approved_governance_actions: Option<Vec<Vec<BridgeAction>>>,
     eth_chain_id: BridgeChainId,
+    solana_chain_id: BridgeChainId,
     sui_chain_id: BridgeChainId,
     enable_fast_path_latest: bool,
     enable_fast_path_safe: bool,
@@ -145,11 +162,13 @@ impl BridgeTestClusterBuilder {
     pub fn new() -> Self {
         BridgeTestClusterBuilder {
             with_eth_env: false,
+            with_solana_env: false,
             with_bridge_cluster: false,
             num_validators: 4,
             approved_governance_actions: None,
             eth_chain_id: BridgeChainId::EthCustom,
             sui_chain_id: BridgeChainId::SuiCustom,
+            solana_chain_id: BridgeChainId::SolanaTestnet,
             enable_fast_path_latest: false,
             enable_fast_path_safe: false,
             enable_fast_path_finalized: true,
@@ -158,6 +177,11 @@ impl BridgeTestClusterBuilder {
 
     pub fn with_eth_env(mut self, with_eth_env: bool) -> Self {
         self.with_eth_env = with_eth_env;
+        self
+    }
+
+    pub fn with_solana_env(mut self, with_solana_env: bool) -> Self {
+        self.with_solana_env = with_solana_env;
         self
     }
 
@@ -182,6 +206,11 @@ impl BridgeTestClusterBuilder {
 
     pub fn with_sui_chain_id(mut self, chain_id: BridgeChainId) -> Self {
         self.sui_chain_id = chain_id;
+        self
+    }
+
+    pub fn with_solana_chain_id(mut self, chain_id: BridgeChainId) -> Self {
+        self.solana_chain_id = chain_id;
         self
     }
 
@@ -218,6 +247,19 @@ impl BridgeTestClusterBuilder {
         Self::start_eth_env(bridge_keys, self.eth_chain_id).await;
     }
 
+    pub async fn build_solana_env(self) {
+        init_all_struct_tags();
+        std::env::set_var("__TEST_ONLY_CONSENSUS_USE_LONG_MIN_ROUND_DELAY", "1");
+        let mut bridge_keys = vec![];
+        let mut bridge_keys_copy = vec![];
+        for _ in 0..self.num_validators {
+            let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
+            bridge_keys.push(kp.copy());
+            bridge_keys_copy.push(kp);
+        }
+        Self::start_solana_env(bridge_keys, self.solana_chain_id,self.sui_chain_id).await;
+    }
+
     pub async fn build(self) -> BridgeTestCluster {
         init_all_struct_tags();
         std::env::set_var("__TEST_ONLY_CONSENSUS_USE_LONG_MIN_ROUND_DELAY", "1");
@@ -235,9 +277,14 @@ impl BridgeTestClusterBuilder {
             tokio::task::spawn(Self::start_test_cluster(bridge_keys, self.eth_chain_id));
         let start_eth_env_task =
             tokio::task::spawn(Self::start_eth_env(bridge_keys_copy, self.eth_chain_id));
-        let (start_cluster_res, start_eth_env_res) = join!(start_cluster_task, start_eth_env_task);
+
+        let start_solana_env_task =
+            tokio::task::spawn(Self::start_solana_env(bridge_keys_copy2, self.solana_chain_id,self.sui_chain_id));
+        let (start_cluster_res, start_eth_env_res, start_solana_env_res) =
+            join!(start_cluster_task, start_eth_env_task, start_solana_env_task);
         let test_cluster = start_cluster_res.unwrap();
         let eth_environment = start_eth_env_res.unwrap();
+        let solana_environment = start_solana_env_res.unwrap();
         let mut bridge_node_handles = None;
         if self.with_bridge_cluster {
             let approved_governace_actions = self
@@ -273,11 +320,13 @@ impl BridgeTestClusterBuilder {
             test_cluster,
             bridge_client,
             eth_environment,
+            sol_environment: solana_environment,
             bridge_node_handles,
             approved_governance_actions_for_next_start: self.approved_governance_actions,
             bridge_tx_cursor: None,
             sui_chain_id: self.sui_chain_id,
             eth_chain_id: self.eth_chain_id,
+            solana_chain_id: self.solana_chain_id,
         }
     }
 
@@ -296,6 +345,63 @@ impl BridgeTestClusterBuilder {
             .trigger_reconfiguration_if_not_yet_and_assert_bridge_committee_initialized()
             .await;
         test_cluster
+    }
+
+    async  fn start_solana_env(
+        bridge_keys: Vec<BridgeAuthorityKeyPair>,
+        solana_chain_id: BridgeChainId,
+        benfen_chain_id: BridgeChainId,
+    )-> SolanaBridgeEnvironment{
+        // Pick an RPC port such that rpc_port+1 (websocket) is also free.
+        let is_port_free = |p: u16| -> bool {
+            std::net::TcpListener::bind(("127.0.0.1", p)).map(|l| drop(l)).is_ok()
+        };
+        let (rpc_port, ws_port) = loop {
+            let candidate_rpc = get_available_port("127.0.0.1");
+            let candidate_ws = candidate_rpc + 1;
+            if is_port_free(candidate_ws) {
+                break (candidate_rpc, candidate_ws);
+            }
+            // else retry another rpc port
+        };
+        let rpc_url = format!("http://127.0.0.1:{rpc_port}");
+        let ws_url = format!("ws://127.0.0.1:{ws_port}");
+        let mut faucet_port = get_available_port("127.0.0.1");
+
+        while faucet_port == rpc_port || faucet_port == ws_port {
+            faucet_port = get_available_port("127.0.0.1");
+        }
+        let faucet_url = format!("http://127.0.0.1:{faucet_port}");
+
+        info!("Solana RPC URL: {rpc_url}");
+        info!("Solana WS URL: {ws_url}");
+        info!("Solana Faucet URL: {faucet_url}");
+        
+        let mut sol_environment=SolanaBridgeEnvironment::new(&rpc_url, rpc_port, faucet_port);
+        let solana_signer = sol_environment.get_signer().await.unwrap_or_else(|e| panic!("Failed to get solana signer {e}"));
+        // Airdrop can be rate-limited; retry with exponential backoff for robustness.
+        for attempt in 1..=5 {
+            match sol_environment.airdrop_sol().await {
+                Ok(_) => break,
+                Err(e) => {
+                    if attempt == 5 {
+                        panic!("Failed to airdrop solana to signer after retries: {e}");
+                    }
+                    let backoff_ms = 500 * attempt;
+                    eprintln!(
+                        "Airdrop rate limited, retrying in {}ms (attempt {}/5): {}",
+                        backoff_ms,
+                        attempt,
+                        e
+                    );
+                    tokio::time::sleep(std::time::Duration::from_millis(backoff_ms as u64)).await;
+                }
+            }
+        }
+
+        let _=init_solana_program(&rpc_url.clone(), &ws_url, solana_signer, bridge_keys, solana_chain_id, benfen_chain_id)
+            .await;
+        sol_environment
     }
 
     async fn start_eth_env(
@@ -562,6 +668,19 @@ pub struct DeployedSolContracts {
     pub ka: EthAddress,
 }
 
+#[allow(dead_code)]
+#[derive(Debug, Clone)]
+pub struct SolanaPDA{
+    pub bridge_config: Pubkey,
+    pub bridge_committee: Pubkey,
+    pub message_verifier: Pubkey,
+    pub bridge_limiter: Pubkey,
+    pub benfen_bridge: Pubkey,
+    pub upgrade_authority: Pubkey,
+}
+
+
+
 impl DeployedSolContracts {
     pub fn eth_adress_to_hex(addr: EthAddress) -> String {
         format!("{:x}", addr)
@@ -588,6 +707,196 @@ struct SolDeployConfig {
     weth: String,
     max_usd_limit: u64,
 }
+
+
+pub(crate) async fn init_solana_program(
+    rpc_url: &str,
+    ws_url: &str,
+    solana_signer: std::sync::Arc<Keypair>,
+    bridge_authority_keys: Vec<BridgeAuthorityKeyPair>,
+    solana_chain_id: BridgeChainId,
+    target_chain_id: BridgeChainId,
+)->anyhow::Result<()>{
+     let client = Client::new_with_options(
+            Cluster::Custom(rpc_url.to_string(), ws_url.to_string()),
+            solana_signer.clone(),
+            CommitmentConfig::confirmed(),
+    );
+
+    let program = client.program(benfen_bridge::ID)?;
+    let init_pdas: SolanaPDA = get_init_solana_pda();
+    let initialize_bridge_config_ix = program
+        .request()
+        .accounts(accounts::InitializeBridgeConfig {
+            bridge_config: init_pdas.bridge_config,
+            payer: solana_signer.pubkey(),
+            system_program: system_program::ID,
+        })
+        .args(args::InitializeBridgeConfig { chain_id: solana_chain_id as u8})
+        .instructions()?
+        .remove(0);
+
+
+    let node_len = bridge_authority_keys.len();
+    let stake = TOTAL_VOTING_POWER / (node_len as u64);
+    let committee_members = bridge_authority_keys
+        .iter()
+        .map(|k| {
+            format!(
+                "0x{:x}",
+                BridgeAuthorityPublicKeyBytes::from(&k.public).to_eth_address()
+            )
+        })
+        .collect::<Vec<_>>();
+    let mut committee_member_stake = vec![stake; node_len];
+    // Adjust it so that the total stake is equal to TOTAL_VOTING_POWER
+    committee_member_stake[node_len - 1] = TOTAL_VOTING_POWER - stake * (node_len as u64 - 1);
+
+    // Convert hex addresses to [u8;20] and stakes to u16 to match Anchor types
+    let committee_addresses: Vec<[u8; 20]> = committee_members
+        .iter()
+        .map(|s| {
+            let hex = if s.starts_with("0x") { &s[2..] } else { s.as_str() };
+            let mut bytes = [0u8; 20];
+            for i in 0..20 {
+                bytes[i] = u8::from_str_radix(&hex[i * 2..i * 2 + 2], 16)
+                    .expect("Invalid hex string");
+            }
+            bytes
+        })
+        .collect();
+    let stakes_u16: Vec<u16> = committee_member_stake.iter().map(|&v| v as u16).collect();
+    let min_stake_required_u16: u16 = 10000u16;
+
+    let initialize_committee_ix = program
+        .request()
+        .accounts(accounts::InitializeCommittee {
+            payer: solana_signer.pubkey(),
+            committee: init_pdas.bridge_committee,
+            bridge_config: init_pdas.bridge_config,
+            system_program: system_program::ID,
+        })
+        .args(args::InitializeCommittee {
+            addresses: committee_addresses.clone(),
+            stakes: stakes_u16.clone(),
+            min_stake_required: min_stake_required_u16,
+        })
+        .instructions()?
+        .remove(0);
+
+    let initialize_message_verifier_ix = program
+        .request()
+        .accounts(accounts::InitializeMessageVerifier {
+            payer: solana_signer.pubkey(),
+            verifier: init_pdas.message_verifier,
+            committee: init_pdas.bridge_committee,
+            system_program: system_program::ID,
+        })
+        .args(args::InitializeMessageVerifier {})
+        .instructions()?
+        .remove(0);
+
+    let initialize_bridge_limiter_ix = program
+        .request()
+        .accounts(accounts::InitializeBridgeLimiter {
+            payer: solana_signer.pubkey(),
+            chain_limit: init_pdas.bridge_limiter,
+            bridge_config: init_pdas.bridge_config,
+            committee: init_pdas.bridge_committee,
+            system_program: system_program::ID,
+        })
+        .args(args::InitializeBridgeLimiter {
+            chain_id: target_chain_id as u8,
+            limit: 1000000000000000,
+            max_usd_limit: 1000000000000000,
+        })
+        .instructions()?
+        .remove(0);
+
+    let initialize_benfen_bridge_ix = program
+        .request()
+        .accounts(accounts::InitializeBenfenBridge {
+            authority: solana_signer.pubkey(),
+            bridge: init_pdas.benfen_bridge,
+            bridge_config: init_pdas.bridge_config,
+            committee: init_pdas.bridge_committee,
+            system_program: system_program::ID,
+        })
+        .args(args::InitializeBenfenBridge {})
+        .instructions()?
+        .remove(0);
+    let initialize_upgrade_authority_ix = program
+        .request()
+        .accounts(accounts::InitializeUpgradeAuthority {
+            payer: solana_signer.pubkey(),
+            upgrade_authority: init_pdas.upgrade_authority,
+            committee: init_pdas.bridge_committee,
+            system_program: system_program::ID,
+        })
+        .args(args::InitializeUpgradeAuthority { enabled: true })
+        .instructions()?
+        .remove(0);
+
+    let signature = program
+        .request()
+        .instruction(initialize_bridge_config_ix)
+        .instruction(initialize_committee_ix)
+        .instruction(initialize_message_verifier_ix)
+        .instruction(initialize_bridge_limiter_ix)
+        .instruction(initialize_benfen_bridge_ix)
+        .instruction(initialize_upgrade_authority_ix)
+        .signer(solana_signer.clone())
+        .send()
+        .await?;
+
+
+    let bridge_config_account = program.account::<BridgeConfig>(init_pdas.bridge_config).await?; 
+    assert_eq!(bridge_config_account.chain_id, solana_chain_id as u8);
+
+    let committee_account = program.account::<Committee>(init_pdas.bridge_committee).await?; 
+    assert_eq!(committee_account.member_count, node_len as u8);
+
+    Ok(())
+}
+
+pub(crate) fn get_init_solana_pda() -> SolanaPDA {
+     let bridge_config_pda =Pubkey::find_program_address(
+        &[b"bridge_config"], 
+        &benfen_bridge::ID
+    ).0;
+     let committee_pda = Pubkey::find_program_address(
+        &[b"committee", bridge_config_pda.as_ref()],
+        &benfen_bridge::ID
+      ).0;
+     let message_verifier_pda = Pubkey::find_program_address(
+        &[b"message_verifier", bridge_config_pda.as_ref()],
+        &benfen_bridge::ID
+      ).0;
+      let bridge_limiter_pda = Pubkey::find_program_address(
+        &[b"bridge_limiter", bridge_config_pda.as_ref()],
+        &benfen_bridge::ID
+      ).0;
+
+      let benfen_bridge_pda = Pubkey::find_program_address(
+        &[b"benfen_bridge"],
+        &benfen_bridge::ID
+      ).0;
+      let upgrade_authority_pda = Pubkey::find_program_address(
+        &[b"upgrade_authority", bridge_config_pda.as_ref()],
+        &benfen_bridge::ID
+      ).0;
+
+    SolanaPDA {
+        bridge_config: bridge_config_pda,
+        bridge_committee: committee_pda,
+        message_verifier: message_verifier_pda,
+        bridge_limiter: bridge_limiter_pda,
+        benfen_bridge: benfen_bridge_pda,
+        upgrade_authority: upgrade_authority_pda,
+    }
+}
+
+
 
 pub(crate) async fn deploy_sol_contract(
     anvil_url: &str,
@@ -769,6 +1078,115 @@ pub(crate) async fn deploy_sol_contract(
 }
 
 #[derive(Debug)]
+pub struct SolanaBridgeEnvironment {
+    pub rpc_url: String,
+    process: Child,
+    contract: Pubkey,
+}
+
+impl SolanaBridgeEnvironment{
+    pub fn new(rpc_url: &str, rpc_port: u16, faucet_port: u16) -> Self{
+        let program_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/benfen_bridge.so");
+        let program_id_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/benfen_bridge-keypair.json");
+        if !program_path.exists() {
+            // Provide a helpful message if the program is not built.
+            // The user can build it by running `anchor build` in `bridge/solana`.
+            // Note: This test will still fail to compile if the program is not built,
+            // because the generated code depends on it.
+            error!(
+                "Program binary not found at {:?}. Run `anchor build` in `bridge/solana` first.",
+                program_path
+            );
+        }
+
+        if !program_id_path.exists() {
+            error!(
+                "Program id file not found at {:?}. Run `anchor build` in `bridge/solana` first.",
+                program_id_path
+            );
+        }
+        let program_keypair =
+            read_keypair_file(program_id_path.to_str().unwrap())
+            .expect("Failed to read program keypair");
+        // program_keypair.
+        let program_id = program_keypair.pubkey().to_string();
+
+        
+        fs::create_dir_all("/tmp/solana-test-ledger").expect("failed to create /tmp/solana-test-ledger file");
+        let solana_environment_process = std::process::Command::new("solana-test-validator")
+            .arg("--rpc-port").arg(rpc_port.to_string())
+            .arg("--faucet-port").arg(faucet_port.to_string())
+            .arg("--ledger")
+            .arg("/tmp/solana-test-ledger")
+            .arg("--reset")
+            .arg("--quiet")
+            .arg("--bpf-program")
+            .arg(program_id)
+            .arg(program_path)
+            .spawn()
+            .expect("Failed to start solana-test-validator");
+
+
+        let env = Self {
+            rpc_url: rpc_url.to_string(),
+            process: solana_environment_process,
+            contract:  program_keypair.pubkey(),
+        };
+
+        env
+    }
+
+
+    pub(crate) async fn get_signer(
+        &self,
+    ) -> anyhow::Result<crate::utils::SolanaSigner> {
+        let admin_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/admin.json");
+        if !admin_path.exists(){
+            error!(
+                "Admin keypair file not found at {:?}. Run `anchor build` in `bridge/solana` first.",
+                admin_path
+            );
+        }
+        let payer =
+            read_keypair_file(admin_path.to_str().unwrap())
+                .expect("Failed to read admin keypair");
+
+       Ok(std::sync::Arc::new(payer))
+    }
+
+    pub async fn airdrop_sol(&self) -> anyhow::Result<()> {
+        let client = solana_client::rpc_client::RpcClient::new_with_commitment(
+            self.rpc_url.clone(),
+            solana_sdk::commitment_config::CommitmentConfig::confirmed(),
+        );
+        let payer = self.get_signer().await?;
+
+        let payer_pubkey = <solana_sdk::signature::Keypair as solana_sdk::signer::Signer>::pubkey(payer.as_ref());
+
+        let sig = client.request_airdrop(
+            &payer_pubkey,
+            solana_sdk::native_token::LAMPORTS_PER_SOL,
+        )?;
+        client.confirm_transaction_with_commitment(
+            &sig,
+            solana_sdk::commitment_config::CommitmentConfig::confirmed(),
+        )?;
+        Ok(())
+    }
+
+    pub fn contract(&self) -> Pubkey {
+        self.contract
+    }
+
+}
+
+
+impl Drop for SolanaBridgeEnvironment {
+    fn drop(&mut self) {
+        self.process.kill().unwrap();
+    }
+}
+#[derive(Debug)]
 pub struct EthBridgeEnvironment {
     pub rpc_url: String,
     process: Child,
@@ -872,7 +1290,7 @@ impl EthBridgeEnvironment {
         let amount: U256 = limit.get_usd_max_limit().call().await.unwrap();
         amount.as_u64()
     }
-}
+} 
 
 impl Drop for EthBridgeEnvironment {
     fn drop(&mut self) {
