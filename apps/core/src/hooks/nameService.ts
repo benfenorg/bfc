@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
-import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import { useQuery } from '@tanstack/react-query';
 
 const SUI_NS_FEATURE_FLAG = 'suins';
@@ -14,7 +13,7 @@ export function isSuiNSName(name: string) {
 }
 
 export function useSuiNSEnabled() {
-	return useFeatureIsOn(SUI_NS_FEATURE_FLAG);
+	return false;
 }
 
 export function useResolveSuiNSAddress(name?: string | null, enabled?: boolean) {

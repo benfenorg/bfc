@@ -6,6 +6,7 @@ title: Module `bridge::message_types`
 
 -  [Constants](#@Constants_0)
 -  [Function `token`](#bridge_message_types_token)
+-  [Function `defi`](#bridge_message_types_defi)
 -  [Function `committee_blocklist`](#bridge_message_types_committee_blocklist)
 -  [Function `emergency_op`](#bridge_message_types_emergency_op)
 -  [Function `update_bridge_limit`](#bridge_message_types_update_bridge_limit)
@@ -86,6 +87,15 @@ title: Module `bridge::message_types`
 
 
 <pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_COMMITTEE_BLOCKLIST">COMMITTEE_BLOCKLIST</a>: u8 = 1;
+</code></pre>
+
+
+
+<a name="bridge_message_types_DEFI"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_DEFI">DEFI</a>: u8 = 23;
 </code></pre>
 
 
@@ -223,6 +233,28 @@ title: Module `bridge::message_types`
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_token">token</a>(): u8 { <a href="../bridge/message_types.md#bridge_message_types_TOKEN">TOKEN</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_types_defi"></a>
+
+## Function `defi`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_defi">defi</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_defi">defi</a>(): u8 { <a href="../bridge/message_types.md#bridge_message_types_DEFI">DEFI</a> }
 </code></pre>
 
 

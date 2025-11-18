@@ -64,6 +64,31 @@ library BridgeUtils {
         uint16 eventIdx;
     }
 
+
+
+    /// @dev A struct that represents a defi transfer payload
+    /// @param senderAddressLength The length of the sender address in bytes
+    /// @param senderAddress The address of the sender on the source chain
+    /// @param targetChain The chain ID of the target chain
+    /// @param amount The amount of the token to be transferred    
+    /// @param protocolType The type of the protocol, such as aave, compound, curve, etc.
+    /// @param protocolVersion The version of the protocol
+    /// @param protocolTokenID The ID of the token in the protocol
+    /// @param actionType The type of the action, such as stake, unstake, etc.
+    struct DefiTransferPayload {
+        uint8 senderAddressLength;
+        bytes senderAddress;
+        uint8 targetChain;
+        uint64 amount;
+        bytes txHash;   
+        uint16 eventIdx;
+        uint64 protocolType;
+        uint64 protocolVersion;
+        uint64 protocolTokenID;
+        uint8 actionType;
+        uint64 principalAmount;
+    }
+
     /* ========== CONSTANTS ========== */
 
     // message Ids
@@ -76,6 +101,13 @@ library BridgeUtils {
     uint8 public constant ADD_EVM_TOKENS = 7;
     uint8 public constant UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT = 19;
 
+    uint8 public constant DEFI=23;
+    uint8 public constant UPDATE_INVEST_ADDRESS =26;
+    uint8 public constant ADD_LP_TOKEN_ID =27;
+
+
+
+
     // Message type stake requirements
     uint32 public constant TRANSFER_STAKE_REQUIRED = 3334;
     uint32 public constant FREEZING_STAKE_REQUIRED = 450;
@@ -86,6 +118,10 @@ library BridgeUtils {
     uint32 public constant UPDATE_TOKEN_PRICE_STAKE_REQUIRED = 5001;
     uint32 public constant ADD_EVM_TOKENS_STAKE_REQUIRED = 5001;
     uint32 public constant UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT_STAKE_REQUIRED =5001;
+
+    uint32 public constant DEFI_STAKE_REQUIRED = 3334;
+    uint32 public constant ADD_LP_TOKEN_ID_STAKE_REQUIRED = 5001;
+    uint32 public constant UPDATE_INVEST_ADDRESS_STAKE_REQUIRED = 5001;
 
     // token Ids
     uint64 public constant SUI = 0;
@@ -145,6 +181,12 @@ library BridgeUtils {
             return ADD_EVM_TOKENS_STAKE_REQUIRED;
         } else if (_message.messageType == UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT){
             return UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT_STAKE_REQUIRED;
+        }else if(_message.messageType == DEFI){
+            return DEFI_STAKE_REQUIRED;
+        }else if(_message.messageType == ADD_LP_TOKEN_ID){
+            return ADD_LP_TOKEN_ID_STAKE_REQUIRED;
+        }else if(_message.messageType == UPDATE_INVEST_ADDRESS){
+            return UPDATE_INVEST_ADDRESS_STAKE_REQUIRED;
         }else{
             revert("BridgeUtils: Invalid message type");
         }
@@ -443,6 +485,126 @@ library BridgeUtils {
         );
     }
 
+
+
+    /// @dev A struct that represents a defi transfer payload
+    /// @param _payload The payload to be decoded.
+    /// @return The decoded defi transfer payload as a DefiTransferPayload struct.
+    function decodeDefiTransferPayload(bytes memory _payload)
+        internal
+        pure
+        returns (DefiTransferPayload memory)
+    {
+        require(_payload.length >= 67, "BridgeUtils: DefiTransferPayload must be at least 67 bytes");
+
+        uint8 senderAddressLength = uint8(_payload[0]);
+
+        require(
+            senderAddressLength == 32,
+            "BridgeUtils: Invalid sender address length, Sui address must be 32 bytes"
+        );
+
+        // used to offset already read bytes
+        uint8 offset = 1;
+
+        // extract sender address from payload bytes 1-32
+        bytes memory senderAddress = new bytes(senderAddressLength);
+        for (uint256 i; i < senderAddressLength; i++) {
+            senderAddress[i] = _payload[i + offset];
+        }
+
+        // move offset past the sender address length
+        offset += senderAddressLength;
+
+        // target chain is a single byte
+        uint8 targetChain = uint8(_payload[offset++]);
+
+        // extract amount from payload
+        uint64 amount;
+        uint8 amountLength = 8; // uint64 = 8 bytes
+
+        // extract amount from payload
+        assembly {
+            amount := mload(add(_payload, add(amountLength, offset)))
+        }
+
+        // move offset past the amount
+        offset = offset + amountLength;
+
+        // extract tx hash from payload
+        // Calculate transaction hash length (remaining bytes minus fixed-size fields at the end)
+        uint256 txHashLength = _payload.length - offset - 2 - 8 - 8 - 8 - 1 - 8; // -2 eventIdx, -8 protocolType, -8 protocolVersion, -8 protocolTokenID, -1 actionType, -8 principalAmount
+        bytes memory txHash = new bytes(txHashLength);
+        for (uint256 i; i < txHashLength; i++) {
+            txHash[i] = _payload[i + offset];
+        }
+
+        // move offset past the tx hash
+        offset = offset + uint8(txHash.length);
+
+       uint16 eventIdx;
+       assembly {
+            eventIdx := shr(240, mload(add(_payload, add(0x20, offset))))
+       }
+       offset += 2; // uint16 = 2 bytes
+
+       // extract protocolType (uint64)
+       uint64 protocolType;
+       assembly {
+            protocolType := shr(192, mload(add(add(_payload, 0x20), offset)))
+        }
+        offset += 8; // uint64 = 8 bytes
+
+        // extract protocolVersion (uint64)
+        uint64 protocolVersion;
+        assembly {
+            protocolVersion :=shr(192, mload(add(add(_payload, 0x20), offset)))
+        }
+        offset += 8; // uint64 = 8 bytes
+
+        uint64 protocolTokenID;
+        assembly {
+            protocolTokenID := shr(192, mload(add(add(_payload, 0x20), offset)))
+        }
+        offset += 8;
+
+        // extract actionType (uint8)
+        uint8 actionType = uint8(_payload[offset]);
+
+        offset += 1;
+
+        // extract principalAmount (uint64)
+        uint64 principalAmount;
+        assembly {
+            principalAmount := shr(192, mload(add(add(_payload, 0x20), offset)))
+        }
+        // offset += 8;
+
+        
+        return DefiTransferPayload(
+            senderAddressLength,
+            senderAddress,
+            targetChain,
+            amount,
+            txHash,
+            eventIdx,
+            protocolType,
+            protocolVersion,
+            protocolTokenID,
+            actionType,
+            principalAmount
+        );
+    }
+
+    function decodeInvestAddressPayload(bytes memory _payload) internal pure returns (address) {
+        require(_payload.length == 20, "BridgeUtils: Invalid payload length");
+        address investAddress;
+        assembly {
+            investAddress := shr(96, mload(add(_payload, 0x20)))
+        }
+        return investAddress;
+    }
+
     /// @notice Decodes a blocklist payload from bytes to a boolean and an array of addresses.
     /// @dev The function will revert if the payload length is invalid.
     ///     Blocklist payload is 2 + 20 * n bytes.
@@ -578,6 +740,44 @@ library BridgeUtils {
             tokenPrice := shr(192, mload(add(add(_payload, 0x20), 8)))
         }
     }
+
+    /// @notice Decodes an add LP token payload from bytes to protocol type, token ID, and LP token ID.
+    /// @dev The function will revert if the payload length is invalid.
+    ///     Add LP token payload is 24 bytes.
+    ///     bytes 0-7    : protocol type (uint64)
+    ///     bytes 8-15   : token ID (uint64)
+    ///     bytes 16-23  : LP token ID (uint64)
+    /// @param _payload The payload to be decoded.
+    /// @return protocolType The protocol type identifier.
+    /// @return tokenID The underlying token ID.
+    /// @return lpTokenId The LP token ID associated with the underlying token
+    function decodeAddLpTokenPayload(bytes memory _payload)
+        internal
+        pure
+        returns(uint64 protocolType,uint64 tokenID, uint64 lpTokenId )
+    {
+
+        require(_payload.length >= 24, "BridgeUtils: AddLpTokenPayload must be at least 24 bytes");
+        
+        uint8 offset = 0;
+        // Extract protocol type (uint64 - 8 bytes)
+        assembly {
+            protocolType := shr(192, mload(add(add(_payload, 0x20), offset)))
+        }
+        offset += 8;
+        // Extract token ID (uint64 - 8 bytes)
+        assembly {
+            tokenID := shr(192, mload(add(add(_payload, 0x20), offset)))
+        }
+        offset += 8;
+
+        // Extract LP token ID (uint64 - 8 bytes)
+        assembly {
+            lpTokenId := shr(192, mload(add(add(_payload, 0x20), offset)))
+        }
+        
+        return (protocolType, tokenID, lpTokenId);
+}
 
     /// @notice Decodes an add token payload from bytes to a token ID, a token address, and a token price.
     /// @dev The function will revert if the payload length is invalid.

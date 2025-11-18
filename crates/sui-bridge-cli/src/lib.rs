@@ -34,7 +34,7 @@ use sui_bridge::types::{
     AddTokenOnTokenListAction,RemoveTokenOnTokenListAction,
     SingleTransferLimitUpdateAction,UpdateBridgeFeeOnCrossOutAction,
     UpdateBridgeFeeOnCrossInAction, WithdrawBridgeFeeAction,
-
+    AddLpTokenIdAction, UpdateInvestAddressAction,
 };
 use sui_bridge::utils::{get_eth_signer_client, EthSigner};
 use sui_config::Config;
@@ -343,6 +343,17 @@ pub enum GovernanceClientCommands {
         #[clap(name = "token-sui-decimals", use_value_delimiter = true, long)]
         token_sui_decimals: Vec<u8>,
     },
+    #[clap(name = "add-lp-token-id")]
+    AddLpTokenId {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "protocol-type", long)]
+        protocol_type: u64,
+        #[clap(name = "token-id", long)]
+        token_id: u64,
+        #[clap(name = "lp-token-id", long)]
+        lp_token_id: u64,
+    },
     #[clap(name = "upgrade-evm-contract")]
     UpgradeEVMContract {
         #[clap(name = "nonce", long)]
@@ -358,6 +369,13 @@ pub enum GovernanceClientCommands {
         /// Params to be passed to the function, e.g. `420,false,hello`
         #[clap(name = "params", use_value_delimiter = true, long)]
         params: Vec<String>,
+    },
+    #[clap(name="update-invest-address")]
+    UpdateInvestAddress {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "invest-address", long)]
+        invest_address: EthAddress,
     },
 }
 
@@ -631,6 +649,31 @@ pub fn make_action(
                 token_sui_decimals: token_sui_decimals.clone(),
             })
         }
+        GovernanceClientCommands::AddLpTokenId {
+            nonce,
+            protocol_type,
+            token_id,
+            lp_token_id,
+        } => {
+            BridgeAction::AddLpTokenIdAction(AddLpTokenIdAction {
+                nonce: *nonce,
+                chain_id,
+                protocol_type: *protocol_type,
+                token_id: *token_id,
+                lp_token_id: *lp_token_id,
+            })
+        },
+
+        GovernanceClientCommands::UpdateInvestAddress {
+            nonce,
+            invest_address,
+        } => {
+            BridgeAction::UpdateInvestAddressAction(UpdateInvestAddressAction {
+                nonce: *nonce,
+                chain_id,
+                invest_address: *invest_address,
+            })
+        },
         GovernanceClientCommands::UpgradeEVMContract {
             nonce,
             proxy_address,
@@ -724,6 +767,8 @@ pub fn select_contract_address(
         GovernanceClientCommands::AddTokensOnEvm { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::UpdateRefundAdmin { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::UpdateFastPathLimit { .. } => config.eth_bridge_config_proxy_address,
+        GovernanceClientCommands::AddLpTokenId { .. } => config.eth_bridge_config_proxy_address,
+        GovernanceClientCommands::UpdateInvestAddress { .. } => config.eth_bridge_proxy_address,
     }
 }
 
@@ -1155,6 +1200,57 @@ async fn claim_on_eth(
     );
     let message = eth_sui_bridge::Message::from(parsed_message);
     let tx = eth_sui_bridge.transfer_bridged_tokens_with_signatures(signatures, message);
+    if dry_run {
+        let tx = tx.tx;
+        let resp = config.eth_signer.estimate_gas(&tx, None).await;
+        println!(
+            "Sui to Eth bridge transfer claim dry run result: {:?}",
+            resp
+        );
+    } else {
+        let eth_claim_tx_receipt = tx.send().await.unwrap().await.unwrap().unwrap();
+        println!(
+            "Sui to Eth bridge transfer claimed: {:?}",
+            eth_claim_tx_receipt
+        );
+    }
+    Ok(())
+}
+
+async fn claim_defi_on_eth(
+    seq_num: u64,
+    config: &LoadedBridgeCliConfig,
+    sui_bridge_client: SuiBridgeClient,
+    dry_run: bool,
+) -> BridgeResult<()> {
+    let sui_chain_id = sui_bridge_client.get_bridge_summary().await?.chain_id;
+    let parsed_message = sui_bridge_client
+        .get_parsed_defi_transfer_out_message(sui_chain_id, seq_num)
+        .await?;
+    if parsed_message.is_none() {
+        println!("No record found for seq_num: {seq_num}, chain id: {sui_chain_id}");
+        return Ok(());
+    }
+    let parsed_message = parsed_message.unwrap();
+    let sigs = sui_bridge_client
+        .get_defi_transfer_out_action_onchain_signatures_until_success(sui_chain_id, seq_num)
+        .await;
+    if sigs.is_none() {
+        println!("No signatures found for seq_num: {seq_num}, chain id: {sui_chain_id}");
+        return Ok(());
+    }
+    let signatures = sigs
+        .unwrap()
+        .into_iter()
+        .map(|sig: Vec<u8>| ethers::types::Bytes::from(sig))
+        .collect::<Vec<_>>();
+
+    let eth_sui_bridge = EthSuiBridge::new(
+        config.eth_bridge_proxy_address,
+        Arc::new(config.eth_signer().clone()),
+    );
+    let message = eth_sui_bridge::Message::from(parsed_message);
+    let tx = eth_sui_bridge.invest_bridged_tokens_with_signatures(signatures, message);
     if dry_run {
         let tx = tx.tx;
         let resp = config.eth_signer.estimate_gas(&tx, None).await;

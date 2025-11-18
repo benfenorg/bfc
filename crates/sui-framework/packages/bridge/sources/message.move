@@ -22,6 +22,7 @@ module bridge::message {
     // const EInvalidPayloadLength: u64 = 5;
     const EMustBeTokenMessage: u64 = 6;
     const EInvalidOperationType: u64 = 7;
+    const EMustBeDefiMessage: u64 = 8;
     // Emergency Op types
     const PAUSE: u8 = 0;
     const UNPAUSE: u8 = 1;
@@ -97,6 +98,35 @@ module bridge::message {
         event_idx: u16,
     }
 
+    public struct DefiTransferOutPayload has drop {
+        sender_address: vector<u8>,
+        target_chain: u8,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+        protocol_type: u64,// 0:aave, 1:compound, 2:curve 等等
+        protocol_version: u64,
+        protocol_token_id: u64,
+        action_type: u8, // 0:stake, 1:unstake
+        principal_amount: u64,
+    }
+
+    public struct DefiTransferInPayload has drop {
+        sender_address: vector<u8>,
+        target_chain: u8,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+        fast_path_selector: u8,
+        protocol_type: u64,// 0:aave, 1:compound, 2:curve 等等
+        protocol_version: u64,
+        protocol_token_id: u64,
+        original_seq_num: u64,
+        action_type: u8, // 0:stake, 1:unstake
+        lp_token_amount: u64,
+        principal_amount: u64,
+    }
+
     public struct TokenTransferInPayload has drop {
         sender_address: vector<u8>,
         target_chain: u8,
@@ -107,6 +137,8 @@ module bridge::message {
         event_idx: u16,
         fast_path_selector: u8,
     }
+
+    
 
     public struct EmergencyOp has drop {
         op_type: u8
@@ -196,6 +228,14 @@ module bridge::message {
         source_chain: u8,
         payload: vector<u8>,
         parsed_payload: TokenTransferInPayload,
+    }
+
+    public struct ParsedDefiTransferOutMessage has drop {
+        message_version: u8,
+        seq_num: u64,
+        source_chain: u8,
+        payload: vector<u8>,
+        parsed_payload: DefiTransferOutPayload,
     }
 
     public struct  AddTokenOnTokenList has drop {
@@ -1244,6 +1284,165 @@ module bridge::message {
         }
     }
 
+    public fun create_defi_transfer_in_message(
+        source_chain: u8,
+        seq_num: u64,
+        benfen_address: vector<u8>,
+        target_chain: u8,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+        fast_path_selector: u8,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        original_seq_num: u64,
+        action_type: u8,
+        lp_token_amount:u64,
+        principal_amount: u64,
+    ): BridgeMessage{
+        chain_ids::assert_valid_chain_id(source_chain);
+        chain_ids::assert_valid_chain_id(target_chain);
+
+        let mut payload = vector[];
+
+        // sender address should be less than 255 bytes so can fit into u8
+        payload.push_back((vector::length(&benfen_address) as u8));
+        payload.append(benfen_address);
+        payload.push_back(target_chain);
+        // bcs serializes u64 as 8 bytes
+        payload.append(reverse_bytes(bcs::to_bytes(&amount)));
+
+        // tx_hash length prefix
+        payload.push_back((vector::length(&tx_hash) as u8));
+        payload.append(tx_hash);
+        payload.append(reverse_bytes(bcs::to_bytes(&event_idx)));
+        payload.push_back(fast_path_selector);
+        payload.append(reverse_bytes(bcs::to_bytes(&protocol_type)));
+        payload.append(reverse_bytes(bcs::to_bytes(&protocol_version)));
+        payload.append(reverse_bytes(bcs::to_bytes(&protocol_token_id)));
+        payload.append(reverse_bytes(bcs::to_bytes(&original_seq_num)));
+        payload.push_back(action_type);
+        payload.append(reverse_bytes(bcs::to_bytes(&lp_token_amount)));
+        payload.append(reverse_bytes(bcs::to_bytes(&principal_amount)));
+        BridgeMessage {
+            message_type: message_types::defi(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload,
+        }
+    }
+
+    public fun create_defi_transfer_out_message(
+        source_chain: u8,
+        seq_num: u64,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        action_type: u8,
+        principal_amount: u64,
+    ): BridgeMessage{
+        chain_ids::assert_valid_chain_id(source_chain);
+        chain_ids::assert_valid_chain_id(target_chain);
+
+        let mut payload = vector[];
+
+        // sender address should be less than 255 bytes so can fit into u8
+        payload.push_back((vector::length(&sender_address) as u8));
+        payload.append(sender_address);
+        payload.push_back(target_chain);
+        // bcs serializes u64 as 8 bytes
+        payload.append(reverse_bytes(bcs::to_bytes(&amount)));
+
+        // tx_hash length prefix
+        payload.push_back((vector::length(&tx_hash) as u8));
+        payload.append(tx_hash);
+        payload.append(reverse_bytes(bcs::to_bytes(&event_idx)));
+        payload.append(reverse_bytes(bcs::to_bytes(&protocol_type)));
+        payload.append(reverse_bytes(bcs::to_bytes(&protocol_version)));
+        payload.append(reverse_bytes(bcs::to_bytes(&protocol_token_id)));
+        payload.push_back(action_type);
+        //principal amount
+        payload.append(reverse_bytes(bcs::to_bytes(&principal_amount)));
+        BridgeMessage {
+            message_type: message_types::defi(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload,
+        }
+    }
+
+    public fun extract_defi_transfer_in_payload(message: &BridgeMessage): DefiTransferInPayload {
+        let mut bcs = bcs::new(message.payload);
+        let sender_address = bcs.peel_vec_u8();
+        let target_chain = bcs.peel_u8();
+        let amount = peel_u64_be(&mut bcs);
+        let tx_hash = bcs.peel_vec_u8();
+        let event_idx = bcs.peel_u16();
+        let fast_path_selector = bcs.peel_u8();
+        let protocol_type = peel_u64_be(&mut bcs);
+        let protocol_version = peel_u64_be(&mut bcs);
+        let protocol_token_id = peel_u64_be(&mut bcs);
+        let original_seq_num = peel_u64_be(&mut bcs);
+        let action_type = bcs.peel_u8();
+        let lp_token_amount = peel_u64_be(&mut bcs);
+        chain_ids::assert_valid_chain_id(target_chain);
+        let principal_amount = peel_u64_be(&mut bcs);
+        assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
+
+        DefiTransferInPayload {
+            sender_address,
+            target_chain,
+            amount,
+            tx_hash,
+            event_idx,
+            fast_path_selector,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            original_seq_num,
+            action_type,
+            lp_token_amount,
+            principal_amount,
+        }
+    }
+
+    public fun extract_defi_transfer_out_payload(message: &BridgeMessage): DefiTransferOutPayload {
+        let mut bcs = bcs::new(message.payload);
+        let sender_address = bcs.peel_vec_u8();
+        let target_chain = bcs.peel_u8();
+        let amount = peel_u64_be(&mut bcs);
+        let tx_hash = bcs.peel_vec_u8();
+        let event_idx = bcs.peel_u16();
+        let protocol_type = peel_u64_be(&mut bcs);
+        let protocol_version = peel_u64_be(&mut bcs);
+        let protocol_token_id = peel_u64_be(&mut bcs);
+        let action_type = bcs.peel_u8();
+        chain_ids::assert_valid_chain_id(target_chain);
+        let principal_amount = peel_u64_be(&mut bcs);
+        assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
+
+        DefiTransferOutPayload {
+            sender_address,
+            target_chain,
+            amount,
+            tx_hash,
+            event_idx,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            action_type,
+            principal_amount
+        }
+    }
+
     public fun create_key(source_chain: u8, message_type: u8, bridge_seq_num: u64): BridgeMessageKey {
         BridgeMessageKey { source_chain, message_type, bridge_seq_num }
     }
@@ -1364,7 +1563,93 @@ module bridge::message {
         self.fast_path_selector
     }
 
+    public fun sender_address_defi_out(self: &DefiTransferOutPayload): vector<u8> {
+        self.sender_address
+    }
 
+    public fun target_chain_defi_out(self: &DefiTransferOutPayload): u8 {
+        self.target_chain
+    }
+
+    public fun token_amount_defi_out(self: &DefiTransferOutPayload): u64 {
+        self.amount
+    }
+
+    public fun token_tx_hash_defi_out(self: &DefiTransferOutPayload): vector<u8> {
+        self.tx_hash
+    }
+
+    public fun token_event_idx_defi_out(self: &DefiTransferOutPayload): u16 {
+        self.event_idx
+    }
+
+    public fun protocol_type_defi_out(self: &DefiTransferOutPayload): u64 {
+        self.protocol_type
+    }
+
+    public fun protocol_version_defi_out(self: &DefiTransferOutPayload): u64 {
+        self.protocol_version
+    }
+
+    public fun action_type_defi_out(self: &DefiTransferOutPayload): u8 {
+        self.action_type
+    }
+
+    public fun protocol_token_id_defi_out(self: &DefiTransferOutPayload): u64 {
+        self.protocol_token_id
+    }
+
+    public fun sender_address_defi_in(self: &DefiTransferInPayload): vector<u8> {
+        self.sender_address
+    }
+
+    public fun target_chain_defi_in(self: &DefiTransferInPayload): u8 {
+        self.target_chain
+    }
+
+    public fun amount_defi_in(self: &DefiTransferInPayload): u64 {
+        self.amount
+    }
+
+    public fun lp_token_amount_defi_in(self: &DefiTransferInPayload): u64 {
+        self.lp_token_amount
+    }
+
+    public fun tx_hash_defi_in(self: &DefiTransferInPayload): vector<u8> {
+        self.tx_hash
+    }
+
+    public fun event_idx_defi_in(self: &DefiTransferInPayload): u16 {
+        self.event_idx
+    }
+
+    public fun fast_path_selector_defi_in(self: &DefiTransferInPayload): u8 {
+        self.fast_path_selector
+    }
+
+    public fun protocol_type_defi_in(self: &DefiTransferInPayload): u64 {
+        self.protocol_type
+    }
+
+    public fun protocol_version_defi_in(self: &DefiTransferInPayload): u64 {
+        self.protocol_version
+    }
+
+    public fun protocol_token_id_defi_in(self: &DefiTransferInPayload): u64 {
+        self.protocol_token_id
+    }
+
+    public fun original_seq_num_defi_in(self: &DefiTransferInPayload): u64 {
+        self.original_seq_num
+    }
+
+    public fun principal_amount_defi_in(self: &DefiTransferInPayload): u64 {
+        self.principal_amount
+    }
+
+    public fun action_type_defi_in(self: &DefiTransferInPayload): u8 {
+        self.action_type
+    }
     // EmergencyOpPayload getters
     public fun emergency_op_type(self: &EmergencyOp): u8 {
         self.op_type
@@ -1572,6 +1857,8 @@ module bridge::message {
             5001
         }else if (message_type == message_types::fast_path_limit_update()) {
             5001
+        }else if (message_type == message_types::defi()) {
+            3334
         }
         else {
             abort EInvalidMessageType
@@ -1613,6 +1900,20 @@ module bridge::message {
         assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
         let payload = message.extract_token_bridge_in_payload();
         ParsedTokenTransferInMessage {
+            message_version: message.message_version(),
+            seq_num: message.seq_num(),
+            source_chain: message.source_chain(),
+            payload: message.payload(),
+            parsed_payload: payload,
+        }
+    }
+
+    public fun to_parsed_defi_transfer_out_message(
+        message: &BridgeMessage,
+    ): ParsedDefiTransferOutMessage {
+        assert!(message.message_type() == message_types::defi(), EMustBeDefiMessage);
+        let payload = message.extract_defi_transfer_out_payload();
+        ParsedDefiTransferOutMessage {
             message_version: message.message_version(),
             seq_num: message.seq_num(),
             source_chain: message.source_chain(),
@@ -1703,6 +2004,66 @@ module bridge::message {
             amount,
             tx_hash,
             event_idx,
+        }
+    }
+
+    #[test_only]
+    public(package) fun make_payload_4_defi_transfer_out(
+        sender_address: vector<u8>,
+        target_chain: u8,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        action_type: u8,
+        principal_amount: u64,
+    ): DefiTransferOutPayload {
+        DefiTransferOutPayload {
+            sender_address,
+            target_chain,
+            amount,
+            tx_hash,
+            event_idx,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            action_type,
+            principal_amount,
+        }
+    }
+
+    #[test_only]
+    public(package) fun make_payload_4_defi_transfer_in(
+        sender_address: vector<u8>,
+        target_chain: u8,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+        fast_path_selector: u8,
+        protocol_type: u64,// 0:aave, 1:compound, 2:curve 等等
+        protocol_version: u64,
+        protocol_token_id: u64,
+        original_seq_num: u64,
+        action_type: u8, // 0:stake, 1:unstake
+        lp_token_amount:u64,
+        principal_amount: u64,
+    ): DefiTransferInPayload {
+        DefiTransferInPayload {
+            sender_address,
+            target_chain,
+            amount,
+            tx_hash,
+            event_idx,
+            fast_path_selector,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            original_seq_num,
+            action_type,
+            lp_token_amount,
+            principal_amount,
         }
     }
 

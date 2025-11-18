@@ -13,6 +13,7 @@ import "../contracts/BridgeLimiter.sol";
 import "../contracts/SuiBridge.sol";
 import "../test/mocks/MockTokens.sol";
 
+import {MockArrow} from "../test/mocks/MockArrow.sol";
 contract DeployBridge is Script {
     function parseDeployConfig(string memory path) public returns (DeployConfig memory) {
         string memory json = vm.readFile(path);
@@ -29,7 +30,8 @@ contract DeployBridge is Script {
         config.supportedTokens = abi.decode(vm.parseJson(json, ".supportedTokens"), (address[]));
         config.tokenIds = abi.decode(vm.parseJson(json, ".tokenIds"), (uint256[]));
         config.suiDecimals = abi.decode(vm.parseJson(json, ".suiDecimals"), (uint256[]));
-        config.weth = abi.decode(vm.parseJson(json, ".weth"), (address));
+        config.weth = abi.decode(vm.parseJson(json, ".weth"), (address));   
+        config.investAddress = abi.decode(vm.parseJson(json, ".investAddress"), (address));
 
         return config;
     }
@@ -62,15 +64,23 @@ contract DeployBridge is Script {
             deployConfig.weth = address(new WETH());
 
             // deploy mock tokens
-            IERC20 USDC;
-            IERC20 USDT;
+            MockBNBUSDC BNBUSDC;
+            MockBNBUSDT BNBUSDT;
+            MockUSDC ETHUSDC;
+            MockUSDT ETHUSDT;
+            // IERC20 USDC;
+            // IERC20 USDT;
+            MockLPToken AAVELPTOKEN;
 
             if (chainIDHash == keccak256(abi.encode("31337"))){
-                USDC = new MockUSDC();
-                USDT = new MockUSDT();
+                ETHUSDC = new MockUSDC();
+                ETHUSDT = new MockUSDT();
+                AAVELPTOKEN= new MockLPToken();
+
             }else{
-                USDC = new MockBNBUSDC();
-                USDT = new MockBNBUSDT();
+                BNBUSDC = new MockBNBUSDC();
+                BNBUSDT = new MockBNBUSDT();
+                AAVELPTOKEN= new MockLPToken();
             }
             MockWBTC wBTC = new MockWBTC();
             MockKA KA = new MockKA();
@@ -80,16 +90,24 @@ contract DeployBridge is Script {
             console.log("[Deployed] BNB:", address(BNB));
 
             // update deployConfig with test values
-            deployConfig.supportedTokens = new address[](7);
+            deployConfig.supportedTokens = new address[](8);
             deployConfig.supportedTokens[0] = address(0);
             deployConfig.supportedTokens[1] = address(wBTC);
             deployConfig.supportedTokens[2] = deployConfig.weth;
-            deployConfig.supportedTokens[3] = address(USDC);
-            deployConfig.supportedTokens[4] = address(USDT);
+
+            if (chainIDHash == keccak256(abi.encode("31337"))){
+                deployConfig.supportedTokens[3] = address(ETHUSDC);
+                deployConfig.supportedTokens[4] = address(ETHUSDT);
+            }else{
+                deployConfig.supportedTokens[3] = address(BNBUSDC);
+                deployConfig.supportedTokens[4] = address(BNBUSDT);
+            }
+
             deployConfig.supportedTokens[5] = address(BUSD);
             deployConfig.supportedTokens[6] = address(BNB);
+            deployConfig.supportedTokens[7] = address(AAVELPTOKEN);
 
-            deployConfig.tokenIds = new uint256[](7);
+            deployConfig.tokenIds = new uint256[](8);
             deployConfig.tokenIds[0] = 0;
             deployConfig.tokenIds[1] = 1;
             deployConfig.tokenIds[2] = 2;
@@ -97,8 +115,9 @@ contract DeployBridge is Script {
             deployConfig.tokenIds[4] = 4;
             deployConfig.tokenIds[5] = 5;
             deployConfig.tokenIds[6] = 6;
+            deployConfig.tokenIds[7] = 7;
 
-            deployConfig.suiDecimals = new uint256[](7);
+            deployConfig.suiDecimals = new uint256[](8);
             deployConfig.suiDecimals[0] = 9;
             deployConfig.suiDecimals[1] = 8;
             deployConfig.suiDecimals[2] = 8;
@@ -106,10 +125,12 @@ contract DeployBridge is Script {
                 console.log("bbking1");
                 deployConfig.suiDecimals[3] = 6;
                 deployConfig.suiDecimals[4] = 6;
+                deployConfig.suiDecimals[7] = 9;
             }else{
                 console.log("bbking2");
                 deployConfig.suiDecimals[3] = 9;
                 deployConfig.suiDecimals[4] = 9;
+                deployConfig.suiDecimals[7] = 9;
             }
 
             deployConfig.suiDecimals[5] = 9;
@@ -191,7 +212,10 @@ contract DeployBridge is Script {
                     tokenPrices,
                     tokenIds,
                     suiDecimals,
-                    supportedChainIds
+                    supportedChainIds,
+                    uint64(1), // aave protocolType
+                    uint64(3), // tokenID
+                    uint64(7)  // lpTokenId
                 )
             ),
             opts
@@ -230,17 +254,33 @@ contract DeployBridge is Script {
 
         // deploy Sui Bridge ========================================================================
 
+        MockArrow mockArrow = new MockArrow(address(vault));
         address suiBridge = Upgrades.deployUUPSProxy(
             "SuiBridge.sol",
-            abi.encodeCall(SuiBridge.initialize, (bridgeCommittee, address(vault), limiter)),
+            abi.encodeCall(SuiBridge.initialize, (bridgeCommittee, address(vault), limiter,address(mockArrow))),
             opts
         );
+
+        // setAsset
+        mockArrow.setAsset(1, BridgeConfig(bridgeConfig).tokenAddressOf(3), BridgeConfig(bridgeConfig).tokenAddressOf(7));
+        mockArrow.setLpToken(1,BridgeConfig(bridgeConfig).tokenAddressOf(3),BridgeConfig(bridgeConfig).tokenAddressOf(7));
 
         // transfer vault ownership to bridge
         vault.transferOwnership(suiBridge);
         // transfer limiter ownership to bridge
         BridgeLimiter instance = BridgeLimiter(limiter);
         instance.transferOwnership(suiBridge);
+
+        if (chainIDHash == keccak256(abi.encode("31337"))){
+            // mint tokens to vault
+            MockUSDC(BridgeConfig(bridgeConfig).tokenAddressOf(3)).mint(address(vault), 100000000000000000);
+            MockUSDT(BridgeConfig(bridgeConfig).tokenAddressOf(4)).mint(address(vault), 1000000000000000);
+            MockAAVELPToken(BridgeConfig(bridgeConfig).tokenAddressOf(7)).mint(address(vault), 1000000000000000);
+            // mint tokens to mockArrow
+            MockUSDC(BridgeConfig(bridgeConfig).tokenAddressOf(3)).mint(address(mockArrow), 100000000000000000);
+            MockUSDT(BridgeConfig(bridgeConfig).tokenAddressOf(4)).mint(address(mockArrow), 1000000000000000);
+            MockAAVELPToken(BridgeConfig(bridgeConfig).tokenAddressOf(7)).mint(address(mockArrow), 1000000000000000);
+        }
 
         // print deployed addresses for post deployment setup
         console.log("[Deployed] BridgeConfig:", bridgeConfig);
@@ -253,6 +293,10 @@ contract DeployBridge is Script {
         console.log("[Deployed] USDC:", BridgeConfig(bridgeConfig).tokenAddressOf(3));
         console.log("[Deployed] USDT:", BridgeConfig(bridgeConfig).tokenAddressOf(4));
         console.log("[Deployed] BNB:", BridgeConfig(bridgeConfig).tokenAddressOf(6));
+        console.log("[Deployed] Arrow:",address(mockArrow));
+        console.log("[Deployed] AaveLPToken:", BridgeConfig(bridgeConfig).tokenAddressOf(7));
+        console.log("[Deployed] AaveAsset:", mockArrow.getAsset(0, BridgeConfig(bridgeConfig).tokenAddressOf(7)));
+        console.log("[Deployed] LP AaveAsset:", mockArrow.getLpToken(0, BridgeConfig(bridgeConfig).tokenAddressOf(3)));
 
         vm.stopBroadcast();
     }
@@ -276,4 +320,5 @@ struct DeployConfig {
     uint256[] tokenIds;
     uint256[] suiDecimals;
     address weth;
+    address investAddress;
 }

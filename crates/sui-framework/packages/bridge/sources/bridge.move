@@ -13,6 +13,7 @@ module bridge::bridge {
     use sui::vec_map::{Self, VecMap};
     use sui::versioned::{Self, Versioned};
     use sui_system::sui_system::SuiSystemState;
+    use sui::dynamic_field;
 
     use bridge::chain_ids;
     use bridge::committee::{Self, BridgeCommittee};
@@ -32,6 +33,7 @@ module bridge::bridge {
     };
     use bridge::tokenlist;
     use bridge::bridge_fee;
+    use bridge::defi_protocols;
     use bridge::message_types;
     use bridge::treasury::{Self, BridgeTreasury};
     use sui::hex;
@@ -44,8 +46,9 @@ module bridge::bridge {
     use bridge::limiter_fast_path;
     use bridge::message::TokenTransferInPayload;
     use sui::coin::split;
-
-
+    use bridge::message::amount;
+    use bridge::message::to_parsed_defi_transfer_out_message;
+    use bridge::message::ParsedDefiTransferOutMessage;
     //  stable coin id
     const TOKEN_ID_USDC: u64 = 3;
     const TOKEN_ID_USDT: u64 = 4;
@@ -53,6 +56,8 @@ module bridge::bridge {
     const MESSAGE_VERSION: u8 = 1;
     const MESSAGE_VERSION_V2: u8 = 2;
     const MESSAGE_VERSION_V3: u8 = 3;
+    const MESSAGE_VERSION_DEFI_OUT: u8 = 1;
+    const MESSAGE_VERSION_DEFI_IN: u8 = 1;
 
     // Transfer Status
     const TRANSFER_STATUS_PENDING: u8 = 0;
@@ -61,6 +66,10 @@ module bridge::bridge {
     const TRANSFER_STATUS_NOT_FOUND: u8 = 3;
 
     const EVM_ADDRESS_LENGTH: u64 = 20;
+
+    //defi
+    const STAKE: u8 = 0;
+    const UNSTAKE: u8 = 1;
 
     //////////////////////////////////////////////////////
     // Types
@@ -93,6 +102,22 @@ module bridge::bridge {
         // bfc_system_id: UID,
     }
 
+    public struct DefiProtocolKey has copy, store, drop {
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    }
+
+    // Key: DefiHoldersKey, Value: LinkedTable<address, VecMap<DefiProtocolKey, DefiHolderInfo>>
+    public struct DefiHoldersKey has copy, store, drop {}
+
+    public struct DefiHolderInfo has copy, store, drop {
+        amount: u64,//busd amount,decimal is 9
+        lp_token_amount: u64,//lp token amount,decimal is 9
+    }
+
+
     public struct TokenDepositedEvent has copy, drop {
         seq_num: u64,
         source_chain: u8,
@@ -112,6 +137,47 @@ module bridge::bridge {
         token_type: u64,
         amount_before_fee: u64,
         amount_after_fee: u64
+    }
+    //defi event: benfen to evm
+    public struct DefiTransferOutEvent has copy, drop {
+        seq_num: u64,
+        source_chain: u8,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        amount_before_fee: u64,
+        amount_after_fee: u64,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        action_type: u8,
+        principal_amount: u64,
+    }
+
+    public struct DefiTokensStakedEvent has copy, drop {
+        original_seq_num: u64,
+        seq_num: u64,
+        source_chain: u8,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        lp_token_amount: u64,
+    }
+
+    public struct DefiTokensUnstakeEvent has copy, drop {
+        original_seq_num: u64,
+        seq_num: u64,
+        source_chain: u8,
+        target_chain: u8,
+        target_address: vector<u8>,
+        amount_before_fee: u64,
+        amount_after_fee: u64,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        principal: u64,
+        fee: u64,
     }
 
     public struct TokenSendBackEvent has copy, drop {
@@ -192,6 +258,19 @@ module bridge::bridge {
     const EFastPathLimitError: u64 = 51;
     const EOnlySupportTokenTransferIn: u64 = 52;
     const ETransferLimit: u64 = 55;
+
+    const EMustBeDefiMessage: u64 = 57;
+    const EOnlySupportDefiTransferOut: u64 = 58;
+    const EOnlySupportDefiTransferIn: u64 = 59;
+    const EOnlySupportUsdcOrUsdt: u64 = 60;
+    const EOnlySupportUnstake: u64 = 61;
+    const EDefiUnstakeAmountNotEnough: u64 = 62;
+    const EDefiProtocolConfigNotFound: u64 = 63;
+    const EDefiLimitError: u64 = 64;
+    const EDefiUnstakeAmountNotEnoughForDel: u64 = 65;
+    const EDefiStakeAmountNotEnough: u64 = 66;
+    const EDefiHoldersNotInitialized: u64 = 67;
+
 
     const CURRENT_VERSION: u64 = 1;
 
@@ -370,9 +449,9 @@ module bridge::bridge {
         bridge: &mut Bridge,
         ctx: &mut TxContext
     ){
-        bridge_fee::new_bridge_fee_registry(&mut bridge.id, ctx);
-        limiter_fast_path::registry(&mut bridge.id, ctx);
-        limiter::new_external_limits(&mut bridge.id, ctx);
+        ensure_defi_holders_initialized(&mut bridge.id, ctx);
+        defi_protocols::registry(&mut bridge.id, ctx);
+        defi_protocols::initial_defi_protocol(&mut bridge.id);
     }
 
     public fun init_token_list(
@@ -382,6 +461,9 @@ module bridge::bridge {
         tokenlist::new_tokenlist_registry(&mut bridge.id, ctx);
         tokenlist::add_center_token_list(&mut bridge.id, ctx);
         limiter::update_transfer_limits(&mut load_inner_mut(bridge).limiter);
+        bridge_fee::new_bridge_fee_registry(&mut bridge.id, ctx);
+        limiter_fast_path::registry(&mut bridge.id, ctx);
+        limiter::new_external_limits(&mut bridge.id, ctx);
     }
 
     public fun update_external_out_limit(
@@ -400,6 +482,98 @@ module bridge::bridge {
             &route,
             limit
         );
+    }
+
+    public fun update_defi_protocol_info(
+        bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
+        cap: &BfcSystemModifyCap,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+        fee_type: u8,
+        fee_rate: u64,
+        limit_stake_amount: u64,
+        limit_unstake_amount: u64,
+        ctx: &mut TxContext,
+    ) {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
+        defi_protocols::add_defi_protocol(
+            parent_id, 
+            protocol_type, 
+            protocol_version, 
+            protocol_token_id, 
+            chain_id, 
+            fee_type, 
+            fee_rate, 
+            limit_stake_amount, 
+            limit_unstake_amount
+        );
+    }
+
+    public fun delete_defi_protocol_info(
+        bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
+        cap: &BfcSystemModifyCap,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+        ctx: &mut TxContext,
+    ) {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
+        defi_protocols::delete_defi_protocol(parent_id, protocol_type, protocol_version, protocol_token_id, chain_id);
+    }
+
+    public fun get_defi_protocol_info_stake_limit(
+        bridge: &mut Bridge,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ): u64 {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        let protocol_info = defi_protocols::get_protocol_info(parent_id, protocol_type, protocol_version, protocol_token_id, chain_id);
+        defi_protocols::limit_stake_amount(&protocol_info)
+    }
+
+    public fun get_defi_protocol_info_unstake_limit(
+        bridge: &mut Bridge,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ): u64 {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        let protocol_info = defi_protocols::get_protocol_info(parent_id, protocol_type, protocol_version, protocol_token_id, chain_id);
+        defi_protocols::limit_unstake_amount(&protocol_info)
+    }
+
+    public fun get_defi_protocol_info_fee_rate(
+        bridge: &mut Bridge,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ): u64 {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        let protocol_info = defi_protocols::get_protocol_info(parent_id, protocol_type, protocol_version, protocol_token_id, chain_id);
+        defi_protocols::fee_rate(&protocol_info)
+    }
+
+    public fun get_defi_protocol_info_fee_type(
+        bridge: &mut Bridge,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ): u8 {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        let protocol_info = defi_protocols::get_protocol_info(parent_id, protocol_type, protocol_version, protocol_token_id, chain_id);
+        defi_protocols::fee_type(&protocol_info)
     }
 
     //////////////////////////////////////////////////////
@@ -431,6 +605,83 @@ module bridge::bridge {
         load_inner_mut(bridge)
             .treasury
             .register_foreign_token<T>(tc, uc, metadata)
+    }
+
+
+    public fun defi_unstake(
+        bridge: &mut Bridge,
+        target_chain: u8,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        lp_amount: u64,
+        ctx: &mut TxContext
+    ) {
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
+        let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::defi());
+        assert!(lp_amount > 0, ETokenValueIsZero);
+        assert!(protocol_token_id == TOKEN_ID_USDC || protocol_token_id == TOKEN_ID_USDT, EOnlySupportUsdcOrUsdt);
+        assert!(tokenlist::is_supported_from_benfen(parent_id, target_chain as u64, protocol_token_id),EInvalidChainIDAndTokenIDExpect);
+        let defi_protocol_key = DefiProtocolKey{
+            protocol_type: protocol_type,
+            protocol_version: protocol_version,
+            protocol_token_id: protocol_token_id,
+            chain_id: target_chain,
+        };
+        assert!(defi_protocols::is_valid_protocol(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain), EDefiProtocolConfigNotFound);
+        let defi_info = defi_holders_get(parent_id, ctx.sender(), defi_protocol_key);
+        assert!(defi_info.lp_token_amount >= lp_amount, EDefiUnstakeAmountNotEnough);
+        //calculate principal amount
+        let principal_amount = defi_protocols::calculate_withdraw_principal_amount(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain, lp_amount, defi_info.lp_token_amount, defi_info.amount);
+        assert!(principal_amount > 0, ETokenValueIsZero);
+
+
+        assert!(defi_holders_del(parent_id, ctx.sender(), defi_protocol_key, principal_amount, lp_amount), EDefiUnstakeAmountNotEnoughForDel);
+        //check limit
+        let defi_protocol_info = defi_protocols::get_protocol_info(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain);
+        assert!(defi_protocol_info.limit_unstake_amount() >= principal_amount, EDefiLimitError);
+        
+        let message = message::create_defi_transfer_out_message(
+            inner.chain_id, 
+            bridge_seq_num, 
+            address::to_bytes(ctx.sender()), 
+            target_chain, 
+            lp_amount, 
+            hex::decode(b""), 0u16, 
+            protocol_type, 
+            protocol_version, 
+            protocol_token_id,
+            UNSTAKE,
+            principal_amount
+        );
+        // Store pending bridge request
+        inner.token_transfer_records.push_back(
+            message.key(),
+            BridgeRecord {
+                message,
+                verified_signatures: option::none(),
+                claimed: false,
+            },
+        );
+
+        // emit event
+        emit(
+            DefiTransferOutEvent {
+                seq_num: bridge_seq_num,
+                source_chain: inner.chain_id,
+                sender_address: address::to_bytes(ctx.sender()),
+                target_chain,
+                amount_before_fee: lp_amount,
+                amount_after_fee: lp_amount,
+                protocol_type: protocol_type,
+                protocol_version: protocol_version,
+                protocol_token_id: protocol_token_id,
+                action_type: UNSTAKE,
+                principal_amount: principal_amount,
+            },
+        );
     }
 
     // Create bridge request to send token to other chain, the request will be in
@@ -504,6 +755,119 @@ module bridge::bridge {
         );
     }
 
+    public fun defi_stake<T>(
+        bridge: &mut Bridge,
+        bfc_system_state: &mut BfcSystemState,
+        target_chain: u8,
+        token: Coin<T>,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        ctx: &mut TxContext
+    ) {
+        let (inner, bridge_id) = load_inner_mut_and_uid(bridge);
+        assert!(defi_protocols::is_valid_protocol(bridge_id, protocol_type, protocol_version, protocol_token_id, target_chain), EDefiProtocolConfigNotFound);
+
+        let token_amount = token.balance().value();
+        if (inner.chain_id == chain_ids::sui_mainnet()) {
+            assert!(token_amount >= 100 * 1_000_000_000, EDefiStakeAmountNotEnough);
+        } else {
+            assert!(token_amount >= 1000, EDefiStakeAmountNotEnough);
+        };
+        
+        // 检查质押金额是否超过协议限制
+        let protocol_info = defi_protocols::get_protocol_info(bridge_id, protocol_type, protocol_version, protocol_token_id, target_chain);
+        assert!(token_amount <= defi_protocols::limit_stake_amount(&protocol_info), ETransferLimit);
+
+        assert!(!inner.paused, EBridgeUnavailable);
+        let is_busd = type_name::get<T>() == type_name::get<BUSD>();
+        assert!(is_busd, EOnlySupportBusd);
+
+        let amount_after_fee = adjust_amount_busd_out(target_chain, token_amount);
+        //principal amount is busd,decimal is 9
+
+        let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::defi());
+        let message = message::create_defi_transfer_out_message(
+            inner.chain_id,
+            bridge_seq_num,
+            address::to_bytes(ctx.sender()),
+            target_chain,
+            amount_after_fee,
+            hex::decode(b""),
+            0u16,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            STAKE,
+            token_amount,
+        );
+
+        bfc_system_state.burn_stable(token, ctx);
+        inner.token_transfer_records.push_back(
+            message.key(),
+            BridgeRecord {
+                message,
+                verified_signatures: option::none(),
+                claimed: false,
+            },
+        );
+
+        let before_fee_amount = adjust_amount_busd_out(target_chain, token_amount);
+
+        emit(
+            DefiTransferOutEvent {
+                seq_num: bridge_seq_num,
+                source_chain: inner.chain_id,
+                sender_address: address::to_bytes(ctx.sender()),
+                target_chain,
+                amount_before_fee: before_fee_amount,
+                amount_after_fee: amount_after_fee,
+                protocol_type,
+                protocol_version,
+                protocol_token_id: protocol_token_id,
+                action_type: STAKE,
+                principal_amount: token_amount,
+            },
+        );
+    }
+
+    fun defi_stake_success(
+        inner: &BridgeInner,
+        bridge_id: &mut UID,
+        seq_num: u64,
+        original_seq_num: u64,
+        sender_address: vector<u8>,
+        protocol_chain: u8,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        amount: u64,
+        lp_token_amount: u64,
+    ) {
+        assert!(!inner.paused, EBridgeUnavailable);
+
+        let key = DefiProtocolKey{
+            protocol_type: protocol_type,
+            protocol_version: protocol_version,
+            protocol_token_id: protocol_token_id,
+            chain_id: protocol_chain,
+        };
+
+        defi_holders_add(bridge_id, address::from_bytes(sender_address), key, amount, lp_token_amount);
+
+        emit(DefiTokensStakedEvent {
+            original_seq_num,
+            seq_num,
+            source_chain: inner.chain_id,
+            sender_address,
+            target_chain: protocol_chain,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            lp_token_amount,
+        });
+    }
+
     public fun send_busd<T>(
         bridge: &mut Bridge,
         bfc_system_state: &mut BfcSystemState,
@@ -527,16 +891,24 @@ module bridge::bridge {
         // let token_id_origin = inner.treasury.token_id<T>();
         // assert!(token_id_origin == 5, EOnlySupportBusd);
         let token_id = token_id_expect;
+        //token amount is usdc or usdt amount
         let token_amount=if (target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom()) {
-             token.balance().value()/1000u64
+            token.balance().value()/1000u64
         }else{
-             token.balance().value()
+            token.balance().value()
         };
         assert!(token_amount > 0, ETokenValueIsZero);
+        //fee is usdc or usdt amount
         let fee=bridge_fee::calculate_cross_out_fee_amount(bridge_id,target_chain as u64,token_id,token_amount);
         assert!(token_amount>fee,EInputAmountLteBridgeFee);
         let amount_after_fee=token_amount-fee;
-        let fee_coin=token.split<T>(fee, ctx);
+        //fee coin is busd,so we need convert fee to busd
+        let fee_busd= if (target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom()) {
+            fee*1000u64
+        }else{
+            fee
+        };
+        let fee_coin=token.split<T>(fee_busd, ctx);
         bridge_fee::deposit_fee(bridge_id, fee_coin);
         // create bridge message
         let message = message::create_token_bridge_message_v2(
@@ -919,6 +1291,109 @@ module bridge::bridge {
         emit(TokenTransferApproved { message_key });
     }
 
+    public fun approve_defi_transfer_out(
+        bridge: &mut Bridge,
+        message: BridgeMessage,
+        signatures: vector<vector<u8>>,
+    ) {
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        // verify signatures
+        inner.committee.verify_signatures(message, signatures);
+
+        assert!(message.message_type() == message_types::defi(), EMustBeDefiMessage);
+        assert!(message.message_version() == MESSAGE_VERSION_DEFI_OUT, EUnexpectedMessageVersion);
+        assert!(message.source_chain() == inner.chain_id, EOnlySupportDefiTransferOut);
+        let message_key = message.key();
+        let record = &mut inner.token_transfer_records[message_key];
+
+        assert!(record.message == message, EMalformedMessageError);
+        assert!(!record.claimed, EInvariantSuiInitializedTokenTransferShouldNotBeClaimed);
+
+        // If record already has verified signatures, it means the message has been approved
+        // Then we exit early.
+        if (record.verified_signatures.is_some()) {
+            emit(TokenTransferAlreadyApproved { message_key });
+            return
+        };
+        // Store approval
+        record.verified_signatures = option::some(signatures);
+        emit(TokenTransferApproved { message_key });
+    }
+
+    public fun approve_defi_transfer_in(
+        bridge: &mut Bridge,
+        message: BridgeMessage,
+        signatures: vector<vector<u8>>,
+    ) {
+        let (inner, bridge_id) = load_inner_mut_and_uid(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        // verify signatures
+        inner.committee.verify_signatures(message, signatures);
+
+        assert!(message.message_type() == message_types::defi(), EMustBeDefiMessage);
+        assert!(message.message_version() == MESSAGE_VERSION_DEFI_IN, EUnexpectedMessageVersion);
+        let defi_payload = message.extract_defi_transfer_in_payload();
+        let target_chain = defi_payload.target_chain_defi_in();
+        assert!(target_chain == inner.chain_id,EUnexpectedChainID);
+
+        let message_key = message.key();
+        // retrieve pending message if source chain is Sui, the initial message
+        // must exist on chain
+        //only support token transfer in
+        assert!(message.source_chain() != inner.chain_id, EOnlySupportDefiTransferIn);
+        // At this point, if this message is in token_transfer_records, we know
+        // it's already approved because we only add a message to token_transfer_records
+        // after verifying the signatures
+        if (inner.token_transfer_records.contains(message_key)) {
+            emit(TokenTransferAlreadyApproved { message_key });
+            return
+        };
+
+
+        if (defi_payload.action_type_defi_in() == STAKE) {
+            let protocol_chain = message.source_chain();
+            let amount = adjust_amount_usdc_usdt_in(message.source_chain(), defi_payload.amount_defi_in());
+            defi_stake_success(
+                inner,
+                bridge_id,
+                 message.seq_num(),
+                 defi_payload.original_seq_num_defi_in(),
+                 defi_payload.sender_address_defi_in(),
+                protocol_chain,
+                 defi_payload.protocol_type_defi_in(),
+                 defi_payload.protocol_version_defi_in(),
+                  defi_payload.protocol_token_id_defi_in(),
+                  amount,
+                  defi_payload.lp_token_amount_defi_in()
+            );
+
+            // Store message and approval
+            inner.token_transfer_records.push_back(
+                message_key,
+                BridgeRecord {
+                    message,
+                    verified_signatures: option::some(signatures),
+                    claimed: true
+                },
+            );
+        }  else {
+            // Unstake
+            // Store message and approval
+            inner.token_transfer_records.push_back(
+                message_key,
+                BridgeRecord {
+                    message,
+                    verified_signatures: option::some(signatures),
+                    claimed: false
+                },
+            );
+
+        };
+
+        emit(TokenTransferApproved { message_key });
+    }
+
     // Get the max mint BUSD amount
     public fun get_max_mint_busd_amount(bridge: &Bridge): u64 {
         let inner = load_inner(bridge);
@@ -987,6 +1462,23 @@ module bridge::bridge {
         ctx: &mut TxContext,
     ) {
         let (token, owner) = bridge.claim_stable_token_internal<T>(bfc_system_state, clock, source_chain, bridge_seq_num, cap, ctx);
+        if (token.is_some()) {
+            transfer::public_transfer(token.destroy_some(), owner)
+        } else {
+            token.destroy_none();
+        };
+    }
+    
+    public fun claim_and_transfer_busd_for_defi<T>(
+        bridge: &mut Bridge,
+        bfc_system_state: &mut BfcSystemState,
+        clock: &Clock,
+        source_chain: u8,
+        bridge_seq_num: u64,
+        cap: &BfcSystemModifyCap,
+        ctx: &mut TxContext,
+    ) {
+        let (token, owner) = bridge.claim_stable_token_for_defi_internal<T>(bfc_system_state, clock, source_chain, bridge_seq_num, cap, ctx);
         if (token.is_some()) {
             transfer::public_transfer(token.destroy_some(), owner)
         } else {
@@ -1538,6 +2030,52 @@ module bridge::bridge {
         );
     }
 
+    public fun defi_holders_lp_token_amount_get(
+        bridge: &Bridge,
+        user_address: address,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8
+    ): u64 {
+        let key = DefiProtocolKey {
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            chain_id,
+        };
+        let defi_info = defi_holders_get(&bridge.id, user_address, key);
+        defi_info.lp_token_amount
+    }
+
+    public fun defi_holders_amount_get(
+        bridge: &Bridge,
+        user_address: address,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8
+    ): u64 {
+        let key = DefiProtocolKey {
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            chain_id,
+        };
+        let defi_info = defi_holders_get(&bridge.id, user_address, key);
+        defi_info.amount
+    }
+
+    #[test_only]
+    public fun test_defi_holders_info_amount_get(defi_info: &DefiHolderInfo): u64 {
+        defi_info.amount
+    }
+
+    #[test_only]
+    public fun test_defi_holders_info_lp_token_amount_get(defi_info: &DefiHolderInfo): u64 {
+        defi_info.lp_token_amount
+    }
+
     //////////////////////////////////////////////////////
     // DevInspect Functions for Read
     //
@@ -1580,6 +2118,35 @@ module bridge::bridge {
         let key = message::create_key(
             source_chain,
             message_types::token(),
+            bridge_seq_num
+        );
+
+        if (!inner.token_transfer_records.contains(key)) {
+            return TRANSFER_STATUS_NOT_FOUND
+        };
+
+        let record = &inner.token_transfer_records[key];
+        if (record.claimed) {
+            return TRANSFER_STATUS_CLAIMED
+        };
+
+        if (record.verified_signatures.is_some()) {
+            return TRANSFER_STATUS_APPROVED
+        };
+
+        TRANSFER_STATUS_PENDING
+    }
+
+    #[allow(unused_function)]
+    fun get_defi_transfer_action_status(
+        bridge: &Bridge,
+        source_chain: u8,
+        bridge_seq_num: u64,
+    ): u8 {
+        let inner = load_inner(bridge);
+        let key = message::create_key(
+            source_chain,
+            message_types::defi(),
             bridge_seq_num
         );
 
@@ -1664,6 +2231,27 @@ module bridge::bridge {
         let key = message::create_key(
             source_chain,
             message_types::token(),
+            bridge_seq_num
+        );
+
+        if (!inner.token_transfer_records.contains(key)) {
+            return option::none()
+        };
+
+        let record = &inner.token_transfer_records[key];
+        record.verified_signatures
+    }
+
+    #[allow(unused_function)]
+    fun get_defi_transfer_out_action_signatures(
+        bridge: &Bridge,
+        source_chain: u8,
+        bridge_seq_num: u64,
+    ): Option<vector<vector<u8>>> {
+        let inner = load_inner(bridge);
+        let key = message::create_key(
+            source_chain,
+            message_types::defi(),
             bridge_seq_num
         );
 
@@ -1917,6 +2505,146 @@ module bridge::bridge {
         (option::none(), owner)
     }
 
+    // adjust amount for busd out
+    fun adjust_amount_busd_out(target_chain: u8,amount: u64): u64 {
+        let need_adjust:bool=target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom();
+        let token_amount=if (need_adjust) {
+             amount/1000u64
+        }else{
+             amount
+        };
+        token_amount
+    }
+
+    // adjust amount for usdc/usdt in
+    fun adjust_amount_usdc_usdt_in(source_chain: u8,amount: u64): u64 {
+        let need_adjust:bool=source_chain==chain_ids::eth_mainnet() || source_chain==chain_ids::eth_sepolia() || source_chain==chain_ids::eth_custom();
+        let token_amount=if (need_adjust) {
+             (amount as u128 * 1000u128) as u64
+        }else{
+             amount
+        };
+        token_amount
+    }
+
+    #[test_only]
+    public fun test_adjust_amount_usdc_usdt_in(source_chain: u8, amount: u64): u64 {
+        adjust_amount_usdc_usdt_in(source_chain, amount)
+    }
+
+    fun claim_stable_token_for_defi_internal<T>(
+        bridge: &mut Bridge,
+        bfc_system_state: &mut BfcSystemState,
+        clock: &Clock,
+        source_chain: u8,
+        bridge_seq_num: u64,
+        cap: &BfcSystemModifyCap,
+        ctx: &mut TxContext,
+    ): (Option<Coin<T>>, address) {
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+
+        let key = message::create_key(source_chain, message_types::defi(), bridge_seq_num);
+        assert!(inner.token_transfer_records.contains(key), EMessageNotFoundInRecords);
+
+        // retrieve approved bridge message
+        let record = &inner.token_transfer_records[key];
+        // ensure this is a defi bridge message
+        assert!(
+            &record.message.message_type() == message_types::defi(),
+            EUnexpectedMessageType,
+        );
+        // Ensure it's signed
+        assert!(record.verified_signatures.is_some(), EUnauthorisedClaim);
+
+        // extract token message
+        let defi_payload = record.message.extract_defi_transfer_in_payload();
+        // get owner address
+        let owner = address::from_bytes(defi_payload.sender_address_defi_in());
+        // get token type
+        let token_id = defi_payload.protocol_token_id_defi_in();
+        //get action:stake or unstake
+        let action = defi_payload.action_type_defi_in();
+        assert!(action == UNSTAKE, EOnlySupportUnstake);
+        //only support usdc and usdt
+        assert!(token_id == 3 || token_id == 4, EOnlySupportUsdcOrUsdt);
+
+        // If already claimed, exit early
+        if (record.claimed) {
+            emit(TokenTransferAlreadyClaimed { message_key: key });
+            return (option::none(), owner)
+        };
+
+        let target_chain = defi_payload.target_chain_defi_in();
+        // ensure target chain matches bridge.chain_id
+        assert!(target_chain == inner.chain_id, EUnexpectedChainID);
+
+        // `get_route` abort if route is invalid
+        let route = chain_ids::get_route(source_chain, target_chain);
+        // check token type
+        assert!(
+            treasury::token_id<T>(&inner.treasury) == 5,
+            EUnexpectedTokenType,
+        );
+        let amount = adjust_amount_usdc_usdt_in(source_chain, defi_payload.amount_defi_in());
+        assert!(amount <= inner.limiter.get_mint_busd_max_limit(), EInvalidMintAmount);
+        // Make sure transfer is within limit.
+        if (!inner
+            .limiter
+            .check_and_record_sending_transfer<T>(
+            &inner.treasury,
+            clock,
+            route,
+            amount,
+        )
+        ) {
+            emit(TokenTransferLimitExceed { message_key: key });
+            return (option::none(), owner)
+        };
+        // let defi_protocol_key = DefiProtocolKey {
+        //     protocol_type: defi_payload.protocol_type_defi_in(),
+        //     protocol_version: defi_payload.protocol_version_defi_in(),
+        //     protocol_token_id: defi_payload.protocol_token_id_defi_in(),
+        //     chain_id: source_chain,
+        // };
+        // let _defi_info = inner.defi_holders_get(owner, defi_protocol_key);
+        let fee = defi_protocols::manage_fee_v2(
+            parent_id, 
+            defi_payload.protocol_type_defi_in(), 
+            defi_payload.protocol_version_defi_in(), 
+            defi_payload.protocol_token_id_defi_in(), 
+            source_chain, 
+            defi_payload.principal_amount_defi_in(), 
+            amount
+        );
+        assert!(amount>fee,EInputAmountLteBridgeFee);
+        let amount_after_fee=amount-fee;
+        // claim from treasury
+        //transfer busd to owner
+        bfc_system_state.mint_stable_entry_to_address<BUSD>(amount_after_fee, cap, owner, ctx);
+        if (fee != 0){
+            let fee_coin=bfc_system_state.mint_stable<BUSD>(fee,cap, ctx);
+            bridge_fee::deposit_fee(parent_id, fee_coin);
+        };
+        inner.token_transfer_records[key].claimed = true;
+        emit(TokenTransferClaimed { message_key: key });
+        emit(DefiTokensUnstakeEvent {
+            original_seq_num: defi_payload.original_seq_num_defi_in(),
+            seq_num: bridge_seq_num,
+            source_chain: source_chain,
+            target_chain: target_chain,
+            target_address: address::to_bytes(owner),
+            amount_before_fee: amount,
+            amount_after_fee: amount_after_fee,
+            protocol_type: defi_payload.protocol_type_defi_in(),
+            protocol_version: defi_payload.protocol_version_defi_in(),
+            protocol_token_id: defi_payload.protocol_token_id_defi_in(),
+            principal: defi_payload.principal_amount_defi_in(),
+            fee: fee,
+        });
+        (option::none(), owner)
+    }
+
     fun execute_emergency_op(inner: &mut BridgeInner, payload: EmergencyOp) {
         let op = payload.emergency_op_type();
         if (op == message::emergency_op_pause()) {
@@ -2100,6 +2828,103 @@ module bridge::bridge {
         seq_num
     }
 
+    // Helper function to ensure defi_holders is initialized
+    fun ensure_defi_holders_initialized(bridge_id: &mut UID, ctx: &mut TxContext) {
+        if (!dynamic_field::exists_(bridge_id, DefiHoldersKey{})) {
+            dynamic_field::add(bridge_id, DefiHoldersKey{}, linked_table::new<address, VecMap<DefiProtocolKey, DefiHolderInfo>>(ctx));
+        };
+    }
+
+    // Helper functions to access defi_holders from dynamic_field on Bridge.id
+    fun get_defi_holders_table_mut(bridge_id: &mut UID): &mut LinkedTable<address, VecMap<DefiProtocolKey, DefiHolderInfo>> {
+        assert!(dynamic_field::exists_(bridge_id, DefiHoldersKey{}), EDefiHoldersNotInitialized);
+        dynamic_field::borrow_mut<DefiHoldersKey, LinkedTable<address, VecMap<DefiProtocolKey, DefiHolderInfo>>>(bridge_id, DefiHoldersKey{})
+    }
+
+    fun get_defi_holders_table(bridge_id: &UID): &LinkedTable<address, VecMap<DefiProtocolKey, DefiHolderInfo>> {
+        assert!(dynamic_field::exists_(bridge_id, DefiHoldersKey{}), EDefiHoldersNotInitialized);
+        dynamic_field::borrow<DefiHoldersKey, LinkedTable<address, VecMap<DefiProtocolKey, DefiHolderInfo>>>(bridge_id, DefiHoldersKey{})
+    }
+
+    fun defi_holders_table_exists(bridge_id: &UID): bool {
+        dynamic_field::exists_(bridge_id, DefiHoldersKey{})
+    }
+
+    fun defi_holders_add(bridge_id: &mut UID, user_address: address, key: DefiProtocolKey, amount: u64, lp_token_amount: u64) {
+        let defi_holders = get_defi_holders_table_mut(bridge_id);
+        if (!linked_table::contains(defi_holders, user_address)) {
+            let new_table = vec_map::empty<DefiProtocolKey, DefiHolderInfo>();
+            linked_table::push_back(defi_holders, user_address, new_table);
+        };
+
+        let user_protocol_table = linked_table::borrow_mut(defi_holders, user_address);
+
+        if (vec_map::contains<DefiProtocolKey, DefiHolderInfo>(user_protocol_table, &key)) {
+            let current_value = vec_map::get_mut<DefiProtocolKey, DefiHolderInfo>(user_protocol_table, &key);
+            current_value.amount = current_value.amount + amount;
+            current_value.lp_token_amount = current_value.lp_token_amount + lp_token_amount;
+        } else {
+            let defi_info = DefiHolderInfo { amount: amount, lp_token_amount: lp_token_amount };
+            vec_map::insert<DefiProtocolKey, DefiHolderInfo>(user_protocol_table, key, defi_info);
+        }
+    }
+
+    fun defi_holders_get(bridge_id: &UID, user_address: address, key: DefiProtocolKey): DefiHolderInfo {
+        if (!defi_holders_table_exists(bridge_id)) {
+            return DefiHolderInfo { amount: 0, lp_token_amount: 0 }
+        };
+
+        let defi_holders = get_defi_holders_table(bridge_id);
+        if (!linked_table::contains(defi_holders, user_address)) {
+            return DefiHolderInfo { amount: 0, lp_token_amount: 0 }
+        };
+
+        let user_protocol_table = linked_table::borrow(defi_holders, user_address);
+        if (!vec_map::contains<DefiProtocolKey, DefiHolderInfo>(user_protocol_table, &key)) {
+            return DefiHolderInfo { amount: 0, lp_token_amount: 0 }
+        };
+        
+        *vec_map::get<DefiProtocolKey, DefiHolderInfo>(user_protocol_table, &key)
+    }
+
+    fun defi_holders_del(bridge_id: &mut UID, user_address: address, key: DefiProtocolKey, amount: u64, lp_token_amount: u64): bool {
+        let defi_holders = get_defi_holders_table_mut(bridge_id);
+        // If user doesn't exist in defi_holders, return false
+        if (!linked_table::contains(defi_holders, user_address)) {
+            return false
+        };
+        
+        let user_protocol_table = linked_table::borrow_mut(defi_holders, user_address);
+
+        // If protocol key doesn't exist for this user, return false
+        if (!vec_map::contains<DefiProtocolKey, DefiHolderInfo>(user_protocol_table, &key)) {
+            return false
+        };
+        
+        let current_value = vec_map::get_mut<DefiProtocolKey, DefiHolderInfo>(user_protocol_table, &key);
+        
+        // If requested deletion amount is greater than current value, return false
+        if (amount > current_value.amount || lp_token_amount > current_value.lp_token_amount) {
+            return false
+        } else if (amount == current_value.amount && lp_token_amount == current_value.lp_token_amount) {
+            // If deleting exact amount, remove the entry
+            vec_map::remove<DefiProtocolKey, DefiHolderInfo>(user_protocol_table, &key);
+        } else {
+            // Otherwise, subtract the values
+            current_value.amount = current_value.amount - amount;
+            current_value.lp_token_amount = current_value.lp_token_amount - lp_token_amount;
+        };
+        
+        // If user's protocol table is now empty, clean it up
+        if (vec_map::is_empty<DefiProtocolKey, DefiHolderInfo>(user_protocol_table)) {
+            let removed_table = linked_table::remove(defi_holders, user_address);
+            vec_map::destroy_empty<DefiProtocolKey, DefiHolderInfo>(removed_table);
+        };
+        
+        // Operation successful
+        return true
+    }
+
     #[allow(unused_function)]
     fun get_parsed_token_transfer_message(
         bridge: &Bridge,
@@ -2144,9 +2969,78 @@ module bridge::bridge {
         option::some(to_parsed_token_transfer_message_v2(message))
     }
 
+    #[allow(unused_function)]
+    fun get_parsed_defi_transfer_out_message(
+        bridge: &Bridge,
+        source_chain: u8,
+        bridge_seq_num: u64,
+    ): Option<ParsedDefiTransferOutMessage> {
+        let inner = load_inner(bridge);
+        let key = message::create_key(
+            source_chain,
+            message_types::defi(),
+            bridge_seq_num
+        );
+
+        if (!inner.token_transfer_records.contains(key)) {
+            return option::none()
+        };
+
+        let record = &inner.token_transfer_records[key];
+        let message = &record.message;
+        option::some(to_parsed_defi_transfer_out_message(message))
+    }
+
+    #[allow(unused_function)]
+    fun get_parsed_defi_transfer_message(
+        bridge: &Bridge,
+        source_chain: u8,
+        bridge_seq_num: u64,
+    ): Option<ParsedTokenTransferMessageV2> {
+        let inner = load_inner(bridge);
+        let key = message::create_key(
+            source_chain,
+            message_types::token(),
+            bridge_seq_num
+        );
+
+        if (!inner.token_transfer_records.contains(key)) {
+            return option::none()
+        };
+
+        let record = &inner.token_transfer_records[key];
+        let message = &record.message;
+        option::some(to_parsed_token_transfer_message_v2(message))
+    }
+
     //////////////////////////////////////////////////////
     // Test functions
     //
+
+    #[test_only]
+    public fun get_defi_transfer_out_event_amount_before_fee(event: &DefiTransferOutEvent): u64 {
+        event.amount_before_fee
+    }
+
+    #[test_only]
+    public fun get_defi_transfer_out_event_amount_after_fee(event: &DefiTransferOutEvent): u64 {
+        event.amount_after_fee
+    }
+
+    #[test_only]
+    public fun get_defi_transfer_out_event_principal_amount(event: &DefiTransferOutEvent): u64 {
+        event.principal_amount
+    }
+
+    #[test_only]
+    public fun get_defi_tokens_unstake_event_principal_amount(event: &DefiTokensUnstakeEvent): u64 {
+        event.principal as u64
+    }
+
+    #[test_only]
+    public fun get_defi_tokens_unstake_event_fee(event: &DefiTokensUnstakeEvent): u64 {
+        event.fee
+    }
 
     #[test_only]
     public fun add_external_coin_admin_for_testing(
@@ -2225,6 +3119,8 @@ module bridge::bridge {
             id,
             inner: versioned::create(CURRENT_VERSION, bridge_inner, ctx),
         };
+        // Initialize defi_holders as dynamic_field
+        dynamic_field::add(&mut bridge.id, DefiHoldersKey{}, linked_table::new<address, VecMap<DefiProtocolKey, DefiHolderInfo>>(ctx));
         bridge.setup_treasury_for_testing();
         bridge
     }
@@ -2238,6 +3134,59 @@ module bridge::bridge {
     #[test_only]
     public fun setup_treasury_for_testing(bridge: &mut Bridge) {
         bridge.load_inner_mut().treasury.setup_for_testing();
+    }
+
+    /////////////////////////////////////////////////////
+    // Test functions for defi_holders
+    //
+
+    #[test_only]
+    public fun test_defi_holders_add(bridge: &mut Bridge, user_address: address, key: DefiProtocolKey, amount: u64, lp_token_amount: u64) {
+        let (_, bridge_id) = load_inner_mut_and_uid(bridge);
+        defi_holders_add( bridge_id, user_address, key, amount, lp_token_amount);
+    }
+
+    #[test_only]
+    public fun test_defi_holders_get(bridge: &Bridge, user_address: address, key: DefiProtocolKey): DefiHolderInfo {
+        let (_, bridge_id) = load_inner_and_uid(bridge);
+        defi_holders_get( bridge_id, user_address, key)
+    }
+
+    #[test_only]
+    public fun test_defi_holders_del(bridge: &mut Bridge, user_address: address, key: DefiProtocolKey, amount: u64, lp_token_amount: u64): bool {
+        let (_, bridge_id) = load_inner_mut_and_uid(bridge);
+        defi_holders_del(bridge_id, user_address, key, amount, lp_token_amount)
+    }
+
+    #[test_only]
+    public fun test_defi_holders_amount_get(
+        bridge: &Bridge,
+        user_address: address,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8
+    ): u64 {
+        bridge.defi_holders_lp_token_amount_get(user_address, protocol_type, protocol_version, protocol_token_id, chain_id)
+    }
+
+    /////////////////////////////////////////////////////
+    // Test functions for DefiProtocolKey creation
+    //
+
+    #[test_only]
+    public fun create_defi_protocol_key_for_testing(
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8
+    ): DefiProtocolKey {
+        DefiProtocolKey {
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            chain_id,
+        }
     }
 
     #[test_only]
@@ -2295,6 +3244,15 @@ module bridge::bridge {
         bridge_seq_num: u64,
     ): u8 {
         bridge.get_token_transfer_action_status(source_chain, bridge_seq_num)
+    }
+
+    #[test_only]
+    public fun test_get_defi_transfer_action_status(
+        bridge: &Bridge,
+        source_chain: u8,
+        bridge_seq_num: u64,
+    ): u8 {
+        bridge.get_defi_transfer_action_status(source_chain, bridge_seq_num)
     }
 
     #[test_only]
@@ -2370,6 +3328,20 @@ module bridge::bridge {
         bridge_inner: &mut BridgeInner,
     ): &mut LinkedTable<BridgeMessageKey, BridgeRecord> {
         &mut bridge_inner.token_transfer_records
+    }
+
+    #[test_only]
+    public fun message(
+        record: &BridgeRecord,
+    ): &BridgeMessage {
+        &record.message
+    }
+
+    #[test_only]
+    public fun message_mut(
+        record: &mut BridgeRecord,
+    ): &mut BridgeMessage {
+        &mut record.message
     }
 
     #[test_only]

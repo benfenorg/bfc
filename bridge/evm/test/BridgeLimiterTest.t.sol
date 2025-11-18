@@ -175,7 +175,7 @@ contract BridgeLimiterTest is BridgeBaseTest {
             "BridgeConfig.sol",
             abi.encodeCall(
                 BridgeConfig.initialize,
-                (address(committee), chainID, _supportedTokens, tokenPrices, tokenIds, suiDecimals, supportedChains)
+                (address(committee), chainID, _supportedTokens, tokenPrices, tokenIds, suiDecimals, supportedChains, uint64(1), uint64(3), uint64(7))
             ),
             opts
         );
@@ -279,7 +279,7 @@ contract BridgeLimiterTest is BridgeBaseTest {
             "BridgeConfig.sol",
             abi.encodeCall(
                 BridgeConfig.initialize,
-                (address(committee), chainID, supportedTokens, tokenPrices, tokenIds, suiDecimals, _supportedChains)
+                (address(committee), chainID, supportedTokens, tokenPrices, tokenIds, suiDecimals, _supportedChains, uint64(1), uint64(3), uint64(7))
             ),
             opts
         );
@@ -307,7 +307,7 @@ contract BridgeLimiterTest is BridgeBaseTest {
         address _suiBridge = Upgrades.deployUUPSProxy(
             "SuiBridge.sol",
             abi.encodeCall(
-                SuiBridge.initialize, (address(committee), address(vault), address(limiter))
+                SuiBridge.initialize, (address(committee), address(vault), address(limiter),address(0))
             ),
             opts
         );
@@ -367,7 +367,7 @@ contract BridgeLimiterTest is BridgeBaseTest {
             "BridgeConfig.sol",
             abi.encodeCall(
                 BridgeConfig.initialize,
-                (address(committee), chainID, supportedTokens, tokenPrices, tokenIds, suiDecimals, _supportedChains)
+                (address(committee), chainID, supportedTokens, tokenPrices, tokenIds, suiDecimals, _supportedChains, uint64(1), uint64(3), uint64(7))
             ),
             opts
         );
@@ -396,7 +396,7 @@ contract BridgeLimiterTest is BridgeBaseTest {
         address _suiBridge = Upgrades.deployUUPSProxy(
             "SuiBridge.sol",
             abi.encodeCall(
-                SuiBridge.initialize, (address(committee), address(vault), address(limiter))
+                SuiBridge.initialize, (address(committee), address(vault), address(limiter),address(0))
             ),
             opts
         );

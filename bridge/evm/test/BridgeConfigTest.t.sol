@@ -4,10 +4,12 @@ pragma solidity ^0.8.20;
 import "./BridgeBaseTest.t.sol";
 import "./mocks/MockTokens.sol";
 
+import {IBridgeConfig} from "../contracts/interfaces/IBridgeConfig.sol";
 contract BridgeConfigTest is BridgeBaseTest {
     function setUp() public {
         setUpBridgeTest();
     }
+    event LpTokenIdAdded(uint64 nonce,uint64 protocolType,uint64 underlyingTokenId,uint64 lpTokenId);
 
     function testBridgeConfigInitialization() public {
         assertTrue(config.tokenAddressOf(1) == wBTC);
@@ -96,6 +98,289 @@ contract BridgeConfigTest is BridgeBaseTest {
         assertEq(config.tokenPriceOf(10), 100_000 * USD_VALUE_MULTIPLIER);
     }
 
+    function testAddLpTokenInvalidNonceFailure() public {
+
+        MockUSDC _newToken = new MockUSDC();
+        // Create add lp token payload
+        uint64 protocolType = 0;
+        uint64 underlyingTokenId = 3;
+        uint64 lpTokenId = 100;
+
+
+        bytes memory payload = abi.encodePacked(
+           protocolType,
+           underlyingTokenId,
+           lpTokenId
+        );
+
+        // Create transfer message
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.ADD_LP_TOKEN_ID,
+            version: 1,
+            nonce: 0,
+            chainID: 1,
+            payload: payload
+        });
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+      
+        config.addLpTokenIdWithSignatures(signatures, message);
+        //assertTrue(config.isTokenSupported(10));
+        assertEq(config.investLpTokenIdOf(protocolType,underlyingTokenId),lpTokenId);
+        assertEq(config.investLpTokenIdOf(protocolType,underlyingTokenId),lpTokenId);
+
+
+        // Create transfer message
+        message = BridgeUtils.Message({
+            messageType: BridgeUtils.ADD_LP_TOKEN_ID,
+            version: 1,
+            nonce: 0,
+            chainID: 1,
+            payload: payload
+        });
+
+        encodedMessage = BridgeUtils.encodeMessage(message);
+
+        messageHash = keccak256(encodedMessage);
+
+        // bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+        vm.expectRevert("MessageVerifier: Invalid nonce");
+        config.addLpTokenIdWithSignatures(signatures, message);
+
+    }
+
+
+    function testAddMutiLpToken() public {
+        MockUSDC _newToken = new MockUSDC();
+        // Create add lp token payload
+        uint64 protocolType = 1; //aave
+        uint64 underlyingTokenId = 3;
+        uint64 lpTokenId = 100;
+
+        {
+            bytes memory payload = abi.encodePacked(
+                protocolType,
+                underlyingTokenId,
+                lpTokenId
+            );
+
+            // Create transfer message
+            BridgeUtils.Message memory message = BridgeUtils.Message({
+                messageType: BridgeUtils.ADD_LP_TOKEN_ID,
+                version: 1,
+                nonce: 0,
+                chainID: 1,
+                payload: payload
+            });
+            bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+            bytes32 messageHash = keccak256(encodedMessage);
+            bytes[] memory signatures = new bytes[](4);
+            signatures[0] = getSignature(messageHash, committeeMemberPkA);
+            signatures[1] = getSignature(messageHash, committeeMemberPkB);
+            signatures[2] = getSignature(messageHash, committeeMemberPkC);
+            signatures[3] = getSignature(messageHash, committeeMemberPkD);
+            config.addLpTokenIdWithSignatures(signatures, message);
+        }
+
+
+       
+
+        //next
+        protocolType=2;
+        lpTokenId=101;
+        bytes memory payload = abi.encodePacked(
+           protocolType,
+           underlyingTokenId,
+           lpTokenId
+        );
+
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.ADD_LP_TOKEN_ID,
+            version: 1,
+            nonce: 1,
+            chainID: 1,
+            payload: payload
+        });
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+        config.addLpTokenIdWithSignatures(signatures, message);
+    }
+
+    function testAddLpTokenTwiceFailure() public {
+        MockUSDC _newToken = new MockUSDC();
+        // Create add lp token payload
+        uint64 protocolType = 0;
+        uint64 underlyingTokenId = 3;
+        uint64 lpTokenId = 100;
+
+
+        bytes memory payload = abi.encodePacked(
+           protocolType,
+           underlyingTokenId,
+           lpTokenId
+        );
+
+        // Create transfer message
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.ADD_LP_TOKEN_ID,
+            version: 1,
+            nonce: 0,
+            chainID: 1,
+            payload: payload
+        });
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+      
+        config.addLpTokenIdWithSignatures(signatures, message);
+        //assertTrue(config.isTokenSupported(10));
+        assertEq(config.investLpTokenIdOf(protocolType,underlyingTokenId),lpTokenId);
+        assertEq(config.investLpTokenIdOf(protocolType,underlyingTokenId),lpTokenId);
+
+
+
+        // twice
+        // Create transfer message
+         message = BridgeUtils.Message({
+            messageType: BridgeUtils.ADD_LP_TOKEN_ID,
+            version: 1,
+            nonce: 1,
+            chainID: 1,
+            payload: payload
+        });
+
+        encodedMessage = BridgeUtils.encodeMessage(message);
+
+        messageHash = keccak256(encodedMessage);
+
+        // bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+        vm.expectRevert("BridgeConfig: LPToken already added");
+        config.addLpTokenIdWithSignatures(signatures, message);
+    }
+
+    function testAddLpTokenWithSignatures() public {
+        MockUSDC _newToken = new MockUSDC();
+        // Create add lp token payload
+        uint64 protocolType = 0;
+        uint64 underlyingTokenId = 3;
+        uint64 lpTokenId = 100;
+
+
+        bytes memory payload = abi.encodePacked(
+           protocolType,
+           underlyingTokenId,
+           lpTokenId
+        );
+
+        // Create transfer message
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.ADD_LP_TOKEN_ID,
+            version: 1,
+            nonce: 0,
+            chainID: 1,
+            payload: payload
+        });
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+
+        config.addLpTokenIdWithSignatures(signatures, message);
+        //assertTrue(config.isTokenSupported(10));
+        assertEq(config.investLpTokenIdOf(protocolType,underlyingTokenId),lpTokenId);
+        assertEq(config.investLpTokenIdOf(protocolType,underlyingTokenId),lpTokenId);
+    }
+
+
+    function testAddLpTokenWithEvent() public {
+
+        MockUSDC _newToken = new MockUSDC();
+        // Create add lp token payload
+        uint64 protocolType = 0;
+        uint64 underlyingTokenId = 3;
+        uint64 lpTokenId = 100;
+
+
+        bytes memory payload = abi.encodePacked(
+           protocolType,
+           underlyingTokenId,
+           lpTokenId
+        );
+
+        // Create transfer message
+        BridgeUtils.Message memory message = BridgeUtils.Message({
+            messageType: BridgeUtils.ADD_LP_TOKEN_ID,
+            version: 1,
+            nonce: 0,
+            chainID: 1,
+            payload: payload
+        });
+
+        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+
+        bytes32 messageHash = keccak256(encodedMessage);
+
+        bytes[] memory signatures = new bytes[](4);
+
+        signatures[0] = getSignature(messageHash, committeeMemberPkA);
+        signatures[1] = getSignature(messageHash, committeeMemberPkB);
+        signatures[2] = getSignature(messageHash, committeeMemberPkC);
+        signatures[3] = getSignature(messageHash, committeeMemberPkD);
+        vm.expectEmit(false, false, false, true);
+        emit LpTokenIdAdded(0,protocolType,underlyingTokenId,lpTokenId);
+        config.addLpTokenIdWithSignatures(signatures, message);
+
+        //assertTrue(config.isTokenSupported(10));
+        assertEq(config.investLpTokenIdOf(protocolType,underlyingTokenId),lpTokenId);
+        assertEq(config.investLpTokenIdOf(protocolType,underlyingTokenId),lpTokenId);
+    }
     function testAddTokensAddressFailure() public {
         MockUSDC _newToken = new MockUSDC();
 
@@ -322,7 +607,7 @@ contract BridgeConfigTest is BridgeBaseTest {
         address _suiBridge = Upgrades.deployUUPSProxy(
             "SuiBridge.sol",
             abi.encodeCall(
-                SuiBridge.initialize, (address(committee), address(vault), address(limiter))
+                SuiBridge.initialize, (address(committee), address(vault), address(limiter),address(0))
             ),
             opts
         );
@@ -376,7 +661,7 @@ contract BridgeConfigTest is BridgeBaseTest {
             "BridgeConfig.sol",
             abi.encodeCall(
                 BridgeConfig.initialize,
-                (address(committee), chainID, supportedTokens, tokenPrices, tokenIds, suiDecimals, _supportedDestinationChains)
+                (address(committee), chainID, supportedTokens, tokenPrices, tokenIds, suiDecimals, _supportedDestinationChains, uint64(1), uint64(3), uint64(7))
             ),
             opts
         );
@@ -404,7 +689,7 @@ contract BridgeConfigTest is BridgeBaseTest {
         address _suiBridge = Upgrades.deployUUPSProxy(
             "SuiBridge.sol",
             abi.encodeCall(
-                SuiBridge.initialize, (address(committee), address(vault), address(limiter))
+                SuiBridge.initialize, (address(committee), address(vault), address(limiter),address(0))
             ),
             opts
         );
@@ -467,7 +752,7 @@ contract BridgeConfigTest is BridgeBaseTest {
             "BridgeConfig.sol",
             abi.encodeCall(
                 BridgeConfig.initialize,
-                (address(committee), 12, supportedTokens, tokenPrices, tokenIds, suiDecimals, _supportedDestinationChains)
+                (address(committee), 12, supportedTokens, tokenPrices, tokenIds, suiDecimals, _supportedDestinationChains, uint64(1), uint64(3), uint64(7))
             ),
             opts
         );
@@ -494,7 +779,7 @@ contract BridgeConfigTest is BridgeBaseTest {
         address _suiBridge = Upgrades.deployUUPSProxy(
             "SuiBridge.sol",
             abi.encodeCall(
-                SuiBridge.initialize, (address(committee), address(vault), address(limiter))
+                SuiBridge.initialize, (address(committee), address(vault), address(limiter),address(0))
             ),
             opts
         );
