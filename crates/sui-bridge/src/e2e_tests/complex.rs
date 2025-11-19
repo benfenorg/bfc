@@ -13,6 +13,8 @@ use ethers::types::Address as EthAddress;
 use std::sync::Arc;
 use sui_json_rpc_types::SuiExecutionStatus;
 use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
+use crate::e2e_tests::test_utils::solana_cross_token_to_bridge;
+use solana_sdk::pubkey::Pubkey;
 use sui_types::bridge::{BridgeChainId, TOKEN_ID_ETH};
 use tracing::info;
 
@@ -131,4 +133,45 @@ async fn test_sui_bridge_paused() {
     )
     .await;
     assert!(sui_to_eth_bridge_action.is_err())
+}
+
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+async  fn test_solana_bridge_call() {
+    telemetry_subscribers::init_for_testing();
+    let bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_solana_env(true)
+        .with_eth_env(true)
+        .with_solana_chain_id(BridgeChainId::SolanaTestnet)
+        .with_bridge_cluster(true)
+        .with_num_validators(3)
+        .build()
+        .await;
+
+    let sol_env = &bridge_test_cluster.sol_environment;
+    let solana_signer = sol_env.get_signer().await.unwrap();
+    let rpc_url = sol_env.rpc_url.clone();
+    let ws_url = rpc_url.replace("http", "ws"); 
+
+    // The following part is hard, because I can't easily create a token.
+    // I will use placeholders. The user will see the test fails and can provide more info.
+    let token_mint = Pubkey::new_unique();
+    let source_token_account = Pubkey::new_unique();
+    let amount = 100;
+    let benfen_address = vec![1; 32];
+    let target_chain_id = bridge_test_cluster.sui_chain_id();
+    let token_id = 1u64;
+
+    solana_cross_token_to_bridge(
+        &rpc_url,
+        &ws_url,
+        solana_signer,
+        target_chain_id,
+        amount,
+        benfen_address,
+        token_id,
+        token_mint,
+        source_token_account,
+    ).await.unwrap();
+
 }
