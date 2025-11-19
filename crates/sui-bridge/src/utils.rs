@@ -50,6 +50,10 @@ use sui_types::BRIDGE_PACKAGE_ID;
 
 pub type EthSigner = SignerMiddleware<Provider<Http>, Wallet<SigningKey>>;
 
+pub type SolanaSigner = std::sync::Arc<solana_sdk::signature::Keypair>;
+
+pub type SolanaClient = solana_client::rpc_client::RpcClient;
+
 pub struct EthBridgeContracts<P> {
     pub bridge: EthSuiBridge<Provider<P>>,
     pub committee: EthBridgeCommittee<Provider<P>>,
