@@ -399,8 +399,9 @@ impl BridgeTestClusterBuilder {
             }
         }
 
-        let _=init_solana_program(&rpc_url.clone(), &ws_url, solana_signer, bridge_keys, solana_chain_id, benfen_chain_id)
-            .await;
+        init_solana_program(&rpc_url, &ws_url, solana_signer, bridge_keys, solana_chain_id, benfen_chain_id)
+            .await
+            .expect("init_solana_program failed");
         sol_environment
     }
 
@@ -717,6 +718,7 @@ pub(crate) async fn init_solana_program(
     solana_chain_id: BridgeChainId,
     target_chain_id: BridgeChainId,
 )->anyhow::Result<()>{
+    info!("init solana program with rpc_url: {}, ws_url: {}", rpc_url, ws_url);
      let client = Client::new_with_options(
             Cluster::Custom(rpc_url.to_string(), ws_url.to_string()),
             solana_signer.clone(),
@@ -724,7 +726,7 @@ pub(crate) async fn init_solana_program(
     );
 
     let program = client.program(benfen_bridge::ID)?;
-    let init_pdas: SolanaPDA = get_init_solana_pda();
+    let init_pdas: SolanaPDA = get_init_solana_pda(target_chain_id as u8);
     let initialize_bridge_config_ix = program
         .request()
         .accounts(accounts::InitializeBridgeConfig {
@@ -849,7 +851,7 @@ pub(crate) async fn init_solana_program(
         .send()
         .await?;
 
-
+    info!("initialize program signature: {:?}", signature);
     let bridge_config_account = program.account::<BridgeConfig>(init_pdas.bridge_config).await?; 
     assert_eq!(bridge_config_account.chain_id, solana_chain_id as u8);
 
@@ -859,32 +861,34 @@ pub(crate) async fn init_solana_program(
     Ok(())
 }
 
-pub(crate) fn get_init_solana_pda() -> SolanaPDA {
-     let bridge_config_pda =Pubkey::find_program_address(
-        &[b"bridge_config"], 
-        &benfen_bridge::ID
-    ).0;
-     let committee_pda = Pubkey::find_program_address(
-        &[b"committee", bridge_config_pda.as_ref()],
-        &benfen_bridge::ID
-      ).0;
-     let message_verifier_pda = Pubkey::find_program_address(
-        &[b"message_verifier", bridge_config_pda.as_ref()],
-        &benfen_bridge::ID
-      ).0;
-      let bridge_limiter_pda = Pubkey::find_program_address(
-        &[b"bridge_limiter", bridge_config_pda.as_ref()],
-        &benfen_bridge::ID
-      ).0;
+pub(crate) fn get_init_solana_pda(chain_id: u8) -> SolanaPDA {
+    // Derive PDAs to match Anchor seeds constraints exactly.
+    let bridge_config_pda = Pubkey::find_program_address(&[b"bridge_config"], &benfen_bridge::ID).0;
+    let committee_pda = Pubkey::find_program_address(&[b"committee", bridge_config_pda.as_ref()], &benfen_bridge::ID).0;
 
-      let benfen_bridge_pda = Pubkey::find_program_address(
-        &[b"benfen_bridge"],
-        &benfen_bridge::ID
-      ).0;
-      let upgrade_authority_pda = Pubkey::find_program_address(
-        &[b"upgrade_authority", bridge_config_pda.as_ref()],
-        &benfen_bridge::ID
-      ).0;
+    // MessageVerifier seeds: ["message_verifier", committee.key()]
+    let message_verifier_pda = Pubkey::find_program_address(
+        &[b"message_verifier", committee_pda.as_ref()],
+        &benfen_bridge::ID,
+    ).0;
+
+    // ChainLimit seeds: ["chain_limit", &[chain_id], bridge_config.key()]
+    let bridge_limiter_pda = Pubkey::find_program_address(
+        &[b"chain_limit", &[chain_id], bridge_config_pda.as_ref()],
+        &benfen_bridge::ID,
+    ).0;
+
+    // BenfenBridge seeds: ["benfen_bridge", committee.key()]
+    let benfen_bridge_pda = Pubkey::find_program_address(
+        &[b"benfen_bridge", committee_pda.as_ref()],
+        &benfen_bridge::ID,
+    ).0;
+
+    // UpgradeAuthority seeds: ["upgrade_authority", committee.key()]
+    let upgrade_authority_pda = Pubkey::find_program_address(
+        &[b"upgrade_authority", committee_pda.as_ref()],
+        &benfen_bridge::ID,
+    ).0;
 
     SolanaPDA {
         bridge_config: bridge_config_pda,
