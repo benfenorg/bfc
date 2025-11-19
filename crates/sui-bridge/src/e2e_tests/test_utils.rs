@@ -103,8 +103,10 @@ use solana_sdk::{
 anchor_lang::declare_program!(benfen_bridge);
 use benfen_bridge::{client::accounts, client::args, accounts::BridgeConfig, accounts::Committee};
 
+use anchor_lang;
 use anchor_client::{Client, Cluster};
 use solana_client::rpc_client::RpcClient;
+use spl_token;
 
 
 
@@ -129,7 +131,7 @@ pub struct BridgeTestCluster {
     pub test_cluster: TestClusterWrapper,
     bridge_client: SuiBridgeClient,
     eth_environment: EthBridgeEnvironment,
-    sol_environment: SolanaBridgeEnvironment,
+    pub sol_environment: SolanaBridgeEnvironment,
     bridge_node_handles: Option<Vec<JoinHandle<()>>>,
     approved_governance_actions_for_next_start: Option<Vec<Vec<BridgeAction>>>,
     bridge_tx_cursor: Option<TransactionDigest>,
@@ -858,6 +860,67 @@ pub(crate) async fn init_solana_program(
     let committee_account = program.account::<Committee>(init_pdas.bridge_committee).await?; 
     assert_eq!(committee_account.member_count, node_len as u8);
 
+    Ok(())
+}
+
+pub(crate) async fn solana_cross_token_to_bridge(
+    rpc_url: &str,
+    ws_url: &str,
+    solana_signer: std::sync::Arc<Keypair>,
+    target_chain_id: BridgeChainId,
+    amount: u64,
+    benfen_address: Vec<u8>,
+    token_id: u64,
+    token_mint: Pubkey,
+    source_token_account: Pubkey,
+) -> anyhow::Result<()> {
+    info!("solana_cross_token_to_bridge with rpc_url: {}, ws_url: {}", rpc_url, ws_url);
+    let client = Client::new_with_options(
+        Cluster::Custom(rpc_url.to_string(), ws_url.to_string()),
+        solana_signer.clone(),
+        CommitmentConfig::confirmed(),
+    );
+
+    let program = client.program(benfen_bridge::ID)?;
+    let init_pdas: SolanaPDA = get_init_solana_pda(target_chain_id as u8);
+
+    let (token_vault, _) = Pubkey::find_program_address(&[b"vault", &token_id.to_le_bytes()], &benfen_bridge::ID);
+    let (token_config, _) = Pubkey::find_program_address(&[b"token_config", &token_id.to_le_bytes()], &benfen_bridge::ID);
+    
+    // TODO: This is a placeholder. We need to figure out how to create/get it.
+    let message_config = Pubkey::new_unique();
+
+    let ix = program
+        .request()
+        .accounts(accounts::CrossTokenToBridge {
+            payer: solana_signer.pubkey(),
+            token_account: source_token_account,
+            token_vault,
+            message_config,
+            token_config,
+            chain_limit: init_pdas.bridge_limiter,
+            bridge_config: init_pdas.bridge_config,
+            bridge: init_pdas.benfen_bridge,
+            verifier: init_pdas.message_verifier,
+            token_mint,
+            token_program: anchor_lang::prelude::Pubkey::new_from_array(spl_token::ID.to_bytes()),
+            system_program: system_program::ID,
+        })
+        .args(args::CrossTokenToBridge {
+            amount,
+            benfen_address,
+        })
+        .instructions()?
+        .remove(0);
+
+    let signature = program
+        .request()
+        .instruction(ix)
+        .signer(solana_signer.clone())
+        .send()
+        .await?;
+
+    info!("cross_token_to_bridge signature: {:?}", signature);
     Ok(())
 }
 
