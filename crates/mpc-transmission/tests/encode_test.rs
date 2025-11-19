@@ -1,8 +1,4 @@
 
-use mpc_transmission::{
-    split_to_two_value,
-    recover_value,
-};
 #[cfg(test)]
 mod encode_tests {
     use rand::random;
