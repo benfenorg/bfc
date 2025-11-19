@@ -82,7 +82,7 @@ async  fn test_solana_test_cluster_builder() {
         .with_solana_chain_id(BridgeChainId::SolanaTestnet)
         .with_bridge_cluster(true)
         .with_num_validators(3)
-        .build_solana_env()
+        .build()
         .await;
 }
 

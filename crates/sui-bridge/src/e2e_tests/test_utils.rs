@@ -377,7 +377,8 @@ impl BridgeTestClusterBuilder {
         info!("Solana WS URL: {ws_url}");
         info!("Solana Faucet URL: {faucet_url}");
         
-        let mut sol_environment=SolanaBridgeEnvironment::new(&rpc_url, rpc_port, faucet_port);
+        let mut sol_environment=SolanaBridgeEnvironment::new(&rpc_url, rpc_port, faucet_port).await.unwrap_or_else(|e| panic!("Failed to start solana environment {e}"));
+        tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
         let solana_signer = sol_environment.get_signer().await.unwrap_or_else(|e| panic!("Failed to get solana signer {e}"));
         // Airdrop can be rate-limited; retry with exponential backoff for robustness.
         for attempt in 1..=5 {
@@ -1089,7 +1090,7 @@ pub struct SolanaBridgeEnvironment {
 }
 
 impl SolanaBridgeEnvironment{
-    pub fn new(rpc_url: &str, rpc_port: u16, faucet_port: u16) -> Self{
+    pub async fn new(rpc_url: &str, rpc_port: u16, faucet_port: u16) -> anyhow::Result<SolanaBridgeEnvironment>{
         let program_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/benfen_bridge.so");
         let program_id_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/benfen_bridge-keypair.json");
         if !program_path.exists() {
@@ -1115,13 +1116,20 @@ impl SolanaBridgeEnvironment{
         // program_keypair.
         let program_id = program_keypair.pubkey().to_string();
 
-        
-        fs::create_dir_all("/tmp/solana-test-ledger").expect("failed to create /tmp/solana-test-ledger file");
+        // Use a unique ledger directory per run to avoid conflicts.
+        let mut rng = SmallRng::from_entropy();
+        let ledger_path = format!(
+            "/tmp/solana-test-ledger-{}-{}",
+            std::process::id(),
+            rng.gen::<u32>()
+        );
+        fs::create_dir_all(&ledger_path)
+            .expect("failed to create unique solana-test-ledger directory");
         let solana_environment_process = std::process::Command::new("solana-test-validator")
             .arg("--rpc-port").arg(rpc_port.to_string())
             .arg("--faucet-port").arg(faucet_port.to_string())
             .arg("--ledger")
-            .arg("/tmp/solana-test-ledger")
+            .arg(&ledger_path)
             .arg("--reset")
             .arg("--quiet")
             .arg("--bpf-program")
@@ -1130,14 +1138,57 @@ impl SolanaBridgeEnvironment{
             .spawn()
             .expect("Failed to start solana-test-validator");
 
+         Self::wait_for_rpc_ready(rpc_url, Duration::from_secs(15)).await?;
+
+         Self::wait_for_program_loaded(rpc_url, program_keypair.pubkey(), Duration::from_secs(15)).await?;
 
         let env = Self {
             rpc_url: rpc_url.to_string(),
             process: solana_environment_process,
             contract:  program_keypair.pubkey(),
         };
+        Ok(env)
+    }
 
-        env
+
+     async fn wait_for_rpc_ready(rpc_url: &str, timeout: Duration) -> anyhow::Result<()> {
+        let client = RpcClient::new(rpc_url.to_string());
+        let start = std::time::Instant::now();
+
+        loop {
+            if start.elapsed() > timeout {
+                anyhow::bail!("RPC not ready");
+            }
+
+            if client.get_health().is_ok() {
+                return Ok(());
+            }
+
+            tokio::time::sleep(Duration::from_millis(200)).await;
+        }
+    }
+
+    async fn wait_for_program_loaded(
+        rpc_url: &str,
+        program_id: Pubkey,
+        timeout: Duration,
+    ) -> anyhow::Result<()> {
+        let client = RpcClient::new(rpc_url.to_string());
+        let start = std::time::Instant::now();
+
+        loop {
+            if start.elapsed() > timeout {
+                anyhow::bail!("Program not loaded");
+            }
+
+            if let Ok(acc) = client.get_account(&program_id) {
+                if acc.executable {
+                    return Ok(());
+                }
+            }
+
+            tokio::time::sleep(Duration::from_millis(200)).await;
+        }
     }
 
 
