@@ -2021,7 +2021,7 @@ fun test_defi_stake_exceeds_limit() {
     let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
     let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
     // Set amount to exceed the limit (100_000_000_000_000)
-    let amount = 200_000_000_000_000u64;
+    let amount = 2_100_000_000_000_000u64;
 
     scenario.next_tx(@0x0);
     let coin = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount, &cap, scenario.ctx());
