@@ -65,7 +65,7 @@ pub enum ResultCode {
 
 impl ResultCode {
     pub fn from_message(error_msg: &str) -> Self {
-        if error_msg.contains("ZKLogin expired at epoch") {
+        if error_msg.contains("ZKLogin expired at epoch") || error_msg.contains("JWK not found") {
             ResultCode::SignatureExpired
         } else {
             ResultCode::InternalError
@@ -92,6 +92,7 @@ pub async fn verify_zk_login_sig(
 
     let sig_decode_bytes = &Base64::decode(&sig).map_err(|e| anyhow!("Invalid base64 sig: {:?}", e))?;
     let zk = ZkLoginAuthenticator::from_bytes(sig_decode_bytes)?;
+    info!("author: {}, this sig's maxEpoch={}", author, zk.get_max_epoch());
 
     let client = Client::new();
     let provider = OIDCProvider::from_iss(zk.get_iss())

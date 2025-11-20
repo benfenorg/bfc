@@ -324,7 +324,7 @@ members = [
 
 [workspace.package]
 # This version string will be inherited by sui-core, sui-faucet, sui-node, sui-tools, sui-sdk, sui-move-build, and sui crates.
-version = "1.24.2"
+version = "1.24.3"
 
 [profile.release]
 # debug = 1 means line charts only, which is minimum needed for good stack traces
@@ -711,10 +711,10 @@ move-abstract-interpreter = { path = "external-crates/move/crates/move-abstract-
 move-abstract-stack = { path = "external-crates/move/crates/move-abstract-stack" }
 move-analyzer = { path = "external-crates/move/crates/move-analyzer" }
 
-fastcrypto = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "cd6e673b852a1912437e44fb70fdc4aa460f7375" }
-fastcrypto-tbls = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "cd6e673b852a1912437e44fb70fdc4aa460f7375" }
-fastcrypto-zkp = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "cd6e673b852a1912437e44fb70fdc4aa460f7375", package = "fastcrypto-zkp" }
-fastcrypto-vdf = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "cd6e673b852a1912437e44fb70fdc4aa460f7375", features = [
+fastcrypto = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "2279770c72e5abb8daaef83ca6d21e6aedc2c981" }
+fastcrypto-tbls = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "2279770c72e5abb8daaef83ca6d21e6aedc2c981" }
+fastcrypto-zkp = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "2279770c72e5abb8daaef83ca6d21e6aedc2c981", package = "fastcrypto-zkp" }
+fastcrypto-vdf = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "2279770c72e5abb8daaef83ca6d21e6aedc2c981", features = [
     "experimental",
 ] }
 passkey-types = { version = "0.2.0" }
