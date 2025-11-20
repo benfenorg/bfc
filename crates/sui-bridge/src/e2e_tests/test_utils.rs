@@ -8,6 +8,7 @@ use crate::crypto::BridgeAuthorityKeyPair;
 use crate::crypto::BridgeAuthorityPublicKeyBytes;
 use crate::crypto::BridgeAuthoritySignInfo;
 use crate::e2e_tests::auth;
+use crate::encoding::BridgeMessageEncoding;
 use crate::events::*;
 use crate::metrics::BridgeMetrics;
 use crate::server::BridgeNodePublicMetadata;
@@ -101,10 +102,16 @@ use solana_sdk::{
     pubkey::Pubkey,
 };
 anchor_lang::declare_program!(benfen_bridge);
-use benfen_bridge::{client::accounts, client::args, accounts::BridgeConfig, accounts::Committee};
+use benfen_bridge::{
+    client::accounts, 
+    client::args, 
+    accounts::BridgeConfig, 
+    accounts::Committee,
+    accounts::TokenConfigAccount,
+};
 
 use anchor_lang;
-use anchor_client::{Client, Cluster};
+use anchor_client::{Program,Client, Cluster};
 use solana_client::rpc_client::RpcClient;
 use spl_token;
 
@@ -379,7 +386,7 @@ impl BridgeTestClusterBuilder {
         info!("Solana WS URL: {ws_url}");
         info!("Solana Faucet URL: {faucet_url}");
         
-        let mut sol_environment=SolanaBridgeEnvironment::new(&rpc_url, rpc_port, faucet_port).await.unwrap_or_else(|e| panic!("Failed to start solana environment {e}"));
+        let  sol_environment=SolanaBridgeEnvironment::new(&rpc_url,&ws_url, rpc_port, faucet_port).await.unwrap_or_else(|e| panic!("Failed to start solana environment {e}"));
         tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
         let solana_signer = sol_environment.get_signer().await.unwrap_or_else(|e| panic!("Failed to get solana signer {e}"));
         // Airdrop can be rate-limited; retry with exponential backoff for robustness.
@@ -470,6 +477,13 @@ impl BridgeTestCluster {
     pub fn sui_chain_id(&self) -> BridgeChainId {
         self.sui_chain_id
     }
+    pub fn solana_chain_id(&self) -> BridgeChainId {
+        self.solana_chain_id
+    }
+
+    pub fn solana_rpc_url(&self) -> String {
+        self.sol_environment.rpc_url.clone()
+    }
 
     pub fn eth_chain_id(&self) -> BridgeChainId {
         self.eth_chain_id
@@ -477,6 +491,10 @@ impl BridgeTestCluster {
 
     pub fn eth_env(&self) -> &EthBridgeEnvironment {
         &self.eth_environment
+    }
+
+    pub fn solana_env(&self) -> &SolanaBridgeEnvironment {
+        &self.sol_environment
     }
 
     pub fn contracts(&self) -> &DeployedSolContracts {
@@ -964,6 +982,50 @@ pub(crate) fn get_init_solana_pda(chain_id: u8) -> SolanaPDA {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct SolanaAddTokenPDAs {
+    pub bridge_config: Pubkey,
+    pub bridge_committee: Pubkey,
+    pub message_verifier: Pubkey,
+    pub bridge_limiter: Pubkey,
+    pub benfen_bridge: Pubkey,
+    pub token_config: Pubkey,
+    pub message_config: Pubkey,
+    pub vault: Pubkey,
+}
+
+pub(crate) fn get_token_solana_pdas(benfen_chain_id: u8, token_id: u64, message_type: u8) -> SolanaAddTokenPDAs {
+    let base = get_init_solana_pda(benfen_chain_id);
+    let token_id_bytes = token_id.to_be_bytes();
+
+    let token_config = Pubkey::find_program_address(
+        &[b"token_config", &token_id_bytes],
+        &benfen_bridge::ID,
+    ).0;
+
+    let vault = Pubkey::find_program_address(
+        &[b"vault", &token_id_bytes],
+        &benfen_bridge::ID,
+    ).0;
+
+    let message_config = Pubkey::find_program_address(
+        &[b"message_config", &[message_type], base.message_verifier.as_ref()],
+        &benfen_bridge::ID,
+    ).0;
+
+
+    SolanaAddTokenPDAs {
+        bridge_config: base.bridge_config,
+        bridge_committee: base.bridge_committee,
+        message_verifier: base.message_verifier,
+        bridge_limiter: base.bridge_limiter,
+        benfen_bridge: base.benfen_bridge,
+        token_config,
+        message_config,
+        vault,
+    }
+}
+
 
 
 pub(crate) async fn deploy_sol_contract(
@@ -1148,12 +1210,13 @@ pub(crate) async fn deploy_sol_contract(
 #[derive(Debug)]
 pub struct SolanaBridgeEnvironment {
     pub rpc_url: String,
+    pub ws_url: String,
     process: Child,
     contract: Pubkey,
 }
 
 impl SolanaBridgeEnvironment{
-    pub async fn new(rpc_url: &str, rpc_port: u16, faucet_port: u16) -> anyhow::Result<SolanaBridgeEnvironment>{
+    pub async fn new(rpc_url: &str, ws_url: &str,rpc_port: u16, faucet_port: u16) -> anyhow::Result<SolanaBridgeEnvironment>{
         let program_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/benfen_bridge.so");
         let program_id_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/benfen_bridge-keypair.json");
         if !program_path.exists() {
@@ -1207,6 +1270,7 @@ impl SolanaBridgeEnvironment{
 
         let env = Self {
             rpc_url: rpc_url.to_string(),
+            ws_url: ws_url.to_string(),
             process: solana_environment_process,
             contract:  program_keypair.pubkey(),
         };
@@ -1896,6 +1960,91 @@ pub struct TestClusterWrapper {
     pub inner: TestCluster,
     pub bridge_authority_keys: Vec<BridgeAuthorityKeyPair>,
     pub bridge_server_ports: Vec<u16>,
+}
+
+pub async fn add_coin_on_solana(
+    action: VerifiedCertifiedBridgeAction,
+    rpc_url: &str,
+    ws_url: &str,
+    solana_signer: std::sync::Arc<Keypair>,
+    mint_address: Pubkey,
+    token_id: u64,
+)->anyhow::Result<()>{
+    let client = Client::new_with_options(
+        Cluster::Custom(rpc_url.to_string(), ws_url.to_string()),
+        solana_signer.clone(),
+        CommitmentConfig::confirmed(),
+    );
+
+    let program = client.program(benfen_bridge::ID)?;
+    //on solana
+    let add_token_type=crate::types::BridgeActionType::AddTokensOnSolana as u8; 
+    let add_token_pdas = get_token_solana_pdas(
+        BridgeChainId::SuiCustom as u8,
+        token_id,
+        add_token_type,
+    );
+
+
+    let sigs = action.auth_sig();
+    let payload = action.clone().as_payload_bytes();
+
+    // Convert signatures to Vec<Vec<u8>> to match Anchor arg type
+    let signatures = sigs
+        .signatures
+        .values()
+        .map(|sig| sig.as_ref().to_vec())
+        .collect::<Vec<Vec<u8>>>();
+    
+     let add_token_ix = program
+        .request()
+        .accounts(accounts::AddTokenToBridge {
+            payer: solana_signer.pubkey(),
+            message_config: add_token_pdas.message_config,
+            verifier: add_token_pdas.message_verifier,
+            token_vault: add_token_pdas.vault,
+            token_config: add_token_pdas.token_config,
+            chain_limit: add_token_pdas.bridge_limiter,
+            bridge_config: add_token_pdas.bridge_config,
+            benfen_bridge: add_token_pdas.benfen_bridge,
+            token_mint: mint_address,
+            committee: add_token_pdas.bridge_committee,
+            token_program: spl_token::ID,
+            system_program: system_program::ID,
+        })
+        .args(args::AddTokenToBridge {
+            token_id,
+            message_type: add_token_type,
+            version: 1,
+            nonce: action.clone().seq_number(),
+            chain_id: action.clone().chain_id() as u8,
+            payload,
+            signatures: signatures,
+        })
+        .instructions()?
+        .remove(0);
+
+
+    let signature = program
+        .request()
+        .instruction(add_token_ix)
+        .signer(solana_signer.clone())
+        .send()
+        .await?;
+
+    info!("add_token signature: {:?}", signature);
+
+
+    //校验token 是否已经存在
+    let new_token_account = program
+        .account::<TokenConfigAccount>(add_token_pdas.token_config)
+        .await?;
+    // Avoid taking references to packed fields: copy to locals first
+    let actual_token_id = new_token_account.token_id;
+    let actual_mint = new_token_account.mint;
+    assert_eq!(actual_token_id, actual_token_id);
+    assert_eq!(actual_mint, mint_address);    
+    Ok(())
 }
 
 impl TestClusterWrapper {

@@ -332,6 +332,18 @@ impl BridgeClient {
                     "sign/add_tokens_on_evm/{chain_id}/{nonce}/{native}/{token_ids}/{token_addresses}/{token_sui_decimals}/{token_prices}"
                 )
             }
+            BridgeAction::AddTokenOnSolanaAction(a) => {
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let native = if a.native { "1" } else { "0" };
+                let token_id = a.token_id.to_string();
+                let token_address = a.token_address.to_string();
+                let benfen_decimal = a.benfen_decimal.to_string();
+                let token_price = a.token_price.to_string();
+                format!(
+                    "sign/add_token_on_solana/{chain_id}/{nonce}/{native}/{token_id}/{token_address}/{benfen_decimal}/{token_price}"
+                )
+            }
             BridgeAction::FastPathLimitUpdateAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();

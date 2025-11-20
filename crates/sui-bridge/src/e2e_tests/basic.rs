@@ -8,6 +8,7 @@ use crate::e2e_tests::test_utils::TestClusterWrapperBuilder;
 use crate::e2e_tests::test_utils::{
     get_signatures, initiate_bridge_erc20_to_sui, initiate_bridge_eth_to_sui,
     initiate_bridge_sui_to_eth, send_eth_tx_and_get_tx_receipt, BridgeTestClusterBuilder,
+    add_coin_on_solana,
 };
 use crate::eth_transaction_builder::build_eth_transaction;
 use crate::events::{
@@ -30,8 +31,8 @@ use crate::sui_transaction_builder::{
 use sui_json_rpc_types::SuiObjectDataOptions;
 // use ethers::types::Address;
 use ethers::types::Address as EthAddress;
-use sui_config::local_ip_utils::get_available_port;
-use std::fs;
+
+use solana_client::rpc_client::RpcClient;
 
 
 use crate::types::{
@@ -61,6 +62,8 @@ use sui_types::bridge::{
 };
 use sui_types::{TypeTag, SUI_BRIDGE_OBJECT_ID};
 use tracing::info;
+use solana_sdk::pubkey::Pubkey;
+use solana_sdk::commitment_config::CommitmentConfig;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_eth_test_cluster_builder() {
@@ -1469,6 +1472,86 @@ async fn test_set_single_transfer_limit_on_eth() {
         .await;
 
     assert_eq!(amount, limit);
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+async fn test_add_new_coin_on_solana() {
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_solana_env(true)
+        .with_solana_chain_id(BridgeChainId::SolanaTestnet)
+        .with_bridge_cluster(false)
+        .with_num_validators(3) 
+        .build()
+        .await;
+
+    let rpc_url = bridge_test_cluster.solana_rpc_url();
+    
+    let solana_signer = bridge_test_cluster
+        .solana_env()
+        .get_signer()
+        .await
+        .expect("Failed to get solana signer");
+    let token_id=4;
+    let sol_client=Arc::new(RpcClient::new_with_commitment(
+        rpc_url,
+        CommitmentConfig::confirmed(),
+    ));
+    let usdc_deployment_result = crate::utils::deploy_usdc(&sol_client, &solana_signer, 1000000, 6)
+        .await
+        .expect("Failed to deploy USDC");
+    let token_address = usdc_deployment_result.mint;   
+    let benfen_decimal = 9;
+    let token_price = 10000;
+    let nonce = 0;
+
+    let add_solana_coin_action = crate::utils::new_add_coin_on_solana_action(
+        token_id,
+        token_address,
+        benfen_decimal,
+        token_price,
+        nonce,
+    );
+
+    bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![add_solana_coin_action.clone(), add_solana_coin_action.clone()],
+        vec![add_solana_coin_action.clone()],
+        vec![add_solana_coin_action.clone()],
+    ]);
+
+    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee"),
+    );
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_solana_action = agg
+        .request_committee_signatures(add_solana_coin_action)
+        .await
+        .expect("Failed to request committee signatures for AddTokenOnSolanaAction");
+
+     let env=bridge_test_cluster
+        .solana_env();
+
+    add_coin_on_solana(
+        certified_solana_action,
+        &env.rpc_url,
+        &env.ws_url,
+        solana_signer.clone(),
+        token_address,
+        token_id,
+    )
+    .await
+    .expect("Failed to add USDC on Solana");
+
 }
 
 // Test add new coins on both Sui and Eth

@@ -26,7 +26,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Debug;
 use strum_macros::Display;
 use sui_types::base_types::SuiAddress;
-use sui_types::bridge::{BridgeChainId, MoveTypeParsedTokenTransferMessageV2, MoveTypeTokenTransferPayload, MoveTypeTokenTransferPayloadV2, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, APPROVAL_THRESHOLD_FAST_PATH_LIMIT_UPDATE, APPROVAL_THRESHOLD_REFUND_ADMIN, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER, BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER, TOKEN_ID_USDC, TOKEN_ID_USDT};
+use sui_types::bridge::{BridgeChainId, MoveTypeParsedTokenTransferMessageV2, MoveTypeTokenTransferPayload, MoveTypeTokenTransferPayloadV2, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SOLANA,APPROVAL_THRESHOLD_FAST_PATH_LIMIT_UPDATE, APPROVAL_THRESHOLD_REFUND_ADMIN, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER, BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER, TOKEN_ID_USDC, TOKEN_ID_USDT};
 use sui_types::bridge::{
     MoveTypeParsedTokenTransferMessage, APPROVAL_THRESHOLD_ASSET_PRICE_UPDATE,
     APPROVAL_THRESHOLD_COMMITTEE_BLOCKLIST, APPROVAL_THRESHOLD_EMERGENCY_PAUSE,
@@ -48,6 +48,7 @@ use sui_types::crypto::ToFromBytes;
 use sui_types::digests::{Digest, TransactionDigest};
 use sui_types::message_envelope::{Envelope, Message, VerifiedEnvelope};
 use sui_types::TypeTag;
+use solana_sdk::pubkey::Pubkey;
 
 pub const BRIDGE_AUTHORITY_TOTAL_VOTING_POWER: u64 = 10000;
 
@@ -233,6 +234,9 @@ pub enum BridgeActionType {
     SetCrossOutBridgeFee = 20,
     SetCrossInBridgeFee = 21,
     WithdrawBridgeFee = 22,
+
+    //solana start
+    AddTokensOnSolana = 30,
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -510,6 +514,17 @@ pub struct AddTokensOnSuiAction {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct AddTokenOnSolanaAction{
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub native: bool,
+    pub token_id: u64,
+    pub token_address: Pubkey,
+    pub benfen_decimal: u8,
+    pub token_price: u64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct AddTokensOnEvmAction {
     pub nonce: u64,
     pub chain_id: BridgeChainId,
@@ -552,6 +567,7 @@ pub enum BridgeAction {
     WithdrawBridgeFeeAction(WithdrawBridgeFeeAction),
     AddTokensOnSuiAction(AddTokensOnSuiAction),
     AddTokensOnEvmAction(AddTokensOnEvmAction),
+    AddTokenOnSolanaAction(AddTokenOnSolanaAction),
 }
 
 impl BridgeAction {
@@ -595,6 +611,7 @@ impl BridgeAction {
             BridgeAction::WithdrawBridgeFeeAction(a) => a.chain_id,
             BridgeAction::AddTokensOnSuiAction(a) => a.chain_id,
             BridgeAction::AddTokensOnEvmAction(a) => a.chain_id,
+            BridgeAction::AddTokenOnSolanaAction(a) => a.chain_id,
             BridgeAction::RefundAdminAction(a) => a.chain_id,
             BridgeAction::FastPathLimitUpdateAction(a) => a.chain_id,
         }
@@ -622,6 +639,7 @@ impl BridgeAction {
             BridgeActionType::WithdrawBridgeFee => true,
             BridgeActionType::AddTokensOnSui => true,
             BridgeActionType::AddTokensOnEvm => true,
+            BridgeActionType::AddTokensOnSolana => true,
             BridgeActionType::RefundAdmin => true,
             BridgeActionType::FastPathLimitUpdate => true,
         }
@@ -653,6 +671,7 @@ impl BridgeAction {
             BridgeAction::WithdrawBridgeFeeAction(_) => BridgeActionType::WithdrawBridgeFee,
             BridgeAction::AddTokensOnSuiAction(_) => BridgeActionType::AddTokensOnSui,
             BridgeAction::AddTokensOnEvmAction(_) => BridgeActionType::AddTokensOnEvm,
+            BridgeAction::AddTokenOnSolanaAction(_) => BridgeActionType::AddTokensOnSolana,
             BridgeAction::RefundAdminAction(_) => BridgeActionType::RefundAdmin,
             BridgeAction::FastPathLimitUpdateAction(_) => BridgeActionType::FastPathLimitUpdate,
         }
@@ -684,6 +703,7 @@ impl BridgeAction {
             BridgeAction::WithdrawBridgeFeeAction(a) => a.nonce,
             BridgeAction::AddTokensOnSuiAction(a) => a.nonce,
             BridgeAction::AddTokensOnEvmAction(a) => a.nonce,
+            BridgeAction::AddTokenOnSolanaAction(a) => a.nonce,
             BridgeAction::RefundAdminAction(a) => a.nonce,
             BridgeAction::FastPathLimitUpdateAction(a) => a.nonce,
         }
@@ -717,6 +737,7 @@ impl BridgeAction {
             BridgeAction::WithdrawBridgeFeeAction(_) => APPROVAL_THRESHOLD_WITHDRAW_BRIDGE_FEE,
             BridgeAction::AddTokensOnSuiAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI,
             BridgeAction::AddTokensOnEvmAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM,
+            BridgeAction::AddTokenOnSolanaAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_SOLANA,
             BridgeAction::RefundAdminAction(_) => APPROVAL_THRESHOLD_REFUND_ADMIN,
             BridgeAction::FastPathLimitUpdateAction(_) => APPROVAL_THRESHOLD_FAST_PATH_LIMIT_UPDATE,
         }
