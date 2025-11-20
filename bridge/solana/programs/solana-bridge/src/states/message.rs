@@ -54,7 +54,7 @@ pub const UPGRADE: u8 = 5;
 // pub const ADD_EVM_TOKENS: u8 = 7;
 
 pub const UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT: u8 = 19;
-pub const ADD_SVM_TOKENS: u8 = 20;
+pub const ADD_SVM_TOKENS: u8 = 30;
 
 
 

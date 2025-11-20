@@ -27,3 +27,5 @@ serde_json.workspace = true
 telemetry-subscribers.workspace = true
 reqwest.workspace = true
 futures.workspace = true
+solana-sdk = "=2.3.1"
+anchor-client = { version = "0.32.1", features = ["async"] }
