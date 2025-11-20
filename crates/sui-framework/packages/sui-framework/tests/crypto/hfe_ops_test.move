@@ -1,8 +1,5 @@
 #[test_only]
 module sui::hfe_ops_test {
-    use std::debug;
-    //use std::uq32_32::le;
-    //use sui::hex;
     use sui::hfe_ops;
     use sui::anonymous_balance::{Self};
     use sui::test_utils::assert_eq;

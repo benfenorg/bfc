@@ -1,12 +1,8 @@
 
-use mpc_transmission::{
-    split_to_two_value,
-    recover_value,
-};
 #[cfg(test)]
 mod encode_tests {
     use rand::random;
-    use mpc_transmission::{recover_two_shares, recover_value, split_to_two_value};
+    use mpc_transmission::{recover_value, split_to_two_value};
 
     #[test]
     fn test_encode_decode_share_data_roundtrip() {
