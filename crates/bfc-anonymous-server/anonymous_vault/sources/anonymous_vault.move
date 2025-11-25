@@ -5,6 +5,8 @@ use sui::vec_map::{Self, VecMap};
 use std::ascii;
 use sui::clock::{Self, Clock};
 use sui::dynamic_field;
+use sui::anonymous_coin::{Self, Anonymous_Coin,join};
+
 
 const ENOT_ADMIN: u64 = 0;
 const ADMIN_ALREADY_EXISTS: u64 = 1;
@@ -38,15 +40,30 @@ public struct AnonymousVault has key, store {
     can_init_admin_status: bool,
     actions: vector<VaultAction>,
 
-
+    //1. use dynamic field to store objects: upgradeCap, treasuryCap, etc
+    //2. use VecMap to store tokens [token don't have key and store ability]
 
 }
+public struct VaultTokenPool<phantom T1, phantom T2> has store, key {
+    id: UID,
+    anonymous_coin_1: Anonymous_Coin<T1>,
+    anonymous_coin_2: Anonymous_Coin<T2>
+}
+
+
 
 fun init(ctx: &mut TxContext) {
     let vault = create_anonymous_vault(ctx);
-
     transfer::share_object(vault);
+}
 
+
+entry fun init_token_pool<T1, T2>(anonymous_coin_1: Anonymous_Coin<T1>, anonymous_coin_2: Anonymous_Coin<T2>, ctx: &mut TxContext) {
+    transfer::share_object(VaultTokenPool {
+        id: object::new(ctx),
+        anonymous_coin_1,
+        anonymous_coin_2,
+    })
 }
 
 entry fun init_admin(admin: address, vault: &mut AnonymousVault) {
@@ -63,10 +80,31 @@ entry fun init_admin(admin: address, vault: &mut AnonymousVault) {
 }
 
 
+entry fun deposit_token1_to_valut_pool<T1, T2>( mut anonymous_coin: Anonymous_Coin<T1>,
+                                                pool: &mut VaultTokenPool<T1, T2>, ctx: &mut TxContext){
+    let sender = tx_context::sender(ctx);
+    join(&mut pool.anonymous_coin_1, anonymous_coin, ctx);
+
+
+}
+
+
+entry fun deposit_token2_to_valut_pool<T1, T2>( mut anonymous_coin: Anonymous_Coin<T2>,
+                                                pool: &mut VaultTokenPool<T1, T2>, ctx: &mut TxContext){
+    let sender = tx_context::sender(ctx);
+    join(&mut pool.anonymous_coin_2, anonymous_coin, ctx);
+
+
+}
+
+
+
+
 entry fun deposit_object_to_vault<T: key + store>( obj: T, object_key: ascii::String,  vault: &mut AnonymousVault, ctx: &mut TxContext){
     //transfer object to sub vault for objects
     let sender = tx_context::sender(ctx);
     assert!(vector_contains(&vault.admins, &sender), ENOT_ADMIN);
+
     let obj_id = object::id(&obj);
 
     // 检查对象是否已存在
@@ -138,7 +176,13 @@ public fun create_anonymous_vault(ctx: &mut TxContext): AnonymousVault {
     }
 }
 
+fun withdraw_token1(){
 
+}
+
+fun withdraw_token2() {
+
+}
 
 public struct VaultAction has key, store {
     id: UID,
