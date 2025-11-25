@@ -9,3 +9,11 @@
 7. Optionally, run `cargo insta test` and `cargo insta review` since the sui-framework build will change the empty genesis config.
 
 Note: The gas metering for native functions is currently a WIP; use a dummy value for now and please open an issue with `move` label.
+
+
+
+#test for move annoymous_coin
+bfc move test annoymous
+
+======================
+UPDATE=1 cargo test -p sui-framework --test build-system-packages

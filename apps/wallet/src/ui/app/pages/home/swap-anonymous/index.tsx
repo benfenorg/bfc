@@ -5,14 +5,18 @@ import { Button } from '_app/shared/ButtonUI';
 import { Text } from '_app/shared/text';
 import Overlay from '_src/ui/app/components/overlay';
 import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
-import { useChainData } from '_src/ui/app/hooks';
 import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
 import { useDryRunTransaction } from '_src/ui/app/hooks/useDryRunTransaction';
 import { useSigner } from '_src/ui/app/hooks/useSigner';
 import BottomMenuLayout, { Content, Menu } from '_src/ui/app/shared/bottom-menu-layout';
 import { InputWithAction } from '_src/ui/app/shared/InputWithAction';
 import { Transaction } from '@benfen/bfc.js/transactions';
-import { BFC_DECIMALS, BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
+import {
+	BFC_DECIMALS,
+	BFC_TYPE_ARG,
+	normalizeStructTag,
+	parseStructTag,
+} from '@benfen/bfc.js/utils';
 import { useGetAllAnonymousCoins } from '@mysten/core';
 import { ArrowRight16 } from '@mysten/icons';
 import { useMutation } from '@tanstack/react-query';
@@ -24,6 +28,8 @@ import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 
 const initialValues = {
+	pool: '',
+	type: '',
 	amount: '',
 	swapOut: false,
 };
@@ -31,6 +37,8 @@ const initialValues = {
 type FormValues = typeof initialValues;
 
 const validationSchema = Yup.object({
+	pool: Yup.string().required(),
+	type: Yup.string().required(),
 	amount: Yup.mixed<BigNumber>()
 		.transform((_, original) => new BigNumber(original))
 		.test('required', `\${path} is a required field`, (value) => {
@@ -47,7 +55,6 @@ export const SwapAnonymous = () => {
 	const dryrun = useDryRunTransaction();
 	const signer = useSigner(activeAccount);
 
-	const { ANONYMOUS_SWAP_POOL } = useChainData();
 	const { data: anonymousCoins, refetch: refetchCoins } = useGetAllAnonymousCoins(
 		activeAccount?.address,
 	);
@@ -58,11 +65,17 @@ export const SwapAnonymous = () => {
 			const tx = new Transaction();
 			const bn = new BigNumber(values.amount).shiftedBy(BFC_DECIMALS).toString();
 			if (values.swapOut) {
-				const [primary, ...others] = anonymousCoins!;
+				const coins = (anonymousCoins || []).filter(
+					(i) => normalizeStructTag(parseStructTag(i.balance.type).typeParams[0]) === values.type,
+				);
+				if (!coins) {
+					throw new Error('No coins found');
+				}
+				const [primary, ...others] = coins;
 				if (others.length > 0) {
 					tx.moveCall({
 						target: `0x2::anonymous_pay::join_vec`,
-						typeArguments: ['0x2::abfc::ABFC'],
+						typeArguments: [values.type],
 						arguments: [
 							tx.object(primary.id.id),
 							tx.makeMoveVec({ elements: others.map((i) => tx.object(i.id.id)) }),
@@ -72,14 +85,14 @@ export const SwapAnonymous = () => {
 
 				tx.moveCall({
 					target: `0x2::anonymous_coin::swap_out_with_amount`,
-					typeArguments: ['0x2::abfc::ABFC', BFC_TYPE_ARG],
-					arguments: [tx.object(primary.id.id), tx.pure.u64(bn), tx.object(ANONYMOUS_SWAP_POOL)],
+					typeArguments: [values.type, BFC_TYPE_ARG],
+					arguments: [tx.object(primary.id.id), tx.pure.u64(bn), tx.object(values.pool)],
 				});
 			} else {
 				tx.moveCall({
 					target: `0x2::anonymous_coin::swap_in`,
-					typeArguments: ['0x2::abfc::ABFC', BFC_TYPE_ARG],
-					arguments: [tx.splitCoins(tx.gas, [bn]), tx.object(ANONYMOUS_SWAP_POOL)],
+					typeArguments: [values.type, BFC_TYPE_ARG],
+					arguments: [tx.splitCoins(tx.gas, [bn]), tx.object(values.pool)],
 				});
 			}
 
@@ -130,6 +143,24 @@ export const SwapAnonymous = () => {
 									<Content>
 										<Form autoComplete={'off'} noValidate={true}>
 											<div className="w-full flex flex-col flex-grow">
+												<div className="px-2 mb-2.5">
+													<Text variant="caption" color="steel" weight="semibold">
+														Anonymous Coin Type
+													</Text>
+												</div>
+												<InputWithAction type="text" name="type" placeholder="" rounded="lg" dark />
+											</div>
+
+											<div className="w-full flex flex-col flex-grow mt-7.5">
+												<div className="px-2 mb-2.5">
+													<Text variant="caption" color="steel" weight="semibold">
+														Swap Pool
+													</Text>
+												</div>
+
+												<InputWithAction type="text" name="pool" placeholder="" rounded="lg" dark />
+											</div>
+											<div className="w-full flex flex-col flex-grow mt-7.5">
 												<div className="px-2 mb-2.5">
 													<Text variant="caption" color="steel" weight="semibold">
 														Select Coin Amount to Swap

@@ -92,7 +92,7 @@ pub async fn verify_zk_login_sig(
     };
 
     let verify_params =
-        VerifyParams::new(parsed, vec![], zklogin_env, true, true, Some(30));
+        VerifyParams::new(parsed, vec![], zklogin_env, true, true, Some(365));
 
     let (_serialized, res) = match IntentScope::try_from(intent_scope)
         .map_err(|_| anyhow!("Invalid scope"))? {

@@ -11,7 +11,7 @@ use sui_types::{
 use test_cluster::TestClusterBuilder;
 
 #[sim_test]
-async fn test_additional_objects() {
+async fn sim_test_additional_objects() {
     // Test the ability to add additional objects into genesis for test clusters
     let id = ObjectID::random();
     let cluster = TestClusterBuilder::new()

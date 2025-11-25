@@ -45,7 +45,7 @@ async fn main() -> anyhow::Result<()> {
             .expect("Couldn't get current directory")
             .join("config.yaml")
     };
-    
+    tracing_subscriber::fmt::init();
     let bridge_metrics = Arc::new(BridgeMetrics::new_for_testing());
     let sui_bridge_client =
         SuiBridgeClient::new(&args.sui_rpc_url, bridge_metrics.clone()).await?;
@@ -59,7 +59,8 @@ async fn main() -> anyhow::Result<()> {
         // Get bridge summary
         let bridge_summary = sui_bridge_client.get_bridge_summary().await;
         if bridge_summary.is_err() {
-            panic!("get price summary error!");
+            error!("get price summary error!");
+            continue;
         }
         let summary = bridge_summary.clone().unwrap();
         // Get last price

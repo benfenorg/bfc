@@ -509,8 +509,13 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 									</div>
 
 									<div className={'w-full'}>
-										<LargeButton to={'/swap-anonymous'} onClick={() => {}} center={true}>
+										<LargeButton to={'/swap-anonymous'} onClick={() => {}} center>
 											Swap Anonymous Coins
+										</LargeButton>
+									</div>
+									<div className={'w-full'}>
+										<LargeButton to={'/mint-astable'} onClick={() => {}} center>
+											Mint Anonymous Stable
 										</LargeButton>
 									</div>
 								</div>

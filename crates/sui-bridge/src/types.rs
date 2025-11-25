@@ -337,6 +337,7 @@ pub struct FastPathLimitUpdateAction {
     pub chain_id: BridgeChainId,
     pub token_id: u64,
     pub amount: u64,
+    pub chain_id_evm: BridgeChainId,
 }
 
 #[derive(

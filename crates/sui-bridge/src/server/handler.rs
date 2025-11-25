@@ -187,6 +187,18 @@ where
                 info!("bbking action_clone mut: {:?}", action_clone);
                 Ok(action_clone)
             }
+            BridgeChainId::AptosMainnet| BridgeChainId::AptosTestnet => {
+                // Aptos is not supported yet
+                Err(BridgeError::Generic(
+                    "Aptos chain is not supported yet".to_string(),
+                ))
+            }
+            BridgeChainId::SuiOfficialMainnet | BridgeChainId::SuiOfficialTestnet => {
+                // Sui is not supported yet
+                Err(BridgeError::Generic(
+                    "Sui chain is not supported yet".to_string(),
+                ))
+            }
         }
     }
 }
@@ -329,6 +341,18 @@ where
                     client
                         .get_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx, self.fast_path_config.clone(), Some(FastPathSelector::Finalized))
                         .await
+                }
+                BridgeChainId::AptosMainnet| BridgeChainId::AptosTestnet => {
+                    // Aptos is not supported yet
+                    Err(BridgeError::Generic(
+                        "Aptos chain is not supported yet".to_string(),
+                    ))
+                }
+                BridgeChainId::SuiOfficialMainnet | BridgeChainId::SuiOfficialTestnet => {
+                    // Sui is not supported yet
+                    Err(BridgeError::Generic(
+                        "Sui chain is not supported yet".to_string(),
+                    ))
                 }
             };
 

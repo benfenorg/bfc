@@ -4,11 +4,9 @@
 mod tests {
     use fastcrypto::encoding::{Base64, Encoding};
 
-    use serial_test::serial;
     use bfc_zklogin_simple_rpc::zk_verification::verify_zk_login_sig;
 
     #[tokio::test]
-    #[serial]
     async fn test_base64_encoding() {
         let encode: String = Base64::encode("BFC0f2c739c38c9a580145e335fa93b243ad6ac5a086a72db9da2d69daa1423ce943962:DhCxzCVEhcj7z9oeHKl7pLDZT0nd1uTu1C46A3MzFcA-6X-PnJHgmFXAFg5M4ZFV");
         println!("encode={}", encode);

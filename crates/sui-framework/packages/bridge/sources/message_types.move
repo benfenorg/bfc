@@ -79,4 +79,8 @@ module bridge::message_types {
         WITHDRAW_BRIDGE_FEE
     }
 
+    public fun fast_path_limit_update(): u8{
+        UPDATE_BRIDGE_LIMIT_FAST_PATH
+    }
+
 }

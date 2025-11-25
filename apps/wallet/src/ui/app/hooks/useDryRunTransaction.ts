@@ -16,6 +16,7 @@ export const useDryRunTransaction = () => {
 				throw new Error('Not Connected');
 			}
 			tx.setSenderIfNotSet(activeAccount.address);
+			console.log('useDryRunTransaction::dryRun::transaction', tx);
 			const result = await client.dryRunTransactionBlock({
 				transactionBlock: await tx.build({ client }),
 			});

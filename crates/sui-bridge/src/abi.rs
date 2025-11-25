@@ -1,14 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::encoding::{
-    BridgeMessageEncoding, ADD_TOKENS_ON_EVM_MESSAGE_VERSION, ASSET_PRICE_UPDATE_MESSAGE_VERSION,
-    EVM_CONTRACT_UPGRADE_MESSAGE_VERSION, LIMIT_UPDATE_MESSAGE_VERSION,
-    SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION,
-};
+use crate::encoding::{BridgeMessageEncoding, ADD_TOKENS_ON_EVM_MESSAGE_VERSION, ASSET_PRICE_UPDATE_MESSAGE_VERSION, EVM_CONTRACT_UPGRADE_MESSAGE_VERSION, LIMIT_UPDATE_MESSAGE_VERSION, SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION, TOKEN_TRANSFER_MESSAGE_VERSION_V3};
 use crate::encoding::{
     COMMITTEE_BLOCKLIST_MESSAGE_VERSION, EMERGENCY_BUTTON_MESSAGE_VERSION,
-    TOKEN_TRANSFER_MESSAGE_VERSION,
 };
 use crate::error::{BridgeError, BridgeResult};
 use crate::fast_path::FastPathSelector;
@@ -264,7 +259,7 @@ impl From<SuiToEthBridgeAction> for eth_sui_bridge::Message {
     fn from(action: SuiToEthBridgeAction) -> Self {
         eth_sui_bridge::Message {
             message_type: BridgeActionType::TokenTransfer as u8,
-            version: TOKEN_TRANSFER_MESSAGE_VERSION,
+            version: TOKEN_TRANSFER_MESSAGE_VERSION_V3,
             nonce: action.sui_bridge_event.nonce,
             chain_id: action.sui_bridge_event.sui_chain_id as u8,
             payload: action.as_payload_bytes().into(),

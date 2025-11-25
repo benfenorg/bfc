@@ -1863,7 +1863,7 @@ async fn test_bridge_usdt_to_sui_fast_path_limit() {
         "[Timer] Eth to Sui bridge USDT transfer finished in {:?}",
         timer.elapsed()
     );
-    let result = initiate_bridge_erc20_to_sui(
+    let _result = initiate_bridge_erc20_to_sui(
         &bridge_test_cluster,
         40,
         new_token_erc_address,

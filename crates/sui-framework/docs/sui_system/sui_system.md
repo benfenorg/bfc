@@ -242,6 +242,15 @@ the SuiSystemStateInner version, or vice versa.
 
 
 
+<a name="sui_system_sui_system_EUnsupportedFeature"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui_system/sui_system.md#sui_system_sui_system_EUnsupportedFeature">EUnsupportedFeature</a>: u64 = 2;
+</code></pre>
+
+
+
 <a name="sui_system_sui_system_EWrongInnerVersion"></a>
 
 

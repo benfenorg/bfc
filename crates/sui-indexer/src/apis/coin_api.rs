@@ -132,6 +132,14 @@ impl CoinReadApiServer for CoinReadApi {
             .map_err(Into::into)
     }
 
+    async fn get_anonyment_coin_metadata(&self, coin_type: String) -> RpcResult<Option<SuiCoinMetadata>> {
+        let coin_struct = parse_to_struct_tag(&coin_type)?;
+        self.inner
+            .get_anonyment_coin_metadata(coin_struct)
+            .await
+            .map_err(Into::into)
+    }
+
     async fn get_coin_metadata(&self, coin_type: String) -> RpcResult<Option<SuiCoinMetadata>> {
         let coin_struct = parse_to_struct_tag(&coin_type)?;
         self.inner
@@ -153,6 +161,8 @@ impl CoinReadApiServer for CoinReadApi {
                 .map_err(Into::into)
         }
     }
+
+
 }
 
 impl SuiRpcModule for CoinReadApi {

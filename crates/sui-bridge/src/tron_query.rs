@@ -4,6 +4,7 @@ use tracing::{debug, error, info};
 use bs58;
 use sha2::{Sha256, Digest};
 use hex;
+use serde_json::Value;
 
 const MAINNET_URL: &str = "https://go.getblock.io/8703fc5554244851be7ee8d84c338177";
 const TESTNET_URL: &str = "https://api.shasta.trongrid.io";
@@ -18,26 +19,40 @@ struct JsonRpcRequest<T> {
 
 #[derive(Debug, Deserialize)]
 struct EthTxByHashResponse {
+    #[allow(dead_code)]
     jsonrpc: String,
+    #[allow(dead_code)]
     id: String,
     result: Option<EthTransaction>,
 }
 
 #[derive(Debug, Deserialize)]
 struct EthTransaction {
+    #[allow(dead_code)]
     hash: String,
+    #[allow(dead_code)]
     from: String,
     to: Option<String>,
     value: String,
+    #[allow(dead_code)]
     block_hash: Option<String>,
+    #[allow(dead_code)]
     block_number: Option<String>,
+    #[allow(dead_code)]
     transaction_index: Option<String>,
+    #[allow(dead_code)]
     gas: Option<String>,
+    #[allow(dead_code)]
     gas_price: Option<String>,
+    #[allow(dead_code)]
     input: Option<String>,
+    #[allow(dead_code)]
     nonce: Option<String>,
+    #[allow(dead_code)]
     v: Option<String>,
+    #[allow(dead_code)]
     r: Option<String>,
+    #[allow(dead_code)]
     s: Option<String>,
 }
 
@@ -151,6 +166,40 @@ pub async fn check_tron_txn(
                 return true;
             }
         }
+
+        if let Some(logs) = get_tron_event_logs(chain_id, tx_hash).await {
+            for log in logs {
+                // topics[1] is from，topics[2] is to，data is amount
+                if let (Some(topics), Some(data)) = (log.get("topics"), log.get("data")) {
+                    if let Some(topics) = topics.as_array() {
+                        if topics.len() >= 3 {
+                            let to_addr = topics[2].as_str().unwrap_or("");
+                            let to_addr = if to_addr.starts_with("0x") && to_addr.len() == 66 {
+                                format!("0x{}", &to_addr[26..])
+                            } else {
+                                to_addr.to_string()
+                            };
+                            let is_whitelisted = whitelist.iter().any(|whitelist_addr| {
+                                is_address_match(whitelist_addr, &to_addr)
+                            });
+                            if !is_whitelisted {
+                                error!("Tron event log TRC20 recipient address {} is not in whitelist", to_addr);
+                                continue;
+                            }
+                            let amount = u64::from_str_radix(data.as_str().unwrap_or("").trim_start_matches("0x"), 16).unwrap_or(0);
+                            if amount == expected_amount {
+                                info!("Tron event log matched: to={}, amount={}", to_addr, amount);
+                                return true;
+                            } else {
+                                error!("Tron event log (to:{}) amount mismatch: expected {}, got {}", to_addr, expected_amount, amount);
+                            }
+                        }
+                    }
+                }
+            }
+            error!("No matching event log found for tx: {}", tx_hash);
+        }
+
     } else {
         // check TRX
         if let Some(to_addr) = &tx.to {
@@ -287,12 +336,114 @@ pub fn is_address_match(address1: &str, address2: &str) -> bool {
     false
 }
 
+pub async fn get_tron_event_logs(
+    chain_id: BridgeChainId,
+    tx_hash: &str,
+) -> Option<Vec<Value>> {
+    let base_url = match chain_id {
+        BridgeChainId::TronMainnet => MAINNET_URL,
+        BridgeChainId::TronTestnet => TESTNET_URL,
+        _ => {
+            error!("Unsupported Tron chain id: {:?}", chain_id);
+            return None;
+        }
+    };
+    let url = format!("{}/jsonrpc", base_url);
+
+    let request_body = JsonRpcRequest {
+        jsonrpc: "2.0".to_string(),
+        method: "eth_getTransactionReceipt".to_string(),
+        params: vec![tx_hash.to_string()],
+        id: "getblock.io".to_string(),
+    };
+
+    let client = reqwest::Client::new();
+    let res = match client.post(&url)
+        .json(&request_body)
+        .send()
+        .await {
+        Ok(res) => res,
+        Err(e) => {
+            error!("Failed to send request to getblock: {:?}", e);
+            return None;
+        }
+    };
+    info!("[get_tron_event_logs]GetBlock response: {:?}", res);
+    if !res.status().is_success() {
+        error!("GetBlock request failed with status: {}", res.status());
+        return None;
+    }
+
+    let text = res.text().await.unwrap_or_default();
+    let parsed: Value = match serde_json::from_str(&text) {
+        Ok(val) => val,
+        Err(e) => {
+            error!("Failed to parse eth_getTransactionReceipt response: {:?}", e);
+            return None;
+        }
+    };
+
+    let logs = parsed
+        .get("result")
+        .and_then(|r| r.get("logs"))
+        .and_then(|logs| logs.as_array())
+        .cloned();
+
+    logs
+}
+
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use tokio;
     use tracing_test::traced_test;
+
+    #[traced_test]
+    #[tokio::test]
+    async fn test_check_tron_trx_txn_recharge() {
+        let tx_hash = "184a235221e59e250bb6d5dec493f335e40a1953a67d3c8e403cd8c9cf038fe4";
+        let to_address = "TXYjT5feBoJW1gkwJ1VBm9si6A9Ze4Dx9X".to_string();
+
+        let ad = tron_to_eth_address(&to_address).unwrap();
+        println!("Tron address {} corresponds to ETH address {}", to_address, ad);
+
+        let whitelist = vec![to_address];
+        let amount: u64 = 19019953;
+
+        let result = check_tron_txn(
+            BridgeChainId::TronMainnet,
+            tx_hash,
+            whitelist,
+            amount,
+            false,
+        ).await;
+
+        assert!(result, "TRX transaction verification failed");
+    }
+
+    #[traced_test]
+    #[tokio::test]
+    async fn test_check_tron_trx_txn_recharge2() {
+        let tx_hash = "8c3f4f4e0ac96dc9d7542571cfe924884fb423f034d1cdc841330a9c8d21dcab";
+        let to_address = "TXYjT5feBoJW1gkwJ1VBm9si6A9Ze4Dx9X".to_string();
+
+        let ad = tron_to_eth_address(&to_address).unwrap();
+        println!("Tron address {} corresponds to ETH address {}", to_address, ad);
+
+        let whitelist = vec![to_address];
+        let amount: u64 = 1400000;
+
+        let result = check_tron_txn(
+            BridgeChainId::TronMainnet,
+            tx_hash,
+            whitelist,
+            amount,
+            false,
+        ).await;
+
+        assert!(result, "TRX transaction verification failed");
+    }
 
     #[traced_test]
     #[tokio::test]

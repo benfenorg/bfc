@@ -1067,7 +1067,7 @@ async fn sim_test_get_objects_read() -> Result<(), anyhow::Error> {
 async fn sim_test_full_node_bootstrap_from_snapshot() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let mut test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(10_000)
+        .with_epoch_duration_ms(15_000)
         // This will also do aggressive pruning and compaction of the snapshot
         .with_enable_db_checkpoints_fullnodes()
         .build()
@@ -1092,7 +1092,7 @@ async fn sim_test_full_node_bootstrap_from_snapshot() -> Result<(), anyhow::Erro
         if checkpoint_path.join("epoch_1").exists() {
             break;
         }
-        sleep(Duration::from_millis(500)).await;
+        sleep(Duration::from_millis(1000)).await;
     }
 
     // Spin up a new full node restored from the snapshot taken at the end of epoch 1

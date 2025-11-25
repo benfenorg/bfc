@@ -62,11 +62,20 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::unstake_manager_key(key, token, ctx);
     }
 
+    const EUnsupportedFeature: u64 = 2;
 
     const BFC_SYSTEM_STATE_VERSION_V1: u64 = 1;
     const BFC_SYSTEM_STATE_VERSION_V2: u64 = 2;
 
     //spec module { pragma verify = false; }
+    public(package) fun allocate_abfc(
+        abfc_balance: Anonymous_Balance<ABFC>,
+        admin: address,
+        ctx: &mut TxContext
+    ){
+        transfer::public_transfer(abfc_balance.into_coin(ctx), admin);
+    }
+
     public(package) fun allocate_abfc(
         abfc_balance: Anonymous_Balance<ABFC>,
         admin: address,
@@ -197,6 +206,9 @@ module bfc_system::bfc_system {
         system_address
     }
 
+
+
+
     entry public fun change_round( wrapper: &mut BfcSystemState, round: u64) {
         let inner_state = load_system_state_mut_no_ctx(wrapper);
         bfc_system_state_inner::update_round(inner_state, round);
@@ -292,6 +304,20 @@ module bfc_system::bfc_system {
     ): Balance<BFC> {
         let (inner_state, _ctx) = load_system_state_mut(_self, _ctx);
         bfc_system_state_inner::withdraw_balance(inner_state, expect)
+    }
+
+    #[allow(unused_function)]
+    fun deposit_stable_gas_coin<StableCoinType>(wrapper: &mut BfcSystemState, balance: Balance<StableCoinType>, ctx: &mut TxContext) {
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
+        inner_state.deposit_stable_gas_coin(balance, _ctx);
+    }
+
+    public fun get_deposited_stable_gas_coin_balance<StableCoinType>(
+        wrapper: &mut BfcSystemState,
+        ctx: &mut TxContext
+    ): u64 {
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
+        inner_state.get_deposited_stable_gas_coin_balance<StableCoinType>()
     }
 
     #[test_only]
@@ -648,33 +674,39 @@ module bfc_system::bfc_system {
     }
 
     /// X treasury  swap bfc to stablecoin
+    #[allow(unused_type_parameter)]
     public entry fun swap_bfc_to_stablecoin<StableCoinType>(
-        wrapper: &mut BfcSystemState,
-        native_coin: Coin<BFC>,
-        clock: &Clock,
-        amount: u64,
-        min_amount: u64,
-        deadline: u64,
-        ctx: &mut TxContext,
+        _wrapper: &mut BfcSystemState,
+        _native_coin: Coin<BFC>,
+        _clock: &Clock,
+        _amount: u64,
+        _min_amount: u64,
+        _deadline: u64,
+        _ctx: &mut TxContext,
     ) {
-        assert!(std::type_name::get<StableCoinType>() == std::type_name::get<BUSD>(), 0);
-        let (system_state, ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::swap_bfc_to_stablecoin<StableCoinType>(system_state, native_coin, clock, amount, min_amount, deadline, ctx);
+        abort(EUnsupportedFeature)
+
+        // assert!(std::type_name::get<StableCoinType>() == std::type_name::get<BUSD>(), 0);
+        // let (system_state, ctx) = load_system_state_mut(wrapper, ctx);
+        // bfc_system_state_inner::swap_bfc_to_stablecoin<StableCoinType>(system_state, native_coin, clock, amount, min_amount, deadline, ctx);
     }
 
     /// X treasury  swap stablecoin to bfc
+    #[allow(unused_type_parameter)]
     public entry fun swap_stablecoin_to_bfc<StableCoinType>(
-        wrapper: &mut BfcSystemState,
-        stable_coin: Coin<StableCoinType>,
-        clock: &Clock,
-        amount: u64,
-        min_amount: u64,
-        deadline: u64,
-        ctx: &mut TxContext,
+        _wrapper: &mut BfcSystemState,
+        _stable_coin: Coin<StableCoinType>,
+        _clock: &Clock,
+        _amount: u64,
+        _min_amount: u64,
+        _deadline: u64,
+        _ctx: &mut TxContext,
     ) {
-        assert!(std::type_name::get<StableCoinType>() == std::type_name::get<BUSD>(), 0);
-        let (system_state, ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::swap_stablecoin_to_bfc<StableCoinType>(system_state, stable_coin, clock, amount, min_amount, deadline, ctx);
+        abort(EUnsupportedFeature)
+
+        // assert!(std::type_name::get<StableCoinType>() == std::type_name::get<BUSD>(), 0);
+        // let (system_state, ctx) = load_system_state_mut(wrapper, ctx);
+        // bfc_system_state_inner::swap_stablecoin_to_bfc<StableCoinType>(system_state, stable_coin, clock, amount, min_amount, deadline, ctx);
     }
 
     public fun get_stablecoin_by_bfc<StableCoinType>(

@@ -24,6 +24,7 @@ title: Module `bridge::message_types`
 -  [Function `set_cross_out_bridge_fee`](#bridge_message_types_set_cross_out_bridge_fee)
 -  [Function `set_cross_in_bridge_fee`](#bridge_message_types_set_cross_in_bridge_fee)
 -  [Function `withdraw_bridge_fee`](#bridge_message_types_withdraw_bridge_fee)
+-  [Function `fast_path_limit_update`](#bridge_message_types_fast_path_limit_update)
 
 
 <pre><code></code></pre>
@@ -631,6 +632,30 @@ title: Module `bridge::message_types`
 
 <pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_withdraw_bridge_fee">withdraw_bridge_fee</a>(): u8{
     <a href="../bridge/message_types.md#bridge_message_types_WITHDRAW_BRIDGE_FEE">WITHDRAW_BRIDGE_FEE</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_types_fast_path_limit_update"></a>
+
+## Function `fast_path_limit_update`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_fast_path_limit_update">fast_path_limit_update</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_fast_path_limit_update">fast_path_limit_update</a>(): u8{
+    <a href="../bridge/message_types.md#bridge_message_types_UPDATE_BRIDGE_LIMIT_FAST_PATH">UPDATE_BRIDGE_LIMIT_FAST_PATH</a>
 }
 </code></pre>
 

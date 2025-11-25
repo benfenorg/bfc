@@ -1,22 +1,19 @@
 // Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
+import { normalizeStructTag, parseStructTag } from '@benfen/bfc.js/utils';
 import { useQuery } from '@tanstack/react-query';
 
-export const ANONYMOUS_COIN_TYPE = '0x2::anonymous_coin::Anonymous_Coin';
+import { ANONYMOUS_COIN_TYPE } from '../utils/constants';
 
 export type AnonymousCoinFields = {
 	balance: {
 		type: string;
 		fields: {
-			balance_type: {
-				type: string;
-				variant: string;
-			};
-			encode_data: string;
-			value: string;
-			value1: string;
-			value2: string;
+			balance_type: number;
+			encode_data: number[];
+			value1: number[];
+			value2: number[];
 			version: number;
 		};
 	};
@@ -25,11 +22,11 @@ export type AnonymousCoinFields = {
 	};
 };
 
-export const useGetAllAnonymousCoins = (address?: string | null) => {
+export const useGetAllAnonymousCoins = (address?: string | null, typeFilter?: string) => {
 	const client = useBenfenClient();
 
 	return useQuery({
-		queryKey: ['get-all-anonymous-coins', address],
+		queryKey: ['get-all-anonymous-coins', address, typeFilter],
 		queryFn: async () => {
 			const result: AnonymousCoinFields[] = [];
 			let cursor: string | undefined | null = undefined;
@@ -50,6 +47,14 @@ export const useGetAllAnonymousCoins = (address?: string | null) => {
 				});
 				result.push(
 					...(data.data ?? [])
+						.filter((row) => {
+							if (!typeFilter) {
+								return true;
+							}
+							return (
+								normalizeStructTag(parseStructTag(row.data!.type!).typeParams[0]) === typeFilter
+							);
+						})
 						.map((row) => {
 							const content = row.data?.content;
 							if (content?.dataType === 'moveObject') {
@@ -60,10 +65,12 @@ export const useGetAllAnonymousCoins = (address?: string | null) => {
 						.filter((row): row is AnonymousCoinFields => !!row),
 				);
 
-				cursor = data.nextCursor;
-				if (!data.hasNextPage) {
-					break;
-				}
+				break;
+				// 暂时不获取所有
+				// cursor = data.nextCursor;
+				// if (!data.hasNextPage) {
+				// 	break;
+				// }
 			}
 
 			return result;

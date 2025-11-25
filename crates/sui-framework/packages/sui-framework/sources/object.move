@@ -29,6 +29,7 @@ public use fun uid_to_bytes as UID.to_bytes;
 const SUI_SYSTEM_STATE_OBJECT_ID: address = @0x5;
 
 const BFC_SYSTEM_STATE_OBJECT_ID: address = @0xC9;
+const BFC_ANONYMOUS_STATE_ID: address = @0xD9;
 
 const BFC_ANONYMOUS_STATE_ID: address = @0xD9;
 

@@ -11,6 +11,7 @@ module bridge::message {
 
     const CURRENT_MESSAGE_VERSION: u8 = 1;
     const CURRENT_MESSAGE_VERSION_V2: u8 = 2;
+    const CURRENT_MESSAGE_VERSION_V3: u8 = 3;
     const ECDSA_ADDRESS_LENGTH: u64 = 20;
 
     const ETrailingBytes: u64 = 0;
@@ -782,7 +783,7 @@ module bridge::message {
         payload.append(reverse_bytes(bcs::to_bytes(&event_idx)));
         BridgeMessage {
             message_type: message_types::token(),
-            message_version: CURRENT_MESSAGE_VERSION,
+            message_version: CURRENT_MESSAGE_VERSION_V3,
             seq_num,
             source_chain,
             payload,
@@ -883,6 +884,7 @@ module bridge::message {
     /// [chain_id: u8]
     /// [token_id: u64]
     /// [amount: u64]
+    /// 
     public fun create_fast_path_limit_message(
         seq_num: u64,
         chain_id: u8,
@@ -891,8 +893,31 @@ module bridge::message {
     ): BridgeMessage {
         chain_ids::assert_valid_chain_id(chain_id);
         let mut payload = bcs::to_bytes(&chain_id);
+        payload.append(bcs::to_bytes(&chain_id));
         payload.append(bcs::to_bytes(&token_id));
         payload.append(bcs::to_bytes(&amount));
+
+        BridgeMessage {
+            message_type: message_types::update_bridge_limit_fast_path(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain: chain_id,
+            payload,
+        }
+    }
+    
+    public fun create_fast_path_limit_message_v2(
+        seq_num: u64,
+        chain_id: u8,
+        token_id: u64,
+        amount: u64,
+        chain_id_evm: u8,
+    ): BridgeMessage {
+        chain_ids::assert_valid_chain_id(chain_id);
+        chain_ids::assert_valid_chain_id(chain_id_evm);
+        let mut payload = bcs::to_bytes(&chain_id_evm);
+        payload.append(reverse_bytes(bcs::to_bytes(&token_id)));
+        payload.append(reverse_bytes(bcs::to_bytes(&amount)));
 
         BridgeMessage {
             message_type: message_types::update_bridge_limit_fast_path(),
@@ -1544,6 +1569,8 @@ module bridge::message {
         }else if (message_type == message_types::set_cross_out_bridge_fee()) {
             5001
         }else if (message_type == message_types::withdraw_bridge_fee()) {
+            5001
+        }else if (message_type == message_types::fast_path_limit_update()) {
             5001
         }
         else {
