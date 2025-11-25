@@ -30,6 +30,9 @@ const SUI_SYSTEM_STATE_OBJECT_ID: address = @0x5;
 
 const BFC_SYSTEM_STATE_OBJECT_ID: address = @0xC9;
 
+const BFC_ANONYMOUS_STATE_ID: address = @0xD9;
+
+
 /// The hardcoded ID for the singleton Clock Object.
 const SUI_CLOCK_OBJECT_ID: address = @0x6;
 
@@ -152,6 +155,12 @@ public(package) fun authenticator_state(): UID {
 public(package) fun randomness_state(): UID {
     UID {
         id: ID { bytes: SUI_RANDOM_ID },
+    }
+}
+
+public(package) fun anonymous_state_id(): UID {
+    UID {
+        id: ID { bytes: BFC_ANONYMOUS_STATE_ID },
     }
 }
 

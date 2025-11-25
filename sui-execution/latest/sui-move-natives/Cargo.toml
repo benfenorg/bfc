@@ -13,7 +13,9 @@ bcs.workspace = true
 indexmap.workspace = true
 smallvec.workspace = true
 rand = { workspace = true, features = ["small_rng"] }
-
+sha2 = "0.10.6"
+hmac = "0.12"
+rand_chacha = "0.3"
 fastcrypto-zkp.workspace = true
 fastcrypto-vdf.workspace = true
 fastcrypto.workspace = true
@@ -26,4 +28,15 @@ move-vm-types = { path = "../../../external-crates/move/crates/move-vm-types" }
 
 sui-protocol-config.workspace = true
 sui-types.workspace = true
+sui-config.workspace = true
 tracing.workspace = true
+dirs.workspace = true
+mpc-transmission.workspace = true
+
+attohttpc = { version = "0.28.5", features =["json", "compress"] }
+anyhow.workspace = true
+
+tokio = { workspace = true, features = ["full"] }
+reqwest = { version = "0.11", features = ["json", "blocking"] }
+serde_json = "1.0.128"
+hex = "0.4.3"

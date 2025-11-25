@@ -22,6 +22,8 @@ use std::{fs, io};
 use std::collections::{BTreeMap, HashMap};
 use std::ops::Deref;
 use sui_config::node::{DEFAULT_COMMISSION_RATE, Genesis};
+use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
+use sui_config::BFC_ANNOYMOUS_CONFIG;
 use sui_bridge::config::BridgeCommitteeConfig;
 use sui_bridge::metrics::BridgeMetrics;
 use sui_bridge::sui_client::SuiBridgeClient;
@@ -1388,6 +1390,14 @@ pub async fn genesis(
     client_config.save(&client_path)?;
     info!("Client config file is stored in {:?}.", client_path);
 
+    let mut annnoymous_config = AnonymousPrivateKeyConfig::new();
+    annnoymous_config.set_private_key("0x1111ffff0000".to_string());
+    annnoymous_config.set_fullnode_rpc_path("https://rpc-mainnet.benfen.org".to_string());
+    annnoymous_config.enable_anonymous_rpc(false);
+    annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010".parse()?, "http://127.0.0.1:9010".parse()?]);
+    annnoymous_config.set_zklogin_verify_rpc_path("https://zksimplerpc.benfen.org/verify_zk_login_sig".to_string());
+    annnoymous_config.save(sui_config_dir.join(BFC_ANNOYMOUS_CONFIG))?;
+
     Ok(())
 }
 
@@ -1463,6 +1473,14 @@ pub async fn genesis_private(
             bail!("Cannot run genesis with non-empty Bfc config directory {}, please use the --force/-f option to remove the existing configuration", sui_config_dir.to_str().unwrap());
         }
     }
+
+    let mut annnoymous_config = AnonymousPrivateKeyConfig::new();
+    annnoymous_config.set_private_key("0x1111ffff0000".to_string());
+    annnoymous_config.set_fullnode_rpc_path("https://rpc-mainnet.benfen.org".to_string());
+    annnoymous_config.enable_anonymous_rpc(false);
+    annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010".parse()?, "http://127.0.0.1:9010".parse()?]);
+    annnoymous_config.set_zklogin_verify_rpc_path("https://zksimplerpc.benfen.org/verify_zk_login_sig".to_string());
+    annnoymous_config.save(sui_config_dir.join(BFC_ANNOYMOUS_CONFIG))?;
 
     let network_path = sui_config_dir.join(SUI_NETWORK_CONFIG);
     let genesis_path = sui_config_dir.join(SUI_GENESIS_FILENAME);

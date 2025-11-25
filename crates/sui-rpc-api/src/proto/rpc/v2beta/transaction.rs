@@ -1172,6 +1172,7 @@ impl From<sui_sdk_types::EndOfEpochTransactionKind> for super::EndOfEpochTransac
             AuthenticatorStateExpire(expire) => Kind::AuthenticatorStateExpire(expire.into()),
             RandomnessStateCreate => Kind::RandomnessStateCreate(()),
             DenyListStateCreate => Kind::DenyListStateCreate(()),
+
             BridgeStateCreate { chain_id } => Kind::BridgeStateCreate(chain_id.to_string()),
             BridgeCommitteeInit {
                 bridge_object_version,
@@ -1182,7 +1183,7 @@ impl From<sui_sdk_types::EndOfEpochTransactionKind> for super::EndOfEpochTransac
             },
             sui_sdk_types::EndOfEpochTransactionKind::AccumulatorRootCreate |
             sui_sdk_types::EndOfEpochTransactionKind::CoinRegistryCreate => { panic!("Should not run this conversion for AccumulatorRootCreate or CoinRegistryCreate") }
-
+            sui_sdk_types::EndOfEpochTransactionKind::AnonymousStateCreate => todo!()
         };
 
         Self { kind: Some(kind) }

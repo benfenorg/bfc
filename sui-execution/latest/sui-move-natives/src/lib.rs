@@ -49,6 +49,8 @@ use crate::{crypto::group_ops, transfer::PartyTransferInternalCostParams};
 use better_any::{Tid, TidAble};
 use crypto::nitro_attestation::{self, NitroAttestationCostParams};
 use crypto::vdf::{self, VDFCostParams};
+use std::path::PathBuf;
+use crate::hfe_ops::AnonymousComputeCostParams;
 use move_binary_format::errors::{PartialVMError, PartialVMResult};
 use move_core_types::{
     annotated_value as A,
@@ -63,6 +65,7 @@ use move_vm_runtime::{
     native_extensions::NativeExtensionMarker,
     native_functions::{NativeContext, NativeFunction, NativeFunctionTable},
 };
+use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
 use move_vm_types::{
     loaded_data::runtime_types::Type,
     natives::function::NativeResult,
@@ -72,7 +75,7 @@ use std::sync::Arc;
 use sui_protocol_config::ProtocolConfig;
 use sui_types::{MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use transfer::TransferReceiveObjectInternalCostParams;
-
+use crate::crypto::hfe_ops;
 mod address;
 mod config;
 mod crypto;
@@ -197,12 +200,22 @@ pub struct NativesCostTable {
 
     // nitro attestation
     pub nitro_attestation_cost_params: NitroAttestationCostParams,
+
+    pub anonymous_privatekey: Option<String>,
+    pub anonymous_rpc: Option<Vec<String>>,
+    // anonymous_cost
+    pub anonymous_compute_cost_params: AnonymousComputeCostParams,
+
+    pub enable_anonymous_rpc: Option<bool>,
 }
 
 impl NativeExtensionMarker<'_> for NativesCostTable {}
 
 impl NativesCostTable {
     pub fn from_protocol_config(protocol_config: &ProtocolConfig) -> NativesCostTable {
+        let path = get_sui_config_directory().join("bfc_anonymous_config.yaml");
+        let config = AnonymousPrivateKeyConfig::from_yaml_file(&path).unwrap_or(AnonymousPrivateKeyConfig::default());
+
         Self {
             address_from_bytes_cost_params: AddressFromBytesCostParams {
                 address_from_bytes_cost_base: protocol_config.address_from_bytes_cost_base().into(),
@@ -755,6 +768,16 @@ impl NativesCostTable {
                     .vdf_hash_to_input_cost_as_option()
                     .map(Into::into),
             },
+            anonymous_privatekey: config.anonymous_privatekey,
+            anonymous_rpc: config.anonymous_rpc,
+            anonymous_compute_cost_params: AnonymousComputeCostParams {
+                anonymous_compute_cost_base: protocol_config
+                    .anonymous_compute_cost_base()
+                    .into(),
+            },
+
+            enable_anonymous_rpc: config.enable_anonymous_rpc,
+
             nitro_attestation_cost_params: NitroAttestationCostParams {
                 parse_base_cost: protocol_config
                     .nitro_attestation_parse_base_cost_as_option()
@@ -770,6 +793,13 @@ impl NativesCostTable {
                     .map(Into::into),
             },
         }
+    }
+}
+
+fn get_sui_config_directory() -> PathBuf {
+    match dirs::home_dir() {
+        Some(v) => v.join(".bfc").join("bfc_config"),
+        None => panic!("Cannot obtain home directory path"),
     }
 }
 
@@ -1233,6 +1263,36 @@ pub fn all_natives(silent: bool, protocol_config: &ProtocolConfig) -> NativeFunc
             "nitro_attestation",
             "load_nitro_attestation_internal",
             make_native!(nitro_attestation::load_nitro_attestation_internal),
+        ),
+        (
+            "hfe_ops",
+            "hfe_ops_add",
+            make_native!(hfe_ops::hfe_ops_add),
+        ),
+        (
+            "hfe_ops",
+            "hfe_ops_minus",
+            make_native!(hfe_ops::hfe_ops_minus),
+        ),
+        (
+            "hfe_ops",
+            "hfe_ops_multiplied",
+            make_native!(hfe_ops::hfe_ops_multiplied),
+        ),
+        (
+            "hfe_ops",
+            "hfe_ops_compare_value",
+            make_native!(hfe_ops::hfe_ops_compare_value),
+        ),
+        (
+            "hfe_ops",
+            "hfe_ops_compare_value1_and_value2",
+            make_native!(hfe_ops::hfe_ops_compare_value1_and_value2),
+        ),
+        (
+            "hfe_ops",
+            "hfe_ops_encode_data",
+            make_native!(hfe_ops::hfe_ops_encode_data),
         ),
     ];
     let sui_framework_natives_iter =

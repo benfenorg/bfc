@@ -42,6 +42,8 @@ pub const TX_CONTEXT_MODULE_NAME: Symbol = symbol!("tx_context");
 pub const TX_CONTEXT_TYPE_NAME: Symbol = symbol!("TxContext");
 pub const SUI_MODULE_NAME: Symbol = symbol!("sui");
 pub const BFC_MODULE_NAME: Symbol = symbol!("bfc");
+
+pub const ABFC_MODULE_NAME: Symbol = symbol!("abfc");
 pub const BARS_MODULE_NAME: Symbol = symbol!("bars");
 pub const BEUR_MODULE_NAME: Symbol = symbol!("beur");
 pub const BKRW_MODULE_NAME: Symbol = symbol!("bkrw");
@@ -73,6 +75,10 @@ pub const AUTHENTICATOR_STATE_CREATE: Symbol = symbol!("create");
 pub const RANDOMNESS_MODULE_NAME: Symbol = symbol!("random");
 pub const RANDOMNESS_STATE_TYPE_NAME: Symbol = symbol!("Random");
 pub const RANDOMNESS_STATE_CREATE: Symbol = symbol!("create");
+
+pub const ANONYMOUS_MODULE_NAME: Symbol = symbol!("anonymous");
+pub const ANONYMOUS_TYPE_NAME: Symbol = symbol!("Anonymous");
+pub const ANONYMOUS_STATE_CREATE: Symbol = symbol!("create");
 pub const DENY_LIST_MODULE_NAME: Symbol = symbol!("deny_list");
 pub const DENY_LIST_CREATE: Symbol = symbol!("create");
 pub const BRIDGE_ADDR_NAME: Symbol = symbol!("bridge");

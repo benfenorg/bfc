@@ -663,6 +663,10 @@ struct FeatureFlags {
     #[serde(skip_serializing_if = "is_false")]
     consensus_zstd_compression: bool,
 
+    // Enable annoymous_coin
+    #[serde(skip_serializing_if = "is_false")]
+    anonymous_coin_open: bool,
+
     // If true, enables the optimizations for child object mutations, removing unnecessary mutations
     #[serde(skip_serializing_if = "is_false")]
     minimize_child_object_mutations: bool,
@@ -1279,6 +1283,9 @@ pub struct ProtocolConfig {
     ed25519_ed25519_verify_cost_base: Option<u64>,
     ed25519_ed25519_verify_msg_cost_per_byte: Option<u64>,
     ed25519_ed25519_verify_msg_cost_per_block: Option<u64>,
+
+    // anonymous compute cost
+    anonymous_compute_cost_base: Option<u64>,
 
     // groth16::prepare_verifying_key
     groth16_prepare_verifying_key_bls12381_cost_base: Option<u64>,
@@ -1991,6 +1998,9 @@ impl ProtocolConfig {
         self.feature_flags.consensus_zstd_compression
     }
 
+    pub fn enable_anonymous_coin_open(&self) -> bool {
+        self.feature_flags.anonymous_coin_open
+    }
     pub fn enable_nitro_attestation(&self) -> bool {
         self.feature_flags.enable_nitro_attestation
     }
@@ -2437,6 +2447,9 @@ impl ProtocolConfig {
             ed25519_ed25519_verify_msg_cost_per_byte: Some(2),
             ed25519_ed25519_verify_msg_cost_per_block: Some(2),
 
+            // anonymous compute cost
+            anonymous_compute_cost_base: Some(52),
+
             // groth16::prepare_verifying_key
             groth16_prepare_verifying_key_bls12381_cost_base: Some(52),
             groth16_prepare_verifying_key_bn254_cost_base: Some(52),
@@ -2633,6 +2646,7 @@ impl ProtocolConfig {
                 1 => unreachable!(),
                 2 => {
                     cfg.feature_flags.advance_epoch_start_time_in_safe_mode = true;
+                    cfg.feature_flags.anonymous_coin_open = false;
                 }
                 3 => {
                     // changes for gas model
@@ -3545,6 +3559,9 @@ impl ProtocolConfig {
                     }
                 }
                 76 => {
+                    cfg.feature_flags.anonymous_coin_open = true;
+                    cfg.anonymous_compute_cost_base = Some(2000);
+
                     if chain != Chain::Mainnet && chain != Chain::Testnet {
                         cfg.feature_flags.record_additional_state_digest_in_prologue = true;
                         cfg.consensus_commit_rate_estimation_window_size = Some(10);

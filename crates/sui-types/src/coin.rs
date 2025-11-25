@@ -27,6 +27,9 @@ pub const COIN_MODULE_NAME: &IdentStr = ident_str!("coin");
 pub const COIN_STRUCT_NAME: &IdentStr = ident_str!("Coin");
 pub const RESOLVED_COIN_STRUCT: (&AccountAddress, &IdentStr, &IdentStr) =
     (&SUI_FRAMEWORK_ADDRESS, COIN_MODULE_NAME, COIN_STRUCT_NAME);
+
+pub const ANONYMOUS_COIN_STRUCT_NAME: &IdentStr = ident_str!("Anonymous_Coin");
+pub const ANONYMOUS_COIN_MODULE_NAME: &IdentStr = ident_str!("anonymous_coin");
 pub const COIN_METADATA_STRUCT_NAME: &IdentStr = ident_str!("CoinMetadata");
 pub const COIN_TREASURE_CAP_NAME: &IdentStr = ident_str!("TreasuryCap");
 pub const REGULATED_COIN_METADATA_STRUCT_NAME: &IdentStr = ident_str!("RegulatedCoinMetadata");
@@ -60,11 +63,23 @@ impl Coin {
         }
     }
 
+    pub fn anonymous_type_(type_param: TypeTag) -> StructTag {
+        StructTag {
+            address: SUI_FRAMEWORK_ADDRESS,
+            name: ANONYMOUS_COIN_STRUCT_NAME.to_owned(),
+            module: ANONYMOUS_COIN_MODULE_NAME.to_owned(),
+            type_params: vec![type_param],
+        }
+    }
+
     /// Is this other StructTag representing a Coin?
     pub fn is_coin(other: &StructTag) -> bool {
-        other.address == SUI_FRAMEWORK_ADDRESS
+        (other.address == SUI_FRAMEWORK_ADDRESS
             && other.module.as_ident_str() == COIN_MODULE_NAME
-            && other.name.as_ident_str() == COIN_STRUCT_NAME
+            && other.name.as_ident_str() == COIN_METADATA_STRUCT_NAME) ||
+            (other.address == SUI_FRAMEWORK_ADDRESS
+                && other.module.as_ident_str() == ANONYMOUS_COIN_MODULE_NAME
+                && other.name.as_ident_str() == COIN_METADATA_STRUCT_NAME)
     }
 
     /// Checks if the provided type is `Coin<T>`, returning the type T if so.
@@ -245,6 +260,14 @@ impl CoinMetadata {
             address: SUI_FRAMEWORK_ADDRESS,
             name: COIN_METADATA_STRUCT_NAME.to_owned(),
             module: COIN_MODULE_NAME.to_owned(),
+            type_params: vec![TypeTag::Struct(Box::new(type_param))],
+        }
+    }
+    pub fn anonyment_type_(type_param: StructTag) -> StructTag {
+        StructTag {
+            address: SUI_FRAMEWORK_ADDRESS,
+            name: COIN_METADATA_STRUCT_NAME.to_owned(),
+            module: ANONYMOUS_COIN_MODULE_NAME.to_owned(),
             type_params: vec![TypeTag::Struct(Box::new(type_param))],
         }
     }

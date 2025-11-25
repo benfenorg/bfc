@@ -37,7 +37,7 @@ use sui_types::{base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddres
                 BFC_SYSTEM_STATE_OBJECT_ID,
                 object::{MoveObject, Owner}, storage::ChildObjectResolver,
                 SUI_CLOCK_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID};
-
+use sui_types::BFC_ANONYMOUS_STATE_OBJECT_ID;
 
 //use object_store::ChildObjectStore;
 //use sui_types::base_types::ObjectDigest;
@@ -322,6 +322,7 @@ impl<'a> ObjectRuntime<'a> {
             SUI_RANDOMNESS_STATE_OBJECT_ID,
             SUI_DENY_LIST_OBJECT_ID,
             SUI_BRIDGE_OBJECT_ID,
+            BFC_ANONYMOUS_STATE_OBJECT_ID,
         ]
         .contains(&id);
 

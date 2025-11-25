@@ -9,7 +9,8 @@ use fastcrypto::encoding::Base64;
 use fastcrypto::traits::ToFromBytes;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::RpcModule;
-
+use sui_json_rpc_types::SuiExecutionStatus;
+use sui_json_rpc_types::SuiTransactionBlockEffects;
 use crate::authority_state::StateRead;
 use crate::error::{Error, SuiRpcInputError};
 use crate::{
@@ -311,15 +312,35 @@ impl TransactionExecutionApi {
         )
         .await?;
 
-        Ok(DryRunTransactionBlockResponse {
+        for object_change in &object_changes {
+            let object_changes_str = format!("{:?}", object_change);
+            if object_changes_str.contains("module: Identifier(\"anonymous_coin\")") {
+                let effects = SuiTransactionBlockEffects::default_for_anonymous_coin(
+                    txn_digest, SuiExecutionStatus::Success);
+
+                let response = DryRunTransactionBlockResponse {
+                    effects: effects,
+                    events: resp.events,
+                    object_changes: Vec::new(),
+                    balance_changes: Vec::new(),
+                    input: resp.input,
+                    suggested_gas_price: None,
+                    execution_error_source: None,
+                };
+                return Ok(response);
+            }
+        }
+
+        let response = DryRunTransactionBlockResponse {
             effects: resp.effects,
             events: resp.events,
-            object_changes,
+            object_changes: object_changes,
             balance_changes,
             input: resp.input,
             execution_error_source: resp.execution_error_source,
             suggested_gas_price: resp.suggested_gas_price,
-        })
+        };
+        Ok(response)
     }
 }
 

@@ -680,6 +680,9 @@ mod checked {
                             assert!(protocol_config.enable_coin_deny_list_v1());
                             builder = setup_coin_deny_list_state_create(builder);
                         }
+                        EndOfEpochTransactionKind::AnonymousStateCreate => {
+                            panic!("EndOfEpochTransactionKind::AnonymousTokenStateCreate should not exist in v2");
+                        }
                         EndOfEpochTransactionKind::BridgeStateCreate(_) => {
                             panic!(
                                 "EndOfEpochTransactionKind::BridgeStateCreate should not exist in v2"

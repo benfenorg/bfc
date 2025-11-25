@@ -1,0 +1,9 @@
+[package]
+name = "bfc-anonymous-slave-server"
+edition = "2021"
+version.workspace = true
+
+[dependencies]
+
+[lints]
+workspace = true

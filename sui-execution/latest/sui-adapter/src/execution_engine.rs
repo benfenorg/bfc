@@ -8,21 +8,25 @@ mod checked {
 
     use crate::execution_mode::{self, ExecutionMode};
     use move_binary_format::CompiledModule;
-
+    use sui_types::anonymous_status::ANONYMOUS_COIND_DEFAULT_ADDRESS;
     use move_trace_format::format::MoveTraceBuilder;
     use move_vm_runtime::move_vm::MoveVM;
     use std::{collections::HashSet, sync::Arc};
     use sui_types::gas::{calculate_add, calculate_reward_rate};
     use sui_types::gas_coin::GAS;
-
+    use std::str::FromStr;
+    use sui_types::BFC_SYSTEM_ADDRESS;
     use std::{cell::RefCell,rc::Rc};
     use sui_types::balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
     };
+    use sui_types::balance::BALANCE_DEPOSIT_STABLE_GAS_COIN_FUNCTION_NAME;
+    use sui_types::anonymous_status::ANONYMOUS_MODULE_NAME;
     use sui_types::messages_checkpoint::CheckpointTimestamp;
     use sui_types::metrics::LimitsMetrics;
     use sui_types::object::OBJECT_START_VERSION;
+    use sui_types::anonymous_status::ANONYMOUS_STATE_CREATE_FUNCTION_NAME;
     use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
     use sui_types::randomness_state::{
         RANDOMNESS_MODULE_NAME, RANDOMNESS_STATE_CREATE_FUNCTION_NAME,
@@ -92,6 +96,8 @@ mod checked {
     use sui_types::stable_coin::stable::checked::STABLE;
 
     const BFC_ROUND_V2_PROTOCOL_VERSION: u64 = 45;
+    const BFC_COLLECT_OTHER_GAS_EPOCH : u64 = 397;
+    const BFC_COLLECT_OTHER_GAS_SKIP_EPOCH : u64 = 398;
 
     /// If a transaction digest shows up in this list, when executing such transaction,
     /// we will always return `ExecutionError::CertificateDenied` without executing it (but still do
@@ -372,6 +378,9 @@ mod checked {
         // we must still ensure an effect is committed and all objects versions incremented
         let result = gas_charger.charge_input_objects(temporary_store);
 
+        let is_end_of_epoch_tx = transaction_kind.is_end_of_epoch_tx();
+        let epoch_id = tx_ctx.borrow().epoch();
+
         let result: ResultWithTimings<Mode::ExecutionResults, ExecutionError> =
             result.map_err(|e| (e, vec![])).and_then(
                 |()| -> ResultWithTimings<Mode::ExecutionResults, ExecutionError> {
@@ -455,6 +464,10 @@ mod checked {
         // Put all the storage rebate accumulated in the system transaction
         // to the 0x5 object so that it's not lost.
         temporary_store.conserve_unmetered_storage_rebate(gas_charger.unmetered_storage_rebate());
+
+        if is_end_of_epoch_tx &&(epoch_id== BFC_COLLECT_OTHER_GAS_EPOCH|| epoch_id == BFC_COLLECT_OTHER_GAS_SKIP_EPOCH){
+            return (cost_summary, result, timings);
+        }
 
         if let Err(e) = run_conservation_checks::<Mode>(
             temporary_store,
@@ -815,6 +828,11 @@ mod checked {
                             assert!(protocol_config.random_beacon());
                             builder = setup_randomness_state_create(builder);
                         }
+                        EndOfEpochTransactionKind::AnonymousStateCreate =>{
+                            assert!(protocol_config.enable_anonymous_coin_open());
+                            builder = setup_anonymous_state_create(builder);
+                        }
+
                         EndOfEpochTransactionKind::DenyListStateCreate => {
                             assert!(protocol_config.enable_coin_deny_list_v1());
                             builder = setup_coin_deny_list_state_create(builder);
@@ -1475,6 +1493,41 @@ mod checked {
                 vec![],
             )
             .expect("Unable to generate randomness_state_create transaction!");
+        builder
+    }
+
+    fn setup_anonymous_state_create(
+        mut builder: ProgrammableTransactionBuilder,
+    ) -> ProgrammableTransactionBuilder {
+        builder
+            .move_call(
+                SUI_FRAMEWORK_ADDRESS.into(),
+                ANONYMOUS_MODULE_NAME.to_owned(),
+                ANONYMOUS_STATE_CREATE_FUNCTION_NAME.to_owned(),
+                vec![],
+                vec![],
+            )
+            .expect("Unable to generate anonymous_state transaction!");
+
+        let abfc_supply = builder.programmable_move_call(
+            SUI_FRAMEWORK_ADDRESS.into(),
+            ident_str!("abfc").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let address1_arg = builder.input(CallArg::Pure(UID::new(ObjectID::from(SuiAddress::from_str(ANONYMOUS_COIND_DEFAULT_ADDRESS).unwrap())).to_bcs_bytes())).unwrap();
+
+        let arguments = vec![abfc_supply, address1_arg];
+        builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bfc_system").to_owned(),
+            ident_str!("allocate_abfc").to_owned(),
+            vec![],
+            arguments,
+        );
+
         builder
     }
 

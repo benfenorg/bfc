@@ -504,8 +504,43 @@ impl PoolTokenExchangeRate {
             pool_token_amount,
         }
     }
+
+    pub fn pool_token_amount(&self) -> u64 {
+        self.pool_token_amount
+    }
+
+    pub fn sui_amount(&self) -> u64 {
+        self.sui_amount
+    }
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Default)]
+pub struct PoolStableTokenExchangeRate {
+    sui_amount: u64,
+    pool_token_amount: u64,
+}
+impl PoolStableTokenExchangeRate {
+    pub fn rate(&self) -> f64 {
+        if self.sui_amount == 0 {
+            1_f64
+        } else {
+            self.pool_token_amount as f64 / self.sui_amount as f64
+        }
+    }
+    pub fn new(sui_amount: u64, pool_token_amount: u64) -> Self {
+        Self {
+            sui_amount,
+            pool_token_amount,
+        }
+    }
+
+    pub fn pool_token_amount(&self) -> u64 {
+        self.pool_token_amount
+    }
+    pub fn sui_amount(&self) -> u64 {
+        self.sui_amount
+    }
+}
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct ValidatorWrapper {
     pub inner: Versioned,

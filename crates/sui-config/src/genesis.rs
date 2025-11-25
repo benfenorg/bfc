@@ -35,6 +35,9 @@ use sui_types::{
 use sui_types::{SUI_BRIDGE_OBJECT_ID, SUI_RANDOMNESS_STATE_OBJECT_ID};
 
 pub const TOTAL_SUPPLY_WITH_ALLOCATION_MIST: u64 = TOTAL_SUPPLY_MIST / 2;
+
+pub const TOTAL_SUPPLY_WITH_ABFC_MIST: u64 = 1_0000_0000__000_000_000 / 2;
+
 #[derive(Clone, Debug)]
 pub struct Genesis {
     checkpoint: CertifiedCheckpointSummary,

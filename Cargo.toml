@@ -79,6 +79,8 @@ members = [
   "consensus/core",
   "crates/anemo-benchmark",
   "crates/bin-version",
+  "crates/bfc-anonymous-server",
+  "crates/mpc-transmission",
   "crates/mysten-common",
   "crates/mysten-metrics",
   "crates/mysten-network",
@@ -330,6 +332,7 @@ members = [
   "consensus/simtests",
   "crates/anemo-benchmark",
   "crates/bin-version",
+  "crates/bfc-anonymous-slave-server",
   "crates/mysten-common",
   "crates/mysten-metrics",
   "crates/mysten-network",
@@ -907,15 +910,16 @@ anemo-cli = { git = "https://github.com/mystenlabs/anemo.git", rev = "9c52c3c794
 anemo-tower = { git = "https://github.com/mystenlabs/anemo.git", rev = "9c52c3c7946532163a79129db15180cdb984bab4" }
 
 # sui-sdk-types = { version = "0.0.1", features = ["hash", "serde", "schemars"] } 1646c4bc2e81ca668ed06ba2aeaef3babfbb3209
-sui-sdk-types = { git = "https://github.com/hellokittyboy-code/bfc-rust-sdk.git", rev = "557c4b7a90dd5a75aa7a9a03cbbc093843fde0b5", features = [ "hash", "serde" ] }
+sui-sdk-types = { git = "https://github.com/hellokittyboy-code/bfc-rust-sdk.git", rev = "324d16db6324d29c5ffa76ab3c64fb3fdc34c728", features = [ "hash", "serde" ] }
 sui-sdk-transaction-builder = { git = "https://github.com/hellokittyboy-code/bfc-rust-sdk.git", rev = "557c4b7a90dd5a75aa7a9a03cbbc093843fde0b5", package = "sui-transaction-builder" }
-sui-crypto = { git = "https://github.com/hellokittyboy-code/bfc-rust-sdk.git", rev = "557c4b7a90dd5a75aa7a9a03cbbc093843fde0b5", features = [ "ed25519", "secp256r1", "secp256k1", "passkey", "zklogin" ] }
+sui-crypto = { git = "https://github.com/hellokittyboy-code/bfc-rust-sdk.git", rev = "324d16db6324d29c5ffa76ab3c64fb3fdc34c728", features = [ "ed25519", "secp256r1", "secp256k1", "passkey", "zklogin" ] }
 sui-graphql-client = { git = "https://github.com/hellokittyboy-code/bfc-rust-sdk.git", rev = "557c4b7a90dd5a75aa7a9a03cbbc093843fde0b5" }
 sui-graphql-client-build = { git = "https://github.com/hellokittyboy-code/bfc-rust-sdk.git", rev = "557c4b7a90dd5a75aa7a9a03cbbc093843fde0b5" }
 
 ### Workspace Members ###
 anemo-benchmark = { path = "crates/anemo-benchmark" }
 bin-version = { path = "crates/bin-version" }
+mpc-transmission = { path = "crates/mpc-transmission" }
 mysten-common = { path = "crates/mysten-common" }
 mysten-metrics = { path = "crates/mysten-metrics" }
 mysten-network = { path = "crates/mysten-network" }

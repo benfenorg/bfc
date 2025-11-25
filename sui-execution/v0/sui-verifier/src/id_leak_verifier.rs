@@ -20,6 +20,8 @@ use move_binary_format::{
         StructDefinition, StructFieldInformation,
     },
 };
+use sui_types::anonymous_status::ANONYMOUS_MODULE_NAME;
+use sui_types::anonymous_status::ANONYMOUS_STATE_CREATE_FUNCTION_NAME;
 use move_bytecode_verifier::absint::{
     AbstractDomain, AbstractInterpreter, FunctionContext, JoinResult, TransferFunctions,
 };
@@ -109,11 +111,20 @@ const SUI_DENY_LIST_OBJECT_CREATE: FunctionIdent = (
     ident_str!("create_deny_list_object"),
 );
 
+const SUI_ANONYMOUS_CREATE: FunctionIdent = (
+    &SUI_FRAMEWORK_ADDRESS,
+    ANONYMOUS_MODULE_NAME,
+    ANONYMOUS_STATE_CREATE_FUNCTION_NAME,
+);
 const FRESH_ID_FUNCTIONS: &[FunctionIdent] = &[OBJECT_NEW, OBJECT_NEW_UID_FROM_HASH, TS_NEW_OBJECT];
 
 //const FUNCTIONS_TO_SKIP: &[FunctionIdent] = &[SUI_SYSTEM_CREATE, SUI_CLOCK_CREATE, BFC_SYSTEM_CREATE];
 #[cfg(not(msim))]
-const FUNCTIONS_TO_SKIP: &[FunctionIdent] = &[SUI_SYSTEM_CREATE, SUI_CLOCK_CREATE, BFC_SYSTEM_CREATE];
+const FUNCTIONS_TO_SKIP: &[FunctionIdent] = &[
+    SUI_SYSTEM_CREATE, SUI_CLOCK_CREATE,
+    BFC_SYSTEM_CREATE, SUI_ANONYMOUS_CREATE,
+    SUI_ANONYMOUS_CREATE,
+];
 
 #[cfg(msim)]
 const FUNCTIONS_TO_SKIP: &[FunctionIdent] = &[

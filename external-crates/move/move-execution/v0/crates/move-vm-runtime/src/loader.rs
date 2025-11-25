@@ -777,10 +777,12 @@ impl Loader {
             let not_verify_function
                 = vec!["receive_impl", "internal_validate", "internal_add", "internal_sub", "internal_mul", "internal_div",
                        "internal_hash_to", "internal_multi_scalar_mul", "internal_pairing", "poseidon_bn254_internal",
-                       "check_zklogin_id_internal", "check_zklogin_issuer_internal", "hash_to_input_internal", "vdf_verify_internal",
-                       "read_setting_impl", "internal_convert", "internal_sum", "native_sender", "native_epoch", "native_sponsor",
-                       "native_epoch_timestamp_ms", "fresh_id", "native_ids_created", "native_gas_price", "load_nitro_attestation_internal",
-                       "native_gas_budget", "party_transfer_impl"];
+                       "check_zklogin_id_internal", "check_zklogin_issuer_internal", "hash_to_input_internal",
+                       "vdf_verify_internal",
+                       "read_setting_impl", "internal_convert",
+                       "internal_sum",
+                       "hfe_ops_add", "hfe_ops_minus","hfe_ops_multiplied", "hfe_ops_encode_data",
+                       "hfe_ops_restore_value", "hfe_ops_compare_value", "hfe_ops_compare_value1_and_value2"];
 
             if !cfg!(feature = "lazy_natives") {
                 for (idx, native_function) in module

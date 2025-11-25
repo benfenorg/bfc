@@ -1288,6 +1288,9 @@ impl From<crate::transaction::EndOfEpochTransactionKind> for EndOfEpochTransacti
             crate::transaction::EndOfEpochTransactionKind::DenyListStateCreate => {
                 Self::DenyListStateCreate
             }
+            crate::transaction::EndOfEpochTransactionKind::AnonymousStateCreate => {
+                Self::AnonymousStateCreate
+            }
             crate::transaction::EndOfEpochTransactionKind::BridgeStateCreate(chain_identifier) => {
                 Self::BridgeStateCreate {
                     chain_id: CheckpointDigest::new(chain_identifier.as_bytes().to_owned()),

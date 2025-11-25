@@ -65,6 +65,14 @@ impl CoinReadApiServer for CoinReadApi {
         })
     }
 
+    async fn get_anonyment_coin_metadata(&self, coin_type: String) -> RpcResult<Option<SuiCoinMetadata>> {
+        let coin_struct = parse_to_struct_tag(&coin_type)?;
+        self.inner
+            .get_anonyment_coin_metadata(coin_struct)
+            .await
+            .map_err(Into::into)
+    }
+
     async fn get_all_coins(
         &self,
         owner: SuiAddress,

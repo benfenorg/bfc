@@ -106,6 +106,36 @@ pub async fn do_mint(test_cluster: &mut TestCluster, package: ObjectID) {
     test_cluster.execute_transaction(mint_tx).await;
 }
 
+#[allow(unused)]
+pub async fn do_mint_anonymous(test_cluster: &mut TestCluster, package: ObjectID, mint_amount: u64) -> SuiTransactionBlockResponse {
+    let context = &test_cluster.wallet;
+    let address = test_cluster.get_address_0();
+    let gas = context
+        .get_one_gas_object_owned_by_address(address)
+        .await
+        .unwrap()
+        .unwrap();
+    let cap = get_cap(&test_cluster.rpc_client().clone(), address).await;
+    let cap_obj_ref = cap.unwrap().object().unwrap().object_ref();
+    let mint_tx = make_mint_test_anonymous_coin_transaction(context, address, gas, package, cap_obj_ref, mint_amount).await;
+    test_cluster.execute_transaction(mint_tx).await
+}
+
+#[allow(unused)]
+pub async fn do_mint_ausd(test_cluster: &mut TestCluster, package: ObjectID, mint_amount: u64) -> SuiTransactionBlockResponse {
+    let context = &test_cluster.wallet;
+    let address = test_cluster.get_address_0();
+    let gas = context
+        .get_one_gas_object_owned_by_address(address)
+        .await
+        .unwrap()
+        .unwrap();
+    let cap = get_cap(&test_cluster.rpc_client().clone(), address).await;
+    let cap_obj_ref = cap.unwrap().object().unwrap().object_ref();
+    let mint_tx = make_mint_test_ausd_transaction(context, address, gas, package, cap_obj_ref, mint_amount).await;
+    test_cluster.execute_transaction(mint_tx).await
+}
+
 async fn make_mint_test_coin_transaction(
     context: &WalletContext,
     sender :SuiAddress,
@@ -121,6 +151,44 @@ async fn make_mint_test_coin_transaction(
     context.sign_transaction(
         &TestTransactionBuilder::new(sender, gas_object, gas_price)
             .call_mint_test_coin(package_id,treasury_cap,amount,*recipient)
+            .build(),
+    )
+}
+
+async fn make_mint_test_anonymous_coin_transaction(
+    context: &WalletContext,
+    sender :SuiAddress,
+    gas_object :ObjectRef,
+    package_id:ObjectID,
+    treasury_cap: ObjectRef,
+    amount:u64,
+) -> Transaction {
+    let addresses= context.get_addresses();
+    let recipient= addresses.first().unwrap();
+    let gas_price = context.get_reference_gas_price().await.unwrap();
+    println!("sender:{:?} recipient:{:?}",sender,recipient);
+    context.sign_transaction(
+        &TestTransactionBuilder::new(sender, gas_object, gas_price)
+            .call_mint_test_anonymous_coin(package_id,treasury_cap,amount,*recipient)
+            .build(),
+    )
+}
+
+async fn make_mint_test_ausd_transaction(
+    context: &WalletContext,
+    sender :SuiAddress,
+    gas_object :ObjectRef,
+    package_id:ObjectID,
+    treasury_cap: ObjectRef,
+    amount:u64,
+) -> Transaction {
+    let addresses= context.get_addresses();
+    let recipient= addresses.first().unwrap();
+    let gas_price = context.get_reference_gas_price().await.unwrap();
+    println!("sender:{:?} recipient:{:?}",sender,recipient);
+    context.sign_transaction(
+        &TestTransactionBuilder::new(sender, gas_object, gas_price)
+            .call_mint_test_ausd_coin(package_id,treasury_cap,amount,*recipient)
             .build(),
     )
 }
