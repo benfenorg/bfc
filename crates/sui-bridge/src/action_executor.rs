@@ -25,6 +25,8 @@ use sui_types::{
     transaction::Transaction,
 };
 
+use crate::events::{TokenTransferApproved, TokenTransferClaimed, TokenTransferAlreadyApproved, TokenTransferAlreadyClaimed};
+
 use crate::metrics::BridgeMetrics;
 use crate::{
     client::bridge_authority_aggregator::BridgeAuthorityAggregator,

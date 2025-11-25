@@ -12,6 +12,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
+use sui_types::base_types::SuiAddress;
 //use tracing::{info, trace};
 use sui_config::genesis::{Genesis, GenesisCeremonyParameters,
                           GenesisChainParameters, TokenDistributionSchedule,

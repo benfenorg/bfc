@@ -76,13 +76,6 @@ module bfc_system::bfc_system {
         transfer::public_transfer(abfc_balance.into_coin(ctx), admin);
     }
 
-    public(package) fun allocate_abfc(
-        abfc_balance: Anonymous_Balance<ABFC>,
-        admin: address,
-        ctx: &mut TxContext
-    ){
-        transfer::public_transfer(abfc_balance.into_coin(ctx), admin);
-    }
 
     public(package) fun create(
         id: UID,

@@ -5815,6 +5815,12 @@ create_bfc_system_modify_cap
 get_extra_fields
 	public(package) fun
 	0xc8::bfc_system_state_inner
+deposit_stable_gas_coin
+	public(package) fun
+	0xc8::bfc_system_state_inner
+get_deposited_stable_gas_coin_balance
+	public fun
+	0xc8::bfc_system_state_inner
 in_external_stable_gas_coin_list
 	public(package) fun
 	0xc8::bfc_system_state_inner
@@ -5859,6 +5865,12 @@ inner_stablecoin_to_bfc
 	0xc8::bfc_system
 inner_withdraw_balance
 	fun
+	0xc8::bfc_system
+deposit_stable_gas_coin
+	fun
+	0xc8::bfc_system
+get_deposited_stable_gas_coin_balance
+	public fun
 	0xc8::bfc_system
 request_gas_balance
 	public fun
@@ -6119,6 +6131,9 @@ set_cross_in_bridge_fee
 	public fun
 	0xb::message_types
 withdraw_bridge_fee
+	public fun
+	0xb::message_types
+fast_path_limit_update
 	public fun
 	0xb::message_types
 BridgeRoute
@@ -6440,6 +6455,9 @@ create_refund_admin_message
 	public fun
 	0xb::message
 create_fast_path_limit_message
+	public fun
+	0xb::message
+create_fast_path_limit_message_v2
 	public fun
 	0xb::message
 create_update_bridge_limit_message

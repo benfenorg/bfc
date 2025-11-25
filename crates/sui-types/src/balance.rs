@@ -19,8 +19,6 @@ pub const BALANCE_CREATE_REWARDS_FUNCTION_NAME: &IdentStr = ident_str!("create_s
 pub const BALANCE_DESTROY_REBATES_FUNCTION_NAME: &IdentStr = ident_str!("destroy_storage_rebates");
 pub const BALANCE_DEPOSIT_STABLE_GAS_COIN_FUNCTION_NAME: &IdentStr = ident_str!("deposit_stable_gas_coin");
 
-pub const BALANCE_DEPOSIT_STABLE_GAS_COIN_FUNCTION_NAME: &IdentStr = ident_str!("deposit_stable_gas_coin");
-
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema)]
 pub struct Supply {

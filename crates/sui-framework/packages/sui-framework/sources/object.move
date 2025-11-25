@@ -31,7 +31,6 @@ const SUI_SYSTEM_STATE_OBJECT_ID: address = @0x5;
 const BFC_SYSTEM_STATE_OBJECT_ID: address = @0xC9;
 const BFC_ANONYMOUS_STATE_ID: address = @0xD9;
 
-const BFC_ANONYMOUS_STATE_ID: address = @0xD9;
 
 
 /// The hardcoded ID for the singleton Clock Object.

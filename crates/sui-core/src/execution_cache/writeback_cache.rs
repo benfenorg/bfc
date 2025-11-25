@@ -48,7 +48,8 @@ use crate::authority::AuthorityStore;
 use crate::fallback_fetch::{do_fallback_lookup, do_fallback_lookup_fallible};
 use crate::global_state_hasher::GlobalStateHashStore;
 use crate::transaction_outputs::TransactionOutputs;
-
+use sui_types::bridge::get_bridge_external_limiter;
+use sui_types::bridge::MoveTypeBridgeExternalLimiter;
 use dashmap::mapref::entry::Entry as DashMapEntry;
 use dashmap::DashMap;
 use futures::{future::BoxFuture, FutureExt};
@@ -1713,6 +1714,10 @@ impl ObjectCacheRead for WritebackCache {
 
     fn get_bridge_object_unsafe(&self) -> SuiResult<Bridge> {
         get_bridge(self)
+    }
+
+    fn get_bridge_limiter(&self) -> SuiResult<MoveTypeBridgeExternalLimiter> {
+        get_bridge_external_limiter(self)
     }
 
     fn get_marker_value(
