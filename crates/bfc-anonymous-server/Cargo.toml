@@ -1,0 +1,36 @@
+[package]
+name = "bfc-anonymous-server"
+version = "0.1.0"
+edition = "2021"
+authors = ["BFC Team"]
+description = "BFC Anonymous Server for handling HTTP POST requests"
+license = "Apache-2.0"
+
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }
+warp = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+anyhow = "1.0"
+clap = { version = "4.0", features = ["derive"] }
+chrono = { version = "0.4", features = ["serde"] }
+reqwest = { version = "0.11", features = ["json"] }
+rocksdb = "0.22.0"
+tempfile = "3.8.0"
+
+ed25519-dalek = { version = "2.1.1", features = ["rand_core", "std"] }
+rand = "0.8.5"
+thiserror = "1.0"
+hex = "0.4.3"
+move-core-types.workspace = true
+fastcrypto.workspace = true
+sui-types.workspace = true
+sui-config.workspace = true
+dirs.workspace = true
+log = "0.4.22"
+mpc-transmission.workspace = true
+[dev-dependencies]
+tokio-test = "0.4"
+rand = "0.8.5"
