@@ -414,8 +414,8 @@ struct PgConectionPoolConfig {
 
 impl PgConectionPoolConfig {
     const DEFAULT_POOL_SIZE: u32 = 10;
-    const DEFAULT_CONNECTION_TIMEOUT: Duration = Duration::from_secs(150);
-    const DEFAULT_STATEMENT_TIMEOUT: Duration = Duration::from_secs(300);
+    const DEFAULT_CONNECTION_TIMEOUT: Duration = Duration::from_secs(1500);
+    const DEFAULT_STATEMENT_TIMEOUT: Duration = Duration::from_secs(3000);
 
     fn connection_config(&self) -> PgConnectionConfig {
         PgConnectionConfig {
