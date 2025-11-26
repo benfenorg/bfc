@@ -615,6 +615,7 @@ module bridge::bridge {
         protocol_version: u64,
         protocol_token_id: u64,
         lp_amount: u64,
+        principal_amount: u64,
         ctx: &mut TxContext
     ) {
         let (inner,parent_id) = load_inner_mut_and_uid(bridge);
@@ -634,7 +635,18 @@ module bridge::bridge {
         let defi_info = defi_holders_get(parent_id, ctx.sender(), defi_protocol_key);
         assert!(defi_info.lp_token_amount >= lp_amount, EDefiUnstakeAmountNotEnough);
         //calculate principal amount
-        let principal_amount = defi_protocols::calculate_withdraw_principal_amount(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain, lp_amount, defi_info.lp_token_amount, defi_info.amount);
+        let principal_amount_calculated = defi_protocols::calculate_withdraw_principal_amount(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain, lp_amount, defi_info.lp_token_amount, defi_info.amount);
+        let principal_amount = if (principal_amount > principal_amount_calculated) {
+            // if principal_amount> principal_amount_calculated more than 10%, then use principal_amount_calculated
+            let threshold = 10; // percentage
+            if (principal_amount > principal_amount_calculated + principal_amount_calculated * threshold / 100) {
+                principal_amount_calculated
+            } else {
+                principal_amount
+            }
+        } else {
+            principal_amount_calculated
+        };
         assert!(principal_amount > 0, ETokenValueIsZero);
 
 
