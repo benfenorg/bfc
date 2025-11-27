@@ -2703,13 +2703,20 @@ fun test_defi_unstake() {
         protocol_token_id,
         source_chain
     );
+    let principal_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
     assert!(holder_amount == adjusted_amount, 0);
     assert!(lp_token_amount == lp_token_amount, 0);
     //unstake start
     scenario.next_tx(@0xABCD);
     let ctx = env.ctx();
 
-    bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
+    bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, principal_amount, ctx);
     let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
     assert!(transfer_out_events.length() == 1, 0);
 
@@ -2810,7 +2817,7 @@ fun test_defi_unstake_gt_stake_amount() {
     scenario.next_tx(@0xABCD);
     let ctx = env.ctx();
     
-    bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount*2, ctx);
+    bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount*2, holder_amount, ctx);
     
     //unstake end
     bridge_wrap.return_bridge();
@@ -2891,7 +2898,7 @@ fun test_defi_unstake_and_approve_defi_transfer_out(){
     scenario.next_tx(@0xABCD);
     let ctx = env.ctx();
     
-    bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
+    bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount,holder_amount, ctx);
     let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
     assert!(transfer_out_events.length() == 1, 0);
     let principal_amount = bridge::bridge::get_defi_transfer_out_event_principal_amount(transfer_out_events.borrow(0));
@@ -3020,7 +3027,7 @@ fun test_defi_unstake_limit_error(){
     scenario.next_tx(@0xABCD);
     let ctx = env.ctx();
     
-    bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
+    bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount,holder_amount, ctx);
     //unstake end
     bridge_wrap.return_bridge();
     // sui::test_scenario::return_shared(bfc_system_state);
@@ -3101,7 +3108,7 @@ fun test_defi_unstake_gt_lp_amount(){
     scenario.next_tx(@0xABCD);
     let ctx = env.ctx();
     
-    bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount+1, ctx);
+    bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount+1,holder_amount, ctx);
     //unstake end
     bridge_wrap.return_bridge();
     // sui::test_scenario::return_shared(bfc_system_state);
@@ -3182,7 +3189,7 @@ fun test_defi_unstake_and_approve_defi_transfer_in(){
     scenario.next_tx(@0xABCD);
     let ctx = env.ctx();
     
-    bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
+    bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount,holder_amount, ctx);
     let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
     assert!(transfer_out_events.length() == 1, 0);
 
@@ -3363,7 +3370,7 @@ fun test_defi_unstake_zero_amount() {
     scenario.next_tx(@0xABCD);
     let ctx = env.ctx();
 
-    bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, 0u64, ctx);
+    bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, 0u64,0u64, ctx);
 
     // Cleanup - should not reach here
     bridge_wrap.return_bridge();
@@ -3388,6 +3395,7 @@ fun test_defi_unstake_invalid_protocol_token() {
     let protocol_version = 3;
     let protocol_token_id = 3; // USDC
     let lp_token_amount = 1000_000_000_000;
+    let principal_amount = 1000_000_000_000;
 
     // First stake with valid protocol_token_id (USDC)
     let message = message::create_defi_transfer_in_message(
@@ -3420,7 +3428,7 @@ fun test_defi_unstake_invalid_protocol_token() {
     let ctx = env.ctx();
     let invalid_protocol_token_id = 999u64; // Not USDC(3) or USDT(2)
 
-    bridge.defi_unstake(source_chain, protocol_type, protocol_version, invalid_protocol_token_id, lp_token_amount, ctx);
+    bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, invalid_protocol_token_id, lp_token_amount,principal_amount, ctx);
 
     // Cleanup - should not reach here
     bridge_wrap.return_bridge();
@@ -3445,7 +3453,7 @@ fun test_defi_unstake_when_bridge_paused() {
     let protocol_version = 3;
     let protocol_token_id = 3; // USDC
     let lp_token_amount = 1000_000_000_000;
-
+    let principal_amount = 1000_000_000_000;
     // First stake some tokens
     let message = message::create_defi_transfer_in_message(
         source_chain,
@@ -3486,7 +3494,7 @@ fun test_defi_unstake_when_bridge_paused() {
     scenario.next_tx(@0xABCD);
     let ctx = env.ctx();
 
-    bridge2.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
+    bridge2.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount,principal_amount, ctx);
 
     // Cleanup - should not reach here
     bridge_wrap2.return_bridge();
@@ -3556,7 +3564,7 @@ fun test_defi_unstake_invalid_route() {
     let protocol_version = 3;
     let protocol_token_id = 3; // USDC
     let lp_token_amount = 1000_000_000_000;
-
+    let principal_amount = 1000_000_000_000;
     // First stake some tokens
     let message = message::create_defi_transfer_in_message(
         source_chain,
@@ -3588,7 +3596,7 @@ fun test_defi_unstake_invalid_route() {
     let ctx = env.ctx();
     let invalid_target_chain = chain_ids::sui_mainnet(); // Invalid route
 
-    bridge.defi_unstake(invalid_target_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
+    bridge.defi_unstake_v2(invalid_target_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount,principal_amount, ctx);
 
     // Cleanup - should not reach here
     bridge_wrap.return_bridge();
@@ -3614,7 +3622,7 @@ fun test_defi_unstake_unsupported_chain_protocol() {
     let protocol_version = 3;
     let protocol_token_id = 3; // USDC
     let lp_token_amount = 1000_000_000_000;
-
+    let principal_amount = 1000_000_000_000;
     // First stake some tokens
     let message = message::create_defi_transfer_in_message(
         source_chain,
@@ -3647,7 +3655,7 @@ fun test_defi_unstake_unsupported_chain_protocol() {
     // Use solana_testnet which may not support USDC from Benfen
     let unsupported_chain = chain_ids::solana_testnet();
 
-    bridge.defi_unstake(unsupported_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
+    bridge.defi_unstake_v2(unsupported_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount,principal_amount, ctx);
 
     // Cleanup - should not reach here
     bridge_wrap.return_bridge();
@@ -3754,13 +3762,20 @@ fun test_defi_unstake_exact_all_lp_tokens() {
         protocol_token_id,
         source_chain
     );
+    let principal_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
     assert!(holder_lp_amount == lp_token_amount, 0);
 
     // Unstake exactly all LP tokens
     scenario.next_tx(@0xABCD);
     let ctx = env.ctx();
 
-    bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, ctx);
+    bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount,principal_amount, ctx);
 
     // Verify all LP tokens were unstaked
     let remaining_lp = bridge.defi_holders_lp_token_amount_get(
@@ -3799,6 +3814,7 @@ fun test_defi_multiple_stakes_partial_unstake() {
     let seq_num_1 = 100;
     let amount_1 = 1000;
     let lp_token_amount_1 = 1000_000_000_000;
+    let principal_amount_1 = 1000_000;
 
     let message_1 = message::create_defi_transfer_in_message(
         source_chain,
@@ -3829,6 +3845,7 @@ fun test_defi_multiple_stakes_partial_unstake() {
     let seq_num_2 = 101;
     let amount_2 = 2000;
     let lp_token_amount_2 = 2000_000_000_000;
+    let principal_amount_2 = 2000_000;
 
     let message_2 = message::create_defi_transfer_in_message(
         source_chain,
@@ -3860,12 +3877,20 @@ fun test_defi_multiple_stakes_partial_unstake() {
         source_chain
     );
     assert!(total_lp == lp_token_amount_1 + lp_token_amount_2, 0);
+    let total_principal_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    assert!(total_principal_amount == principal_amount_1 + principal_amount_2, 0);
 
     // Partial unstake (only unstake amount from first stake)
     scenario.next_tx(@0xABCD);
     let ctx = env.ctx();
 
-    bridge.defi_unstake(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount_1, ctx);
+    bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount_1,principal_amount_1, ctx);
 
     // Verify partial unstake
     let remaining_lp = bridge.defi_holders_lp_token_amount_get(
@@ -3876,6 +3901,14 @@ fun test_defi_multiple_stakes_partial_unstake() {
         source_chain
     );
     assert!(remaining_lp == lp_token_amount_2, 0);
+    let remaining_principal_amount = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    assert!(remaining_principal_amount == principal_amount_2, 0);
 
     // Verify event was emitted
     let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
@@ -3885,3 +3918,561 @@ fun test_defi_multiple_stakes_partial_unstake() {
     sui::test_scenario::end(scenario);
     env.destroy_env();
 }
+
+// Test unstake with principal amount smaller than calculated - should use calculated value
+#[test]
+fun test_defi_unstake_principal_smaller_than_calculated() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    scenario.next_tx(@0x0);
+    let source_chain = chain_ids::eth_custom();
+    let sender_address = address::to_bytes(@0x0);
+    let target_chain = chain_ids::sui_custom();
+    let protocol_type = 1;
+    let protocol_version = 3;
+    let protocol_token_id = 3; // USDC
+
+    // Stake
+    let seq_num = 100;
+    let amount = 1000;
+    let lp_token_amount = 1000_000_000_000;
+
+    let message = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num,
+        sender_address,
+        target_chain,
+        amount,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE,
+        lp_token_amount,
+        amount
+    );
+
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+
+    bridge.approve_defi_transfer_in(message, signatures);
+
+    // Get actual principal amount
+    let total_principal = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    std::debug::print(&total_principal);
+    let total_lp = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+
+    // Partial unstake with principal smaller than calculated
+    scenario.next_tx(@0xABCD);
+    let ctx = env.ctx();
+
+    // Unstake half of LP tokens, but provide principal amount smaller than calculated
+    let unstake_lp = total_lp / 2;
+    let provided_principal = total_principal / 4; // Smaller than calculated (should be ~total_principal/2)
+
+    bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, unstake_lp, provided_principal, ctx);
+
+    // Verify event uses calculated principal amount (not the provided smaller one)
+    let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
+    assert!(transfer_out_events.length() == 1, 0);
+    let event_principal = bridge::bridge::get_defi_transfer_out_event_principal_amount(transfer_out_events.borrow(0));
+    std::debug::print(&event_principal);
+    std::debug::print(&provided_principal);
+    
+    // Should use calculated value (approximately total_principal/2), not the provided smaller value
+    assert!(event_principal > provided_principal, 0);
+    assert!(event_principal <= total_principal / 2 + 1, 0); // Allow small rounding error
+
+    bridge_wrap.return_bridge();
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+// Test unstake with principal amount larger than calculated but within 10% - should use provided value
+#[test]
+fun test_defi_unstake_principal_larger_within_10_percent() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    scenario.next_tx(@0x0);
+    let source_chain = chain_ids::eth_custom();
+    let sender_address = address::to_bytes(@0x0);
+    let target_chain = chain_ids::sui_custom();
+    let protocol_type = 1;
+    let protocol_version = 3;
+    let protocol_token_id = 3; // USDC
+
+    // Stake
+    let seq_num = 100;
+    let amount = 1000;
+    let lp_token_amount = 1000_000_000_000;
+
+    let message = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num,
+        sender_address,
+        target_chain,
+        amount,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE,
+        lp_token_amount,
+        amount
+    );
+
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+
+    bridge.approve_defi_transfer_in(message, signatures);
+
+    // Get actual principal amount
+    let total_principal = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    let total_lp = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+
+    // Partial unstake with principal larger than calculated but within 10%
+    scenario.next_tx(@0xABCD);
+    let ctx = env.ctx();
+
+    // Unstake half of LP tokens
+    let unstake_lp = total_lp / 2;
+    let calculated_principal = total_principal / 2;
+    // Provide principal 5% larger than calculated (within 10% threshold)
+    let provided_principal = calculated_principal + calculated_principal * 5 / 100;
+
+    bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, unstake_lp, provided_principal, ctx);
+
+    // Verify event uses provided principal amount (within 10% threshold)
+    let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
+    assert!(transfer_out_events.length() == 1, 0);
+    let event_principal = bridge::bridge::get_defi_transfer_out_event_principal_amount(transfer_out_events.borrow(0));
+    // Should use provided value since it's within 10%
+    assert!(event_principal == provided_principal, 0);
+
+    bridge_wrap.return_bridge();
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+// Test unstake with principal amount larger than calculated and exceeds 10% - should use calculated value
+#[test]
+fun test_defi_unstake_principal_larger_exceeds_10_percent() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    scenario.next_tx(@0x0);
+    let source_chain = chain_ids::eth_custom();
+    let sender_address = address::to_bytes(@0x0);
+    let target_chain = chain_ids::sui_custom();
+    let protocol_type = 1;
+    let protocol_version = 3;
+    let protocol_token_id = 3; // USDC
+
+    // Stake
+    let seq_num = 100;
+    let amount = 1000;
+    let lp_token_amount = 1000_000_000_000;
+
+    let message = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num,
+        sender_address,
+        target_chain,
+        amount,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE,
+        lp_token_amount,
+        amount
+    );
+
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+
+    bridge.approve_defi_transfer_in(message, signatures);
+
+    // Get actual principal amount
+    let total_principal = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    let total_lp = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+
+    // Partial unstake with principal larger than calculated and exceeds 10%
+    scenario.next_tx(@0xABCD);
+    let ctx = env.ctx();
+
+    // Unstake half of LP tokens
+    let unstake_lp = total_lp / 2;
+    let calculated_principal = total_principal / 2;
+    // Provide principal 15% larger than calculated (exceeds 10% threshold)
+    let provided_principal = calculated_principal + calculated_principal * 15 / 100;
+
+    bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, unstake_lp, provided_principal, ctx);
+
+    // Verify event uses calculated principal amount (not the provided larger one)
+    let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
+    assert!(transfer_out_events.length() == 1, 0);
+    let event_principal = bridge::bridge::get_defi_transfer_out_event_principal_amount(transfer_out_events.borrow(0));
+    // Should use calculated value since provided value exceeds 10% threshold
+    assert!(event_principal == calculated_principal, 0);
+    assert!(event_principal < provided_principal, 0);
+
+    bridge_wrap.return_bridge();
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+// Test unstake all LP tokens with correct LP amount but principal larger than calculated
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EDefiUnstakeAmountNotEnoughForDel)]
+fun test_defi_unstake_all_lp_principal_larger_than_calculated_within_10_percent() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    scenario.next_tx(@0x0);
+    let source_chain = chain_ids::eth_custom();
+    let sender_address = address::to_bytes(@0x0);
+    let target_chain = chain_ids::sui_custom();
+    let protocol_type = 1;
+    let protocol_version = 3;
+    let protocol_token_id = 3; // USDC
+
+    // Stake
+    let seq_num = 100;
+    let amount = 1000;
+    let lp_token_amount = 1000_000_000_000;
+
+    let message = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num,
+        sender_address,
+        target_chain,
+        amount,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE,
+        lp_token_amount,
+        amount
+    );
+
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+
+    bridge.approve_defi_transfer_in(message, signatures);
+
+    // Get actual principal amount
+    let total_principal = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    let total_lp = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+
+    // Unstake all LP tokens with correct LP amount but principal larger than calculated
+    scenario.next_tx(@0xABCD);
+    let ctx = env.ctx();
+
+    // Provide principal 20% larger than calculated (exceeds 10% threshold)
+    let provided_principal = total_principal + total_principal * 5 / 100;
+
+    bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, total_lp, provided_principal, ctx);
+
+    // Verify event uses calculated principal amount (not the provided larger one)
+    let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
+    assert!(transfer_out_events.length() == 1, 0);
+    let event_principal = bridge::bridge::get_defi_transfer_out_event_principal_amount(transfer_out_events.borrow(0));
+    // Should use calculated value (total_principal) since provided value exceeds 10% threshold
+    assert!(event_principal == total_principal, 0);
+    assert!(event_principal < provided_principal, 0);
+
+    // Verify all LP tokens were unstaked
+    let remaining_lp = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    assert!(remaining_lp == 0, 0);
+    let remaining_principal = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    assert!(remaining_principal == 0, 0);
+
+    bridge_wrap.return_bridge();
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+// Test unstake all LP tokens with correct LP amount but principal larger than calculated
+#[test]
+fun test_defi_unstake_all_lp_principal_larger_than_calculated_gt_10_percent() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    scenario.next_tx(@0x0);
+    let source_chain = chain_ids::eth_custom();
+    let sender_address = address::to_bytes(@0x0);
+    let target_chain = chain_ids::sui_custom();
+    let protocol_type = 1;
+    let protocol_version = 3;
+    let protocol_token_id = 3; // USDC
+
+    // Stake
+    let seq_num = 100;
+    let amount = 1000;
+    let lp_token_amount = 1000_000_000_000;
+
+    let message = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num,
+        sender_address,
+        target_chain,
+        amount,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE,
+        lp_token_amount,
+        amount
+    );
+
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+
+    bridge.approve_defi_transfer_in(message, signatures);
+
+    // Get actual principal amount
+    let total_principal = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    let total_lp = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+
+    // Unstake all LP tokens with correct LP amount but principal larger than calculated
+    scenario.next_tx(@0xABCD);
+    let ctx = env.ctx();
+
+    // Provide principal 20% larger than calculated (exceeds 10% threshold)
+    let provided_principal = total_principal + total_principal * 15 / 100;
+
+    bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, total_lp, provided_principal, ctx);
+
+    // Verify event uses calculated principal amount (not the provided larger one)
+    let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
+    assert!(transfer_out_events.length() == 1, 0);
+    let event_principal = bridge::bridge::get_defi_transfer_out_event_principal_amount(transfer_out_events.borrow(0));
+    // Should use calculated value (total_principal) since provided value exceeds 10% threshold
+    assert!(event_principal == total_principal, 0);
+    assert!(event_principal < provided_principal, 0);
+
+    // Verify all LP tokens were unstaked
+    let remaining_lp = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    assert!(remaining_lp == 0, 0);
+    let remaining_principal = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    assert!(remaining_principal == 0, 0);
+
+    bridge_wrap.return_bridge();
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+// Test unstake all LP tokens with correct LP amount but principal larger than calculated
+#[test]
+fun test_defi_unstake_all_lp_principal_larger_than_calculated_lt_10_percent() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    scenario.next_tx(@0x0);
+    let source_chain = chain_ids::eth_custom();
+    let sender_address = address::to_bytes(@0x0);
+    let target_chain = chain_ids::sui_custom();
+    let protocol_type = 1;
+    let protocol_version = 3;
+    let protocol_token_id = 3; // USDC
+
+    // Stake
+    let seq_num = 100;
+    let amount = 1000;
+    let lp_token_amount = 1000_000_000_000;
+
+    let message = message::create_defi_transfer_in_message(
+        source_chain,
+        seq_num,
+        sender_address,
+        target_chain,
+        amount,
+        hex::decode(b""),
+        0u16,
+        0u8,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        0u64,
+        STAKE,
+        lp_token_amount,
+        amount
+    );
+
+    let signatures = sign_message_with(&env, message, vector[0, 1, 2]);
+
+    let mut bridge_wrap = env.bridge(@0x0);
+    let bridge = bridge_wrap.bridge_ref_mut();
+
+    bridge.approve_defi_transfer_in(message, signatures);
+
+    // Get actual principal amount
+    let total_principal = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    let total_lp = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+
+    // Unstake all LP tokens with correct LP amount but principal larger than calculated
+    scenario.next_tx(@0xABCD);
+    let ctx = env.ctx();
+
+    // Provide principal 20% larger than calculated (exceeds 10% threshold)
+    let provided_principal = total_principal - total_principal * 15 / 100;
+
+    bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, total_lp, provided_principal, ctx);
+
+    // Verify event uses calculated principal amount (not the provided larger one)
+    let transfer_out_events = sui::event::events_by_type<bridge::bridge::DefiTransferOutEvent>();
+    assert!(transfer_out_events.length() == 1, 0);
+    let event_principal = bridge::bridge::get_defi_transfer_out_event_principal_amount(transfer_out_events.borrow(0));
+    // Should use calculated value (total_principal) since provided value exceeds 10% threshold
+    assert!(event_principal == total_principal, 0);
+    assert!(event_principal > provided_principal, 0);
+
+    // Verify all LP tokens were unstaked
+    let remaining_lp = bridge.defi_holders_lp_token_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    assert!(remaining_lp == 0, 0);
+    let remaining_principal = bridge.defi_holders_amount_get(
+        address::from_bytes(sender_address),
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        source_chain
+    );
+    assert!(remaining_principal == 0, 0);
+
+    bridge_wrap.return_bridge();
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
