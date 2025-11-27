@@ -6,7 +6,8 @@ use std::ascii;
 use sui::clock::{Self, Clock};
 use sui::dynamic_field;
 use sui::anonymous_coin::{Self, Anonymous_Coin,join};
-
+use sui::bag::{Self, Bag};
+use std::string::{Self, String};
 
 const ENOT_ADMIN: u64 = 0;
 const ADMIN_ALREADY_EXISTS: u64 = 1;
@@ -30,8 +31,10 @@ const ACTION_STATUS_COMPLETED: u8 = 1;
 const ACTION_TYPE_ADD_ADMIN: u8 = 0;
 const ACTION_TYPE_REMOVE_ADMIN: u8 = 1;
 const ACTION_TYPE_WITHDRAW_OBJECT: u8 = 2;
+const ACTION_TYPE_WITHDRAW_TOKEN1: u8 = 3;
+const ACTION_TYPE_WITHDRAW_TOKEN2: u8 = 4;
 
-
+const VAULT_KEY : vector<u8> = b"anonymous_vault_key";
 
 public struct AnonymousVault has key, store {
     id: UID,
@@ -41,8 +44,8 @@ public struct AnonymousVault has key, store {
     actions: vector<VaultAction>,
 
     //1. use dynamic field to store objects: upgradeCap, treasuryCap, etc
-    //2. use VecMap to store tokens [token don't have key and store ability]
-
+    //2. use Bag to store tokens [token don't have key and store ability]
+    vault_pool: Bag,
 }
 public struct VaultTokenPool<phantom T1, phantom T2> has store, key {
     id: UID,
@@ -58,12 +61,20 @@ fun init(ctx: &mut TxContext) {
 }
 
 
-entry fun init_token_pool<T1, T2>(anonymous_coin_1: Anonymous_Coin<T1>, anonymous_coin_2: Anonymous_Coin<T2>, ctx: &mut TxContext) {
-    transfer::share_object(VaultTokenPool {
+entry fun init_token_pool<T1, T2>(anonymous_coin_1: Anonymous_Coin<T1>,
+                                    anonymous_coin_2: Anonymous_Coin<T2>,
+                                    vault: &mut AnonymousVault,
+                                    ctx: &mut TxContext) {
+    //use bag or table to store pool
+    let pool = VaultTokenPool {
         id: object::new(ctx),
         anonymous_coin_1,
         anonymous_coin_2,
-    })
+    };
+    let vault_key = string::utf8(VAULT_KEY);
+    bag::add<string::String, VaultTokenPool<T1, T2>>(&mut vault.vault_pool, vault_key, pool)
+
+
 }
 
 entry fun init_admin(admin: address, vault: &mut AnonymousVault) {
@@ -81,18 +92,23 @@ entry fun init_admin(admin: address, vault: &mut AnonymousVault) {
 
 
 entry fun deposit_token1_to_valut_pool<T1, T2>( mut anonymous_coin: Anonymous_Coin<T1>,
-                                                pool: &mut VaultTokenPool<T1, T2>, ctx: &mut TxContext){
-    let sender = tx_context::sender(ctx);
-    join(&mut pool.anonymous_coin_1, anonymous_coin, ctx);
+                                                vault: &mut AnonymousVault,
+                                                 ctx: &mut TxContext){
+    let vault_key = string::utf8(VAULT_KEY);
+    let vault_pool = bag::borrow_mut<string::String, VaultTokenPool<T1, T2>>(&mut vault.vault_pool, vault_key);
+    join(&mut vault_pool.anonymous_coin_1, anonymous_coin, ctx);
 
 
 }
 
 
 entry fun deposit_token2_to_valut_pool<T1, T2>( mut anonymous_coin: Anonymous_Coin<T2>,
-                                                pool: &mut VaultTokenPool<T1, T2>, ctx: &mut TxContext){
-    let sender = tx_context::sender(ctx);
-    join(&mut pool.anonymous_coin_2, anonymous_coin, ctx);
+                                                vault: &mut AnonymousVault,
+                                                ctx: &mut TxContext){
+    let vault_key = string::utf8(VAULT_KEY);
+    let vault_pool = bag::borrow_mut<string::String, VaultTokenPool<T1, T2>>(&mut vault.vault_pool, vault_key);
+
+    join(&mut vault_pool.anonymous_coin_2, anonymous_coin, ctx);
 
 
 }
@@ -124,7 +140,7 @@ fun withdraw_object_to_sender<T: key + store>(obj_id: ID, object_key: ascii::Str
 
 }
 
-entry fun admin_vote_for_action(action: &mut VaultAction, vault:& mut AnonymousVault, ctx: &mut TxContext){
+entry fun admin_vote_for_action<T1, T2>(action: &mut VaultAction, vault:& mut AnonymousVault, ctx: &mut TxContext){
 
     let sender = tx_context::sender(ctx);
     assert!(vector_contains(&vault.admins, &sender), ENOT_ADMIN);
@@ -132,7 +148,7 @@ entry fun admin_vote_for_action(action: &mut VaultAction, vault:& mut AnonymousV
 
     vector::push_back(&mut action.approve_admins, tx_context::sender(ctx));
     if(vector::length(&action.approve_admins) >= THRESHOLD_FOR_ACTION){
-        do_action_if_reach_threshold(action, vault);
+        do_action_if_reach_threshold<T1, T2>(action, vault, ctx);
     }
 
 }
@@ -150,7 +166,7 @@ fun add_admin(admin: address, vault:& mut AnonymousVault){
 }
 
 
-fun do_action_if_reach_threshold(action: &mut VaultAction, vault:& mut AnonymousVault){
+fun do_action_if_reach_threshold<T1, T2>(action: &mut VaultAction, vault:& mut AnonymousVault,  ctx: &mut TxContext){
 
     if(action.action_type == ACTION_TYPE_ADD_ADMIN){
         add_admin(action.action_receipt, vault);
@@ -160,6 +176,12 @@ fun do_action_if_reach_threshold(action: &mut VaultAction, vault:& mut Anonymous
     }
     else if(action.action_type == ACTION_TYPE_WITHDRAW_OBJECT){
 
+    }
+    else if(action.action_type == ACTION_TYPE_WITHDRAW_TOKEN1){
+        withdraw_token1<T1, T2>(vault, ctx);
+    }
+    else if(action.action_type == ACTION_TYPE_WITHDRAW_TOKEN2){
+        withdraw_token2<T1, T2>(vault, ctx);
     };
 
     action.action_status = ACTION_STATUS_COMPLETED;
@@ -173,14 +195,31 @@ public fun create_anonymous_vault(ctx: &mut TxContext): AnonymousVault {
         admins: vector::empty<address>(),
         can_init_admin_status: true,
         actions: vector::empty<VaultAction>(),
+        vault_pool: bag::new(ctx),
     }
 }
 
-fun withdraw_token1(){
+fun withdraw_token1<T1, T2>( vault: &mut AnonymousVault,
+                    ctx: &mut TxContext){
+    let vault_key = string::utf8(VAULT_KEY);
+    let vault_pool = bag::remove<string::String, VaultTokenPool<T1, T2>>(&mut vault.vault_pool, vault_key);
+    let VaultTokenPool {
+                        anonymous_coin_1: token1,
+                        anonymous_coin_2: token2, id} = vault_pool;
+
+    let addr = tx_context::sender(ctx);
+    transfer::public_transfer(token1, addr);
+    transfer::public_transfer(token2, addr);
+    object::delete(id);
+    //object::delete(vault_pool.id)
+    //re-add poo
 
 }
 
-fun withdraw_token2() {
+fun withdraw_token2<T1, T2>(vault: &mut AnonymousVault,
+                    ctx: &mut TxContext) {
+    let vault_key = string::utf8(VAULT_KEY);
+    let vault_pool = bag::borrow_mut<string::String, VaultTokenPool<T1, T2>>(&mut vault.vault_pool, vault_key);
 
 }
 
