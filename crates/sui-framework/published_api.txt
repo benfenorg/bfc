@@ -7369,9 +7369,6 @@ update_node_url
 register_foreign_token
 	public fun
 	0xb::bridge
-defi_unstake
-	public fun
-	0xb::bridge
 defi_unstake_v2
 	public fun
 	0xb::bridge
