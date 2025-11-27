@@ -684,7 +684,7 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
     assert_eq!(events.len(), 1);
     //withdraw amount is amount_after_fee/10
     let amount_after_fee = amount_after_fee / 10;
-    initiate_defi_bridge_unstake_sui_to_eth(&bridge_test_cluster, protocol_type, protocol_version, protocol_token_id, amount_after_fee,false)
+    initiate_defi_bridge_unstake_sui_to_eth(&bridge_test_cluster, protocol_type, protocol_version, protocol_token_id, amount_after_fee,amount_after_fee,false)
         .await
         .unwrap();
     let events = bridge_test_cluster
@@ -1116,7 +1116,7 @@ async fn test_bridge_defi_stake_and_unstake_revoke_twice_e2e() -> Result<(), any
     assert!(!events.is_empty(), "Should have TokenTransferApproved event");
     assert_eq!(events.len(), 1);
     let amount_after_fee = amount_after_fee / 10;
-    initiate_defi_bridge_unstake_sui_to_eth(&bridge_test_cluster, protocol_type, protocol_version, protocol_token_id, amount_after_fee,true)
+    initiate_defi_bridge_unstake_sui_to_eth(&bridge_test_cluster, protocol_type, protocol_version, protocol_token_id, amount_after_fee,amount_after_fee,true)
         .await
         .unwrap();
     let events = bridge_test_cluster
@@ -1527,7 +1527,7 @@ async fn test_bridge_defi_stake_and_unstake_gt_lp_amount_e2e() -> Result<(), any
     assert!(!events.is_empty(), "Should have TokenTransferApproved event");
     assert_eq!(events.len(), 1);
     let amount_after_fee = amount_after_fee*1000+100;
-    let result = initiate_defi_bridge_unstake_sui_to_eth(&bridge_test_cluster, protocol_type, protocol_version, protocol_token_id, amount_after_fee,false)
+    let result = initiate_defi_bridge_unstake_sui_to_eth(&bridge_test_cluster, protocol_type, protocol_version, protocol_token_id, amount_after_fee,amount_after_fee,false)
         .await;
     info!("defitag100 result: {:?}", result);
     let err = result.unwrap_err();

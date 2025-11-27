@@ -1763,6 +1763,7 @@ pub async fn initiate_defi_bridge_unstake_sui_to_eth(
     protocol_version: u64,
     protocol_token_id: u64,
     amount: u64,
+    principal_amount: u64,
     revoke_twice: bool,
 ) -> Result<SuiToEthDefiBridgeAction, anyhow::Error> {
     let bridge_object_arg = bridge_test_cluster
@@ -1781,6 +1782,7 @@ pub async fn initiate_defi_bridge_unstake_sui_to_eth(
         protocol_version,
         protocol_token_id,
         amount,
+        principal_amount,
         revoke_twice,
     )
     .await
@@ -1976,6 +1978,7 @@ async fn defi_unstake_sui_to_eth_package(
     protocol_version: u64,
     protocol_token_id: u64,
     amount: u64,
+    principal_amount: u64,
     revoke_twice: bool,
 ) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
     let mut builder = ProgrammableTransactionBuilder::new();
@@ -1985,13 +1988,14 @@ async fn defi_unstake_sui_to_eth_package(
     let arg_protocol_version = builder.pure(protocol_version).unwrap();
     let arg_protocol_token_id = builder.pure(protocol_token_id).unwrap();
     let arg_amount = builder.pure(amount).unwrap();
+    let arg_principal_amount = builder.pure(principal_amount).unwrap();
     let arg_bridge = builder.obj(bridge_object_arg).unwrap();
     builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
         BRIDGE_MODULE_NAME.to_owned(),
-        ident_str!("defi_unstake").to_owned(),
+        ident_str!("defi_unstake_v2").to_owned(),
         vec![],
-        vec![arg_bridge, arg_target_chain, arg_protocol_type, arg_protocol_version, arg_protocol_token_id, arg_amount],
+        vec![arg_bridge, arg_target_chain, arg_protocol_type, arg_protocol_version, arg_protocol_token_id, arg_amount, arg_principal_amount],
     );
 
     let pt = builder.finish();
