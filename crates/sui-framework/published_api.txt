@@ -7372,6 +7372,9 @@ register_foreign_token
 defi_unstake
 	public fun
 	0xb::bridge
+defi_unstake_v2
+	public fun
+	0xb::bridge
 send_token
 	public fun
 	0xb::bridge

@@ -49,6 +49,7 @@ title: Module `bridge::bridge`
 -  [Function `update_node_url`](#bridge_bridge_update_node_url)
 -  [Function `register_foreign_token`](#bridge_bridge_register_foreign_token)
 -  [Function `defi_unstake`](#bridge_bridge_defi_unstake)
+-  [Function `defi_unstake_v2`](#bridge_bridge_defi_unstake_v2)
 -  [Function `send_token`](#bridge_bridge_send_token)
 -  [Function `defi_stake`](#bridge_bridge_defi_stake)
 -  [Function `defi_stake_success`](#bridge_bridge_defi_stake_success)
@@ -2805,6 +2806,110 @@ title: Module `bridge::bridge`
     <b>assert</b>!(defi_info.lp_token_amount &gt;= lp_amount, <a href="../bridge/bridge.md#bridge_bridge_EDefiUnstakeAmountNotEnough">EDefiUnstakeAmountNotEnough</a>);
     //calculate principal amount
     <b>let</b> principal_amount = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_calculate_withdraw_principal_amount">defi_protocols::calculate_withdraw_principal_amount</a>(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain, lp_amount, defi_info.lp_token_amount, defi_info.amount);
+    <b>assert</b>!(principal_amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
+    <b>assert</b>!(<a href="../bridge/bridge.md#bridge_bridge_defi_holders_del">defi_holders_del</a>(parent_id, ctx.sender(), defi_protocol_key, principal_amount, lp_amount), <a href="../bridge/bridge.md#bridge_bridge_EDefiUnstakeAmountNotEnoughForDel">EDefiUnstakeAmountNotEnoughForDel</a>);
+    //check limit
+    <b>let</b> defi_protocol_info = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_get_protocol_info">defi_protocols::get_protocol_info</a>(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain);
+    <b>assert</b>!(defi_protocol_info.limit_unstake_amount() &gt;= principal_amount, <a href="../bridge/bridge.md#bridge_bridge_EDefiLimitError">EDefiLimitError</a>);
+    <b>let</b> <a href="../bridge/message.md#bridge_message">message</a> = <a href="../bridge/message.md#bridge_message_create_defi_transfer_out_message">message::create_defi_transfer_out_message</a>(
+        inner.chain_id,
+        bridge_seq_num,
+        address::to_bytes(ctx.sender()),
+        target_chain,
+        lp_amount,
+        hex::decode(b""), 0u16,
+        protocol_type,
+        protocol_version,
+        protocol_token_id,
+        <a href="../bridge/bridge.md#bridge_bridge_UNSTAKE">UNSTAKE</a>,
+        principal_amount
+    );
+    // Store pending <a href="../bridge/bridge.md#bridge_bridge">bridge</a> request
+    inner.token_transfer_records.push_back(
+        <a href="../bridge/message.md#bridge_message">message</a>.key(),
+        <a href="../bridge/bridge.md#bridge_bridge_BridgeRecord">BridgeRecord</a> {
+            <a href="../bridge/message.md#bridge_message">message</a>,
+            verified_signatures: option::none(),
+            claimed: <b>false</b>,
+        },
+    );
+    // emit event
+    emit(
+        <a href="../bridge/bridge.md#bridge_bridge_DefiTransferOutEvent">DefiTransferOutEvent</a> {
+            seq_num: bridge_seq_num,
+            source_chain: inner.chain_id,
+            sender_address: address::to_bytes(ctx.sender()),
+            target_chain,
+            amount_before_fee: lp_amount,
+            amount_after_fee: lp_amount,
+            protocol_type: protocol_type,
+            protocol_version: protocol_version,
+            protocol_token_id: protocol_token_id,
+            action_type: <a href="../bridge/bridge.md#bridge_bridge_UNSTAKE">UNSTAKE</a>,
+            principal_amount: principal_amount,
+        },
+    );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_defi_unstake_v2"></a>
+
+## Function `defi_unstake_v2`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_unstake_v2">defi_unstake_v2</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, target_chain: u8, protocol_type: u64, protocol_version: u64, protocol_token_id: u64, lp_amount: u64, principal_amount: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_defi_unstake_v2">defi_unstake_v2</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    target_chain: u8,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    lp_amount: u64,
+    principal_amount: u64,
+    ctx: &<b>mut</b> TxContext
+) {
+    <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
+    <b>assert</b>!(<a href="../bridge/chain_ids.md#bridge_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="../bridge/bridge.md#bridge_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
+    <b>let</b> bridge_seq_num = inner.<a href="../bridge/bridge.md#bridge_bridge_get_current_seq_num_and_increment">get_current_seq_num_and_increment</a>(<a href="../bridge/message_types.md#bridge_message_types_defi">message_types::defi</a>());
+    <b>assert</b>!(lp_amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
+    <b>assert</b>!(protocol_token_id == <a href="../bridge/bridge.md#bridge_bridge_TOKEN_ID_USDC">TOKEN_ID_USDC</a> || protocol_token_id == <a href="../bridge/bridge.md#bridge_bridge_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, <a href="../bridge/bridge.md#bridge_bridge_EOnlySupportUsdcOrUsdt">EOnlySupportUsdcOrUsdt</a>);
+    <b>assert</b>!(<a href="../bridge/tokenlist.md#bridge_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(parent_id, target_chain <b>as</b> u64, protocol_token_id),<a href="../bridge/bridge.md#bridge_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
+    <b>let</b> defi_protocol_key = <a href="../bridge/bridge.md#bridge_bridge_DefiProtocolKey">DefiProtocolKey</a>{
+        protocol_type: protocol_type,
+        protocol_version: protocol_version,
+        protocol_token_id: protocol_token_id,
+        chain_id: target_chain,
+    };
+    <b>assert</b>!(<a href="../bridge/defi_protocols.md#bridge_defi_protocols_is_valid_protocol">defi_protocols::is_valid_protocol</a>(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain), <a href="../bridge/bridge.md#bridge_bridge_EDefiProtocolConfigNotFound">EDefiProtocolConfigNotFound</a>);
+    <b>let</b> defi_info = <a href="../bridge/bridge.md#bridge_bridge_defi_holders_get">defi_holders_get</a>(parent_id, ctx.sender(), defi_protocol_key);
+    <b>assert</b>!(defi_info.lp_token_amount &gt;= lp_amount, <a href="../bridge/bridge.md#bridge_bridge_EDefiUnstakeAmountNotEnough">EDefiUnstakeAmountNotEnough</a>);
+    //calculate principal amount
+    <b>let</b> principal_amount_calculated = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_calculate_withdraw_principal_amount">defi_protocols::calculate_withdraw_principal_amount</a>(parent_id, protocol_type, protocol_version, protocol_token_id, target_chain, lp_amount, defi_info.lp_token_amount, defi_info.amount);
+    <b>let</b> principal_amount = <b>if</b> (principal_amount &gt; principal_amount_calculated) {
+        // <b>if</b> principal_amount&gt; principal_amount_calculated more than 10%, then <b>use</b> principal_amount_calculated
+        <b>let</b> threshold = 10; // percentage
+        <b>if</b> (principal_amount &gt; principal_amount_calculated + principal_amount_calculated * threshold / 100) {
+            principal_amount_calculated
+        } <b>else</b> {
+            principal_amount
+        }
+    } <b>else</b> {
+        principal_amount_calculated
+    };
     <b>assert</b>!(principal_amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
     <b>assert</b>!(<a href="../bridge/bridge.md#bridge_bridge_defi_holders_del">defi_holders_del</a>(parent_id, ctx.sender(), defi_protocol_key, principal_amount, lp_amount), <a href="../bridge/bridge.md#bridge_bridge_EDefiUnstakeAmountNotEnoughForDel">EDefiUnstakeAmountNotEnoughForDel</a>);
     //check limit
