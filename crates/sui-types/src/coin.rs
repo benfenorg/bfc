@@ -74,12 +74,9 @@ impl Coin {
 
     /// Is this other StructTag representing a Coin?
     pub fn is_coin(other: &StructTag) -> bool {
-        (other.address == SUI_FRAMEWORK_ADDRESS
+        other.address == SUI_FRAMEWORK_ADDRESS
             && other.module.as_ident_str() == COIN_MODULE_NAME
-            && other.name.as_ident_str() == COIN_METADATA_STRUCT_NAME) ||
-            (other.address == SUI_FRAMEWORK_ADDRESS
-                && other.module.as_ident_str() == ANONYMOUS_COIN_MODULE_NAME
-                && other.name.as_ident_str() == COIN_METADATA_STRUCT_NAME)
+            && other.name.as_ident_str() == COIN_STRUCT_NAME
     }
 
     /// Checks if the provided type is `Coin<T>`, returning the type T if so.
