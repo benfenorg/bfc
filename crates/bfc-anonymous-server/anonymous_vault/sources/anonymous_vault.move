@@ -116,7 +116,7 @@ entry fun deposit_token2_to_valut_pool<T1, T2>( mut anonymous_coin: Anonymous_Co
 
 
 
-entry fun deposit_object_to_vault<T: key + store>( obj: T, object_key: ascii::String,  vault: &mut AnonymousVault, ctx: &mut TxContext){
+entry fun deposit_object_to_vault<T: key + store>( obj: T, object_key: string::String,  vault: &mut AnonymousVault, ctx: &mut TxContext){
     //transfer object to sub vault for objects
     let sender = tx_context::sender(ctx);
     assert!(vector_contains(&vault.admins, &sender), ENOT_ADMIN);
@@ -130,7 +130,10 @@ entry fun deposit_object_to_vault<T: key + store>( obj: T, object_key: ascii::St
 }
 
 
-fun withdraw_object_to_sender<T: key + store>(obj_id: ID, object_key: ascii::String,  vault: &mut AnonymousVault, ctx: &mut TxContext){
+fun withdraw_object_to_sender<T: key + store>(
+                                    object_key: string::String,
+                                    vault: &mut AnonymousVault,
+                                    ctx: &mut TxContext){
     let sender = tx_context::sender(ctx);
     assert!(vector_contains(&vault.admins, &sender), ENOT_ADMIN);
     assert!(dynamic_field::exists_(&vault.id, object_key), EObjectNotFound);
@@ -140,7 +143,7 @@ fun withdraw_object_to_sender<T: key + store>(obj_id: ID, object_key: ascii::Str
 
 }
 
-entry fun admin_vote_for_action<T1, T2>(action: &mut VaultAction, vault:& mut AnonymousVault, ctx: &mut TxContext){
+entry fun admin_vote_for_action<T: key + store,T1, T2,>(action: &mut VaultAction, vault:& mut AnonymousVault, ctx: &mut TxContext){
 
     let sender = tx_context::sender(ctx);
     assert!(vector_contains(&vault.admins, &sender), ENOT_ADMIN);
@@ -148,7 +151,7 @@ entry fun admin_vote_for_action<T1, T2>(action: &mut VaultAction, vault:& mut An
 
     vector::push_back(&mut action.approve_admins, tx_context::sender(ctx));
     if(vector::length(&action.approve_admins) >= THRESHOLD_FOR_ACTION){
-        do_action_if_reach_threshold<T1, T2>(action, vault, ctx);
+        do_action_if_reach_threshold<T, T1, T2>(action, vault, ctx);
     }
 
 }
@@ -166,7 +169,7 @@ fun add_admin(admin: address, vault:& mut AnonymousVault){
 }
 
 
-fun do_action_if_reach_threshold<T1, T2>(action: &mut VaultAction, vault:& mut AnonymousVault,  ctx: &mut TxContext){
+fun do_action_if_reach_threshold<T: key + store, T1, T2>(action: &mut VaultAction, vault:& mut AnonymousVault,  ctx: &mut TxContext){
 
     if(action.action_type == ACTION_TYPE_ADD_ADMIN){
         add_admin(action.action_receipt, vault);
@@ -175,7 +178,8 @@ fun do_action_if_reach_threshold<T1, T2>(action: &mut VaultAction, vault:& mut A
         remove_admin(action.action_receipt, vault);
     }
     else if(action.action_type == ACTION_TYPE_WITHDRAW_OBJECT){
-
+        let key_string = string::utf8(b"object_key");
+        withdraw_object_to_sender<T>(key_string, vault, ctx);
     }
     else if(action.action_type == ACTION_TYPE_WITHDRAW_TOKEN1){
         withdraw_token1<T1, T2>(vault, ctx);
@@ -235,7 +239,7 @@ public struct VaultAction has key, store {
 }
 
 
-entry fun create_action(action_type: u8, vault: &mut AnonymousVault, clock: &Clock, ctx: &mut TxContext) {
+entry fun create_action(action_type: u8, operation_address: address,  vault: &mut AnonymousVault, clock: &Clock, ctx: &mut TxContext) {
     let action = VaultAction {
         id: object::new(ctx),
         action_type: action_type,
@@ -243,7 +247,7 @@ entry fun create_action(action_type: u8, vault: &mut AnonymousVault, clock: &Clo
         start_time: clock::timestamp_ms(clock),
         approve_admins: vector::empty<address>(),
         action_status: ACTION_STATUS_PENDING,
-        action_receipt: tx_context::sender(ctx),
+        action_receipt: operation_address,
     };
     //vector::push_back(&mut vault.actions, action);
     vault.latest_action_num = vault.latest_action_num + 1;
