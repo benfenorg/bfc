@@ -5248,7 +5248,7 @@ async fn test_parse_host_port() {
 }
 
 #[sim_test]
-async fn test_tree_shaking_package_with_unpublished_deps() -> Result<(), anyhow::Error> {
+async fn sim_test_tree_shaking_package_with_unpublished_deps() -> Result<(), anyhow::Error> {
     let mut test = TreeShakingTest::new().await.unwrap();
     // A package and with unpublished deps
     let (package_id, _) = test.publish_package("H", true).await.unwrap();
@@ -5307,7 +5307,7 @@ async fn test_tree_shaking_package_with_bytecode_deps() -> Result<(), anyhow::Er
 }
 
 #[sim_test]
-async fn test_tree_shaking_package_without_dependencies() -> Result<(), anyhow::Error> {
+async fn sim_test_tree_shaking_package_without_dependencies() -> Result<(), anyhow::Error> {
     let mut test = TreeShakingTest::new().await?;
 
     // Publish package A and verify empty linkage table
@@ -5323,7 +5323,7 @@ async fn test_tree_shaking_package_without_dependencies() -> Result<(), anyhow::
 }
 
 #[sim_test]
-async fn test_tree_shaking_package_with_direct_dependency() -> Result<(), anyhow::Error> {
+async fn sim_test_tree_shaking_package_with_direct_dependency() -> Result<(), anyhow::Error> {
     let mut test = TreeShakingTest::new().await?;
 
     // First publish package A
@@ -5341,7 +5341,7 @@ async fn test_tree_shaking_package_with_direct_dependency() -> Result<(), anyhow
 }
 
 #[sim_test]
-async fn test_tree_shaking_package_with_unused_dependency() -> Result<(), anyhow::Error> {
+async fn sim_test_tree_shaking_package_with_unused_dependency() -> Result<(), anyhow::Error> {
     let mut test = TreeShakingTest::new().await?;
 
     // First publish package A
@@ -5359,7 +5359,7 @@ async fn test_tree_shaking_package_with_unused_dependency() -> Result<(), anyhow
 }
 
 #[sim_test]
-async fn test_tree_shaking_package_with_transitive_dependencies1() -> Result<(), anyhow::Error> {
+async fn sim_test_tree_shaking_package_with_transitive_dependencies1() -> Result<(), anyhow::Error> {
     let mut test = TreeShakingTest::new().await?;
 
     // Publish packages A and B
@@ -5388,7 +5388,7 @@ async fn test_tree_shaking_package_with_transitive_dependencies1() -> Result<(),
 }
 
 #[sim_test]
-async fn test_tree_shaking_package_with_transitive_dependencies_and_no_code_references(
+async fn sim_test_tree_shaking_package_with_transitive_dependencies_and_no_code_references(
 ) -> Result<(), anyhow::Error> {
     // Publish package C_B with no code references_B and check the linkage table
     // we use here the package B published in TEST 3
@@ -5411,7 +5411,7 @@ async fn test_tree_shaking_package_with_transitive_dependencies_and_no_code_refe
 }
 
 #[sim_test]
-async fn test_tree_shaking_package_deps_on_pkg_upgrade() -> Result<(), anyhow::Error> {
+async fn sim_test_tree_shaking_package_deps_on_pkg_upgrade() -> Result<(), anyhow::Error> {
     let mut test = TreeShakingTest::new().await?;
 
     // Publish package A and B
@@ -5466,7 +5466,7 @@ async fn test_tree_shaking_package_deps_on_pkg_upgrade() -> Result<(), anyhow::E
 }
 
 #[sim_test]
-async fn test_tree_shaking_package_deps_on_pkg_upgrade_1() -> Result<(), anyhow::Error> {
+async fn sim_test_tree_shaking_package_deps_on_pkg_upgrade_1() -> Result<(), anyhow::Error> {
     let mut test = TreeShakingTest::new().await?;
 
     // Publish package A and D_A_v1_but_no_code_references_A
@@ -5520,7 +5520,7 @@ async fn test_tree_shaking_package_deps_on_pkg_upgrade_1() -> Result<(), anyhow:
 }
 
 #[sim_test]
-async fn test_tree_shaking_package_deps_on_pkg_upgrade_2() -> Result<(), anyhow::Error> {
+async fn sim_test_tree_shaking_package_deps_on_pkg_upgrade_2() -> Result<(), anyhow::Error> {
     let mut test = TreeShakingTest::new().await?;
 
     // Publish package K
@@ -5563,7 +5563,7 @@ async fn test_tree_shaking_package_deps_on_pkg_upgrade_2() -> Result<(), anyhow:
 }
 
 #[sim_test]
-async fn test_tree_shaking_package_deps_on_pkg_upgrade_3() -> Result<(), anyhow::Error> {
+async fn sim_test_tree_shaking_package_deps_on_pkg_upgrade_3() -> Result<(), anyhow::Error> {
     let mut test = TreeShakingTest::new().await?;
 
     // This test is identic to #2, except it uses the old test-transaction-builder infrastructure
@@ -5607,7 +5607,7 @@ async fn test_tree_shaking_package_deps_on_pkg_upgrade_3() -> Result<(), anyhow:
 }
 
 #[sim_test]
-async fn test_tree_shaking_package_system_deps() -> Result<(), anyhow::Error> {
+async fn sim_test_tree_shaking_package_system_deps() -> Result<(), anyhow::Error> {
     let mut test = TreeShakingTest::new().await?;
 
     // Publish package J and verify empty linkage table
