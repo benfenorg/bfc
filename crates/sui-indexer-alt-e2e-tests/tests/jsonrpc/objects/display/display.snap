@@ -8,7 +8,7 @@ A: object(0,0)
 
 task 1, lines 12-70:
 //# publish --sender A
-events: Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("DisplayCreated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [89, 140, 215, 194, 33, 33, 50, 147, 180, 228, 218, 66, 30, 196, 52, 46, 37, 237, 228, 156, 98, 33, 32, 15, 155, 162, 65, 62, 215, 246, 21, 42] }, Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("VersionUpdated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [89, 140, 215, 194, 33, 33, 50, 147, 180, 228, 218, 66, 30, 196, 52, 46, 37, 237, 228, 156, 98, 33, 32, 15, 155, 162, 65, 62, 215, 246, 21, 42, 1, 0, 4, 3, 98, 97, 114, 17, 98, 97, 114, 32, 105, 115, 32, 123, 98, 97, 114, 46, 118, 97, 108, 125, 33, 3, 98, 97, 122, 21, 98, 97, 122, 32, 105, 115, 32, 123, 98, 97, 114, 46, 98, 97, 122, 46, 118, 97, 108, 125, 63, 3, 113, 117, 121, 25, 113, 117, 121, 32, 105, 115, 32, 123, 98, 97, 114, 46, 98, 97, 122, 46, 113, 117, 120, 46, 113, 117, 121, 125, 46, 3, 113, 117, 95, 77, 120, 40, 123, 98, 97, 114, 46, 98, 97, 122, 46, 113, 117, 120, 46, 118, 97, 108, 125, 41, 32, 121, 40, 123, 98, 97, 114, 46, 98, 97, 122, 46, 113, 117, 120, 46, 113, 117, 121, 46, 118, 97, 108, 125, 41, 44, 32, 122, 40, 123, 98, 97, 114, 46, 98, 97, 122, 46, 113, 117, 120, 46, 113, 117, 121, 46, 113, 117, 122, 46, 118, 97, 108, 125, 41, 63, 33] }
+events: Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("DisplayCreated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [52, 62, 220, 240, 228, 76, 26, 203, 35, 75, 59, 164, 239, 150, 213, 170, 232, 76, 200, 84, 245, 205, 222, 78, 110, 229, 127, 31, 60, 203, 5, 119] }, Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("VersionUpdated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [52, 62, 220, 240, 228, 76, 26, 203, 35, 75, 59, 164, 239, 150, 213, 170, 232, 76, 200, 84, 245, 205, 222, 78, 110, 229, 127, 31, 60, 203, 5, 119, 1, 0, 4, 3, 98, 97, 114, 17, 98, 97, 114, 32, 105, 115, 32, 123, 98, 97, 114, 46, 118, 97, 108, 125, 33, 3, 98, 97, 122, 21, 98, 97, 122, 32, 105, 115, 32, 123, 98, 97, 114, 46, 98, 97, 122, 46, 118, 97, 108, 125, 63, 3, 113, 117, 121, 25, 113, 117, 121, 32, 105, 115, 32, 123, 98, 97, 114, 46, 98, 97, 122, 46, 113, 117, 120, 46, 113, 117, 121, 125, 46, 3, 113, 117, 95, 77, 120, 40, 123, 98, 97, 114, 46, 98, 97, 122, 46, 113, 117, 120, 46, 118, 97, 108, 125, 41, 32, 121, 40, 123, 98, 97, 114, 46, 98, 97, 122, 46, 113, 117, 120, 46, 113, 117, 121, 46, 118, 97, 108, 125, 41, 44, 32, 122, 40, 123, 98, 97, 114, 46, 98, 97, 122, 46, 113, 117, 120, 46, 113, 117, 121, 46, 113, 117, 122, 46, 118, 97, 108, 125, 41, 63, 33] }
 created: object(1,0), object(1,1), object(1,2)
 mutated: object(0,0)
 gas summary: computation_cost: 1000000, storage_cost: 17837200,  storage_rebate: 0, non_refundable_storage_fee: 0
@@ -42,9 +42,9 @@ Response: {
   "id": 0,
   "result": {
     "data": {
-      "objectId": "BFCa39c4af77acaee0c0f5cfcdaf7572f43a1c3d1b7626bab2bc71b9f3b47e0ad8809d3",
+      "objectId": "BFC30fb0e6cd16836a6977e4c8997dc15e2c06dcbca1593f07803412eb9df2f8faf3326",
       "version": "1",
-      "digest": "52NWKkYdy8pbnyNhtCEKpb8WSahgWHKZAuZeXhoof2AS",
+      "digest": "2n1gYRX6ndDE5V96GibFoncEmY68ecxv9aYKKWauwNkd",
       "type": "package"
     }
   }
@@ -57,10 +57,10 @@ Response: {
   "id": 1,
   "result": {
     "data": {
-      "objectId": "BFC598cd7c221213293b4e4da421ec4342e25ede49c6221200f9ba2413ed7f6152ae5c0",
+      "objectId": "BFC343edcf0e44c1acb234b3ba4ef96d5aae84cc854f5cdde4e6ee57f1f3ccb0577319c",
       "version": "2",
-      "digest": "2WXZYpL68vequRVc5xybiFdhngJZEaHpKBPMfZNPDwet",
-      "type": "0x2::display::Display<0xa39c4af77acaee0c0f5cfcdaf7572f43a1c3d1b7626bab2bc71b9f3b47e0ad88::mod::Foo>"
+      "digest": "FXaVJtgQFck2DLZ8ZZDuz819xeWQDsAU1BbC2aQFYryA",
+      "type": "0x2::display::Display<0x30fb0e6cd16836a6977e4c8997dc15e2c06dcbca1593f07803412eb9df2f8faf::mod::Foo>"
     }
   }
 }
@@ -72,9 +72,9 @@ Response: {
   "id": 2,
   "result": {
     "data": {
-      "objectId": "BFCdd1d5a13227ba890c2af3bcec2b14b934da1a3b6ebab457e9f46acd7cffc31eb1640",
+      "objectId": "BFC9821783018065126ed64a531d5d62bb74dd89e70a542674b2b63377b432ea373558d",
       "version": "2",
-      "digest": "34DKuTpPy5G2T5aeWFxNr5U3njpwJDTgh9RQUZkfVVX5",
+      "digest": "D61DYmhXGzn2P83yuiv3cwrdnAtWSys82PwyimmL2Xme",
       "type": "0x2::package::Publisher"
     }
   }
@@ -87,15 +87,15 @@ Response: {
   "id": 3,
   "result": {
     "data": {
-      "objectId": "BFC5ef7fc4b5a4de29807b23117ac65fe32e8015f853419ab2d2d399819b31bd6d8f457",
+      "objectId": "BFCc4152558411946a5def00ad824172f45d3fc9f78659b1dc02f55f9cffde4ef2bd1d9",
       "version": "3",
-      "digest": "97hRAHUp8f81LcyBGMVfTVNpcbY88tSwaUGhF3Cti4HR",
+      "digest": "DyDrkXWxpTFLpxhwurxJqsrLPm51qqCtHgxKJBv1w9ff",
       "display": {
         "data": {
           "bar": "bar is 42!",
           "baz": "baz is true?",
           "qu_": "x(hello) y(0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e), z(43)?!",
-          "quy": "quy is \n  type: 0xa39c4af77acaee0c0f5cfcdaf7572f43a1c3d1b7626bab2bc71b9f3b47e0ad88::mod::Quy\n  quz:   \n    type: 0xa39c4af77acaee0c0f5cfcdaf7572f43a1c3d1b7626bab2bc71b9f3b47e0ad88::mod::Quz\n    val: 43\n  val: Some(Address(0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e))."
+          "quy": "quy is \n  type: 0x30fb0e6cd16836a6977e4c8997dc15e2c06dcbca1593f07803412eb9df2f8faf::mod::Quy\n  quz:   \n    type: 0x30fb0e6cd16836a6977e4c8997dc15e2c06dcbca1593f07803412eb9df2f8faf::mod::Quz\n    val: 43\n  val: Some(Address(0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e))."
         },
         "error": null
       }
@@ -110,15 +110,15 @@ Response: {
   "id": 4,
   "result": {
     "data": {
-      "objectId": "BFCb1f44c25589e494a1963c38286719f0204783c82d4b3f43a210026813c9272b4ee04",
+      "objectId": "BFCcce083a11463e86b26d536a30dbc91731e55f75f2efd0edbda699620d55570d63a7b",
       "version": "4",
-      "digest": "Ahawh5a3Pv47AUoTmRVkgFH7HL1Ut1n9TmDZW1zWigX3",
+      "digest": "FwWyCJa9cT7tuspg4MZ3qqqLyiccNTAfVkgiC8V1iuy8",
       "display": {
         "data": {
           "bar": "bar is 42!",
           "baz": "baz is true?",
           "qu_": "x(hello) y(), z(43)?!",
-          "quy": "quy is \n  type: 0xa39c4af77acaee0c0f5cfcdaf7572f43a1c3d1b7626bab2bc71b9f3b47e0ad88::mod::Quy\n  quz:   \n    type: 0xa39c4af77acaee0c0f5cfcdaf7572f43a1c3d1b7626bab2bc71b9f3b47e0ad88::mod::Quz\n    val: 43\n  val: None."
+          "quy": "quy is \n  type: 0x30fb0e6cd16836a6977e4c8997dc15e2c06dcbca1593f07803412eb9df2f8faf::mod::Quy\n  quz:   \n    type: 0x30fb0e6cd16836a6977e4c8997dc15e2c06dcbca1593f07803412eb9df2f8faf::mod::Quz\n    val: 43\n  val: None."
         },
         "error": null
       }
@@ -130,7 +130,7 @@ task 10, lines 114-116:
 //# programmable --sender A --inputs object(1,1) "quy" "{bar.baz.qux.quy.val}!"
 //> 0: sui::display::edit<test::mod::Foo>(Input(0), Input(1), Input(2));
 //> 1: sui::display::update_version<test::mod::Foo>(Input(0));
-events: Event { package_id: sui, transaction_module: Identifier("display"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("VersionUpdated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [89, 140, 215, 194, 33, 33, 50, 147, 180, 228, 218, 66, 30, 196, 52, 46, 37, 237, 228, 156, 98, 33, 32, 15, 155, 162, 65, 62, 215, 246, 21, 42, 2, 0, 4, 3, 98, 97, 114, 17, 98, 97, 114, 32, 105, 115, 32, 123, 98, 97, 114, 46, 118, 97, 108, 125, 33, 3, 98, 97, 122, 21, 98, 97, 122, 32, 105, 115, 32, 123, 98, 97, 114, 46, 98, 97, 122, 46, 118, 97, 108, 125, 63, 3, 113, 117, 95, 77, 120, 40, 123, 98, 97, 114, 46, 98, 97, 122, 46, 113, 117, 120, 46, 118, 97, 108, 125, 41, 32, 121, 40, 123, 98, 97, 114, 46, 98, 97, 122, 46, 113, 117, 120, 46, 113, 117, 121, 46, 118, 97, 108, 125, 41, 44, 32, 122, 40, 123, 98, 97, 114, 46, 98, 97, 122, 46, 113, 117, 120, 46, 113, 117, 121, 46, 113, 117, 122, 46, 118, 97, 108, 125, 41, 63, 33, 3, 113, 117, 121, 22, 123, 98, 97, 114, 46, 98, 97, 122, 46, 113, 117, 120, 46, 113, 117, 121, 46, 118, 97, 108, 125, 33] }
+events: Event { package_id: sui, transaction_module: Identifier("display"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("VersionUpdated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [52, 62, 220, 240, 228, 76, 26, 203, 35, 75, 59, 164, 239, 150, 213, 170, 232, 76, 200, 84, 245, 205, 222, 78, 110, 229, 127, 31, 60, 203, 5, 119, 2, 0, 4, 3, 98, 97, 114, 17, 98, 97, 114, 32, 105, 115, 32, 123, 98, 97, 114, 46, 118, 97, 108, 125, 33, 3, 98, 97, 122, 21, 98, 97, 122, 32, 105, 115, 32, 123, 98, 97, 114, 46, 98, 97, 122, 46, 118, 97, 108, 125, 63, 3, 113, 117, 95, 77, 120, 40, 123, 98, 97, 114, 46, 98, 97, 122, 46, 113, 117, 120, 46, 118, 97, 108, 125, 41, 32, 121, 40, 123, 98, 97, 114, 46, 98, 97, 122, 46, 113, 117, 120, 46, 113, 117, 121, 46, 118, 97, 108, 125, 41, 44, 32, 122, 40, 123, 98, 97, 114, 46, 98, 97, 122, 46, 113, 117, 120, 46, 113, 117, 121, 46, 113, 117, 122, 46, 118, 97, 108, 125, 41, 63, 33, 3, 113, 117, 121, 22, 123, 98, 97, 114, 46, 98, 97, 122, 46, 113, 117, 120, 46, 113, 117, 121, 46, 118, 97, 108, 125, 33] }
 mutated: object(0,0), object(1,1)
 gas summary: computation_cost: 1000000, storage_cost: 4142000,  storage_rebate: 4123152, non_refundable_storage_fee: 41648
 
@@ -145,9 +145,9 @@ Response: {
   "id": 5,
   "result": {
     "data": {
-      "objectId": "BFC5ef7fc4b5a4de29807b23117ac65fe32e8015f853419ab2d2d399819b31bd6d8f457",
+      "objectId": "BFCc4152558411946a5def00ad824172f45d3fc9f78659b1dc02f55f9cffde4ef2bd1d9",
       "version": "3",
-      "digest": "97hRAHUp8f81LcyBGMVfTVNpcbY88tSwaUGhF3Cti4HR",
+      "digest": "DyDrkXWxpTFLpxhwurxJqsrLPm51qqCtHgxKJBv1w9ff",
       "display": {
         "data": {
           "bar": "bar is 42!",
@@ -168,9 +168,9 @@ Response: {
   "id": 6,
   "result": {
     "data": {
-      "objectId": "BFCb1f44c25589e494a1963c38286719f0204783c82d4b3f43a210026813c9272b4ee04",
+      "objectId": "BFCcce083a11463e86b26d536a30dbc91731e55f75f2efd0edbda699620d55570d63a7b",
       "version": "4",
-      "digest": "Ahawh5a3Pv47AUoTmRVkgFH7HL1Ut1n9TmDZW1zWigX3",
+      "digest": "FwWyCJa9cT7tuspg4MZ3qqqLyiccNTAfVkgiC8V1iuy8",
       "display": {
         "data": {
           "bar": "bar is 42!",

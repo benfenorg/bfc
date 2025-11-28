@@ -45,15 +45,15 @@ task 7, lines 29-45:
 Response: {
   "data": {
     "p1": {
-      "address": "0xb81e81a8ad9b375f589fba560b9ebaca1f6ce7c880a41518e56aac9f1d7ae283",
+      "address": "0xa93bad5807e405d22a7991e516fd6cb0bee31a66db7eaea7e05b615452170318",
       "version": 1
     },
     "p2": {
-      "address": "0x23ee43f85925ee9684db2c6ece3d5e40f52b994919fda9bd0ebb57d800e82e64",
+      "address": "0xf2c26e60ae4d9231e64732b20eb48f669d87d99ee17a9efa93cb04f188fe2830",
       "version": 2
     },
     "p3": {
-      "address": "0x7ead3ff4c960e3d0f079b79ef98387f765b81f01ef681fb83664f199751d74e1",
+      "address": "0x4bca8f857124f957b6efb5e61214aa6f7defaf6f4f908152fbd7d68c25fde39d",
       "version": 3
     }
   }
@@ -64,20 +64,20 @@ task 8, lines 47-80:
 Response: {
   "data": {
     "latest": {
-      "address": "0x7ead3ff4c960e3d0f079b79ef98387f765b81f01ef681fb83664f199751d74e1",
+      "address": "0x4bca8f857124f957b6efb5e61214aa6f7defaf6f4f908152fbd7d68c25fde39d",
       "version": 3
     },
     "c0": null,
     "c1": {
-      "address": "0xb81e81a8ad9b375f589fba560b9ebaca1f6ce7c880a41518e56aac9f1d7ae283",
+      "address": "0xa93bad5807e405d22a7991e516fd6cb0bee31a66db7eaea7e05b615452170318",
       "version": 1
     },
     "c2": {
-      "address": "0x7ead3ff4c960e3d0f079b79ef98387f765b81f01ef681fb83664f199751d74e1",
+      "address": "0x4bca8f857124f957b6efb5e61214aa6f7defaf6f4f908152fbd7d68c25fde39d",
       "version": 3
     },
     "c3": {
-      "address": "0x7ead3ff4c960e3d0f079b79ef98387f765b81f01ef681fb83664f199751d74e1",
+      "address": "0x4bca8f857124f957b6efb5e61214aa6f7defaf6f4f908152fbd7d68c25fde39d",
       "version": 3
     }
   }
@@ -88,20 +88,20 @@ task 9, lines 82-109:
 Response: {
   "data": {
     "latest": {
-      "address": "0x7ead3ff4c960e3d0f079b79ef98387f765b81f01ef681fb83664f199751d74e1",
+      "address": "0x4bca8f857124f957b6efb5e61214aa6f7defaf6f4f908152fbd7d68c25fde39d",
       "version": 3
     },
     "c0": null,
     "c1": {
-      "address": "0xb81e81a8ad9b375f589fba560b9ebaca1f6ce7c880a41518e56aac9f1d7ae283",
+      "address": "0xa93bad5807e405d22a7991e516fd6cb0bee31a66db7eaea7e05b615452170318",
       "version": 1
     },
     "c2": {
-      "address": "0x7ead3ff4c960e3d0f079b79ef98387f765b81f01ef681fb83664f199751d74e1",
+      "address": "0x4bca8f857124f957b6efb5e61214aa6f7defaf6f4f908152fbd7d68c25fde39d",
       "version": 3
     },
     "c3": {
-      "address": "0x7ead3ff4c960e3d0f079b79ef98387f765b81f01ef681fb83664f199751d74e1",
+      "address": "0x4bca8f857124f957b6efb5e61214aa6f7defaf6f4f908152fbd7d68c25fde39d",
       "version": 3
     }
   }
@@ -137,7 +137,7 @@ Response: {
     "implicit": null,
     "explicit": null,
     "object": {
-      "address": "0x2d0c8d9ff0c265123f67d58d0f8b1fac08ba6dfeb3e1d9d9c815715083ceb5ec",
+      "address": "0xde8224e00257933923a168096beab5e02359d1e6b98ca717a2223ab1e3862dcb",
       "version": 5
     }
   }
