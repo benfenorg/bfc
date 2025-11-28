@@ -29,6 +29,7 @@ feature_flags:
   loaded_child_object_format: true
   enable_jwk_consensus_updates: true
   end_of_epoch_transaction_supported: true
+  bfc_authenticator_state_supported: true
   simple_conservation_checks: true
   loaded_child_object_format_type: true
   receive_objects: true
@@ -73,6 +74,7 @@ feature_flags:
   convert_type_argument_error: true
   variant_nodes: true
   consensus_zstd_compression: true
+  anonymous_coin_open: true
   minimize_child_object_mutations: true
   move_native_context: true
   consensus_median_based_commit_timestamp: true
@@ -141,9 +143,9 @@ max_move_identifier_len: 128
 max_move_value_depth: 128
 max_back_edges_per_function: 10000
 max_back_edges_per_module: 10000
-max_verifier_meter_ticks_per_function: 16000000
-max_meter_ticks_per_module: 16000000
-max_meter_ticks_per_package: 16000000
+max_verifier_meter_ticks_per_function: 20000000
+max_meter_ticks_per_module: 20000000
+max_meter_ticks_per_package: 20000000
 object_runtime_max_num_cached_objects: 1000
 object_runtime_max_num_cached_objects_system_tx: 16000
 object_runtime_max_num_store_entries: 1000
@@ -171,6 +173,7 @@ buffer_stake_for_protocol_upgrade_bps: 5000
 address_from_bytes_cost_base: 52
 address_to_u256_cost_base: 52
 address_from_u256_cost_base: 52
+curve_dx_cost_base: 52
 config_read_setting_impl_cost_base: 100
 config_read_setting_impl_cost_per_byte: 40
 dynamic_field_hash_type_and_key_cost_base: 100
@@ -255,6 +258,7 @@ ecvrf_ecvrf_verify_alpha_string_cost_per_block: 2
 ed25519_ed25519_verify_cost_base: 1802
 ed25519_ed25519_verify_msg_cost_per_byte: 2
 ed25519_ed25519_verify_msg_cost_per_block: 2
+anonymous_compute_cost_base: 2000
 groth16_prepare_verifying_key_bls12381_cost_base: 53838
 groth16_prepare_verifying_key_bn254_cost_base: 82010
 groth16_verify_groth16_proof_internal_bls12381_cost_base: 72090
@@ -355,6 +359,7 @@ consensus_max_transaction_size_bytes: 262144
 consensus_max_transactions_in_block_bytes: 524288
 consensus_max_num_transactions_in_block: 512
 consensus_voting_rounds: 40
+bfc_system_state_open: 1
 max_accumulated_txn_cost_per_object_in_narwhal_commit: 40
 max_deferral_rounds_for_congestion_control: 10
 max_txn_cost_overage_per_object_in_commit: 18446744073709551615
