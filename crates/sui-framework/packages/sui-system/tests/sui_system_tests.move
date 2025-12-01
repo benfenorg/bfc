@@ -5,10 +5,6 @@
 // already tested by the other more themed tests such as `stake_tests` or
 // `rewards_distribution_tests`.
 
-#[test_only]
-<<<<<<< Updated upstream
-module sui_system::sui_system_tests;
-
 use std::unit_test::assert_eq;
 use sui_system::test_runner;
 use sui::coin::Self;
@@ -27,7 +23,6 @@ use bfc_system::bjpy::BJPY;
 use bfc_system::busd::BUSD;
 
 #[test]
-=======
 module sui_system::sui_system_tests {
     use sui::test_scenario::{Self, Scenario};
     use sui::bfc::BFC;
@@ -669,9 +664,7 @@ fun convert_to_fungible_staked_sui_and_redeem(stake: u16) {
     assert_eq!(pool.sui_balance(), 100 * MIST_PER_SUI);
     });
 
-<<<<<<< Updated upstream
     runner.finish();
-=======
         let sui = system_state.redeem_fungible_staked_sui(
             fungible_staked_sui,
             scenario.ctx()

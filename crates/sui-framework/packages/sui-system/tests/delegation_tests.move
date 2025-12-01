@@ -245,8 +245,6 @@ fun split_nonentry_below_threshold() {
 //     test_scenario::end(scenario_val);
 // }
 
-<<<<<<< Updated upstream
-
 #[test]
 // Scenario:
 // 1. Stake 60 SUI to VALIDATOR_ADDR_1
@@ -356,7 +354,6 @@ fun add_remove_stake_flow() {
 //     test_scenario::end(scenario_val);
 // }
 
-=======
     #[test]
     #[expected_failure(abort_code = stable_pool::EIncompatibleStakedSui)]
     fun test_join_different_epochs_stable() {
@@ -479,8 +476,6 @@ fun remove_stake_post_active_flow_with_rewards() {
     remove_stake_post_active_flow(true)
 }
 
-<<<<<<< Updated upstream
-=======
     #[test]
     #[expected_failure(abort_code = stable_pool::EStakedSuiBelowThreshold)]
     fun test_split_nonentry_below_threshold_stable() {

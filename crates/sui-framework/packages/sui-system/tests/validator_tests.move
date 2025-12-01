@@ -151,21 +151,20 @@ module sui_system::validator_tests {
         assert_eq!(validator.total_stake(), initial_stake);
         assert_eq!(validator.pending_stake_amount(), added_stake);
 
-<<<<<<< Updated upstream
         // take initial stake out of inventory
-        runner.owned_tx!<StakedBfc>(|staked_sui| {
+        runner.owned_tx!<StakedSui>(|staked_sui| {
         let withdrawn_balance = validator
         .request_withdraw_stake(staked_sui, runner.ctx())
         .destroy_for_testing();
-    // take initial stake out of inventory
-    runner.owned_tx!<StakedBfc>(|staked_sui| {
-    let withdrawn_balance = validator
-    .request_withdraw_stake(staked_sui, runner.ctx())
-    .destroy_for_testing();
 
-    // trigger the state change and pending processing
-    validator.deposit_stake_rewards(balance::zero(), &rate_vec_map());
-    validator.process_pending_stakes_and_withdraws(runner.ctx());
+        assert_eq!(withdrawn_balance, initial_stake);
+        assert_eq!(validator.total_stake(), initial_stake);
+        assert_eq!(validator.pending_stake_amount(), added_stake);
+        assert_eq!(validator.pending_stake_withdraw_amount(), initial_stake);
+
+        // trigger the state change and pending processing
+        validator.deposit_stake_rewards(balance::zero());
+        validator.process_pending_stakes_and_withdraws(runner.ctx());
 
         assert_eq!(validator.total_stake(), added_stake);
         assert_eq!(validator.pending_stake_amount(), 0);
