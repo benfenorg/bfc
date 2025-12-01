@@ -2,5 +2,9 @@
 name = "clever_errors"
 edition = "2024.beta" # edition = "legacy" to use legacy (pre-2024) Move
 
+[dependencies]
+Sui = { local = "../../../../sui-framework/packages/sui-framework" }
+
+
 [addresses]
 clever_errors = "0x0"
