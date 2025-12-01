@@ -155,7 +155,7 @@ impl FnDelegationTestCluster {
 }
 
 #[sim_test]
-async fn test_execution() {
+async fn sim_test_execution() {
     telemetry_subscribers::init_for_testing();
     let test_cluster = FnDelegationTestCluster::new()
         .await
@@ -200,7 +200,7 @@ async fn test_execution() {
 }
 
 #[sim_test]
-async fn test_execution_with_deprecated_mode() {
+async fn sim_test_execution_with_deprecated_mode() {
     telemetry_subscribers::init_for_testing();
 
     let test_cluster = FnDelegationTestCluster::new()
@@ -234,7 +234,7 @@ async fn test_execution_with_deprecated_mode() {
 }
 
 #[sim_test]
-async fn test_execution_with_no_sigs() {
+async fn sim_test_execution_with_no_sigs() {
     telemetry_subscribers::init_for_testing();
 
     let test_cluster = FnDelegationTestCluster::new()
@@ -267,7 +267,7 @@ async fn test_execution_with_no_sigs() {
 }
 
 #[sim_test]
-async fn test_execution_with_empty_sigs() {
+async fn sim_test_execution_with_empty_sigs() {
     telemetry_subscribers::init_for_testing();
 
     let test_cluster = FnDelegationTestCluster::new()
@@ -300,7 +300,7 @@ async fn test_execution_with_empty_sigs() {
 }
 
 #[sim_test]
-async fn test_execution_with_aborted_tx() {
+async fn sim_test_execution_with_aborted_tx() {
     telemetry_subscribers::init_for_testing();
 
     let test_cluster = FnDelegationTestCluster::new()
@@ -332,7 +332,7 @@ async fn test_execution_with_aborted_tx() {
 }
 
 #[sim_test]
-async fn test_dry_run() {
+async fn sim_test_dry_run() {
     let test_cluster = FnDelegationTestCluster::new()
         .await
         .expect("Failed to create test cluster");
@@ -355,7 +355,7 @@ async fn test_dry_run() {
 }
 
 #[sim_test]
-async fn test_dry_run_with_invalid_tx() {
+async fn sim_test_dry_run_with_invalid_tx() {
     let test_cluster = FnDelegationTestCluster::new()
         .await
         .expect("Failed to create test cluster");
@@ -380,7 +380,7 @@ async fn test_dry_run_with_invalid_tx() {
 }
 
 #[sim_test]
-async fn test_get_all_balances() {
+async fn sim_test_get_all_balances() {
     telemetry_subscribers::init_for_testing();
     let test_cluster = FnDelegationTestCluster::new()
         .await
@@ -401,7 +401,7 @@ async fn test_get_all_balances() {
 }
 
 #[sim_test]
-async fn test_get_all_balances_with_invalid_address() {
+async fn sim_test_get_all_balances_with_invalid_address() {
     let test_cluster = FnDelegationTestCluster::new()
         .await
         .expect("Failed to create test cluster");
