@@ -711,10 +711,10 @@ move-abstract-interpreter = { path = "external-crates/move/crates/move-abstract-
 move-abstract-stack = { path = "external-crates/move/crates/move-abstract-stack" }
 move-analyzer = { path = "external-crates/move/crates/move-analyzer" }
 
-fastcrypto = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "2279770c72e5abb8daaef83ca6d21e6aedc2c981" }
-fastcrypto-tbls = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "2279770c72e5abb8daaef83ca6d21e6aedc2c981" }
-fastcrypto-zkp = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "2279770c72e5abb8daaef83ca6d21e6aedc2c981", package = "fastcrypto-zkp" }
-fastcrypto-vdf = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "2279770c72e5abb8daaef83ca6d21e6aedc2c981", features = [
+fastcrypto = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "79027254d8ab3d17cbf14a4363eb90f39fb27720" }
+fastcrypto-tbls = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "79027254d8ab3d17cbf14a4363eb90f39fb27720" }
+fastcrypto-zkp = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "79027254d8ab3d17cbf14a4363eb90f39fb27720", package = "fastcrypto-zkp" }
+fastcrypto-vdf = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "79027254d8ab3d17cbf14a4363eb90f39fb27720", features = [
     "experimental",
 ] }
 passkey-types = { version = "0.2.0" }
