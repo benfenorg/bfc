@@ -28,7 +28,12 @@ Summary generation successful. Summaries stored in 'package_summaries'
 0x0000000000000000000000000000000000000000000000000000000000000002
 address_mapping.json
 root_package_metadata.json
+abfc.json
 address.json
+anonymous.json
+anonymous_balance.json
+anonymous_coin.json
+anonymous_pay.json
 authenticator_state.json
 bag.json
 balance.json
@@ -53,13 +58,14 @@ groth16.json
 group_ops.json
 hash.json
 hex.json
+hfe_ops.json
 hmac.json
-kiosk_extension.json
 kiosk.json
+kiosk_extension.json
 linked_table.json
 math.json
-object_bag.json
 object.json
+object_bag.json
 object_table.json
 package.json
 pay.json
@@ -170,5 +176,5 @@ vector.json
 }Active environment switched to [localnet]
 
 ----- stderr -----
-[warning] Client/Server api version mismatch, client api version : 1.50.1, server api version : 1.23.0
-[warning] Client/Server api version mismatch, client api version : 1.50.1, server api version : 1.23.0
+[warning] Client/Server api version mismatch, client api version : 1.50.1, server api version : 1.24.2
+[warning] Client/Server api version mismatch, client api version : 1.50.1, server api version : 1.24.2

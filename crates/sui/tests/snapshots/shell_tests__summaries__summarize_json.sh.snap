@@ -33,9 +33,9 @@ Caused by:
 
 ----- stderr -----
 [note] Dependencies on BfcSystem, Bridge, MoveStdlib, Sui, and SuiSystem are automatically added, but this feature is disabled for your package because you have explicitly included dependencies on Sui. Consider removing these dependencies from Move.toml.
-ls: cannot access 'data/move_package/package_summaries': No such file or directory
-ls: cannot access 'data/move_package/package_summaries/move_package': No such file or directory
-ls: cannot access 'data/move_package/package_summaries/sui': No such file or directory
-ls: cannot access 'data/move_package/package_summaries/std': No such file or directory
+ls: data/move_package/package_summaries: No such file or directory
+ls: data/move_package/package_summaries/move_package: No such file or directory
+ls: data/move_package/package_summaries/sui: No such file or directory
+ls: data/move_package/package_summaries/std: No such file or directory
 cat: data/move_package/package_summaries/root_package_metadata.json: No such file or directory
 cat: data/move_package/package_summaries/address_mapping.json: No such file or directory

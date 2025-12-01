@@ -25,7 +25,12 @@ Summary generation successful. Summaries stored in 'package_summaries'
 0x0000000000000000000000000000000000000000000000000000000000000002
 address_mapping.yaml
 root_package_metadata.yaml
+abfc.yaml
 address.yaml
+anonymous.yaml
+anonymous_balance.yaml
+anonymous_coin.yaml
+anonymous_pay.yaml
 authenticator_state.yaml
 bag.yaml
 balance.yaml
@@ -50,25 +55,26 @@ groth16.yaml
 group_ops.yaml
 hash.yaml
 hex.yaml
+hfe_ops.yaml
 hmac.yaml
-kiosk_extension.yaml
 kiosk.yaml
+kiosk_extension.yaml
 linked_table.yaml
 math.yaml
+object.yaml
 object_bag.yaml
 object_table.yaml
-object.yaml
 package.yaml
 pay.yaml
 poseidon.yaml
 priority_queue.yaml
 prover.yaml
 random.yaml
-table_vec.yaml
 table.yaml
+table_vec.yaml
 token.yaml
-transfer_policy.yaml
 transfer.yaml
+transfer_policy.yaml
 tx_context.yaml
 types.yaml
 url.yaml
@@ -143,5 +149,5 @@ type_origins:
 Active environment switched to [localnet]
 
 ----- stderr -----
-[warning] Client/Server api version mismatch, client api version : 1.50.1, server api version : 1.23.0
-[warning] Client/Server api version mismatch, client api version : 1.50.1, server api version : 1.23.0
+[warning] Client/Server api version mismatch, client api version : 1.50.1, server api version : 1.24.2
+[warning] Client/Server api version mismatch, client api version : 1.50.1, server api version : 1.24.2

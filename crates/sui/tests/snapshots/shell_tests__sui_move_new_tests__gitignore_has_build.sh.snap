@@ -33,4 +33,4 @@ sources
 tests
 
 ----- stderr -----
-mkdir: cannot create directory ‘example’: File exists
+mkdir: example: File exists

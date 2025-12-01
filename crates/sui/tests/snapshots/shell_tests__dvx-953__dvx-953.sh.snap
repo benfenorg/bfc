@@ -6,6 +6,7 @@ description: tests/shell_tests/dvx-953/dvx-953.sh
 # Copyright (c) Mysten Labs, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
+# should fail
 cd A && bfc move build
 
 ----- results -----
@@ -17,7 +18,7 @@ Failed to build Move modules: Failed to resolve dependencies for package 'A'
 Caused by:
     0: Failed to resolve dependencies for package 'B'
     1: Fetching 'BfcSystem'
-    2: Failed to reset to latest Git state 'a4786abc9d4d' for package 'BfcSystem', to skip set --skip-fetch-latest-git-deps | Exit status: exit status: 128.
+    2: Failed to reset to latest Git state 'a5188e45d62d' for package 'BfcSystem', to skip set --skip-fetch-latest-git-deps | Exit status: exit status: 128.
 
 ----- stderr -----
 [note] Dependencies on BfcSystem, Bridge, MoveStdlib, Sui, and SuiSystem are automatically added, but this feature is disabled for your package because you have explicitly included dependencies on Sui. Consider removing these dependencies from Move.toml.
