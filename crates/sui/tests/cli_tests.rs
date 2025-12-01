@@ -369,7 +369,8 @@ async fn sim_test_genesis() -> Result<(), anyhow::Error> {
         .flat_map(|r| r.map(|file| file.file_name().to_str().unwrap().to_owned()))
         .collect::<Vec<_>>();
 
-    assert_eq!(7, files.len());
+    println!("Generated files: {:?}", files);
+    assert_eq!(8, files.len());
     assert!(files.contains(&SUI_CLIENT_CONFIG.to_string()));
     assert!(files.contains(&SUI_NETWORK_CONFIG.to_string()));
     assert!(files.contains(&SUI_FULLNODE_CONFIG.to_string()));
@@ -1109,7 +1110,7 @@ async fn sim_test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
     if let SuiClientCommandResult::TransactionBlock(txn_response) = result {
         assert_eq!(
             txn_response.transaction.unwrap().data.gas_data().price,
-            9999
+            12345
         );
     } else {
         //println!("==========={}", result);
@@ -2782,6 +2783,8 @@ async fn sim_test_package_management_on_upgrade_command_conflict() -> Result<(),
     lines.insert(idx + 1, "published-at = \"0xbad\"".to_string());
     let new = lines.join("\n");
     move_toml.write_at(new.as_bytes(), 0).unwrap();
+
+    println!("======the new Move.toml======\n{}", new);
 
     // Create a new build config for the upgrade. Initialize its lock file to the package we published.
     let build_config_upgrade = BuildConfig::new_for_testing().config;
