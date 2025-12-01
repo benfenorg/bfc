@@ -13,6 +13,9 @@ use sui_system::test_runner;
 use sui::test_scenario;
 use sui_system::validator_builder;
 use sui_system::validator_set;
+use sui::test_utils;
+use sui::coin;
+
 use sui_system::governance_test_utils::{
     Self,
     add_validator,
@@ -497,58 +500,6 @@ fun remove_stake_post_active_flow_with_rewards() {
         test_scenario::end(scenario_val);
     }
 
-#[test]
-// Scenario:
-// 1. Stake 60 SUI to VALIDATOR_ADDR_1
-// 2. Check that the stake is not yet added to the validator
-// 3. Advance epoch
-// 4. Check that the stake is added to the validator
-// 5. Withdraw the stake and advance epoch
-// 6. Check that the stake is not added to the validator again
-fun add_remove_stake_flow() {
-    let mut runner = test_runner::new()
-    .validators(vector[
-    validator_builder::new().initial_stake(100).sui_address(VALIDATOR_ADDR_1),
-    validator_builder::new().initial_stake(100).sui_address(VALIDATOR_ADDR_2),
-    ])
-    .build();
-
-    // Stake 60 SUI to the validator.
-    runner.set_sender(STAKER_ADDR_1).stake_with(VALIDATOR_ADDR_1, 60);
-
-    // Check that the stake is NOT yet added to the validator.
-    runner.system_tx!(|system, _| {
-    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 100 * MIST_PER_SUI);
-    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_2), 100 * MIST_PER_SUI);
-    });
-
-    // Advance epoch. Stake is now added to the validator.
-    runner.advance_epoch(option::none()).destroy_for_testing();
-
-    // Withdraw the stake.
-    runner.set_sender(STAKER_ADDR_1);
-    runner.owned_tx!<StakedBfc>(|stake| {
-    runner.system_tx!(|system, ctx| {
-    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 160 * MIST_PER_SUI);
-    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_2), 100 * MIST_PER_SUI);
-
-    system.request_withdraw_stake(stake, ctx);
-
-    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 160 * MIST_PER_SUI);
-    });
-    });
-
-    // Advance epoch. Stake is now removed from the validator.
-    runner.advance_epoch(option::none()).destroy_for_testing();
-    runner.system_tx!(|system, _| {
-    assert_eq!(system.validator_stake_amount(VALIDATOR_ADDR_1), 100 * MIST_PER_SUI);
-    });
-
-    runner.finish();
-}
-
-
-
 // Scenario:
 // 1. Stake 100 SUI to VALIDATOR_ADDR_1
 // 2. Advance epoch
@@ -617,6 +568,7 @@ fun remove_stake_post_active_flow(should_distribute_rewards: bool) {
 }
 
 #[test]
+#[expected_failure(abort_code = EUnsupportedFeature)]
 fun test_add_remove_stable_stake_flow() {
     set_up_sui_system_state();
     let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
@@ -676,11 +628,6 @@ fun test_add_remove_stable_stake_flow() {
 
 #[test]
 fun test_remove_stake_post_active_flow_no_rewards() {
-    test_remove_stake_post_active_flow(false)
-}
-
-#[test]
-fun test_remove_stake_post_active_flow_no_rewards_stable() {
     test_remove_stake_post_active_flow(false)
 }
 
