@@ -1253,7 +1253,7 @@ module sui_system::sui_system_state_inner {
         }
 
     }
-    }
+
 
     public(package) fun store_execution_time_estimates(self: &mut SuiSystemStateInner, estimates: vector<u8>) {
         if (bag::contains(&self.extra_fields, EXTRA_FIELD_EXECUTION_TIME_ESTIMATES_KEY)) {

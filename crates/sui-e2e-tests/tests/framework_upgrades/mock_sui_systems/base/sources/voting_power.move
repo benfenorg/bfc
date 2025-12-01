@@ -131,9 +131,9 @@ module sui_system::voting_power {
     // actual is the actual amount of power we will be distributing to this validator.
     let actual = remaining_power.min(target - v.voting_power);
     v.voting_power = v.voting_power + actual;
-    assert!(v.voting_power < = threshold, EVotingPowerOverThreshold);
-    remaining_power = remaining_power - actual;
-    i = i + 1;
+    assert!(v.voting_power <= threshold, EVotingPowerOverThreshold);
+        remaining_power = remaining_power - actual;
+        i = i + 1;
     };
     assert!(remaining_power == 0, ETotalPowerMismatch);
     }
