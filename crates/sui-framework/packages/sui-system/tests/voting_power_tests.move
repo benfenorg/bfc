@@ -250,14 +250,4 @@ module sui_system::voting_power_tests {
         };
         result
     }
-
-    /// Create a validator set with the given stake amounts
-    fun create_validators_with_stakes(stakes: vector<u64>, ctx: &mut TxContext): vector<Validator> {
-        vector::tabulate!(stakes.length(), |i| {
-        validator_builder::new()
-        .initial_stake(stakes[i])
-        .sui_address(sui::address::from_u256(i as u256))
-        .build(ctx)
-        })
-    }
 }

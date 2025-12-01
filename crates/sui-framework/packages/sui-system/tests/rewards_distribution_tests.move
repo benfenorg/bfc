@@ -3,7 +3,6 @@
 
 #[test_only]
 module sui_system::rewards_distribution_tests;
-    use sui::balance;
     use std::type_name;
     use sui::test_scenario::{Self, Scenario};
     use sui_system::sui_system::{Self, SuiSystemState, get_stable_rate};
@@ -13,12 +12,10 @@ module sui_system::rewards_distribution_tests;
         advance_epoch_with_reward_amounts,
         advance_epoch_with_reward_amounts_and_slashing_rates,
         assert_validator_total_stake_amounts,
-        assert_validator_non_self_stake_amounts,
         assert_validator_self_stake_amounts,
         create_validator_for_testing,
         create_sui_system_state_for_testing,
-        stake_with,
-        total_sui_balance, unstake, assert_validator_total_stake_with_stable_amounts, stake_with_stable, unstake_stable,
+        total_sui_balance, assert_validator_total_stake_with_stable_amounts, stake_with_stable, unstake_stable,
         total_busd_balance, advance_epoch_with_reward_amounts_with_stable_rate,
         assert_validator_non_self_stake_amounts_stable, assert_validator_self_stake_amounts_stable
     };

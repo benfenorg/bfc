@@ -4,14 +4,13 @@
 #[test_only]
 #[allow(implicit_const_copy,unused_mut_ref)]
 module sui_system::validator_tests {
-    use sui::bfc::BFC;
     use sui::test_scenario;
     use sui::test_utils;
     use sui::url;
     use std::string::{Self};
     use sui_system::validator::{Self, Validator, rate_vec_map};
     use std::ascii;
-    use sui_system::staking_pool::{Self, StakedBfc};
+    use sui_system::staking_pool::StakedBfc;
     use sui::coin::{Self, Coin};
     use sui::balance;
     use bfc_system::busd::BUSD;
