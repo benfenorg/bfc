@@ -9,7 +9,6 @@ module sui_system::validator_set_tests {
     use sui_system::validator::{Self, Validator, staking_pool_id, rate_vec_map};
     use sui_system::validator_set::{Self, ValidatorSet, active_validator_addresses};
     use sui::test_scenario::{Self, Scenario};
-    use std::ascii;
     use sui::address;
     use bfc_system::bars::BARS;
     use bfc_system::baud::BAUD;

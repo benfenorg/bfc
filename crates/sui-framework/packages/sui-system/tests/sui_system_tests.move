@@ -7,37 +7,21 @@
 
 #[test_only]
 module sui_system::sui_system_tests;
-use sui::test_scenario::{Self, Scenario};
-use sui::bfc::BFC;
-use sui::coin::Self;
+use sui::test_scenario::Self;
 use std::unit_test::assert_eq;
-use sui_system::governance_test_utils::{add_validator_full_flow, advance_epoch, remove_validator, set_up_sui_system_state, create_sui_system_state_for_testing, stake_with, unstake};
+use sui_system::governance_test_utils::{add_validator_full_flow, advance_epoch, remove_validator};
 
 use sui_system::sui_system::{Self, SuiSystemState};
-use sui_system::sui_system_state_inner;
-use sui_system::validator::{Self, Validator};
-use sui_system::validator_set::{Self,EInvalidCap};
 use sui_system::validator_cap::UnverifiedValidatorOperationCap;
-use sui::vec_set;
 use sui_system::test_runner;
 use sui_system::validator_builder;
 use sui::table;
-use sui::balance;
-use sui::test_utils::destroy;
-use sui::url;
-use std::string;
-use std::ascii;
 use bfc_system::bars::BARS;
 use bfc_system::bbrl::BBRL;
 use bfc_system::bjpy::BJPY;
 use bfc_system::busd::BUSD;
 
 const MIST_PER_SUI: u64 = 1_000_000_000;
-const VALIDATOR_ADDR_1: address = @0x1;
-const VALIDATOR_ADDR_2: address = @0x2;
-const VALIDATOR_ADDR_3: address = @0x3;
-const VALIDATOR_ADDR_4: address = @0x4;
-
 
 #[random_test]
 // Scenario: transfer the validator cap object to different addresses and check
