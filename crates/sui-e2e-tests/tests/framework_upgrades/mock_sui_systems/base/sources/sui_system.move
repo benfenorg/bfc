@@ -962,9 +962,4 @@ module sui_system::sui_system {
             ctx,
         )
     }
-
-    fun store_execution_time_estimates(wrapper: &mut SuiSystemState, estimates_bytes: vector<u8>) {
-        let self = load_system_state_mut(wrapper);
-        sui_system_state_inner::store_execution_time_estimates(self, estimates_bytes)
-    }
 }

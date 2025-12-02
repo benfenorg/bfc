@@ -33,8 +33,6 @@ module sui_system::sui_system_state_inner {
     const SYSTEM_STATE_VERSION_V1: u64 = 1;
 
     /// A list of system config parameters.
-    const EXTRA_FIELD_EXECUTION_TIME_ESTIMATES_KEY: u64 = 0;
-
     public struct SystemParameters has store {
         /// The duration of an epoch, in milliseconds.
         epoch_duration_ms: u64,
@@ -590,11 +588,11 @@ module sui_system::sui_system_state_inner {
         cap: &UnverifiedValidatorOperationCap,
         reportee_addr: address,
         ) {
-            // Reportee needs to be an active validator
-            assert!(self.validators.is_active_validator_by_sui_address(reportee_addr), ENotValidator);
-            // Verify the represented reporter address is an active validator, and the capability is still valid.
-            let verified_cap = self.validators.verify_cap(cap, ACTIVE_VALIDATOR_ONLY);
-            report_validator_impl(verified_cap, reportee_addr, &mut self.validator_report_records);
+        // Reportee needs to be an active validator
+        assert!(self.validators.is_active_validator_by_sui_address(reportee_addr), ENotValidator);
+        // Verify the represented reporter address is an active validator, and the capability is still valid.
+        let verified_cap = self.validators.verify_cap(cap, ACTIVE_VALIDATOR_ONLY);
+        report_validator_impl(verified_cap, reportee_addr, &mut self.validator_report_records);
         }
 
 
@@ -616,16 +614,16 @@ module sui_system::sui_system_state_inner {
         reportee_addr: address,
         validator_report_records: &mut VecMap<address, VecSet<address>>,
         ) {
-            let reporter_address = *verified_cap.verified_operation_cap_address();
-            assert!(reporter_address != reportee_addr, ECannotReportOneself);
-            if (!validator_report_records.contains(&reportee_addr)) {
-                validator_report_records.insert(reportee_addr, vec_set::singleton(reporter_address));
-            } else {
-                let reporters = validator_report_records.get_mut(&reportee_addr);
-                if (!reporters.contains(&reporter_address)) {
-                    reporters.insert(reporter_address);
-                }
-            }
+        let reporter_address = *verified_cap.verified_operation_cap_address();
+        assert!(reporter_address != reportee_addr, ECannotReportOneself);
+        if (!validator_report_records.contains(&reportee_addr)) {
+        validator_report_records.insert(reportee_addr, vec_set::singleton(reporter_address));
+        } else {
+        let reporters = validator_report_records.get_mut(&reportee_addr);
+        if (!reporters.contains(&reporter_address)) {
+        reporters.insert(reporter_address);
+        }
+        }
         }
 
         fun undo_report_validator_impl(
@@ -633,16 +631,16 @@ module sui_system::sui_system_state_inner {
         reportee_addr: address,
         validator_report_records: &mut VecMap<address, VecSet<address>>,
         ) {
-            assert!(validator_report_records.contains(&reportee_addr), EReportRecordNotFound);
-            let reporters = validator_report_records.get_mut(&reportee_addr);
+        assert!(validator_report_records.contains(&reportee_addr), EReportRecordNotFound);
+        let reporters = validator_report_records.get_mut(&reportee_addr);
 
-            let reporter_addr = *verified_cap.verified_operation_cap_address();
-            assert!(reporters.contains(&reporter_addr), EReportRecordNotFound);
+        let reporter_addr = *verified_cap.verified_operation_cap_address();
+        assert!(reporters.contains(&reporter_addr), EReportRecordNotFound);
 
-            reporters.remove(&reporter_addr);
-            if (reporters.is_empty()) {
-                validator_report_records.remove(&reportee_addr);
-            }
+        reporters.remove(&reporter_addr);
+        if (reporters.is_empty()) {
+        validator_report_records.remove(&reportee_addr);
+        }
         }
 
         // ==== validator metadata management functions ====
@@ -653,8 +651,8 @@ module sui_system::sui_system_state_inner {
             self: &mut SuiSystemStateInnerV2,
         ctx: &mut TxContext,
         ) {
-            let validator = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
-            validator.new_unverified_validator_operation_cap_and_transfer(ctx);
+        let validator = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
+        validator.new_unverified_validator_operation_cap_and_transfer(ctx);
         }
 
         /// Update a validator's name.
@@ -663,28 +661,29 @@ module sui_system::sui_system_state_inner {
         name: vector<u8>,
         ctx: &TxContext,
         ) {
-            let validator = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
-            validator.update_name(name);
+        let validator = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
+
+        validator.update_name(name);
         }
 
         /// Update a validator's description
         public(package) fun update_validator_description(
             self: &mut SuiSystemStateInnerV2,
-            description: vector<u8>,
-            ctx: &TxContext,
+        description: vector<u8>,
+        ctx: &TxContext,
         ) {
-            let validator = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
-            validator.update_description(description);
+        let validator = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
+        validator.update_description(description);
         }
 
         /// Update a validator's image url
         public(package) fun update_validator_image_url(
             self: &mut SuiSystemStateInnerV2,
-            image_url: vector<u8>,
-            ctx: &TxContext,
+        image_url: vector<u8>,
+        ctx: &TxContext,
         ) {
-            let validator = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
-            validator.update_image_url(image_url);
+        let validator = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
+        validator.update_image_url(image_url);
         }
 
         /// Update a validator's project url
@@ -693,8 +692,8 @@ module sui_system::sui_system_state_inner {
         project_url: vector<u8>,
         ctx: &TxContext,
         ) {
-            let validator = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
-            validator.update_project_url(project_url);
+        let validator = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
+        validator.update_project_url(project_url);
         }
 
         /// Update a validator's network address.
@@ -704,85 +703,85 @@ module sui_system::sui_system_state_inner {
         network_address: vector<u8>,
         ctx: &TxContext,
         ) {
-            let validator = self.validators.get_validator_mut_with_ctx(ctx);
-            validator.update_next_epoch_network_address(network_address);
-            let validator :&Validator = validator; // Force immutability for the following call
-            self.validators.assert_no_pending_or_active_duplicates(validator);
+        let validator = self.validators.get_validator_mut_with_ctx(ctx);
+        validator.update_next_epoch_network_address(network_address);
+        let validator :&Validator = validator; // Force immutability for the following call
+        self.validators.assert_no_pending_or_active_duplicates(validator);
         }
 
         /// Update candidate validator's network address.
         public(package) fun update_candidate_validator_network_address(
             self: &mut SuiSystemStateInnerV2,
-            network_address: vector<u8>,
-            ctx: &TxContext,
+        network_address: vector<u8>,
+        ctx: &TxContext,
         ) {
-            let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
-            candidate.update_candidate_network_address(network_address);
+        let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
+        candidate.update_candidate_network_address(network_address);
         }
 
         /// Update a validator's p2p address.
         /// The change will only take effects starting from the next epoch.
         public(package) fun update_validator_next_epoch_p2p_address(
             self: &mut SuiSystemStateInnerV2,
-            p2p_address: vector<u8>,
-            ctx: &TxContext,
+        p2p_address: vector<u8>,
+        ctx: &TxContext,
         ) {
-            let validator = self.validators.get_validator_mut_with_ctx(ctx);
-            validator.update_next_epoch_p2p_address(p2p_address);
-            let validator :&Validator = validator; // Force immutability for the following call
-            self.validators.assert_no_pending_or_active_duplicates(validator);
+        let validator = self.validators.get_validator_mut_with_ctx(ctx);
+        validator.update_next_epoch_p2p_address(p2p_address);
+        let validator :&Validator = validator; // Force immutability for the following call
+        self.validators.assert_no_pending_or_active_duplicates(validator);
         }
 
         /// Update candidate validator's p2p address.
         public(package) fun update_candidate_validator_p2p_address(
             self: &mut SuiSystemStateInnerV2,
-            p2p_address: vector<u8>,
-            ctx: &TxContext,
+        p2p_address: vector<u8>,
+        ctx: &TxContext,
         ) {
-            let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
-            candidate.update_candidate_p2p_address(p2p_address);
+        let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
+        candidate.update_candidate_p2p_address(p2p_address);
         }
 
         /// Update a validator's narwhal primary address.
         /// The change will only take effects starting from the next epoch.
         public(package) fun update_validator_next_epoch_primary_address(
             self: &mut SuiSystemStateInnerV2,
-            primary_address: vector<u8>,
-            ctx: &TxContext,
+        primary_address: vector<u8>,
+        ctx: &TxContext,
         ) {
-            let validator = self.validators.get_validator_mut_with_ctx(ctx);
-            validator.update_next_epoch_primary_address(primary_address);
+        let validator = self.validators.get_validator_mut_with_ctx(ctx);
+        validator.update_next_epoch_primary_address(primary_address);
         }
 
         /// Update candidate validator's narwhal primary address.
         public(package) fun update_candidate_validator_primary_address(
             self: &mut SuiSystemStateInnerV2,
-            primary_address: vector<u8>,
-            ctx: &TxContext,
+        primary_address: vector<u8>,
+        ctx: &TxContext,
         ) {
-            let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
-            candidate.update_candidate_primary_address(primary_address);
+        let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
+        candidate.update_candidate_primary_address(primary_address);
         }
 
         /// Update a validator's narwhal worker address.
         /// The change will only take effects starting from the next epoch.
         public(package) fun update_validator_next_epoch_worker_address(
             self: &mut SuiSystemStateInnerV2,
-            worker_address: vector<u8>,
-            ctx: &TxContext,
+        worker_address: vector<u8>,
+        ctx: &TxContext,
         ) {
-            let validator = self.validators.get_validator_mut_with_ctx(ctx);
-            validator.update_next_epoch_worker_address(worker_address);
+        let validator = self.validators.get_validator_mut_with_ctx(ctx);
+        validator.update_next_epoch_worker_address(worker_address);
         }
 
         /// Update candidate validator's narwhal worker address.
         public(package) fun update_candidate_validator_worker_address(
             self: &mut SuiSystemStateInnerV2,
-            worker_address: vector<u8>,
-            ctx: &TxContext,
+        worker_address: vector<u8>,
+        ctx: &TxContext,
         ) {
-            let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
-            candidate.update_candidate_worker_address(worker_address);
+        let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
+        candidate.update_candidate_worker_address(worker_address);
         }
 
         /// Update a validator's public key of protocol key and proof of possession.
@@ -793,67 +792,67 @@ module sui_system::sui_system_state_inner {
         proof_of_possession: vector<u8>,
         ctx: &TxContext,
         ) {
-            let validator = self.validators.get_validator_mut_with_ctx(ctx);
-            validator.update_next_epoch_protocol_pubkey(protocol_pubkey, proof_of_possession);
-            let validator :&Validator = validator; // Force immutability for the following call
-            self.validators.assert_no_pending_or_active_duplicates(validator);
+        let validator = self.validators.get_validator_mut_with_ctx(ctx);
+        validator.update_next_epoch_protocol_pubkey(protocol_pubkey, proof_of_possession);
+        let validator :&Validator = validator; // Force immutability for the following call
+        self.validators.assert_no_pending_or_active_duplicates(validator);
         }
 
         /// Update candidate validator's public key of protocol key and proof of possession.
         public(package) fun update_candidate_validator_protocol_pubkey(
             self: &mut SuiSystemStateInnerV2,
-            protocol_pubkey: vector<u8>,
-            proof_of_possession: vector<u8>,
-            ctx: &TxContext,
+        protocol_pubkey: vector<u8>,
+        proof_of_possession: vector<u8>,
+        ctx: &TxContext,
         ) {
-            let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
-            candidate.update_candidate_protocol_pubkey(protocol_pubkey, proof_of_possession);
+        let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
+        candidate.update_candidate_protocol_pubkey(protocol_pubkey, proof_of_possession);
         }
 
         /// Update a validator's public key of worker key.
         /// The change will only take effects starting from the next epoch.
         public(package) fun update_validator_next_epoch_worker_pubkey(
             self: &mut SuiSystemStateInnerV2,
-            worker_pubkey: vector<u8>,
-            ctx: &TxContext,
+        worker_pubkey: vector<u8>,
+        ctx: &TxContext,
         ) {
-            let validator = self.validators.get_validator_mut_with_ctx(ctx);
-            validator.update_next_epoch_worker_pubkey(worker_pubkey);
-            let validator :&Validator = validator; // Force immutability for the following call
-            self.validators.assert_no_pending_or_active_duplicates(validator);
+        let validator = self.validators.get_validator_mut_with_ctx(ctx);
+        validator.update_next_epoch_worker_pubkey(worker_pubkey);
+        let validator :&Validator = validator; // Force immutability for the following call
+        self.validators.assert_no_pending_or_active_duplicates(validator);
         }
 
         /// Update candidate validator's public key of worker key.
         public(package) fun update_candidate_validator_worker_pubkey(
             self: &mut SuiSystemStateInnerV2,
-            worker_pubkey: vector<u8>,
-            ctx: &TxContext,
+        worker_pubkey: vector<u8>,
+        ctx: &TxContext,
         ) {
-            let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
-            candidate.update_candidate_worker_pubkey(worker_pubkey);
+        let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
+        candidate.update_candidate_worker_pubkey(worker_pubkey);
         }
 
         /// Update a validator's public key of network key.
         /// The change will only take effects starting from the next epoch.
         public(package) fun update_validator_next_epoch_network_pubkey(
             self: &mut SuiSystemStateInnerV2,
-            network_pubkey: vector<u8>,
-            ctx: &TxContext,
+        network_pubkey: vector<u8>,
+        ctx: &TxContext,
         ) {
-            let validator = self.validators.get_validator_mut_with_ctx(ctx);
-            validator.update_next_epoch_network_pubkey(network_pubkey);
-            let validator :&Validator = validator; // Force immutability for the following call
-            self.validators.assert_no_pending_or_active_duplicates(validator);
+        let validator = self.validators.get_validator_mut_with_ctx(ctx);
+        validator.update_next_epoch_network_pubkey(network_pubkey);
+        let validator :&Validator = validator; // Force immutability for the following call
+        self.validators.assert_no_pending_or_active_duplicates(validator);
         }
 
         /// Update candidate validator's public key of network key.
         public(package) fun update_candidate_validator_network_pubkey(
             self: &mut SuiSystemStateInnerV2,
-            network_pubkey: vector<u8>,
-            ctx: &TxContext,
+        network_pubkey: vector<u8>,
+        ctx: &TxContext,
         ) {
-            let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
-            candidate.update_candidate_network_pubkey(network_pubkey);
+        let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
+        candidate.update_candidate_network_pubkey(network_pubkey);
         }
 
         /// This function should be called at the end of an epoch, and advances the system to the next epoch.
@@ -1143,73 +1142,73 @@ module sui_system::sui_system_state_inner {
         let mut total_balance = merged_coin.into_balance();
         // return the full amount if amount is not specified
         if (amount.is_some()) {
-            let amount = amount.destroy_some();
-            let balance = total_balance.split(amount);
-            // transfer back the remainder if non zero.
-            if (total_balance.value() > 0) {
-                transfer::public_transfer(total_balance.into_coin(ctx), ctx.sender());
-            } else {
-                total_balance.destroy_zero();
-            };
-            balance
+        let amount = amount.destroy_some();
+        let balance = total_balance.split(amount);
+        // transfer back the remainder if non zero.
+        if (total_balance.value() > 0) {
+        transfer::public_transfer(total_balance.into_coin(ctx), ctx.sender());
         } else {
-            total_balance
+        total_balance.destroy_zero();
+        };
+        balance
+        } else {
+        total_balance
         }
-    }
+        }
 
-    #[test_only]
-    /// Return the current validator set
-    public(package) fun validators(self: &SuiSystemStateInnerV2): &ValidatorSet {
+        #[test_only]
+        /// Return the current validator set
+        public(package) fun validators(self: &SuiSystemStateInnerV2): &ValidatorSet {
         &self.validators
-    }
+        }
 
-    #[test_only]
-    /// Return the currently active validator by address
-    public(package) fun active_validator_by_address(self: &SuiSystemStateInnerV2, validator_address: address): &Validator {
+        #[test_only]
+        /// Return the currently active validator by address
+        public(package) fun active_validator_by_address(self: &SuiSystemStateInnerV2, validator_address: address): &Validator {
         self.validators().get_active_validator_ref(validator_address)
-    }
+        }
 
-    #[test_only]
-    /// Return the currently pending validator by address
-    public(package) fun pending_validator_by_address(self: &SuiSystemStateInnerV2, validator_address: address): &Validator {
+        #[test_only]
+        /// Return the currently pending validator by address
+        public(package) fun pending_validator_by_address(self: &SuiSystemStateInnerV2, validator_address: address): &Validator {
         self.validators().get_pending_validator_ref(validator_address)
-    }
+        }
 
-    #[test_only]
-    /// Return the currently candidate validator by address
-    public(package) fun candidate_validator_by_address(self: &SuiSystemStateInnerV2, validator_address: address): &Validator {
+        #[test_only]
+        /// Return the currently candidate validator by address
+        public(package) fun candidate_validator_by_address(self: &SuiSystemStateInnerV2, validator_address: address): &Validator {
         validators(self).get_candidate_validator_ref(validator_address)
-    }
+        }
 
-    #[test_only]
-    public(package) fun get_stake_subsidy_distribution_counter(self: &SuiSystemStateInnerV2): u64 {
+        #[test_only]
+        public(package) fun get_stake_subsidy_distribution_counter(self: &SuiSystemStateInnerV2): u64 {
         self.stake_subsidy.get_distribution_counter()
-    }
+        }
 
-    #[test_only]
-    public(package) fun set_epoch_for_testing(self: &mut SuiSystemStateInnerV2, epoch_num: u64) {
+        #[test_only]
+        public(package) fun set_epoch_for_testing(self: &mut SuiSystemStateInnerV2, epoch_num: u64) {
         self.epoch = epoch_num
-    }
+        }
 
-    #[test_only]
-    public(package) fun request_add_validator_for_testing(
+        #[test_only]
+        public(package) fun request_add_validator_for_testing(
         self: &mut SuiSystemStateInnerV2,
         min_joining_stake_for_testing: u64,
         ctx: &mut TxContext,
-    ) {
+        ) {
         assert!(
-            self.validators.next_epoch_validator_count() < self.parameters.max_validator_count,
-            ELimitExceeded,
+        self.validators.next_epoch_validator_count() < self.parameters.max_validator_count,
+        ELimitExceeded,
         );
 
         self.validators.request_add_validator(min_joining_stake_for_testing, ctx);
-    }
+        }
 
-    // CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.  Creates a
-    // candidate validator - bypassing the proof of possession check and other metadata validation
-    // in the process.
-    #[test_only]
-    public(package) fun request_add_validator_candidate_for_testing(
+        // CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.  Creates a
+        // candidate validator - bypassing the proof of possession check and other metadata validation
+        // in the process.
+        #[test_only]
+        public(package) fun request_add_validator_candidate_for_testing(
         self: &mut SuiSystemStateInnerV2,
         pubkey_bytes: vector<u8>,
         network_pubkey_bytes: vector<u8>,
@@ -1226,34 +1225,29 @@ module sui_system::sui_system_state_inner {
         gas_price: u64,
         commission_rate: u64,
         ctx: &mut TxContext,
-    ) {
+        ) {
         let validator = validator::new_for_testing(
-            ctx.sender(),
-            pubkey_bytes,
-            network_pubkey_bytes,
-            worker_pubkey_bytes,
-            proof_of_possession,
-            name,
-            description,
-            image_url,
-            project_url,
-            net_address,
-            p2p_address,
-            primary_address,
-            worker_address,
-            option::none(),
-            gas_price,
-            commission_rate,
-            false, // not an initial validator active at genesis
-            ctx
+        ctx.sender(),
+        pubkey_bytes,
+        network_pubkey_bytes,
+        worker_pubkey_bytes,
+        proof_of_possession,
+        name,
+        description,
+        image_url,
+        project_url,
+        net_address,
+        p2p_address,
+        primary_address,
+        worker_address,
+        option::none(),
+        gas_price,
+        commission_rate,
+        false, // not an initial validator active at genesis
+        ctx
         );
 
         self.validators.request_add_validator_candidate(validator, ctx);
+        }
+
     }
-    public(package) fun store_execution_time_estimates(self: &mut SuiSystemStateInner, estimates: vector<u8>) {
-        if (bag::contains(&self.extra_fields, EXTRA_FIELD_EXECUTION_TIME_ESTIMATES_KEY)) {
-            let _: vector<u8> = bag::remove(&mut self.extra_fields, EXTRA_FIELD_EXECUTION_TIME_ESTIMATES_KEY);
-        };
-        bag::add(&mut self.extra_fields, EXTRA_FIELD_EXECUTION_TIME_ESTIMATES_KEY, estimates);
-    }
-}
