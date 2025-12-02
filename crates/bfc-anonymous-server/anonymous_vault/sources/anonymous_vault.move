@@ -44,6 +44,11 @@ public struct AnonymousVault has key, store {
     //2. use Bag to store tokens [token don't have key and store ability]
     vault_token_pool: Bag,
 }
+
+public fun get_latest_action_num(vault: &AnonymousVault): u64 {
+    vault.latest_action_num
+}
+
 public struct VaultTokenPool<phantom T1, phantom T2> has store, key {
     id: UID,
     anonymous_coin_1: Anonymous_Coin<T1>,
@@ -76,10 +81,10 @@ entry fun init_token_pool<T1, T2>(anonymous_coin_1: Anonymous_Coin<T1>,
 
 entry fun init_admin(admin: address, vault: &mut AnonymousVault) {
 
-    assert!(vault.can_init_admin_status == false, NOT_INIT_ADMIN_STATUS);
+    assert!(vault.can_init_admin_status == true, NOT_INIT_ADMIN_STATUS);
 
-    assert!(vector_contains(&vault.admins, &admin) , ADMIN_ALREADY_EXISTS);
-    assert!(vector::length(&vault.admins) < ADMIN_MAX_COUNT, ADMIN_REACH_MAX);
+    assert!(!vector_contains(&vault.admins, &admin) , ADMIN_ALREADY_EXISTS);
+    assert!(vector::length(&vault.admins) <= ADMIN_MAX_COUNT, ADMIN_REACH_MAX);
 
     vector::push_back(&mut vault.admins, admin);
     if (vector::length(&vault.admins) == ADMIN_MAX_COUNT) {
@@ -243,7 +248,11 @@ public struct VaultAction has key, store {
 }
 
 
-entry fun create_action(action_type: u8, action_address: address, action_key: string::String,  vault: &mut AnonymousVault, clock: &Clock, ctx: &mut TxContext) {
+entry fun create_action(action_type: u8,
+                        action_address: address,
+                        action_key: string::String,
+                        vault: &mut AnonymousVault,
+                        clock: &Clock, ctx: &mut TxContext) {
     let action = VaultAction {
         id: object::new(ctx),
         action_type: action_type,
@@ -285,4 +294,33 @@ fun vector_contains(vec: &vector<address>, addr: &address): bool {
         i = i + 1;
     };
     false
+}
+
+
+#[test_only]
+public fun new_for_testing(ctx: &mut TxContext): AnonymousVault{
+    create_anonymous_vault(ctx)
+}
+
+#[test_only]
+public fun create_testing_action(action_type: u8,
+                          action_address: address,
+                            action_key: string::String,
+                            vault: &mut AnonymousVault,
+                            clock: &Clock, ctx: &mut TxContext): VaultAction {
+    let action = VaultAction {
+        id: object::new(ctx),
+        action_type: action_type,
+        action_index: vault.latest_action_num,
+        start_time: clock::timestamp_ms(clock),
+        approve_admins: vector::empty<address>(),
+        action_status: ACTION_STATUS_PENDING,
+        action_receipt: action_address,
+        action_key: action_key,
+
+    };
+    //vector::push_back(&mut vault.actions, action);
+    vault.latest_action_num = vault.latest_action_num + 1;
+
+    action
 }
