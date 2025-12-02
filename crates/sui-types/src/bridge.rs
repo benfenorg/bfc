@@ -81,6 +81,8 @@ pub const APPROVAL_THRESHOLD_SINGLE_TRANSFER_LIMIT_UPDATE: u64=5001;
 pub const APPROVAL_THRESHOLD_SET_CROSS_OUT_BRIDGE_FEE: u64 = 5001;
 pub const APPROVAL_THRESHOLD_SET_CROSS_IN_BRIDGE_FEE: u64 = 5001;
 pub const APPROVAL_THRESHOLD_WITHDRAW_BRIDGE_FEE: u64=5001;
+pub const APPROVAL_THRESHOLD_UPDATE_INVEST_ADDRESS: u64 = 5001;
+pub const APPROVAL_THRESHOLD_ADD_LP_TOKEN_ID: u64 = 5001;
 
 // const for initial token ids for convenience
 pub const TOKEN_ID_SUI: u64 = 0;
@@ -708,6 +710,22 @@ pub struct MoveTypeRefundMessageKey {
     pub tx_hash: Vec<u8>,
 }
 
+/// Rust version of the Move bridge::DefiProtocolKey type.
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct MoveTypeDefiProtocolKey {
+    pub protocol_type: u64,
+    pub protocol_version: u64,
+    pub protocol_token_id: u64,
+    pub chain_id: u8,
+}
+
+/// Rust version of the Move bridge::DefiHolderInfo type.
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct MoveTypeDefiHolderInfo {
+    pub amount: u64,
+    pub lp_token_amount: u64,
+}
+
 /// Rust version of the Move limiter::TransferLimiter type.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MoveTypeBridgeTransferLimiter {
@@ -804,6 +822,21 @@ pub struct MoveTypeTokenTransferPayloadV2 {
     pub event_idx: u16,
 }
 
+/// Rust version of the Move message::DefiTransferOutPayload type.
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct MoveTypeDefiTransferOutPayload {
+    pub sender_address: Vec<u8>,
+    pub target_chain: u8,
+    pub amount: u64,
+    pub tx_hash: Vec<u8>,
+    pub event_idx: u16,
+    pub protocol_type: u64,
+    pub protocol_version: u64,
+    pub protocol_token_id: u64,
+    pub action_type: u8,
+    pub principal_amount: u64,
+}
+
 /// Rust version of the Move message::ParsedTokenTransferMessage type.
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct MoveTypeParsedTokenTransferMessage {
@@ -822,4 +855,14 @@ pub struct MoveTypeParsedTokenTransferMessageV2 {
     pub source_chain: u8,
     pub payload: Vec<u8>,
     pub parsed_payload: MoveTypeTokenTransferPayloadV2,
+}
+
+/// Rust version of the Move message::ParsedDefiTransferOutMessage type.
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct MoveTypeParsedDefiTransferOutMessage {
+    pub message_version: u8,
+    pub seq_num: u64,
+    pub source_chain: u8,
+    pub payload: Vec<u8>,
+    pub parsed_payload: MoveTypeDefiTransferOutPayload,
 }

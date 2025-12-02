@@ -1040,6 +1040,9 @@ title: Module `bridge::limiter`
 
 <pre><code><b>fun</b> <a href="../bridge/limiter.md#bridge_limiter_adjust_transfer_records">adjust_transfer_records</a>(self: &<b>mut</b> <a href="../bridge/limiter.md#bridge_limiter_TransferRecord">TransferRecord</a>, <a href="../bridge/limiter.md#bridge_limiter_current_hour_since_epoch">current_hour_since_epoch</a>: u64) {
     <b>if</b> (self.hour_head == <a href="../bridge/limiter.md#bridge_limiter_current_hour_since_epoch">current_hour_since_epoch</a>) {
+        <b>if</b>(self.per_hour_amounts.length() == 0) {
+            self.per_hour_amounts.push_back(0);
+        };
         <b>return</b> // nothing to backfill
     };
     <b>let</b> target_tail = <a href="../bridge/limiter.md#bridge_limiter_current_hour_since_epoch">current_hour_since_epoch</a> - 23;

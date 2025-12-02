@@ -318,6 +318,23 @@ where
                 )
                 .await;
             },
+            // defi
+            BridgeAction::EthToSuiDefiBridgeAction(_defi_action) => {
+                status = sui_client
+                    .get_defi_transfer_action_status_until_success(
+                         action.chain_id() as u8,
+                        action.seq_number(),
+                    )
+                    .await;
+            },
+            BridgeAction::SuiToEthDefiBridgeAction(_defi_action) => {
+                status = sui_client
+                    .get_defi_transfer_action_status_until_success(
+                         action.chain_id() as u8,
+                        action.seq_number(),
+                    )
+                    .await;
+            },
             _ => {
                 status = sui_client
                     .get_token_transfer_action_onchain_status_until_success(
@@ -371,7 +388,12 @@ where
 
         // Only token transfer action should reach here
         match &action {
-            BridgeAction::ExternalDepositStartBridgeAction(_) | BridgeAction::SuiToEthBridgeAction(_) | BridgeAction::EthToSuiBridgeAction(_) | BridgeAction::EthSendBackBridgeAction(_) => (),
+            BridgeAction::ExternalDepositStartBridgeAction(_)
+            | BridgeAction::SuiToEthBridgeAction(_)
+            | BridgeAction::EthToSuiBridgeAction(_)
+            | BridgeAction::EthSendBackBridgeAction(_)
+            | BridgeAction::SuiToEthDefiBridgeAction(_)
+            | BridgeAction::EthToSuiDefiBridgeAction(_) => (),
             _ => unreachable!("Non token transfer action should not reach here"),
         };
 

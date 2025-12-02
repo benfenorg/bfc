@@ -477,7 +477,7 @@ module bridge::bridge_env {
             &metadata,
         );
         destroy(metadata);
-
+        // BUSD
         let (
             upgrade_cap,
             treasury_cap,
@@ -893,6 +893,25 @@ module bridge::bridge_env {
                 true,
             )
         })
+    }
+
+    public fun sign_message_with_mut(
+        env: &mut BridgeEnv,
+        message: BridgeMessage,
+        validator_idxs: vector<u64>,
+    ): vector<vector<u8>> {
+        let mut message_bytes = SUI_MESSAGE_PREFIX;
+        message_bytes.append(message.serialize_message());
+        validator_idxs.map!(
+            |idx| {
+                secp256k1_sign(
+                    env.validators[idx].key_pair.private_key(),
+                    &message_bytes,
+                    0,
+                    true,
+                )
+            },
+        )
     }
 
     public fun bridge_in_message<Token>(

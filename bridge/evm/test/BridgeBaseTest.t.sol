@@ -143,7 +143,7 @@ contract BridgeBaseTest is Test {
             "BridgeConfig.sol",
             abi.encodeCall(
                 BridgeConfig.initialize,
-                (address(committee), chainID, supportedTokens, tokenPrices, tokenIds, suiDecimals, supportedChains)
+                (address(committee), chainID, supportedTokens, tokenPrices, tokenIds, suiDecimals, supportedChains, 4, 3, 7)
             ),
             opts
         );
@@ -177,7 +177,7 @@ contract BridgeBaseTest is Test {
         address _suiBridge = Upgrades.deployUUPSProxy(
             "SuiBridge.sol",
             abi.encodeCall(
-                SuiBridge.initialize, (address(committee), address(vault), address(limiter))
+                SuiBridge.initialize, (address(committee), address(vault), address(limiter),address(0))
             ),
             opts
         );

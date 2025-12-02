@@ -1,12 +1,13 @@
 // Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { getEphemeralValue } from '_src/background/session-ephemeral-values';
 import { getAnonymousRestoreValue } from '_src/shared/anonymous-api';
-import { fromExportedKeypair } from '_src/shared/utils/from-exported-keypair';
+import { useChainData } from '_src/ui/app/hooks';
 import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
+import { useSigner } from '_src/ui/app/hooks/useSigner';
 import { Text } from '_src/ui/app/shared/text';
 import { type StructTag } from '@benfen/bfc.js/bcs/bcs';
+import { parseSerializedKeypairSignature } from '@benfen/bfc.js/cryptography/publickey';
 import { bfc2HexAddress, parseStructTag } from '@benfen/bfc.js/utils';
 import { type AnonymousCoinFields } from '@mysten/core';
 import { useMutation } from '@tanstack/react-query';
@@ -15,6 +16,8 @@ import { Link } from 'react-router-dom';
 
 export const AnonymousTokenLink = ({ token }: { token: AnonymousCoinFields }) => {
 	const activeAccount = useActiveAccount();
+	const { ANONYMOUS_RPC } = useChainData();
+	const signer = useSigner(activeAccount);
 
 	const symbol = useMemo(() => {
 		const parsed = parseStructTag(token.balance.type);
@@ -24,18 +27,19 @@ export const AnonymousTokenLink = ({ token }: { token: AnonymousCoinFields }) =>
 	const { mutate, data } = useMutation({
 		mutationKey: ['get-anonymous-value', token.id.id],
 		mutationFn: async () => {
-			const ephemeral = (await getEphemeralValue(activeAccount!.id)) as { keyPair: string };
-			const keypair = fromExportedKeypair(ephemeral.keyPair);
-
 			const tokenId = bfc2HexAddress(token.id.id);
-			const signature = await keypair.sign(new TextEncoder().encode(tokenId));
+			const { signature } = await signer!.signMessage({
+				message: new TextEncoder().encode(tokenId),
+			});
 
-			const res = await getAnonymousRestoreValue({
+			const parsed = parseSerializedKeypairSignature(signature);
+
+			const res = await getAnonymousRestoreValue(ANONYMOUS_RPC, {
 				value1: token.balance.fields.value1,
 				value2: token.balance.fields.value2,
-				signature: Array.from(signature),
+				signature: Array.from(parsed.signature),
 				objectid: tokenId,
-				publickey: Array.from(keypair.getPublicKey().toRawBytes()),
+				publickey: Array.from(parsed.publicKey),
 			});
 			return res;
 		},

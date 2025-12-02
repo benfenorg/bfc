@@ -27,7 +27,11 @@ module bridge::message_types {
 
     const WITHDRAW_BRIDGE_FEE: u8=22;
 
+    const DEFI: u8=23;
+
     public fun token(): u8 { TOKEN }
+
+    public fun defi(): u8 { DEFI }
 
     public fun committee_blocklist(): u8 { COMMITTEE_BLOCKLIST }
 

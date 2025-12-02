@@ -6,6 +6,7 @@
 use crate::error::{BridgeError, BridgeResult};
 use crate::test_utils::DUMMY_MUTALBE_BRIDGE_OBJECT_ARG;
 use async_trait::async_trait;
+use tracing::info;
 use std::collections::{HashMap, VecDeque};
 use std::sync::atomic::AtomicU64;
 use std::sync::{Arc, Mutex};
@@ -13,7 +14,7 @@ use sui_json_rpc_types::{ SuiTransactionBlockResponse};
 use sui_json_rpc_types::{EventFilter, EventPage, SuiEvent};
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::base_types::ObjectRef;
-use sui_types::bridge::{BridgeCommitteeSummary, BridgeSummary, BridgeTokenMetadata, BridgeTreasurySummary, MoveTypeParsedTokenTransferMessageV2};
+use sui_types::bridge::{BridgeCommitteeSummary, BridgeSummary, BridgeTokenMetadata, BridgeTreasurySummary, MoveTypeParsedDefiTransferOutMessage, MoveTypeParsedTokenTransferMessageV2};
 use sui_types::digests::TransactionDigest;
 use sui_types::event::EventID;
 use sui_types::gas_coin::GasCoin;
@@ -225,6 +226,7 @@ impl SuiClientInner for SuiMockClient {
     }
 
     async fn get_mutable_bridge_object_arg(&self) -> Result<ObjectArg, Self::Error> {
+        info!("bbking120 get_mutable_bridge_object_arg");
         Ok(DUMMY_MUTALBE_BRIDGE_OBJECT_ARG)
     }
 
@@ -297,6 +299,21 @@ impl SuiClientInner for SuiMockClient {
             .unwrap_or(BridgeActionStatus::Pending))
     }
 
+    async fn get_defi_transfer_action_onchain_status(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> Result<BridgeActionStatus, BridgeError> {
+        Ok(self
+            .onchain_status
+            .lock()
+            .unwrap()
+            .get(&(source_chain_id, seq_number))
+            .cloned()
+            .unwrap_or(BridgeActionStatus::Pending))
+    }
+
     async fn get_eth_to_sui_limit(
         &self,
         _bridge_object_arg: ObjectArg,
@@ -330,6 +347,27 @@ impl SuiClientInner for SuiMockClient {
         Ok(BridgeActionStatus::NotFound)
     }
 
+    async fn get_defi_transfer_action_status(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _source_chain: u8,
+        _seq_number: u64,
+    ) -> Result<BridgeActionStatus, BridgeError> {
+        Ok(BridgeActionStatus::NotFound)
+    }
+
+    async fn get_defi_holders_get_by_key(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _user_address: SuiAddress,
+        _protocol_type: u64,
+        _protocol_version: u64,
+        _protocol_token_id: u64,
+        _chain_id: u8,
+    ) -> Result<u64, BridgeError> {
+        Ok(0)
+    }
+
     async fn get_send_back_onchain_status(
         &self,
         _bridge_object_arg: ObjectArg,
@@ -347,6 +385,15 @@ impl SuiClientInner for SuiMockClient {
         unimplemented!()
     }
 
+    async fn get_defi_transfer_out_action_onchain_signatures(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _source_chain_id: u8,
+        _seq_number: u64,
+    ) -> Result<Option<Vec<Vec<u8>>>, BridgeError> {
+        unimplemented!()
+    }
+
     async fn get_parsed_token_transfer_message(
         &self,
         _bridge_object_arg: ObjectArg,
@@ -354,6 +401,39 @@ impl SuiClientInner for SuiMockClient {
         _seq_number: u64,
     ) -> Result<Option<MoveTypeParsedTokenTransferMessageV2>, BridgeError> {
         unimplemented!()
+    }
+
+    async fn get_parsed_defi_transfer_out_message(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _source_chain_id: u8,
+        _seq_number: u64,
+    ) -> Result<Option<MoveTypeParsedDefiTransferOutMessage>, BridgeError> {
+        unimplemented!()
+    }
+
+    async fn get_defi_holders_amount(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _user_address: SuiAddress,
+        _protocol_type: u64,
+        _protocol_version: u64,
+        _protocol_token_id: u64,
+        _chain_id: u8,
+    ) -> Result<u64, BridgeError> {
+        Ok(0)
+    }
+
+    async fn get_defi_holders_lp_token_amount(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _user_address: SuiAddress,
+        _protocol_type: u64,
+        _protocol_version: u64,
+        _protocol_token_id: u64,
+        _chain_id: u8,
+    ) -> Result<u64, BridgeError> {
+        Ok(0)
     }
 
     async fn execute_transaction_block_with_effects(

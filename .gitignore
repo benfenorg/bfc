@@ -76,6 +76,9 @@ docs/content/references/framework/**
 lcov.info
 
 .sparse
+bridge/evm/broadcast/deploy_bridge.s.sol/12/run-*.json
+!bridge/evm/broadcast/deploy_bridge.s.sol/12/run-latest.json
+
 
 /crates/sui/tests/shell_tests/summaries/data/move_package/package_summaries/
 /crates/sui/tests/shell_tests/with_network/summaries/package_summaries/

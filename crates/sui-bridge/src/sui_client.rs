@@ -6,6 +6,7 @@ use async_trait::async_trait;
 use ethers::utils::hex;
 use core::panic;
 use fastcrypto::traits::ToFromBytes;
+use move_core_types::account_address::AccountAddress;
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::str::from_utf8;
@@ -21,7 +22,7 @@ use sui_json_rpc_types::{
 use sui_sdk::{SuiClient as SuiSdkClient, SuiClientBuilder};
 use sui_types::base_types::ObjectRef;
 use sui_types::base_types::SequenceNumber;
-use sui_types::bridge::BridgeSummary;
+use sui_types::bridge::{BridgeSummary, MoveTypeParsedDefiTransferOutMessage};
 use sui_types::bridge::BridgeTreasurySummary;
 use sui_types::bridge::MoveTypeCommitteeMember;
 use sui_types::bridge::MoveTypeParsedTokenTransferMessageV2;
@@ -45,7 +46,7 @@ use sui_types::{
     Identifier,
 };
 use tokio::sync::OnceCell;
-use tracing::{error, warn};
+use tracing::{error, info, warn};
 use hex::encode as hex_encode;
 
 use crate::crypto::BridgeAuthorityPublicKey;
@@ -53,7 +54,7 @@ use crate::error::{BridgeError, BridgeResult};
 use crate::events::SuiBridgeEvent;
 use crate::metrics::BridgeMetrics;
 use crate::retry_with_max_elapsed_time;
-use crate::types::BridgeActionStatus;
+use crate::types::{BridgeActionStatus, ParsedDefiTransferOutMessage};
 use crate::types::ParsedTokenTransferMessageV2;
 use crate::types::{BridgeAction, BridgeAuthority, BridgeCommittee};
 
@@ -344,6 +345,36 @@ where
         }
     }
 
+    // TODO: this function is very slow (seconds) in tests, we need to optimize it
+    pub async fn get_defi_transfer_action_onchain_status_until_success(
+        &self,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> BridgeActionStatus {
+        loop {
+            let bridge_object_arg = self.get_mutable_bridge_object_arg_must_succeed().await;
+            let Ok(Ok(status)) = retry_with_max_elapsed_time!(
+                self.inner.get_defi_transfer_action_onchain_status(
+                    bridge_object_arg,
+                    source_chain_id,
+                    seq_number
+                ),
+                Duration::from_secs(30)
+            ) else {
+                self.bridge_metrics
+                    .sui_rpc_errors
+                    .with_label_values(&["get_defi_transfer_action_onchain_status"])
+                    .inc();
+                error!(
+                    source_chain_id,
+                    seq_number, "Failed to get defi transfer action onchain status"
+                );
+                continue;
+            };
+            return status;
+        }
+    }
+
     pub async fn get_external_token_transfer_action_onchain_status_until_success(
         &self,
         source_chain: u8,
@@ -372,6 +403,35 @@ where
 
                 error!("Failed to get external token onchain status for tx_hash: {}", tx_hash.clone());
 
+                continue;
+            };
+            return status;
+        }
+    }
+
+    pub async fn get_defi_transfer_action_status_until_success(
+        &self,
+        source_chain: u8,
+        seq_number: u64,
+    ) -> BridgeActionStatus {
+        loop {
+            let bridge_object_arg = self.get_mutable_bridge_object_arg_must_succeed().await;
+            let Ok(Ok(status)) = retry_with_max_elapsed_time!(
+                self.inner.get_defi_transfer_action_status(
+                    bridge_object_arg,
+                    source_chain,
+                    seq_number
+                ),
+                Duration::from_secs(30)
+            ) else {
+                self.bridge_metrics
+                    .sui_rpc_errors
+                    .with_label_values(&["get_defi_transfer_action_onchain_status"])
+                    .inc();
+                error!(
+                    source_chain,
+                    seq_number, "Failed to get defi transfer action onchain status"
+                );
                 continue;
             };
             return status;
@@ -435,6 +495,35 @@ where
         }
     }
 
+    pub async fn get_defi_transfer_out_action_onchain_signatures_until_success(
+        &self,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> Option<Vec<Vec<u8>>> {
+        loop {
+            let bridge_object_arg = self.get_mutable_bridge_object_arg_must_succeed().await;
+            let Ok(Ok(sigs)) = retry_with_max_elapsed_time!(
+                self.inner.get_defi_transfer_out_action_onchain_signatures(
+                    bridge_object_arg,
+                    source_chain_id,
+                    seq_number
+                ),
+                Duration::from_secs(30)
+            ) else {
+                self.bridge_metrics
+                    .sui_rpc_errors
+                    .with_label_values(&["get_defi_transfer_out_action_onchain_signatures"])
+                    .inc();
+                error!(
+                    source_chain_id,
+                    seq_number, "Failed to get defi transfer out action onchain signatures"
+                );
+                continue;
+            };
+            return sigs;
+        }
+    }
+
     pub async fn get_parsed_token_transfer_message(
         &self,
         source_chain_id: u8,
@@ -451,12 +540,70 @@ where
         })
     }
 
+    pub async fn get_parsed_defi_transfer_out_message(
+        &self,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> BridgeResult<Option<ParsedDefiTransferOutMessage>> {
+        let bridge_object_arg = self.get_mutable_bridge_object_arg_must_succeed().await;
+        let message = self
+            .inner
+            .get_parsed_defi_transfer_out_message(bridge_object_arg, source_chain_id, seq_number)
+            .await?;
+        Ok(match message {
+            Some(payload) => Some(ParsedDefiTransferOutMessage::try_from(payload)?),
+            None => None,
+        })
+    }
+
     pub async fn get_gas_data_panic_if_not_gas(
         &self,
         gas_object_id: ObjectID,
     ) -> (GasCoin, ObjectRef, Owner) {
         self.inner
             .get_gas_data_panic_if_not_gas(gas_object_id)
+            .await
+    }
+
+    pub async fn get_defi_holders_amount(
+        &self,
+        user_address: SuiAddress,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) -> BridgeResult<u64> {
+        let bridge_object_arg = self.get_mutable_bridge_object_arg_must_succeed().await;
+        self.inner
+            .get_defi_holders_amount(
+                bridge_object_arg,
+                user_address,
+                protocol_type,
+                protocol_version,
+                protocol_token_id,
+                chain_id,
+            )
+            .await
+    }
+
+    pub async fn get_defi_holders_lp_token_amount(
+        &self,
+        user_address: SuiAddress,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) -> BridgeResult<u64> {
+        let bridge_object_arg = self.get_mutable_bridge_object_arg_must_succeed().await;
+        self.inner
+            .get_defi_holders_lp_token_amount(
+                bridge_object_arg,
+                user_address,
+                protocol_type,
+                protocol_version,
+                protocol_token_id,
+                chain_id,
+            )
             .await
     }
 }
@@ -502,6 +649,13 @@ pub trait SuiClientInner: Send + Sync {
         seq_number: u64,
     ) -> Result<BridgeActionStatus, BridgeError>;
 
+    async fn get_defi_transfer_action_onchain_status(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> Result<BridgeActionStatus, BridgeError>;
+
     async fn get_eth_to_sui_limit(
         &self,
         bridge_object_arg: ObjectArg,
@@ -529,6 +683,23 @@ pub trait SuiClientInner: Send + Sync {
         tx_hash: String,
     ) -> Result<BridgeActionStatus, BridgeError>;
 
+    async fn get_defi_transfer_action_status(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain: u8,
+        seq_number: u64,
+    ) -> Result<BridgeActionStatus, BridgeError>;
+
+    async fn get_defi_holders_get_by_key(
+        &self,
+        bridge_object_arg: ObjectArg,
+        user_address: SuiAddress,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) -> Result<u64, BridgeError>;
+
     async fn get_send_back_onchain_status(
         &self,
         bridge_object_arg: ObjectArg,
@@ -542,12 +713,26 @@ pub trait SuiClientInner: Send + Sync {
         seq_number: u64,
     ) -> Result<Option<Vec<Vec<u8>>>, BridgeError>;
 
+    async fn get_defi_transfer_out_action_onchain_signatures(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> Result<Option<Vec<Vec<u8>>>, BridgeError>;
+
     async fn get_parsed_token_transfer_message(
         &self,
         bridge_object_arg: ObjectArg,
         source_chain_id: u8,
         seq_number: u64,
     ) -> Result<Option<MoveTypeParsedTokenTransferMessageV2>, BridgeError>;
+
+    async fn get_parsed_defi_transfer_out_message(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> Result<Option<MoveTypeParsedDefiTransferOutMessage>, BridgeError>;
 
     async fn get_gas_data_panic_if_not_gas(
         &self,
@@ -557,6 +742,26 @@ pub trait SuiClientInner: Send + Sync {
         &self,
         cap_id: ObjectID,
     ) -> anyhow::Result<ObjectRef>;
+
+    async fn get_defi_holders_amount(
+        &self,
+        bridge_object_arg: ObjectArg,
+        user_address: SuiAddress,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) -> Result<u64, BridgeError>;
+
+    async fn get_defi_holders_lp_token_amount(
+        &self,
+        bridge_object_arg: ObjectArg,
+        user_address: SuiAddress,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) -> Result<u64, BridgeError>;
 }
 
 #[async_trait]
@@ -642,6 +847,23 @@ impl SuiClientInner for SuiSdkClient {
         .and_then(|status_byte| BridgeActionStatus::try_from(status_byte).map_err(Into::into))
     }
 
+    async fn get_defi_transfer_action_onchain_status(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> Result<BridgeActionStatus, BridgeError> {
+        dev_inspect_bridge::<u8>(
+            self,
+            bridge_object_arg,
+            source_chain_id,
+            seq_number,
+            "get_defi_transfer_action_status",
+        )
+        .await
+        .and_then(|status_byte| BridgeActionStatus::try_from(status_byte).map_err(Into::into))
+    }
+
     async fn get_eth_to_sui_limit(
         &self,
         bridge_object_arg: ObjectArg,
@@ -705,6 +927,46 @@ impl SuiClientInner for SuiSdkClient {
         .and_then(|status_byte| BridgeActionStatus::try_from(status_byte).map_err(Into::into))
     }
 
+    async fn get_defi_transfer_action_status(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain: u8,
+        seq_number: u64,
+    ) -> Result<BridgeActionStatus, BridgeError> {
+        dev_inspect_bridge::<u8>(
+            self,
+            bridge_object_arg,
+            source_chain,
+            seq_number,
+            "get_defi_transfer_action_status",
+        )
+        .await
+        .and_then(|status_byte| BridgeActionStatus::try_from(status_byte).map_err(Into::into))
+    }
+
+    async fn get_defi_holders_get_by_key(
+        &self,
+        bridge_object_arg: ObjectArg,
+        user_address: SuiAddress,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) -> Result<u64, BridgeError> {
+        dev_inspect_bridge_defi_holders::<u64>(
+            self,
+            bridge_object_arg,
+            user_address,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            chain_id, 
+            "defi_holders_get_by_key",
+        )
+        .await
+        .and_then(|status_byte| Ok(status_byte))    
+    }
+
     async fn get_send_back_onchain_status(
         &self,
         bridge_object_arg: ObjectArg,
@@ -736,6 +998,22 @@ impl SuiClientInner for SuiSdkClient {
         .await
     }
 
+    async fn get_defi_transfer_out_action_onchain_signatures(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> Result<Option<Vec<Vec<u8>>>, BridgeError> {
+        dev_inspect_bridge::<Option<Vec<Vec<u8>>>>(
+            self,
+            bridge_object_arg,
+            source_chain_id,
+            seq_number,
+            "get_defi_transfer_out_action_signatures",
+        )
+        .await
+    }
+
     async fn execute_transaction_block_with_effects(
         &self,
         tx: Transaction,
@@ -762,6 +1040,22 @@ impl SuiClientInner for SuiSdkClient {
             source_chain_id,
             seq_number,
             "get_parsed_token_transfer_message_v2",
+        )
+        .await
+    }
+
+    async fn get_parsed_defi_transfer_out_message(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain_id: u8,
+        seq_number: u64,
+    ) -> Result<Option<MoveTypeParsedDefiTransferOutMessage>, BridgeError> {
+        dev_inspect_bridge::<Option<MoveTypeParsedDefiTransferOutMessage>>(
+            self,
+            bridge_object_arg,
+            source_chain_id,
+            seq_number,
+            "get_parsed_defi_transfer_out_message",
         )
         .await
     }
@@ -818,6 +1112,50 @@ impl SuiClientInner for SuiSdkClient {
             }
         }
     }
+
+    async fn get_defi_holders_amount(
+        &self,
+        bridge_object_arg: ObjectArg,
+        user_address: SuiAddress,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) -> Result<u64, BridgeError> {
+        dev_inspect_defi_holders::<u64>(
+            self,
+            bridge_object_arg,
+            user_address,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            chain_id,
+            "defi_holders_amount_get",
+        )
+        .await
+    }
+
+    async fn get_defi_holders_lp_token_amount(
+        &self,
+        bridge_object_arg: ObjectArg,
+        user_address: SuiAddress,
+        protocol_type: u64,
+        protocol_version: u64,
+        protocol_token_id: u64,
+        chain_id: u8,
+    ) -> Result<u64, BridgeError> {
+        dev_inspect_defi_holders::<u64>(
+            self,
+            bridge_object_arg,
+            user_address,
+            protocol_type,
+            protocol_version,
+            protocol_token_id,
+            chain_id,
+            "defi_holders_lp_token_amount_get",
+        )
+        .await
+    }
 }
 
 /// Helper function to dev-inspect `bridge::{function_name}` function
@@ -852,6 +1190,70 @@ where
         .read_api()
         .dev_inspect_transaction_block(SuiAddress::ZERO, kind, None, None, None)
         .await?;
+    let DevInspectResults {
+        results, effects, ..
+    } = resp;
+    let Some(results) = results else {
+        return Err(BridgeError::Generic(format!(
+            "No results returned for '{}', effects: {:?}",
+            function_name, effects
+        )));
+    };
+    let return_values = &results
+        .first()
+        .ok_or(BridgeError::Generic(format!(
+            "No return values for '{}', results: {:?}",
+            function_name, results
+        )))?
+        .return_values;
+    let (value_bytes, _type_tag) = return_values.first().ok_or(BridgeError::Generic(format!(
+        "No first return value for '{}', results: {:?}",
+        function_name, results
+    )))?;
+    bcs::from_bytes::<T>(value_bytes).map_err(|e| {
+        BridgeError::Generic(format!(
+            "Failed to parse return value for '{}', error: {:?}, results: {:?}",
+            function_name, e, results
+        ))
+    })
+}
+
+async fn dev_inspect_bridge_defi_holders<T>(
+    sui_client: &SuiSdkClient,
+    bridge_object_arg: ObjectArg,
+    user_address: SuiAddress,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    chain_id: u8,
+    function_name: &str,
+) -> Result<T, BridgeError>
+where
+    T: DeserializeOwned,
+{
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::Object(bridge_object_arg),
+            CallArg::Pure(bcs::to_bytes(&user_address.to_vec()).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&protocol_type).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&protocol_version).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&protocol_token_id).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&chain_id).unwrap()),
+        ],
+        commands: vec![Command::move_call(
+            BRIDGE_PACKAGE_ID,
+            Identifier::new("bridge").unwrap(),
+            Identifier::new(function_name).unwrap(),
+            vec![],
+            vec![Argument::Input(0), Argument::Input(1), Argument::Input(2), Argument::Input(3), Argument::Input(4), Argument::Input(5)],
+        )],
+    };
+    let kind = TransactionKind::programmable(pt);
+    let resp = sui_client
+        .read_api()
+        .dev_inspect_transaction_block(SuiAddress::ZERO, kind, None, None, None)
+        .await?;
+    info!("bbking110 resp: {:?}", resp);
     let DevInspectResults {
         results, effects, ..
     } = resp;
@@ -1122,7 +1524,81 @@ where
     })
 }
 
+async fn dev_inspect_defi_holders<T>(
+    sui_client: &SuiSdkClient,
+    bridge_object_arg: ObjectArg,
+    user_address: SuiAddress,
+    protocol_type: u64,
+    protocol_version: u64,
+    protocol_token_id: u64,
+    chain_id: u8,
+    function_name: &str,
+) -> Result<T, BridgeError>
+where
+    T: DeserializeOwned,
+{
+    // Convert SuiAddress to AccountAddress for Move's address type
+    let account_address = AccountAddress::from(user_address);
+
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::Object(bridge_object_arg),
+            CallArg::Pure(bcs::to_bytes(&account_address).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&protocol_type).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&protocol_version).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&protocol_token_id).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&chain_id).unwrap()),
+        ],
+        commands: vec![Command::move_call(
+            BRIDGE_PACKAGE_ID,
+            Identifier::new("bridge").unwrap(),
+            Identifier::new(function_name).unwrap(),
+            vec![],
+            vec![
+                Argument::Input(0),
+                Argument::Input(1),
+                Argument::Input(2),
+                Argument::Input(3),
+                Argument::Input(4),
+                Argument::Input(5),
+            ],
+        )],
+    };
+    let kind = TransactionKind::programmable(pt);
+    let resp = sui_client
+        .read_api()
+        .dev_inspect_transaction_block(SuiAddress::ZERO, kind, None, None, None)
+        .await?;
+    let DevInspectResults {
+        results, effects, ..
+    } = resp;
+    let Some(results) = results else {
+        return Err(BridgeError::Generic(format!(
+            "No results returned for '{}', effects: {:?}",
+            function_name, effects
+        )));
+    };
+    let return_values = &results
+        .first()
+        .ok_or(BridgeError::Generic(format!(
+            "No return values for '{}', results: {:?}",
+            function_name, results
+        )))?
+        .return_values;
+    let (value_bytes, _type_tag) = return_values.first().ok_or(BridgeError::Generic(format!(
+        "No first return value for '{}', results: {:?}",
+        function_name, results
+    )))?;
+    bcs::from_bytes::<T>(value_bytes).map_err(|e| {
+        BridgeError::Generic(format!(
+            "Failed to parse return value for '{}', error: {:?}, results: {:?}",
+            function_name, e, results
+        ))
+    })
+}
+
 #[cfg(test)]
+
 mod tests {
     use crate::crypto::BridgeAuthorityKeyPair;
     use crate::e2e_tests::test_utils::TestClusterWrapperBuilder;

@@ -5,11 +5,13 @@ import axios from 'axios';
 export const anonymousRequest = <TRes, TParams>({
 	method,
 	params,
+	url,
 }: {
 	method: string;
 	params: TParams;
+	url: string;
 }) => {
-	return axios.post<TRes>('https://bfc-anonymous.openblock.vip/rpc', {
+	return axios.post<TRes>(url, {
 		jsonrpc: '2.0',
 		method,
 		params,
@@ -17,13 +19,16 @@ export const anonymousRequest = <TRes, TParams>({
 	});
 };
 
-export const getAnonymousRestoreValue = (params: {
-	value1: number[];
-	value2: number[];
-	signature: number[];
-	objectid: string;
-	publickey: number[];
-}) => {
+export const getAnonymousRestoreValue = (
+	url: string,
+	params: {
+		value1: number[];
+		value2: number[];
+		signature: number[];
+		objectid: string;
+		publickey: number[];
+	},
+) => {
 	return anonymousRequest<
 		{
 			jsonrpc: '2.0';
@@ -40,5 +45,6 @@ export const getAnonymousRestoreValue = (params: {
 	>({
 		method: 'bfcx_getAnonymousRestoreValue',
 		params,
+		url,
 	});
 };

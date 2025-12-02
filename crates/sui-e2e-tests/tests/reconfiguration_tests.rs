@@ -418,67 +418,66 @@ async fn set_oracle_address(test_cluster: &mut TestCluster, oracle_address: Stri
 //     // Ok((cap, package.object_id()))
 // }
 
-// #[allow(unused)]
-// async fn do_publish_inner(rgp: u64, context: &mut WalletContext, gas_obj_id: &ObjectID) -> Result<SuiClientCommandResult, Error> {
-//     let mut package_path = PathBuf::from("tests/test_oracle_price/");
-//     package_path.push("sources");
-//     let build_config = BuildConfig::new_for_testing().config;
-//     let resp = SuiClientCommands::Publish {
-//         package_path: package_path.clone(),
-//         build_config,
-//         skip_dependency_verification: false,
-//         with_unpublished_dependencies: false,
-//         opts: OptsWithGas::for_testing(Some(*gas_obj_id), rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH),
-//         verify_deps: true,
-//     }
-//         .execute(context)
-//         .await?;
-//     Ok(resp)
-// }
+#[allow(unused)]
+async fn do_publish_inner(rgp: u64, context: &mut WalletContext, gas_obj_id: &ObjectID) -> Result<SuiClientCommandResult, Error> {
+    let mut package_path = PathBuf::from("tests/test_oracle_price/");
+    package_path.push("sources");
+    let build_config = BuildConfig::new_for_testing().config;
+    let resp = SuiClientCommands::Publish {
+        package_path: package_path.clone(),
+        build_config,
+        skip_dependency_verification: false,
+        with_unpublished_dependencies: false,
+        opts: OptsWithGas::for_testing(Some(*gas_obj_id), rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH),
+        verify_deps: true,
+    }
+        .execute(context)
+        .await?;
+    Ok(resp)
+}
 
 
-// todo
-// #[sim_test]
-// async fn sim_advance_epoch_tx_test() {
-//     let test_cluster = TestClusterBuilder::new().build().await;
-//     let states = test_cluster
-//         .swarm
-//         .validator_node_handles()
-//         .into_iter()
-//         .map(|handle| handle.with(|node| node.state()))
-//         .collect::<Vec<_>>();
-//     let tasks: Vec<_> = states
-//         .iter()
-//         .map(|state| async {
-//             let (_system_state, effects) = state
-//                 .create_and_execute_advance_epoch_tx(
-//                     &state.epoch_store_for_testing(),
-//                     &GasCostSummary::new(0, 0, 0, 0),
-//                     &HashMap::new(),
-//                     0, // checkpoint
-//                     0, // epoch_start_timestamp_ms
-//                 )
-//                 .await
-//                 .unwrap();
-//             // Check that the validator didn't commit the transaction yet.
-//             assert!(state
-//                 .get_signed_effects_and_maybe_resign(
-//                     effects.transaction_digest(),
-//                     &state.epoch_store_for_testing(),
-//                 )
-//                 .unwrap()
-//                 .is_none());
-//             effects
-//         })
-//         .collect();
-//     let results: HashSet<_> = join_all(tasks)
-//         .await
-//         .into_iter()
-//         .map(|result| result.digest())
-//         .collect();
-//     // Check that all validators have the same result.
-//     assert_eq!(results.len(), 1);
-// }
+#[sim_test]
+async fn sim_advance_epoch_tx_test() {
+    let test_cluster = TestClusterBuilder::new().build().await;
+    let states = test_cluster
+        .swarm
+        .validator_node_handles()
+        .into_iter()
+        .map(|handle| handle.with(|node| node.state()))
+        .collect::<Vec<_>>();
+    let tasks: Vec<_> = states
+        .iter()
+        .map(|state| async {
+            let (_system_state, effects) = state
+                .create_and_execute_advance_epoch_tx(
+                    &state.epoch_store_for_testing(),
+                    &GasCostSummary::new(0, 0, 0, 0),
+                    &HashMap::new(),
+                    0, // checkpoint
+                    0, // epoch_start_timestamp_ms
+                )
+                .await
+                .unwrap();
+            // Check that the validator didn't commit the transaction yet.
+            assert!(state
+                .get_signed_effects_and_maybe_resign(
+                    effects.transaction_digest(),
+                    &state.epoch_store_for_testing(),
+                )
+                .unwrap()
+                .is_none());
+            effects
+        })
+        .collect();
+    let results: HashSet<_> = join_all(tasks)
+        .await
+        .into_iter()
+        .map(|result| result.digest())
+        .collect();
+    // Check that all validators have the same result.
+    assert_eq!(results.len(), 1);
+}
 
 #[sim_test]
 async fn sim_basic_reconfig_end_to_end_test() {
