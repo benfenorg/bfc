@@ -55,15 +55,6 @@ title: Module `bridge::message_types`
 
 
 
-<a name="bridge_message_types_DEFI"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_DEFI">DEFI</a>: u8 = 23;
-</code></pre>
-
-
-
 <a name="bridge_message_types_EMERGENCY_OP"></a>
 
 
@@ -213,6 +204,15 @@ title: Module `bridge::message_types`
 
 
 <pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_WITHDRAW_BRIDGE_FEE">WITHDRAW_BRIDGE_FEE</a>: u8 = 22;
+</code></pre>
+
+
+
+<a name="bridge_message_types_DEFI"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_DEFI">DEFI</a>: u8 = 23;
 </code></pre>
 
 

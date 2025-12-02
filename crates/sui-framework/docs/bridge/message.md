@@ -1570,15 +1570,6 @@ title: Module `bridge::message`
 
 
 
-<a name="bridge_message_EMustBeDefiMessage"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/message.md#bridge_message_EMustBeDefiMessage">EMustBeDefiMessage</a>: u64 = 8;
-</code></pre>
-
-
-
 <a name="bridge_message_EMustBeTokenMessage"></a>
 
 
@@ -1593,6 +1584,15 @@ title: Module `bridge::message`
 
 
 <pre><code><b>const</b> <a href="../bridge/message.md#bridge_message_EInvalidOperationType">EInvalidOperationType</a>: u64 = 7;
+</code></pre>
+
+
+
+<a name="bridge_message_EMustBeDefiMessage"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message.md#bridge_message_EMustBeDefiMessage">EMustBeDefiMessage</a>: u64 = 8;
 </code></pre>
 
 

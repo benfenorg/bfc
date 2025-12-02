@@ -242,11 +242,11 @@ token id 映射表
 ## Constants
 
 
-<a name="bridge_defi_protocols_EDefiProtocolConfigNotFound"></a>
+<a name="bridge_defi_protocols_KEY"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_EDefiProtocolConfigNotFound">EDefiProtocolConfigNotFound</a>: u64 = 1;
+<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_KEY">KEY</a>: vector&lt;u8&gt; = vector[100, 101, 102, 105, 95, 112, 114, 111, 116, 111, 99, 111, 108, 115];
 </code></pre>
 
 
@@ -260,11 +260,11 @@ token id 映射表
 
 
 
-<a name="bridge_defi_protocols_FEE_RATE_15_PERCENTAGE"></a>
+<a name="bridge_defi_protocols_EDefiProtocolConfigNotFound"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_FEE_RATE_15_PERCENTAGE">FEE_RATE_15_PERCENTAGE</a>: u64 = 150000000;
+<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_EDefiProtocolConfigNotFound">EDefiProtocolConfigNotFound</a>: u64 = 1;
 </code></pre>
 
 
@@ -287,29 +287,29 @@ token id 映射表
 
 
 
-<a name="bridge_defi_protocols_KEY"></a>
+<a name="bridge_defi_protocols_FEE_RATE_15_PERCENTAGE"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_KEY">KEY</a>: vector&lt;u8&gt; = vector[100, 101, 102, 105, 95, 112, 114, 111, 116, 111, 99, 111, 108, 115];
+<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_FEE_RATE_15_PERCENTAGE">FEE_RATE_15_PERCENTAGE</a>: u64 = 150000000;
 </code></pre>
 
 
 
-<a name="bridge_defi_protocols_LIMIT_STAKE_AMOUNT"></a>
+<a name="bridge_defi_protocols_PROTOCOL_TYPE_AAVE"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_LIMIT_STAKE_AMOUNT">LIMIT_STAKE_AMOUNT</a>: u64 = 2000000000000000;
+<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_PROTOCOL_TYPE_AAVE">PROTOCOL_TYPE_AAVE</a>: u64 = 1;
 </code></pre>
 
 
 
-<a name="bridge_defi_protocols_LIMIT_UNSTAKE_AMOUNT"></a>
+<a name="bridge_defi_protocols_PROTOCOL_TYPE_COMPOUND"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_LIMIT_UNSTAKE_AMOUNT">LIMIT_UNSTAKE_AMOUNT</a>: u64 = 2000000000000000;
+<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_PROTOCOL_TYPE_COMPOUND">PROTOCOL_TYPE_COMPOUND</a>: u64 = 2;
 </code></pre>
 
 
@@ -332,20 +332,20 @@ token id 映射表
 
 
 
-<a name="bridge_defi_protocols_PROTOCOL_TYPE_AAVE"></a>
+<a name="bridge_defi_protocols_LIMIT_STAKE_AMOUNT"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_PROTOCOL_TYPE_AAVE">PROTOCOL_TYPE_AAVE</a>: u64 = 1;
+<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_LIMIT_STAKE_AMOUNT">LIMIT_STAKE_AMOUNT</a>: u64 = 2000000000000000;
 </code></pre>
 
 
 
-<a name="bridge_defi_protocols_PROTOCOL_TYPE_COMPOUND"></a>
+<a name="bridge_defi_protocols_LIMIT_UNSTAKE_AMOUNT"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_PROTOCOL_TYPE_COMPOUND">PROTOCOL_TYPE_COMPOUND</a>: u64 = 2;
+<pre><code><b>const</b> <a href="../bridge/defi_protocols.md#bridge_defi_protocols_LIMIT_UNSTAKE_AMOUNT">LIMIT_UNSTAKE_AMOUNT</a>: u64 = 2000000000000000;
 </code></pre>
 
 

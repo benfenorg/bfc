@@ -3781,8 +3781,6 @@ impl AuthorityState {
     }
 
     pub fn get_stable_rate_and_base_points(&self, gas_ref: &[ObjectRef]) -> SuiResult<(Option<u64>, Option<u64>)> {
-        use tokio::runtime::Runtime;
-
         if gas_ref.is_empty() {
             return Ok((None, None)); //dry run /dev inspect
         }
