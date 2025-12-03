@@ -21,7 +21,7 @@ use crate::ErrorReason;
 use crate::RpcError;
 use crate::RpcService;
 use prost_types::FieldMask;
-use sui_sdk_types::{CheckpointContents, CheckpointContentsDigest, CheckpointDigest, CheckpointTimestamp, EndOfEpochData, GasCostSummary};
+use sui_sdk_types::CheckpointDigest;
 
 #[tracing::instrument(skip(service))]
 pub fn get_checkpoint(

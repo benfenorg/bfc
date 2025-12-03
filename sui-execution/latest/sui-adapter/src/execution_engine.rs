@@ -21,7 +21,6 @@ mod checked {
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
     };
-    use sui_types::balance::BALANCE_DEPOSIT_STABLE_GAS_COIN_FUNCTION_NAME;
     use sui_types::anonymous_status::ANONYMOUS_MODULE_NAME;
     use sui_types::messages_checkpoint::CheckpointTimestamp;
     use sui_types::metrics::LimitsMetrics;

@@ -30,7 +30,6 @@ use sui_test_transaction_builder::{make_transfer_sui_transaction_with_gas, make_
 use sui_types::base_types::{ObjectID,SuiAddress};
 use move_core_types::parser::parse_struct_tag;
 use sui_types::sui_serde::BigInt;
-use sui_types::SUI_SYSTEM_PACKAGE_ID;
 use sui_test_transaction_builder::make_transfer_sui_transaction_with_gas_coins_budget;
 use sui_protocol_config::{Chain};
 use sui_swarm_config::genesis_config::{

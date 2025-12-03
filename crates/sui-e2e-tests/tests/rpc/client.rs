@@ -6,7 +6,6 @@ use sui_macros::sim_test;
 use sui_rpc_api::Client;
 use sui_sdk_types::BalanceChange;
 use sui_sdk_types::ObjectId;
-use tracing::info;
 use sui_test_transaction_builder::make_transfer_sui_transaction;
 use sui_types::base_types::SuiAddress;
 use sui_types::effects::TransactionEffectsAPI;
