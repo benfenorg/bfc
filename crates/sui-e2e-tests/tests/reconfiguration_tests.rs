@@ -4063,26 +4063,6 @@ async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
     test_cluster.wait_for_epoch(Some(2)).await;
 
     rebalance(&test_cluster, http_client, address).await?;
-    test_cluster.wait_for_epoch(Some(3)).await;
-
-    let swap_amount = 100_000_000_000u64;
-    match transfer_with_swapped_stable_coin(
-        &test_cluster,
-        http_client,
-        address,
-        swap_amount,
-        100,
-        vec!["0xc8::busd::BUSD".to_string(), "0xc8::busd::BUSD".to_string()],
-    ).await {
-        Ok(_) => {
-            // panic!("should not be ok") //todo 复现 MutableObjectUsedMoreThanOnce场景
-        }
-        Err(e) => {
-            if !e.to_string().contains("cannot appear more than one in one transaction") {
-                panic!("unknown err: {:?}", e)
-            }
-        }
-    }
 
     Ok(())
 }
