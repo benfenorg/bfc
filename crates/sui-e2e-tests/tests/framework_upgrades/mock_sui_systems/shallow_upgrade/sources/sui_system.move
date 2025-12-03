@@ -56,10 +56,10 @@ module sui_system::sui_system {
     use sui::vec_map::VecMap;
     use sui_system::stable_pool::{StakedStable, PoolStableTokenExchangeRate};
 
-
     #[test_only] use sui::balance;
+    #[test_only]
+    use sui::vec_set::VecSet;
     #[test_only] use sui_system::validator_set::ValidatorSet;
-    #[test_only] use sui::vec_set::VecSet;
 
     public struct SuiSystemState has key {
         id: UID,
@@ -69,7 +69,7 @@ module sui_system::sui_system {
 
     const ENotSystemAddress: u64 = 0;
     const EWrongInnerVersion: u64 = 1;
-
+    const EUnsupportedFeature: u64 = 2;
     // ==== functions that can only be called by genesis ====
 
     /// Create a new SuiSystemState object and make it shared.
@@ -104,9 +104,9 @@ module sui_system::sui_system {
         transfer::share_object(self);
     }
 
-    // ==== entry functions ====
+// ==== entry functions ====
 
-    /// Can be called by anyone who wishes to become a validator candidate and starts accuring delegated
+    /// Can be called by anyone who wishes to become a validator candidate and starts accruing delegated
     /// stakes in their staking pool. Once they have at least `MIN_VALIDATOR_JOINING_STAKE` amount of stake they
     /// can call `request_add_validator` to officially become an active validator at the next epoch.
     /// Aborts if the caller is already a pending or active validator, or a validator candidate.
@@ -149,7 +149,7 @@ module sui_system::sui_system {
             commission_rate,
             ctx,
         )
-    }
+}
 
     /// Called by a validator candidate to remove themselves from the candidacy. After this call
     /// their staking pool becomes deactivate.
@@ -241,13 +241,14 @@ module sui_system::sui_system {
 
     /// Add stake to a validator's stable pool.
     public entry fun request_add_stable_stake<STABLE>(
-        wrapper: &mut SuiSystemState,
-        stake: Coin<STABLE>,
-        validator_address: address,
-        ctx: &mut TxContext,
+        _wrapper: &mut SuiSystemState,
+        _stake: Coin<STABLE>,
+        _validator_address: address,
+        _ctx: &mut TxContext,
     ) {
-        let staked_sui = request_add_stable_stake_non_entry(wrapper, stake, validator_address, ctx);
-        transfer::public_transfer(staked_sui, tx_context::sender(ctx));
+        abort(EUnsupportedFeature)
+        // let staked_sui = request_add_stable_stake_non_entry(wrapper, stake, validator_address, ctx);
+        // transfer::public_transfer(staked_sui, tx_context::sender(ctx));
     }
 
     /// The non-entry version of `request_add_stable_stake`, which returns the staked SUI instead of transferring it to the sender.
@@ -372,7 +373,7 @@ module sui_system::sui_system {
         sui_system_state_inner::undo_report_validator(self, cap, reportee_addr)
     }
 
-    // ==== validator metadata management functions ====
+// ==== validator metadata management functions ====
 
     /// Create a new `UnverifiedValidatorOperationCap`, transfer it to the
     /// validator and registers it. The original object is thus revoked.
@@ -573,18 +574,34 @@ module sui_system::sui_system {
         sui_system_state_inner::update_candidate_validator_network_pubkey(self, network_pubkey, ctx)
     }
 
-    public fun validator_address_by_pool_id(wrapper: &mut SuiSystemState, pool_id: &ID): address {
-        let self = load_system_state_mut(wrapper);
-        self.validator_address_by_pool_id(pool_id)
-    }
+public fun validator_address_by_pool_id(wrapper: &mut SuiSystemState, pool_id: &ID): address {
+    wrapper.load_system_state_mut().validator_address_by_pool_id(pool_id)
+}
 
-    /// Getter of the pool token exchange rate of a staking pool. Works for both active and inactive pools.
-    public fun pool_exchange_rates(
-        wrapper: &mut SuiSystemState,
-        pool_id: &ID
-    ): &Table<u64, PoolTokenExchangeRate>  {
-        let self = load_system_state_mut(wrapper);
-        sui_system_state_inner::pool_exchange_rates(self, pool_id)
+/// Getter of the pool token exchange rate of a staking pool. Works for both active and inactive pools.
+public fun pool_exchange_rates(
+    wrapper: &mut SuiSystemState,
+    pool_id: &ID,
+): &Table<u64, PoolTokenExchangeRate> {
+    wrapper.load_system_state_mut().pool_exchange_rates(pool_id)
+}
+
+#[test_only]
+/// Calculate the rewards for a given staked SUI object.
+public fun calculate_rewards(self: &mut SuiSystemState, staked_sui: &StakedBfc, epoch: u64): u64 {
+    let system_state = self.load_system_state_mut();
+    let validator_address = system_state.validator_address_by_pool_id(&staked_sui.pool_id());
+
+    system_state
+        .active_validator_by_address(validator_address)
+        .get_staking_pool_ref()
+        .calculate_rewards(staked_sui, epoch)
+}
+
+    /// Getter returning addresses of the currently active validators.
+    public fun active_validator_addresses(wrapper: &mut SuiSystemState): vector<address> {
+        let self = load_system_state(wrapper);
+        sui_system_state_inner::active_validator_addresses(self)
     }
 
     public fun pool_exchange_stable_rates<STABLE>(
@@ -593,12 +610,6 @@ module sui_system::sui_system {
     ): &Table<u64, PoolStableTokenExchangeRate>  {
         let self = load_system_state_mut(wrapper);
         sui_system_state_inner::pool_exchange_stable_rates<STABLE>(self, pool_id)
-    }
-
-    /// Getter returning addresses of the currently active validators.
-    public fun active_validator_addresses(wrapper: &mut SuiSystemState): vector<address> {
-        let self = load_system_state(wrapper);
-        sui_system_state_inner::active_validator_addresses(self)
     }
 
     // This function should be called at the end of an epoch, and advances the system to the next epoch.
@@ -649,7 +660,6 @@ module sui_system::sui_system {
             epoch_start_timestamp_ms,
             ctx,
         );
-
         storage_rebate
     }
 
@@ -717,59 +727,63 @@ module sui_system::sui_system {
         load_inner_maybe_upgrade(self)
     }
 
-    fun load_system_state_mut(self: &mut SuiSystemState): &mut SuiSystemStateInnerV2 {
-        load_inner_maybe_upgrade(self)
-    }
+fun load_system_state_mut(self: &mut SuiSystemState): &mut SuiSystemStateInnerV2 {
+    load_inner_maybe_upgrade(self)
+}
 
-    fun load_inner_maybe_upgrade(self: &mut SuiSystemState): &mut SuiSystemStateInnerV2 {
-        let mut version = self.version;
-        if (version == sui_system_state_inner::genesis_system_state_version()) {
-            let inner: SuiSystemStateInner = dynamic_field::remove(&mut self.id, version);
-            let new_inner = sui_system_state_inner::v1_to_v2(inner);
-            version = sui_system_state_inner::system_state_version(&new_inner);
-            dynamic_field::add(&mut self.id, version, new_inner);
-            self.version = version;
-        };
+fun load_inner_maybe_upgrade(self: &mut SuiSystemState): &mut SuiSystemStateInnerV2 {
+    if (self.version == 1) {
+        let v1: SuiSystemStateInner = dynamic_field::remove(&mut self.id, self.version);
+        let v2 = v1.v1_to_v2();
+        self.version = 2;
+        dynamic_field::add(&mut self.id, self.version, v2);
+    };
 
-        let inner: &mut SuiSystemStateInnerV2 = dynamic_field::borrow_mut(&mut self.id, version);
-        assert!(sui_system_state_inner::system_state_version(inner) == version, 0);
-        inner
-    }
+    let inner: &mut SuiSystemStateInnerV2 = dynamic_field::borrow_mut(
+        &mut self.id,
+        self.version,
+    );
+    assert!(inner.system_state_version() == self.version, EWrongInnerVersion);
+    inner
+}
 
-    #[allow(unused_function)]
-    /// Returns the voting power of the active validators, values are voting power in the scale of 10000.
-    fun validator_voting_powers(wrapper: &mut SuiSystemState): VecMap<address, u64> {
-        let self = load_system_state(wrapper);
-        sui_system_state_inner::active_validator_voting_powers(self)
-    }
+#[allow(unused_function)]
+/// Returns the voting power of the active validators, values are voting power in the scale of 10000.
+fun validator_voting_powers(wrapper: &mut SuiSystemState): VecMap<address, u64> {
+    wrapper.load_system_state().active_validator_voting_powers()
+}
 
-    #[test_only]
-    public fun validator_voting_powers_for_testing(wrapper: &mut SuiSystemState): VecMap<address, u64> {
-        validator_voting_powers(wrapper)
-    }
+#[allow(unused_function)]
+/// Saves the given execution time estimate blob to the SuiSystemState object, for system use
+/// at the start of the next epoch.
+fun store_execution_time_estimates(wrapper: &mut SuiSystemState, estimates_bytes: vector<u8>) {
+    wrapper.load_system_state_mut().store_execution_time_estimates(estimates_bytes)
+}
 
-    #[test_only]
-    /// Return the current epoch number. Useful for applications that need a coarse-grained concept of time,
-    /// since epochs are ever-increasing and epoch changes are intended to happen every 24 hours.
-    public fun epoch(wrapper: &mut SuiSystemState): u64 {
-        let self = load_system_state(wrapper);
-        self.epoch()
-    }
+#[test_only]
+public fun validator_voting_powers_for_testing(wrapper: &mut SuiSystemState): VecMap<address, u64> {
+    wrapper.validator_voting_powers()
+}
 
-    #[test_only]
-    /// Returns unix timestamp of the start of current epoch
-    public fun epoch_start_timestamp_ms(wrapper: &mut SuiSystemState): u64 {
-        let self = load_system_state(wrapper);
-        self.epoch_start_timestamp_ms()
-    }
+#[test_only]
+/// Return the current epoch number. Useful for applications that need a coarse-grained concept of time,
+/// since epochs are ever-increasing and epoch changes are intended to happen every 24 hours.
+public fun epoch(wrapper: &mut SuiSystemState): u64 {
+    wrapper.load_system_state_mut().epoch()
+}
 
-    #[test_only]
-    /// Returns the total amount staked with `validator_addr`.
-    /// Aborts if `validator_addr` is not an active validator.
-    public fun validator_stake_amount(wrapper: &mut SuiSystemState, validator_addr: address): u64 {
-        let self = load_system_state(wrapper);
-        self.validator_stake_amount(validator_addr)
-    }
+#[test_only]
+/// Returns unix timestamp of the start of current epoch
+public fun epoch_start_timestamp_ms(wrapper: &mut SuiSystemState): u64 {
+    wrapper.load_system_state_mut().epoch_start_timestamp_ms()
+}
+
+#[test_only]
+/// Returns the total amount staked with `validator_addr`.
+/// Aborts if `validator_addr` is not an active validator.
+public fun validator_stake_amount(wrapper: &mut SuiSystemState, validator_addr: address): u64 {
+    wrapper.load_system_state_mut().validator_stake_amount(validator_addr)
+}
 
     #[test_only]
     /// Returns the total amount staked with `validator_addr`.
@@ -829,89 +843,105 @@ module sui_system::sui_system {
         self.get_reporters_of(addr)
     }
 
-    #[test_only]
-    /// Return the current validator set
-    public fun validators(wrapper: &mut SuiSystemState): &ValidatorSet {
-        let self = load_system_state(wrapper);
-        self.validators()
-    }
+#[test_only]
+/// Return the current validator set
+public fun validators(wrapper: &mut SuiSystemState): &ValidatorSet {
+    wrapper.load_system_state_mut().validators()
+}
+
+#[test_only]
+/// Return a mutable reference to the validator set
+public fun validators_mut(wrapper: &mut SuiSystemState): &mut ValidatorSet {
+    wrapper.load_system_state_mut().validators_mut()
+}
+
+#[test_only]
+/// Return the currently active validator by address
+public fun active_validator_by_address(
+    self: &mut SuiSystemState,
+    validator_address: address,
+): &Validator {
+    self.validators().get_active_validator_ref(validator_address)
+}
+
+#[test_only]
+/// Return the currently pending validator by address
+public fun pending_validator_by_address(
+    self: &mut SuiSystemState,
+    validator_address: address,
+): &Validator {
+    self.validators().get_pending_validator_ref(validator_address)
+}
+
+#[test_only]
+/// Return the currently candidate validator by address
+public fun candidate_validator_by_address(
+    self: &mut SuiSystemState,
+    validator_address: address,
+): &Validator {
+    self.validators().get_candidate_validator_ref(validator_address)
+}
+
+#[test_only]
+public fun set_epoch_for_testing(wrapper: &mut SuiSystemState, epoch_num: u64) {
+    wrapper.load_system_state_mut().set_epoch_for_testing(epoch_num)
+}
 
     #[test_only]
-    /// Return the currently active validator by address
-    public fun active_validator_by_address(self: &mut SuiSystemState, validator_address: address): &Validator {
-        validators(self).get_active_validator_ref(validator_address)
+    public fun request_add_validator_for_testing(wrapper: &mut SuiSystemState, ctx: &TxContext) {
+        wrapper.load_system_state_mut().request_add_validator(ctx)
     }
 
-    #[test_only]
-    /// Return the currently pending validator by address
-    public fun pending_validator_by_address(self: &mut SuiSystemState, validator_address: address): &Validator {
-        validators(self).get_pending_validator_ref(validator_address)
-    }
+#[test_only]
+public fun get_storage_fund_total_balance(wrapper: &mut SuiSystemState): u64 {
+    wrapper.load_system_state_mut().get_storage_fund_total_balance()
+}
 
-    #[test_only]
-    /// Return the currently candidate validator by address
-    public fun candidate_validator_by_address(self: &mut SuiSystemState, validator_address: address): &Validator {
-        validators(self).get_candidate_validator_ref(validator_address)
-    }
+#[test_only]
+public fun get_storage_fund_object_rebates(wrapper: &mut SuiSystemState): u64 {
+    wrapper.load_system_state_mut().get_storage_fund_object_rebates()
+}
 
-    #[test_only]
-    public fun set_epoch_for_testing(wrapper: &mut SuiSystemState, epoch_num: u64) {
-        let self = load_system_state_mut(wrapper);
-        self.set_epoch_for_testing(epoch_num)
-    }
+#[test_only]
+public fun get_stake_subsidy_distribution_counter(wrapper: &mut SuiSystemState): u64 {
+    wrapper.load_system_state_mut().get_stake_subsidy_distribution_counter()
+}
 
-    #[test_only]
-    public fun request_add_validator_for_testing(
-        wrapper: &mut SuiSystemState,
-        min_joining_stake_for_testing: u64,
-        ctx: &mut TxContext,
-    ) {
-        let self = load_system_state_mut(wrapper);
-        self.request_add_validator_for_testing(min_joining_stake_for_testing, ctx)
-    }
+#[test_only]
+public fun set_stake_subsidy_distribution_counter(wrapper: &mut SuiSystemState, counter: u64) {
+    wrapper.load_system_state_mut().set_stake_subsidy_distribution_counter(counter)
+}
 
-    #[test_only]
-    public fun get_storage_fund_total_balance(wrapper: &mut SuiSystemState): u64 {
-        let self = load_system_state(wrapper);
-        self.get_storage_fund_total_balance()
-    }
+#[test_only]
+public fun inner_mut_for_testing(wrapper: &mut SuiSystemState): &mut SuiSystemStateInnerV2 {
+    wrapper.load_system_state_mut()
+}
 
-    #[test_only]
-    public fun get_storage_fund_object_rebates(wrapper: &mut SuiSystemState): u64 {
-        let self = load_system_state(wrapper);
-        self.get_storage_fund_object_rebates()
-    }
-
-    #[test_only]
-    public fun get_stake_subsidy_distribution_counter(wrapper: &mut SuiSystemState): u64 {
-        let self = load_system_state(wrapper);
-        self.get_stake_subsidy_distribution_counter()
-    }
-
-    // CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.  Creates a
-    // candidate validator - bypassing the proof of possession check and other metadata validation
-    // in the process.
-    #[test_only]
-    public entry fun request_add_validator_candidate_for_testing(
-        wrapper: &mut SuiSystemState,
-        pubkey_bytes: vector<u8>,
-        network_pubkey_bytes: vector<u8>,
-        worker_pubkey_bytes: vector<u8>,
-        proof_of_possession: vector<u8>,
-        name: vector<u8>,
-        description: vector<u8>,
-        image_url: vector<u8>,
-        project_url: vector<u8>,
-        net_address: vector<u8>,
-        p2p_address: vector<u8>,
-        primary_address: vector<u8>,
-        worker_address: vector<u8>,
-        gas_price: u64,
-        commission_rate: u64,
-        ctx: &mut TxContext,
-    ) {
-        let self = load_system_state_mut(wrapper);
-        self.request_add_validator_candidate_for_testing(
+// CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.  Creates a
+// candidate validator - bypassing the proof of possession check and other metadata validation
+// in the process.
+#[test_only]
+public entry fun request_add_validator_candidate_for_testing(
+    wrapper: &mut SuiSystemState,
+    pubkey_bytes: vector<u8>,
+    network_pubkey_bytes: vector<u8>,
+    worker_pubkey_bytes: vector<u8>,
+    proof_of_possession: vector<u8>,
+    name: vector<u8>,
+    description: vector<u8>,
+    image_url: vector<u8>,
+    project_url: vector<u8>,
+    net_address: vector<u8>,
+    p2p_address: vector<u8>,
+    primary_address: vector<u8>,
+    worker_address: vector<u8>,
+    gas_price: u64,
+    commission_rate: u64,
+    ctx: &mut TxContext,
+) {
+    wrapper
+        .load_system_state_mut()
+        .request_add_validator_candidate_for_testing(
             pubkey_bytes,
             network_pubkey_bytes,
             worker_pubkey_bytes,
@@ -926,9 +956,9 @@ module sui_system::sui_system {
             worker_address,
             gas_price,
             commission_rate,
-            ctx
+            ctx,
         )
-    }
+}
 
     // CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.
     #[test_only]
@@ -960,10 +990,5 @@ module sui_system::sui_system {
             epoch_start_timestamp_ms,
             ctx,
         )
-    }
-
-    fun store_execution_time_estimates(wrapper: &mut SuiSystemState, estimates_bytes: vector<u8>) {
-        let self = load_system_state_mut(wrapper);
-        sui_system_state_inner::store_execution_time_estimates(self, estimates_bytes)
     }
 }

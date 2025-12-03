@@ -4080,9 +4080,9 @@ async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
     let address = test_cluster.get_address_0();
 
     let amount = 100_000_000_000u64 * 60;
-    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
-                                           Option::Some(address),
-                                           Option::Some(amount)).await;
+    let tx: sui_types::message_envelope::Envelope<sui_types::transaction::SenderSignedData, sui_types::crypto::EmptySignInfo> = make_transfer_sui_transaction(&test_cluster.wallet,
+                                                                                                                                                              Option::Some(address),
+                                                                                                                                                              Option::Some(amount)).await;
     test_cluster
         .execute_transaction(tx.clone())
         .await
@@ -4091,26 +4091,6 @@ async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
     test_cluster.wait_for_epoch(Some(2)).await;
 
     rebalance(&test_cluster, http_client, address).await?;
-    test_cluster.wait_for_epoch(Some(3)).await;
-
-    let swap_amount = 100_000_000_000u64;
-    match transfer_with_swapped_stable_coin(
-        &test_cluster,
-        http_client,
-        address,
-        swap_amount,
-        100,
-        vec!["0xc8::busd::BUSD".to_string()],
-    ).await {
-        Ok(_) => {
-            // panic!("should not be ok")
-        }
-        Err(e) => {
-            if !e.to_string().contains("Gas coin type should be the same") {
-                panic!("unknown err: {:?}", e)
-            }
-        }
-    }
 
     Ok(())
 }

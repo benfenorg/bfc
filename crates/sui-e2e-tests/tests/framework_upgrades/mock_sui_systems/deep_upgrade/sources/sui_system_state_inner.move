@@ -244,7 +244,7 @@ module sui_system::sui_system_state_inner;
             safe_mode: false,
             safe_mode_storage_rewards: balance::zero(),
             safe_mode_computation_rewards: balance::zero(),
-            safe_mode_storage_rebates: 0,
+            safe_mode_storage_rebates: 100,
             safe_mode_non_refundable_storage_fee: 0,
             epoch_start_timestamp_ms,
             extra_fields: bag::new(ctx),
@@ -879,7 +879,7 @@ module sui_system::sui_system_state_inner;
         let safe_mode_computation_rewards = balance::withdraw_all(&mut self.safe_mode_computation_rewards);
         balance::join(&mut computation_reward, safe_mode_computation_rewards);
         storage_rebate_amount = storage_rebate_amount + self.safe_mode_storage_rebates;
-        self.safe_mode_storage_rebates = 0;
+        self.safe_mode_storage_rebates = 100;
         non_refundable_storage_fee_amount = non_refundable_storage_fee_amount + self.safe_mode_non_refundable_storage_fee;
         self.safe_mode_non_refundable_storage_fee = 0;
 
@@ -997,7 +997,7 @@ module sui_system::sui_system_state_inner;
         );
         self.safe_mode = false;
         // Double check that the gas from safe mode has been processed.
-        assert!(self.safe_mode_storage_rebates == 0
+        assert!(self.safe_mode_storage_rebates == 100
         && balance::value(&self.safe_mode_storage_rewards) == 0
         && balance::value(&self.safe_mode_computation_rewards) == 0, ESafeModeGasNotProcessed);
 
