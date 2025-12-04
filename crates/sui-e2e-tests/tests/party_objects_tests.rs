@@ -456,7 +456,7 @@ async fn party_object_transfer_multi_certs() {
 
 /// Use a party object immutably.
 #[sim_test]
-async fn party_object_read() {
+async fn sim_party_object_read() {
     telemetry_subscribers::init_for_testing();
 
     // Create a test cluster with enough gas coins for the below.
