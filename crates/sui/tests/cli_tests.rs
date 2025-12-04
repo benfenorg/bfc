@@ -2414,6 +2414,7 @@ async fn sim_test_package_upgrade_command() -> Result<(), anyhow::Error> {
 
     // Provide path to well formed package sources
     let mut package_path = PathBuf::from(TEST_DATA_DIR);
+    let mut package_path_old = package_path.clone();
     package_path.push("dummy_modules_upgrade");
     let build_config = BuildConfig::new_for_testing().config;
     let resp = SuiClientCommands::Publish {
@@ -2431,8 +2432,8 @@ async fn sim_test_package_upgrade_command() -> Result<(), anyhow::Error> {
         },
         processing: TxProcessingArgs::default(),
     }
-    .execute(context)
-    .await?;
+        .execute(context)
+        .await?;
 
     // Print it out to CLI/logs
     resp.print(true);
@@ -2442,7 +2443,6 @@ async fn sim_test_package_upgrade_command() -> Result<(), anyhow::Error> {
     };
 
     let SuiTransactionBlockEffects::V1(effects) = response.effects.unwrap();
-
     assert!(effects.status.is_ok());
     assert_eq!(effects.gas_object().object_id(), gas_obj_id);
     let package = effects
@@ -2459,14 +2459,18 @@ async fn sim_test_package_upgrade_command() -> Result<(), anyhow::Error> {
 
     // Hacky for now: we need to add the correct `published-at` field to the Move toml file.
     // In the future once we have automated address management replace this logic!
-    let tmp_dir = tempfile::tempdir().unwrap();
+   // let tmp_dir = tempfile::tempdir().unwrap();
+    package_path_old.push("test_package_upgrade_command");
+    let mut upgrade_pkg_path = &mut package_path_old;
+    let options = &mut fs_extra::dir::CopyOptions::default();
+    options.skip_exist = true;
     fs_extra::dir::copy(
         &package_path,
-        tmp_dir.path(),
-        &fs_extra::dir::CopyOptions::default(),
+        &mut *upgrade_pkg_path,
+        options,
     )
-    .unwrap();
-    let mut upgrade_pkg_path = tmp_dir.path().to_path_buf();
+        .unwrap();
+
     upgrade_pkg_path.extend(["dummy_modules_upgrade", "Move.toml"]);
     let mut move_toml = std::fs::File::options()
         .read(true)
@@ -2481,12 +2485,9 @@ async fn sim_test_package_upgrade_command() -> Result<(), anyhow::Error> {
     // Add a `published-at = "0x<package_object_id>"` to the Move manifest.
     let mut lines: Vec<String> = buf.split('\n').map(|x| x.to_string()).collect();
     let idx = lines.iter().position(|s| s == "[package]").unwrap();
-    lines.insert(
-        idx + 1,
-        format!(
-            "published-at = \"{}\"",
-            package.reference.object_id.to_hex_uncompressed()
-        ),
+    lines[idx + 1] = format!(
+        "published-at = \"{}\"",
+        package.reference.object_id.to_hex_uncompressed()
     );
     let new = lines.join("\n");
     move_toml.write_at(new.as_bytes(), 0).unwrap();
@@ -2494,16 +2495,13 @@ async fn sim_test_package_upgrade_command() -> Result<(), anyhow::Error> {
     // Now run the upgrade
     let build_config = BuildConfig::new_for_testing().config;
     let resp = SuiClientCommands::Upgrade {
-        package_path: upgrade_pkg_path,
+        package_path: upgrade_pkg_path.to_path_buf(),
         upgrade_capability: cap.reference.object_id,
         build_config,
         verify_compatibility: true,
         skip_dependency_verification: false,
         verify_deps: true,
         with_unpublished_dependencies: false,
-        //serialize_unsigned_transaction: false,
-        //serialize_signed_transaction: false,
-        //lint: false,
         payment: PaymentArgs {
             gas: vec![gas_obj_id],
         },
@@ -2513,8 +2511,8 @@ async fn sim_test_package_upgrade_command() -> Result<(), anyhow::Error> {
         },
         processing: TxProcessingArgs::default(),
     }
-    .execute(context)
-    .await?;
+        .execute(context)
+        .await?;
 
     resp.print(true);
 
@@ -2569,6 +2567,8 @@ async fn sim_test_package_management_on_upgrade_command() -> Result<(), anyhow::
 
     // Provide path to well formed package sources
     let mut package_path = PathBuf::from(TEST_DATA_DIR);
+    let mut package_path_old = package_path.clone();
+
     package_path.push("dummy_modules_upgrade");
     let mut build_config = BuildConfig::new_for_testing().config;
     let resp = SuiClientCommands::Publish {
@@ -2609,14 +2609,18 @@ async fn sim_test_package_management_on_upgrade_command() -> Result<(), anyhow::
     // The core implementation does not use support an arbitrary `lock_file` path specified in
     // `BuildConfig` when the `Move.lock` file is an input for upgrades, so we change the `BuildConfig`
     // `lock_file` to point to the root directory of package-to-be-upgraded.
-    let tmp_dir = tempfile::tempdir().unwrap();
+    // let tmp_dir = tempfile::tempdir().unwrap();
+    package_path_old.push("test_package_management_on_upgrade_command");
+    let mut upgrade_pkg_path = &mut package_path_old;
+    let options = &mut fs_extra::dir::CopyOptions::default();
+    options.skip_exist = true;
     fs_extra::dir::copy(
         &package_path,
-        tmp_dir.path(),
-        &fs_extra::dir::CopyOptions::default(),
+        &mut *upgrade_pkg_path,
+        options,
     )
     .unwrap();
-    let mut upgrade_pkg_path = tmp_dir.path().to_path_buf();
+
     upgrade_pkg_path.extend(["dummy_modules_upgrade", "Move.toml"]);
     upgrade_pkg_path.pop();
     // Place the `Move.lock` after publishing in the tmp dir for upgrading.
@@ -2632,7 +2636,7 @@ async fn sim_test_package_management_on_upgrade_command() -> Result<(), anyhow::
 
     // Now run the upgrade
     let upgrade_response = SuiClientCommands::Upgrade {
-        package_path: upgrade_pkg_path,
+        package_path: upgrade_pkg_path.to_path_buf(),
         upgrade_capability: cap.reference.object_id,
         build_config: build_config.clone(),
         verify_compatibility: true,
@@ -2719,6 +2723,7 @@ async fn sim_test_package_management_on_upgrade_command_conflict() -> Result<(),
 
     // Provide path to well formed package sources
     let mut package_path = PathBuf::from(TEST_DATA_DIR);
+    let mut package_path_old = package_path.clone();
     package_path.push("dummy_modules_upgrade");
     let build_config_publish = BuildConfig::new_for_testing().config;
     let resp = SuiClientCommands::Publish {
@@ -2760,14 +2765,16 @@ async fn sim_test_package_management_on_upgrade_command_conflict() -> Result<(),
         .unwrap();
 
     // Set up a temporary working directory  for upgrading.
-    let tmp_dir = tempfile::tempdir().unwrap();
+    package_path_old.push("test_package_management_on_upgrade_command_conflict");
+    let mut upgrade_pkg_path = &mut package_path_old;
+    let options = &mut fs_extra::dir::CopyOptions::default();
+    options.skip_exist = true;
     fs_extra::dir::copy(
         &package_path,
-        tmp_dir.path(),
-        &fs_extra::dir::CopyOptions::default(),
+        &mut *upgrade_pkg_path,
+        options,
     )
     .unwrap();
-    let mut upgrade_pkg_path = tmp_dir.path().to_path_buf();
     upgrade_pkg_path.extend(["dummy_modules_upgrade", "Move.toml"]);
     let mut move_toml = std::fs::File::options()
         .read(true)
@@ -2780,7 +2787,8 @@ async fn sim_test_package_management_on_upgrade_command_conflict() -> Result<(),
     let mut lines: Vec<String> = buf.split('\n').map(|x| x.to_string()).collect();
     let idx = lines.iter().position(|s| s == "[package]").unwrap();
     // Purposely add a conflicting `published-at` address to the Move manifest.
-    lines.insert(idx + 1, "published-at = \"0xbad\"".to_string());
+    //lines.insert(idx + 1, "published-at = \"0xbad\"".to_string());
+    lines[idx + 1] = "published-at = \"0xbad\"".to_string();
     let new = lines.join("\n");
     move_toml.write_at(new.as_bytes(), 0).unwrap();
 
@@ -2798,7 +2806,7 @@ async fn sim_test_package_management_on_upgrade_command_conflict() -> Result<(),
 
     // Now run the upgrade
     let upgrade_response = SuiClientCommands::Upgrade {
-        package_path: upgrade_pkg_path,
+        package_path: upgrade_pkg_path.to_path_buf(),
         upgrade_capability: cap.reference.object_id,
         build_config: build_config_upgrade.clone(),
         verify_compatibility: true,
@@ -2816,7 +2824,7 @@ async fn sim_test_package_management_on_upgrade_command_conflict() -> Result<(),
     }
     .execute(context)
     .await;
-
+    //
     let err_string = upgrade_response.unwrap_err().to_string();
     let err_string = err_string.replace(&package.object_id().to_string(), "<elided-for-test>");
 
