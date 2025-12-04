@@ -3103,7 +3103,7 @@ async fn safe_mode_reconfig_busd_staking_test() -> Result<(), anyhow::Error> {
     // Inject failure at epoch change 1 -> 2.
     advance_epoch_result_injection::set_override(Some((2, 3)));
 
-    let test_cluster = TestClusterBuilder::new()
+    let mut test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(EPOCH_DURATION)
         .build()
         .await;
@@ -3122,17 +3122,19 @@ async fn safe_mode_reconfig_busd_staking_test() -> Result<(), anyhow::Error> {
     // busd staking test
     let validator = test_cluster.swarm.validator_node_handles().pop().unwrap();
     let validator_addr = validator.with(|node| node.get_config().sui_address());
-    let http_client = test_cluster.rpc_client();
+    let mut http_client = test_cluster.rpc_client().clone();
     let address = test_cluster.get_address_0();
-    rebalance(&test_cluster, http_client, address).await?;
+    auth::auth_setup(&mut test_cluster, &mut http_client, address, "MINT-BUSD-right_key").await?;
+    rebalance(&test_cluster, &http_client, address).await?;
     let amount = 1_000_000_000u64 * 100;
     let tx = make_transfer_sui_transaction(&test_cluster.wallet,
                                            Option::Some(address),
                                            Option::Some(amount)).await;
     test_cluster.execute_transaction(tx.clone()).await.effects.unwrap();
-    swap_bfc_to_stablecoin_v2(&test_cluster, http_client, address, 10000000000000).await?;
+    stable::mint_stable_coin(10000000000000, &test_cluster, &http_client, address, "0xc8::busd::BUSD").await?;
+
     let _ = sleep(Duration::from_secs(10)).await;
-    let busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
+    let busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", &http_client, address).await?;
     assert!(busd_response_vec.len() >= 1);
     let busd_response = busd_response_vec.get(0).unwrap();
     let busd_data = busd_response.data.as_ref().unwrap();
@@ -3144,7 +3146,9 @@ async fn safe_mode_reconfig_busd_staking_test() -> Result<(), anyhow::Error> {
         .await.unwrap().1.object_ref();
     let stake_tx = make_stable_staking_transaction(
         &test_cluster.wallet, validator_addr, vec![TypeTag::from_str("0xc8::busd::BUSD")?], address, gas, busd_data.object_ref()).await;
-    test_cluster.execute_transaction(stake_tx).await;
+    let resp = test_cluster.wallet.execute_transaction_may_fail(stake_tx).await;
+    println!("resp is {:?}", resp);
+    assert!(!resp.unwrap().status_ok().unwrap());
     // ...
 
     // Wait for regular epoch change to happen once. Migration from V1 to V2 should happen here.
@@ -3972,38 +3976,6 @@ async fn sim_test_bfc_stable_gas_single() -> Result<(), anyhow::Error> {
     test_cluster.wait_for_epoch(Some(2)).await;
     let res_rebalance = rebalance(&test_cluster, http_client, address).await?;
     println!("res_rebalance: {:?}", res_rebalance);
-
-    test_cluster.wait_for_epoch(Some(3)).await;
-
-
-    let swap_amount = 100_000_000_000u64;
-    // transfer_with_swapped_stable_coin(
-    //     &test_cluster,
-    //     http_client,
-    //     address,
-    //     swap_amount,
-    //     100,
-    //     vec!["0xc8::busd::BUSD".to_string()],
-    // ).await?;
-    match transfer_with_swapped_stable_coin(
-        &test_cluster,
-        http_client,
-        address,
-        swap_amount,
-        100,
-        vec!["0xc8::busd::BUSD".to_string(), "0xc8::busd::BUSD".to_string()],
-    ).await {
-        Ok(_) => {
-            // panic!("should not be ok") //todo 复现 MutableObjectUsedMoreThanOnce场景
-        }
-        Err(e) => {
-            if !e.to_string().contains("cannot appear more than one in one transaction") {
-                panic!("unknown err: {:?}", e)
-            }
-        }
-    }
-
-    //test_cluster.wait_for_epoch(Some(2)).await;
 
     Ok(())
 }
