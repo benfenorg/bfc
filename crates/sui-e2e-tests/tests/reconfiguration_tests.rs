@@ -2812,8 +2812,8 @@ async fn do_test_reconfig_with_committee_change_stress() {
 
     while let Some(v1) = candidates.pop() {
         let v2 = candidates.pop().unwrap();
-        execute_add_validator_transactions(&test_cluster, &v1).await;
-        execute_add_validator_transactions(&test_cluster, &v2).await;
+        execute_add_validator_transactions(&mut test_cluster, &v1, None).await;
+        execute_add_validator_transactions(&mut test_cluster, &v2, None).await;
         let mut removed_validators = vec![];
         for v in test_cluster
             .swarm
