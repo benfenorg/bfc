@@ -420,7 +420,7 @@ async fn sim_test_get_all_balances_with_invalid_address() {
     assert!(response["error"]["data"]
         .as_str()
         .unwrap()
-        .contains("Deserialization failed"));
+        .contains("Invalid value was given to the function"));
 
     test_cluster.stopped().await;
 }
