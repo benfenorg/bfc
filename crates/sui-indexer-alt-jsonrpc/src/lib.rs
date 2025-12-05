@@ -160,7 +160,7 @@ impl RpcService {
         } = self;
 
         info!("Starting JSON-RPC service on {rpc_listen_address}",);
-        info!("Serving schema: {}", serde_json::to_string_pretty(&schema)?);
+        //info!("Serving schema: {}", serde_json::to_string_pretty(&schema)?);
 
         // Add a method to serve the schema to clients.
         modules

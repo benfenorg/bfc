@@ -2375,12 +2375,12 @@ const VALIDATOR_STARTING_STAKE: u64 = 1_000_000_000_000_000; // 1M SUI
 #[sim_test]
 async fn sim_test_reconfig_with_committee_change_basic() {
     // This test exercise the full flow of a validator joining the network, catch up and then leave.
-    let initial_num_validators = 10;
+    let initial_num_validators = 6;
     let new_validator = ValidatorGenesisConfigBuilder::new().build(&mut OsRng);
     let address = (&new_validator.account_key_pair.public()).into();
     let mut test_cluster = TestClusterBuilder::new()
         .with_accounts(vec![AccountConfig {
-            gas_amounts: vec![VALIDATOR_STARTING_STAKE * 1_000],
+            gas_amounts: vec![VALIDATOR_STARTING_STAKE ],
             address: None,
         }])
         .with_num_validators(initial_num_validators)
