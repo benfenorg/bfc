@@ -17,8 +17,8 @@ use crate::{
 
 use super::rpc_module::RpcModule;
 
-#[open_rpc(namespace = "sui", tag = "Write API")]
-#[rpc(server, client, namespace = "sui")]
+#[open_rpc(namespace = "bfc", tag = "Write API")]
+#[rpc(server, client, namespace = "bfc")]
 pub trait WriteApi {
     /// Execute the transaction with options to show different information in the response.
     /// The only supported request type is `WaitForEffectsCert`: waits for TransactionEffectsCert and then return to client.

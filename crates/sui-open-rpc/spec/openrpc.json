@@ -3095,7 +3095,7 @@
       }
     },
     {
-      "name": "suix_getAllBalances",
+      "name": "bfcx_getAllBalances",
       "tags": [
         {
           "name": "Coin Query API"

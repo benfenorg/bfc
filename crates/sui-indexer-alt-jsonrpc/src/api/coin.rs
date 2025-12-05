@@ -33,8 +33,8 @@ use crate::{
 
 use super::rpc_module::RpcModule;
 
-#[open_rpc(namespace = "suix", tag = "Coin API")]
-#[rpc(server, namespace = "suix")]
+#[open_rpc(namespace = "bfcx", tag = "Coin API")]
+#[rpc(server, namespace = "bfcx")]
 trait CoinsApi {
     /// Return Coin objects owned by an address with a specified coin type.
     /// If no coin type is specified, SUI coins are returned.
@@ -63,8 +63,8 @@ trait CoinsApi {
 }
 
 /// Delegation Coin API for endpoints that are delegated to FN RPC
-#[open_rpc(namespace = "suix", tag = "Delegation Coin API")]
-#[rpc(server, client, namespace = "suix")]
+#[open_rpc(namespace = "bfcx", tag = "Delegation Coin API")]
+#[rpc(server, client, namespace = "bfcx")]
 trait DelegationCoinsApi {
     /// Return the total coin balance for all coin types, owned by the address owner.
     #[method(name = "getAllBalances")]

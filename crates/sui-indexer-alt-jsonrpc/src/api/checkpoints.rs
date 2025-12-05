@@ -16,8 +16,8 @@ use crate::{
 
 use super::rpc_module::RpcModule;
 
-#[open_rpc(namespace = "sui", tag = "Checkpoints API")]
-#[rpc(server, namespace = "sui")]
+#[open_rpc(namespace = "bfc", tag = "Checkpoints API")]
+#[rpc(server, namespace = "bfc")]
 trait CheckpointsApi {
     /// Return a checkpoint by its sequence number
     #[method(name = "getCheckpoint")]

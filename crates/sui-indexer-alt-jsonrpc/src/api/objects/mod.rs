@@ -24,8 +24,8 @@ mod error;
 pub(crate) mod filter;
 pub(crate) mod response;
 
-#[open_rpc(namespace = "sui", tag = "Objects API")]
-#[rpc(server, namespace = "sui")]
+#[open_rpc(namespace = "bfc", tag = "Objects API")]
+#[rpc(server, namespace = "bfc")]
 trait ObjectsApi {
     /// Return the object information for the latest version of an object.
     #[method(name = "getObject")]
@@ -78,8 +78,8 @@ trait ObjectsApi {
     ) -> RpcResult<Vec<SuiPastObjectResponse>>;
 }
 
-#[open_rpc(namespace = "suix", tag = "Query Objects API")]
-#[rpc(server, namespace = "suix")]
+#[open_rpc(namespace = "bfcx", tag = "Query Objects API")]
+#[rpc(server, namespace = "bfcx")]
 trait QueryObjectsApi {
     /// Query objects by their owner's address. Returns a paginated list of objects.
     ///

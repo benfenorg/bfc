@@ -16,8 +16,8 @@ use self::error::Error;
 mod error;
 mod response;
 
-#[open_rpc(namespace = "suix", tag = "Name Service API")]
-#[rpc(server, namespace = "suix")]
+#[open_rpc(namespace = "bfcx", tag = "Name Service API")]
+#[rpc(server, namespace = "bfcx")]
 trait NameServiceApi {
     /// Resolve a SuiNS name to its address
     #[method(name = "resolveNameServiceAddress")]

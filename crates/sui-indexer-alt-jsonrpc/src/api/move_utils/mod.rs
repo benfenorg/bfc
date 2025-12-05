@@ -14,8 +14,8 @@ use super::rpc_module::RpcModule;
 mod error;
 mod response;
 
-#[open_rpc(namespace = "sui", tag = "Move APIs")]
-#[rpc(server, namespace = "sui")]
+#[open_rpc(namespace = "bfc", tag = "Move APIs")]
+#[rpc(server, namespace = "bfc")]
 trait MoveApi {
     #[method(name = "getNormalizedMoveFunction")]
     async fn get_normalized_move_function(

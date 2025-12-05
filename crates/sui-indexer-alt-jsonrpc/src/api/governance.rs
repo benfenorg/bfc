@@ -28,8 +28,8 @@ use crate::{
 
 use super::rpc_module::RpcModule;
 
-#[open_rpc(namespace = "suix", tag = "Governance API")]
-#[rpc(server, namespace = "suix")]
+#[open_rpc(namespace = "bfcx", tag = "Governance API")]
+#[rpc(server, namespace = "bfcx")]
 trait GovernanceApi {
     /// Return the reference gas price for the network as of the latest epoch.
     #[method(name = "getReferenceGasPrice")]

@@ -15,8 +15,8 @@ use super::rpc_module::RpcModule;
 mod error;
 mod response;
 
-#[open_rpc(namespace = "suix", tag = "Dynamic Fields API")]
-#[rpc(server, namespace = "suix")]
+#[open_rpc(namespace = "bfcx", tag = "Dynamic Fields API")]
+#[rpc(server, namespace = "bfcx")]
 trait DynamicFieldsApi {
     /// Return the information from a dynamic field based on its parent ID and name.
     #[method(name = "getDynamicFieldObject")]

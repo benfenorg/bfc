@@ -21,8 +21,8 @@ mod error;
 mod filter;
 mod response;
 
-#[open_rpc(namespace = "sui", tag = "Transactions API")]
-#[rpc(server, namespace = "sui")]
+#[open_rpc(namespace = "bfc", tag = "Transactions API")]
+#[rpc(server, namespace = "bfc")]
 trait TransactionsApi {
     /// Fetch a transaction by its transaction digest.
     #[method(name = "getTransactionBlock")]
@@ -35,8 +35,8 @@ trait TransactionsApi {
     ) -> RpcResult<SuiTransactionBlockResponse>;
 }
 
-#[open_rpc(namespace = "suix", tag = "Query Transactions API")]
-#[rpc(server, namespace = "suix")]
+#[open_rpc(namespace = "bfcx", tag = "Query Transactions API")]
+#[rpc(server, namespace = "bfcx")]
 trait QueryTransactionsApi {
     /// Query transactions based on their properties (sender, affected addresses, function calls,
     /// etc). Returns a paginated list of transactions.
