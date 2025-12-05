@@ -393,12 +393,12 @@ mod tests {
             let converted_back = field_elem.to_u64();
 
             // For small values, should be completely reversible
-        if value < 1000000 {
-            assert_eq!(
-                converted_back, value,
-                "Small value {value} should convert back exactly"
-            );
-        }
+            if value < 1000000 {
+                assert_eq!(
+                    converted_back, value,
+                    "Small value {value} should convert back exactly"
+                );
+            }
         }
     }
 

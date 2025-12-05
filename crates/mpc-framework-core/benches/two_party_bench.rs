@@ -7,15 +7,14 @@
 //! - Beaver triple multiplication: mul_step1/2/3
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use mpc_framework_core::two_party_share::{
-    add_two_shared_secrets, recover_value, split_to_two_value,
-    sub_two_shared_secrets, recover_two_shares,
-    mul_step1_compute_masked_diff, mul_step2_reconstruct_masked_values, mul_step3_compute_result,
-    generate_beaver_triple, bytes_to_share, recover_from_shares_internal,
-};
-use mpc_framework_core::poly::Polynomial;
-use mpc_framework_core::field::FieldElement as FieldElementTrait;
 use mpc_framework_core::field::gf64_sss::FieldElement;
+use mpc_framework_core::field::FieldElement as FieldElementTrait;
+use mpc_framework_core::poly::Polynomial;
+use mpc_framework_core::two_party_share::{
+    add_two_shared_secrets, bytes_to_share, generate_beaver_triple, mul_step1_compute_masked_diff,
+    mul_step2_reconstruct_masked_values, mul_step3_compute_result, recover_from_shares_internal,
+    recover_two_shares, recover_value, split_to_two_value, sub_two_shared_secrets,
+};
 
 // Constants for benchmarking
 const BENCH_MASK_SECRET: u64 = 0x1234567890ABCDEFu64;
@@ -33,7 +32,12 @@ fn bench_split_basic(c: &mut Criterion) {
 
     group.bench_function("split_to_two_value", |bench| {
         bench.iter(|| {
-            split_to_two_value(black_box(secret), BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED)
+            split_to_two_value(
+                black_box(secret),
+                BENCH_USER_ID,
+                BENCH_MASK_SECRET,
+                BENCH_COORD_SEED,
+            )
         })
     });
 
@@ -47,7 +51,8 @@ fn bench_recover_basic(c: &mut Criterion) {
     let secret = 42u64;
 
     // Pre-generate shares
-    let (hex1, hex2, _) = split_to_two_value(secret, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+    let (hex1, hex2, _) =
+        split_to_two_value(secret, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
 
     group.throughput(Throughput::Elements(1));
 
@@ -72,7 +77,8 @@ fn bench_recover_two_shares(c: &mut Criterion) {
     let secret = 123456u64;
 
     // Pre-generate shares
-    let (hex1, hex2, _) = split_to_two_value(secret, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+    let (hex1, hex2, _) =
+        split_to_two_value(secret, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
 
     group.throughput(Throughput::Elements(1));
 
@@ -100,8 +106,12 @@ fn bench_split_recover_roundtrip(c: &mut Criterion) {
 
     group.bench_function("split_and_recover", |bench| {
         bench.iter(|| {
-            let (hex1, hex2, _) =
-                split_to_two_value(black_box(secret), BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+            let (hex1, hex2, _) = split_to_two_value(
+                black_box(secret),
+                BENCH_USER_ID,
+                BENCH_MASK_SECRET,
+                BENCH_COORD_SEED,
+            );
             recover_value(hex1, hex2, BENCH_MASK_SECRET).expect("recover should succeed")
         })
     });
@@ -117,8 +127,10 @@ fn bench_add_operation(c: &mut Criterion) {
     let secret2 = 50u64;
 
     // Pre-split secrets with same coord_seed
-    let (hex1_a, hex2_a, seed) = split_to_two_value(secret1, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
-    let (hex1_b, hex2_b, _) = split_to_two_value(secret2, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+    let (hex1_a, hex2_a, seed) =
+        split_to_two_value(secret1, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+    let (hex1_b, hex2_b, _) =
+        split_to_two_value(secret2, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
 
     group.throughput(Throughput::Elements(1));
 
@@ -157,8 +169,10 @@ fn bench_sub_operation(c: &mut Criterion) {
     let secret2 = 30u64;
 
     // Pre-split secrets with same coord_seed
-    let (hex1_a, hex2_a, seed) = split_to_two_value(secret1, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
-    let (hex1_b, hex2_b, _) = split_to_two_value(secret2, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+    let (hex1_a, hex2_a, seed) =
+        split_to_two_value(secret1, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+    let (hex1_b, hex2_b, _) =
+        split_to_two_value(secret2, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
 
     group.throughput(Throughput::Elements(1));
 
@@ -231,10 +245,9 @@ fn bench_beaver_multiplication(c: &mut Criterion) {
     let e_share_0 = mul_step1_compute_masked_diff(&y_share_0, &triple.b_shares[0]);
     let e_share_1 = mul_step1_compute_masked_diff(&y_share_1, &triple.b_shares[1]);
 
-    let (d_open, e_open) = mul_step2_reconstruct_masked_values(
-        &[d_share_0, d_share_1],
-        &[e_share_0, e_share_1],
-    ).unwrap();
+    let (d_open, e_open) =
+        mul_step2_reconstruct_masked_values(&[d_share_0, d_share_1], &[e_share_0, e_share_1])
+            .unwrap();
 
     group.throughput(Throughput::Elements(1));
 
@@ -279,16 +292,22 @@ fn bench_beaver_multiplication(c: &mut Criterion) {
             let e1 = mul_step1_compute_masked_diff(&y_share_1, &triple.b_shares[1]);
 
             // Step 2: Reconstruct d and e
-            let (d, e) = mul_step2_reconstruct_masked_values(
-                &[d0, d1], &[e0, e1],
-            ).unwrap();
+            let (d, e) = mul_step2_reconstruct_masked_values(&[d0, d1], &[e0, e1]).unwrap();
 
             // Step 3: Compute result
             let r0 = mul_step3_compute_result(
-                &triple.a_shares[0], &triple.b_shares[0], &triple.c_shares[0], d, e,
+                &triple.a_shares[0],
+                &triple.b_shares[0],
+                &triple.c_shares[0],
+                d,
+                e,
             );
             let r1 = mul_step3_compute_result(
-                &triple.a_shares[1], &triple.b_shares[1], &triple.c_shares[1], d, e,
+                &triple.a_shares[1],
+                &triple.b_shares[1],
+                &triple.c_shares[1],
+                d,
+                e,
             );
 
             // Recover final result
@@ -313,7 +332,12 @@ fn bench_different_secrets(c: &mut Criterion) {
             &secret,
             |bench, &s| {
                 bench.iter(|| {
-                    split_to_two_value(black_box(s), BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED)
+                    split_to_two_value(
+                        black_box(s),
+                        BENCH_USER_ID,
+                        BENCH_MASK_SECRET,
+                        BENCH_COORD_SEED,
+                    )
                 })
             },
         );
@@ -330,8 +354,10 @@ fn bench_homomorphic_comparison(c: &mut Criterion) {
     let secret2 = 50u64;
 
     // Pre-split secrets with same coord_seed
-    let (hex1_a, hex2_a, seed) = split_to_two_value(secret1, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
-    let (hex1_b, hex2_b, _) = split_to_two_value(secret2, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+    let (hex1_a, hex2_a, seed) =
+        split_to_two_value(secret1, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+    let (hex1_b, hex2_b, _) =
+        split_to_two_value(secret2, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
     let _ = hex2_a;
     let _ = hex2_b;
 
@@ -371,8 +397,10 @@ fn bench_zero_operations(c: &mut Criterion) {
     let mut group = c.benchmark_group("two_party/zero_operations");
 
     // Pre-split values with same coord_seed
-    let (hex1_42, hex2_42, seed) = split_to_two_value(42u64, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
-    let (hex1_0, hex2_0, _) = split_to_two_value(0u64, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+    let (hex1_42, hex2_42, seed) =
+        split_to_two_value(42u64, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+    let (hex1_0, hex2_0, _) =
+        split_to_two_value(0u64, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
     let _ = hex2_42;
     let _ = hex2_0;
 
@@ -417,9 +445,12 @@ fn bench_complex_expression(c: &mut Criterion) {
     let cv = 30u64;
 
     // Pre-split all values with same coord_seed
-    let (hex1_a, hex2_a, seed) = split_to_two_value(a, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
-    let (hex1_b, hex2_b, _) = split_to_two_value(b, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
-    let (hex1_c, hex2_c, _) = split_to_two_value(cv, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+    let (hex1_a, hex2_a, seed) =
+        split_to_two_value(a, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+    let (hex1_b, hex2_b, _) =
+        split_to_two_value(b, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+    let (hex1_c, hex2_c, _) =
+        split_to_two_value(cv, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
 
     group.throughput(Throughput::Elements(1));
 
@@ -433,7 +464,8 @@ fn bench_complex_expression(c: &mut Criterion) {
                 0,
                 seed,
                 seed,
-            ).expect("add should succeed");
+            )
+            .expect("add should succeed");
             let ab_bytes2 = add_two_shared_secrets(
                 black_box(hex2_a.clone()),
                 black_box(hex2_b.clone()),
@@ -441,14 +473,16 @@ fn bench_complex_expression(c: &mut Criterion) {
                 1,
                 seed,
                 seed,
-            ).expect("add should succeed");
+            )
+            .expect("add should succeed");
 
             // Convert to shares
             let share1_ab = bytes_to_share(&ab_bytes1).unwrap();
             let share2_ab = bytes_to_share(&ab_bytes2).unwrap();
 
             // Get c shares
-            let shares_c = recover_two_shares(hex1_c.clone(), hex2_c.clone(), BENCH_MASK_SECRET).unwrap();
+            let shares_c =
+                recover_two_shares(hex1_c.clone(), hex2_c.clone(), BENCH_MASK_SECRET).unwrap();
 
             // Step 2: (a + b) - c (manually subtract on shares)
             let result_share1 = (share1_ab.0, share1_ab.1 - shares_c[0].1);
@@ -474,7 +508,12 @@ fn bench_large_values(c: &mut Criterion) {
             &value,
             |bench, &v| {
                 bench.iter(|| {
-                    split_to_two_value(black_box(v), BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED)
+                    split_to_two_value(
+                        black_box(v),
+                        BENCH_USER_ID,
+                        BENCH_MASK_SECRET,
+                        BENCH_COORD_SEED,
+                    )
                 })
             },
         );
@@ -495,30 +534,26 @@ fn bench_end_to_end_workflow(c: &mut Criterion) {
     group.bench_function("full_homomorphic_add_workflow", |bench| {
         bench.iter(|| {
             // Split both secrets with same coord_seed
-            let (hex1_a, hex2_a, seed) =
-                split_to_two_value(black_box(secret1), BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
-            let (hex1_b, hex2_b, _) =
-                split_to_two_value(black_box(secret2), BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+            let (hex1_a, hex2_a, seed) = split_to_two_value(
+                black_box(secret1),
+                BENCH_USER_ID,
+                BENCH_MASK_SECRET,
+                BENCH_COORD_SEED,
+            );
+            let (hex1_b, hex2_b, _) = split_to_two_value(
+                black_box(secret2),
+                BENCH_USER_ID,
+                BENCH_MASK_SECRET,
+                BENCH_COORD_SEED,
+            );
 
             // Homomorphic addition on both share positions
-            let result_bytes1 = add_two_shared_secrets(
-                hex1_a,
-                hex1_b,
-                BENCH_MASK_SECRET,
-                0,
-                seed,
-                seed,
-            )
-            .expect("add should succeed");
-            let result_bytes2 = add_two_shared_secrets(
-                hex2_a,
-                hex2_b,
-                BENCH_MASK_SECRET,
-                1,
-                seed,
-                seed,
-            )
-            .expect("add should succeed");
+            let result_bytes1 =
+                add_two_shared_secrets(hex1_a, hex1_b, BENCH_MASK_SECRET, 0, seed, seed)
+                    .expect("add should succeed");
+            let result_bytes2 =
+                add_two_shared_secrets(hex2_a, hex2_b, BENCH_MASK_SECRET, 1, seed, seed)
+                    .expect("add should succeed");
 
             // Convert bytes to shares and recover
             let share1 = bytes_to_share(&result_bytes1).unwrap();
@@ -567,7 +602,9 @@ fn bench_different_masks(c: &mut Criterion) {
             BenchmarkId::new("split_mask", format!("mask_{:x}", mask)),
             &mask,
             |bench, &m| {
-                bench.iter(|| split_to_two_value(black_box(secret), BENCH_USER_ID, m, BENCH_COORD_SEED))
+                bench.iter(|| {
+                    split_to_two_value(black_box(secret), BENCH_USER_ID, m, BENCH_COORD_SEED)
+                })
             },
         );
     }
@@ -587,7 +624,9 @@ fn bench_different_coord_seeds(c: &mut Criterion) {
             BenchmarkId::new("split_coord_seed", format!("seed_{:x}", seed)),
             &seed,
             |bench, &s| {
-                bench.iter(|| split_to_two_value(black_box(secret), BENCH_USER_ID, BENCH_MASK_SECRET, s))
+                bench.iter(|| {
+                    split_to_two_value(black_box(secret), BENCH_USER_ID, BENCH_MASK_SECRET, s)
+                })
             },
         );
     }

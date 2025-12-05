@@ -41,8 +41,14 @@ fn bench_triple_creation_basic(c: &mut Criterion) {
     group.bench_function("new_t3_n5", |bench| {
         let mut rng = create_bench_rng();
         bench.iter(|| {
-            BeaverTriple::new(black_box(a), black_box(b), threshold, total_shares, &mut rng)
-                .expect("triple creation should succeed")
+            BeaverTriple::new(
+                black_box(a),
+                black_box(b),
+                threshold,
+                total_shares,
+                &mut rng,
+            )
+            .expect("triple creation should succeed")
         })
     });
 
@@ -160,20 +166,16 @@ fn bench_multiplication_protocol(c: &mut Criterion) {
         FieldElementTrait::from_u64(x_secret),
         &mut rng,
     );
-    let x_shares: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_x.evaluate(&x)))
-        .collect();
+    let x_shares: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_x.evaluate(&x))).collect();
 
     let poly_y = Polynomial::new(
         threshold - 1,
         FieldElementTrait::from_u64(y_secret),
         &mut rng,
     );
-    let y_shares: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_y.evaluate(&x)))
-        .collect();
+    let y_shares: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_y.evaluate(&x))).collect();
 
     // Create Beaver triple with matching coordinates
     let triple = BeaverTriple::new_with_coordinates(7, 11, &x_coords, threshold, &mut rng)
@@ -216,8 +218,9 @@ fn bench_distributor(c: &mut Criterion) {
 
     // Benchmark getting triples from distributor (cache hit)
     let mut rng = create_bench_rng();
-    let mut distributor = BeaverTripleDistributor::new(threshold, total_shares, cache_size, &mut rng)
-        .expect("distributor creation should succeed");
+    let mut distributor =
+        BeaverTripleDistributor::new(threshold, total_shares, cache_size, &mut rng)
+            .expect("distributor creation should succeed");
 
     group.bench_function("get_triple_from_cache", |bench| {
         let mut rng = create_bench_rng();
@@ -301,8 +304,9 @@ fn bench_end_to_end_multiplication(c: &mut Criterion) {
             &(threshold, total_shares),
             |bench, &(t, n)| {
                 let mut rng = create_bench_rng();
-                let x_coords: Vec<FieldElement> =
-                    (1..=n).map(|i| FieldElementTrait::from_u64(i as u64)).collect();
+                let x_coords: Vec<FieldElement> = (1..=n)
+                    .map(|i| FieldElementTrait::from_u64(i as u64))
+                    .collect();
 
                 let x_secret = 5u64;
                 let y_secret = 7u64;
@@ -319,9 +323,8 @@ fn bench_end_to_end_multiplication(c: &mut Criterion) {
 
                 bench.iter(|| {
                     let mut rng = create_bench_rng();
-                    let triple =
-                        BeaverTriple::new_with_coordinates(13, 17, &x_coords, t, &mut rng)
-                            .expect("triple creation should succeed");
+                    let triple = BeaverTriple::new_with_coordinates(13, 17, &x_coords, t, &mut rng)
+                        .expect("triple creation should succeed");
                     BeaverMultiplication::multiply_with_beaver(
                         black_box(&x_shares),
                         black_box(&y_shares),
@@ -349,4 +352,3 @@ criterion_group!(
 );
 
 criterion_main!(benches);
-

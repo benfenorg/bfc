@@ -113,7 +113,6 @@ impl BeaverTripleCache {
         Ok(triple)
     }
 
-
     /// Generate single triple
     ///
     /// Optimized triple generation algorithm to reduce redundant computation

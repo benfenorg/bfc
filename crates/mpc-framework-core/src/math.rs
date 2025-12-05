@@ -1,10 +1,7 @@
 // Import necessary modules and types
 use crate::{
-    error::SSSError,
-    field::gf64_sss::FieldElement,
-    field::FieldElement as FieldElementTrait,
-    secret::SecretSharing,
-    types::ShareList,
+    error::SSSError, field::gf64_sss::FieldElement, field::FieldElement as FieldElementTrait,
+    secret::SecretSharing, types::ShareList,
 };
 use rand_core::RngCore;
 
@@ -304,20 +301,20 @@ pub struct EncryptedAwareHomomorphicOperations;
 
 impl EncryptedAwareHomomorphicOperations {
     /// Perform homomorphic addition on encrypted secret shares (with automatic decryption)
-///
-/// # Arguments
-/// * `encrypted_shares_a` - First encrypted secret share list
-/// * `encrypted_shares_b` - Second encrypted secret share list
-/// * `encryption_manager` - XOR encryption manager
-///
-/// # Algorithm Flow
-/// 1. Automatically decrypt input shares
-/// 2. Execute standard homomorphic addition
-/// 3. Return computation result (unencrypted)
-///
-/// # Returns
-/// * `Ok(Vec<(FieldElement, FieldElement)>)` - Addition result
-/// * `Err(SSSError)` - Operation failure
+    ///
+    /// # Arguments
+    /// * `encrypted_shares_a` - First encrypted secret share list
+    /// * `encrypted_shares_b` - Second encrypted secret share list
+    /// * `encryption_manager` - XOR encryption manager
+    ///
+    /// # Algorithm Flow
+    /// 1. Automatically decrypt input shares
+    /// 2. Execute standard homomorphic addition
+    /// 3. Return computation result (unencrypted)
+    ///
+    /// # Returns
+    /// * `Ok(Vec<(FieldElement, FieldElement)>)` - Addition result
+    /// * `Err(SSSError)` - Operation failure
     pub fn add_encrypted_shares_with_manager(
         encrypted_shares_a: &[crate::encryption::EncryptedShare],
         encrypted_shares_b: &[crate::encryption::EncryptedShare],
@@ -332,13 +329,13 @@ impl EncryptedAwareHomomorphicOperations {
     }
 
     /// Perform homomorphic subtraction on encrypted secret shares (with automatic decryption)
-///
-/// # Arguments
-/// * `encrypted_shares_a` - Minuend encrypted shares
-/// * `encrypted_shares_b` - Subtrahend encrypted shares
-/// * `encryption_manager` - XOR encryption manager
-///
-/// # Returns
+    ///
+    /// # Arguments
+    /// * `encrypted_shares_a` - Minuend encrypted shares
+    /// * `encrypted_shares_b` - Subtrahend encrypted shares
+    /// * `encryption_manager` - XOR encryption manager
+    ///
+    /// # Returns
     /// * `Ok(Vec<(FieldElement, FieldElement)>)` - Subtraction result
     /// * `Err(SSSError)` - Operation failure
     pub fn subtract_encrypted_shares_with_manager(
@@ -419,9 +416,9 @@ mod tests {
     }
 
     /// Create compatible test shares with predefined coordinates
-///
-/// # Error Cause:
-/// The original create_compatible_shares_for_test generates new random coordinates each time, causing coordinate mismatch with Beaver triples
+    ///
+    /// # Error Cause:
+    /// The original create_compatible_shares_for_test generates new random coordinates each time, causing coordinate mismatch with Beaver triples
     /// The original create_compatible_shares_for_test generates new random coordinates each time,
     /// causing coordinate mismatch with Beaver triples
     fn create_compatible_shares_with_coords<R: RngCore>(
@@ -596,7 +593,6 @@ mod tests {
             "Constant addition should produce correct result"
         );
     }
-
 
     #[test]
     fn test_complex_arithmetic_expression() {
@@ -989,7 +985,6 @@ mod tests {
         }
     }
 
-
     #[test]
     fn test_homomorphic_operations_stress_test() {
         let mut rng = create_test_rng();
@@ -1116,7 +1111,6 @@ mod tests {
             "Integrated Beaver multiplication should produce correct result"
         );
     }
-
 
     #[test]
     fn test_beaver_vs_direct_multiplication_consistency() {

@@ -355,4 +355,3 @@ criterion_group!(
 );
 
 criterion_main!(benches);
-

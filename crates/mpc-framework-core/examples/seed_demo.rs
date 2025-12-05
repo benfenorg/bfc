@@ -75,7 +75,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("   - Default run: cargo run --example seed_demo");
     println!("   - Custom seed: TEST_SEED=12345 cargo run --example seed_demo");
     println!("   - Random seed: USE_RANDOM_SEED=1 cargo run --example seed_demo");
-    println!("   - Same seed produces the same random sequence, facilitating test result reproduction");
+    println!(
+        "   - Same seed produces the same random sequence, facilitating test result reproduction"
+    );
 
     Ok(())
 }

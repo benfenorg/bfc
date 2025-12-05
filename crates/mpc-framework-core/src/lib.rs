@@ -43,20 +43,25 @@ pub use encrypted_beaver::EncryptedBeaverProcessor;
 
 // Export from two_party_share module - Two-party secret sharing operations
 pub use two_party_share::{
-    split_to_two_value,
-    recover_value,
-    recover_two_shares,
     add_two_shared_secrets,
-    sub_two_shared_secrets,
-    // Beaver multiplication - step by step API
-    mul_step1_compute_masked_diff,
-    mul_step1_compute_masked_diff_from_hex,
-    mul_step2_reconstruct_masked_values,
-    mul_step3_compute_result,
-    mul_step2_and_3_combined,
     // Beaver triple generation
     generate_beaver_triple,
     generate_beaver_triple_with_values,
+    // Beaver multiplication - step by step API
+    mul_step1_compute_masked_diff,
+    mul_step1_compute_masked_diff_from_hex,
+    mul_step2_and_3_combined,
+    mul_step2_reconstruct_masked_values,
+    mul_step3_compute_result,
+    recover_two_shares,
+    recover_value,
+    split_to_two_value,
+    sub_two_shared_secrets,
+};
+
+pub use share_converter::{
+    convert_from_transmission_shares, is_transmission_shares_format,
+    recover_from_transmission_shares,
 };
 
 // Type aliases - simplify complex type definitions

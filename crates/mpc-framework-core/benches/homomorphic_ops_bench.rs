@@ -40,17 +40,13 @@ fn create_compatible_shares(
 
     // Create polynomial for first secret and evaluate
     let poly_a = Polynomial::new(threshold - 1, FieldElementTrait::from_u64(secret_a), rng);
-    let shares_a: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_a.evaluate(&x)))
-        .collect();
+    let shares_a: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_a.evaluate(&x))).collect();
 
     // Create polynomial for second secret and evaluate at same x coordinates
     let poly_b = Polynomial::new(threshold - 1, FieldElementTrait::from_u64(secret_b), rng);
-    let shares_b: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_b.evaluate(&x)))
-        .collect();
+    let shares_b: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_b.evaluate(&x))).collect();
 
     (shares_a, shares_b, x_coords)
 }
@@ -224,30 +220,24 @@ fn bench_complex_expression(c: &mut Criterion) {
         FieldElementTrait::from_u64(secret_a),
         &mut rng,
     );
-    let shares_a: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_a.evaluate(&x)))
-        .collect();
+    let shares_a: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_a.evaluate(&x))).collect();
 
     let poly_b = Polynomial::new(
         threshold - 1,
         FieldElementTrait::from_u64(secret_b),
         &mut rng,
     );
-    let shares_b: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_b.evaluate(&x)))
-        .collect();
+    let shares_b: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_b.evaluate(&x))).collect();
 
     let poly_c = Polynomial::new(
         threshold - 1,
         FieldElementTrait::from_u64(secret_c),
         &mut rng,
     );
-    let shares_c: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_c.evaluate(&x)))
-        .collect();
+    let shares_c: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_c.evaluate(&x))).collect();
 
     group.throughput(Throughput::Elements(1));
 
@@ -255,7 +245,8 @@ fn bench_complex_expression(c: &mut Criterion) {
         let mut rng = create_bench_rng();
         bench.iter(|| {
             // Step 1: a + b
-            let ab_sum = HomomorphicOperations::add_shares(&shares_a, &shares_b).expect("add failed");
+            let ab_sum =
+                HomomorphicOperations::add_shares(&shares_a, &shares_b).expect("add failed");
 
             // Step 2: c * 2
             let c_doubled =
@@ -296,20 +287,16 @@ fn bench_beaver_multiplication(c: &mut Criterion) {
         FieldElementTrait::from_u64(x_secret),
         &mut rng,
     );
-    let x_shares: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_x.evaluate(&x)))
-        .collect();
+    let x_shares: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_x.evaluate(&x))).collect();
 
     let poly_y = Polynomial::new(
         threshold - 1,
         FieldElementTrait::from_u64(y_secret),
         &mut rng,
     );
-    let y_shares: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_y.evaluate(&x)))
-        .collect();
+    let y_shares: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_y.evaluate(&x))).collect();
 
     // Create Beaver triple with matching coordinates
     let triple = BeaverTriple::new_with_coordinates(7, 11, &x_coords, threshold, &mut rng)
@@ -385,10 +372,8 @@ fn bench_multiplication_comparison(c: &mut Criterion) {
         FieldElementTrait::from_u64(x_secret),
         &mut rng,
     );
-    let x_shares: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_x.evaluate(&x)))
-        .collect();
+    let x_shares: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_x.evaluate(&x))).collect();
 
     // For Beaver multiplication, we need y_shares too
     let poly_y = Polynomial::new(
@@ -396,10 +381,8 @@ fn bench_multiplication_comparison(c: &mut Criterion) {
         FieldElementTrait::from_u64(y_constant),
         &mut rng,
     );
-    let y_shares: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_y.evaluate(&x)))
-        .collect();
+    let y_shares: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_y.evaluate(&x))).collect();
 
     let triple = BeaverTriple::new_with_coordinates(13, 17, &x_coords, threshold, &mut rng)
         .expect("triple creation should succeed");
@@ -443,4 +426,3 @@ criterion_group!(
 );
 
 criterion_main!(benches);
-

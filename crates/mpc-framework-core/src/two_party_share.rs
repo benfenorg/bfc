@@ -24,15 +24,21 @@ use crate::types::Share;
 
 // Re-export helper functions for internal use
 pub use crate::two_party_helper::{
-    // Constants
-    THRESHOLD, TOTAL_SHARES,
+    bytes_to_share,
+    decode_share_data_with_user_id,
     // Encoding/Decoding
-    encode_share_data_with_user_id, decode_share_data_with_user_id,
-    share_to_bytes, bytes_to_share,
-    // Coordinate generation
-    get_two_party_coordinates, split_to_two_value_internal, recover_from_shares_internal,
+    encode_share_data_with_user_id,
     // Beaver triple
-    generate_beaver_triple, generate_beaver_triple_with_values,
+    generate_beaver_triple,
+    generate_beaver_triple_with_values,
+    // Coordinate generation
+    get_two_party_coordinates,
+    recover_from_shares_internal,
+    share_to_bytes,
+    split_to_two_value_internal,
+    // Constants
+    THRESHOLD,
+    TOTAL_SHARES,
 };
 
 // ============================================================================
@@ -59,13 +65,18 @@ pub use crate::two_party_helper::{
 /// ```ignore
 /// let (hex1, hex2, seed) = split_to_two_value(12345, 1, 0x1234567890ABCDEF, 0xABCDEF);
 /// ```
-pub fn split_to_two_value(value: u64, user_id: u64, mask_secret: u64, coord_seed: u64) -> (String, String, u64) {
+pub fn split_to_two_value(
+    value: u64,
+    user_id: u64,
+    mask_secret: u64,
+    coord_seed: u64,
+) -> (String, String, u64) {
     // Step 1: Use coord_seed to generate x-coordinates (independent of value!)
     let coords = get_two_party_coordinates(coord_seed);
 
     // Step 2: Shamir split the ORIGINAL value (split first!)
-    let (share1, share2) = split_to_two_value_internal(value, &coords)
-        .expect("Internal split should not fail");
+    let (share1, share2) =
+        split_to_two_value_internal(value, &coords).expect("Internal split should not fail");
 
     // Step 3: Convert shares to bytes
     let share1_bytes = share_to_bytes(&share1);
@@ -76,7 +87,11 @@ pub fn split_to_two_value(value: u64, user_id: u64, mask_secret: u64, coord_seed
     let encoded_share2 = encode_share_data_with_user_id(share2_bytes, mask_secret, user_id, 1);
 
     // Step 5: Return as hex strings
-    (hex::encode(encoded_share1), hex::encode(encoded_share2), coord_seed)
+    (
+        hex::encode(encoded_share1),
+        hex::encode(encoded_share2),
+        coord_seed,
+    )
 }
 
 /// Recover secret value from two hex-encoded shares
@@ -89,11 +104,7 @@ pub fn split_to_two_value(value: u64, user_id: u64, mask_secret: u64, coord_seed
 /// # Returns
 /// * `Ok(u64)` - The recovered secret value
 /// * `Err(SSSError)` - If decoding or recovery fails
-pub fn recover_value(
-    value1: String,
-    value2: String,
-    mask_secret: u64,
-) -> Result<u64, SSSError> {
+pub fn recover_value(value1: String, value2: String, mask_secret: u64) -> Result<u64, SSSError> {
     // Step 1: Decode hex -> unmask -> get shares
     let shares = recover_two_shares(value1, value2, mask_secret)?;
     // Step 2: Interpolate to recover original value
@@ -177,12 +188,10 @@ pub fn add_two_shared_secrets(
 
     // 4. Verify x coordinates match (ensures same coordinate system)
     if share_a.0 != share_b.0 {
-        return Err(SSSError::InvalidParameters(
-            format!(
-                "X coordinates must match for homomorphic addition. Got x_a={:?}, x_b={:?}",
-                share_a.0, share_b.0
-            )
-        ));
+        return Err(SSSError::InvalidParameters(format!(
+            "X coordinates must match for homomorphic addition. Got x_a={:?}, x_b={:?}",
+            share_a.0, share_b.0
+        )));
     }
 
     // 5. Add y coordinates in finite field
@@ -237,12 +246,10 @@ pub fn sub_two_shared_secrets(
 
     // 4. Verify x coordinates match (ensures same coordinate system)
     if share_a.0 != share_b.0 {
-        return Err(SSSError::InvalidParameters(
-            format!(
-                "X coordinates must match for homomorphic subtraction. Got x_a={:?}, x_b={:?}",
-                share_a.0, share_b.0
-            )
-        ));
+        return Err(SSSError::InvalidParameters(format!(
+            "X coordinates must match for homomorphic subtraction. Got x_a={:?}, x_b={:?}",
+            share_a.0, share_b.0
+        )));
     }
 
     // 5. Subtract y coordinates in finite field
@@ -303,10 +310,10 @@ pub fn mul_step1_compute_masked_diff_from_hex(
     }
 
     // 1. Hex decode
-    let bytes_val = hex::decode(&hex_share_val)
-        .map_err(|e| SSSError::InvalidParameters(e.to_string()))?;
-    let bytes_beaver = hex::decode(&hex_beaver_share)
-        .map_err(|e| SSSError::InvalidParameters(e.to_string()))?;
+    let bytes_val =
+        hex::decode(&hex_share_val).map_err(|e| SSSError::InvalidParameters(e.to_string()))?;
+    let bytes_beaver =
+        hex::decode(&hex_beaver_share).map_err(|e| SSSError::InvalidParameters(e.to_string()))?;
 
     // 2. Decode (remove shuffle/XOR + user_id interleaving)
     let decoded_val = decode_share_data_with_user_id(bytes_val, mask_secret, index)?;
@@ -318,12 +325,10 @@ pub fn mul_step1_compute_masked_diff_from_hex(
 
     // 4. Verify x coordinates match
     if share_val.0 != beaver_share.0 {
-        return Err(SSSError::InvalidParameters(
-            format!(
-                "X coordinates must match for Beaver multiplication. Got x_val={:?}, x_beaver={:?}",
-                share_val.0, beaver_share.0
-            )
-        ));
+        return Err(SSSError::InvalidParameters(format!(
+            "X coordinates must match for Beaver multiplication. Got x_val={:?}, x_beaver={:?}",
+            share_val.0, beaver_share.0
+        )));
     }
 
     // 5. Compute masked difference
@@ -408,11 +413,12 @@ pub fn mul_step2_and_3_combined(
 ) -> Result<Vec<u8>, SSSError> {
     // Step 2: Reconstruct d and e
     let (d_open, e_open) = mul_step2_reconstruct_masked_values(d_shares, e_shares)?;
-    
-    // Step 3: Compute final result
-    Ok(mul_step3_compute_result(beaver_a, beaver_b, beaver_c, d_open, e_open))
-}
 
+    // Step 3: Compute final result
+    Ok(mul_step3_compute_result(
+        beaver_a, beaver_b, beaver_c, d_open, e_open,
+    ))
+}
 
 // ============================================================================
 // Tests
@@ -431,7 +437,8 @@ mod tests {
 
     #[test]
     fn test_split_to_two_value_returns_hex_and_seed() {
-        let (hex1, hex2, seed) = split_to_two_value(12345, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1, hex2, seed) =
+            split_to_two_value(12345, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         // Should be valid hex strings
         assert!(!hex1.is_empty());
@@ -449,7 +456,8 @@ mod tests {
     #[test]
     fn test_split_and_recover_roundtrip() {
         let value = 12345u64;
-        let (hex1, hex2, _) = split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1, hex2, _) =
+            split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
         let recovered = recover_value(hex1, hex2, TEST_MASK_SECRET).unwrap();
         assert_eq!(recovered, value);
     }
@@ -457,7 +465,8 @@ mod tests {
     #[test]
     fn test_split_and_recover_zero() {
         let value = 0u64;
-        let (hex1, hex2, _) = split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1, hex2, _) =
+            split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
         let recovered = recover_value(hex1, hex2, TEST_MASK_SECRET).unwrap();
         assert_eq!(recovered, value);
     }
@@ -467,7 +476,8 @@ mod tests {
         // Note: u64::MAX exceeds the field modulus (18446744069414584321)
         // so we test with a large value within the field
         let value = 18446744069414584320u64; // MODULUS - 1
-        let (hex1, hex2, _) = split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1, hex2, _) =
+            split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
         let recovered = recover_value(hex1, hex2, TEST_MASK_SECRET).unwrap();
         assert_eq!(recovered, value);
     }
@@ -475,7 +485,8 @@ mod tests {
     #[test]
     fn test_recover_with_wrong_mask_fails() {
         let value = 12345u64;
-        let (hex1, hex2, _) = split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1, hex2, _) =
+            split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         let wrong_mask = 0xFEDCBA0987654321u64;
         let result = recover_value(hex1, hex2, wrong_mask);
@@ -508,7 +519,8 @@ mod tests {
     #[test]
     fn test_recover_two_shares_returns_shares() {
         let value = 12345u64;
-        let (hex1, hex2, _) = split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1, hex2, _) =
+            split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         let shares = recover_two_shares(hex1, hex2, TEST_MASK_SECRET).unwrap();
         assert_eq!(shares.len(), 2);
@@ -522,8 +534,10 @@ mod tests {
     fn test_different_user_ids_produce_different_shares() {
         let value = 12345u64;
 
-        let (hex1_a, hex2_a, seed_a) = split_to_two_value(value, 1u64, TEST_MASK_SECRET, TEST_COORD_SEED);
-        let (hex1_b, hex2_b, seed_b) = split_to_two_value(value, 2u64, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_a, hex2_a, seed_a) =
+            split_to_two_value(value, 1u64, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_b, hex2_b, seed_b) =
+            split_to_two_value(value, 2u64, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         // Different user_ids should produce different encoded shares
         assert_ne!(hex1_a, hex1_b);
@@ -543,8 +557,10 @@ mod tests {
     fn test_split_is_deterministic() {
         let value = 12345u64;
 
-        let (hex1_a, hex2_a, seed_a) = split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
-        let (hex1_b, hex2_b, seed_b) = split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_a, hex2_a, seed_a) =
+            split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_b, hex2_b, seed_b) =
+            split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         // Same inputs should produce same outputs
         assert_eq!(hex1_a, hex1_b);
@@ -560,16 +576,16 @@ mod tests {
         let value2 = 200u64;
 
         // Split both values using same coord_seed (ensures same x-coordinates)
-        let (hex1_a, hex2_a, seed_a) = split_to_two_value(value1, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
-        let (hex1_b, hex2_b, seed_b) = split_to_two_value(value2, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_a, hex2_a, seed_a) =
+            split_to_two_value(value1, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_b, hex2_b, seed_b) =
+            split_to_two_value(value2, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         // Homomorphic addition on each share position
-        let result_bytes1 = add_two_shared_secrets(
-            hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed_a, seed_b,
-        ).unwrap();
-        let result_bytes2 = add_two_shared_secrets(
-            hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed_a, seed_b,
-        ).unwrap();
+        let result_bytes1 =
+            add_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed_a, seed_b).unwrap();
+        let result_bytes2 =
+            add_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed_a, seed_b).unwrap();
 
         // Convert bytes to shares and recover
         let share1 = bytes_to_share(&result_bytes1).unwrap();
@@ -583,15 +599,15 @@ mod tests {
         let value1 = 42u64;
         let value2 = 0u64;
 
-        let (hex1_a, hex2_a, seed_a) = split_to_two_value(value1, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
-        let (hex1_b, hex2_b, seed_b) = split_to_two_value(value2, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_a, hex2_a, seed_a) =
+            split_to_two_value(value1, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_b, hex2_b, seed_b) =
+            split_to_two_value(value2, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
-        let result_bytes1 = add_two_shared_secrets(
-            hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed_a, seed_b,
-        ).unwrap();
-        let result_bytes2 = add_two_shared_secrets(
-            hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed_a, seed_b,
-        ).unwrap();
+        let result_bytes1 =
+            add_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed_a, seed_b).unwrap();
+        let result_bytes2 =
+            add_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed_a, seed_b).unwrap();
 
         let share1 = bytes_to_share(&result_bytes1).unwrap();
         let share2 = bytes_to_share(&result_bytes2).unwrap();
@@ -610,9 +626,7 @@ mod tests {
         let (hex1_b, _, _) = split_to_two_value(value2, TEST_USER_ID, TEST_MASK_SECRET, seed2);
 
         // Should fail because coord_seeds don't match
-        let result = add_two_shared_secrets(
-            hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed1, seed2,
-        );
+        let result = add_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed1, seed2);
         assert!(result.is_err());
     }
 
@@ -623,15 +637,15 @@ mod tests {
         let value1 = 300u64;
         let value2 = 100u64;
 
-        let (hex1_a, hex2_a, seed_a) = split_to_two_value(value1, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
-        let (hex1_b, hex2_b, seed_b) = split_to_two_value(value2, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_a, hex2_a, seed_a) =
+            split_to_two_value(value1, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_b, hex2_b, seed_b) =
+            split_to_two_value(value2, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
-        let result_bytes1 = sub_two_shared_secrets(
-            hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed_a, seed_b,
-        ).unwrap();
-        let result_bytes2 = sub_two_shared_secrets(
-            hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed_a, seed_b,
-        ).unwrap();
+        let result_bytes1 =
+            sub_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed_a, seed_b).unwrap();
+        let result_bytes2 =
+            sub_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed_a, seed_b).unwrap();
 
         let share1 = bytes_to_share(&result_bytes1).unwrap();
         let share2 = bytes_to_share(&result_bytes2).unwrap();
@@ -643,15 +657,15 @@ mod tests {
     fn test_sub_equal_values() {
         let value = 42u64;
 
-        let (hex1_a, hex2_a, seed_a) = split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
-        let (hex1_b, hex2_b, seed_b) = split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_a, hex2_a, seed_a) =
+            split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_b, hex2_b, seed_b) =
+            split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
-        let result_bytes1 = sub_two_shared_secrets(
-            hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed_a, seed_b,
-        ).unwrap();
-        let result_bytes2 = sub_two_shared_secrets(
-            hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed_a, seed_b,
-        ).unwrap();
+        let result_bytes1 =
+            sub_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed_a, seed_b).unwrap();
+        let result_bytes2 =
+            sub_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed_a, seed_b).unwrap();
 
         let share1 = bytes_to_share(&result_bytes1).unwrap();
         let share2 = bytes_to_share(&result_bytes2).unwrap();
@@ -689,19 +703,24 @@ mod tests {
         let e_share_1 = mul_step1_compute_masked_diff(&y_share_1, &triple.b_shares[1]);
 
         // Step 2: Exchange and reconstruct d, e (after network exchange)
-        let (d_open, e_open) = mul_step2_reconstruct_masked_values(
-            &[d_share_0, d_share_1],
-            &[e_share_0, e_share_1],
-        ).unwrap();
+        let (d_open, e_open) =
+            mul_step2_reconstruct_masked_values(&[d_share_0, d_share_1], &[e_share_0, e_share_1])
+                .unwrap();
 
         // Step 3: Each party computes result (local)
         let result_bytes_0 = mul_step3_compute_result(
-            &triple.a_shares[0], &triple.b_shares[0], &triple.c_shares[0],
-            d_open, e_open,
+            &triple.a_shares[0],
+            &triple.b_shares[0],
+            &triple.c_shares[0],
+            d_open,
+            e_open,
         );
         let result_bytes_1 = mul_step3_compute_result(
-            &triple.a_shares[1], &triple.b_shares[1], &triple.c_shares[1],
-            d_open, e_open,
+            &triple.a_shares[1],
+            &triple.b_shares[1],
+            &triple.c_shares[1],
+            d_open,
+            e_open,
         );
 
         // Verify result
@@ -740,14 +759,16 @@ mod tests {
             &triple.a_shares[0],
             &triple.b_shares[0],
             &triple.c_shares[0],
-        ).unwrap();
+        )
+        .unwrap();
         let result_bytes_1 = mul_step2_and_3_combined(
             &[d_share_0, d_share_1],
             &[e_share_0, e_share_1],
             &triple.a_shares[1],
             &triple.b_shares[1],
             &triple.c_shares[1],
-        ).unwrap();
+        )
+        .unwrap();
 
         // Verify result
         let share1 = bytes_to_share(&result_bytes_0).unwrap();
@@ -780,19 +801,24 @@ mod tests {
         let e_share_1 = mul_step1_compute_masked_diff(&y_share_1, &triple.b_shares[1]);
 
         // Step 2
-        let (d_open, e_open) = mul_step2_reconstruct_masked_values(
-            &[d_share_0, d_share_1],
-            &[e_share_0, e_share_1],
-        ).unwrap();
+        let (d_open, e_open) =
+            mul_step2_reconstruct_masked_values(&[d_share_0, d_share_1], &[e_share_0, e_share_1])
+                .unwrap();
 
         // Step 3
         let result_bytes_0 = mul_step3_compute_result(
-            &triple.a_shares[0], &triple.b_shares[0], &triple.c_shares[0],
-            d_open, e_open,
+            &triple.a_shares[0],
+            &triple.b_shares[0],
+            &triple.c_shares[0],
+            d_open,
+            e_open,
         );
         let result_bytes_1 = mul_step3_compute_result(
-            &triple.a_shares[1], &triple.b_shares[1], &triple.c_shares[1],
-            d_open, e_open,
+            &triple.a_shares[1],
+            &triple.b_shares[1],
+            &triple.c_shares[1],
+            d_open,
+            e_open,
         );
 
         let share1 = bytes_to_share(&result_bytes_0).unwrap();
@@ -825,19 +851,24 @@ mod tests {
         let e_share_1 = mul_step1_compute_masked_diff(&y_share_1, &triple.b_shares[1]);
 
         // Step 2
-        let (d_open, e_open) = mul_step2_reconstruct_masked_values(
-            &[d_share_0, d_share_1],
-            &[e_share_0, e_share_1],
-        ).unwrap();
+        let (d_open, e_open) =
+            mul_step2_reconstruct_masked_values(&[d_share_0, d_share_1], &[e_share_0, e_share_1])
+                .unwrap();
 
         // Step 3
         let result_bytes_0 = mul_step3_compute_result(
-            &triple.a_shares[0], &triple.b_shares[0], &triple.c_shares[0],
-            d_open, e_open,
+            &triple.a_shares[0],
+            &triple.b_shares[0],
+            &triple.c_shares[0],
+            d_open,
+            e_open,
         );
         let result_bytes_1 = mul_step3_compute_result(
-            &triple.a_shares[1], &triple.b_shares[1], &triple.c_shares[1],
-            d_open, e_open,
+            &triple.a_shares[1],
+            &triple.b_shares[1],
+            &triple.c_shares[1],
+            d_open,
+            e_open,
         );
 
         let share1 = bytes_to_share(&result_bytes_0).unwrap();
@@ -855,13 +886,18 @@ mod tests {
         let b = 50u64;
         let c = 30u64;
 
-        let (hex1_a, hex2_a, seed) = split_to_two_value(a, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
-        let (hex1_b, hex2_b, _) = split_to_two_value(b, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
-        let (hex1_c, hex2_c, _) = split_to_two_value(c, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_a, hex2_a, seed) =
+            split_to_two_value(a, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_b, hex2_b, _) =
+            split_to_two_value(b, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_c, hex2_c, _) =
+            split_to_two_value(c, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         // Step 1: a + b (on both share positions)
-        let ab_bytes1 = add_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed, seed).unwrap();
-        let ab_bytes2 = add_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed, seed).unwrap();
+        let ab_bytes1 =
+            add_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed, seed).unwrap();
+        let ab_bytes2 =
+            add_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed, seed).unwrap();
 
         // Convert raw bytes to shares
         let share1_ab = bytes_to_share(&ab_bytes1).unwrap();
@@ -884,12 +920,16 @@ mod tests {
         let a = 10u64;
         let b = 15u64;
 
-        let (hex1_a, hex2_a, seed) = split_to_two_value(a, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
-        let (hex1_b, hex2_b, _) = split_to_two_value(b, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_a, hex2_a, seed) =
+            split_to_two_value(a, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_b, hex2_b, _) =
+            split_to_two_value(b, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         // a + b
-        let ab_bytes1 = add_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed, seed).unwrap();
-        let ab_bytes2 = add_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed, seed).unwrap();
+        let ab_bytes1 =
+            add_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed, seed).unwrap();
+        let ab_bytes2 =
+            add_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed, seed).unwrap();
 
         let share1 = bytes_to_share(&ab_bytes1).unwrap();
         let share2 = bytes_to_share(&ab_bytes2).unwrap();
@@ -911,7 +951,8 @@ mod tests {
         ];
 
         for value in test_cases {
-            let (hex1, hex2, _) = split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            let (hex1, hex2, _) =
+                split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
             let recovered = recover_value(hex1, hex2, TEST_MASK_SECRET).unwrap();
             assert_eq!(recovered, value, "Failed for value {}", value);
         }
@@ -927,14 +968,20 @@ mod tests {
         let c = 30u64;
         let d = 20u64;
 
-        let (hex1_a, hex2_a, seed) = split_to_two_value(a, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
-        let (hex1_b, hex2_b, _) = split_to_two_value(b, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
-        let (hex1_c, hex2_c, _) = split_to_two_value(c, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
-        let (hex1_d, hex2_d, _) = split_to_two_value(d, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_a, hex2_a, seed) =
+            split_to_two_value(a, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_b, hex2_b, _) =
+            split_to_two_value(b, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_c, hex2_c, _) =
+            split_to_two_value(c, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex1_d, hex2_d, _) =
+            split_to_two_value(d, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         // a + b
-        let ab_bytes1 = add_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed, seed).unwrap();
-        let ab_bytes2 = add_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed, seed).unwrap();
+        let ab_bytes1 =
+            add_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed, seed).unwrap();
+        let ab_bytes2 =
+            add_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed, seed).unwrap();
         let share1_ab = bytes_to_share(&ab_bytes1).unwrap();
         let share2_ab = bytes_to_share(&ab_bytes2).unwrap();
 
@@ -973,18 +1020,23 @@ mod tests {
         let e_share_0 = mul_step1_compute_masked_diff(&y_share_0, &triple.b_shares[0]);
         let e_share_1 = mul_step1_compute_masked_diff(&y_share_1, &triple.b_shares[1]);
 
-        let (d_open, e_open) = mul_step2_reconstruct_masked_values(
-            &[d_share_0, d_share_1],
-            &[e_share_0, e_share_1],
-        ).unwrap();
+        let (d_open, e_open) =
+            mul_step2_reconstruct_masked_values(&[d_share_0, d_share_1], &[e_share_0, e_share_1])
+                .unwrap();
 
         let result_bytes_0 = mul_step3_compute_result(
-            &triple.a_shares[0], &triple.b_shares[0], &triple.c_shares[0],
-            d_open, e_open,
+            &triple.a_shares[0],
+            &triple.b_shares[0],
+            &triple.c_shares[0],
+            d_open,
+            e_open,
         );
         let result_bytes_1 = mul_step3_compute_result(
-            &triple.a_shares[1], &triple.b_shares[1], &triple.c_shares[1],
-            d_open, e_open,
+            &triple.a_shares[1],
+            &triple.b_shares[1],
+            &triple.c_shares[1],
+            d_open,
+            e_open,
         );
 
         let share1 = bytes_to_share(&result_bytes_0).unwrap();
@@ -1013,18 +1065,50 @@ mod tests {
         let a_bytes_1 = share_to_bytes(&triple.a_shares[1]);
 
         // Encode with user_id and mask
-        let hex_x_0 = hex::encode(encode_share_data_with_user_id(x_bytes_0, TEST_MASK_SECRET, TEST_USER_ID, 0));
-        let hex_x_1 = hex::encode(encode_share_data_with_user_id(x_bytes_1, TEST_MASK_SECRET, TEST_USER_ID, 1));
-        let hex_a_0 = hex::encode(encode_share_data_with_user_id(a_bytes_0, TEST_MASK_SECRET, TEST_USER_ID, 0));
-        let hex_a_1 = hex::encode(encode_share_data_with_user_id(a_bytes_1, TEST_MASK_SECRET, TEST_USER_ID, 1));
+        let hex_x_0 = hex::encode(encode_share_data_with_user_id(
+            x_bytes_0,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            0,
+        ));
+        let hex_x_1 = hex::encode(encode_share_data_with_user_id(
+            x_bytes_1,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            1,
+        ));
+        let hex_a_0 = hex::encode(encode_share_data_with_user_id(
+            a_bytes_0,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            0,
+        ));
+        let hex_a_1 = hex::encode(encode_share_data_with_user_id(
+            a_bytes_1,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            1,
+        ));
 
         // Test step1 with hex input
         let d_share_0_hex = mul_step1_compute_masked_diff_from_hex(
-            hex_x_0, hex_a_0, TEST_MASK_SECRET, 0, TEST_COORD_SEED, TEST_COORD_SEED,
-        ).unwrap();
+            hex_x_0,
+            hex_a_0,
+            TEST_MASK_SECRET,
+            0,
+            TEST_COORD_SEED,
+            TEST_COORD_SEED,
+        )
+        .unwrap();
         let d_share_1_hex = mul_step1_compute_masked_diff_from_hex(
-            hex_x_1, hex_a_1, TEST_MASK_SECRET, 1, TEST_COORD_SEED, TEST_COORD_SEED,
-        ).unwrap();
+            hex_x_1,
+            hex_a_1,
+            TEST_MASK_SECRET,
+            1,
+            TEST_COORD_SEED,
+            TEST_COORD_SEED,
+        )
+        .unwrap();
 
         // Compare with direct computation
         let d_share_0_direct = mul_step1_compute_masked_diff(&x_share_0, &triple.a_shares[0]);
@@ -1048,12 +1132,27 @@ mod tests {
         let x_bytes_0 = share_to_bytes(&x_share_0);
         let a_bytes_0 = share_to_bytes(&triple.a_shares[0]);
 
-        let hex_x_0 = hex::encode(encode_share_data_with_user_id(x_bytes_0, TEST_MASK_SECRET, TEST_USER_ID, 0));
-        let hex_a_0 = hex::encode(encode_share_data_with_user_id(a_bytes_0, TEST_MASK_SECRET, TEST_USER_ID, 0));
+        let hex_x_0 = hex::encode(encode_share_data_with_user_id(
+            x_bytes_0,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            0,
+        ));
+        let hex_a_0 = hex::encode(encode_share_data_with_user_id(
+            a_bytes_0,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            0,
+        ));
 
         // Test with different coord_seeds
         let result = mul_step1_compute_masked_diff_from_hex(
-            hex_x_0, hex_a_0, TEST_MASK_SECRET, 0, TEST_COORD_SEED, 0xFEDCBA0987654321u64,
+            hex_x_0,
+            hex_a_0,
+            TEST_MASK_SECRET,
+            0,
+            TEST_COORD_SEED,
+            0xFEDCBA0987654321u64,
         );
         assert!(result.is_err());
     }

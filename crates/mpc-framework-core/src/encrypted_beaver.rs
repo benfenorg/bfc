@@ -198,7 +198,6 @@ impl EncryptedBeaverProcessor {
         BeaverMultiplication::multiply_with_beaver(&x_shares, &y_shares, &beaver_triple)
     }
 
-
     /// Perform Beaver multiplication and return encrypted result
     ///
     /// # Parameters
@@ -633,7 +632,6 @@ mod tests {
             "Simple API result should be correct"
         );
     }
-
 
     #[test]
     fn test_multiply_and_encrypt() {

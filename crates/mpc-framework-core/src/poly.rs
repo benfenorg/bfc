@@ -187,7 +187,6 @@ impl Polynomial {
         Ok(result)
     }
 
-
     /// Get the degree of the polynomial
     ///
     /// # Returns
@@ -207,7 +206,6 @@ impl Polynomial {
     pub fn coefficients(&self) -> &[FieldElement] {
         &self.coefficients
     }
-
 }
 
 #[cfg(test)]
@@ -585,8 +583,6 @@ mod tests {
         let expected = FieldElementTrait::from_u64(49);
         assert_eq!(result1, expected, "f(4) should equal 49");
     }
-
-
 
     #[test]
     fn test_coefficients_getter() {

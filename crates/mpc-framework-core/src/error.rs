@@ -141,7 +141,7 @@ impl From<subtle::CtOption<crate::field::GF64>> for SSSError {
         SSSError::FieldError(
             // This case should not happen, as From is only called on error
             "Finite field operation failed - likely division by zero or invalid operation"
-                .to_string()
+                .to_string(),
         )
     }
 }
@@ -215,10 +215,10 @@ mod tests {
     fn test_error_variants() {
         let field_error = SSSError::field_error("Division by zero");
         assert!(matches!(field_error, SSSError::FieldError(_)));
-        
+
         let param_error = SSSError::invalid_parameters("Invalid threshold");
         assert!(matches!(param_error, SSSError::InvalidParameters(_)));
-        
+
         let share_error = SSSError::insufficient_shares("Not enough shares");
         assert!(matches!(share_error, SSSError::InsufficientShares(_)));
     }
@@ -228,7 +228,7 @@ mod tests {
         let error1 = SSSError::field_error("test message");
         let error2 = SSSError::invalid_parameters("test message");
         let error3 = SSSError::insufficient_shares("test message");
-        
+
         assert!(error1.to_string().contains("test message"));
         assert!(error2.to_string().contains("test message"));
         assert!(error3.to_string().contains("test message"));

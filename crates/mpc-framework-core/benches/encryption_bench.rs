@@ -57,10 +57,7 @@ fn generate_test_shares(
 
     let poly = Polynomial::new(threshold - 1, FieldElementTrait::from_u64(secret), rng);
 
-    x_coords
-        .iter()
-        .map(|&x| (x, poly.evaluate(&x)))
-        .collect()
+    x_coords.iter().map(|&x| (x, poly.evaluate(&x))).collect()
 }
 
 /// Benchmark single share encryption
@@ -241,20 +238,16 @@ fn bench_encrypted_homomorphic_add(c: &mut Criterion) {
         FieldElementTrait::from_u64(secret_a),
         &mut rng,
     );
-    let shares_a: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_a.evaluate(&x)))
-        .collect();
+    let shares_a: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_a.evaluate(&x))).collect();
 
     let poly_b = Polynomial::new(
         threshold - 1,
         FieldElementTrait::from_u64(secret_b),
         &mut rng,
     );
-    let shares_b: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_b.evaluate(&x)))
-        .collect();
+    let shares_b: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_b.evaluate(&x))).collect();
 
     // Encrypt shares
     let encrypted_a = manager
@@ -306,20 +299,16 @@ fn bench_encrypted_homomorphic_subtract(c: &mut Criterion) {
         FieldElementTrait::from_u64(secret_a),
         &mut rng,
     );
-    let shares_a: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_a.evaluate(&x)))
-        .collect();
+    let shares_a: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_a.evaluate(&x))).collect();
 
     let poly_b = Polynomial::new(
         threshold - 1,
         FieldElementTrait::from_u64(secret_b),
         &mut rng,
     );
-    let shares_b: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_b.evaluate(&x)))
-        .collect();
+    let shares_b: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_b.evaluate(&x))).collect();
 
     // Encrypt shares
     let encrypted_a = manager
@@ -419,20 +408,16 @@ fn bench_end_to_end_encrypted(c: &mut Criterion) {
         FieldElementTrait::from_u64(secret_a),
         &mut rng,
     );
-    let shares_a: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_a.evaluate(&x)))
-        .collect();
+    let shares_a: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_a.evaluate(&x))).collect();
 
     let poly_b = Polynomial::new(
         threshold - 1,
         FieldElementTrait::from_u64(secret_b),
         &mut rng,
     );
-    let shares_b: Vec<(FieldElement, FieldElement)> = x_coords
-        .iter()
-        .map(|&x| (x, poly_b.evaluate(&x)))
-        .collect();
+    let shares_b: Vec<(FieldElement, FieldElement)> =
+        x_coords.iter().map(|&x| (x, poly_b.evaluate(&x))).collect();
 
     group.throughput(Throughput::Elements(1));
 
@@ -481,4 +466,3 @@ criterion_group!(
 );
 
 criterion_main!(benches);
-

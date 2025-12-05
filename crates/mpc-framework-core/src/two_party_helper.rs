@@ -137,7 +137,8 @@ pub fn encode_share_data_with_user_id(
     }
 
     if index == 0 {
-        let (forward_permutation, _) = generate_shuffle_permutations(result_data.len(), mask_secret);
+        let (forward_permutation, _) =
+            generate_shuffle_permutations(result_data.len(), mask_secret);
         shuffle_data(&result_data, &forward_permutation)
     } else {
         let xor_mask = get_xor_mask(result_data.len());
@@ -400,12 +401,14 @@ mod tests {
         let share_data = vec![1u8, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
 
         // Test index 0 (shuffle)
-        let encoded0 = encode_share_data_with_user_id(share_data.clone(), TEST_MASK_SECRET, TEST_USER_ID, 0);
+        let encoded0 =
+            encode_share_data_with_user_id(share_data.clone(), TEST_MASK_SECRET, TEST_USER_ID, 0);
         let decoded0 = decode_share_data_with_user_id(encoded0, TEST_MASK_SECRET, 0).unwrap();
         assert_eq!(decoded0, share_data);
 
         // Test index 1 (XOR mask)
-        let encoded1 = encode_share_data_with_user_id(share_data.clone(), TEST_MASK_SECRET, TEST_USER_ID, 1);
+        let encoded1 =
+            encode_share_data_with_user_id(share_data.clone(), TEST_MASK_SECRET, TEST_USER_ID, 1);
         let decoded1 = decode_share_data_with_user_id(encoded1, TEST_MASK_SECRET, 1).unwrap();
         assert_eq!(decoded1, share_data);
     }
@@ -497,4 +500,3 @@ mod tests {
         assert_eq!(triple1.a_shares[0].1, triple2.a_shares[0].1);
     }
 }
-

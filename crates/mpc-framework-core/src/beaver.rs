@@ -716,7 +716,6 @@ mod tests {
         );
     }
 
-
     #[test]
     fn test_beaver_with_zero_values() {
         let mut rng = create_test_rng();

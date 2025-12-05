@@ -376,7 +376,6 @@ mod tests {
         let _ = fs::remove_file(config_path);
     }
 
-
     #[test]
     fn test_encrypted_homomorphic_addition() {
         let config_path = create_test_config().expect("Failed to create test config");
@@ -700,7 +699,6 @@ mod tests {
         let _ = fs::remove_file(config_path);
     }
 
-
     #[test]
     fn test_encrypted_share_structure() {
         let config_path = create_test_config().expect("Failed to create test config");
@@ -764,5 +762,4 @@ mod tests {
         // Clean up test file
         let _ = fs::remove_file(config_path);
     }
-
 }

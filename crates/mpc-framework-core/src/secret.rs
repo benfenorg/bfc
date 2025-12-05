@@ -156,7 +156,6 @@ impl SecretSharing {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -455,5 +454,4 @@ mod tests {
 
         assert_eq!(recovered, secret, "Should handle large threshold correctly");
     }
-
 }
