@@ -8618,6 +8618,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "mpc-framework-core"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "clap",
+ "criterion",
+ "fastcrypto",
+ "ff 0.13.0",
+ "futures",
+ "hex",
+ "mpc-transmission",
+ "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "rand_core 0.6.4",
+ "serde",
+ "serde_json",
+ "subtle",
+ "tempfile",
+ "thiserror 1.0.69",
+ "tokio",
+]
+
+[[package]]
 name = "mpc-transmission"
 version = "0.1.0"
 dependencies = [
