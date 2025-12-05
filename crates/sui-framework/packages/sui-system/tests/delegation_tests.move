@@ -358,7 +358,7 @@ fun add_remove_stake_flow() {
 // }
 
     #[test]
-    #[expected_failure(abort_code = stable_pool::EIncompatibleStakedSui)]
+    #[expected_failure(abort_code = sui_system::EUnsupportedFeature)]
     fun test_join_different_epochs_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(STAKER_ADDR_1);
@@ -480,7 +480,7 @@ fun remove_stake_post_active_flow_with_rewards() {
 }
 
     #[test]
-    #[expected_failure(abort_code = stable_pool::EStakedSuiBelowThreshold)]
+    #[expected_failure(abort_code = sui_system::EUnsupportedFeature)]
     fun test_split_nonentry_below_threshold_stable() {
         set_up_sui_system_state();
         let mut scenario_val = test_scenario::begin(STAKER_ADDR_1);
@@ -880,7 +880,7 @@ fun add_preactive_remove_pending_failure() {
 }
 
 #[test]
-#[expected_failure(abort_code = EUnsupportedFeature)]
+#[expected_failure(abort_code = validator_set::EMinJoiningStakeNotReached)]
 fun test_add_preactive_remove_pending_failure_stable() {
     set_up_sui_system_state();
     let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
