@@ -164,6 +164,7 @@ pub fn add_two_shared_secrets(
     hex_b: String,
     mask_secret: u64,
     index: u8,
+    user_id: u64,
     coord_seed_a: u64,
     coord_seed_b: u64,
 ) -> Result<Vec<u8>, SSSError> {
@@ -198,7 +199,11 @@ pub fn add_two_shared_secrets(
     let new_share = (share_a.0, share_a.1 + share_b.1);
 
     // 6. Return raw share bytes
-    Ok(share_to_bytes(&new_share))
+    let bytes = share_to_bytes(&new_share);
+
+    // 7. Encode with mask + user_id interleaving + shuffle/XOR (then mask!)
+    let encoded_share = encode_share_data_with_user_id(bytes, mask_secret, user_id, index);
+    Ok(encoded_share)
 }
 
 /// Subtract two shared secrets homomorphically (single share version)
@@ -222,6 +227,7 @@ pub fn sub_two_shared_secrets(
     hex_b: String,
     mask_secret: u64,
     index: u8,
+    user_id: u64,
     coord_seed_a: u64,
     coord_seed_b: u64,
 ) -> Result<Vec<u8>, SSSError> {
@@ -256,7 +262,11 @@ pub fn sub_two_shared_secrets(
     let new_share = (share_a.0, share_a.1 - share_b.1);
 
     // 6. Return raw share bytes
-    Ok(share_to_bytes(&new_share))
+    let bytes = share_to_bytes(&new_share);
+
+    // 7. Encode with mask + user_id interleaving + shuffle/XOR (then mask!)
+    let encoded_share = encode_share_data_with_user_id(bytes, mask_secret, user_id, index);
+    Ok(encoded_share)
 }
 
 // ============================================================================
@@ -582,15 +592,34 @@ mod tests {
             split_to_two_value(value2, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         // Homomorphic addition on each share position
-        let result_bytes1 =
-            add_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed_a, seed_b).unwrap();
-        let result_bytes2 =
-            add_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed_a, seed_b).unwrap();
+        let result_bytes1 = add_two_shared_secrets(
+            hex1_a,
+            hex1_b,
+            TEST_MASK_SECRET,
+            0,
+            TEST_USER_ID,
+            seed_a,
+            seed_b,
+        )
+        .unwrap();
+        let result_bytes2 = add_two_shared_secrets(
+            hex2_a,
+            hex2_b,
+            TEST_MASK_SECRET,
+            1,
+            TEST_USER_ID,
+            seed_a,
+            seed_b,
+        )
+        .unwrap();
 
         // Convert bytes to shares and recover
-        let share1 = bytes_to_share(&result_bytes1).unwrap();
-        let share2 = bytes_to_share(&result_bytes2).unwrap();
-        let result = recover_from_shares_internal(&[share1, share2]).unwrap();
+        let result = recover_value(
+            hex::encode(result_bytes1),
+            hex::encode(result_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
         assert_eq!(result, value1 + value2);
     }
 
@@ -604,14 +633,33 @@ mod tests {
         let (hex1_b, hex2_b, seed_b) =
             split_to_two_value(value2, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
-        let result_bytes1 =
-            add_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed_a, seed_b).unwrap();
-        let result_bytes2 =
-            add_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed_a, seed_b).unwrap();
+        let result_bytes1 = add_two_shared_secrets(
+            hex1_a,
+            hex1_b,
+            TEST_MASK_SECRET,
+            0,
+            TEST_USER_ID,
+            seed_a,
+            seed_b,
+        )
+        .unwrap();
+        let result_bytes2 = add_two_shared_secrets(
+            hex2_a,
+            hex2_b,
+            TEST_MASK_SECRET,
+            1,
+            TEST_USER_ID,
+            seed_a,
+            seed_b,
+        )
+        .unwrap();
 
-        let share1 = bytes_to_share(&result_bytes1).unwrap();
-        let share2 = bytes_to_share(&result_bytes2).unwrap();
-        let result = recover_from_shares_internal(&[share1, share2]).unwrap();
+        let result = recover_value(
+            hex::encode(result_bytes1),
+            hex::encode(result_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
         assert_eq!(result, value1);
     }
 
@@ -626,7 +674,15 @@ mod tests {
         let (hex1_b, _, _) = split_to_two_value(value2, TEST_USER_ID, TEST_MASK_SECRET, seed2);
 
         // Should fail because coord_seeds don't match
-        let result = add_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed1, seed2);
+        let result = add_two_shared_secrets(
+            hex1_a,
+            hex1_b,
+            TEST_MASK_SECRET,
+            0,
+            TEST_USER_ID,
+            seed1,
+            seed2,
+        );
         assert!(result.is_err());
     }
 
@@ -642,14 +698,33 @@ mod tests {
         let (hex1_b, hex2_b, seed_b) =
             split_to_two_value(value2, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
-        let result_bytes1 =
-            sub_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed_a, seed_b).unwrap();
-        let result_bytes2 =
-            sub_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed_a, seed_b).unwrap();
+        let result_bytes1 = sub_two_shared_secrets(
+            hex1_a,
+            hex1_b,
+            TEST_MASK_SECRET,
+            0,
+            TEST_USER_ID,
+            seed_a,
+            seed_b,
+        )
+        .unwrap();
+        let result_bytes2 = sub_two_shared_secrets(
+            hex2_a,
+            hex2_b,
+            TEST_MASK_SECRET,
+            1,
+            TEST_USER_ID,
+            seed_a,
+            seed_b,
+        )
+        .unwrap();
 
-        let share1 = bytes_to_share(&result_bytes1).unwrap();
-        let share2 = bytes_to_share(&result_bytes2).unwrap();
-        let result = recover_from_shares_internal(&[share1, share2]).unwrap();
+        let result = recover_value(
+            hex::encode(result_bytes1),
+            hex::encode(result_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
         assert_eq!(result, value1 - value2);
     }
 
@@ -662,14 +737,33 @@ mod tests {
         let (hex1_b, hex2_b, seed_b) =
             split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
-        let result_bytes1 =
-            sub_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed_a, seed_b).unwrap();
-        let result_bytes2 =
-            sub_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed_a, seed_b).unwrap();
+        let result_bytes1 = sub_two_shared_secrets(
+            hex1_a,
+            hex1_b,
+            TEST_MASK_SECRET,
+            0,
+            TEST_USER_ID,
+            seed_a,
+            seed_b,
+        )
+        .unwrap();
+        let result_bytes2 = sub_two_shared_secrets(
+            hex2_a,
+            hex2_b,
+            TEST_MASK_SECRET,
+            1,
+            TEST_USER_ID,
+            seed_a,
+            seed_b,
+        )
+        .unwrap();
 
-        let share1 = bytes_to_share(&result_bytes1).unwrap();
-        let share2 = bytes_to_share(&result_bytes2).unwrap();
-        let result = recover_from_shares_internal(&[share1, share2]).unwrap();
+        let result = recover_value(
+            hex::encode(result_bytes1),
+            hex::encode(result_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
         assert_eq!(result, 0);
     }
 
@@ -894,23 +988,49 @@ mod tests {
             split_to_two_value(c, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         // Step 1: a + b (on both share positions)
-        let ab_bytes1 =
-            add_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed, seed).unwrap();
-        let ab_bytes2 =
-            add_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed, seed).unwrap();
+        let ab_bytes0 = add_two_shared_secrets(
+            hex1_a,
+            hex1_b,
+            TEST_MASK_SECRET,
+            0,
+            TEST_USER_ID,
+            seed,
+            seed,
+        )
+        .unwrap();
+        let ab_bytes1 = add_two_shared_secrets(
+            hex2_a,
+            hex2_b,
+            TEST_MASK_SECRET,
+            1,
+            TEST_USER_ID,
+            seed,
+            seed,
+        )
+        .unwrap();
 
-        // Convert raw bytes to shares
-        let share1_ab = bytes_to_share(&ab_bytes1).unwrap();
-        let share2_ab = bytes_to_share(&ab_bytes2).unwrap();
-
-        // Also get c shares directly
-        let shares_c = recover_two_shares(hex1_c, hex2_c, TEST_MASK_SECRET).unwrap();
-
-        // Subtract manually on shares
-        let result_share1 = (share1_ab.0, share1_ab.1 - shares_c[0].1);
-        let result_share2 = (share2_ab.0, share2_ab.1 - shares_c[1].1);
-
-        let result = recover_from_shares_internal(&[result_share1, result_share2]).unwrap();
+        let result0 = sub_two_shared_secrets(
+            hex::encode(ab_bytes0),
+            hex1_c,
+            TEST_MASK_SECRET,
+            0,
+            TEST_USER_ID,
+            seed,
+            seed,
+        )
+        .unwrap();
+        let result1 = sub_two_shared_secrets(
+            hex::encode(ab_bytes1),
+            hex2_c,
+            TEST_MASK_SECRET,
+            1,
+            TEST_USER_ID,
+            seed,
+            seed,
+        )
+        .unwrap();
+        let result =
+            recover_value(hex::encode(result0), hex::encode(result1), TEST_MASK_SECRET).unwrap();
         assert_eq!(result, (a + b) - c);
     }
 
@@ -926,14 +1046,33 @@ mod tests {
             split_to_two_value(b, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         // a + b
-        let ab_bytes1 =
-            add_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed, seed).unwrap();
-        let ab_bytes2 =
-            add_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed, seed).unwrap();
+        let ab_bytes1 = add_two_shared_secrets(
+            hex1_a,
+            hex1_b,
+            TEST_MASK_SECRET,
+            0,
+            TEST_USER_ID,
+            seed,
+            seed,
+        )
+        .unwrap();
+        let ab_bytes2 = add_two_shared_secrets(
+            hex2_a,
+            hex2_b,
+            TEST_MASK_SECRET,
+            1,
+            TEST_USER_ID,
+            seed,
+            seed,
+        )
+        .unwrap();
 
-        let share1 = bytes_to_share(&ab_bytes1).unwrap();
-        let share2 = bytes_to_share(&ab_bytes2).unwrap();
-        let result = recover_from_shares_internal(&[share1, share2]).unwrap();
+        let result = recover_value(
+            hex::encode(ab_bytes1),
+            hex::encode(ab_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
         assert_eq!(result, a + b);
     }
 
@@ -978,24 +1117,73 @@ mod tests {
             split_to_two_value(d, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         // a + b
-        let ab_bytes1 =
-            add_two_shared_secrets(hex1_a, hex1_b, TEST_MASK_SECRET, 0, seed, seed).unwrap();
-        let ab_bytes2 =
-            add_two_shared_secrets(hex2_a, hex2_b, TEST_MASK_SECRET, 1, seed, seed).unwrap();
-        let share1_ab = bytes_to_share(&ab_bytes1).unwrap();
-        let share2_ab = bytes_to_share(&ab_bytes2).unwrap();
+        let ab_bytes0 = add_two_shared_secrets(
+            hex1_a,
+            hex1_b,
+            TEST_MASK_SECRET,
+            0,
+            TEST_USER_ID,
+            seed,
+            seed,
+        )
+        .unwrap();
+        let ab_bytes1 = add_two_shared_secrets(
+            hex2_a,
+            hex2_b,
+            TEST_MASK_SECRET,
+            1,
+            TEST_USER_ID,
+            seed,
+            seed,
+        )
+        .unwrap();
 
         // (a + b) - c
-        let shares_c = recover_two_shares(hex1_c, hex2_c, TEST_MASK_SECRET).unwrap();
-        let share1_abc = (share1_ab.0, share1_ab.1 - shares_c[0].1);
-        let share2_abc = (share2_ab.0, share2_ab.1 - shares_c[1].1);
+        let result0 = sub_two_shared_secrets(
+            hex::encode(ab_bytes0),
+            hex1_c,
+            TEST_MASK_SECRET,
+            0,
+            TEST_USER_ID,
+            seed,
+            seed,
+        )
+        .unwrap();
+        let result1 = sub_two_shared_secrets(
+            hex::encode(ab_bytes1),
+            hex2_c,
+            TEST_MASK_SECRET,
+            1,
+            TEST_USER_ID,
+            seed,
+            seed,
+        )
+        .unwrap();
 
         // ((a + b) - c) + d
-        let shares_d = recover_two_shares(hex1_d, hex2_d, TEST_MASK_SECRET).unwrap();
-        let share1_final = (share1_abc.0, share1_abc.1 + shares_d[0].1);
-        let share2_final = (share2_abc.0, share2_abc.1 + shares_d[1].1);
+        let result0 = add_two_shared_secrets(
+            hex::encode(result0),
+            hex1_d,
+            TEST_MASK_SECRET,
+            0,
+            TEST_USER_ID,
+            seed,
+            seed,
+        )
+        .unwrap();
+        let result1 = add_two_shared_secrets(
+            hex::encode(result1),
+            hex2_d,
+            TEST_MASK_SECRET,
+            1,
+            TEST_USER_ID,
+            seed,
+            seed,
+        )
+        .unwrap();
 
-        let result = recover_from_shares_internal(&[share1_final, share2_final]).unwrap();
+        let result =
+            recover_value(hex::encode(result0), hex::encode(result1), TEST_MASK_SECRET).unwrap();
         assert_eq!(result, ((a + b) - c) + d);
     }
 
