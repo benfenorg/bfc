@@ -1862,6 +1862,7 @@ dependencies = [
  "hex",
  "log",
  "move-core-types",
+ "mpc-framework-core",
  "mpc-transmission",
  "rand 0.8.5",
  "reqwest 0.11.20",
