@@ -1002,6 +1002,90 @@ pub(crate) async fn solana_cross_token_to_bridge(
     Ok(())
 }
 
+pub(crate) fn get_init_solana_pda(chain_id: u8) -> SolanaPDA {
+    // Derive PDAs to match Anchor seeds constraints exactly.
+    let bridge_config_pda = Pubkey::find_program_address(&[b"bridge_config"], &benfen_bridge::ID).0;
+    let committee_pda = Pubkey::find_program_address(&[b"committee", bridge_config_pda.as_ref()], &benfen_bridge::ID).0;
+
+    // MessageVerifier seeds: ["message_verifier", committee.key()]
+    let message_verifier_pda = Pubkey::find_program_address(
+        &[b"message_verifier", committee_pda.as_ref()],
+        &benfen_bridge::ID,
+    ).0;
+
+    // ChainLimit seeds: ["chain_limit", &[chain_id], bridge_config.key()]
+    let bridge_limiter_pda = Pubkey::find_program_address(
+        &[b"chain_limit", &[chain_id], bridge_config_pda.as_ref()],
+        &benfen_bridge::ID,
+    ).0;
+
+    // BenfenBridge seeds: ["benfen_bridge", committee.key()]
+    let benfen_bridge_pda = Pubkey::find_program_address(
+        &[b"benfen_bridge", committee_pda.as_ref()],
+        &benfen_bridge::ID,
+    ).0;
+
+    // UpgradeAuthority seeds: ["upgrade_authority", committee.key()]
+    let upgrade_authority_pda = Pubkey::find_program_address(
+        &[b"upgrade_authority", committee_pda.as_ref()],
+        &benfen_bridge::ID,
+    ).0;
+
+    SolanaPDA {
+        bridge_config: bridge_config_pda,
+        bridge_committee: committee_pda,
+        message_verifier: message_verifier_pda,
+        bridge_limiter: bridge_limiter_pda,
+        benfen_bridge: benfen_bridge_pda,
+        upgrade_authority: upgrade_authority_pda,
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct SolanaAddTokenPDAs {
+    pub bridge_config: Pubkey,
+    pub bridge_committee: Pubkey,
+    pub message_verifier: Pubkey,
+    pub bridge_limiter: Pubkey,
+    pub benfen_bridge: Pubkey,
+    pub token_config: Pubkey,
+    pub message_config: Pubkey,
+    pub vault: Pubkey,
+}
+
+pub(crate) fn get_token_solana_pdas(benfen_chain_id: u8, token_id: u64, message_type: u8) -> SolanaAddTokenPDAs {
+    let base = get_init_solana_pda(benfen_chain_id);
+    let token_id_bytes = token_id.to_be_bytes();
+
+    let token_config = Pubkey::find_program_address(
+        &[b"token_config", &token_id_bytes],
+        &benfen_bridge::ID,
+    ).0;
+
+    let vault = Pubkey::find_program_address(
+        &[b"vault", &token_id_bytes],
+        &benfen_bridge::ID,
+    ).0;
+
+    let message_config = Pubkey::find_program_address(
+        &[b"message_config", &[message_type], base.message_verifier.as_ref()],
+        &benfen_bridge::ID,
+    ).0;
+
+
+    SolanaAddTokenPDAs {
+        bridge_config: base.bridge_config,
+        bridge_committee: base.bridge_committee,
+        message_verifier: base.message_verifier,
+        bridge_limiter: base.bridge_limiter,
+        benfen_bridge: base.benfen_bridge,
+        token_config,
+        message_config,
+        vault,
+    }
+}
+
+
 
 pub(crate) async fn deploy_sol_contract(
     anvil_url: &str,
