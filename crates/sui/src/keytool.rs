@@ -1229,12 +1229,11 @@ impl KeyToolCommand {
                     &jwt_randomness,
                 )?;
 
-                // todo to be replaced
                 let url_16 = get_oidc_url(
                     OIDCProvider::BenPay,
                     &eph_pk_bytes,
                     max_epoch,
-                    "eG01ffQ9vgvs4zGZV6lxvFQIK2p0xETu",
+                    "f3a7b2c9-4d1e-5f6a-8b9c-0d1e2f3a4b5c",
                     "https://www.benfen.org/",
                     &jwt_randomness,
                 )?;
