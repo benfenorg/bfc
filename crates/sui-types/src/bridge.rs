@@ -70,6 +70,7 @@ pub const APPROVAL_THRESHOLD_ASSET_PRICE_UPDATE: u64 = 5001;
 pub const APPROVAL_THRESHOLD_EVM_CONTRACT_UPGRADE: u64 = 5001;
 pub const APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI: u64 = 5001;
 pub const APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM: u64 = 5001;
+pub const APPROVAL_THRESHOLD_ADD_TOKENS_ON_SOLANA: u64 = 5001;
 pub const APPROVAL_THRESHOLD_REFUND_ADMIN: u64 = 5001;
 pub const APPROVAL_THRESHOLD_FAST_PATH_LIMIT_UPDATE: u64 = 5001;
 pub const APPROVAL_THRESHOLD_EXTERNAL_COIN_ADMIN: u64 = 5001;
@@ -77,10 +78,10 @@ pub const APPROVAL_THRESHOLD_EXTERNAL_COIN_WITNESS: u64 = 5001;
 pub const APPROVAL_THRESHOLD_EXTERNAL_COIN_TARGET: u64 = 5001;
 pub const APPROVAL_THRESHOLD_ADD_TOKEN_ON_TOKEN_LIST: u64 = 5001;
 pub const APPROVAL_THRESHOLD_REMOVE_TOKEN_ON_TOKEN_LIST: u64 = 5001;
-pub const APPROVAL_THRESHOLD_SINGLE_TRANSFER_LIMIT_UPDATE: u64=5001;
+pub const APPROVAL_THRESHOLD_SINGLE_TRANSFER_LIMIT_UPDATE: u64 = 5001;
 pub const APPROVAL_THRESHOLD_SET_CROSS_OUT_BRIDGE_FEE: u64 = 5001;
 pub const APPROVAL_THRESHOLD_SET_CROSS_IN_BRIDGE_FEE: u64 = 5001;
-pub const APPROVAL_THRESHOLD_WITHDRAW_BRIDGE_FEE: u64=5001;
+pub const APPROVAL_THRESHOLD_WITHDRAW_BRIDGE_FEE: u64 = 5001;
 
 // const for initial token ids for convenience
 pub const TOKEN_ID_SUI: u64 = 0;
@@ -96,7 +97,6 @@ pub const TOKEN_ID_POL: u64 = 8;
 // const for fast path
 pub const FAST_PATH_THREASHOLD_LATEST_BUSD: u64 = 100_000_000_000;
 pub const FAST_PATH_THREASHOLD_SAFE_BUSD: u64 = 10000_000_000_000;
-
 
 #[derive(
     Debug,
@@ -183,6 +183,14 @@ impl BridgeChainId {
             BridgeChainId::BscMainnet | BridgeChainId::BscTestnet | BridgeChainId::BscCustom
         )
     }
+
+    pub fn is_solana_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet
+        )
+    }
+
     pub fn is_eth_chain(&self) -> bool {
         matches!(
             self,
@@ -315,7 +323,10 @@ pub trait BridgeTrait {
     fn treasury(&self) -> &MoveTypeBridgeTreasury;
     fn bridge_records(&self) -> &LinkedTable<MoveTypeBridgeMessageKey>;
     fn frozen(&self) -> bool;
-    fn try_into_bridge_summary(self, external_limiter: MoveTypeBridgeExternalLimiter) -> SuiResult<BridgeSummary>;
+    fn try_into_bridge_summary(
+        self,
+        external_limiter: MoveTypeBridgeExternalLimiter,
+    ) -> SuiResult<BridgeSummary>;
 }
 
 #[serde_as]
@@ -402,16 +413,15 @@ pub fn get_bridge_external_limiter(
     let wrapper = get_bridge_wrapper(object_store)?;
     let id = wrapper.id.id.bytes;
     let key = "bridge_external_limits";
-    let limiter: MoveTypeBridgeExternalLimiter = get_dynamic_field_from_store(
-        object_store,
-        id,
-        &key.to_string().into_bytes(),
-    ).map_err(|err| SuiError::SuiBridgeReadError(
-        format!(
-            "Failed to load bridge external limiter with ID {:?} and key {:?}: {:?}",
-            id, key, err
-        )
-    ))?;
+    let limiter: MoveTypeBridgeExternalLimiter =
+        get_dynamic_field_from_store(object_store, id, &key.to_string().into_bytes()).map_err(
+            |err| {
+                SuiError::SuiBridgeReadError(format!(
+                    "Failed to load bridge external limiter with ID {:?} and key {:?}: {:?}",
+                    id, key, err
+                ))
+            },
+        )?;
     Ok(limiter)
 }
 
@@ -467,7 +477,10 @@ impl BridgeTrait for BridgeInnerV1 {
         self.frozen
     }
 
-    fn try_into_bridge_summary(self, external_limiter: MoveTypeBridgeExternalLimiter) -> SuiResult<BridgeSummary> {
+    fn try_into_bridge_summary(
+        self,
+        external_limiter: MoveTypeBridgeExternalLimiter,
+    ) -> SuiResult<BridgeSummary> {
         let transfer_limit = self
             .limiter
             .transfer_limit

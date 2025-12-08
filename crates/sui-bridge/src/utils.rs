@@ -11,7 +11,7 @@ use crate::crypto::BridgeAuthorityKeyPair;
 use crate::crypto::BridgeAuthorityPublicKeyBytes;
 use crate::server::APPLICATION_JSON;
 use crate::types::BridgeCommittee;
-use crate::types::{AddTokensOnSuiAction, BridgeAction};
+use crate::types::{AddTokensOnSuiAction, AddTokenOnSolanaAction,BridgeAction};
 use anyhow::anyhow;
 use ethers::core::k256::ecdsa::SigningKey;
 use ethers::middleware::SignerMiddleware;
@@ -47,6 +47,31 @@ use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary;
 use sui_types::transaction::{ObjectArg, TransactionData};
 use sui_types::BRIDGE_PACKAGE_ID;
+
+use solana_client::rpc_client::RpcClient;
+use anchor_client::{Program,Client, Cluster};
+use solana_sdk::{
+    commitment_config::CommitmentConfig,
+    signature::{Keypair, Signer},
+    pubkey::Pubkey,
+    system_instruction,
+    transaction::Transaction,
+};
+
+use spl_token::{
+    instruction as token_instruction,
+    state::Mint,
+};
+use spl_associated_token_account::{
+    get_associated_token_address,
+    instruction::create_associated_token_account,
+};
+
+
+// use ethers::ethers_signers::Signer;
+use solana_program_pack::Pack;
+
+// use ethers::ethers_signers::Signer;
 
 pub type EthSigner = SignerMiddleware<Provider<Http>, Wallet<SigningKey>>;
 
@@ -190,6 +215,104 @@ pub fn examine_key(path: &PathBuf, is_validator_key: bool) -> Result<(), anyhow:
     Ok(())
 }
 
+
+pub struct USDCDeploymentResult {
+    pub mint: Pubkey,
+    pub token_account: Pubkey,
+}
+
+pub async fn deploy_usdc_in_anchor_client(
+    client: &Arc<Client<Arc<Keypair>>>,
+    program_id: Pubkey,
+    payer: &Arc<Keypair>,
+    mint_amount: u64,
+    decimals: u8,
+)-> anyhow::Result<USDCDeploymentResult>{
+    let program = client.program(program_id).expect("Failed to get program");
+    let balance = program.rpc().get_balance(&payer.pubkey()).await.expect("get balance failed");
+    println!("Payer balance: {}", balance);
+    let mint = Keypair::new();
+    let mint_pubkey = mint.pubkey();
+    let rent = program.rpc().get_minimum_balance_for_rent_exemption(Mint::LEN).await?;
+
+     let create_mint_ix = system_instruction::create_account(
+        &payer.pubkey(),
+        &mint_pubkey,
+        rent,
+        Mint::LEN  as u64,
+        &spl_token::id(),
+    );
+
+    let init_mint_ix = token_instruction::initialize_mint(
+        &spl_token::id(),
+        &mint_pubkey,
+        &payer.pubkey(),
+        Some(&payer.pubkey()),
+        decimals,
+    )?;
+
+    let ata = get_associated_token_address(&payer.pubkey(), &mint_pubkey);
+    let create_ata_ix = create_associated_token_account(
+        &payer.pubkey(),
+        &payer.pubkey(),
+        &mint_pubkey,
+        &spl_token::id(),
+    );
+
+    let raw_amount = mint_amount * 10u64.pow(decimals as u32);
+    let mint_to_ix = token_instruction::mint_to(
+        &spl_token::id(),
+        &mint_pubkey,
+        &ata,
+        &payer.pubkey(),
+        &[],
+        raw_amount,
+    )?;
+
+    let recent_hash = program.rpc().get_latest_blockhash().await?;
+    let tx = Transaction::new_signed_with_payer(
+        &[create_mint_ix, init_mint_ix, create_ata_ix, mint_to_ix],
+        Some(&payer.pubkey()),
+        &[payer, &mint],
+        recent_hash,
+    );
+
+    program.rpc().send_and_confirm_transaction(&tx).await?;
+    Ok(USDCDeploymentResult { mint: mint_pubkey, token_account: ata })
+}
+
+
+
+pub async fn mint_to(
+    client: &RpcClient,
+    payer: &Keypair,
+    mint: Pubkey,
+    destination_ata: Pubkey,
+    amount: u64,
+) -> anyhow::Result<()> {
+    let raw_amount = amount * 10u64.pow(6);
+    let ix = token_instruction::mint_to(
+        &spl_token::id(),
+        &mint,
+        &destination_ata,
+        &payer.pubkey(),
+        &[],
+        raw_amount,
+    )?;
+
+    let recent_hash = client.get_latest_blockhash()?;
+    let tx = Transaction::new_signed_with_payer(
+        &[ix],
+        Some(&payer.pubkey()),
+        &[payer],
+        recent_hash,
+    );
+
+    client.send_and_confirm_transaction(&tx)?;
+    Ok(())
+}
+
+
 /// Generate Bridge Node Config template and write to a file.
 pub fn generate_bridge_node_config_and_write_to_file(
     path: &PathBuf,
@@ -261,11 +384,27 @@ pub async fn get_eth_signer_client(url: &str, private_key_hex: &str) -> anyhow::
     let provider = Provider::<Http>::try_from(url)
         .unwrap()
         .interval(std::time::Duration::from_millis(2000));
-    let chain_id = provider.get_chainid().await?;
     let wallet = Wallet::from_str(private_key_hex)
-        .unwrap()
-        .with_chain_id(chain_id.as_u64());
+        .unwrap();
     Ok(SignerMiddleware::new(provider, wallet))
+}
+
+pub  fn new_add_coin_on_solana_action(
+    token_id: u64,
+    token_address: Pubkey,
+    benfen_decimal: u8,
+    token_price: u64,
+    nonce: u64,
+) -> BridgeAction {
+    BridgeAction::AddTokenOnSolanaAction(AddTokenOnSolanaAction {
+        nonce,
+        chain_id: BridgeChainId::SolanaTestnet,
+        native: false,
+        token_id,
+        token_address,
+        benfen_decimal,
+        token_price,
+    })
 }
 
 pub async fn publish_and_register_coins_return_add_coins_on_sui_action(

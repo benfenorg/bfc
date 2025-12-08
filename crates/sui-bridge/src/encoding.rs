@@ -3,6 +3,7 @@
 
 use crate::types::AddTokensOnEvmAction;
 use crate::types::AddTokensOnSuiAction;
+use crate::types::AddTokenOnSolanaAction;
 use crate::types::AddTokenOnTokenListAction;
 use crate::types::RemoveTokenOnTokenListAction;
 use crate::types::AddExternalCoinAdminAction;
@@ -52,6 +53,8 @@ pub const ASSET_PRICE_UPDATE_MESSAGE_VERSION: u8 = 1;
 pub const EVM_CONTRACT_UPGRADE_MESSAGE_VERSION: u8 = 1;
 pub const ADD_TOKENS_ON_SUI_MESSAGE_VERSION: u8 = 1;
 pub const ADD_TOKENS_ON_EVM_MESSAGE_VERSION: u8 = 1;
+pub const ADD_TOKENS_ON_SOLANA_MESSAGE_VERSION: u8 = 1;
+
 pub const ADD_TOKEN_ON_TOKEN_LIST_MESSAGE_VERSION: u8 = 1;
 pub const REMOVE_TOKEN_ON_TOKEN_LIST_MESSAGE_VERSION: u8 = 1;
 pub const SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION: u8 = 1;
@@ -909,6 +912,35 @@ impl BridgeMessageEncoding for AddTokensOnEvmAction {
         for token_price in &self.token_prices {
             bytes.extend_from_slice(&token_price.to_be_bytes());
         }
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for AddTokenOnSolanaAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::AddTokensOnSolana as u8);
+        // Add message version
+        bytes.push(ADD_TOKENS_ON_SOLANA_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());  
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add native
+        bytes.push(self.native as u8);
+        bytes.extend_from_slice(&self.token_id.to_be_bytes());
+        bytes.extend_from_slice(&self.token_address.to_bytes());
+        bytes.push(self.benfen_decimal);
+        bytes.extend_from_slice(&self.token_price.to_be_bytes());
         bytes
     }
 }
