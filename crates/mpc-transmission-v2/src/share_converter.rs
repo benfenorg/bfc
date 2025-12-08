@@ -1,10 +1,10 @@
 //! Share Converter Module
 //!
-//! Provides conversion functionality between mpc-transmission share format and mpc-framework-core share format.
+//! Provides conversion functionality between mpc-transmission share format and mpc-transmission-v2 share format.
 //!
 //! # Important Notes
 //! - The conversion process requires complete recovery of the original secret value, which temporarily exposes the secret
-//! - The finite field modulus of mpc-framework-core is 18446744069414584321
+//! - The finite field modulus of mpc-transmission-v2 is 18446744069414584321
 //! - If the mpc-transmission value >= modulus, conversion will fail
 //!
 //! # Usage
@@ -25,7 +25,7 @@
 use crate::error::SSSError;
 use crate::two_party_share::split_to_two_value;
 
-/// mpc-framework-core finite field modulus
+/// mpc-transmission-v2 finite field modulus
 pub const FIELD_MODULUS: u64 = 18446744069414584321;
 
 // ============================================================================
@@ -97,18 +97,18 @@ pub fn is_transmission_shares_format(
     }
 }
 
-/// Convert shares from mpc-transmission format to mpc-framework-core format
+/// Convert shares from mpc-transmission format to mpc-transmission-v2 format
 ///
 /// # Arguments
 /// * `transmission_hex1` - First mpc-transmission format hex share
 /// * `transmission_hex2` - Second mpc-transmission format hex share
 /// * `mask_secret` - Mask secret key
-/// * `user_id` - User ID (for mpc-framework-core encoding)
-/// * `coord_seed` - Coordinate seed (for mpc-framework-core)
+/// * `user_id` - User ID (for mpc-transmission-v2 encoding)
+/// * `coord_seed` - Coordinate seed (for mpc-transmission-v2)
 /// * `version` - Version number, only version 1 is supported
 ///
 /// # Returns
-/// * `Ok((String, String, u64))` - mpc-framework-core format (hex1, hex2, seed)
+/// * `Ok((String, String, u64))` - mpc-transmission-v2 format (hex1, hex2, seed)
 /// * `Err(SSSError)` - If conversion fails
 ///
 /// # Errors
@@ -134,15 +134,15 @@ pub fn convert_from_transmission_shares(
     let value =
         recover_from_transmission_shares(transmission_hex1, transmission_hex2, mask_secret)?;
 
-    // Step 2: Check if value is within mpc-framework-core finite field range
+    // Step 2: Check if value is within mpc-transmission-v2 finite field range
     if value >= FIELD_MODULUS {
         return Err(SSSError::InvalidParameters(format!(
-            "Value {} exceeds field modulus {}. Cannot convert to mpc-framework-core format.",
+            "Value {} exceeds field modulus {}. Cannot convert to mpc-transmission-v2 format.",
             value, FIELD_MODULUS
         )));
     }
 
-    // Step 3: Re-split using mpc-framework-core
+    // Step 3: Re-split using mpc-transmission-v2
     let (hex1, hex2, seed) = split_to_two_value(value, user_id, mask_secret, coord_seed);
 
     Ok((hex1, hex2, seed))
