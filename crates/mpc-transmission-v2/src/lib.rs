@@ -8,7 +8,6 @@ pub mod field;
 pub mod math;
 pub mod poly;
 pub mod secret;
-pub mod share_converter;
 pub mod two_party_helper;
 pub mod two_party_share;
 
@@ -59,10 +58,194 @@ pub use two_party_share::{
     sub_two_shared_secrets,
 };
 
-pub use share_converter::{
-    convert_from_transmission_shares, is_transmission_shares_format,
-    recover_from_transmission_shares,
-};
+// Share converter functions - conversion between mpc-transmission and mpc-transmission-v2 formats
+
+/// mpc-transmission-v2 finite field modulus
+pub const FIELD_MODULUS: u64 = 18446744069414584321;
+
+/// Recover the original secret value from mpc-transmission format shares
+///
+/// # Arguments
+/// * `transmission_hex1` - First mpc-transmission format hex share
+/// * `transmission_hex2` - Second mpc-transmission format hex share
+/// * `mask_secret` - Mask secret key
+///
+/// # Returns
+/// * `Ok(u64)` - Recovered original secret value
+/// * `Err(SSSError)` - If decoding or recovery fails
+fn recover_from_transmission_shares(
+    transmission_hex1: &str,
+    transmission_hex2: &str,
+    mask_secret: u64,
+) -> Result<u64, SSSError> {
+    Ok(mpc_transmission::two_party_share::recover_value(
+        transmission_hex1.to_string(),
+        transmission_hex2.to_string(),
+        mask_secret,
+    )?)
+}
+
+/// Check if the given shares are in valid mpc-transmission format
+///
+/// This function validates whether two hex-encoded shares and a mask secret can be used
+/// to successfully recover a secret value using the mpc-transmission format.
+///
+/// # Arguments
+/// * `transmission_hex1` - First mpc-transmission format hex share
+/// * `transmission_hex2` - Second mpc-transmission format hex share
+/// * `mask_secret` - Mask secret key used for encoding
+///
+/// # Returns
+/// * `true` - If the shares are valid and can successfully recover a value
+/// * `false` - If the shares are invalid, malformed, or cannot recover a value
+pub fn is_transmission_shares_format(
+    transmission_hex1: &str,
+    transmission_hex2: &str,
+    mask_secret: u64,
+) -> bool {
+    if recover_from_transmission_shares(transmission_hex1, transmission_hex2, mask_secret).is_err()
+    {
+        false
+    } else {
+        true
+    }
+}
+
+/// Convert shares from mpc-transmission format to mpc-transmission-v2 format
+///
+/// # Arguments
+/// * `transmission_hex1` - First mpc-transmission format hex share
+/// * `transmission_hex2` - Second mpc-transmission format hex share
+/// * `mask_secret` - Mask secret key
+/// * `user_id` - User ID (for mpc-transmission-v2 encoding)
+/// * `coord_seed` - Coordinate seed (for mpc-transmission-v2)
+/// * `version` - Version number, only version 1 is supported
+///
+/// # Returns
+/// * `Ok((String, String, u64))` - mpc-transmission-v2 format (hex1, hex2, seed)
+/// * `Err(SSSError)` - If conversion fails
+///
+/// # Errors
+/// - Returns error if version number is not 1
+/// - Returns error if mpc-transmission value >= FIELD_MODULUS
+///
+/// # Important Notes
+/// - The conversion process requires complete recovery of the original secret value, which temporarily exposes the secret
+/// - The finite field modulus of mpc-transmission-v2 is 18446744069414584321
+/// - If the mpc-transmission value >= modulus, conversion will fail
+pub fn convert_from_transmission_shares(
+    transmission_hex1: &str,
+    transmission_hex2: &str,
+    mask_secret: u64,
+    user_id: u64,
+    coord_seed: u64,
+    version: u8,
+) -> Result<(String, String, u64), SSSError> {
+    // Step 0: Check version number, only convert version 1
+    if version != 1 {
+        return Err(SSSError::InvalidParameters(format!(
+            "Unsupported version: {}. Only version 1 is supported for conversion.",
+            version
+        )));
+    }
+
+    // Step 1: Recover original value from mpc-transmission format
+    let value =
+        recover_from_transmission_shares(transmission_hex1, transmission_hex2, mask_secret)?;
+
+    // Step 2: Check if value is within mpc-transmission-v2 finite field range
+    if value >= FIELD_MODULUS {
+        return Err(SSSError::InvalidParameters(format!(
+            "Value {} exceeds field modulus {}. Cannot convert to mpc-transmission-v2 format.",
+            value, FIELD_MODULUS
+        )));
+    }
+
+    // Step 3: Re-split using mpc-transmission-v2
+    let (hex1, hex2, seed) = split_to_two_value(value, user_id, mask_secret, coord_seed);
+
+    Ok((hex1, hex2, seed))
+}
+
+/// Recover secret value from Share objects
+///
+/// This is a public wrapper around `recover_from_shares_internal` that provides
+/// a convenient interface for recovering secrets from Share objects.
+///
+/// # Arguments
+/// * `shares` - A slice of Share objects (at least one share is required)
+///
+/// # Returns
+/// * `Ok(u64)` - Recovered secret value
+/// * `Err(SSSError)` - If recovery fails (e.g., insufficient shares)
+pub fn recover_from_shares(shares: &[types::Share]) -> Result<u64, SSSError> {
+    use crate::two_party_helper::recover_from_shares_internal;
+    recover_from_shares_internal(shares)
+}
+
+/// Generate multiple secret shares from a u64 secret
+///
+/// Similar to `split_to_two_value_internal`, but supports generating any number of shares
+/// with a configurable threshold. Uses deterministic coordinate generation based on coord_seed
+/// and fixed-seed polynomial generation for compatibility.
+///
+/// # Arguments
+/// * `secret` - The secret value to be shared (u64)
+/// * `threshold` - Minimum number of shares required to recover the secret (must be ≥ 2)
+/// * `total_shares` - Total number of shares to generate (must be ≥ threshold)
+/// * `coord_seed` - Seed for deterministic coordinate generation
+///
+/// # Returns
+/// * `Ok(Vec<Share>)` - Vector of Share objects (x-coordinate, y-value pairs)
+/// * `Err(SSSError)` - If parameters are invalid
+///
+/// # Errors
+/// - Returns error if threshold < 2
+/// - Returns error if total_shares < threshold
+pub fn generate_shares_u64(
+    secret: u64,
+    threshold: usize,
+    total_shares: usize,
+    coord_seed: u64,
+) -> Result<Vec<types::Share>, SSSError> {
+    // Parameter validation
+    if threshold < 2 {
+        return Err(SSSError::InvalidParameters(format!(
+            "Threshold must be at least 2, got {}",
+            threshold
+        )));
+    }
+    if total_shares < threshold {
+        return Err(SSSError::InvalidParameters(format!(
+            "Total shares ({}) must be at least threshold ({})",
+            total_shares, threshold
+        )));
+    }
+
+    // Generate deterministic coordinates based on coord_seed
+    use crate::field::FieldElement as FieldElementTrait;
+    use crate::poly::Polynomial;
+    use rand::SeedableRng;
+    use rand_chacha::ChaCha20Rng;
+    use rand_core::RngCore;
+
+    let mut rng = ChaCha20Rng::seed_from_u64(coord_seed);
+    let coords: Vec<crate::field::gf64_sss::FieldElement> = (0..total_shares)
+        .map(|_| FieldElementTrait::from_u64(rng.next_u64()))
+        .collect();
+
+    // Create polynomial with fixed seed (same as split_to_two_value_internal)
+    let secret_fe = FieldElementTrait::from_u64(secret);
+    let poly = Polynomial::new_with_fixed_seed(threshold - 1, secret_fe);
+
+    // Generate shares by evaluating polynomial at each coordinate
+    let shares: Vec<types::Share> = coords
+        .iter()
+        .map(|x| (*x, poly.evaluate(x)))
+        .collect();
+
+    Ok(shares)
+}
 
 // Type aliases - simplify complex type definitions
 pub mod types {

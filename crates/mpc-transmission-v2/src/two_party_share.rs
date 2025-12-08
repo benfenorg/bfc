@@ -60,11 +60,6 @@ pub use crate::two_party_helper::{
 /// - `hex1` - First hex-encoded share
 /// - `hex2` - Second hex-encoded share
 /// - `seed` - The seed used for coordinate generation
-///
-/// # Example
-/// ```ignore
-/// let (hex1, hex2, seed) = split_to_two_value(12345, 1, 0x1234567890ABCDEF, 0xABCDEF);
-/// ```
 pub fn split_to_two_value(
     value: u64,
     user_id: u64,
