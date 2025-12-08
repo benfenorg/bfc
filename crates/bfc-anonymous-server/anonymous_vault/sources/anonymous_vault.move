@@ -6,7 +6,8 @@ use sui::dynamic_field;
 use sui::anonymous_coin::{Anonymous_Coin,join};
 use sui::bag::{Self, Bag};
 use std::string::{Self};
-
+use sui::anonymous_coin::TreasuryCap;
+use sui::package::UpgradeCap;
 const ENOT_ADMIN: u64 = 0;
 const ADMIN_ALREADY_EXISTS: u64 = 1;
 const ADMIN_REACH_MAX: u64 = 2;
@@ -115,18 +116,23 @@ entry fun deposit_token2_to_valut_pool<T1, T2>( anonymous_coin: Anonymous_Coin<T
 
 }
 
-
-
-
-entry fun deposit_object_to_vault<T: key + store>( obj: T, object_key: string::String,  vault: &mut AnonymousVault, ctx: &TxContext){
+entry fun deposit_treasury_upgrade_cap_to_vault( obj: UpgradeCap, object_key: string::String,  vault: &mut AnonymousVault, ctx: &TxContext){
     //transfer object to sub vault for objects
     let sender = tx_context::sender(ctx);
     assert!(vector_contains(&vault.admins, &sender), ENOT_ADMIN);
 
 
-    // 检查对象是否已存在
     assert!(!dynamic_field::exists_(&vault.id, object_key), EObjectAlreadyExists);
-    // 存入对象
+    dynamic_field::add(&mut vault.id, object_key, obj);
+}
+
+
+entry fun deposit_treasury_cap_to_vault<T>( obj: TreasuryCap<T>, object_key: string::String,  vault: &mut AnonymousVault, ctx: &TxContext){
+    //transfer object to sub vault for objects
+    let sender = tx_context::sender(ctx);
+    assert!(vector_contains(&vault.admins, &sender), ENOT_ADMIN);
+
+    assert!(!dynamic_field::exists_(&vault.id, object_key), EObjectAlreadyExists);
     dynamic_field::add(&mut vault.id, object_key, obj);
 }
 
