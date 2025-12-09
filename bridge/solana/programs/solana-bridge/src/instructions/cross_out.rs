@@ -165,6 +165,8 @@ pub fn cross_out_with_signature(
 
 
     process_transfer.mark_processed()?;
+
+    msg!("emit TokensClaimed");
     //emit event
     emit!(
         TokensClaimed{

@@ -93,6 +93,8 @@ pub fn update_block_list_with_signatures(
 
     committee.update_blocklist(&block_list.addresses, flag );
 
+    msg!("emit BlocklistUpdatedEvent");
+
     emit!(BlocklistUpdatedEvent {
         nonce,
         blocklist: block_list.addresses.iter().map(|x| x.to_vec()).collect(),

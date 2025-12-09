@@ -84,6 +84,8 @@ pub fn update_token_price_with_signature(
 
   token_config_loader.update_price(price)?;
 
+  msg!("emit TokenPriceUpdated");
+
   //emit event
   emit!(TokenPriceUpdated {
     nonce,
