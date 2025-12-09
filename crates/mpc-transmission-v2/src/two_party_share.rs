@@ -264,6 +264,120 @@ pub fn sub_two_shared_secrets(
     Ok(encoded_share)
 }
 
+/// Multiply two shared secrets using Beaver triple multiplication
+///
+/// Performs secure multiplication of two secrets x and y using Beaver triple protocol.
+/// This function handles the complete multiplication process including:
+/// - Decoding input shares
+/// - Generating Beaver triple with matching coordinates
+/// - Computing masked differences
+/// - Reconstructing and computing final result
+/// - Encoding output shares
+///
+/// # Arguments
+/// * `hex_x1` - First share of secret x (hex encoded)
+/// * `hex_x2` - Second share of secret x (hex encoded)
+/// * `hex_y1` - First share of secret y (hex encoded)
+/// * `hex_y2` - Second share of secret y (hex encoded)
+/// * `mask_secret` - Mask secret used during encoding
+/// * `user_id` - User ID for encoding output shares
+/// * `coord_seed_x` - Coordinate seed used when creating x's shares (for documentation, not validated)
+/// * `coord_seed_y` - Coordinate seed used when creating y's shares (for documentation, not validated)
+///
+/// # Returns
+/// * `Ok((Vec<u8>, Vec<u8>))` - Encoded result shares (result1, result2)
+/// * `Err(SSSError)` - If decoding fails, coordinates don't match, or computation fails
+pub fn mul_two_shared_secrets(
+    hex_x1: String,
+    hex_x2: String,
+    hex_y1: String,
+    hex_y2: String,
+    mask_secret: u64,
+    user_id: u64,
+    _coord_seed_x: u64,
+    _coord_seed_y: u64,
+) -> Result<(Vec<u8>, Vec<u8>), SSSError> {
+    use crate::beaver::BeaverTriple;
+    use rand::SeedableRng;
+    use rand_chacha::ChaCha20Rng;
+    use rand_core::RngCore;
+
+    // Step 1: Decode hex strings to bytes
+    let x_bytes_1 = hex::decode(&hex_x1)
+        .map_err(|e| SSSError::InvalidParameters(format!("Invalid hex in hex_x1: {}", e)))?;
+    let x_bytes_2 = hex::decode(&hex_x2)
+        .map_err(|e| SSSError::InvalidParameters(format!("Invalid hex in hex_x2: {}", e)))?;
+    let y_bytes_1 = hex::decode(&hex_y1)
+        .map_err(|e| SSSError::InvalidParameters(format!("Invalid hex in hex_y1: {}", e)))?;
+    let y_bytes_2 = hex::decode(&hex_y2)
+        .map_err(|e| SSSError::InvalidParameters(format!("Invalid hex in hex_y2: {}", e)))?;
+
+    // Step 2: Decode share data (remove shuffle/XOR + user_id interleaving)
+    let decoded_x_1 = decode_share_data_with_user_id(x_bytes_1, mask_secret, 0)?;
+    let decoded_x_2 = decode_share_data_with_user_id(x_bytes_2, mask_secret, 1)?;
+    let decoded_y_1 = decode_share_data_with_user_id(y_bytes_1, mask_secret, 0)?;
+    let decoded_y_2 = decode_share_data_with_user_id(y_bytes_2, mask_secret, 1)?;
+
+    // Step 3: Parse to Share objects
+    let x_share_1 = bytes_to_share(&decoded_x_1)?;
+    let x_share_2 = bytes_to_share(&decoded_x_2)?;
+    let y_share_1 = bytes_to_share(&decoded_y_1)?;
+    let y_share_2 = bytes_to_share(&decoded_y_2)?;
+
+    // Step 4: Verify x coordinates match between x and y shares
+    if x_share_1.0 != y_share_1.0 || x_share_2.0 != y_share_2.0 {
+        return Err(SSSError::InvalidParameters(format!(
+            "X coordinates must match for multiplication. Got x_x1={:?}, x_y1={:?}, x_x2={:?}, x_y2={:?}",
+            x_share_1.0, y_share_1.0, x_share_2.0, y_share_2.0
+        )));
+    }
+
+    // Step 5: Get x-coordinates from the shares
+    let x_coords = [x_share_1.0, x_share_2.0];
+
+    // Step 6: Generate Beaver triple using the same x-coordinates
+    let mut rng = ChaCha20Rng::seed_from_u64(mask_secret);
+    let a = rng.next_u64();
+    let b = rng.next_u64();
+
+    let beaver_triple = BeaverTriple::new_with_coordinates(
+        a,
+        b,
+        &x_coords,
+        THRESHOLD,
+        &mut rng,
+    )?;
+
+    // Step 7: Compute masked differences d = x - a, e = y - b for both parties
+    let d_share_1 = mul_step1_compute_masked_diff(&x_share_1, &beaver_triple.a_shares[0]);
+    let d_share_2 = mul_step1_compute_masked_diff(&x_share_2, &beaver_triple.a_shares[1]);
+    let e_share_1 = mul_step1_compute_masked_diff(&y_share_1, &beaver_triple.b_shares[0]);
+    let e_share_2 = mul_step1_compute_masked_diff(&y_share_2, &beaver_triple.b_shares[1]);
+
+    // Step 8: Reconstruct d and e, then compute final result for both parties
+    let result_bytes_1 = mul_step2_and_3_combined(
+        &[d_share_1, d_share_2],
+        &[e_share_1, e_share_2],
+        &beaver_triple.a_shares[0],
+        &beaver_triple.b_shares[0],
+        &beaver_triple.c_shares[0],
+    )?;
+
+    let result_bytes_2 = mul_step2_and_3_combined(
+        &[d_share_1, d_share_2],
+        &[e_share_1, e_share_2],
+        &beaver_triple.a_shares[1],
+        &beaver_triple.b_shares[1],
+        &beaver_triple.c_shares[1],
+    )?;
+
+    // Step 9: Encode the result shares with user_id
+    let encoded_result_1 = encode_share_data_with_user_id(result_bytes_1, mask_secret, user_id, 0);
+    let encoded_result_2 = encode_share_data_with_user_id(result_bytes_2, mask_secret, user_id, 1);
+
+    Ok((encoded_result_1, encoded_result_2))
+}
+
 // ============================================================================
 // Beaver Triple Multiplication - Step-by-Step API
 // ============================================================================
@@ -424,6 +538,8 @@ pub fn mul_step2_and_3_combined(
         beaver_a, beaver_b, beaver_c, d_open, e_open,
     ))
 }
+
+
 
 // ============================================================================
 // Tests

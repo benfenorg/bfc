@@ -16,12 +16,10 @@ use crate::utils::public_key_bytes_to_sui_address;
 use clap::Parser;
 use fastcrypto::encoding::{Base64, Encoding};
 use move_core_types::account_address::AccountAddress;
-use mpc_transmission::{get_sui_config_directory, get_user_address_salt, two_party_share::{
-    mul_two_shared_secrets, recover_two_shares,
-}};
+use mpc_transmission::{get_sui_config_directory, get_user_address_salt};
 use mpc_transmission::{get_mask_secret_from_config};
 use mpc_framework_core::{is_transmission_shares_format, convert_from_transmission_shares};
-use mpc_framework_core::two_party_share::{add_two_shared_secrets, sub_two_shared_secrets, recover_value, split_to_two_value};
+use mpc_framework_core::two_party_share::{add_two_shared_secrets, sub_two_shared_secrets, recover_value, split_to_two_value, mul_two_shared_secrets};
 
 use serde::{Deserialize, Serialize};
 use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
@@ -580,39 +578,67 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
                     }
                 };
 
-                let value1_share =
-                    recover_two_shares(multiply_params.value1, multiply_params.value2, mask_secret);
-                let value2_share =
-                    recover_two_shares(multiply_params.value3, multiply_params.value4, mask_secret);
-                if value1_share.is_err() || value2_share.is_err() {
-                    return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": "invalid params"})));
-
-                }
-
-                match mul_two_shared_secrets(
-                    value1_share.unwrap(),
-                    value2_share.unwrap(),
-                    mask_secret,
-                ) {
-                    Ok(result) => {
-                        let (result1, result2, _) = split_to_two_value(result, get_user_address_salt(multiply_params.owner), mask_secret, COORD_SEED);
-                        JsonRpcResponse {
-                            jsonrpc: "2.0".to_string(),
-                            id: request.id,
-                            result: Some(serde_json::json!({
-                                "result1": result1,
-                                "result2": result2,
-                                "operation": "anonymous_multiply",
-                                "timestamp": chrono::Utc::now().timestamp()
-                            })),
-                            error: None,
+                let user_id = get_user_address_salt(multiply_params.owner);
+                
+                let (value1, value2, coord_seed_a) = if is_transmission_shares_format(&multiply_params.value1, &multiply_params.value2, mask_secret){
+                    match convert_from_transmission_shares(multiply_params.value1.as_str(), multiply_params.value2.as_str(), mask_secret, user_id, COORD_SEED, 1) {
+                        Ok((core_hex1, core_hex2, coord_seed_a)) => (core_hex1, core_hex2, coord_seed_a),
+                        Err(e) => {
+                            warn!("Failed to convert transmission shares to core shares: {}", e);
+                            return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})));
                         }
                     }
-                    Err(e) => {
-                        warn!("Invalid parameters for bfcx_getAnonymousMultiply: {}", e);
-                        create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+                } else {
+                    (multiply_params.value1, multiply_params.value2, COORD_SEED)
+                };
+                let (value3, value4, coord_seed_b) = if is_transmission_shares_format(&multiply_params.value3, &multiply_params.value4, mask_secret){
+                    match convert_from_transmission_shares(multiply_params.value3.as_str(), multiply_params.value4.as_str(), mask_secret, user_id, COORD_SEED, 1) {
+                        Ok((core_hex3, core_hex4, coord_seed_b)) => (core_hex3, core_hex4, coord_seed_b),
+                        Err(e) => {
+                            warn!("Failed to convert transmission shares to core shares: {}", e);
+                            return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})));
+                        }
                     }
+                } else {
+                    (multiply_params.value3, multiply_params.value4, COORD_SEED)
+                };
+
+                // Ensure coordinate seeds match for multiplication
+                if coord_seed_a != coord_seed_b {
+                    warn!("Coordinate seeds don't match (a={}, b={}), using coord_seed_a", coord_seed_a, coord_seed_b);
                 }
+
+                // Use the high-level multiplication function
+                let (encoded_result_0, encoded_result_1) = match mul_two_shared_secrets(
+                    value1,
+                    value2,
+                    value3,
+                    value4,
+                    mask_secret,
+                    user_id,
+                    coord_seed_a,
+                    coord_seed_b,
+                ) {
+                    Ok((result1, result2)) => (result1, result2),
+                    Err(e) => {
+                        warn!("Failed to multiply shared secrets: {}", e);
+                        return create_error_response(request.id, -32603, "Internal error".to_string(), Some(serde_json::json!({"error": e.to_string()})));
+                    }
+                };
+
+                JsonRpcResponse {
+                    jsonrpc: "2.0".to_string(),
+                    id: request.id,
+                    result: Some(serde_json::json!({
+                        "result1": hex::encode(encoded_result_0),
+                        "result2": hex::encode(encoded_result_1),
+                        "operation": "anonymous_multiply",
+                        "timestamp": chrono::Utc::now().timestamp()
+                    })),
+                    error: None,
+                }
+
+
             }
             Err(e) => {
                 warn!("Invalid parameters for bfcx_getAnonymousMultiply: {}", e);

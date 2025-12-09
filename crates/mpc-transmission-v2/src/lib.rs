@@ -52,6 +52,8 @@ pub use two_party_share::{
     mul_step2_and_3_combined,
     mul_step2_reconstruct_masked_values,
     mul_step3_compute_result,
+    // High-level multiplication API
+    mul_two_shared_secrets,
     recover_two_shares,
     recover_value,
     split_to_two_value,
