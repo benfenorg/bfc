@@ -245,6 +245,24 @@ fn create_error_response(requestid : serde_json::Value, code: i32, message: Stri
     };
     result
 }
+
+/// Recover a value from two shares, automatically detecting the format (transmission or core)
+/// Returns Ok(u64) if successful, Err(String) with error message if failed
+fn recover_value_from_shares(value1: String, value2: String, mask_secret: u64) -> Result<u64, String> {
+    if is_transmission_shares_format(&value1, &value2, mask_secret) {
+        mpc_transmission::two_party_share::recover_value(value1, value2, mask_secret)
+            .map_err(|e| {
+                warn!("Failed to recover value from transmission shares: {}", e);
+                e.to_string()
+            })
+    } else {
+        recover_value(value1, value2, mask_secret)
+            .map_err(|e| {
+                warn!("Failed to recover value from core shares: {}", e);
+                e.to_string()
+            })
+    }
+}
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let subscriber = fmt::Subscriber::new();
@@ -429,16 +447,6 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
                 let result2 = match add_two_shared_secrets(value2, value4, mask_secret, 1, get_user_address_salt(add_params.owner), coord_seed_a, coord_seed_b) {
                     Ok(result) => {
                         result
-                    }
-                    Err(e) => {
-                        warn!("Invalid parameters for bfcx_getAnonymousAdd: {}", e);
-                        return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
-                    }
-                };
-
-                match recover_value(hex::encode(result1.clone()), hex::encode(result2.clone()), mask_secret) {
-                    Ok(value) => {
-                        value
                     }
                     Err(e) => {
                         warn!("Invalid parameters for bfcx_getAnonymousAdd: {}", e);
@@ -774,7 +782,7 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
                         let data_str2 = String::from_utf8(data2).unwrap_or_default();
                         info!("=== data_str1: {}, data_str2: {} ===", data_str1, data_str2);
 
-                        match recover_value(data_str1, data_str2, mask_secret) {
+                        match recover_value_from_shares(data_str1, data_str2, mask_secret) {
                             Ok(value) => {
                                 restore_result_array.push(value);
                             },
@@ -912,7 +920,7 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
                 let data_str2 = String::from_utf8(data2).unwrap_or_default();
                 info!("=== data_str1: {}, data_str2: {} ===", data_str1, data_str2);
 
-                match recover_value(data_str1, data_str2, mask_secret) {
+                match recover_value_from_shares(data_str1, data_str2, mask_secret) {
                     Ok(value) => {
                         restore_result_array.push(value);
                     },
@@ -1110,35 +1118,34 @@ async fn handle_anonymous_compare(request: JsonRpcRequest) -> JsonRpcResponse {
                     }
                 };
 
-                match recover_value(compare_params.value1, compare_params.value2, mask_secret) {
-                    Ok(value_a) => {
-                        let value_b = compare_params.value3;
-                        let comparison = if value_a > value_b {
-                            "1"
-                        } else if value_a < value_b {
-                            "2"
-                        } else {
-                            "0"
-                        };
-                        JsonRpcResponse {
-                            jsonrpc: "2.0".to_string(),
-                            id: request.id,
-                            result: Some(serde_json::json!({
-                                "result1": comparison.to_string(),
-                                "result2": "0".to_string(),
-                                "operation": "anonymous_compare",
-                                "timestamp": chrono::Utc::now().timestamp()
-                            })),
-                            error: None,
-                        }
-                    }
+                let value_a = match recover_value_from_shares(compare_params.value1, compare_params.value2, mask_secret) {
+                    Ok(value) => value,
                     Err(e) => {
-                        warn!("Invalid parameters for bfcx_getAnonymousCompare: {}", e);
-                        create_error_response(request.id,
-                                              -32602,
-                                              "Invalid params".to_string(),
-                                              Some(serde_json::json!({"error": e.to_string()})))
+                        return create_error_response(request.id,
+                                                     -32602,
+                                                     "Invalid params".to_string(),
+                                                     Some(serde_json::json!({"error": e})));
                     }
+                };
+
+                let value_b = compare_params.value3;
+                let comparison = if value_a > value_b {
+                    "1"
+                } else if value_a < value_b {
+                    "2"
+                } else {
+                    "0"
+                };
+                JsonRpcResponse {
+                    jsonrpc: "2.0".to_string(),
+                    id: request.id,
+                    result: Some(serde_json::json!({
+                        "result1": comparison.to_string(),
+                        "result2": "0".to_string(),
+                        "operation": "anonymous_compare",
+                        "timestamp": chrono::Utc::now().timestamp()
+                    })),
+                    error: None,
                 }
             }
             Err(e) => {
@@ -1172,17 +1179,27 @@ async fn handle_anonymous_compare_value1_and_value2(request: JsonRpcRequest) -> 
                     }
                 };
 
-                let new_value1 = recover_value(compare_params.value1, compare_params.value2, mask_secret);
-                let new_value2 = recover_value(compare_params.value3, compare_params.value4, mask_secret);
-                if new_value1.is_err() || new_value2.is_err() {
-                    warn!("Invalid parameters for bfcx_getAnonymousCompareValue1AndValue2");
-                    return create_error_response(request.id,
-                                          -32602,
-                                          "Invalid params".to_string(),
-                                          Some(serde_json::json!("error: recover failed")));
-                }
-                let value_a = new_value1.unwrap();
-                let value_b = new_value2.unwrap();
+
+                let value_a = match recover_value_from_shares(compare_params.value1, compare_params.value2, mask_secret) {
+                    Ok(value) => value,
+                    Err(e) => {
+                        return create_error_response(request.id,
+                                                     -32602,
+                                                     "Invalid params".to_string(),
+                                                     Some(serde_json::json!({"error": e})));
+                    }
+                };
+
+                let value_b = match recover_value_from_shares(compare_params.value3, compare_params.value4, mask_secret) {
+                    Ok(value) => value,
+                    Err(e) => {
+                        return create_error_response(request.id,
+                                                     -32602,
+                                                     "Invalid params".to_string(),
+                                                     Some(serde_json::json!({"error": e})));
+                    }
+                };
+
                 let comparison = if value_a > value_b {
                     "1"
                 } else if value_a < value_b {
