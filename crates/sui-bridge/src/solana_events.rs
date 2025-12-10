@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use solana_sdk::signature::Signature;
 use solana_transaction_status::EncodedConfirmedTransactionWithStatusMeta;
 use base64::Engine;
+use tracing::info;
 
 // 声明程序以生成事件类型
 anchor_lang::declare_program!(benfen_bridge);
@@ -72,6 +73,18 @@ impl SolanaBridgeEvent {
         parsed_events
     }
 
+    pub fn test_try_from_logs(log_msg: &str) -> Vec<SolanaBridgeEvent> {
+        let log = SolanaLog {
+            signature: Signature::default(),
+            slot: 0,
+            log_messages: vec![log_msg.to_string()],
+        };
+        let events = Self::try_from_logs(&log);
+        // tracing::info!("events: {:?}", events);
+        println!("events: {:?}", events);
+        events
+    }
+
     /// 从交易元数据中解析事件
     pub fn try_from_transaction(
         signature: Signature,
@@ -134,6 +147,59 @@ mod tests {
             [87, 57, 59, 239, 206, 101, 116, 48],
             [87, 57, 59, 239, 206, 101, 116, 48]
         );
+    }
+
+    // xNnHWCN1PGABAAAAAAAAAD0CBAAAAAAAAAAAypo7AAAAAOXaYE6RS0pYLywuTnxDVWpNC5vNpLb2ZR5oXqMkmrq8IAAAAK6o6kznyCufMoNfXO4QV6GdxnPPcbMT248r8B8cx6ke
+    #[test]
+    fn test_try_from_logs_with_sample() {
+        // The base64 sample string from the instructions
+        let base64_str = "xNnHWCN1PGABAAAAAAAAAD0CBAAAAAAAAAAAypo7AAAAAOXaYE6RS0pYLywuTnxDVWpNC5vNpLb2ZR5oXqMkmrq8IAAAAK6o6kznyCufMoNfXO4QV6GdxnPPcbMT248r8B8cx6ke";
+        let log_msg = format!("Program data: {}", base64_str);
+
+
+        let event_result = SolanaBridgeEvent::test_try_from_logs(&log_msg.as_str());
+
+        assert!(!event_result.is_empty(), "Event parse should succeed");
+    }
+
+    #[test]
+    fn test_bytes_to_string() {
+        // 字节数组转成字符
+        let bytes = vec![
+            1, 0, 0, 0, 0, 0, 0, 0, 61, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 202, 154, 59, 0, 0, 0, 0, 
+            229, 218, 96, 78, 145, 75, 74, 88, 47, 44, 46, 78, 124, 67, 85, 106, 77, 11, 155, 205, 
+            164, 182, 246, 101, 30, 104, 94, 163, 36, 154, 186, 188, 32, 0, 0, 0, 174, 168, 234, 76, 
+            231, 200, 43, 159, 50, 131, 95, 92, 238, 16, 87, 161, 157, 198, 115, 207, 113, 179, 19, 
+            219, 143, 43, 240, 31, 28, 199, 169, 30
+        ];
+        
+        // 尝试作为 UTF-8 字符串
+        match String::from_utf8(bytes.clone()) {
+            Ok(s) => println!("UTF-8 字符串: {}", s),
+            Err(e) => println!("UTF-8 解码失败: {:?}", e),
+        }
+        
+        // 转换为十六进制字符串
+        let hex_str: String = bytes.iter()
+            .map(|b| format!("{:02x}", b))
+            .collect();
+        println!("十六进制字符串: {}", hex_str);
+        
+        // 转换为 base64 字符串
+        let base64_str = base64::engine::general_purpose::STANDARD.encode(&bytes);
+        println!("Base64 字符串: {}", base64_str);
+        
+        // 转换为可打印字符（ASCII 范围内）
+        let ascii_str: String = bytes.iter()
+            .map(|&b| {
+                if b >= 32 && b <= 126 {
+                    b as char
+                } else {
+                    '.'
+                }
+            })
+            .collect();
+        println!("ASCII 字符: {}", ascii_str);
     }
 }
 
