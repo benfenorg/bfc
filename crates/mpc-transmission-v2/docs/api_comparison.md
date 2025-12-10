@@ -20,11 +20,11 @@ This document compares the API implementation differences of the `two_party_shar
 
 ## API Signature Comparison
 
-### 1. Secret Splitting - `split_to_two_value`
+### 1. Secret Splitting - `split_to_two_value_v2`
 
 #### mpc-framework-core
 ```rust
-pub fn split_to_two_value(
+pub fn split_to_two_value_v2(
     value: u64,
     user_id: u64,
     mask_secret: u64,
@@ -34,7 +34,7 @@ pub fn split_to_two_value(
 
 #### mpc-transmission
 ```rust
-pub fn split_to_two_value(
+pub fn split_to_two_value_v2(
     value: u64,
     user_id: u64,
     mask_secret: u64,
@@ -107,11 +107,11 @@ pub fn recover_two_shares(
 
 ---
 
-### 4. Homomorphic Addition - `add_two_shared_secrets`
+### 4. Homomorphic Addition - `add_two_shared_secrets_v2`
 
 #### mpc-framework-core
 ```rust
-pub fn add_two_shared_secrets(
+pub fn add_two_shared_secrets_v2(
     hex_a: String,          // Single share
     hex_b: String,          // Single share
     mask_secret: u64,
@@ -123,7 +123,7 @@ pub fn add_two_shared_secrets(
 
 #### mpc-transmission
 ```rust
-pub fn add_two_shared_secrets(
+pub fn add_two_shared_secrets_v2(
     shares1: Vec<Share>,    // Complete share array
     shares2: Vec<Share>,    // Complete share array
     mask_secret: u64,
@@ -141,11 +141,11 @@ pub fn add_two_shared_secrets(
 
 ---
 
-### 5. Homomorphic Subtraction - `sub_two_shared_secrets`
+### 5. Homomorphic Subtraction - `sub_two_shared_secrets_v2`
 
 #### mpc-framework-core
 ```rust
-pub fn sub_two_shared_secrets(
+pub fn sub_two_shared_secrets_v2(
     hex_a: String,
     hex_b: String,
     mask_secret: u64,
@@ -157,7 +157,7 @@ pub fn sub_two_shared_secrets(
 
 #### mpc-transmission
 ```rust
-pub fn sub_two_shared_secrets(
+pub fn sub_two_shared_secrets_v2(
     shares1: Vec<Share>,
     shares2: Vec<Share>,
     mask_secret: u64,
@@ -169,7 +169,7 @@ Same difference pattern as addition
 
 ---
 
-### 6. Multiplication - `mul_two_shared_secrets`
+### 6. Multiplication - `mul_two_shared_secrets_v2`
 
 #### mpc-framework-core (Beaver Triple Protocol)
 ```rust
@@ -218,7 +218,7 @@ pub fn generate_beaver_triple_with_values(a: u64, b: u64, mask_secret: u64) -> R
 
 #### mpc-transmission (Direct Computation)
 ```rust
-pub fn mul_two_shared_secrets(
+pub fn mul_two_shared_secrets_v2(
     shares1: Vec<Share>,
     shares2: Vec<Share>,
     mask_secret: u64,
@@ -244,7 +244,7 @@ pub fn mul_two_shared_secrets(
 #### mpc-framework-core
 ```rust
 // Split - requires specifying coord_seed
-let (hex1, hex2, seed) = split_to_two_value(12345, user_id, mask_secret, coord_seed);
+let (hex1, hex2, seed) = split_to_two_value_v2(12345, user_id, mask_secret, coord_seed);
 
 // Recover
 let value = recover_value(hex1, hex2, mask_secret)?;
@@ -253,7 +253,7 @@ let value = recover_value(hex1, hex2, mask_secret)?;
 #### mpc-transmission
 ```rust
 // Split - does not require coord_seed
-let (hex1, hex2) = split_to_two_value(12345, user_id, mask_secret);
+let (hex1, hex2) = split_to_two_value_v2(12345, user_id, mask_secret);
 
 // Recover
 let value = recover_value(hex1, hex2, mask_secret)?;
@@ -266,12 +266,12 @@ let value = recover_value(hex1, hex2, mask_secret)?;
 #### mpc-framework-core
 ```rust
 // Use the same coord_seed
-let (hex1_a, hex2_a, seed) = split_to_two_value(100, user_id, mask_secret, coord_seed);
-let (hex1_b, hex2_b, _) = split_to_two_value(50, user_id, mask_secret, coord_seed);
+let (hex1_a, hex2_a, seed) = split_to_two_value_v2(100, user_id, mask_secret, coord_seed);
+let (hex1_b, hex2_b, _) = split_to_two_value_v2(50, user_id, mask_secret, coord_seed);
 
 // Process both share positions separately
-let result_bytes1 = add_two_shared_secrets(hex1_a, hex1_b, mask_secret, 0, seed, seed)?;
-let result_bytes2 = add_two_shared_secrets(hex2_a, hex2_b, mask_secret, 1, seed, seed)?;
+let result_bytes1 = add_two_shared_secrets_v2(hex1_a, hex1_b, mask_secret, 0, seed, seed)?;
+let result_bytes2 = add_two_shared_secrets_v2(hex2_a, hex2_b, mask_secret, 1, seed, seed)?;
 
 // Convert and recover
 let share1 = bytes_to_share(&result_bytes1)?;
@@ -281,15 +281,15 @@ let result = recover_from_shares_internal(&[share1, share2])?;  // 150
 
 #### mpc-transmission
 ```rust
-let (hex1_a, hex2_a) = split_to_two_value(100, user_id, mask_secret);
-let (hex1_b, hex2_b) = split_to_two_value(50, user_id, mask_secret);
+let (hex1_a, hex2_a) = split_to_two_value_v2(100, user_id, mask_secret);
+let (hex1_b, hex2_b) = split_to_two_value_v2(50, user_id, mask_secret);
 
 // Recover Share objects
 let shares1 = recover_two_shares(hex1_a, hex2_a, mask_secret)?;
 let shares2 = recover_two_shares(hex1_b, hex2_b, mask_secret)?;
 
 // Single call completes addition
-let result = add_two_shared_secrets(shares1, shares2, mask_secret)?;  // 150
+let result = add_two_shared_secrets_v2(shares1, shares2, mask_secret)?;  // 150
 ```
 
 ---
@@ -359,13 +359,13 @@ let result = recover_from_shares_internal(&[share1, share2])?;  // x * y
 
 #### mpc-transmission (Direct Computation)
 ```rust
-let (hex1_a, hex2_a) = split_to_two_value(x, user_id, mask_secret);
-let (hex1_b, hex2_b) = split_to_two_value(y, user_id, mask_secret);
+let (hex1_a, hex2_a) = split_to_two_value_v2(x, user_id, mask_secret);
+let (hex1_b, hex2_b) = split_to_two_value_v2(y, user_id, mask_secret);
 
 let shares1 = recover_two_shares(hex1_a, hex2_a, mask_secret)?;
 let shares2 = recover_two_shares(hex1_b, hex2_b, mask_secret)?;
 
-let result = mul_two_shared_secrets(shares1, shares2, mask_secret)?;  // x * y
+let result = mul_two_shared_secrets_v2(shares1, shares2, mask_secret)?;  // x * y
 ```
 
 ---

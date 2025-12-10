@@ -242,7 +242,7 @@ pub fn get_two_party_coordinates(seed: u64) -> [FieldElement; 2] {
 /// Split a secret into two shares using specified coordinates (internal)
 ///
 /// Uses fixed-seed polynomial generation for compatibility.
-pub fn split_to_two_value_internal(
+pub fn split_to_two_value_v2_internal(
     secret: u64,
     coords: &[FieldElement; 2],
 ) -> Result<(Share, Share), SSSError> {
@@ -445,7 +445,7 @@ mod tests {
     fn test_split_and_recover_internal() {
         let secret = 12345u64;
         let coords = get_two_party_coordinates(TEST_MASK_SECRET);
-        let (share1, share2) = split_to_two_value_internal(secret, &coords).unwrap();
+        let (share1, share2) = split_to_two_value_v2_internal(secret, &coords).unwrap();
 
         let recovered = recover_from_shares_internal(&[share1, share2]).unwrap();
         assert_eq!(recovered, secret);

@@ -28,6 +28,13 @@ pub mod read;
 pub mod share;
 pub mod two_party_share;
 
+
+#[derive(Clone)]
+pub struct AnonymousParameters {
+    pub mask_secret: u64,
+    pub coord_seed: u64,
+}
+
 /// Generate secret shares
 ///
 /// # Parameters
@@ -198,7 +205,7 @@ pub fn recover_secret_with_xor(
 /// - `Err`: If the config file doesn't exist, is invalid, or the private key cannot be parsed
 pub fn get_mask_secret_and_coord_seed_from_config(
     config_path: Option<String>,
-) -> Result<(u64, u64), Box<dyn std::error::Error>> {
+) -> Result<AnonymousParameters, Box<dyn std::error::Error>> {
     let config = config_path.unwrap_or("".parse().unwrap());
     let pre_path = get_sui_config_directory();
     let mut path = pre_path.join("bfc_anonymous_config.yaml");
@@ -229,7 +236,10 @@ pub fn get_mask_secret_and_coord_seed_from_config(
 
     let coord_seed = config.anonymous_coordseed
         .ok_or_else(|| anyhow!("Anonymous anonymous coordseed not found in configuration"))?;
-    Ok((mask_secret, coord_seed))
+    Ok(AnonymousParameters{
+        mask_secret,
+        coord_seed,
+    })
 }
 
 pub fn get_user_address_salt(address: AccountAddress) -> u64 {

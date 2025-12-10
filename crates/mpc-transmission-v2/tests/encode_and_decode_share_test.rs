@@ -2,7 +2,7 @@ use mpc_framework_core::*;
 
 const TEST_MASK_SECRET: u64 = 0x1234567890ABCDEFu64;
 const TEST_USER_ID: u64 = 1u64;
-const TEST_COORD_SEED: u64 = 1234567890;
+const TEST_COORD_SEED: u64 = 116540450355;
 
 // ============================================================================
 // Tests for generate_shares_u64
@@ -232,8 +232,8 @@ fn test_generate_shares_u64_invalid_total_shares() {
 }
 
 #[test]
-fn test_generate_shares_u64_consistency_with_split_to_two_value() {
-    // When threshold=2 and total_shares=2, should be consistent with split_to_two_value_internal
+fn test_generate_shares_u64_consistency_with_split_to_two_value_v2() {
+    // When threshold=2 and total_shares=2, should be consistent with split_to_two_value_v2_internal
     let secret = 55555u64;
     let coord_seed = TEST_COORD_SEED;
 
@@ -241,7 +241,7 @@ fn test_generate_shares_u64_consistency_with_split_to_two_value() {
     let shares = generate_shares_u64(secret, 2, 2, coord_seed).unwrap();
     assert_eq!(shares.len(), 2);
 
-    // Generate using split_to_two_value (which uses split_to_two_value_internal internally)
+    // Generate using split_to_two_value_v2 (which uses split_to_two_value_v2_internal internally)
     use crate::two_party_helper::get_two_party_coordinates;
     use crate::two_party_helper::split_to_two_value_internal;
     let coords = get_two_party_coordinates(coord_seed);
@@ -511,7 +511,7 @@ fn test_recover_from_shares_different_mask_secrets() {
 #[test]
 fn test_recover_from_shares_different_coord_seeds() {
     let original_value = 54321;
-    let coord_seeds = [0u64, 1u64, 1234567890, u64::MAX];
+    let coord_seeds = [0u64, 1u64, 116540450355, u64::MAX];
     
     for &coord_seed in &coord_seeds {
         let (hex1, hex2, _) = split_to_two_value(
@@ -569,7 +569,7 @@ fn test_recover_from_shares_with_homomorphic_operations() {
     );
     
     // Perform homomorphic addition
-    let result_bytes1 = add_two_shared_secrets(
+    let result_bytes1 = add_two_shared_secrets_v2(
         hex1_a,
         hex1_b,
         TEST_MASK_SECRET,
@@ -579,7 +579,7 @@ fn test_recover_from_shares_with_homomorphic_operations() {
         seed,
     )
     .unwrap();
-    let result_bytes2 = add_two_shared_secrets(
+    let result_bytes2 = add_two_shared_secrets_v2(
         hex2_a,
         hex2_b,
         TEST_MASK_SECRET,

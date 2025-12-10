@@ -13,6 +13,7 @@ pub mod two_party_share;
 
 // Re-export main public APIs
 
+use serde::{Deserialize, Serialize};
 // Export from error module
 pub use error::SSSError;
 
@@ -40,10 +41,11 @@ pub use beaver_cache::{BeaverTripleCache, CacheStats, CachedTriple};
 
 // Export from encrypted_beaver module
 pub use encrypted_beaver::EncryptedBeaverProcessor;
-
+use log::info;
+use mpc_transmission::get_user_address_salt;
 // Export from two_party_share module - Two-party secret sharing operations
 pub use two_party_share::{
-    add_two_shared_secrets,
+    add_two_shared_secrets_v2,
     // Beaver triple generation
     generate_beaver_triple,
     generate_beaver_triple_with_values,
@@ -54,17 +56,25 @@ pub use two_party_share::{
     mul_step2_reconstruct_masked_values,
     mul_step3_compute_result,
     // High-level multiplication API
-    mul_two_shared_secrets,
-    recover_two_shares,
-    recover_value,
-    split_to_two_value,
-    sub_two_shared_secrets,
+    mul_two_shared_secrets_v2,
+    recover_two_shares_v2,
+    recover_value_v2,
+    split_to_two_value_v2,
+    sub_two_shared_secrets_v2,
 };
 
 // Share converter functions - conversion between mpc-transmission and mpc-transmission-v2 formats
 
 /// mpc-transmission-v2 finite field modulus
 pub const FIELD_MODULUS: u64 = 18446744069414584321;
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ConvertedData {
+   pub value1: String,
+   pub value2: String,
+   pub coord_seed: u64,
+}
+
 
 /// Recover the original secret value from mpc-transmission format shares
 ///
@@ -101,7 +111,7 @@ fn recover_from_transmission_shares(
 /// # Returns
 /// * `true` - If the shares are valid and can successfully recover a value
 /// * `false` - If the shares are invalid, malformed, or cannot recover a value
-pub fn is_transmission_shares_format(
+fn is_v1_transmission_shares_format(
     transmission_hex1: &str,
     transmission_hex2: &str,
     mask_secret: u64,
@@ -112,6 +122,26 @@ pub fn is_transmission_shares_format(
     } else {
         true
     }
+}
+
+pub fn process_shares_data_convert(transmission_hex1: &str, transmission_hex2: &str, mask_secret: u64, coord_seed :u64, user_id: u64) -> Result<ConvertedData, SSSError> {
+    let (value1, value2, coord_seed_a) =  if is_v1_transmission_shares_format(transmission_hex1, transmission_hex2, mask_secret){
+        match convert_from_v1_transmission_shares(transmission_hex1, transmission_hex2, mask_secret, user_id, coord_seed, 1) {
+            Ok((core_hex1, core_hex2, coord_seed_a)) => (core_hex1, core_hex2, coord_seed_a),
+            Err(e) => {
+                info!("Failed to convert transmission shares to core shares: {}", e);
+                Err(e)
+            }?
+        }
+    } else {
+        (transmission_hex1.to_string(), transmission_hex2.to_string(), coord_seed)
+    };
+
+    Ok(ConvertedData {
+        value1,
+        value2,
+        coord_seed,
+    })
 }
 
 /// Convert shares from mpc-transmission format to mpc-transmission-v2 format
@@ -136,7 +166,7 @@ pub fn is_transmission_shares_format(
 /// - The conversion process requires complete recovery of the original secret value, which temporarily exposes the secret
 /// - The finite field modulus of mpc-transmission-v2 is 18446744069414584321
 /// - If the mpc-transmission value >= modulus, conversion will fail
-pub fn convert_from_transmission_shares(
+fn convert_from_v1_transmission_shares(
     transmission_hex1: &str,
     transmission_hex2: &str,
     mask_secret: u64,
@@ -165,21 +195,21 @@ pub fn convert_from_transmission_shares(
     }
 
     // Step 3: Re-split using mpc-transmission-v2
-    let (hex1, hex2, seed) = split_to_two_value(value, user_id, mask_secret, coord_seed);
+    let (hex1, hex2, seed) = split_to_two_value_v2(value, user_id, mask_secret, coord_seed);
 
     Ok((hex1, hex2, seed))
 }
 
 /// Recover a value from two shares, automatically detecting the format (transmission or core)
 /// Returns Ok(u64) if successful, Err(String) with error message if failed
-pub fn recover_value_from_shares(value1: String, value2: String, mask_secret: u64) -> Result<u64, String> {
-    if is_transmission_shares_format(&value1, &value2, mask_secret) {
+pub fn recover_value_from_shares_v2(value1: String, value2: String, mask_secret: u64) -> Result<u64, String> {
+    if is_v1_transmission_shares_format(&value1, &value2, mask_secret) {
         mpc_transmission::two_party_share::recover_value(value1, value2, mask_secret)
             .map_err(|e| {
                 e.to_string()
             })
     } else {
-        recover_value(value1, value2, mask_secret)
+        recover_value_v2(value1, value2, mask_secret)
             .map_err(|e| {
                 e.to_string()
             })

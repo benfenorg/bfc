@@ -159,7 +159,7 @@ mod tests {
 
         assert!(config.anonymous_privatekey.is_some());
         assert!(config.anonymous_coordseed.is_some());
-        assert_eq!(config.anonymous_coordseed.unwrap(), 1234567890);
+        assert_eq!(config.anonymous_coordseed.unwrap(), 116540450355);
     }
 
 
