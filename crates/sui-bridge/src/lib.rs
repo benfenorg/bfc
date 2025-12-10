@@ -33,6 +33,7 @@ pub mod solana_query;
 pub mod solana_transaction_builder;
 pub mod query_solana_account;
 pub mod idl;
+pub mod solana_events;
 
 pub mod fast_path; // Add this line
 

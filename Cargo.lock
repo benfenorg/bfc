@@ -103,6 +103,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "agave-reserved-account-keys"
+version = "2.3.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8289c8a8a2ef5aa10ce49a070f360f4e035ee3410b8d8f3580fb39d8cf042581"
+dependencies = [
+ "agave-feature-set",
+ "solana-pubkey 2.4.0",
+ "solana-sdk-ids 2.2.1",
+]
+
+[[package]]
 name = "ahash"
 version = "0.7.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -16591,6 +16602,50 @@ dependencies = [
 ]
 
 [[package]]
+name = "solana-transaction-status"
+version = "2.3.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "135f92f4192cc68900c665becf97fc0a6500ae5a67ff347bf2cbc20ecfefa821"
+dependencies = [
+ "Inflector",
+ "agave-reserved-account-keys",
+ "base64 0.22.1",
+ "bincode",
+ "borsh 1.5.7",
+ "bs58 0.5.1",
+ "log",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "solana-account-decoder",
+ "solana-address-lookup-table-interface 2.2.2",
+ "solana-clock 2.2.2",
+ "solana-hash 2.3.0",
+ "solana-instruction 2.3.3",
+ "solana-loader-v2-interface",
+ "solana-loader-v3-interface 5.0.0",
+ "solana-message 2.4.0",
+ "solana-program-option 2.2.1",
+ "solana-pubkey 2.4.0",
+ "solana-reward-info",
+ "solana-sdk-ids 2.2.1",
+ "solana-signature",
+ "solana-stake-interface",
+ "solana-system-interface 1.0.0",
+ "solana-transaction",
+ "solana-transaction-error 2.2.1",
+ "solana-transaction-status-client-types",
+ "solana-vote-interface",
+ "spl-associated-token-account 7.0.0",
+ "spl-memo 6.0.0",
+ "spl-token 8.0.0",
+ "spl-token-2022 8.0.1",
+ "spl-token-group-interface 0.6.0",
+ "spl-token-metadata-interface 0.7.0",
+ "thiserror 2.0.17",
+]
+
+[[package]]
 name = "solana-transaction-status-client-types"
 version = "2.3.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -16825,6 +16880,32 @@ dependencies = [
  "spl-token 6.0.0",
  "spl-token-2022 4.0.1",
  "thiserror 1.0.69",
+]
+
+[[package]]
+name = "spl-associated-token-account"
+version = "7.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ae179d4a26b3c7a20c839898e6aed84cb4477adf108a366c95532f058aea041b"
+dependencies = [
+ "borsh 1.5.7",
+ "num-derive 0.4.2",
+ "num-traits",
+ "solana-program 2.3.0",
+ "spl-associated-token-account-client",
+ "spl-token 8.0.0",
+ "spl-token-2022 8.0.1",
+ "thiserror 2.0.17",
+]
+
+[[package]]
+name = "spl-associated-token-account-client"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6f8349dbcbe575f354f9a533a21f272f3eb3808a49e2fdc1c34393b88ba76cb"
+dependencies = [
+ "solana-instruction 2.3.3",
+ "solana-pubkey 2.4.0",
 ]
 
 [[package]]
@@ -17969,6 +18050,7 @@ dependencies = [
  "async-trait",
  "axum 0.7.5",
  "backoff",
+ "base64 0.22.1",
  "bcs",
  "bin-version",
  "bs58 0.4.0",
@@ -18004,7 +18086,8 @@ dependencies = [
  "solana-program 3.0.0",
  "solana-program-pack 2.2.1",
  "solana-sdk",
- "spl-associated-token-account",
+ "solana-transaction-status",
+ "spl-associated-token-account 4.0.0",
  "spl-token 5.0.2",
  "strum_macros 0.24.3",
  "sui-authority-aggregation",
