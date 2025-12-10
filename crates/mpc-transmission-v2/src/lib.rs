@@ -16,6 +16,7 @@ pub mod two_party_share;
 // Export from error module
 pub use error::SSSError;
 
+
 // Export from field module
 pub use field::{gf64_sss, FieldElement};
 
@@ -167,6 +168,22 @@ pub fn convert_from_transmission_shares(
     let (hex1, hex2, seed) = split_to_two_value(value, user_id, mask_secret, coord_seed);
 
     Ok((hex1, hex2, seed))
+}
+
+/// Recover a value from two shares, automatically detecting the format (transmission or core)
+/// Returns Ok(u64) if successful, Err(String) with error message if failed
+pub fn recover_value_from_shares(value1: String, value2: String, mask_secret: u64) -> Result<u64, String> {
+    if is_transmission_shares_format(&value1, &value2, mask_secret) {
+        mpc_transmission::two_party_share::recover_value(value1, value2, mask_secret)
+            .map_err(|e| {
+                e.to_string()
+            })
+    } else {
+        recover_value(value1, value2, mask_secret)
+            .map_err(|e| {
+                e.to_string()
+            })
+    }
 }
 
 /// Recover secret value from Share objects

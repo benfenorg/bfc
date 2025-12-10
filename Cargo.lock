@@ -1862,8 +1862,8 @@ dependencies = [
  "hex",
  "log",
  "move-core-types",
- "mpc-framework-core",
  "mpc-transmission",
+ "mpc-transmission-v2",
  "rand 0.8.5",
  "reqwest 0.11.20",
  "rocksdb",
@@ -8619,29 +8619,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "mpc-framework-core"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "clap",
- "criterion",
- "fastcrypto",
- "ff 0.13.0",
- "futures",
- "hex",
- "mpc-transmission",
- "rand 0.8.5",
- "rand_chacha 0.3.1",
- "rand_core 0.6.4",
- "serde",
- "serde_json",
- "subtle",
- "tempfile",
- "thiserror 1.0.69",
- "tokio",
-]
-
-[[package]]
 name = "mpc-transmission"
 version = "0.1.0"
 dependencies = [
@@ -8662,6 +8639,29 @@ dependencies = [
  "tempfile",
  "thiserror 1.0.69",
  "zeroize",
+]
+
+[[package]]
+name = "mpc-transmission-v2"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "clap",
+ "criterion",
+ "fastcrypto",
+ "ff 0.13.0",
+ "futures",
+ "hex",
+ "mpc-transmission",
+ "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "rand_core 0.6.4",
+ "serde",
+ "serde_json",
+ "subtle",
+ "tempfile",
+ "thiserror 1.0.69",
+ "tokio",
 ]
 
 [[package]]
@@ -15372,6 +15372,7 @@ dependencies = [
  "move-vm-runtime",
  "move-vm-types",
  "mpc-transmission",
+ "mpc-transmission-v2",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "reqwest 0.11.20",

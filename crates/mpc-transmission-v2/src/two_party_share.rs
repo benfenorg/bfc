@@ -10,7 +10,8 @@
 //! - TOTAL_SHARES = 2 (exactly two shares generated)
 //!
 //! # Core Functions (same names as mpc-transmission)
-//! - `split_to_two_value`: Split a secret into two hex-encoded shares
+//! - `split_to_two_
+//! value`: Split a secret into two hex-encoded shares
 //! - `recover_value`: Recover secret from two hex-encoded shares
 //! - `recover_two_shares`: Recover Share objects from hex strings
 //! - `add_two_shared_secrets`: Add two secrets using shares
@@ -552,7 +553,7 @@ mod tests {
 
     const TEST_MASK_SECRET: u64 = 0x1234567890ABCDEFu64;
     const TEST_USER_ID: u64 = 1u64;
-    const TEST_COORD_SEED: u64 = 0xABCDEF1234567890u64;
+    const TEST_COORD_SEED: u64 = 1234567890;
 
     // ==================== Split and Recover Tests ====================
 

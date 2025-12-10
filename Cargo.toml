@@ -745,7 +745,7 @@ sui-sdk-transaction-builder = { git = "https://github.com/hellokittyboy-code/bfc
 anemo-benchmark = { path = "crates/anemo-benchmark" }
 bin-version = { path = "crates/bin-version" }
 mpc-transmission = { path = "crates/mpc-transmission" }
-mpc-framework-core = { path = "crates/mpc-transmission-v2" }
+mpc-transmission-v2 = { path = "crates/mpc-transmission-v2" }
 mysten-common = { path = "crates/mysten-common" }
 mysten-metrics = { path = "crates/mysten-metrics" }
 mysten-network = { path = "crates/mysten-network" }

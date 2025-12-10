@@ -19,7 +19,7 @@ use mpc_framework_core::two_party_share::{
 // Constants for benchmarking
 const BENCH_MASK_SECRET: u64 = 0x1234567890ABCDEFu64;
 const BENCH_USER_ID: u64 = 1u64;
-const BENCH_COORD_SEED: u64 = 0xABCDEF1234567890u64;
+const BENCH_COORD_SEED: u64 = 1234567890;
 const THRESHOLD: usize = 2;
 
 /// Benchmark basic split_to_two_value operation
@@ -617,7 +617,7 @@ fn bench_different_coord_seeds(c: &mut Criterion) {
     let mut group = c.benchmark_group("two_party/coord_seeds");
 
     let secret = 12345u64;
-    let seeds = [0u64, 0xABCDEF1234567890u64, u64::MAX];
+    let seeds = [0u64, 1234567890, u64::MAX];
 
     for &seed in &seeds {
         group.bench_with_input(

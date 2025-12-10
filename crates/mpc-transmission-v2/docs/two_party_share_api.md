@@ -47,7 +47,7 @@ pub fn split_to_two_value(
 let secret = 12345u64;
 let user_id = 1u64;
 let mask_secret = 0x1234567890ABCDEFu64;
-let coord_seed = 0xABCDEF1234567890u64;
+let coord_seed = 1234567890;
 
 let (hex1, hex2, seed) = split_to_two_value(secret, user_id, mask_secret, coord_seed);
 // hex1 and hex2 are encrypted shares (hexadecimal strings)
@@ -111,7 +111,7 @@ pub fn add_two_shared_secrets(
 ```rust
 let a = 100u64;
 let b = 50u64;
-let coord_seed = 0xABCDEF1234567890u64;
+let coord_seed = 1234567890;
 
 // 1. Split both secrets using the same coord_seed
 let (hex1_a, hex2_a, seed) = split_to_two_value(a, user_id, mask_secret, coord_seed);
@@ -413,7 +413,7 @@ use mpc_framework_core::two_party_share::*;
 // Configuration parameters
 let user_id = 1u64;
 let mask_secret = 0x1234567890ABCDEFu64;
-let coord_seed = 0xABCDEF1234567890u64;
+let coord_seed = 1234567890;
 
 // Split secret
 let secret = 42u64;

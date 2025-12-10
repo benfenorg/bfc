@@ -2,7 +2,7 @@ use mpc_framework_core::*;
 
 const TEST_MASK_SECRET: u64 = 0x1234567890ABCDEFu64;
 const TEST_USER_ID: u64 = 1u64;
-const TEST_COORD_SEED: u64 = 0xABCDEF1234567890u64;
+const TEST_COORD_SEED: u64 = 1234567890;
 
 // ============================================================================
 // Tests for generate_shares_u64
@@ -511,7 +511,7 @@ fn test_recover_from_shares_different_mask_secrets() {
 #[test]
 fn test_recover_from_shares_different_coord_seeds() {
     let original_value = 54321;
-    let coord_seeds = [0u64, 1u64, 0xABCDEF1234567890u64, u64::MAX];
+    let coord_seeds = [0u64, 1u64, 1234567890, u64::MAX];
     
     for &coord_seed in &coord_seeds {
         let (hex1, hex2, _) = split_to_two_value(
