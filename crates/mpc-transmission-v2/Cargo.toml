@@ -1,0 +1,53 @@
+[package]
+name = "mpc-transmission-v2"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rand.workspace = true
+thiserror.workspace = true
+ff.workspace = true
+rand_core.workspace = true
+subtle.workspace = true
+rand_chacha.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true
+tokio.workspace = true
+futures.workspace = true
+clap.workspace = true
+chrono.workspace = true
+fastcrypto.workspace = true
+hex.workspace = true
+mpc-transmission.workspace = true
+
+
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+# Benchmark configurations
+[[bench]]
+name = "secret_sharing_bench"
+harness = false
+
+[[bench]]
+name = "beaver_triple_bench"
+harness = false
+
+[[bench]]
+name = "homomorphic_ops_bench"
+harness = false
+
+[[bench]]
+name = "polynomial_bench"
+harness = false
+
+[[bench]]
+name = "encryption_bench"
+harness = false
+
+[[bench]]
+name = "two_party_bench"
+harness = false
+

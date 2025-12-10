@@ -1863,6 +1863,7 @@ dependencies = [
  "log",
  "move-core-types",
  "mpc-transmission",
+ "mpc-transmission-v2",
  "rand 0.8.5",
  "reqwest 0.11.20",
  "rocksdb",
@@ -8654,6 +8655,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "mpc-transmission-v2"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "clap",
+ "criterion",
+ "fastcrypto",
+ "ff 0.13.0",
+ "futures",
+ "hex",
+ "mpc-transmission",
+ "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "rand_core 0.6.4",
+ "serde",
+ "serde_json",
+ "subtle",
+ "tempfile",
+ "thiserror 1.0.69",
+ "tokio",
+]
+
+[[package]]
 name = "msim"
 version = "0.1.0"
 source = "git+https://github.com/MystenLabs/mysten-sim.git?rev=e06fc6fa9aeb978ffc621f8b27c06a404042279f#e06fc6fa9aeb978ffc621f8b27c06a404042279f"
@@ -15361,6 +15385,7 @@ dependencies = [
  "move-vm-runtime",
  "move-vm-types",
  "mpc-transmission",
+ "mpc-transmission-v2",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "reqwest 0.11.20",

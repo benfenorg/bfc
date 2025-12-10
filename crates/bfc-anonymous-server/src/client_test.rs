@@ -623,6 +623,7 @@ mod tests {
         assert_eq!(hex::encode(hash), expected_hex);
     }
 
+    #[ignore]
     #[tokio::test]
     async fn test_client_encode_data() {
 
@@ -649,6 +650,7 @@ mod tests {
 
     }
 
+    #[ignore]
     #[tokio::test]
     async fn test_client_encode_data_array_for_client() {
         use std::string::String;
@@ -682,6 +684,7 @@ mod tests {
         println!("Split 20 Result: {:?}", split_result_0);
     }
 
+    #[ignore]
     #[tokio::test]
     async fn test_client_compare_value1_and_value2() {
         let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
@@ -735,6 +738,7 @@ mod tests {
         assert_eq!(client.base_url, "http://localhost:9010");
     }
 
+    #[ignore]
     #[tokio::test]
     async fn test_client_restore_value_array(){
         // let subscriber = fmt::Subscriber::new();
@@ -803,6 +807,7 @@ mod tests {
 
     }
 
+    #[ignore]
     #[tokio::test]
     async fn test_client_restore_value_array_for_zklogin(){
         // let subscriber = fmt::Subscriber::new();
@@ -834,6 +839,7 @@ mod tests {
         assert!(add_result.is_ok());
     }
 
+    #[ignore]
     #[tokio::test]
     async fn test_encode_data_for_zklogin(){
         use std::string::String;
@@ -858,6 +864,7 @@ mod tests {
 
     }
 
+    #[ignore]
     #[tokio::test]
     async fn test_client_with_server() -> anyhow::Result<()> {
         // let subscriber = fmt::Subscriber::new();

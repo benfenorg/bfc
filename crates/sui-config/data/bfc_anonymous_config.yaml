@@ -1,5 +1,6 @@
 ---
 anonymous-privatekey: "0x1111ffff0000"
+anonymous-coordseed: 1234567890
 anonymous-rpc:
   - "http://localhost:9010"
   - "http://localhost:9010"

@@ -177,6 +177,9 @@ pub struct NativesCostTable {
     pub transfer_receive_object_internal_cost_params: TransferReceiveObjectInternalCostParams,
 
     pub anonymous_privatekey: Option<String>,
+
+    pub anonymous_coordseed: Option<u64>,
+
     pub anonymous_rpc: Option<Vec<String>>,
     // anonymous_cost
     pub anonymous_compute_cost_params: AnonymousComputeCostParams,
@@ -673,6 +676,7 @@ impl NativesCostTable {
                     .map(Into::into),
             },
             anonymous_privatekey: config.anonymous_privatekey,
+            anonymous_coordseed: config.anonymous_coordseed,
             anonymous_rpc: config.anonymous_rpc,
             anonymous_compute_cost_params: AnonymousComputeCostParams {
                 anonymous_compute_cost_base: protocol_config

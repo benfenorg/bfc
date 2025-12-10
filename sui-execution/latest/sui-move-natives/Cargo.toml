@@ -31,6 +31,7 @@ sui-config.workspace = true
 tracing.workspace = true
 dirs.workspace = true
 mpc-transmission.workspace = true
+mpc-transmission-v2.workspace = true
 
 attohttpc = { version = "0.28.5", features =["json", "compress"] }
 anyhow.workspace = true
