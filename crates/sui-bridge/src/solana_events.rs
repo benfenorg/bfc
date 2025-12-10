@@ -5,7 +5,9 @@ use serde::{Deserialize, Serialize};
 use solana_sdk::signature::Signature;
 use solana_transaction_status::EncodedConfirmedTransactionWithStatusMeta;
 use base64::Engine;
-use tracing::info;
+use std::io::Cursor;
+use std::io::Read;
+use tracing;
 
 // 声明程序以生成事件类型
 anchor_lang::declare_program!(benfen_bridge);
@@ -22,6 +24,132 @@ pub struct SolanaLog {
     pub log_messages: Vec<String>,
 }
 
+/// TokensDeposited 事件结构
+/// 
+/// 对应 Solana Anchor 事件：
+/// ```rust
+/// #[event]
+/// pub struct TokensDeposited {
+///   pub nonce: u64,
+///   pub source_chain_id: u8,
+///   pub target_chain_id: u8,
+///   pub token_id: u64,
+///   pub amount: u64,
+///   pub sender_address: Pubkey,   // 32 bytes
+///   pub recipient_address: Vec<u8>, // u32 LE length + bytes
+/// }
+/// ```
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct TokensDeposited {
+    pub discriminator: [u8; 8],
+    pub nonce: u64,
+    pub source_chain_id: u8,
+    pub target_chain_id: u8,
+    pub token_id: u64,
+    pub amount: u64,
+    pub sender_pubkey: [u8; 32],
+    pub recipient_length: u32,
+    pub recipient_bytes: Vec<u8>,
+}
+
+impl TokensDeposited {
+    /// 从字节数据解析 TokensDeposited 事件
+    pub fn parse_from_bytes(data: &[u8]) -> Result<Self, String> {
+        let mut cursor = Cursor::new(data);
+        
+        // 读取 8-byte Anchor event discriminator
+        let mut discriminator = [0u8; 8];
+        cursor.read_exact(&mut discriminator)
+            .map_err(|e| format!("read discriminator: {}", e))?;
+        
+        // 读取 nonce (u64, little-endian)
+        let mut nonce_bytes = [0u8; 8];
+        cursor.read_exact(&mut nonce_bytes)
+            .map_err(|e| format!("read nonce: {}", e))?;
+        let nonce = u64::from_le_bytes(nonce_bytes);
+        
+        // 读取 source_chain_id (u8)
+        let mut source_chain_id_bytes = [0u8; 1];
+        cursor.read_exact(&mut source_chain_id_bytes)
+            .map_err(|e| format!("read source_chain_id: {}", e))?;
+        let source_chain_id = source_chain_id_bytes[0];
+        
+        // 读取 target_chain_id (u8)
+        let mut target_chain_id_bytes = [0u8; 1];
+        cursor.read_exact(&mut target_chain_id_bytes)
+            .map_err(|e| format!("read target_chain_id: {}", e))?;
+        let target_chain_id = target_chain_id_bytes[0];
+        
+        // 读取 token_id (u64, little-endian)
+        let mut token_id_bytes = [0u8; 8];
+        cursor.read_exact(&mut token_id_bytes)
+            .map_err(|e| format!("read token_id: {}", e))?;
+        let token_id = u64::from_le_bytes(token_id_bytes);
+        
+        // 读取 amount (u64, little-endian)
+        let mut amount_bytes = [0u8; 8];
+        cursor.read_exact(&mut amount_bytes)
+            .map_err(|e| format!("read amount: {}", e))?;
+        let amount = u64::from_le_bytes(amount_bytes);
+        
+        // 读取 sender_pubkey (32 bytes)
+        let mut sender_pubkey = [0u8; 32];
+        cursor.read_exact(&mut sender_pubkey)
+            .map_err(|e| format!("read sender pubkey: {}", e))?;
+        
+        // 读取 recipient_length (u32, little-endian)
+        let mut recipient_length_bytes = [0u8; 4];
+        cursor.read_exact(&mut recipient_length_bytes)
+            .map_err(|e| format!("read recipient length: {}", e))?;
+        let recipient_length = u32::from_le_bytes(recipient_length_bytes);
+        
+        // 检查长度是否合理
+        if recipient_length > 10_000_000 {
+            return Err(format!("recipient length too large: {}", recipient_length));
+        }
+        
+        // 读取 recipient_bytes
+        let mut recipient_bytes = vec![0u8; recipient_length as usize];
+        cursor.read_exact(&mut recipient_bytes)
+            .map_err(|e| format!("read recipient bytes: {}", e))?;
+        
+        // 检查是否还有剩余数据
+        if cursor.position() != cursor.get_ref().len() as u64 {
+            return Err(format!(
+                "unexpected trailing bytes: {}",
+                cursor.get_ref().len() - cursor.position() as usize
+            ));
+        }
+        
+        Ok(TokensDeposited {
+            discriminator,
+            nonce,
+            source_chain_id,
+            target_chain_id,
+            token_id,
+            amount,
+            sender_pubkey,
+            recipient_length,
+            recipient_bytes,
+        })
+    }
+    
+    /// 获取 sender_address 的 base58 编码
+    pub fn sender_base58(&self) -> String {
+        bs58::encode(&self.sender_pubkey).into_string()
+    }
+    
+    /// 获取 recipient_address 的十六进制编码
+    pub fn recipient_hex(&self) -> String {
+        hex::encode(&self.recipient_bytes)
+    }
+    
+    /// 获取 discriminator 的十六进制编码
+    pub fn discriminator_hex(&self) -> String {
+        hex::encode(&self.discriminator)
+    }
+}
+
 /// Solana Bridge 事件枚举
 /// 
 /// 注意：事件类型由 anchor_lang::declare_program! 宏生成
@@ -32,7 +160,7 @@ pub struct SolanaLog {
 pub enum SolanaBridgeEvent {
     // 这些类型需要根据实际生成的代码调整
     // TokenAddedEvent,
-    // TokensDeposited,
+    TokensDeposited(TokensDeposited),
     // TokensClaimed,
     // BlocklistUpdatedEvent,
     // ChainLimitUpdated,
@@ -60,12 +188,31 @@ impl SolanaBridgeEvent {
             if let Some(event_data) = Self::extract_event_data(log_msg) {
                 if event_data.len() >= 8 {
                     let discriminator: [u8; 8] = event_data[..8].try_into().unwrap();
-                    let data = event_data[8..].to_vec();
                     
-                    parsed_events.push(SolanaBridgeEvent::RawEvent {
-                        discriminator,
-                        data,
-                    });
+                    // 尝试解析为 TokensDeposited 事件
+                    // TokensDeposited discriminator: [196, 217, 199, 88, 35, 117, 60, 96]
+                    if discriminator == [196, 217, 199, 88, 35, 117, 60, 96] {
+                        match TokensDeposited::parse_from_bytes(&event_data) {
+                            Ok(tokens_deposited) => {
+                                parsed_events.push(SolanaBridgeEvent::TokensDeposited(tokens_deposited));
+                            }
+                            Err(e) => {
+                                // 如果解析失败，回退到 RawEvent
+                                tracing::warn!("Failed to parse TokensDeposited: {}", e);
+                                parsed_events.push(SolanaBridgeEvent::RawEvent {
+                                    discriminator,
+                                    data: event_data[8..].to_vec(),
+                                });
+                            }
+                        }
+                    } else {
+                        // 其他事件类型，使用 RawEvent
+                        let data = event_data[8..].to_vec();
+                        parsed_events.push(SolanaBridgeEvent::RawEvent {
+                            discriminator,
+                            data,
+                        });
+                    }
                 }
             }
         }
@@ -118,6 +265,7 @@ impl SolanaBridgeEvent {
     /// 根据 discriminator 识别事件类型
     pub fn event_name(&self) -> Option<&'static str> {
         match self {
+            SolanaBridgeEvent::TokensDeposited(_) => Some("TokensDeposited"),
             SolanaBridgeEvent::RawEvent { discriminator, .. } => {
                 match discriminator {
                     [87, 57, 59, 239, 206, 101, 116, 48] => Some("TokenAddedEvent"),
@@ -140,15 +288,6 @@ impl SolanaBridgeEvent {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_event_discriminators() {
-        // 验证 discriminator 与 IDL 中的定义一致
-        assert_eq!(
-            [87, 57, 59, 239, 206, 101, 116, 48],
-            [87, 57, 59, 239, 206, 101, 116, 48]
-        );
-    }
-
     // xNnHWCN1PGABAAAAAAAAAD0CBAAAAAAAAAAAypo7AAAAAOXaYE6RS0pYLywuTnxDVWpNC5vNpLb2ZR5oXqMkmrq8IAAAAK6o6kznyCufMoNfXO4QV6GdxnPPcbMT248r8B8cx6ke
     #[test]
     fn test_try_from_logs_with_sample() {
@@ -156,50 +295,35 @@ mod tests {
         let base64_str = "xNnHWCN1PGABAAAAAAAAAD0CBAAAAAAAAAAAypo7AAAAAOXaYE6RS0pYLywuTnxDVWpNC5vNpLb2ZR5oXqMkmrq8IAAAAK6o6kznyCufMoNfXO4QV6GdxnPPcbMT248r8B8cx6ke";
         let log_msg = format!("Program data: {}", base64_str);
 
-
         let event_result = SolanaBridgeEvent::test_try_from_logs(&log_msg.as_str());
 
         assert!(!event_result.is_empty(), "Event parse should succeed");
-    }
-
-    #[test]
-    fn test_bytes_to_string() {
-        // 字节数组转成字符
-        let bytes = vec![
-            1, 0, 0, 0, 0, 0, 0, 0, 61, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 202, 154, 59, 0, 0, 0, 0, 
-            229, 218, 96, 78, 145, 75, 74, 88, 47, 44, 46, 78, 124, 67, 85, 106, 77, 11, 155, 205, 
-            164, 182, 246, 101, 30, 104, 94, 163, 36, 154, 186, 188, 32, 0, 0, 0, 174, 168, 234, 76, 
-            231, 200, 43, 159, 50, 131, 95, 92, 238, 16, 87, 161, 157, 198, 115, 207, 113, 179, 19, 
-            219, 143, 43, 240, 31, 28, 199, 169, 30
-        ];
         
-        // 尝试作为 UTF-8 字符串
-        match String::from_utf8(bytes.clone()) {
-            Ok(s) => println!("UTF-8 字符串: {}", s),
-            Err(e) => println!("UTF-8 解码失败: {:?}", e),
+        // 验证解析结果
+        match &event_result[0] {
+            SolanaBridgeEvent::TokensDeposited(tokens_deposited) => {
+                println!("== TokensDeposited ==");
+                println!("discriminator(hex): {}", tokens_deposited.discriminator_hex());
+                println!("nonce: {}", tokens_deposited.nonce);
+                println!("source_chain_id: {}", tokens_deposited.source_chain_id);
+                println!("target_chain_id: {}", tokens_deposited.target_chain_id);
+                println!("token_id: {}", tokens_deposited.token_id);
+                println!("amount: {}", tokens_deposited.amount);
+                println!("sender_address(base58): {}", tokens_deposited.sender_base58());
+                println!("recipient_address_len: {}", tokens_deposited.recipient_length);
+                println!("recipient_address(hex): {}", tokens_deposited.recipient_hex());
+                
+                // 验证 discriminator
+                assert_eq!(
+                    tokens_deposited.discriminator,
+                    [196, 217, 199, 88, 35, 117, 60, 96],
+                    "Discriminator should match TokensDeposited"
+                );
+            }
+            SolanaBridgeEvent::RawEvent { discriminator, .. } => {
+                panic!("Expected TokensDeposited event, got RawEvent with discriminator: {:?}", discriminator);
+            }
         }
-        
-        // 转换为十六进制字符串
-        let hex_str: String = bytes.iter()
-            .map(|b| format!("{:02x}", b))
-            .collect();
-        println!("十六进制字符串: {}", hex_str);
-        
-        // 转换为 base64 字符串
-        let base64_str = base64::engine::general_purpose::STANDARD.encode(&bytes);
-        println!("Base64 字符串: {}", base64_str);
-        
-        // 转换为可打印字符（ASCII 范围内）
-        let ascii_str: String = bytes.iter()
-            .map(|&b| {
-                if b >= 32 && b <= 126 {
-                    b as char
-                } else {
-                    '.'
-                }
-            })
-            .collect();
-        println!("ASCII 字符: {}", ascii_str);
     }
 }
 
