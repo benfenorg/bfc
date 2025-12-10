@@ -580,7 +580,7 @@ mod tests {
         let value = 12345u64;
         let (hex1, hex2, _) =
             split_to_two_value_v2(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
-        let recovered = recover_value(hex1, hex2, TEST_MASK_SECRET).unwrap();
+        let recovered = recover_value_v2(hex1, hex2, TEST_MASK_SECRET).unwrap();
         assert_eq!(recovered, value);
     }
 
@@ -589,7 +589,7 @@ mod tests {
         let value = 0u64;
         let (hex1, hex2, _) =
             split_to_two_value_v2(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
-        let recovered = recover_value(hex1, hex2, TEST_MASK_SECRET).unwrap();
+        let recovered = recover_value_v2(hex1, hex2, TEST_MASK_SECRET).unwrap();
         assert_eq!(recovered, value);
     }
 
@@ -600,7 +600,7 @@ mod tests {
         let value = 18446744069414584320u64; // MODULUS - 1
         let (hex1, hex2, _) =
             split_to_two_value_v2(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
-        let recovered = recover_value(hex1, hex2, TEST_MASK_SECRET).unwrap();
+        let recovered = recover_value_v2(hex1, hex2, TEST_MASK_SECRET).unwrap();
         assert_eq!(recovered, value);
     }
 
@@ -611,7 +611,7 @@ mod tests {
             split_to_two_value_v2(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         let wrong_mask = 0xFEDCBA0987654321u64;
-        let result = recover_value(hex1, hex2, wrong_mask);
+        let result = recover_value_v2(hex1, hex2, wrong_mask);
 
         // Should either fail or return wrong value
         match result {
@@ -625,7 +625,7 @@ mod tests {
         let invalid_hex1 = "invalid_hex".to_string();
         let invalid_hex2 = "also_invalid".to_string();
 
-        let result = recover_value(invalid_hex1, invalid_hex2, TEST_MASK_SECRET);
+        let result = recover_value_v2(invalid_hex1, invalid_hex2, TEST_MASK_SECRET);
         assert!(result.is_err());
     }
 
@@ -634,7 +634,7 @@ mod tests {
         let empty1 = "".to_string();
         let empty2 = "".to_string();
 
-        let result = recover_value(empty1, empty2, TEST_MASK_SECRET);
+        let result = recover_value_v2(empty1, empty2, TEST_MASK_SECRET);
         assert!(result.is_err());
     }
 
@@ -644,7 +644,7 @@ mod tests {
         let (hex1, hex2, _) =
             split_to_two_value_v2(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
-        let shares = recover_two_shares(hex1, hex2, TEST_MASK_SECRET).unwrap();
+        let shares = recover_two_shares_v2(hex1, hex2, TEST_MASK_SECRET).unwrap();
         assert_eq!(shares.len(), 2);
 
         // Verify that recovered shares can reconstruct the original value
@@ -669,8 +669,8 @@ mod tests {
         assert_eq!(seed_a, seed_b);
 
         // Both should recover to same value
-        let recovered_a = recover_value(hex1_a, hex2_a, TEST_MASK_SECRET).unwrap();
-        let recovered_b = recover_value(hex1_b, hex2_b, TEST_MASK_SECRET).unwrap();
+        let recovered_a = recover_value_v2(hex1_a, hex2_a, TEST_MASK_SECRET).unwrap();
+        let recovered_b = recover_value_v2(hex1_b, hex2_b, TEST_MASK_SECRET).unwrap();
         assert_eq!(recovered_a, recovered_b);
         assert_eq!(recovered_a, value);
     }
@@ -680,9 +680,9 @@ mod tests {
         let value = 12345u64;
 
         let (hex1_a, hex2_a, seed_a) =
-            split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
         let (hex1_b, hex2_b, seed_b) =
-            split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         // Same inputs should produce same outputs
         assert_eq!(hex1_a, hex1_b);
@@ -699,9 +699,9 @@ mod tests {
 
         // Split both values using same coord_seed (ensures same x-coordinates)
         let (hex1_a, hex2_a, seed_a) =
-            split_to_two_value(value1, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(value1, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
         let (hex1_b, hex2_b, seed_b) =
-            split_to_two_value(value2, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(value2, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         // Homomorphic addition on each share position
         let result_bytes1 = add_two_shared_secrets_v2(
@@ -726,7 +726,7 @@ mod tests {
         .unwrap();
 
         // Convert bytes to shares and recover
-        let result = recover_value(
+        let result = recover_value_v2(
             hex::encode(result_bytes1),
             hex::encode(result_bytes2),
             TEST_MASK_SECRET,
@@ -741,9 +741,9 @@ mod tests {
         let value2 = 0u64;
 
         let (hex1_a, hex2_a, seed_a) =
-            split_to_two_value(value1, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(value1, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
         let (hex1_b, hex2_b, seed_b) =
-            split_to_two_value(value2, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(value2, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         let result_bytes1 = add_two_shared_secrets_v2(
             hex1_a,
@@ -766,7 +766,7 @@ mod tests {
         )
         .unwrap();
 
-        let result = recover_value(
+        let result = recover_value_v2(
             hex::encode(result_bytes1),
             hex::encode(result_bytes2),
             TEST_MASK_SECRET,
@@ -782,8 +782,8 @@ mod tests {
         let seed1 = TEST_COORD_SEED;
         let seed2 = 0xFEDCBA0987654321u64;
 
-        let (hex1_a, _, _) = split_to_two_value(value1, TEST_USER_ID, TEST_MASK_SECRET, seed1);
-        let (hex1_b, _, _) = split_to_two_value(value2, TEST_USER_ID, TEST_MASK_SECRET, seed2);
+        let (hex1_a, _, _) = split_to_two_value_v2(value1, TEST_USER_ID, TEST_MASK_SECRET, seed1);
+        let (hex1_b, _, _) = split_to_two_value_v2(value2, TEST_USER_ID, TEST_MASK_SECRET, seed2);
 
         // Should fail because coord_seeds don't match
         let result = add_two_shared_secrets_v2(
@@ -806,9 +806,9 @@ mod tests {
         let value2 = 100u64;
 
         let (hex1_a, hex2_a, seed_a) =
-            split_to_two_value(value1, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(value1, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
         let (hex1_b, hex2_b, seed_b) =
-            split_to_two_value(value2, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(value2, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         let result_bytes1 = sub_two_shared_secrets_v2(
             hex1_a,
@@ -831,7 +831,7 @@ mod tests {
         )
         .unwrap();
 
-        let result = recover_value(
+        let result = recover_value_v2(
             hex::encode(result_bytes1),
             hex::encode(result_bytes2),
             TEST_MASK_SECRET,
@@ -845,9 +845,9 @@ mod tests {
         let value = 42u64;
 
         let (hex1_a, hex2_a, seed_a) =
-            split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
         let (hex1_b, hex2_b, seed_b) =
-            split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         let result_bytes1 = sub_two_shared_secrets_v2(
             hex1_a,
@@ -870,7 +870,7 @@ mod tests {
         )
         .unwrap();
 
-        let result = recover_value(
+        let result = recover_value_v2(
             hex::encode(result_bytes1),
             hex::encode(result_bytes2),
             TEST_MASK_SECRET,
@@ -1093,11 +1093,11 @@ mod tests {
         let c = 30u64;
 
         let (hex1_a, hex2_a, seed) =
-            split_to_two_value(a, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(a, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
         let (hex1_b, hex2_b, _) =
-            split_to_two_value(b, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(b, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
         let (hex1_c, hex2_c, _) =
-            split_to_two_value(c, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(c, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         // Step 1: a + b (on both share positions)
         let ab_bytes0 = add_two_shared_secrets_v2(
@@ -1142,7 +1142,7 @@ mod tests {
         )
         .unwrap();
         let result =
-            recover_value(hex::encode(result0), hex::encode(result1), TEST_MASK_SECRET).unwrap();
+            recover_value_v2(hex::encode(result0), hex::encode(result1), TEST_MASK_SECRET).unwrap();
         assert_eq!(result, (a + b) - c);
     }
 
@@ -1153,9 +1153,9 @@ mod tests {
         let b = 15u64;
 
         let (hex1_a, hex2_a, seed) =
-            split_to_two_value(a, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(a, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
         let (hex1_b, hex2_b, _) =
-            split_to_two_value(b, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(b, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         // a + b
         let ab_bytes1 = add_two_shared_secrets_v2(
@@ -1179,7 +1179,7 @@ mod tests {
         )
         .unwrap();
 
-        let result = recover_value(
+        let result = recover_value_v2(
             hex::encode(ab_bytes1),
             hex::encode(ab_bytes2),
             TEST_MASK_SECRET,
@@ -1203,8 +1203,8 @@ mod tests {
 
         for value in test_cases {
             let (hex1, hex2, _) =
-                split_to_two_value(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
-            let recovered = recover_value(hex1, hex2, TEST_MASK_SECRET).unwrap();
+                split_to_two_value_v2(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            let recovered = recover_value_v2(hex1, hex2, TEST_MASK_SECRET).unwrap();
             assert_eq!(recovered, value, "Failed for value {}", value);
         }
     }
@@ -1220,13 +1220,13 @@ mod tests {
         let d = 20u64;
 
         let (hex1_a, hex2_a, seed) =
-            split_to_two_value(a, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(a, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
         let (hex1_b, hex2_b, _) =
-            split_to_two_value(b, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(b, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
         let (hex1_c, hex2_c, _) =
-            split_to_two_value(c, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(c, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
         let (hex1_d, hex2_d, _) =
-            split_to_two_value(d, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            split_to_two_value_v2(d, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
 
         // a + b
         let ab_bytes0 = add_two_shared_secrets_v2(
@@ -1295,7 +1295,7 @@ mod tests {
         .unwrap();
 
         let result =
-            recover_value(hex::encode(result0), hex::encode(result1), TEST_MASK_SECRET).unwrap();
+            recover_value_v2(hex::encode(result0), hex::encode(result1), TEST_MASK_SECRET).unwrap();
         assert_eq!(result, ((a + b) - c) + d);
     }
 

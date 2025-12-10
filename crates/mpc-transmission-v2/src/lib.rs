@@ -111,7 +111,7 @@ fn recover_from_transmission_shares(
 /// # Returns
 /// * `true` - If the shares are valid and can successfully recover a value
 /// * `false` - If the shares are invalid, malformed, or cannot recover a value
-fn is_v1_transmission_shares_format(
+pub fn is_v1_transmission_shares_format(
     transmission_hex1: &str,
     transmission_hex2: &str,
     mask_secret: u64,
@@ -166,7 +166,7 @@ pub fn process_shares_data_convert(transmission_hex1: &str, transmission_hex2: &
 /// - The conversion process requires complete recovery of the original secret value, which temporarily exposes the secret
 /// - The finite field modulus of mpc-transmission-v2 is 18446744069414584321
 /// - If the mpc-transmission value >= modulus, conversion will fail
-fn convert_from_v1_transmission_shares(
+pub fn convert_from_v1_transmission_shares(
     transmission_hex1: &str,
     transmission_hex2: &str,
     mask_secret: u64,
