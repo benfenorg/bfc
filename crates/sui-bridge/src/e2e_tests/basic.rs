@@ -56,12 +56,7 @@ use anchor_client::{Program,Client, Cluster};
 use spl_token;
 
 use crate::types::{
-    AddExternalCoinAdminAction, AddExternalCoinTargetAction, AddExternalCoinWitnessAction,
-    AddTokenOnTokenListAction, AddTokensOnEvmAction, BridgeAction, RefundAdminAction,
-    RemoveExternalCoinAdminAction, RemoveExternalCoinTargetAction, RemoveExternalCoinWitnessAction,
-    RemoveTokenOnTokenListAction, SingleTransferLimitUpdateAction, UpdateBridgeFeeOnCrossInAction,
-    UpdateBridgeFeeOnCrossOutAction, WithdrawBridgeFeeAction,
-    UpdateInvestAddressAction, AddLpTokenIdAction,
+    AddExternalCoinAdminAction, AddExternalCoinTargetAction, AddExternalCoinWitnessAction, AddLpTokenIdAction, AddTokenOnSolanaAction, AddTokenOnTokenListAction, AddTokensOnEvmAction, BridgeAction, RefundAdminAction, RemoveExternalCoinAdminAction, RemoveExternalCoinTargetAction, RemoveExternalCoinWitnessAction, RemoveTokenOnTokenListAction, SingleTransferLimitUpdateAction, UpdateBridgeFeeOnCrossInAction, UpdateBridgeFeeOnCrossOutAction, UpdateInvestAddressAction, WithdrawBridgeFeeAction
 };
 use crate::utils::publish_and_register_coins_return_add_coins_on_sui_action;
 use crate::BRIDGE_ENABLE_PROTOCOL_VERSION;
