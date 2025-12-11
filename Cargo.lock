@@ -8665,6 +8665,7 @@ dependencies = [
  "ff 0.13.0",
  "futures",
  "hex",
+ "log",
  "mpc-transmission",
  "rand 0.8.5",
  "rand_chacha 0.3.1",

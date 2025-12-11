@@ -28,12 +28,12 @@ This module implements a (2,2)-threshold secret sharing scheme, supporting:
 
 ## API Details
 
-### 1. Secret Splitting - `split_to_two_value`
+### 1. Secret Splitting - `split_to_two_value_v2`
 
 Splits a secret value into two encrypted hexadecimal shares.
 
 ```rust
-pub fn split_to_two_value(
+pub fn split_to_two_value_v2(
     value: u64,        // Secret to split
     user_id: u64,      // User ID
     mask_secret: u64,  // Mask secret key
@@ -47,9 +47,9 @@ pub fn split_to_two_value(
 let secret = 12345u64;
 let user_id = 1u64;
 let mask_secret = 0x1234567890ABCDEFu64;
-let coord_seed = 1234567890;
+let coord_seed = 116540450355;
 
-let (hex1, hex2, seed) = split_to_two_value(secret, user_id, mask_secret, coord_seed);
+let (hex1, hex2, seed) = split_to_two_value_v2(secret, user_id, mask_secret, coord_seed);
 // hex1 and hex2 are encrypted shares (hexadecimal strings)
 // seed equals the input coord_seed
 ```
@@ -91,12 +91,12 @@ pub fn recover_two_shares(
 
 ---
 
-### 4. Homomorphic Addition - `add_two_shared_secrets`
+### 4. Homomorphic Addition - `add_two_shared_secrets_v2`
 
 Performs addition on two secrets in encrypted state.
 
 ```rust
-pub fn add_two_shared_secrets(
+pub fn add_two_shared_secrets_v2(
     hex_a: String,      // One share of secret A
     hex_b: String,      // Corresponding share of secret B
     mask_secret: u64,   // Mask secret key
@@ -111,17 +111,17 @@ pub fn add_two_shared_secrets(
 ```rust
 let a = 100u64;
 let b = 50u64;
-let coord_seed = 1234567890;
+let coord_seed = 116540450355;
 
 // 1. Split both secrets using the same coord_seed
-let (hex1_a, hex2_a, seed) = split_to_two_value(a, user_id, mask_secret, coord_seed);
-let (hex1_b, hex2_b, _) = split_to_two_value(b, user_id, mask_secret, coord_seed);
+let (hex1_a, hex2_a, seed) = split_to_two_value_v2(a, user_id, mask_secret, coord_seed);
+let (hex1_b, hex2_b, _) = split_to_two_value_v2(b, user_id, mask_secret, coord_seed);
 
 // 2. Perform homomorphic addition for both positions separately
-let result_bytes1 = add_two_shared_secrets(
+let result_bytes1 = add_two_shared_secrets_v2(
     hex1_a, hex1_b, mask_secret, 0, seed, seed
 )?;
-let result_bytes2 = add_two_shared_secrets(
+let result_bytes2 = add_two_shared_secrets_v2(
     hex2_a, hex2_b, mask_secret, 1, seed, seed
 )?;
 
@@ -135,12 +135,12 @@ assert_eq!(result, a + b);  // 150
 
 ---
 
-### 5. Homomorphic Subtraction - `sub_two_shared_secrets`
+### 5. Homomorphic Subtraction - `sub_two_shared_secrets_v2`
 
 Performs subtraction on two secrets in encrypted state.
 
 ```rust
-pub fn sub_two_shared_secrets(
+pub fn sub_two_shared_secrets_v2(
     hex_a: String,      // Share of minuend
     hex_b: String,      // Share of subtrahend
     mask_secret: u64,
@@ -205,7 +205,7 @@ pub fn mul_step1_compute_masked_diff_from_hex(
 // Returns: [d]_i or [e]_i share
 ```
 
-**Note**: If the input is a hex-encoded share (e.g., from `split_to_two_value`), use the `from_hex` version to auto-decrypt.
+**Note**: If the input is a hex-encoded share (e.g., from `split_to_two_value_v2`), use the `from_hex` version to auto-decrypt.
 
 #### 6.3 Step 2 - Reconstruct Public Values (Requires Communication)
 
@@ -413,11 +413,11 @@ use mpc_framework_core::two_party_share::*;
 // Configuration parameters
 let user_id = 1u64;
 let mask_secret = 0x1234567890ABCDEFu64;
-let coord_seed = 1234567890;
+let coord_seed = 116540450355;
 
 // Split secret
 let secret = 42u64;
-let (hex1, hex2, _) = split_to_two_value(secret, user_id, mask_secret, coord_seed);
+let (hex1, hex2, _) = split_to_two_value_v2(secret, user_id, mask_secret, coord_seed);
 
 // ... Distribute hex1 and hex2 to two parties ...
 
@@ -433,12 +433,12 @@ assert_eq!(recovered, secret);
 let a = 100u64;
 let b = 50u64;
 
-let (hex1_a, hex2_a, seed) = split_to_two_value(a, user_id, mask_secret, coord_seed);
-let (hex1_b, hex2_b, _) = split_to_two_value(b, user_id, mask_secret, coord_seed);
+let (hex1_a, hex2_a, seed) = split_to_two_value_v2(a, user_id, mask_secret, coord_seed);
+let (hex1_b, hex2_b, _) = split_to_two_value_v2(b, user_id, mask_secret, coord_seed);
 
 // Homomorphic addition
-let sum_bytes1 = add_two_shared_secrets(hex1_a, hex1_b, mask_secret, 0, seed, seed)?;
-let sum_bytes2 = add_two_shared_secrets(hex2_a, hex2_b, mask_secret, 1, seed, seed)?;
+let sum_bytes1 = add_two_shared_secrets_v2(hex1_a, hex1_b, mask_secret, 0, seed, seed)?;
+let sum_bytes2 = add_two_shared_secrets_v2(hex2_a, hex2_b, mask_secret, 1, seed, seed)?;
 
 // Recover result
 let s1 = bytes_to_share(&sum_bytes1)?;

@@ -1,8 +1,8 @@
-use mpc_framework_core::*;
+use mpc_transmission_v2::*;
 
 const TEST_MASK_SECRET: u64 = 0x1234567890ABCDEFu64;
 const TEST_USER_ID: u64 = 1u64;
-const TEST_COORD_SEED: u64 = 1234567890;
+const TEST_COORD_SEED: u64 = 116540450355;
 
 // ============================================================================
 // Tests for generate_shares_u64
@@ -232,8 +232,8 @@ fn test_generate_shares_u64_invalid_total_shares() {
 }
 
 #[test]
-fn test_generate_shares_u64_consistency_with_split_to_two_value() {
-    // When threshold=2 and total_shares=2, should be consistent with split_to_two_value_internal
+fn test_generate_shares_u64_consistency_with_split_to_two_value_v2() {
+    // When threshold=2 and total_shares=2, should be consistent with split_to_two_value_v2_internal
     let secret = 55555u64;
     let coord_seed = TEST_COORD_SEED;
 
@@ -241,11 +241,11 @@ fn test_generate_shares_u64_consistency_with_split_to_two_value() {
     let shares = generate_shares_u64(secret, 2, 2, coord_seed).unwrap();
     assert_eq!(shares.len(), 2);
 
-    // Generate using split_to_two_value (which uses split_to_two_value_internal internally)
+    // Generate using split_to_two_value_v2 (which uses split_to_two_value_v2_internal internally)
     use crate::two_party_helper::get_two_party_coordinates;
-    use crate::two_party_helper::split_to_two_value_internal;
+    use crate::two_party_helper::split_to_two_value_v2_internal;
     let coords = get_two_party_coordinates(coord_seed);
-    let (share1, share2) = split_to_two_value_internal(secret, &coords).unwrap();
+    let (share1, share2) = split_to_two_value_v2_internal(secret, &coords).unwrap();
 
     // Compare coordinates - they should match
     assert_eq!(shares[0].0, share1.0);
@@ -367,13 +367,13 @@ fn test_generate_shares_u64_large_threshold() {
 #[test]
 fn test_recover_from_shares_basic() {
     let original_value = 12345;
-    let (hex1, hex2, _) = split_to_two_value(
+    let (hex1, hex2, _) = split_to_two_value_v2(
         original_value,
         TEST_USER_ID,
         TEST_MASK_SECRET,
         TEST_COORD_SEED,
     );
-    let shares = recover_two_shares(hex1, hex2, TEST_MASK_SECRET).unwrap();
+    let shares = recover_two_shares_v2(hex1, hex2, TEST_MASK_SECRET).unwrap();
     let recovered = recover_from_shares(&shares).unwrap();
     assert_eq!(recovered, original_value);
 }
@@ -381,13 +381,13 @@ fn test_recover_from_shares_basic() {
 #[test]
 fn test_recover_from_shares_zero() {
     let original_value = 0;
-    let (hex1, hex2, _) = split_to_two_value(
+    let (hex1, hex2, _) = split_to_two_value_v2(
         original_value,
         TEST_USER_ID,
         TEST_MASK_SECRET,
         TEST_COORD_SEED,
     );
-    let shares = recover_two_shares(hex1, hex2, TEST_MASK_SECRET).unwrap();
+    let shares = recover_two_shares_v2(hex1, hex2, TEST_MASK_SECRET).unwrap();
     let recovered = recover_from_shares(&shares).unwrap();
     assert_eq!(recovered, 0);
 }
@@ -395,13 +395,13 @@ fn test_recover_from_shares_zero() {
 #[test]
 fn test_recover_from_shares_large_value() {
     let original_value = FIELD_MODULUS - 1;
-    let (hex1, hex2, _) = split_to_two_value(
+    let (hex1, hex2, _) = split_to_two_value_v2(
         original_value,
         TEST_USER_ID,
         TEST_MASK_SECRET,
         TEST_COORD_SEED,
     );
-    let shares = recover_two_shares(hex1, hex2, TEST_MASK_SECRET).unwrap();
+    let shares = recover_two_shares_v2(hex1, hex2, TEST_MASK_SECRET).unwrap();
     let recovered = recover_from_shares(&shares).unwrap();
     assert_eq!(recovered, original_value);
 }
@@ -423,13 +423,13 @@ fn test_recover_from_shares_single_share() {
     // For two-party sharing, we need at least threshold shares
     // But let's test with a single share to see the behavior
     let original_value = 99999;
-    let (hex1, hex2, _) = split_to_two_value(
+    let (hex1, hex2, _) = split_to_two_value_v2(
         original_value,
         TEST_USER_ID,
         TEST_MASK_SECRET,
         TEST_COORD_SEED,
     );
-    let shares = recover_two_shares(hex1, hex2, TEST_MASK_SECRET).unwrap();
+    let shares = recover_two_shares_v2(hex1, hex2, TEST_MASK_SECRET).unwrap();
     
     // Try with single share (should work if threshold is 1, but for two-party it's typically 2)
     let single_share = &shares[0..1];
@@ -447,13 +447,13 @@ fn test_recover_from_shares_multiple_values() {
             continue;
         }
         
-        let (hex1, hex2, _) = split_to_two_value(
+        let (hex1, hex2, _) = split_to_two_value_v2(
             original_value,
             TEST_USER_ID,
             TEST_MASK_SECRET,
             TEST_COORD_SEED,
         );
-        let shares = recover_two_shares(hex1, hex2, TEST_MASK_SECRET).unwrap();
+        let shares = recover_two_shares_v2(hex1, hex2, TEST_MASK_SECRET).unwrap();
         let recovered = recover_from_shares(&shares).unwrap();
         assert_eq!(
             recovered, original_value,
@@ -467,7 +467,7 @@ fn test_recover_from_shares_multiple_values() {
 fn test_recover_from_shares_consistency_with_recover_value() {
     // Test that recover_from_shares gives same result as recover_value
     let original_value = 88888;
-    let (hex1, hex2, _) = split_to_two_value(
+    let (hex1, hex2, _) = split_to_two_value_v2(
         original_value,
         TEST_USER_ID,
         TEST_MASK_SECRET,
@@ -475,10 +475,10 @@ fn test_recover_from_shares_consistency_with_recover_value() {
     );
     
     // Method 1: Using recover_value
-    let recovered1 = recover_value(hex1.clone(), hex2.clone(), TEST_MASK_SECRET).unwrap();
+    let recovered1 = recover_value_v2(hex1.clone(), hex2.clone(), TEST_MASK_SECRET).unwrap();
     
     // Method 2: Using recover_from_shares
-    let shares = recover_two_shares(hex1, hex2, TEST_MASK_SECRET).unwrap();
+    let shares = recover_two_shares_v2(hex1, hex2, TEST_MASK_SECRET).unwrap();
     let recovered2 = recover_from_shares(&shares).unwrap();
     
     assert_eq!(recovered1, original_value);
@@ -492,13 +492,13 @@ fn test_recover_from_shares_different_mask_secrets() {
     let mask_secrets = [0u64, 1u64, 0x1234567890ABCDEFu64, u64::MAX];
     
     for &mask_secret in &mask_secrets {
-        let (hex1, hex2, _) = split_to_two_value(
+        let (hex1, hex2, _) = split_to_two_value_v2(
             original_value,
             TEST_USER_ID,
             mask_secret,
             TEST_COORD_SEED,
         );
-        let shares = recover_two_shares(hex1, hex2, mask_secret).unwrap();
+        let shares = recover_two_shares_v2(hex1, hex2, mask_secret).unwrap();
         let recovered = recover_from_shares(&shares).unwrap();
         assert_eq!(
             recovered, original_value,
@@ -511,16 +511,16 @@ fn test_recover_from_shares_different_mask_secrets() {
 #[test]
 fn test_recover_from_shares_different_coord_seeds() {
     let original_value = 54321;
-    let coord_seeds = [0u64, 1u64, 1234567890, u64::MAX];
+    let coord_seeds = [0u64, 1u64, 116540450355, u64::MAX];
     
     for &coord_seed in &coord_seeds {
-        let (hex1, hex2, _) = split_to_two_value(
+        let (hex1, hex2, _) = split_to_two_value_v2(
             original_value,
             TEST_USER_ID,
             TEST_MASK_SECRET,
             coord_seed,
         );
-        let shares = recover_two_shares(hex1, hex2, TEST_MASK_SECRET).unwrap();
+        let shares = recover_two_shares_v2(hex1, hex2, TEST_MASK_SECRET).unwrap();
         let recovered = recover_from_shares(&shares).unwrap();
         assert_eq!(
             recovered, original_value,
@@ -536,13 +536,13 @@ fn test_recover_from_shares_round_trip() {
     let original_value = 55555;
     
     for _ in 0..5 {
-        let (hex1, hex2, _) = split_to_two_value(
+        let (hex1, hex2, _) = split_to_two_value_v2(
             original_value,
             TEST_USER_ID,
             TEST_MASK_SECRET,
             TEST_COORD_SEED,
         );
-        let shares = recover_two_shares(hex1, hex2, TEST_MASK_SECRET).unwrap();
+        let shares = recover_two_shares_v2(hex1, hex2, TEST_MASK_SECRET).unwrap();
         let recovered = recover_from_shares(&shares).unwrap();
         assert_eq!(recovered, original_value);
     }
@@ -555,13 +555,13 @@ fn test_recover_from_shares_with_homomorphic_operations() {
     let b = 50u64;
     
     // Split both secrets
-    let (hex1_a, hex2_a, seed) = split_to_two_value(
+    let (hex1_a, hex2_a, seed) = split_to_two_value_v2(
         a,
         TEST_USER_ID,
         TEST_MASK_SECRET,
         TEST_COORD_SEED,
     );
-    let (hex1_b, hex2_b, _) = split_to_two_value(
+    let (hex1_b, hex2_b, _) = split_to_two_value_v2(
         b,
         TEST_USER_ID,
         TEST_MASK_SECRET,
@@ -569,7 +569,7 @@ fn test_recover_from_shares_with_homomorphic_operations() {
     );
     
     // Perform homomorphic addition
-    let result_bytes1 = add_two_shared_secrets(
+    let result_bytes1 = add_two_shared_secrets_v2(
         hex1_a,
         hex1_b,
         TEST_MASK_SECRET,
@@ -579,7 +579,7 @@ fn test_recover_from_shares_with_homomorphic_operations() {
         seed,
     )
     .unwrap();
-    let result_bytes2 = add_two_shared_secrets(
+    let result_bytes2 = add_two_shared_secrets_v2(
         hex2_a,
         hex2_b,
         TEST_MASK_SECRET,

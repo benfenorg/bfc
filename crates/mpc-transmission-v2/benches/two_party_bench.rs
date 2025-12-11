@@ -2,8 +2,8 @@
 //!
 //! This benchmark suite tests the performance of two-party (2,2) secret sharing
 //! with homomorphic operations:
-//! - Basic operations: split_to_two_value, recover_value
-//! - Homomorphic operations: add_two_shared_secrets, sub_two_shared_secrets
+//! - Basic operations: split_to_two_value_v2, recover_value
+//! - Homomorphic operations: add_two_shared_secrets_v2, sub_two_shared_secrets_v2
 //! - Beaver triple multiplication: mul_step1/2/3
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
@@ -11,18 +11,18 @@ use mpc_framework_core::field::gf64_sss::FieldElement;
 use mpc_framework_core::field::FieldElement as FieldElementTrait;
 use mpc_framework_core::poly::Polynomial;
 use mpc_framework_core::two_party_share::{
-    add_two_shared_secrets, bytes_to_share, generate_beaver_triple, mul_step1_compute_masked_diff,
+    add_two_shared_secrets_v2, bytes_to_share, generate_beaver_triple, mul_step1_compute_masked_diff,
     mul_step2_reconstruct_masked_values, mul_step3_compute_result, recover_from_shares_internal,
-    recover_two_shares, recover_value, split_to_two_value, sub_two_shared_secrets,
+    recover_two_shares, recover_value, split_to_two_value_v2, sub_two_shared_secrets_v2,
 };
 
 // Constants for benchmarking
 const BENCH_MASK_SECRET: u64 = 0x1234567890ABCDEFu64;
 const BENCH_USER_ID: u64 = 1u64;
-const BENCH_COORD_SEED: u64 = 1234567890;
+const BENCH_COORD_SEED: u64 = 116540450355;
 const THRESHOLD: usize = 2;
 
-/// Benchmark basic split_to_two_value operation
+/// Benchmark basic split_to_two_value_v2 operation
 fn bench_split_basic(c: &mut Criterion) {
     let mut group = c.benchmark_group("two_party/split_basic");
 
@@ -30,9 +30,9 @@ fn bench_split_basic(c: &mut Criterion) {
 
     group.throughput(Throughput::Elements(1));
 
-    group.bench_function("split_to_two_value", |bench| {
+    group.bench_function("split_to_two_value_v2", |bench| {
         bench.iter(|| {
-            split_to_two_value(
+            split_to_two_value_v2(
                 black_box(secret),
                 BENCH_USER_ID,
                 BENCH_MASK_SECRET,
@@ -52,7 +52,7 @@ fn bench_recover_basic(c: &mut Criterion) {
 
     // Pre-generate shares
     let (hex1, hex2, _) =
-        split_to_two_value(secret, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+        split_to_two_value_v2(secret, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
 
     group.throughput(Throughput::Elements(1));
 
@@ -78,7 +78,7 @@ fn bench_recover_two_shares(c: &mut Criterion) {
 
     // Pre-generate shares
     let (hex1, hex2, _) =
-        split_to_two_value(secret, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
+        split_to_two_value_v2(secret, BENCH_USER_ID, BENCH_MASK_SECRET, BENCH_COORD_SEED);
 
     group.throughput(Throughput::Elements(1));
 
@@ -106,7 +106,7 @@ fn bench_split_recover_roundtrip(c: &mut Criterion) {
 
     group.bench_function("split_and_recover", |bench| {
         bench.iter(|| {
-            let (hex1, hex2, _) = split_to_two_value(
+            let (hex1, hex2, _) = split_to_two_value_v2(
                 black_box(secret),
                 BENCH_USER_ID,
                 BENCH_MASK_SECRET,
@@ -119,7 +119,7 @@ fn bench_split_recover_roundtrip(c: &mut Criterion) {
     group.finish();
 }
 
-/// Benchmark homomorphic add_two_shared_secrets
+/// Benchmark homomorphic add_two_shared_secrets_v2
 fn bench_add_operation(c: &mut Criterion) {
     let mut group = c.benchmark_group("two_party/homomorphic_add");
 
@@ -134,10 +134,10 @@ fn bench_add_operation(c: &mut Criterion) {
 
     group.throughput(Throughput::Elements(1));
 
-    group.bench_function("add_two_shared_secrets", |bench| {
+    group.bench_function("add_two_shared_secrets_v2", |bench| {
         bench.iter(|| {
             // Add on both share positions
-            let _r1 = add_two_shared_secrets(
+            let _r1 = add_two_shared_secrets_v2(
                 black_box(hex1_a.clone()),
                 black_box(hex1_b.clone()),
                 BENCH_MASK_SECRET,
@@ -146,7 +146,7 @@ fn bench_add_operation(c: &mut Criterion) {
                 seed,
             )
             .expect("add should succeed");
-            let _r2 = add_two_shared_secrets(
+            let _r2 = add_two_shared_secrets_v2(
                 black_box(hex2_a.clone()),
                 black_box(hex2_b.clone()),
                 BENCH_MASK_SECRET,
@@ -161,7 +161,7 @@ fn bench_add_operation(c: &mut Criterion) {
     group.finish();
 }
 
-/// Benchmark homomorphic sub_two_shared_secrets
+/// Benchmark homomorphic sub_two_shared_secrets_v2
 fn bench_sub_operation(c: &mut Criterion) {
     let mut group = c.benchmark_group("two_party/homomorphic_subtract");
 
@@ -176,9 +176,9 @@ fn bench_sub_operation(c: &mut Criterion) {
 
     group.throughput(Throughput::Elements(1));
 
-    group.bench_function("sub_two_shared_secrets", |bench| {
+    group.bench_function("sub_two_shared_secrets_v2", |bench| {
         bench.iter(|| {
-            let _r1 = sub_two_shared_secrets(
+            let _r1 = sub_two_shared_secrets_v2(
                 black_box(hex1_a.clone()),
                 black_box(hex1_b.clone()),
                 BENCH_MASK_SECRET,
@@ -187,7 +187,7 @@ fn bench_sub_operation(c: &mut Criterion) {
                 seed,
             )
             .expect("sub should succeed");
-            let _r2 = sub_two_shared_secrets(
+            let _r2 = sub_two_shared_secrets_v2(
                 black_box(hex2_a.clone()),
                 black_box(hex2_b.clone()),
                 BENCH_MASK_SECRET,
@@ -365,7 +365,7 @@ fn bench_homomorphic_comparison(c: &mut Criterion) {
 
     group.bench_function("add", |bench| {
         bench.iter(|| {
-            add_two_shared_secrets(
+            add_two_shared_secrets_v2(
                 black_box(hex1_a.clone()),
                 black_box(hex1_b.clone()),
                 BENCH_MASK_SECRET,
@@ -378,7 +378,7 @@ fn bench_homomorphic_comparison(c: &mut Criterion) {
 
     group.bench_function("subtract", |bench| {
         bench.iter(|| {
-            sub_two_shared_secrets(
+            sub_two_shared_secrets_v2(
                 black_box(hex1_a.clone()),
                 black_box(hex1_b.clone()),
                 BENCH_MASK_SECRET,
@@ -408,7 +408,7 @@ fn bench_zero_operations(c: &mut Criterion) {
 
     group.bench_function("add_with_zero", |bench| {
         bench.iter(|| {
-            add_two_shared_secrets(
+            add_two_shared_secrets_v2(
                 black_box(hex1_42.clone()),
                 black_box(hex1_0.clone()),
                 BENCH_MASK_SECRET,
@@ -421,7 +421,7 @@ fn bench_zero_operations(c: &mut Criterion) {
 
     group.bench_function("sub_to_zero", |bench| {
         bench.iter(|| {
-            sub_two_shared_secrets(
+            sub_two_shared_secrets_v2(
                 black_box(hex1_42.clone()),
                 black_box(hex1_42.clone()),
                 BENCH_MASK_SECRET,
@@ -457,7 +457,7 @@ fn bench_complex_expression(c: &mut Criterion) {
     group.bench_function("expr_a_plus_b_minus_c", |bench| {
         bench.iter(|| {
             // Step 1: a + b (on both positions)
-            let ab_bytes1 = add_two_shared_secrets(
+            let ab_bytes1 = add_two_shared_secrets_v2(
                 black_box(hex1_a.clone()),
                 black_box(hex1_b.clone()),
                 BENCH_MASK_SECRET,
@@ -466,7 +466,7 @@ fn bench_complex_expression(c: &mut Criterion) {
                 seed,
             )
             .expect("add should succeed");
-            let ab_bytes2 = add_two_shared_secrets(
+            let ab_bytes2 = add_two_shared_secrets_v2(
                 black_box(hex2_a.clone()),
                 black_box(hex2_b.clone()),
                 BENCH_MASK_SECRET,
@@ -549,10 +549,10 @@ fn bench_end_to_end_workflow(c: &mut Criterion) {
 
             // Homomorphic addition on both share positions
             let result_bytes1 =
-                add_two_shared_secrets(hex1_a, hex1_b, BENCH_MASK_SECRET, 0, seed, seed)
+                add_two_shared_secrets_v2(hex1_a, hex1_b, BENCH_MASK_SECRET, 0, seed, seed)
                     .expect("add should succeed");
             let result_bytes2 =
-                add_two_shared_secrets(hex2_a, hex2_b, BENCH_MASK_SECRET, 1, seed, seed)
+                add_two_shared_secrets_v2(hex2_a, hex2_b, BENCH_MASK_SECRET, 1, seed, seed)
                     .expect("add should succeed");
 
             // Convert bytes to shares and recover
@@ -617,7 +617,7 @@ fn bench_different_coord_seeds(c: &mut Criterion) {
     let mut group = c.benchmark_group("two_party/coord_seeds");
 
     let secret = 12345u64;
-    let seeds = [0u64, 1234567890, u64::MAX];
+    let seeds = [0u64, 105196814012, u64::MAX];
 
     for &seed in &seeds {
         group.bench_with_input(

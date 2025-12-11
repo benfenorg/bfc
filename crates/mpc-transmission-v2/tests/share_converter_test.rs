@@ -1,18 +1,18 @@
-use mpc_framework_core::*;
+use mpc_transmission_v2::*;
 
 const TEST_MASK_SECRET: u64 = 0x1234567890ABCDEFu64;
 const TEST_USER_ID: u64 = 1u64;
-const TEST_COORD_SEED: u64 = 1234567890;
+const TEST_COORD_SEED: u64 = 116540450355;
 
 #[test]
-fn test_convert_from_transmission_shares() {
+fn test_convert_from_v1_transmission_shares() {
     let original_value = 12345;
     let (hex1, hex2) = mpc_transmission::two_party_share::split_to_two_value(
         original_value,
         TEST_USER_ID,
         TEST_MASK_SECRET,
     );
-    let (core_hex1, core_hex2, _) = convert_from_transmission_shares(
+    let (core_hex1, core_hex2, _) = convert_from_v1_transmission_shares(
         &hex1,
         &hex2,
         TEST_MASK_SECRET,
@@ -21,7 +21,7 @@ fn test_convert_from_transmission_shares() {
         1,
     )
     .unwrap();
-    let value = mpc_framework_core::recover_value(
+    let value = recover_value_v2(
         core_hex1.clone(),
         core_hex2.clone(),
         TEST_MASK_SECRET,
@@ -38,7 +38,7 @@ fn test_convert_zero_value() {
         TEST_USER_ID,
         TEST_MASK_SECRET,
     );
-    let (core_hex1, core_hex2, seed) = convert_from_transmission_shares(
+    let (core_hex1, core_hex2, seed) = convert_from_v1_transmission_shares(
         &hex1,
         &hex2,
         TEST_MASK_SECRET,
@@ -47,7 +47,7 @@ fn test_convert_zero_value() {
         1,
     )
     .unwrap();
-    let value = mpc_framework_core::recover_value(
+    let value = mpc_transmission_v2::recover_value_v2(
         core_hex1.clone(),
         core_hex2.clone(),
         TEST_MASK_SECRET,
@@ -66,7 +66,7 @@ fn test_convert_max_valid_value() {
         TEST_USER_ID,
         TEST_MASK_SECRET,
     );
-    let (core_hex1, core_hex2, seed) = convert_from_transmission_shares(
+    let (core_hex1, core_hex2, seed) = convert_from_v1_transmission_shares(
         &hex1,
         &hex2,
         TEST_MASK_SECRET,
@@ -75,7 +75,7 @@ fn test_convert_max_valid_value() {
         1,
     )
     .unwrap();
-    let value = mpc_framework_core::recover_value(
+    let value = mpc_transmission_v2::recover_value_v2(
         core_hex1.clone(),
         core_hex2.clone(),
         TEST_MASK_SECRET,
@@ -93,7 +93,7 @@ fn test_convert_large_value() {
         TEST_USER_ID,
         TEST_MASK_SECRET,
     );
-    let (core_hex1, core_hex2, seed) = convert_from_transmission_shares(
+    let (core_hex1, core_hex2, seed) = convert_from_v1_transmission_shares(
         &hex1,
         &hex2,
         TEST_MASK_SECRET,
@@ -102,7 +102,7 @@ fn test_convert_large_value() {
         1,
     )
     .unwrap();
-    let value = mpc_framework_core::recover_value(
+    let value = recover_value_v2(
         core_hex1.clone(),
         core_hex2.clone(),
         TEST_MASK_SECRET,
@@ -121,7 +121,7 @@ fn test_convert_value_exceeds_modulus() {
         TEST_USER_ID,
         TEST_MASK_SECRET,
     );
-    let result = convert_from_transmission_shares(
+    let result = convert_from_v1_transmission_shares(
         &hex1,
         &hex2,
         TEST_MASK_SECRET,
@@ -147,7 +147,7 @@ fn test_convert_invalid_version() {
     );
 
     // Test version 0
-    let result = convert_from_transmission_shares(
+    let result = convert_from_v1_transmission_shares(
         &hex1,
         &hex2,
         TEST_MASK_SECRET,
@@ -163,7 +163,7 @@ fn test_convert_invalid_version() {
     }
 
     // Test version 2
-    let result = convert_from_transmission_shares(
+    let result = convert_from_v1_transmission_shares(
         &hex1,
         &hex2,
         TEST_MASK_SECRET,
@@ -190,7 +190,7 @@ fn test_convert_different_user_ids() {
             user_id,
             TEST_MASK_SECRET,
         );
-        let (core_hex1, core_hex2, seed) = convert_from_transmission_shares(
+        let (core_hex1, core_hex2, seed) = convert_from_v1_transmission_shares(
             &hex1,
             &hex2,
             TEST_MASK_SECRET,
@@ -199,7 +199,7 @@ fn test_convert_different_user_ids() {
             1,
         )
         .unwrap();
-        let value = mpc_framework_core::recover_value(
+        let value = recover_value_v2(
             core_hex1.clone(),
             core_hex2.clone(),
             TEST_MASK_SECRET,
@@ -213,7 +213,7 @@ fn test_convert_different_user_ids() {
 #[test]
 fn test_convert_different_coord_seeds() {
     let original_value = 54321;
-    let coord_seeds = [0u64, 1u64, 1234567890, u64::MAX];
+    let coord_seeds = [0u64, 1u64, 116540450355, u64::MAX];
 
     for &coord_seed in &coord_seeds {
         let (hex1, hex2) = mpc_transmission::two_party_share::split_to_two_value(
@@ -221,7 +221,7 @@ fn test_convert_different_coord_seeds() {
             TEST_USER_ID,
             TEST_MASK_SECRET,
         );
-        let (core_hex1, core_hex2, seed) = convert_from_transmission_shares(
+        let (core_hex1, core_hex2, seed) = convert_from_v1_transmission_shares(
             &hex1,
             &hex2,
             TEST_MASK_SECRET,
@@ -230,7 +230,7 @@ fn test_convert_different_coord_seeds() {
             1,
         )
         .unwrap();
-        let value = mpc_framework_core::recover_value(
+        let value = recover_value_v2(
             core_hex1.clone(),
             core_hex2.clone(),
             TEST_MASK_SECRET,
@@ -256,7 +256,7 @@ fn test_convert_different_mask_secrets() {
             TEST_USER_ID,
             mask_secret,
         );
-        let (core_hex1, core_hex2, seed) = convert_from_transmission_shares(
+        let (core_hex1, core_hex2, seed) = convert_from_v1_transmission_shares(
             &hex1,
             &hex2,
             mask_secret,
@@ -265,7 +265,7 @@ fn test_convert_different_mask_secrets() {
             1,
         )
         .unwrap();
-        let value = mpc_framework_core::recover_value(
+        let value = recover_value_v2(
             core_hex1.clone(),
             core_hex2.clone(),
             mask_secret,
@@ -289,8 +289,8 @@ fn test_recover_from_transmission_shares() {
         TEST_MASK_SECRET,
     );
     // Note: recover_from_transmission_shares is private, so we test it indirectly
-    // through is_transmission_shares_format and convert_from_transmission_shares
-    let (core_hex1, core_hex2, _) = convert_from_transmission_shares(
+    // through is_v1_transmission_shares_format and convert_from_v1_transmission_shares
+    let (core_hex1, core_hex2, _) = convert_from_v1_transmission_shares(
         &hex1,
         &hex2,
         TEST_MASK_SECRET,
@@ -299,7 +299,7 @@ fn test_recover_from_transmission_shares() {
         1,
     )
     .unwrap();
-    let recovered = mpc_framework_core::recover_value(
+    let recovered = recover_value_v2(
         core_hex1.clone(),
         core_hex2.clone(),
         TEST_MASK_SECRET,
@@ -316,7 +316,7 @@ fn test_recover_from_transmission_shares_zero() {
         TEST_USER_ID,
         TEST_MASK_SECRET,
     );
-    let (core_hex1, core_hex2, _) = convert_from_transmission_shares(
+    let (core_hex1, core_hex2, _) = convert_from_v1_transmission_shares(
         &hex1,
         &hex2,
         TEST_MASK_SECRET,
@@ -325,7 +325,7 @@ fn test_recover_from_transmission_shares_zero() {
         1,
     )
     .unwrap();
-    let recovered = mpc_framework_core::recover_value(
+    let recovered = recover_value_v2(
         core_hex1.clone(),
         core_hex2.clone(),
         TEST_MASK_SECRET,
@@ -344,7 +344,7 @@ fn test_recover_from_transmission_shares_large_value() {
     );
     // This will fail if original_value >= FIELD_MODULUS, so we check that
     if original_value >= FIELD_MODULUS {
-        let result = convert_from_transmission_shares(
+        let result = convert_from_v1_transmission_shares(
             &hex1,
             &hex2,
             TEST_MASK_SECRET,
@@ -354,7 +354,7 @@ fn test_recover_from_transmission_shares_large_value() {
         );
         assert!(result.is_err());
     } else {
-        let (core_hex1, core_hex2, _) = convert_from_transmission_shares(
+        let (core_hex1, core_hex2, _) = convert_from_v1_transmission_shares(
             &hex1,
             &hex2,
             TEST_MASK_SECRET,
@@ -363,7 +363,7 @@ fn test_recover_from_transmission_shares_large_value() {
             1,
         )
         .unwrap();
-        let recovered = mpc_framework_core::recover_value(
+        let recovered = recover_value_v2(
             core_hex1.clone(),
             core_hex2.clone(),
             TEST_MASK_SECRET,
@@ -382,7 +382,7 @@ fn test_recover_from_transmission_shares_wrong_mask() {
         TEST_MASK_SECRET,
     );
     let wrong_mask = TEST_MASK_SECRET.wrapping_add(1);
-    let result = convert_from_transmission_shares(
+    let result = convert_from_v1_transmission_shares(
         &hex1,
         &hex2,
         wrong_mask,
@@ -392,7 +392,7 @@ fn test_recover_from_transmission_shares_wrong_mask() {
     );
     // Should fail or return wrong value - depends on implementation
     if let Ok((core_hex1, core_hex2, _)) = result {
-        let recovered = mpc_framework_core::recover_value(
+        let recovered = recover_value_v2(
             core_hex1.clone(),
             core_hex2.clone(),
             wrong_mask,
@@ -438,7 +438,7 @@ fn test_convert_multiple_values() {
             TEST_USER_ID,
             TEST_MASK_SECRET,
         );
-        let (core_hex1, core_hex2, seed) = convert_from_transmission_shares(
+        let (core_hex1, core_hex2, seed) = convert_from_v1_transmission_shares(
             &hex1,
             &hex2,
             TEST_MASK_SECRET,
@@ -447,7 +447,7 @@ fn test_convert_multiple_values() {
             1,
         )
         .unwrap();
-        let value = mpc_framework_core::recover_value(
+        let value = recover_value_v2(
             core_hex1.clone(),
             core_hex2.clone(),
             TEST_MASK_SECRET,
@@ -474,7 +474,7 @@ fn test_convert_round_trip_consistency() {
 
     // Convert multiple times with same parameters
     for _ in 0..5 {
-        let (core_hex1, core_hex2, seed) = convert_from_transmission_shares(
+        let (core_hex1, core_hex2, seed) = convert_from_v1_transmission_shares(
             &hex1,
             &hex2,
             TEST_MASK_SECRET,
@@ -483,7 +483,7 @@ fn test_convert_round_trip_consistency() {
             1,
         )
         .unwrap();
-        let value = mpc_framework_core::recover_value(
+        let value = recover_value_v2(
             core_hex1.clone(),
             core_hex2.clone(),
             TEST_MASK_SECRET,
@@ -500,7 +500,7 @@ fn test_convert_invalid_hex_format() {
     let invalid_hex1 = "not_a_hex_string";
     let invalid_hex2 = "also_not_hex";
 
-    let result = convert_from_transmission_shares(
+    let result = convert_from_v1_transmission_shares(
         invalid_hex1,
         invalid_hex2,
         TEST_MASK_SECRET,
@@ -517,7 +517,7 @@ fn test_convert_empty_hex_strings() {
     let empty1 = "";
     let empty2 = "";
 
-    let result = convert_from_transmission_shares(
+    let result = convert_from_v1_transmission_shares(
         empty1,
         empty2,
         TEST_MASK_SECRET,
@@ -545,7 +545,7 @@ fn test_convert_mismatched_shares() {
     );
 
     // Try to convert with mismatched shares
-    let result = convert_from_transmission_shares(
+    let result = convert_from_v1_transmission_shares(
         &hex1_1,
         &hex1_2, // Wrong share - from different secret
         TEST_MASK_SECRET,
@@ -556,7 +556,7 @@ fn test_convert_mismatched_shares() {
     // Should either fail or produce wrong value
     if let Ok((core_hex1, core_hex2, _)) = result {
         let recovered =
-            mpc_framework_core::recover_value(core_hex1, core_hex2, TEST_MASK_SECRET)
+            recover_value_v2(core_hex1, core_hex2, TEST_MASK_SECRET)
                 .unwrap();
         assert_ne!(recovered, value1);
         assert_ne!(recovered, value2);
@@ -567,18 +567,18 @@ fn test_convert_mismatched_shares() {
 }
 
 // ============================================================================
-// Tests for is_transmission_shares_format
+// Tests for is_v1_transmission_shares_format
 // ============================================================================
 
 #[test]
-fn test_is_transmission_shares_format_valid() {
+fn test_is_v1_transmission_shares_format_valid() {
     let original_value = 12345;
     let (hex1, hex2) = mpc_transmission::two_party_share::split_to_two_value(
         original_value,
         TEST_USER_ID,
         TEST_MASK_SECRET,
     );
-    assert!(is_transmission_shares_format(
+    assert!(is_v1_transmission_shares_format(
         &hex1,
         &hex2,
         TEST_MASK_SECRET
@@ -586,15 +586,15 @@ fn test_is_transmission_shares_format_valid() {
 }
 
 #[test]
-fn test_core_share_is_transmission_shares_format() {
+fn test_core_share_is_v1_transmission_shares_format() {
     let original_value = 12345;
-    let (hex1, hex2, _) = mpc_framework_core::split_to_two_value(
+    let (hex1, hex2, _) = split_to_two_value_v2(
         original_value,
         TEST_USER_ID,
         TEST_MASK_SECRET,
         TEST_COORD_SEED,
     );
-    assert!(!is_transmission_shares_format(
+    assert!(!is_v1_transmission_shares_format(
         &hex1,
         &hex2,
         TEST_MASK_SECRET
@@ -602,14 +602,14 @@ fn test_core_share_is_transmission_shares_format() {
 }
 
 #[test]
-fn test_is_transmission_shares_format_zero_value() {
+fn test_is_v1_transmission_shares_format_zero_value() {
     let original_value = 0;
     let (hex1, hex2) = mpc_transmission::two_party_share::split_to_two_value(
         original_value,
         TEST_USER_ID,
         TEST_MASK_SECRET,
     );
-    assert!(is_transmission_shares_format(
+    assert!(is_v1_transmission_shares_format(
         &hex1,
         &hex2,
         TEST_MASK_SECRET
@@ -617,14 +617,14 @@ fn test_is_transmission_shares_format_zero_value() {
 }
 
 #[test]
-fn test_is_transmission_shares_format_large_value() {
+fn test_is_v1_transmission_shares_format_large_value() {
     let original_value = u64::MAX;
     let (hex1, hex2) = mpc_transmission::two_party_share::split_to_two_value(
         original_value,
         TEST_USER_ID,
         TEST_MASK_SECRET,
     );
-    assert!(is_transmission_shares_format(
+    assert!(is_v1_transmission_shares_format(
         &hex1,
         &hex2,
         TEST_MASK_SECRET
@@ -632,7 +632,7 @@ fn test_is_transmission_shares_format_large_value() {
 }
 
 #[test]
-fn test_is_transmission_shares_format_wrong_mask_secret() {
+fn test_is_v1_transmission_shares_format_wrong_mask_secret() {
     let original_value = 12345;
     let (hex1, hex2) = mpc_transmission::two_party_share::split_to_two_value(
         original_value,
@@ -640,10 +640,10 @@ fn test_is_transmission_shares_format_wrong_mask_secret() {
         TEST_MASK_SECRET,
     );
     let wrong_mask = TEST_MASK_SECRET.wrapping_add(1);
-    // Note: is_transmission_shares_format checks if format is valid (can decode),
+    // Note: is_v1_transmission_shares_format checks if format is valid (can decode),
     // not if the recovered value is correct. Wrong mask may still decode successfully
     // but produce incorrect value. The function behavior depends on implementation.
-    let result = convert_from_transmission_shares(
+    let result = convert_from_v1_transmission_shares(
         &hex1,
         &hex2,
         wrong_mask,
@@ -652,12 +652,12 @@ fn test_is_transmission_shares_format_wrong_mask_secret() {
         1,
     );
     if result.is_err() {
-        assert!(!is_transmission_shares_format(&hex1, &hex2, wrong_mask));
+        assert!(!is_v1_transmission_shares_format(&hex1, &hex2, wrong_mask));
     } else {
         // If it can recover (even with wrong value), format is considered valid
-        assert!(is_transmission_shares_format(&hex1, &hex2, wrong_mask));
+        assert!(is_v1_transmission_shares_format(&hex1, &hex2, wrong_mask));
         let (core_hex1, core_hex2, _) = result.unwrap();
-        let recovered = mpc_framework_core::recover_value(
+        let recovered = recover_value_v2(
             core_hex1.clone(),
             core_hex2.clone(),
             wrong_mask,
@@ -668,10 +668,10 @@ fn test_is_transmission_shares_format_wrong_mask_secret() {
 }
 
 #[test]
-fn test_is_transmission_shares_format_invalid_hex() {
+fn test_is_v1_transmission_shares_format_invalid_hex() {
     let invalid_hex1 = "not_a_valid_hex_string";
     let invalid_hex2 = "also_not_valid";
-    assert!(!is_transmission_shares_format(
+    assert!(!is_v1_transmission_shares_format(
         invalid_hex1,
         invalid_hex2,
         TEST_MASK_SECRET
@@ -679,10 +679,10 @@ fn test_is_transmission_shares_format_invalid_hex() {
 }
 
 #[test]
-fn test_is_transmission_shares_format_empty_strings() {
+fn test_is_v1_transmission_shares_format_empty_strings() {
     let empty1 = "";
     let empty2 = "";
-    assert!(!is_transmission_shares_format(
+    assert!(!is_v1_transmission_shares_format(
         empty1,
         empty2,
         TEST_MASK_SECRET
@@ -690,7 +690,7 @@ fn test_is_transmission_shares_format_empty_strings() {
 }
 
 #[test]
-fn test_is_transmission_shares_format_partial_empty() {
+fn test_is_v1_transmission_shares_format_partial_empty() {
     let original_value = 12345;
     let (hex1, hex2) = mpc_transmission::two_party_share::split_to_two_value(
         original_value,
@@ -698,13 +698,13 @@ fn test_is_transmission_shares_format_partial_empty() {
         TEST_MASK_SECRET,
     );
     // First share empty
-    assert!(!is_transmission_shares_format("", &hex2, TEST_MASK_SECRET));
+    assert!(!is_v1_transmission_shares_format("", &hex2, TEST_MASK_SECRET));
     // Second share empty
-    assert!(!is_transmission_shares_format(&hex1, "", TEST_MASK_SECRET));
+    assert!(!is_v1_transmission_shares_format(&hex1, "", TEST_MASK_SECRET));
 }
 
 #[test]
-fn test_is_transmission_shares_format_mismatched_shares() {
+fn test_is_v1_transmission_shares_format_mismatched_shares() {
     let value1 = 11111;
     let value2 = 22222;
     let (hex1_1, _hex2_1) = mpc_transmission::two_party_share::split_to_two_value(
@@ -718,8 +718,8 @@ fn test_is_transmission_shares_format_mismatched_shares() {
         TEST_MASK_SECRET,
     );
     // Mismatched shares from different secrets
-    // Note: is_transmission_shares_format checks format validity, not value correctness
-    let result = convert_from_transmission_shares(
+    // Note: is_v1_transmission_shares_format checks format validity, not value correctness
+    let result = convert_from_v1_transmission_shares(
         &hex1_1,
         &hex1_2,
         TEST_MASK_SECRET,
@@ -728,20 +728,20 @@ fn test_is_transmission_shares_format_mismatched_shares() {
         1,
     );
     if result.is_err() {
-        assert!(!is_transmission_shares_format(
+        assert!(!is_v1_transmission_shares_format(
             &hex1_1,
             &hex1_2,
             TEST_MASK_SECRET
         ));
     } else {
         // If it can recover (even with wrong value), format is considered valid
-        assert!(is_transmission_shares_format(
+        assert!(is_v1_transmission_shares_format(
             &hex1_1,
             &hex1_2,
             TEST_MASK_SECRET
         ));
         let (core_hex1, core_hex2, _) = result.unwrap();
-        let recovered = mpc_framework_core::recover_value(
+        let recovered = recover_value_v2(
             core_hex1.clone(),
             core_hex2.clone(),
             TEST_MASK_SECRET,
@@ -753,10 +753,10 @@ fn test_is_transmission_shares_format_mismatched_shares() {
 }
 
 #[test]
-fn test_is_transmission_shares_format_odd_length_hex() {
+fn test_is_v1_transmission_shares_format_odd_length_hex() {
     let odd_hex1 = "123"; // Odd length hex
     let odd_hex2 = "abc";
-    assert!(!is_transmission_shares_format(
+    assert!(!is_v1_transmission_shares_format(
         odd_hex1,
         odd_hex2,
         TEST_MASK_SECRET
@@ -764,10 +764,10 @@ fn test_is_transmission_shares_format_odd_length_hex() {
 }
 
 #[test]
-fn test_is_transmission_shares_format_invalid_hex_characters() {
+fn test_is_v1_transmission_shares_format_invalid_hex_characters() {
     let invalid_hex1 = "GHIJKL"; // Contains invalid hex characters
     let invalid_hex2 = "MNOPQR";
-    assert!(!is_transmission_shares_format(
+    assert!(!is_v1_transmission_shares_format(
         invalid_hex1,
         invalid_hex2,
         TEST_MASK_SECRET
@@ -775,7 +775,7 @@ fn test_is_transmission_shares_format_invalid_hex_characters() {
 }
 
 #[test]
-fn test_is_transmission_shares_format_multiple_valid_values() {
+fn test_is_v1_transmission_shares_format_multiple_valid_values() {
     let test_values = vec![1, 42, 100, 1000, 10000, 999999, u64::MAX];
     for original_value in test_values {
         let (hex1, hex2) = mpc_transmission::two_party_share::split_to_two_value(
@@ -784,7 +784,7 @@ fn test_is_transmission_shares_format_multiple_valid_values() {
             TEST_MASK_SECRET,
         );
         assert!(
-            is_transmission_shares_format(&hex1, &hex2, TEST_MASK_SECRET),
+            is_v1_transmission_shares_format(&hex1, &hex2, TEST_MASK_SECRET),
             "Failed for value: {}",
             original_value
         );
@@ -792,7 +792,7 @@ fn test_is_transmission_shares_format_multiple_valid_values() {
 }
 
 #[test]
-fn test_is_transmission_shares_format_different_mask_secrets() {
+fn test_is_v1_transmission_shares_format_different_mask_secrets() {
     let original_value = 77777;
     let mask_secrets = [0u64, 1u64, 0x1234567890ABCDEFu64, u64::MAX];
     for &mask_secret in &mask_secrets {
@@ -802,13 +802,13 @@ fn test_is_transmission_shares_format_different_mask_secrets() {
             mask_secret,
         );
         assert!(
-            is_transmission_shares_format(&hex1, &hex2, mask_secret),
+            is_v1_transmission_shares_format(&hex1, &hex2, mask_secret),
             "Failed for mask_secret: {}",
             mask_secret
         );
         // Wrong mask: check if it can still decode (format may still be valid)
         let wrong_mask = mask_secret.wrapping_add(1);
-        let result = convert_from_transmission_shares(
+        let result = convert_from_v1_transmission_shares(
             &hex1,
             &hex2,
             wrong_mask,
@@ -816,7 +816,7 @@ fn test_is_transmission_shares_format_different_mask_secrets() {
             TEST_COORD_SEED,
             1,
         );
-        let format_valid = is_transmission_shares_format(&hex1, &hex2, wrong_mask);
+        let format_valid = is_v1_transmission_shares_format(&hex1, &hex2, wrong_mask);
         if result.is_err() {
             assert!(
                 !format_valid,
@@ -831,7 +831,7 @@ fn test_is_transmission_shares_format_different_mask_secrets() {
                 wrong_mask
             );
             let (core_hex1, core_hex2, _) = result.unwrap();
-            let recovered = mpc_framework_core::recover_value(
+            let recovered = recover_value_v2(
                 core_hex1.clone(),
                 core_hex2.clone(),
                 wrong_mask,
@@ -843,8 +843,8 @@ fn test_is_transmission_shares_format_different_mask_secrets() {
 }
 
 #[test]
-fn test_is_transmission_shares_format_consistency_with_recover() {
-    // Test that is_transmission_shares_format returns true exactly when recover succeeds
+fn test_is_v1_transmission_shares_format_consistency_with_recover() {
+    // Test that is_v1_transmission_shares_format returns true exactly when recover succeeds
     let original_value = 88888;
     let (hex1, hex2) = mpc_transmission::two_party_share::split_to_two_value(
         original_value,
@@ -853,12 +853,12 @@ fn test_is_transmission_shares_format_consistency_with_recover() {
     );
 
     // Valid case: should both succeed
-    assert!(is_transmission_shares_format(
+    assert!(is_v1_transmission_shares_format(
         &hex1,
         &hex2,
         TEST_MASK_SECRET
     ));
-    let (core_hex1, core_hex2, _) = convert_from_transmission_shares(
+    let (core_hex1, core_hex2, _) = convert_from_v1_transmission_shares(
         &hex1,
         &hex2,
         TEST_MASK_SECRET,
@@ -867,7 +867,7 @@ fn test_is_transmission_shares_format_consistency_with_recover() {
         1,
     )
     .unwrap();
-    let recovered = mpc_framework_core::recover_value(
+    let recovered = recover_value_v2(
         core_hex1.clone(),
         core_hex2.clone(),
         TEST_MASK_SECRET,
@@ -876,10 +876,10 @@ fn test_is_transmission_shares_format_consistency_with_recover() {
     assert_eq!(recovered, original_value);
 
     // Invalid case: wrong mask
-    // Note: is_transmission_shares_format returns true if recover succeeds,
+    // Note: is_v1_transmission_shares_format returns true if recover succeeds,
     // regardless of whether the recovered value is correct
     let wrong_mask = TEST_MASK_SECRET.wrapping_add(1);
-    let recover_result = convert_from_transmission_shares(
+    let recover_result = convert_from_v1_transmission_shares(
         &hex1,
         &hex2,
         wrong_mask,
@@ -887,7 +887,7 @@ fn test_is_transmission_shares_format_consistency_with_recover() {
         TEST_COORD_SEED,
         1,
     );
-    let format_valid = is_transmission_shares_format(&hex1, &hex2, wrong_mask);
+    let format_valid = is_v1_transmission_shares_format(&hex1, &hex2, wrong_mask);
 
     // Consistency check: format is valid if and only if recover succeeds
     assert_eq!(format_valid, recover_result.is_ok());
@@ -895,7 +895,7 @@ fn test_is_transmission_shares_format_consistency_with_recover() {
     if recover_result.is_ok() {
         // If recover succeeds, value may be wrong but format is valid
         let (core_hex1, core_hex2, _) = recover_result.unwrap();
-        let recovered = mpc_framework_core::recover_value(
+        let recovered = recover_value_v2(
             core_hex1.clone(),
             core_hex2.clone(),
             wrong_mask,
