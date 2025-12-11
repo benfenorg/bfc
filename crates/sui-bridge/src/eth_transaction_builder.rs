@@ -132,6 +132,9 @@ pub async fn build_eth_transaction(
         BridgeAction::AddTokensOnSuiAction(_) => {
             unreachable!();
         }
+        BridgeAction::AddTokenOnSolanaAction(_)=> {
+            unreachable!();
+        }
         BridgeAction::AddTokensOnEvmAction(action) => {
             build_add_tokens_on_evm_transaction(contract_address, signer, action.clone(), sigs)
                 .await

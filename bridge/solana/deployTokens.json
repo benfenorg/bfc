@@ -1,0 +1,26 @@
+[
+  {
+    "tokenType": "USDT",
+    "tokenId": 4,
+    "mintAddress": "3YnwxwMLi4NP8o5xpZxjBqZUJRHV9P118VkQCTN9psM8",
+    "tokenAccountAddress": "4Lcw1tN3ZUqosaBtfyxcdjki8RqECSbMSR7S8c27CjvJ",
+    "timestamp": "2025-08-21T02:44:45.352Z",
+    "index": 1
+  },
+  {
+    "tokenType": "USDC",
+    "tokenId": 3,
+    "mintAddress": "DTknHhvWA9FrSQRnEh2XhNEA2z6UCfMTGkxCLcW39aiS",
+    "tokenAccountAddress": "65s3nbDAJiC9czey7pwQCiCoyoq5g21vFfnUtnZaojG4",
+    "timestamp": "2025-08-21T02:44:49.327Z",
+    "index": 2
+  },
+  {
+    "tokenType": "SOL",
+    "tokenId": 16,
+    "mintAddress": "So11111111111111111111111111111111111111112",
+    "tokenAccountAddress": "",
+    "timestamp": "2025-08-21T02:44:51.654Z",
+    "index": 3
+  }
+]

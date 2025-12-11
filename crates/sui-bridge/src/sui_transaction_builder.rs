@@ -140,6 +140,9 @@ pub fn build_sui_transaction(
             // It does not need a Sui tranaction to execute EVM contract upgrade
             unreachable!()
         }
+        BridgeAction::AddTokenOnSolanaAction(_)=> {
+            unreachable!();
+        }
         BridgeAction::AddExternalCoinAdminAction(_) => build_add_external_coin_admin_transaction(
             client_address,
             gas_object_ref,

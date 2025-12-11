@@ -18,6 +18,7 @@ use crate::{
         RemoveExternalCoinWitnessAction, RemoveTokenOnTokenListAction, SignedBridgeAction,
         SingleTransferLimitUpdateAction, UpdateBridgeFeeOnCrossInAction,
         UpdateBridgeFeeOnCrossOutAction, WithdrawBridgeFeeAction,
+        AddTokenOnSolanaAction,
         AddLpTokenIdAction, UpdateInvestAddressAction
     },
 };
@@ -37,7 +38,7 @@ use std::{net::SocketAddr, str::FromStr};
 use sui_types::base_types::SuiAddress;
 use sui_types::{bridge::BridgeChainId, TypeTag};
 use tracing::{info, instrument};
-
+use solana_sdk::pubkey::Pubkey;
 pub mod governance_verifier;
 pub mod handler;
 
@@ -110,6 +111,9 @@ pub const ADD_TOKENS_ON_SUI_PATH: &str =
     "/sign/add_tokens_on_sui/:chain_id/:nonce/:native/:token_ids/:token_type_names/:token_prices";
 pub const ADD_TOKENS_ON_EVM_PATH: &str =
     "/sign/add_tokens_on_evm/:chain_id/:nonce/:native/:token_ids/:token_addresses/:token_sui_decimals/:token_prices";
+
+pub const ADD_TOKEN_ON_SOLANA_PATH: &str =
+    "/sign/add_token_on_solana/:chain_id/:nonce/:native/:token_id/:token_address/:benfen_decimal/:token_price";
 
 pub const UPDATE_REFUND_ADMIN_PATH: &str =
     "/sign/update_refund_admin/:chain_id/:nonce/:op_type/:sui_address";
@@ -251,6 +255,7 @@ pub(crate) fn make_router(
         .route(WITHDRAW_BRIDGE_FEE, get(handle_withdraw_bridge_fee))
         .route(ADD_TOKENS_ON_SUI_PATH, get(handle_add_tokens_on_sui))
         .route(ADD_TOKENS_ON_EVM_PATH, get(handle_add_tokens_on_evm))
+        .route(ADD_TOKEN_ON_SOLANA_PATH, get(handle_add_token_on_solana))
         .with_state((handler, metrics, metadata))
 }
 
@@ -1171,6 +1176,61 @@ async fn handle_add_tokens_on_sui(
         Ok(sig)
     };
     with_metrics!(metrics.clone(), "handle_add_tokens_on_sui", future).await
+}
+
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, native=native, token_id=token_id, token_address=token_address, benfen_decimal=benfen_decimal, token_price=token_price))]
+async fn handle_add_token_on_solana(
+    Path((chain_id, nonce, native, token_id, token_address, benfen_decimal, token_price)): Path<(
+        u8,
+        u64,
+        u8,
+        u64,
+        String,
+        u8,
+        u64,
+    )>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+)-> Result<Json<SignedBridgeAction>, BridgeError> {
+     let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+        // if !chain_id.is_solana_chain() {
+        //     return Err(BridgeError::InvalidBridgeClientRequest(
+        //         "handle_add_token_on_solana only expects Solana chain id".to_string(),
+        //     ));
+        // }
+        let native = match native {
+            1 => true,
+            0 => false,
+            _ => {
+                return Err(BridgeError::InvalidBridgeClientRequest(format!(
+                    "Invalid native flag: {}",
+                    native
+                )))
+            }
+        };
+        let token_address = Pubkey::from_str(&token_address).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid token address: {:?}", err))
+        })?;
+        let action = BridgeAction::AddTokenOnSolanaAction(AddTokenOnSolanaAction {
+            chain_id,
+            nonce,
+            native,
+            token_id,
+            token_address,
+            benfen_decimal,
+            token_price,
+        });
+
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_add_token_on_solana", future).await
 }
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, native=native, token_ids=token_ids, token_addresses=token_addresses, token_sui_decimals=token_sui_decimals, token_prices=token_prices))]

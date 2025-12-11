@@ -14,8 +14,6 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use shared_crypto::intent::Intent;
 use shared_crypto::intent::IntentMessage;
-use sui_bridge::types::FastPathLimitUpdateAction;
-use sui_bridge::types::RefundAdminAction;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -25,6 +23,8 @@ use sui_bridge::crypto::BridgeAuthorityPublicKeyBytes;
 use sui_bridge::error::BridgeResult;
 use sui_bridge::sui_client::{SuiBridgeClient, SuiClientInner};
 use sui_bridge::types::BridgeAction;
+use sui_bridge::types::FastPathLimitUpdateAction;
+use sui_bridge::types::RefundAdminAction;
 use sui_bridge::types::{
     AddTokensOnEvmAction, AddTokensOnSuiAction, AssetPriceUpdateAction, BlocklistCommitteeAction,
     BlocklistType, EmergencyAction, EmergencyActionType, EvmContractUpgradeAction,
@@ -36,7 +36,7 @@ use sui_bridge::types::{
     UpdateBridgeFeeOnCrossInAction, WithdrawBridgeFeeAction,
     AddLpTokenIdAction, UpdateInvestAddressAction,
 };
-use sui_bridge::utils::{get_eth_signer_client, EthSigner};
+use sui_bridge::utils::{get_eth_signer_client, EthSigner, SolanaSigner};
 use sui_config::Config;
 use sui_json_rpc_types::SuiObjectDataOptions;
 use sui_keys::keypair_file::read_key;
@@ -49,6 +49,10 @@ use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::transaction::{CallArg, ObjectArg, Transaction, TransactionData};
 use sui_types::{TypeTag, BRIDGE_PACKAGE_ID};
 use tracing::info;
+
+use solana_sdk::pubkey::Pubkey;
+use solana_sdk::signature::read_keypair_file;
+use solana_sdk::signature::Signer;
 
 pub const SEPOLIA_BRIDGE_PROXY_ADDR: &str = "0xAE68F87938439afEEDd6552B0E83D2CbC2473623";
 
@@ -379,10 +383,7 @@ pub enum GovernanceClientCommands {
     },
 }
 
-pub fn make_action(
-    chain_id: BridgeChainId,
-    cmd: &GovernanceClientCommands,
-) -> BridgeAction {
+pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> BridgeAction {
     match cmd {
         GovernanceClientCommands::EmergencyButton { nonce, action_type } => {
             BridgeAction::EmergencyAction(EmergencyAction {
@@ -420,7 +421,7 @@ pub fn make_action(
             let chain_id_evm = BridgeChainId::try_from(*chain_id_evm).expect("Invalid chain id");
             BridgeAction::FastPathLimitUpdateAction(FastPathLimitUpdateAction {
                 nonce: *nonce,
-                chain_id: chain_id,
+                chain_id,
                 token_id: *token_id,
                 amount: *amount,
                 chain_id_evm,
@@ -444,16 +445,15 @@ pub fn make_action(
             nonce,
             sending_chain,
             new_usd_limit,
-        }=>{
+        } => {
             let sending_chain_id =
-            BridgeChainId::try_from(*sending_chain).expect("Invalid sending chain id");
+                BridgeChainId::try_from(*sending_chain).expect("Invalid sending chain id");
             BridgeAction::SingleTransferLimitUpdateAction(SingleTransferLimitUpdateAction {
                 nonce: *nonce,
                 chain_id,
                 sending_chain_id,
                 new_usd_limit: *new_usd_limit,
             })
-
         }
         GovernanceClientCommands::UpdateAssetPrice {
             nonce,
@@ -489,26 +489,22 @@ pub fn make_action(
             nonce,
             coin_type,
             witness_address,
-        } => {
-            BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
-                nonce: *nonce,
-                chain_id,
-                coin_type: coin_type.clone(),
-                witness_address: *witness_address,
-            })
-        }
+        } => BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
+            nonce: *nonce,
+            chain_id,
+            coin_type: coin_type.clone(),
+            witness_address: *witness_address,
+        }),
         GovernanceClientCommands::RemoveExternalCoinWitness {
             nonce,
             coin_type,
             witness_address,
-        } => {
-            BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction{
-                nonce: *nonce,
-                chain_id,
-                coin_type: coin_type.clone(),
-                witness_address: *witness_address,
-            })
-        }
+        } => BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction {
+            nonce: *nonce,
+            chain_id,
+            coin_type: coin_type.clone(),
+            witness_address: *witness_address,
+        }),
         GovernanceClientCommands::AddExternalCoinTarget {
             nonce,
             coin_type,
@@ -533,42 +529,41 @@ pub fn make_action(
             nonce,
             from_chain_id,
             to_chain_id,
-            token_id
+            token_id,
         } => {
             let from_chain_id = BridgeChainId::try_from(*from_chain_id).expect("Invalid chain id");
             let to_chain_id = BridgeChainId::try_from(*to_chain_id).expect("Invalid chain id");
             BridgeAction::AddTokenOnTokenListAction(AddTokenOnTokenListAction {
                 nonce: *nonce,
                 chain_id,
-                from_chain_id: from_chain_id,
-                to_chain_id:  to_chain_id,
+                from_chain_id,
+                to_chain_id,
                 token_id: *token_id,
             })
-        },
+        }
         GovernanceClientCommands::RemoveTokenOnTokenList {
             nonce,
             from_chain_id,
             to_chain_id,
-            token_id
+            token_id,
         } => {
             let from_chain_id = BridgeChainId::try_from(*from_chain_id).expect("Invalid chain id");
             let to_chain_id = BridgeChainId::try_from(*to_chain_id).expect("Invalid chain id");
             BridgeAction::RemoveTokenOnTokenListAction(RemoveTokenOnTokenListAction {
                 nonce: *nonce,
                 chain_id,
-                from_chain_id: from_chain_id,
-                to_chain_id:  to_chain_id,
+                from_chain_id,
+                to_chain_id,
                 token_id: *token_id,
             })
-
-        },
+        }
         GovernanceClientCommands::SetBridgeFeeOnCrossOut {
             nonce,
             to_chain_id,
             token_id,
             mode,
-            amount
-        } =>{
+            amount,
+        } => {
             let to_chain_id = BridgeChainId::try_from(*to_chain_id).expect("Invalid chain id");
             BridgeAction::UpdateBridgeFeeOnCrossOutAction(UpdateBridgeFeeOnCrossOutAction {
                 nonce: *nonce,
@@ -578,14 +573,14 @@ pub fn make_action(
                 mode: *mode,
                 amount: *amount,
             })
-        },
+        }
         GovernanceClientCommands::SetBridgeFeeOnCrossIn {
             nonce,
             from_chain_id,
             token_id,
             mode,
-            amount
-        } =>{
+            amount,
+        } => {
             let from_chain_id = BridgeChainId::try_from(*from_chain_id).expect("Invalid chain id");
             BridgeAction::UpdateBridgeFeeOnCrossInAction(UpdateBridgeFeeOnCrossInAction {
                 nonce: *nonce,
@@ -595,22 +590,20 @@ pub fn make_action(
                 mode: *mode,
                 amount: *amount,
             })
-        },
+        }
 
         GovernanceClientCommands::WithdrawBridgeFee {
             nonce,
             recipient,
             coin_type,
-            amount
-        } =>{
-            BridgeAction::WithdrawBridgeFeeAction(WithdrawBridgeFeeAction {
-                nonce: *nonce,
-                chain_id,
-                addr: *recipient,
-                coin_type: coin_type.clone(),
-                amount: *amount,
-            })
-        },
+            amount,
+        } => BridgeAction::WithdrawBridgeFeeAction(WithdrawBridgeFeeAction {
+            nonce: *nonce,
+            chain_id,
+            addr: *recipient,
+            coin_type: coin_type.clone(),
+            amount: *amount,
+        }),
 
         GovernanceClientCommands::AddTokensOnSui {
             nonce,
@@ -749,20 +742,22 @@ pub fn select_contract_address(
             config.eth_bridge_committee_proxy_address
         }
         GovernanceClientCommands::UpdateLimit { .. } => config.eth_bridge_limiter_proxy_address,
-        GovernanceClientCommands::UpdateSingleTransferLimit { .. } => config.eth_bridge_limiter_proxy_address,
+        GovernanceClientCommands::UpdateSingleTransferLimit { .. } => {
+            config.eth_bridge_limiter_proxy_address
+        }
         GovernanceClientCommands::UpdateAssetPrice { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::UpgradeEVMContract { proxy_address, .. } => *proxy_address,
-        GovernanceClientCommands::AddExternalCoinAdmin {.. } => unreachable!(),
-        GovernanceClientCommands::RemoveExternalCoinAdmin {.. } => unreachable!(),
-        GovernanceClientCommands::AddExternalCoinWitness {.. } => unreachable!(),
-        GovernanceClientCommands::RemoveExternalCoinWitness {.. } => unreachable!(),
+        GovernanceClientCommands::AddExternalCoinAdmin { .. } => unreachable!(),
+        GovernanceClientCommands::RemoveExternalCoinAdmin { .. } => unreachable!(),
+        GovernanceClientCommands::AddExternalCoinWitness { .. } => unreachable!(),
+        GovernanceClientCommands::RemoveExternalCoinWitness { .. } => unreachable!(),
         GovernanceClientCommands::AddTokenOnTokenList { .. } => unreachable!(),
         GovernanceClientCommands::RemoveTokenOnTokenList { .. } => unreachable!(),
-        GovernanceClientCommands::SetBridgeFeeOnCrossIn { .. }=> unreachable!(),
-        GovernanceClientCommands::SetBridgeFeeOnCrossOut { .. }=> unreachable!(),
-        GovernanceClientCommands::WithdrawBridgeFee { .. }=> unreachable!(),
-        GovernanceClientCommands::AddExternalCoinTarget {.. } => unreachable!(),
-        GovernanceClientCommands::RemoveExternalCoinTarget {.. } => unreachable!(),
+        GovernanceClientCommands::SetBridgeFeeOnCrossIn { .. } => unreachable!(),
+        GovernanceClientCommands::SetBridgeFeeOnCrossOut { .. } => unreachable!(),
+        GovernanceClientCommands::WithdrawBridgeFee { .. } => unreachable!(),
+        GovernanceClientCommands::AddExternalCoinTarget { .. } => unreachable!(),
+        GovernanceClientCommands::RemoveExternalCoinTarget { .. } => unreachable!(),
         GovernanceClientCommands::AddTokensOnSui { .. } => unreachable!(),
         GovernanceClientCommands::AddTokensOnEvm { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::UpdateRefundAdmin { .. } => config.eth_bridge_config_proxy_address,
@@ -782,6 +777,11 @@ pub struct BridgeCliConfig {
     pub eth_rpc_url: String,
     /// Proxy address for SuiBridge deployed on Eth
     pub eth_bridge_proxy_address: EthAddress,
+
+    pub solana_rpc_url: String,
+
+    pub solana_bridge_program_id: Pubkey,
+
     /// Path of the file where private key is stored. The content could be any of the following:
     /// - Base64 encoded `flag || privkey` for ECDSA key
     /// - Base64 encoded `privkey` for Raw key
@@ -791,6 +791,7 @@ pub struct BridgeCliConfig {
     pub sui_key_path: Option<PathBuf>,
     /// See `sui_key_path`. Must be Secp256k1 key.
     pub eth_key_path: Option<PathBuf>,
+    pub solana_key_path: Option<PathBuf>,
 }
 
 impl Config for BridgeCliConfig {}
@@ -800,6 +801,11 @@ pub struct LoadedBridgeCliConfig {
     pub sui_rpc_url: String,
     /// Rpc url for Eth fullnode, used for query stuff.
     pub eth_rpc_url: String,
+
+    pub solana_rpc_url: String,
+
+    pub solana_bridge_program_id: Pubkey,
+
     /// Proxy address for SuiBridge deployed on Eth
     pub eth_bridge_proxy_address: EthAddress,
     /// Proxy address for BridgeCommittee deployed on Eth
@@ -812,6 +818,8 @@ pub struct LoadedBridgeCliConfig {
     sui_key: SuiKeyPair,
     /// Key pair for Eth operations, must be Secp256k1 key
     eth_signer: EthSigner,
+
+    solana_signer: SolanaSigner,
 }
 
 impl LoadedBridgeCliConfig {
@@ -847,6 +855,12 @@ impl LoadedBridgeCliConfig {
             }
         };
 
+        let solana_key = if let Some(solana_key_path) = &cli_config.solana_key_path {
+            read_keypair_file(solana_key_path.to_str().unwrap()).expect("Failed to read solana key pair file")
+        } else {
+            return Err(anyhow!("`solana_key_path` must be provided"));
+        };
+
         let provider = Arc::new(
             ethers::prelude::Provider::<ethers::providers::Http>::try_from(&cli_config.eth_rpc_url)
                 .unwrap()
@@ -854,6 +868,7 @@ impl LoadedBridgeCliConfig {
         );
         let private_key = Hex::encode(eth_key.to_bytes_no_flag());
         let eth_signer = get_eth_signer_client(&cli_config.eth_rpc_url, &private_key).await?;
+        let solana_signer = Arc::new(solana_key);
         let sui_bridge = EthSuiBridge::new(cli_config.eth_bridge_proxy_address, provider.clone());
         let eth_bridge_committee_proxy_address: EthAddress = sui_bridge.committee().call().await?;
         let eth_bridge_limiter_proxy_address: EthAddress = sui_bridge.limiter().call().await?;
@@ -867,17 +882,21 @@ impl LoadedBridgeCliConfig {
         let sui_address = SuiAddress::from(&sui_key.public());
         println!("Using Sui address: {:?}", sui_address);
         println!("Using Eth address: {:?}", eth_address);
+        println!("Using Solana address: {:?}", solana_signer.pubkey());
         println!("Using Eth chain: {:?}", eth_chain_id);
 
         Ok(Self {
             sui_rpc_url: cli_config.sui_rpc_url,
             eth_rpc_url: cli_config.eth_rpc_url,
+            solana_rpc_url: cli_config.solana_rpc_url,
+            solana_bridge_program_id: cli_config.solana_bridge_program_id,
             eth_bridge_proxy_address: cli_config.eth_bridge_proxy_address,
             eth_bridge_committee_proxy_address,
             eth_bridge_limiter_proxy_address,
             eth_bridge_config_proxy_address,
             sui_key,
             eth_signer,
+            solana_signer,
         })
     }
 }
@@ -885,6 +904,10 @@ impl LoadedBridgeCliConfig {
 impl LoadedBridgeCliConfig {
     pub fn eth_signer(self: &LoadedBridgeCliConfig) -> &EthSigner {
         &self.eth_signer
+    }
+
+    pub fn solana_signer(self: &LoadedBridgeCliConfig)->&SolanaSigner {
+        &self.solana_signer
     }
 
     pub async fn get_sui_account_info(
@@ -1013,14 +1036,7 @@ impl BridgeClientCommands {
             BridgeClientCommands::SetMintBusdLimit {
                 modify_cap_id,
                 new_limit,
-            } => {
-                set_busd_limit(
-                    modify_cap_id,
-                    new_limit,
-                    config,
-                    sui_bridge_client,
-                ).await
-            }
+            } => set_busd_limit(modify_cap_id, new_limit, config, sui_bridge_client).await,
         }
     }
 }
@@ -1035,9 +1051,7 @@ async fn set_busd_limit(
     let bridge_object_arg = sui_bridge_client
         .get_mutable_bridge_object_arg_must_succeed()
         .await;
-    let bfc_system_modify_cap = sui_client.
-        get_cap_object_ref(modify_cap_id)
-        .await?;
+    let bfc_system_modify_cap = sui_client.get_cap_object_ref(modify_cap_id).await?;
     let rgp = sui_client
         .governance_api()
         .get_reference_gas_price()
@@ -1054,8 +1068,9 @@ async fn set_busd_limit(
     let mut builder = ProgrammableTransactionBuilder::new();
     let arg_bridge = builder.obj(bridge_object_arg)?;
     let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT)?;
-    let cap_obj = builder
-        .input(CallArg::Object(ObjectArg::ImmOrOwnedObject(bfc_system_modify_cap)))?;
+    let cap_obj = builder.input(CallArg::Object(ObjectArg::ImmOrOwnedObject(
+        bfc_system_modify_cap,
+    )))?;
     let new_limit = builder.pure(new_limit)?;
 
     CallArg::Object(ObjectArg::ImmOrOwnedObject(bfc_system_modify_cap));
@@ -1084,10 +1099,7 @@ async fn set_busd_limit(
         return Err(anyhow!("Transaction {:?} failed: {:?}", tx_digest, resp));
     }
     let events = resp.events.unwrap();
-    info!(
-        ?tx_digest,
-        "Transaction succeeded. Events: {:?}", events
-    );
+    info!(?tx_digest, "Transaction succeeded. Events: {:?}", events);
     Ok(())
 }
 
@@ -1139,7 +1151,13 @@ async fn deposit_on_sui(
         BRIDGE_MODULE_NAME.to_owned(),
         ident_str!("send_token").to_owned(),
         vec![coin_type],
-        vec![arg_bridge, arg_target_chain, arg_target_address, arg_token, arg_token_id_expect],
+        vec![
+            arg_bridge,
+            arg_target_chain,
+            arg_target_address,
+            arg_token,
+            arg_token_id_expect,
+        ],
     );
     let pt = builder.finish();
     let tx_data =
