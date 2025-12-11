@@ -115,6 +115,12 @@ dependencies = [
 
 [[package]]
 name = "ahash"
+version = "0.4.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0453232ace82dee0dd0b4c87a59bd90f7b53b314f3e0f61fe2ee7c8a16482289"
+
+[[package]]
+name = "ahash"
 version = "0.7.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "891477e0c6a8957309ee5c45a6368af3ae14bb510732d2684ffa19af310920f9"
@@ -1139,7 +1145,7 @@ dependencies = [
  "indexmap 2.12.0",
  "lru 0.7.8",
  "mime",
- "multer",
+ "multer 3.1.0",
  "num-traits",
  "once_cell",
  "opentelemetry 0.21.0",
@@ -1350,6 +1356,18 @@ dependencies = [
  "hermit-abi 0.1.19",
  "libc",
  "winapi",
+name = "attohttpc"
+version = "0.28.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "07a9b245ba0739fc90935094c29adbaee3f977218b5fb95e822e261cda7f56a3"
+dependencies = [
+ "flate2",
+ "http 1.1.0",
+ "log",
+ "native-tls",
+ "serde",
+ "serde_json",
+ "url",
 ]
 
 [[package]]
@@ -1394,7 +1412,7 @@ dependencies = [
  "aws-smithy-types",
  "aws-types",
  "bytes",
- "fastrand 2.0.0",
+ "fastrand 2.3.0",
  "hex",
  "http 0.2.12",
  "hyper 0.14.26",
@@ -1414,7 +1432,7 @@ checksum = "70a66ac8ef5fa9cf01c2d999f39d16812e90ec1467bd382cbbb74ba23ea86201"
 dependencies = [
  "aws-smithy-async",
  "aws-smithy-types",
- "fastrand 2.0.0",
+ "fastrand 2.3.0",
  "tokio",
  "tracing",
  "zeroize",
@@ -1861,7 +1879,7 @@ dependencies = [
  "axum-core 0.4.3",
  "bytes",
  "futures-util",
- "headers",
+ "headers 0.4.0",
  "http 1.1.0",
  "http-body 1.0.1",
  "http-body-util",
@@ -2114,6 +2132,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "bfc-anonymous-server"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "clap",
+ "dirs 4.0.0",
+ "ed25519-dalek",
+ "fastcrypto",
+ "hex",
+ "log",
+ "move-core-types",
+ "mpc-transmission",
+ "rand 0.8.5",
+ "reqwest 0.11.20",
+ "rocksdb",
+ "serde",
+ "serde_json",
+ "sui-config",
+ "sui-types",
+ "tempfile",
+ "thiserror 1.0.69",
+ "tokio",
+ "tokio-test",
+ "tracing",
+ "tracing-subscriber",
+ "warp",
+]
+
+[[package]]
+name = "bfc-anonymous-slave-server"
+version = "1.24.3"
+
+[[package]]
 name = "bfc-zklogin-simple-rpc"
 version = "2024.2.0"
 dependencies = [
@@ -2198,7 +2250,7 @@ checksum = "230c5f1ca6a325a32553f8640d31ac9b49f2411e901e427570154868b46da4f7"
 
 [[package]]
 name = "bin-version"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "const-str",
  "git-version",
@@ -4746,13 +4798,14 @@ dependencies = [
 name = "ed25519-dalek"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7277392b266383ef8396db7fdeb1e77b6c52fed775f5df15bb24f35b72156980"
+checksum = "70e796c081cee67dc755e1a36a0a172b897fab85fc3f6bc48307991f64e4eca9"
 dependencies = [
  "curve25519-dalek 4.1.3",
  "ed25519 2.2.2",
  "rand_core 0.6.4",
  "serde",
  "sha2 0.10.8",
+ "subtle",
  "zeroize",
 ]
 
@@ -4902,6 +4955,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "env"
+version = "0.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2df100894e93515acbb9525a754370f81a5ab1715914c76845f2a3f73e586d6a"
+
+[[package]]
 name = "env_filter"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4995,9 +5054,9 @@ dependencies = [
 
 [[package]]
 name = "errno"
-version = "0.3.8"
+version = "0.3.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a258e46cdc063eb8519c00b9fc845fc47bcfca4130e2f08e88665ceda8474245"
+checksum = "778e2ac28f6c47af28e4907f13ffd1e1ddbd400980a9abd7c8df189bf578a5ad"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
@@ -5445,7 +5504,7 @@ dependencies = [
 [[package]]
 name = "fastcrypto"
 version = "0.1.8"
-source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=9519ebc20064e1a93d16918d2759f63195cf0bf3#9519ebc20064e1a93d16918d2759f63195cf0bf3"
+source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=58a1b233c134f4605d17de63dee2ad6927aede1a#58a1b233c134f4605d17de63dee2ad6927aede1a"
 dependencies = [
  "aes",
  "aes-gcm",
@@ -5499,7 +5558,7 @@ dependencies = [
 [[package]]
 name = "fastcrypto-derive"
 version = "0.1.3"
-source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=9519ebc20064e1a93d16918d2759f63195cf0bf3#9519ebc20064e1a93d16918d2759f63195cf0bf3"
+source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=58a1b233c134f4605d17de63dee2ad6927aede1a#58a1b233c134f4605d17de63dee2ad6927aede1a"
 dependencies = [
  "quote 1.0.37",
  "syn 1.0.107",
@@ -5508,7 +5567,7 @@ dependencies = [
 [[package]]
 name = "fastcrypto-tbls"
 version = "0.1.0"
-source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=9519ebc20064e1a93d16918d2759f63195cf0bf3#9519ebc20064e1a93d16918d2759f63195cf0bf3"
+source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=58a1b233c134f4605d17de63dee2ad6927aede1a#58a1b233c134f4605d17de63dee2ad6927aede1a"
 dependencies = [
  "bcs",
  "digest 0.10.7",
@@ -5527,7 +5586,7 @@ dependencies = [
 [[package]]
 name = "fastcrypto-vdf"
 version = "0.1.0"
-source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=9519ebc20064e1a93d16918d2759f63195cf0bf3#9519ebc20064e1a93d16918d2759f63195cf0bf3"
+source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=58a1b233c134f4605d17de63dee2ad6927aede1a#58a1b233c134f4605d17de63dee2ad6927aede1a"
 dependencies = [
  "bcs",
  "fastcrypto",
@@ -5544,7 +5603,7 @@ dependencies = [
 [[package]]
 name = "fastcrypto-zkp"
 version = "0.1.3"
-source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=9519ebc20064e1a93d16918d2759f63195cf0bf3#9519ebc20064e1a93d16918d2759f63195cf0bf3"
+source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=58a1b233c134f4605d17de63dee2ad6927aede1a#58a1b233c134f4605d17de63dee2ad6927aede1a"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -5561,6 +5620,8 @@ dependencies = [
  "im",
  "itertools 0.12.1",
  "lazy_static",
+ "lru 0.7.8",
+ "minreq",
  "neptune",
  "num-bigint 0.4.6",
  "once_cell",
@@ -5583,9 +5644,9 @@ dependencies = [
 
 [[package]]
 name = "fastrand"
-version = "2.0.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6999dc1837253364c2ebb0704ba97994bd874e8f195d665c50b7548f6ea92764"
+checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
 name = "fd-lock"
@@ -6404,6 +6465,15 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d7afe4a420e3fe79967a00898cc1f4db7c8a49a9333a29f8a4bd76a253d5cd04"
+dependencies = [
+ "ahash 0.4.8",
+]
+
+[[package]]
+name = "hashbrown"
 version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
@@ -6470,17 +6540,41 @@ dependencies = [
 
 [[package]]
 name = "headers"
+version = "0.3.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "06683b93020a07e3dbcf5f8c0f6d40080d725bea7936fc01ad345c01b97dc270"
+dependencies = [
+ "base64 0.21.7",
+ "bytes",
+ "headers-core 0.2.0",
+ "http 0.2.9",
+ "httpdate",
+ "mime",
+ "sha1",
+]
+
+[[package]]
+name = "headers"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "322106e6bd0cba2d5ead589ddb8150a13d7c4217cf80d7c4f682ca994ccc6aa9"
 dependencies = [
  "base64 0.21.7",
  "bytes",
- "headers-core",
+ "headers-core 0.3.0",
  "http 1.1.0",
  "httpdate",
  "mime",
  "sha1",
+]
+
+[[package]]
+name = "headers-core"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e7f66481bfee273957b1f20485a4ff3362987f85b2c236580d81b4eb7a326429"
+dependencies = [
+ "http 0.2.9",
 ]
 
 [[package]]
@@ -6779,7 +6873,7 @@ checksum = "5d06dbdfbacf34d996c6fb540a71a684a7aae9056c71951163af8a8a4c07b9a4"
 dependencies = [
  "bytes",
  "futures-util",
- "headers",
+ "headers 0.4.0",
  "http 1.1.0",
  "hyper 1.6.0",
  "hyper-rustls 0.27.2",
@@ -6864,6 +6958,19 @@ dependencies = [
  "pin-project-lite",
  "tokio",
  "tower-service",
+]
+
+[[package]]
+name = "hyper-tls"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6183ddfa99b85da61a140bea0efc93fdf56ceaa041b37d553518030827f9905"
+dependencies = [
+ "bytes",
+ "hyper 0.14.26",
+ "native-tls",
+ "tokio",
+ "tokio-native-tls",
 ]
 
 [[package]]
@@ -8153,6 +8260,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c4cd1a83af159aa67994778be9070f0ae1bd732942279cabb14f86f986a21456"
 
 [[package]]
+name = "linux-raw-sys"
+version = "0.9.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd945864f07fe9f5371a27ad7b52a172b4b499999f1d97574c9fa68373937e12"
+
+[[package]]
 name = "litemap"
 version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8467,6 +8580,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e7810e0be55b428ada41041c41f32c9f1a42817901b4ccf45fa3d4b6561e74c7"
 dependencies = [
  "adler",
+]
+
+[[package]]
+name = "minreq"
+version = "2.14.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "05015102dad0f7d61691ca347e9d9d9006685a64aefb3d79eecf62665de2153d"
+dependencies = [
+ "rustls 0.21.12",
+ "rustls-webpki 0.101.7",
+ "webpki-roots 0.25.2",
 ]
 
 [[package]]
@@ -9322,6 +9446,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "mpc-transmission"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "arbitrary",
+ "dirs 4.0.0",
+ "env",
+ "fastcrypto",
+ "hex",
+ "move-core-types",
+ "proptest",
+ "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "serde",
+ "serde_json",
+ "sharks",
+ "sui-config",
+ "tempfile",
+ "thiserror 1.0.69",
+ "zeroize",
+]
+
+[[package]]
 name = "msim"
 version = "0.1.0"
 source = "git+https://github.com/MystenLabs/mysten-sim.git?rev=e06fc6fa9aeb978ffc621f8b27c06a404042279f#e06fc6fa9aeb978ffc621f8b27c06a404042279f"
@@ -9359,6 +9506,24 @@ dependencies = [
  "proc-macro2 1.0.103",
  "quote 1.0.37",
  "syn 1.0.107",
+]
+
+[[package]]
+name = "multer"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01acbdc23469fd8fe07ab135923371d5f5a422fbf9c522158677c8eb15bc51c2"
+dependencies = [
+ "bytes",
+ "encoding_rs",
+ "futures-util",
+ "http 0.2.9",
+ "httparse",
+ "log",
+ "memchr",
+ "mime",
+ "spin 0.9.8",
+ "version_check",
 ]
 
 [[package]]
@@ -9580,6 +9745,23 @@ dependencies = [
  "thiserror 1.0.69",
  "widestring",
  "winapi",
+]
+
+[[package]]
+name = "native-tls"
+version = "0.2.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "87de3442987e9dbec73158d5c715e7ad9072fda936bb03d19d7fa10e00520f0e"
+dependencies = [
+ "libc",
+ "log",
+ "openssl",
+ "openssl-probe",
+ "openssl-sys",
+ "schannel",
+ "security-framework 2.11.0",
+ "security-framework-sys",
+ "tempfile",
 ]
 
 [[package]]
@@ -10081,9 +10263,9 @@ dependencies = [
 
 [[package]]
 name = "num_threads"
-version = "0.1.6"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2819ce041d2ee131036f4fc9d6ae7ae125a3a40e97ba64d04fe799ad9dabbb44"
+checksum = "5c7398b9c8b70908f6371f47ed36737907c87c52af34c268fed0bf0ceb92ead9"
 dependencies = [
  "libc",
 ]
@@ -10275,6 +10457,18 @@ name = "openssl-sys"
 version = "0.9.111"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "82cab2d520aa75e3c58898289429321eb788c3106963d0dc886ec7a5f4adc321"
+dependencies = [
+ "cc",
+ "libc",
+ "pkg-config",
+ "vcpkg",
+]
+
+[[package]]
+name = "openssl-sys"
+version = "0.9.109"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "90096e2e47630d78b7d1c20952dc621f957103f8bc2c8359ec81290d75238571"
 dependencies = [
  "cc",
  "libc",
@@ -12155,10 +12349,12 @@ dependencies = [
  "http-body 0.4.5",
  "hyper 0.14.26",
  "hyper-rustls 0.24.0",
+ "hyper-tls",
  "ipnet",
  "js-sys",
  "log",
  "mime",
+ "native-tls",
  "once_cell",
  "percent-encoding",
  "pin-project-lite",
@@ -12169,6 +12365,7 @@ dependencies = [
  "serde_json",
  "serde_urlencoded",
  "tokio",
+ "tokio-native-tls",
  "tokio-rustls 0.24.1",
  "tokio-util 0.7.17",
  "tower-service",
@@ -12752,7 +12949,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2aae838e49b3d63e9274e1c01833cc8139d3fec468c3b84688c628f44b1ae11d"
 dependencies = [
  "bitflags 1.3.2",
- "errno 0.3.8",
+ "errno 0.3.13",
  "io-lifetimes",
  "libc",
  "linux-raw-sys 0.3.1",
@@ -12769,6 +12966,19 @@ dependencies = [
  "errno 0.3.8",
  "libc",
  "linux-raw-sys 0.4.12",
+ "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "rustix"
+version = "1.0.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11181fbabf243db407ef8df94a6ce0b2f9a733bd8be4ad02b4eda9602296cac8"
+dependencies = [
+ "bitflags 2.6.0",
+ "errno 0.3.13",
+ "libc",
+ "linux-raw-sys 0.9.4",
  "windows-sys 0.52.0",
 ]
 
@@ -13134,6 +13344,12 @@ dependencies = [
  "cfg-if",
  "pin-utils",
 ]
+
+[[package]]
+name = "scoped-tls"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1cf6437eb19a8f4a6cc0f7dca544973b0b78843adbfeb3683d1a94a0024a294"
 
 [[package]]
 name = "scopeguard"
@@ -13673,6 +13889,16 @@ dependencies = [
  "fastcrypto",
  "serde",
  "serde_repr",
+]
+
+[[package]]
+name = "sharks"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dcaed91ca635500985e0c9c09d9a0935df6e48846a6694b62fefa9923ba8497f"
+dependencies = [
+ "hashbrown 0.9.1",
+ "rand 0.8.5",
 ]
 
 [[package]]
@@ -17636,7 +17862,7 @@ checksum = "734676eb262c623cec13c3155096e08d1f8f29adce39ba17948b18dad1e54142"
 
 [[package]]
 name = "sui"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anemo",
  "anyhow",
@@ -17856,7 +18082,7 @@ dependencies = [
 
 [[package]]
 name = "sui-analytics-indexer"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "arrow",
@@ -17908,7 +18134,7 @@ dependencies = [
 
 [[package]]
 name = "sui-analytics-indexer-derive"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "proc-macro2 1.0.103",
  "quote 1.0.37",
@@ -17917,7 +18143,7 @@ dependencies = [
 
 [[package]]
 name = "sui-archival"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "byteorder",
@@ -18041,7 +18267,7 @@ dependencies = [
 
 [[package]]
 name = "sui-bridge"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anchor-client",
  "anchor-lang",
@@ -18111,7 +18337,7 @@ dependencies = [
 
 [[package]]
 name = "sui-bridge-cli"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anchor-client",
  "anyhow",
@@ -18180,7 +18406,7 @@ dependencies = [
 
 [[package]]
 name = "sui-bridge-price-updater"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "clap",
@@ -18195,7 +18421,7 @@ dependencies = [
 
 [[package]]
 name = "sui-cluster-test"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -18386,7 +18612,7 @@ dependencies = [
 
 [[package]]
 name = "sui-data-ingestion"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -18484,7 +18710,7 @@ dependencies = [
 
 [[package]]
 name = "sui-default-config"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "quote 1.0.37",
  "syn 1.0.107",
@@ -18492,7 +18718,7 @@ dependencies = [
 
 [[package]]
 name = "sui-e2e-tests"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -18643,7 +18869,7 @@ dependencies = [
 
 [[package]]
 name = "sui-faucet"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "async-recursion",
@@ -18689,14 +18915,14 @@ dependencies = [
 
 [[package]]
 name = "sui-field-count"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "sui-field-count-derive",
 ]
 
 [[package]]
 name = "sui-field-count-derive"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "quote 1.0.37",
  "syn 1.0.107",
@@ -18724,7 +18950,7 @@ dependencies = [
 
 [[package]]
 name = "sui-framework-snapshot"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "bcs",
@@ -18804,7 +19030,7 @@ dependencies = [
 
 [[package]]
 name = "sui-graphql-rpc"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "async-graphql",
@@ -18925,7 +19151,7 @@ dependencies = [
 
 [[package]]
 name = "sui-indexer"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -19003,7 +19229,7 @@ dependencies = [
 
 [[package]]
 name = "sui-indexer-alt"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -19063,7 +19289,7 @@ dependencies = [
 
 [[package]]
 name = "sui-indexer-alt-framework"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -19098,7 +19324,7 @@ dependencies = [
 
 [[package]]
 name = "sui-indexer-alt-jsonrpc"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "async-graphql",
@@ -19138,7 +19364,7 @@ dependencies = [
 
 [[package]]
 name = "sui-indexer-alt-metrics"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "axum 0.7.5",
@@ -19180,7 +19406,7 @@ dependencies = [
 
 [[package]]
 name = "sui-indexer-alt-schema"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "bcs",
@@ -19213,7 +19439,7 @@ dependencies = [
 
 [[package]]
 name = "sui-indexer-v0"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -19467,7 +19693,7 @@ dependencies = [
 
 [[package]]
 name = "sui-kvstore"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -19490,7 +19716,7 @@ dependencies = [
 
 [[package]]
 name = "sui-light-client"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -19528,7 +19754,7 @@ dependencies = [
 
 [[package]]
 name = "sui-metric-checker"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "backoff",
@@ -19549,7 +19775,7 @@ dependencies = [
 
 [[package]]
 name = "sui-move"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -19596,7 +19822,7 @@ dependencies = [
 
 [[package]]
 name = "sui-move-build"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "datatest-stable",
@@ -19620,7 +19846,7 @@ dependencies = [
 
 [[package]]
 name = "sui-move-lsp"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "bin-version",
  "clap",
@@ -19632,8 +19858,11 @@ dependencies = [
 name = "sui-move-natives-latest"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "attohttpc",
  "bcs",
  "better_any",
+ "dirs 4.0.0",
  "fastcrypto",
  "fastcrypto-vdf",
  "fastcrypto-zkp",
@@ -19643,10 +19872,17 @@ dependencies = [
  "move-stdlib-natives",
  "move-vm-runtime",
  "move-vm-types",
+ "mpc-transmission",
  "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "reqwest 0.11.20",
+ "serde_json",
+ "sha2 0.10.8",
  "smallvec",
+ "sui-config",
  "sui-protocol-config",
  "sui-types",
+ "tokio",
  "tracing",
 ]
 
@@ -19727,7 +19963,7 @@ dependencies = [
 
 [[package]]
 name = "sui-mvr-graphql-rpc"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "async-graphql",
@@ -19847,7 +20083,7 @@ dependencies = [
 
 [[package]]
 name = "sui-node"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anemo",
  "anemo-tower",
@@ -19899,7 +20135,7 @@ dependencies = [
 
 [[package]]
 name = "sui-open-rpc"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "bcs",
@@ -19935,7 +20171,7 @@ dependencies = [
 
 [[package]]
 name = "sui-oracle"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "bcs",
@@ -19965,7 +20201,7 @@ dependencies = [
 
 [[package]]
 name = "sui-package-dump"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "bcs",
@@ -19982,7 +20218,7 @@ dependencies = [
 
 [[package]]
 name = "sui-package-management"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "move-core-types",
@@ -20021,7 +20257,7 @@ dependencies = [
 
 [[package]]
 name = "sui-pg-db"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "bb8",
@@ -20166,7 +20402,7 @@ dependencies = [
 
 [[package]]
 name = "sui-rosetta"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -20264,7 +20500,7 @@ dependencies = [
 
 [[package]]
 name = "sui-rpc-loadgen"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -20293,7 +20529,7 @@ dependencies = [
 
 [[package]]
 name = "sui-sdk"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "async-recursion",
@@ -20350,7 +20586,7 @@ dependencies = [
 
 [[package]]
 name = "sui-security-watchdog"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "arrow-array",
@@ -20397,7 +20633,7 @@ dependencies = [
 
 [[package]]
 name = "sui-single-node-benchmark"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "async-trait",
  "bcs",
@@ -20461,7 +20697,7 @@ dependencies = [
 
 [[package]]
 name = "sui-source-validation"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "colored",
@@ -20587,7 +20823,7 @@ dependencies = [
 
 [[package]]
 name = "sui-surfer"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "async-trait",
  "bcs",
@@ -20709,7 +20945,7 @@ dependencies = [
 
 [[package]]
 name = "sui-test-validator"
-version = "1.24.0"
+version = "1.24.3"
 
 [[package]]
 name = "sui-tls"
@@ -20735,7 +20971,7 @@ dependencies = [
 
 [[package]]
 name = "sui-tool"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anemo",
  "anemo-cli",
@@ -21041,7 +21277,7 @@ dependencies = [
 
 [[package]]
 name = "suins-indexer"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -21081,7 +21317,7 @@ dependencies = [
 
 [[package]]
 name = "suiop-cli"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "axum 0.7.5",
@@ -21378,15 +21614,15 @@ dependencies = [
 
 [[package]]
 name = "tempfile"
-version = "3.8.0"
+version = "3.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb94d2f3cc536af71caac6b6fcebf65860b347e7ce0cc9ebe8f70d3e521054ef"
+checksum = "e8a64e3985349f2441a1a9ef0b853f869006c3855f2cda6862a94d26ebb9d6a1"
 dependencies = [
- "cfg-if",
- "fastrand 2.0.0",
- "redox_syscall 0.3.5",
- "rustix 0.38.28",
- "windows-sys 0.48.0",
+ "fastrand 2.3.0",
+ "getrandom 0.3.3",
+ "once_cell",
+ "rustix 1.0.8",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -21772,6 +22008,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "tokio-native-tls"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbae76ab933c85776efabc971569dd6119c580d8f5d448769dec1764bf796ef2"
+dependencies = [
+ "native-tls",
+ "tokio",
+]
+
+[[package]]
 name = "tokio-postgres"
 version = "0.7.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -21853,6 +22099,19 @@ dependencies = [
  "pin-project-lite",
  "tokio",
  "tokio-util 0.7.17",
+]
+
+[[package]]
+name = "tokio-test"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2468baabc3311435b55dd935f702f42cd1b8abb7e754fb7dfb16bd36aa88f9f7"
+dependencies = [
+ "async-stream",
+ "bytes",
+ "futures-core",
+ "tokio",
+ "tokio-stream",
 ]
 
 [[package]]
@@ -22999,6 +23258,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "warp"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4378d202ff965b011c64817db11d5829506d3404edeadb61f190d111da3f231c"
+dependencies = [
+ "bytes",
+ "futures-channel",
+ "futures-util",
+ "headers 0.3.9",
+ "http 0.2.9",
+ "hyper 0.14.26",
+ "log",
+ "mime",
+ "mime_guess",
+ "multer 2.1.0",
+ "percent-encoding",
+ "pin-project",
+ "scoped-tls",
+ "serde",
+ "serde_json",
+ "serde_urlencoded",
+ "tokio",
+ "tokio-tungstenite 0.21.0",
+ "tokio-util 0.7.13 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tower-service",
+ "tracing",
+]
+
+[[package]]
 name = "wasi"
 version = "0.9.0+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -23656,7 +23944,7 @@ dependencies = [
 
 [[package]]
 name = "x"
-version = "1.24.0"
+version = "1.24.3"
 dependencies = [
  "anyhow",
  "camino",

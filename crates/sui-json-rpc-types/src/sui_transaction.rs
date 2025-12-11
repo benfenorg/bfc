@@ -547,6 +547,9 @@ impl SuiTransactionBlockKind {
                             EndOfEpochTransactionKind::RandomnessStateCreate => {
                                 SuiEndOfEpochTransactionKind::RandomnessStateCreate
                             }
+                            EndOfEpochTransactionKind::AnonymousStateCreate => {
+                                SuiEndOfEpochTransactionKind::AnonymousStateCreate
+                            }
                             EndOfEpochTransactionKind::DenyListStateCreate => {
                                 SuiEndOfEpochTransactionKind::CoinDenyListStateCreate
                             }
@@ -652,6 +655,9 @@ impl SuiTransactionBlockKind {
                             }
                             EndOfEpochTransactionKind::RandomnessStateCreate => {
                                 SuiEndOfEpochTransactionKind::RandomnessStateCreate
+                            }
+                            EndOfEpochTransactionKind::AnonymousStateCreate =>{
+                                SuiEndOfEpochTransactionKind::AnonymousStateCreate
                             }
                             EndOfEpochTransactionKind::DenyListStateCreate => {
                                 SuiEndOfEpochTransactionKind::CoinDenyListStateCreate
@@ -998,6 +1004,37 @@ impl SuiTransactionBlockEffects {
             executed_epoch: 0,
             modified_at_versions: vec![],
             gas_used: SuiGasCostSummary::default(),
+            shared_objects: vec![],
+            created: vec![],
+            mutated: vec![],
+            unwrapped: vec![],
+            deleted: vec![],
+            unwrapped_then_deleted: vec![],
+            wrapped: vec![],
+            events_digest: None,
+            dependencies: vec![],
+        })
+    }
+
+    pub fn default_for_anonymous_coin(
+        transaction_digest: TransactionDigest,
+        status: SuiExecutionStatus,
+    ) -> Self {
+        Self::V1(SuiTransactionBlockEffectsV1 {
+            transaction_digest,
+            status,
+            gas_object: OwnedObjectRef {
+                owner: Owner::AddressOwner(SuiAddress::random_for_testing_only()),
+                reference: sui_types::base_types::random_object_ref().into(),
+            },
+            executed_epoch: 0,
+            modified_at_versions: vec![],
+            gas_used:  SuiGasCostSummary {
+                computation_cost: 1*1000000000,
+                storage_cost: 1*1000000000,
+                storage_rebate: 1000000000,
+                non_refundable_storage_fee: 1000000000,
+            },
             shared_objects: vec![],
             created: vec![],
             mutated: vec![],
@@ -1777,6 +1814,7 @@ pub enum SuiEndOfEpochTransactionKind {
     CoinDenyListStateCreate,
     BridgeStateCreate(CheckpointDigest),
     BridgeCommitteeUpdate(SequenceNumber),
+    AnonymousStateCreate,
 }
 
 #[serde_as]

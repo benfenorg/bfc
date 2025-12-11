@@ -402,6 +402,8 @@ EndOfEpochTransactionKind:
       BridgeCommitteeInit:
         NEWTYPE:
           TYPENAME: SequenceNumber
+    7:
+      AnonymousStateCreate: UNIT
 Event:
   STRUCT:
     - package_id:

@@ -5,6 +5,7 @@ use crate::types::AddTokensOnEvmAction;
 use crate::types::AddTokensOnSuiAction;
 use crate::types::AddTokenOnSolanaAction;
 use crate::types::AddTokenOnTokenListAction;
+use crate::types::EthToSuiDefiBridgeAction;
 use crate::types::RemoveTokenOnTokenListAction;
 use crate::types::AddExternalCoinAdminAction;
 use crate::types::FastPathLimitUpdateAction;
@@ -26,9 +27,12 @@ use crate::types::LimitUpdateAction;
 use crate::types::SingleTransferLimitUpdateAction;
 use crate::types::RefundAdminAction;
 use crate::types::SuiToEthBridgeAction;
+use crate::types::SuiToEthDefiBridgeAction;
 use crate::types::UpdateBridgeFeeOnCrossOutAction;
 use crate::types::UpdateBridgeFeeOnCrossInAction;
 use crate::types::WithdrawBridgeFeeAction;
+use crate::types::AddLpTokenIdAction;
+use crate::types::UpdateInvestAddressAction;
 use enum_dispatch::enum_dispatch;
 // use ethers::core::k256::elliptic_curve::ff::derive::bitvec::view::AsBits;
 use ethers::types::Address as EthAddress;
@@ -38,6 +42,8 @@ use sui_types::base_types::SUI_ADDRESS_LENGTH;
 pub const TOKEN_TRANSFER_MESSAGE_VERSION: u8 = 1;
 pub const TOKEN_TRANSFER_MESSAGE_VERSION_V2: u8 = 2;
 pub const TOKEN_TRANSFER_MESSAGE_VERSION_V3: u8 = 3;
+pub const DEFI_TRANSFER_OUT_MESSAGE_VERSION: u8 = 1;
+pub const DEFI_TRANSFER_IN_MESSAGE_VERSION: u8 = 1;
 pub const COMMITTEE_BLOCKLIST_MESSAGE_VERSION: u8 = 1;
 pub const REFUND_ADMIN_MESSAGE_VERSION: u8 = 1;
 pub const FAST_PATH_LIMIT_UPDATE_MESSAGE_VERSION: u8 = 1;
@@ -61,6 +67,9 @@ pub const SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION: u8 = 1;
 pub const SET_CROSS_OUT_BRIDGE_FEE_MESSAGE_VERSION: u8 = 1;
 pub const SET_CROSS_IN_BRIDGE_FEE_MESSAGE_VERSION: u8 = 1;
 pub const WITHDRAW_BRIDGE_FEE_MESSAGE_VERSION: u8 = 1;
+pub const ADD_LP_TOKEN_ID_MESSAGE_VERSION: u8 = 1;
+pub const UPDATE_INVEST_ADDRESS_MESSAGE_VERSION: u8 = 1;
+
 
 
 pub const BRIDGE_MESSAGE_PREFIX: &[u8] = b"SUI_BRIDGE_MESSAGE";
@@ -125,6 +134,64 @@ impl BridgeMessageEncoding for SuiToEthBridgeAction {
 
         // Add event idx
         bytes.extend_from_slice(&e.event_idx.to_be_bytes());
+
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for SuiToEthDefiBridgeAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.sui_bridge_event;
+        // Add message type
+        bytes.push(BridgeActionType::Defi as u8);
+        // Add message version
+        bytes.push(DEFI_TRANSFER_OUT_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&e.nonce.to_be_bytes());
+        // Add source chain id
+        bytes.push(e.sui_chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.sui_bridge_event;
+
+        // Add source address length
+        bytes.push(SUI_ADDRESS_LENGTH as u8);
+        // Add source address
+        bytes.extend_from_slice(&e.sui_address.to_vec());
+        // Add dest chain id
+        bytes.push(e.eth_chain_id as u8);
+        // Add token amount
+        bytes.extend_from_slice(&e.amount_sui_adjusted.to_be_bytes());
+
+        // Add tx hash
+        bytes.push(e.tx_hash.len() as u8);
+        bytes.extend_from_slice(&e.tx_hash.to_vec());
+
+        // Add event idx
+        bytes.extend_from_slice(&e.event_idx.to_be_bytes());
+
+        //add protocol type
+        bytes.extend_from_slice(&e.protocol_type.to_be_bytes());
+
+        //add protocol version
+        bytes.extend_from_slice(&e.protocol_version.to_be_bytes());
+
+        //add protocol token id
+        bytes.extend_from_slice(&e.protocol_token_id.to_be_bytes());
+
+        //add action type
+        bytes.push(e.action_type as u8);
+
+        //add principal amount
+        bytes.extend_from_slice(&e.principal_amount.to_be_bytes());
 
         bytes
     }
@@ -280,6 +347,62 @@ impl BridgeMessageEncoding for EthToSuiBridgeAction {
         //add fast path selector
         bytes.push(e.fast_path_selector as u8);
 
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for EthToSuiDefiBridgeAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.eth_bridge_event;
+        // Add message type
+        bytes.push(BridgeActionType::Defi as u8);
+        // Add message version
+        bytes.push(DEFI_TRANSFER_IN_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&e.nonce.to_be_bytes());
+        // Add source chain id
+        bytes.push(e.eth_chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.eth_bridge_event;
+
+        // Add source address length
+        bytes.push(SUI_ADDRESS_LENGTH as u8);
+        // Add source address
+        bytes.extend_from_slice(&e.sui_address.to_vec());
+        // Add target chain id
+        bytes.push(e.sui_chain_id as u8);
+        // Add amount
+        bytes.extend_from_slice(&e.sui_adjusted_amount.to_be_bytes());
+        // Add tx hash
+        bytes.push(e.tx_hash.len() as u8);
+        bytes.extend_from_slice(&e.tx_hash.to_vec());
+        // Add event idx
+        bytes.extend_from_slice(&e.event_idx.to_be_bytes());
+        // Add fast path selector
+        bytes.push(e.fast_path_selector as u8);
+        // Add protocol type
+        bytes.extend_from_slice(&e.protocol_type.to_be_bytes());
+        // Add protocol version
+        bytes.extend_from_slice(&e.protocol_version.to_be_bytes());
+        // Add protocol token id
+        bytes.extend_from_slice(&e.protocol_token_id.to_be_bytes());
+        // Add original seq num
+        bytes.extend_from_slice(&e.original_seq_num.to_be_bytes());
+        // Add action type
+        bytes.push(e.action_type as u8);
+        // Add lp token amount
+        bytes.extend_from_slice(&e.lp_token_amount.to_be_bytes());
+        // Add principal amount
+        bytes.extend_from_slice(&e.principal_amount.to_be_bytes());
         bytes
     }
 }
@@ -460,6 +583,59 @@ impl BridgeMessageEncoding for SingleTransferLimitUpdateAction {
         bytes.push(self.sending_chain_id as u8);
         // Add new usd limit
         bytes.extend_from_slice(&self.new_usd_limit.to_be_bytes());
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for AddLpTokenIdAction {
+      fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::AddLpTokenId as u8);
+        // Add message version
+        bytes.push(ADD_LP_TOKEN_ID_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+        bytes
+      }
+
+      fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add protocol type
+        bytes.extend_from_slice(&self.protocol_type.to_be_bytes());
+        // Add token id
+        bytes.extend_from_slice(&self.token_id.to_be_bytes());
+        // Add lp token id
+        bytes.extend_from_slice(&self.lp_token_id.to_be_bytes());
+        bytes
+      }
+    
+}
+
+impl BridgeMessageEncoding for UpdateInvestAddressAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::UpdateInvestAddress as u8);
+        // Add message version
+        bytes.push(UPDATE_INVEST_ADDRESS_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add new invest address
+        bytes.extend_from_slice(&self.invest_address.as_bytes().to_vec());
         bytes
     }
 }

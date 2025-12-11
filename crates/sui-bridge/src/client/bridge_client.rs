@@ -56,6 +56,10 @@ impl BridgeClient {
                 "sign/bridge_tx/sui/eth/{}/{}",
                 e.sui_tx_digest, e.sui_tx_event_index
             ),
+            BridgeAction::SuiToEthDefiBridgeAction(e) => format!(
+                "sign/bridge_tx/sui/eth/defi/{}/{}",
+                e.sui_tx_digest, e.sui_tx_event_index
+            ),
             BridgeAction::EthSendBackBridgeAction(e) =>{
                 if e.sui_bridge_event.eth_chain_id.is_eth_chain(){
                     format!(
@@ -91,6 +95,14 @@ impl BridgeClient {
                         e.eth_bridge_event.fast_path_selector as u8
                     )
                 }
+            },
+            BridgeAction::EthToSuiDefiBridgeAction(e) => {
+                format!(
+                    "sign/bridge_tx/eth/sui/defi/{}/{}/{}",
+                    Hex::encode(e.eth_tx_hash.0),
+                    e.eth_event_index,
+                    e.eth_bridge_event.fast_path_selector as u8
+                )
             },
             BridgeAction::BlocklistCommitteeAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
@@ -131,6 +143,22 @@ impl BridgeClient {
                 let new_usd_limit = a.new_usd_limit.to_string();
                 format!("sign/update_single_transfer_limit/{chain_id}/{nonce}/{sending_chain_id}/{new_usd_limit}")
             }
+
+            BridgeAction::UpdateInvestAddressAction(a) => {
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let invest_address = Hex::encode(a.invest_address.as_bytes());
+                format!("sign/update_invest_address/{chain_id}/{nonce}/{invest_address}")
+            }
+            BridgeAction::AddLpTokenIdAction(a) => {
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let protocol_type = a.protocol_type.to_string();
+                let token_id = a.token_id.to_string();
+                let lp_token_id = a.lp_token_id.to_string();
+                format!("sign/add_lp_token_id/{chain_id}/{nonce}/{protocol_type}/{token_id}/{lp_token_id}")
+            }
+
             BridgeAction::AssetPriceUpdateAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();

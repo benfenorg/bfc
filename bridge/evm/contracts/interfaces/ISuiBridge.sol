@@ -45,4 +45,44 @@ interface ISuiBridge {
     /// @param nonce The governance action nonce.
     /// @param paused A boolean indicating whether the bridge is paused or not.
     event EmergencyOperation(uint64 nonce, bool paused);
+
+     /// @notice Emitted when tokens are staked.
+    event TokensStaked(
+        uint8 indexed sourceChainID, //evm 
+        uint64 indexed nonce, // evm
+        uint8 indexed destinationChainID, //benfen
+        uint64 originNonce, //benfen 生成的
+        bytes senderAddress, // benfen 上用户的地址
+        address recipientAddress, //资管合约地址
+        uint64 suiAdjustedAmount,  //0
+        uint64 suiLpTokenAmount, 
+        uint64  protocolType,
+        uint64 protocolVersion,
+        uint64 protocolTokenId,
+        uint64 principalAmount,
+        uint8 actionType
+        
+    );
+
+
+     /// @notice Emitted when tokens are un-staked.
+    event TokensUnStaked(
+        uint8 indexed sourceChainID, //evm
+        uint64 indexed nonce, // evm
+        uint8 indexed destinationChainID, //benfen
+        uint64 originNonce, //benfen 生成的
+        bytes recipientAddress, // benfen 上用户的地址
+        address senderAddress, // 资管合约地址
+        uint64 suiAdjustedAmount, //aave 返回的 usdt 数量
+        uint64 suiLpTokenAmount, //赎回 LP 的 amount 统一成 9 位小数
+        uint64  protocolType,
+        uint64 protocolVersion,
+        uint64 protocolTokenId,
+        uint64 principalAmount,
+        uint8 actionType
+    );
+
+
+    event  UpdateInvestAddress(uint64 nonce,address investAddress);
+    
 }

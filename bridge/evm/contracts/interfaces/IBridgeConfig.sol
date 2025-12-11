@@ -43,6 +43,11 @@ interface IBridgeConfig {
     /// @notice Returns the chain ID of the bridge.
     function chainID() external view returns (uint8);
 
+
+   function investLpTokenIdOf(uint64 protocolType,uint64 underlyingTokenId) external view returns (uint64);
+   
+   function underlyingTokenIdOf(uint64 protocolType,uint64 lpTokenId) external view returns (uint64);
+
     /// @notice Event for the addition of a new token.
     /// @param nonce The governance action nonce.
     /// @param tokenIDs The IDs of the tokens added.
@@ -68,4 +73,7 @@ interface IBridgeConfig {
 
     /// @dev (deprecated in favor of TokenPriceUpdatedV2)
     event TokenPriceUpdated(uint64 tokenID, uint64 tokenPrice);
+
+
+    event LpTokenIdAdded(uint64 nonce,uint64 protocolType,uint64 underlyingTokenId,uint64 lpTokenId);
 }

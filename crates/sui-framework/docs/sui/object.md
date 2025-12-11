@@ -17,6 +17,7 @@ Sui object identifiers
 -  [Function `clock`](#sui_object_clock)
 -  [Function `authenticator_state`](#sui_object_authenticator_state)
 -  [Function `randomness_state`](#sui_object_randomness_state)
+-  [Function `anonymous_state_id`](#sui_object_anonymous_state_id)
 -  [Function `sui_deny_list_object_id`](#sui_object_sui_deny_list_object_id)
 -  [Function `bridge`](#sui_object_bridge)
 -  [Function `uid_as_inner`](#sui_object_uid_as_inner)
@@ -114,6 +115,15 @@ This is a privileged type that can only be derived from a <code>TxContext</code>
 <a name="@Constants_0"></a>
 
 ## Constants
+
+
+<a name="sui_object_BFC_ANONYMOUS_STATE_ID"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui/object.md#sui_object_BFC_ANONYMOUS_STATE_ID">BFC_ANONYMOUS_STATE_ID</a>: <b>address</b> = 0xd9;
+</code></pre>
+
 
 
 <a name="sui_object_BFC_SYSTEM_STATE_OBJECT_ID"></a>
@@ -429,6 +439,32 @@ This should only be called once from <code><a href="../sui/random.md#sui_random"
 <pre><code><b>public</b>(<a href="../sui/package.md#sui_package">package</a>) <b>fun</b> <a href="../sui/object.md#sui_object_randomness_state">randomness_state</a>(): <a href="../sui/object.md#sui_object_UID">UID</a> {
     <a href="../sui/object.md#sui_object_UID">UID</a> {
         <a href="../sui/object.md#sui_object_id">id</a>: <a href="../sui/object.md#sui_object_ID">ID</a> { bytes: <a href="../sui/object.md#sui_object_SUI_RANDOM_ID">SUI_RANDOM_ID</a> },
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="sui_object_anonymous_state_id"></a>
+
+## Function `anonymous_state_id`
+
+
+
+<pre><code><b>public</b>(<a href="../sui/package.md#sui_package">package</a>) <b>fun</b> <a href="../sui/object.md#sui_object_anonymous_state_id">anonymous_state_id</a>(): <a href="../sui/object.md#sui_object_UID">sui::object::UID</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<a href="../sui/package.md#sui_package">package</a>) <b>fun</b> <a href="../sui/object.md#sui_object_anonymous_state_id">anonymous_state_id</a>(): <a href="../sui/object.md#sui_object_UID">UID</a> {
+    <a href="../sui/object.md#sui_object_UID">UID</a> {
+        <a href="../sui/object.md#sui_object_id">id</a>: <a href="../sui/object.md#sui_object_ID">ID</a> { bytes: <a href="../sui/object.md#sui_object_BFC_ANONYMOUS_STATE_ID">BFC_ANONYMOUS_STATE_ID</a> },
     }
 }
 </code></pre>

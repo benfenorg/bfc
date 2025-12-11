@@ -121,8 +121,10 @@ where
         }
 
         match event {
+            SuiBridgeEvent::SuiToEthDefiTokensStaked(_) => (),
             SuiBridgeEvent::SuiToEthTokenBridgeV1(_) => (),
             SuiBridgeEvent::SuiToEthTokenBridgeV2(_) => (),
+            SuiBridgeEvent::SuiToEthDefiBridgeV1(_) => (),
             SuiBridgeEvent::TokenSendBackEvent(_) => (),
             SuiBridgeEvent::TokenSendBackEventV2(_) => (),
             SuiBridgeEvent::ExternalDepositStartBridgeV1(_) => (),
@@ -301,6 +303,9 @@ where
                 EthBridgeConfigEvents::TokenPriceUpdatedFilter(_) => {
                     bump_eth_counter!("update_token_price");
                 }
+                EthBridgeConfigEvents::LpTokenIdAddedFilter(_) => {
+                    bump_eth_counter!("new_lp_token_added");
+                }
                 EthBridgeConfigEvents::ContractUpgradedFilter(_) => {
                     bump_eth_counter!("config_contract_upgraded");
                 }
@@ -322,6 +327,9 @@ where
             EthBridgeEvent::EthSuiBridgeEvents(event) => match event {
                 EthSuiBridgeEvents::TokensClaimedFilter(_) => (),
                 EthSuiBridgeEvents::TokensDepositedFilter(_) => (),
+                EthSuiBridgeEvents::TokensStakedFilter(_) => (),
+                EthSuiBridgeEvents::TokensUnStakedFilter(_) => (),
+                EthSuiBridgeEvents::UpdateInvestAddressFilter(_) => (),
                 EthSuiBridgeEvents::PausedFilter(_) => bump_eth_counter!("bridge_paused"),
                 EthSuiBridgeEvents::UnpausedFilter(_) => bump_eth_counter!("bridge_unpaused"),
                 EthSuiBridgeEvents::UpgradedFilter(_) => {

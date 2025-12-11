@@ -46,6 +46,7 @@ pub fn verify_module(
     // framework code and thus deemed correct.
     let bfc_modules = [
         ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("bfc").to_owned()),
+        ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("abfc").to_owned()),
         ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("busd").to_owned()),
         ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bjpy").to_owned()),
         ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bkrw").to_owned()),

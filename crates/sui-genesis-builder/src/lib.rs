@@ -12,7 +12,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
-use tracing::trace;
+//use tracing::{info, trace};
 use sui_config::genesis::{Genesis, GenesisCeremonyParameters,
                           GenesisChainParameters, TokenDistributionSchedule,
                           UnsignedGenesis, BfcSystemParameters,
@@ -57,7 +57,11 @@ use sui_types::transaction::{
     CallArg, CheckedInputObjects, Command, InputObjectKind, ObjectReadResult, Transaction,
 };
 use sui_types::{BRIDGE_ADDRESS, SUI_BRIDGE_OBJECT_ID};
+use sui_types::anonymous_status::ANONYMOUS_COIND_DEFAULT_ADDRESS;
 use validator_info::{GenesisValidatorInfo, GenesisValidatorMetadata, ValidatorInfo};
+use std::str::FromStr;
+use tracing::trace;
+
 pub mod validator_info;
 
 //use tracing::info;
@@ -1163,7 +1167,7 @@ fn create_genesis_objects(
         bfc_system_parameters,
         token_distribution_schedule,
         metrics,
-        bfc_skip_init_vault
+        bfc_skip_init_vault,
     ).unwrap();
 
     store.into_inner().into_values().collect()
@@ -1473,6 +1477,8 @@ pub fn generate_genesis_system_object(
             arguments,
         );
 
+
+
         // Step 5: Run genesis.
         // The first argument is the system state uid we got from step 1 and the second one is the SUI supply we
         // got from step 3.
@@ -1671,6 +1677,38 @@ pub fn generate_genesis_system_object(
             vec![],
             arguments,
         );
+
+
+        //todo : move the new feature logic to advanced epoch
+        if protocol_config.enable_anonymous_coin_open() {
+            builder
+                .move_call(
+                    SUI_FRAMEWORK_ADDRESS.into(),
+                    ident_str!("anonymous").to_owned(),
+                    ident_str!("create").to_owned(),
+                    vec![],
+                    vec![],
+                )?;
+
+            let abfc_supply = builder.programmable_move_call(
+                SUI_FRAMEWORK_ADDRESS.into(),
+                ident_str!("abfc").to_owned(),
+                ident_str!("new").to_owned(),
+                vec![],
+                vec![],
+            );
+            let address1_arg = builder.input(CallArg::Pure(UID::new(ObjectID::from(SuiAddress::from_str(ANONYMOUS_COIND_DEFAULT_ADDRESS).unwrap())).to_bcs_bytes())).unwrap();
+
+            let arguments = vec![abfc_supply, address1_arg];
+            builder.programmable_move_call(
+                BFC_SYSTEM_ADDRESS.into(),
+                ident_str!("bfc_system").to_owned(),
+                ident_str!("allocate_abfc").to_owned(),
+                vec![],
+                arguments,
+            );
+        }
+
 
         builder.finish()
     };

@@ -745,7 +745,7 @@ async fn sim_test_bfc_dao_update_system_package_blocked() {
     });
     ProtocolConfig::poison_get_for_min_version();
 
-    let start_version = 75u64;
+    let start_version = 77u64;
 
 
     let test_cluster = TestClusterBuilder::new()
@@ -853,7 +853,7 @@ async fn test_expired_locks() {
 }
 
 
-async fn do_move_call(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster, package_id: ObjectID, module: String, function: String, arg: Vec<SuiJsonValue>) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
+pub async fn do_move_call(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster, package_id: ObjectID, module: String, function: String, arg: Vec<SuiJsonValue>) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
     let transaction_bytes: TransactionBlockBytes = http_client
         .move_call(
             address,
@@ -1247,7 +1247,7 @@ async fn sim_test_bfc_dao_create_propose() -> Result<(), anyhow::Error> {
 
 #[sim_test]
 async fn test_bfc_dao_create_votingbfc() -> Result<(), anyhow::Error> {
-    //telemetry_subscribers::init_for_testing();
+    telemetry_subscribers::init_for_testing();
 
     let cluster = TestClusterBuilder::new().build().await;
     let http_client = cluster.rpc_client();

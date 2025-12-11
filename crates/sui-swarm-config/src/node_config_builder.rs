@@ -17,10 +17,7 @@ use sui_config::node::{
 use sui_config::node::{default_zklogin_oauth_providers, RunWithRange};
 use sui_config::p2p::{P2pConfig, SeedPeer, StateSyncConfig};
 use sui_config::verifier_signing_config::VerifierSigningConfig;
-use sui_config::{
-    local_ip_utils, ConsensusConfig, NodeConfig, AUTHORITIES_DB_NAME, CONSENSUS_DB_NAME,
-    FULL_NODE_DB_PATH,
-};
+use sui_config::{local_ip_utils, ConsensusConfig, NodeConfig, AUTHORITIES_DB_NAME, CONSENSUS_DB_NAME, FULL_NODE_DB_PATH};
 use sui_types::crypto::{AuthorityKeyPair, AuthorityPublicKeyBytes, NetworkKeyPair, SuiKeyPair};
 use sui_types::multiaddr::Multiaddr;
 use sui_types::supported_protocol_versions::SupportedProtocolVersions;
@@ -131,10 +128,12 @@ impl ValidatorConfigBuilder {
         let key_path = get_key_path(&validator.key_pair);
         let config_directory = self
             .config_directory
-            .unwrap_or_else(|| tempfile::tempdir().unwrap().into_path());
+            .unwrap_or_else(|| tempfile::tempdir().unwrap().keep());
         let db_path = config_directory
             .join(AUTHORITIES_DB_NAME)
             .join(key_path.clone());
+
+
 
         let network_address = validator.network_address;
         let consensus_db_path = config_directory.join(CONSENSUS_DB_NAME).join(key_path);
@@ -386,7 +385,7 @@ impl FullnodeConfigBuilder {
         let key_path = get_key_path(&validator_config.key_pair);
         let config_directory = self
             .config_directory
-            .unwrap_or_else(|| tempfile::tempdir().unwrap().into_path());
+            .unwrap_or_else(|| tempfile::tempdir().unwrap().keep());
 
         let p2p_config = {
             let seed_peers = network_config
@@ -538,7 +537,7 @@ impl FullnodeConfigBuilder {
         let key_path = get_key_path(&validator_config.key_pair);
         let config_directory = self
             .config_directory
-            .unwrap_or_else(|| tempfile::tempdir().unwrap().into_path());
+            .unwrap_or_else(|| tempfile::tempdir().unwrap().keep());
 
         let p2p_config = {
             let seed_peers = network_config
@@ -593,6 +592,8 @@ impl FullnodeConfigBuilder {
             pruning_config.set_num_epochs_to_retain_for_checkpoints(None);
             pruning_config.set_num_epochs_to_retain(u64::MAX);
         };
+
+
 
         NodeConfig {
             protocol_key_pair: AuthorityKeyPairWithPath::new(validator_config.key_pair),

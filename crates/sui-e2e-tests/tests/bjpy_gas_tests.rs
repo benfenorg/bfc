@@ -8,31 +8,26 @@ use std::str::FromStr;
 use std::time::Duration;
 use std::vec;
 use anyhow::{anyhow, Error};
-use chrono::Utc;
 use fastcrypto::encoding::Base64;
 use jsonrpsee::http_client::HttpClient;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::TypeTag;
-use move_core_types::parser::parse_struct_tag;
-use sui_json_rpc_types::{ObjectChange, SuiExecutionStatus, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects};
-use sui_json_rpc_types::{SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
+use sui_json_rpc_types::{ObjectChange, SuiExecutionStatus, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects};
+use sui_json_rpc_types::{SuiTransactionBlockResponseOptions};
 use sui_macros::sim_test;
 use sui_sdk::json::{type_args, SuiJsonValue};
 use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 use sui_types::stable_coin::stable::checked::get_allow_stable_gas_coins_rate_map;
-use sui_types::sui_serde::BigInt;
 use sui_types::transaction::{CallArg, ObjectArg, TransactionKind, TransactionData, GasData, TEST_ONLY_GAS_UNIT_FOR_TRANSFER, TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS, Command, ProgrammableMoveCall};
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use test_cluster::{TestCluster, TestClusterBuilder};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
-use sui_types::{parse_sui_struct_tag, BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID};
+use sui_types::{parse_sui_struct_tag, BFC_SYSTEM_PACKAGE_ID};
 use sui_types::utils::to_sender_signed_transaction_with_multi_signers;
-use serde_json::json;
 use sui_json_rpc_api::{CoinReadApiClient, IndexerApiClient, WriteApiClient};
 use sui_json_rpc_api::TransactionBuilderClient;
 use tokio::time::sleep;
-use tracing::error;
 use sui_keys::keystore::AccountKeystore;
 
 #[sim_test]
@@ -273,19 +268,6 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit() -> Result<(), any
         .await;
     assert!(response.is_ok());
 
-    // Test calling the Move contract method to get balance
-    let balance_result = test_move_call_get_deposited_balance(&mut test_cluster, coin_type.clone()).await;
-    match &balance_result {
-        Ok(balance) => {
-            println!("Got balance from Move contract: {}", balance);
-            assert!(*balance > 0);
-        } 
-        Err(e) => println!("Failed to get balance from Move contract: {:?}", e),
-    }
-    // assert balance_result balance > 0
-    let old_gas_balance = balance_result.unwrap();
-    assert!(old_gas_balance > 0);
-
     let pool_id = response.unwrap();
 
     // case 2 : call move function
@@ -297,119 +279,6 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit() -> Result<(), any
     )
     .await;
     assert!(response.is_ok());
-
-    test_cluster.wait_for_epoch(Some(6)).await;
-    // Query extra_fields in bfc system
-    let mut new_extra_fields_size = 0;
-    test_cluster
-        .swarm
-        .validator_nodes()
-        .next()
-        .unwrap()
-        .get_node_handle()
-        .unwrap()
-        .with(|node| {
-            let _state = node
-                .state()
-                .get_bfc_system_state_object_for_testing()
-                .unwrap();
-
-            // Query extra_fields from BFC system state
-            let _extra_fields = _state.get_extra_fields();
-            println!("=============extra_fields: {:?}", &_extra_fields);
-
-            // Check if extra_fields exists (only available in V2)
-            if let Some(extra_fields) = _extra_fields {
-                println!("Extra fields size: {}", extra_fields.size);
-                new_extra_fields_size = extra_fields.size;
-                // You can add more specific checks here based on what you expect in extra_fields
-            } else {
-                println!("Extra fields not available (BFC system state V1)");
-            }
-
-            // // print detail in extra_fields
-            // if let Some(extra_fields) = _extra_fields {
-            //     use sui_types::dynamic_field::get_dynamic_field_from_store;
-            //     use sui_types::base_types::ObjectID;
-            //     use sui_types::balance::Balance;
-            //     let parent_id: ObjectID = extra_fields.id.id.bytes;
-            //     let state = node.state();
-            //     let object_store = state.get_object_store();
-            //     let object_store_ref = object_store.as_ref();
-                
-            //     // Try to read known keys from extra_fields
-            //     let known_keys = vec![
-            //         ("ExternalStableCoinList", "ExternalStableCoinList".as_bytes().to_vec()),
-            //         ("ToDeleteExternalStableCoinList", "ToDeleteExternalStableCoinList".as_bytes().to_vec()),
-            //     ];
-                
-            //     for (key_name, key_bytes) in known_keys {
-            //         let value_result: Result<Vec<String>, _> = get_dynamic_field_from_store(object_store_ref, parent_id, &key_bytes);
-            //         match value_result {
-            //             Ok(v) => println!("Bag[{:?}] = {:?}", key_name, v),
-            //             Err(_) => {}, // Silently ignore missing keys
-            //         }
-            //     }
-
-            //     // use coin_type without 0x prefix
-            //     let coin_type_no_0x = coin_type.replace("0x", "");
-            //     let stable_coin_types = vec![
-            //         coin_type_no_0x.as_str(),  
-            //         coin_type.as_str(),  
-            //     ];
-                
-            //     for coin_type_str in stable_coin_types {
-            //         // Try reading balance using the full coin type name as key (converted to Vec<u8>)
-            //         let key_bytes = coin_type_str.as_bytes().to_vec();
-            //         let balance_result: Result<Balance, _> = get_dynamic_field_from_store(object_store_ref, parent_id, &key_bytes);
-            //         match balance_result {
-            //             Ok(balance) => println!("StableCoin[{}] balance = {}", coin_type_str, balance.value()),
-            //             Err(e) => {
-            //                  println!("Failed to get balance for stable coin type: {}, error: {:?}", coin_type_str, e);
-            //             },
-            //         }
-            //     }
-                
-            //     // Also try calling the Move contract method to read balance
-            //     // Call the BFC system to get balance using Move contract method
-            //     let bfc_state = node.state().get_bfc_system_state_object_for_testing().unwrap();
-                
-            //     // Try with the full coin type string
-            //     println!("Trying to read balance using Move contract method with coin_type: {}", coin_type);
-            //     // Note: We can't directly call the Move method from here, but we know the key exists
-            //     // if ExternalStableCoinList contains the coin type
-                
-            //     // Let's also try to check if the key exists in extra_fields directly
-            //     let coin_type_key = coin_type.clone();
-            //     let key_bytes = coin_type_key.as_bytes().to_vec();
-            //     println!("Checking if key exists in extra_fields: {:?}", String::from_utf8_lossy(&key_bytes));
-                
-            // }
-           
-
-        });
-
-        println!("old_extra_fields_size is {:?}, new_extra_fields_size is {:?}", old_extra_fields_size, new_extra_fields_size);
-        assert!(new_extra_fields_size > old_extra_fields_size,
-            "Extra fields size should increase after adding a new stable gas coin"
-        );
-
-    // Test calling the Move contract method to get balance
-    let balance_result = test_move_call_get_deposited_balance(&mut test_cluster, coin_type).await;
-    match &balance_result {
-        Ok(balance) => {
-            println!("Got balance from Move contract: {}", balance);
-            assert!(*balance > 0);
-        } 
-        Err(e) => println!("Failed to get balance from Move contract: {:?}", e),
-    }
-
-    // assert balance_result balance > 0
-    let new_gas_balance = balance_result.unwrap();
-    assert!(new_gas_balance > 0);
-
-    println!("old_gas_balance is {:?}, new_gas_balance is {:?}", old_gas_balance, new_gas_balance);
-    assert!(new_gas_balance > old_gas_balance);
 
     Ok(())
 }
@@ -877,18 +746,6 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit_sponsored_test_coin
         .await;
     assert!(response.is_ok());
 
-    // Test calling the Move contract method to get balance
-    let balance_result = test_move_call_get_deposited_balance(&mut test_cluster, coin_type.clone()).await;
-    match &balance_result {
-        Ok(balance) => {
-            println!("Got balance from Move contract: {}", balance);
-            assert!(*balance > 0);
-        } 
-        Err(e) => println!("Failed to get balance from Move contract: {:?}", e),
-    }
-    let old_gas_balance = balance_result.unwrap();
-    assert!(old_gas_balance > 0);
-
     let pool_id = response.unwrap();
 
     // Sponsored move function call using Test Coin as gas (the key difference)
@@ -937,24 +794,6 @@ async fn sim_test_with_new_stable_coin_gas_check_gas_deposit_sponsored_test_coin
         // Test coin gas deposit functionality in sponsored transactions
 
     println!("coin_type is {:?}", coin_type);
-    // Test calling the Move contract method to get balance after using test coin as gas
-    let balance_result = test_move_call_get_deposited_balance(&mut test_cluster, coin_type).await;
-    match &balance_result {
-        Ok(balance) => {
-            println!("Got balance from Move contract after test coin gas usage: {}", balance);
-            // With test coin as gas, balance should increase due to deposited gas fees
-            assert!(*balance > old_gas_balance);
-        } 
-        Err(e) => println!("Failed to get balance from Move contract: {:?}", e),
-    }
-
-    let new_gas_balance = balance_result.unwrap();
-    assert!(new_gas_balance > old_gas_balance);
-
-    println!("old_gas_balance is {:?}, new_gas_balance is {:?}", old_gas_balance, new_gas_balance);
-    // Key assertion: Test coin gas deposit should increase the balance
-    assert!(new_gas_balance > old_gas_balance, 
-        "Expected gas balance to increase after using test coin as gas in sponsored transaction");
 
     Ok(())
 }

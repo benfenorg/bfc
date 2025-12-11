@@ -1327,6 +1327,45 @@ vdf_verify
 vdf_verify_internal
 	fun
 	0x2::vdf
+Url
+	public struct
+	0x2::url
+new_unsafe
+	public fun
+	0x2::url
+new_unsafe_from_bytes
+	public fun
+	0x2::url
+inner_url
+	public fun
+	0x2::url
+update
+	public fun
+	0x2::url
+TxContext
+	public struct
+	0x2::tx_context
+sender
+	public fun
+	0x2::tx_context
+digest
+	public fun
+	0x2::tx_context
+epoch
+	public fun
+	0x2::tx_context
+epoch_timestamp_ms
+	public fun
+	0x2::tx_context
+fresh_object_address
+	public fun
+	0x2::tx_context
+ids_created
+	fun
+	0x2::tx_context
+derive_id
+	fun
+	0x2::tx_context
 encode
 	public fun
 	0x2::hex
@@ -1366,30 +1405,6 @@ length
 max
 	public fun
 	0x2::address
-TxContext
-	public struct
-	0x2::tx_context
-sender
-	public fun
-	0x2::tx_context
-digest
-	public fun
-	0x2::tx_context
-epoch
-	public fun
-	0x2::tx_context
-epoch_timestamp_ms
-	public fun
-	0x2::tx_context
-fresh_object_address
-	public fun
-	0x2::tx_context
-ids_created
-	fun
-	0x2::tx_context
-derive_id
-	fun
-	0x2::tx_context
 ID
 	public struct
 	0x2::object
@@ -1421,6 +1436,9 @@ authenticator_state
 	public(package) fun
 	0x2::object
 randomness_state
+	public(package) fun
+	0x2::object
+anonymous_state_id
 	public(package) fun
 	0x2::object
 sui_deny_list_object_id
@@ -1513,6 +1531,48 @@ transfer_impl
 receive_impl
 	fun
 	0x2::transfer
+is_one_time_witness
+	public fun
+	0x2::types
+VecSet
+	public struct
+	0x2::vec_set
+empty
+	public fun
+	0x2::vec_set
+singleton
+	public fun
+	0x2::vec_set
+insert
+	public fun
+	0x2::vec_set
+remove
+	public fun
+	0x2::vec_set
+contains
+	public fun
+	0x2::vec_set
+size
+	public fun
+	0x2::vec_set
+is_empty
+	public fun
+	0x2::vec_set
+into_keys
+	public fun
+	0x2::vec_set
+from_keys
+	public fun
+	0x2::vec_set
+keys
+	public fun
+	0x2::vec_set
+get_idx_opt
+	fun
+	0x2::vec_set
+get_idx
+	fun
+	0x2::vec_set
 Field
 	public struct
 	0x2::dynamic_field
@@ -1564,285 +1624,6 @@ has_child_object
 has_child_object_with_ty
 	public(package) fun
 	0x2::dynamic_field
-AuthenticatorState
-	public struct
-	0x2::authenticator_state
-AuthenticatorStateInner
-	public struct
-	0x2::authenticator_state
-JWK
-	public struct
-	0x2::authenticator_state
-JwkId
-	public struct
-	0x2::authenticator_state
-ActiveJwk
-	public struct
-	0x2::authenticator_state
-active_jwk_equal
-	fun
-	0x2::authenticator_state
-jwk_equal
-	fun
-	0x2::authenticator_state
-jwk_id_equal
-	fun
-	0x2::authenticator_state
-string_bytes_lt
-	fun
-	0x2::authenticator_state
-jwk_lt
-	fun
-	0x2::authenticator_state
-create
-	fun
-	0x2::authenticator_state
-load_inner_mut
-	fun
-	0x2::authenticator_state
-load_inner
-	fun
-	0x2::authenticator_state
-check_sorted
-	fun
-	0x2::authenticator_state
-update_authenticator_state
-	fun
-	0x2::authenticator_state
-deduplicate
-	fun
-	0x2::authenticator_state
-expire_jwks
-	fun
-	0x2::authenticator_state
-get_active_jwks
-	fun
-	0x2::authenticator_state
-Bag
-	public struct
-	0x2::bag
-new
-	public fun
-	0x2::bag
-add
-	public fun
-	0x2::bag
-borrow
-	public fun
-	0x2::bag
-borrow_mut
-	public fun
-	0x2::bag
-remove
-	public fun
-	0x2::bag
-contains
-	public fun
-	0x2::bag
-contains_with_type
-	public fun
-	0x2::bag
-length
-	public fun
-	0x2::bag
-is_empty
-	public fun
-	0x2::bag
-destroy_empty
-	public fun
-	0x2::bag
-Supply
-	public struct
-	0x2::balance
-Balance
-	public struct
-	0x2::balance
-value
-	public fun
-	0x2::balance
-supply_value
-	public fun
-	0x2::balance
-create_supply
-	public fun
-	0x2::balance
-increase_supply
-	public fun
-	0x2::balance
-decrease_supply
-	public fun
-	0x2::balance
-zero
-	public fun
-	0x2::balance
-join
-	public fun
-	0x2::balance
-split
-	public fun
-	0x2::balance
-withdraw_all
-	public fun
-	0x2::balance
-destroy_zero
-	public fun
-	0x2::balance
-create_staking_rewards
-	fun
-	0x2::balance
-destroy_storage_rebates
-	fun
-	0x2::balance
-destroy_supply
-	public(package) fun
-	0x2::balance
-BCS
-	public struct
-	0x2::bcs
-to_bytes
-	public fun
-	0x2::bcs
-new
-	public fun
-	0x2::bcs
-into_remainder_bytes
-	public fun
-	0x2::bcs
-peel_address
-	public fun
-	0x2::bcs
-peel_bool
-	public fun
-	0x2::bcs
-peel_u8
-	public fun
-	0x2::bcs
-peel_u16
-	public fun
-	0x2::bcs
-peel_u32
-	public fun
-	0x2::bcs
-peel_u64
-	public fun
-	0x2::bcs
-peel_u128
-	public fun
-	0x2::bcs
-peel_u256
-	public fun
-	0x2::bcs
-peel_vec_length
-	public fun
-	0x2::bcs
-peel_vec_address
-	public fun
-	0x2::bcs
-peel_vec_bool
-	public fun
-	0x2::bcs
-peel_vec_u8
-	public fun
-	0x2::bcs
-peel_vec_vec_u8
-	public fun
-	0x2::bcs
-peel_vec_u16
-	public fun
-	0x2::bcs
-peel_vec_u32
-	public fun
-	0x2::bcs
-peel_vec_u64
-	public fun
-	0x2::bcs
-peel_vec_u128
-	public fun
-	0x2::bcs
-peel_vec_u256
-	public fun
-	0x2::bcs
-peel_option_address
-	public fun
-	0x2::bcs
-peel_option_bool
-	public fun
-	0x2::bcs
-peel_option_u8
-	public fun
-	0x2::bcs
-peel_option_u16
-	public fun
-	0x2::bcs
-peel_option_u32
-	public fun
-	0x2::bcs
-peel_option_u64
-	public fun
-	0x2::bcs
-peel_option_u128
-	public fun
-	0x2::bcs
-peel_option_u256
-	public fun
-	0x2::bcs
-Url
-	public struct
-	0x2::url
-new_unsafe
-	public fun
-	0x2::url
-new_unsafe_from_bytes
-	public fun
-	0x2::url
-inner_url
-	public fun
-	0x2::url
-update
-	public fun
-	0x2::url
-is_one_time_witness
-	public fun
-	0x2::types
-VecSet
-	public struct
-	0x2::vec_set
-empty
-	public fun
-	0x2::vec_set
-singleton
-	public fun
-	0x2::vec_set
-insert
-	public fun
-	0x2::vec_set
-remove
-	public fun
-	0x2::vec_set
-contains
-	public fun
-	0x2::vec_set
-size
-	public fun
-	0x2::vec_set
-is_empty
-	public fun
-	0x2::vec_set
-into_keys
-	public fun
-	0x2::vec_set
-from_keys
-	public fun
-	0x2::vec_set
-keys
-	public fun
-	0x2::vec_set
-get_idx_opt
-	fun
-	0x2::vec_set
-get_idx
-	fun
-	0x2::vec_set
 Table
 	public struct
 	0x2::table
@@ -1960,6 +1741,39 @@ read_setting
 read_setting_impl
 	fun
 	0x2::config
+Bag
+	public struct
+	0x2::bag
+new
+	public fun
+	0x2::bag
+add
+	public fun
+	0x2::bag
+borrow
+	public fun
+	0x2::bag
+borrow_mut
+	public fun
+	0x2::bag
+remove
+	public fun
+	0x2::bag
+contains
+	public fun
+	0x2::bag
+contains_with_type
+	public fun
+	0x2::bag
+length
+	public fun
+	0x2::bag
+is_empty
+	public fun
+	0x2::bag
+destroy_empty
+	public fun
+	0x2::bag
 DenyList
 	public struct
 	0x2::deny_list
@@ -2044,6 +1858,51 @@ create
 per_type_list
 	fun
 	0x2::deny_list
+Supply
+	public struct
+	0x2::balance
+Balance
+	public struct
+	0x2::balance
+value
+	public fun
+	0x2::balance
+supply_value
+	public fun
+	0x2::balance
+create_supply
+	public fun
+	0x2::balance
+increase_supply
+	public fun
+	0x2::balance
+decrease_supply
+	public fun
+	0x2::balance
+zero
+	public fun
+	0x2::balance
+join
+	public fun
+	0x2::balance
+split
+	public fun
+	0x2::balance
+withdraw_all
+	public fun
+	0x2::balance
+destroy_zero
+	public fun
+	0x2::balance
+create_staking_rewards
+	fun
+	0x2::balance
+destroy_storage_rebates
+	fun
+	0x2::balance
+destroy_supply
+	public(package) fun
+	0x2::balance
 Coin
 	public struct
 	0x2::coin
@@ -2200,6 +2059,471 @@ deny_list_remove
 deny_list_contains
 	public fun
 	0x2::coin
+hfe_ops_add
+	public fun
+	0x2::hfe_ops
+hfe_ops_minus
+	public fun
+	0x2::hfe_ops
+hfe_ops_multiplied
+	public fun
+	0x2::hfe_ops
+hfe_ops_compare_value
+	public fun
+	0x2::hfe_ops
+hfe_ops_compare_value1_and_value2
+	public fun
+	0x2::hfe_ops
+hfe_ops_encode_data
+	public fun
+	0x2::hfe_ops
+Supply
+	public struct
+	0x2::anonymous_balance
+Anonymous_Balance
+	public struct
+	0x2::anonymous_balance
+create_by_value
+	public fun
+	0x2::anonymous_balance
+create_by_value1_and_value2
+	public fun
+	0x2::anonymous_balance
+value1
+	public fun
+	0x2::anonymous_balance
+value2
+	public fun
+	0x2::anonymous_balance
+get_encode_data
+	public fun
+	0x2::anonymous_balance
+supply_value
+	public fun
+	0x2::anonymous_balance
+create_supply
+	public fun
+	0x2::anonymous_balance
+increase_supply
+	public fun
+	0x2::anonymous_balance
+zero
+	public fun
+	0x2::anonymous_balance
+update_encode_data
+	fun
+	0x2::anonymous_balance
+join
+	public fun
+	0x2::anonymous_balance
+compare
+	public fun
+	0x2::anonymous_balance
+split
+	public fun
+	0x2::anonymous_balance
+split_anonymous
+	public fun
+	0x2::anonymous_balance
+destroy_zero
+	public fun
+	0x2::anonymous_balance
+destroy_supply
+	public fun
+	0x2::anonymous_balance
+Anonymous_Coin
+	public struct
+	0x2::anonymous_coin
+SwapPool
+	public struct
+	0x2::anonymous_coin
+CoinMetadata
+	public struct
+	0x2::anonymous_coin
+RegulatedCoinMetadata
+	public struct
+	0x2::anonymous_coin
+TreasuryCap
+	public struct
+	0x2::anonymous_coin
+DenyCapV2
+	public struct
+	0x2::anonymous_coin
+CurrencyCreated
+	public struct
+	0x2::anonymous_coin
+DenyCap
+	public struct
+	0x2::anonymous_coin
+bind_swap_pool
+	public entry fun
+	0x2::anonymous_coin
+swap_out_with_amount
+	public entry fun
+	0x2::anonymous_coin
+swap_in
+	public entry fun
+	0x2::anonymous_coin
+total_supply
+	public fun
+	0x2::anonymous_coin
+treasury_into_supply
+	public fun
+	0x2::anonymous_coin
+supply_immut
+	public fun
+	0x2::anonymous_coin
+supply_mut
+	public fun
+	0x2::anonymous_coin
+balance
+	public fun
+	0x2::anonymous_coin
+balance_mut
+	public fun
+	0x2::anonymous_coin
+from_balance
+	public fun
+	0x2::anonymous_coin
+into_balance
+	public fun
+	0x2::anonymous_coin
+take_anonymous
+	public fun
+	0x2::anonymous_coin
+take
+	public fun
+	0x2::anonymous_coin
+put
+	public fun
+	0x2::anonymous_coin
+join
+	public entry fun
+	0x2::anonymous_coin
+split
+	public fun
+	0x2::anonymous_coin
+split_anonymous
+	public fun
+	0x2::anonymous_coin
+compare
+	public fun
+	0x2::anonymous_coin
+zero
+	public fun
+	0x2::anonymous_coin
+destry_zero
+	public fun
+	0x2::anonymous_coin
+create_currency
+	public fun
+	0x2::anonymous_coin
+create_regulated_currency_v2
+	public fun
+	0x2::anonymous_coin
+migrate_regulated_currency_to_v2
+	public fun
+	0x2::anonymous_coin
+mint
+	public fun
+	0x2::anonymous_coin
+mint_balance
+	public fun
+	0x2::anonymous_coin
+deny_list_v2_add
+	public fun
+	0x2::anonymous_coin
+deny_list_v2_remove
+	public fun
+	0x2::anonymous_coin
+deny_list_v2_contains_current_epoch
+	public fun
+	0x2::anonymous_coin
+deny_list_v2_contains_next_epoch
+	public fun
+	0x2::anonymous_coin
+deny_list_v2_enable_global_pause
+	public fun
+	0x2::anonymous_coin
+deny_list_v2_disable_global_pause
+	public fun
+	0x2::anonymous_coin
+deny_list_v2_is_global_pause_enabled_current_epoch
+	public fun
+	0x2::anonymous_coin
+deny_list_v2_is_global_pause_enabled_next_epoch
+	public fun
+	0x2::anonymous_coin
+mint_and_transfer
+	public entry fun
+	0x2::anonymous_coin
+update_name
+	public entry fun
+	0x2::anonymous_coin
+update_symbol
+	public entry fun
+	0x2::anonymous_coin
+update_description
+	public entry fun
+	0x2::anonymous_coin
+update_icon_url
+	public entry fun
+	0x2::anonymous_coin
+get_decimals
+	public fun
+	0x2::anonymous_coin
+get_name
+	public fun
+	0x2::anonymous_coin
+get_symbol
+	public fun
+	0x2::anonymous_coin
+get_description
+	public fun
+	0x2::anonymous_coin
+get_icon_url
+	public fun
+	0x2::anonymous_coin
+supply
+	public fun
+	0x2::anonymous_coin
+create_regulated_currency
+	public fun
+	0x2::anonymous_coin
+deny_list_add
+	public fun
+	0x2::anonymous_coin
+deny_list_remove
+	public fun
+	0x2::anonymous_coin
+deny_list_contains
+	public fun
+	0x2::anonymous_coin
+ABFC
+	public struct
+	0x2::abfc
+new
+	fun
+	0x2::abfc
+transfer
+	public entry fun
+	0x2::abfc
+Versioned
+	public struct
+	0x2::versioned
+VersionChangeCap
+	public struct
+	0x2::versioned
+create
+	public fun
+	0x2::versioned
+version
+	public fun
+	0x2::versioned
+load_value
+	public fun
+	0x2::versioned
+load_value_mut
+	public fun
+	0x2::versioned
+remove_value_for_upgrade
+	public fun
+	0x2::versioned
+upgrade
+	public fun
+	0x2::versioned
+destroy
+	public fun
+	0x2::versioned
+Anonymous
+	public struct
+	0x2::anonymous
+AnonymousInner
+	public struct
+	0x2::anonymous
+create
+	fun
+	0x2::anonymous
+load_inner_mut
+	fun
+	0x2::anonymous
+load_inner
+	fun
+	0x2::anonymous
+update_annoymous_state
+	fun
+	0x2::anonymous
+keep
+	public fun
+	0x2::anonymous_pay
+split
+	public entry fun
+	0x2::anonymous_pay
+split_anonymous
+	public entry fun
+	0x2::anonymous_pay
+split_and_transfer_anonymous
+	public entry fun
+	0x2::anonymous_pay
+join
+	public entry fun
+	0x2::anonymous_pay
+join_vec
+	public entry fun
+	0x2::anonymous_pay
+join_vec_and_transfer
+	public entry fun
+	0x2::anonymous_pay
+split_vec
+	public entry fun
+	0x2::anonymous_pay
+split_and_transfer
+	public entry fun
+	0x2::anonymous_pay
+AuthenticatorState
+	public struct
+	0x2::authenticator_state
+AuthenticatorStateInner
+	public struct
+	0x2::authenticator_state
+JWK
+	public struct
+	0x2::authenticator_state
+JwkId
+	public struct
+	0x2::authenticator_state
+ActiveJwk
+	public struct
+	0x2::authenticator_state
+active_jwk_equal
+	fun
+	0x2::authenticator_state
+jwk_equal
+	fun
+	0x2::authenticator_state
+jwk_id_equal
+	fun
+	0x2::authenticator_state
+string_bytes_lt
+	fun
+	0x2::authenticator_state
+jwk_lt
+	fun
+	0x2::authenticator_state
+create
+	fun
+	0x2::authenticator_state
+load_inner_mut
+	fun
+	0x2::authenticator_state
+load_inner
+	fun
+	0x2::authenticator_state
+check_sorted
+	fun
+	0x2::authenticator_state
+update_authenticator_state
+	fun
+	0x2::authenticator_state
+deduplicate
+	fun
+	0x2::authenticator_state
+expire_jwks
+	fun
+	0x2::authenticator_state
+get_active_jwks
+	fun
+	0x2::authenticator_state
+BCS
+	public struct
+	0x2::bcs
+to_bytes
+	public fun
+	0x2::bcs
+new
+	public fun
+	0x2::bcs
+into_remainder_bytes
+	public fun
+	0x2::bcs
+peel_address
+	public fun
+	0x2::bcs
+peel_bool
+	public fun
+	0x2::bcs
+peel_u8
+	public fun
+	0x2::bcs
+peel_u16
+	public fun
+	0x2::bcs
+peel_u32
+	public fun
+	0x2::bcs
+peel_u64
+	public fun
+	0x2::bcs
+peel_u128
+	public fun
+	0x2::bcs
+peel_u256
+	public fun
+	0x2::bcs
+peel_vec_length
+	public fun
+	0x2::bcs
+peel_vec_address
+	public fun
+	0x2::bcs
+peel_vec_bool
+	public fun
+	0x2::bcs
+peel_vec_u8
+	public fun
+	0x2::bcs
+peel_vec_vec_u8
+	public fun
+	0x2::bcs
+peel_vec_u16
+	public fun
+	0x2::bcs
+peel_vec_u32
+	public fun
+	0x2::bcs
+peel_vec_u64
+	public fun
+	0x2::bcs
+peel_vec_u128
+	public fun
+	0x2::bcs
+peel_vec_u256
+	public fun
+	0x2::bcs
+peel_option_address
+	public fun
+	0x2::bcs
+peel_option_bool
+	public fun
+	0x2::bcs
+peel_option_u8
+	public fun
+	0x2::bcs
+peel_option_u16
+	public fun
+	0x2::bcs
+peel_option_u32
+	public fun
+	0x2::bcs
+peel_option_u64
+	public fun
+	0x2::bcs
+peel_option_u128
+	public fun
+	0x2::bcs
+peel_option_u256
+	public fun
+	0x2::bcs
 BFC
 	public struct
 	0x2::bfc
@@ -3172,33 +3496,6 @@ max_heapify_recursive
 priorities
 	public fun
 	0x2::priority_queue
-Versioned
-	public struct
-	0x2::versioned
-VersionChangeCap
-	public struct
-	0x2::versioned
-create
-	public fun
-	0x2::versioned
-version
-	public fun
-	0x2::versioned
-load_value
-	public fun
-	0x2::versioned
-load_value_mut
-	public fun
-	0x2::versioned
-remove_value_for_upgrade
-	public fun
-	0x2::versioned
-upgrade
-	public fun
-	0x2::versioned
-destroy
-	public fun
-	0x2::versioned
 hmac_sha3_256
 	public fun
 	0x2::hmac
@@ -5434,6 +5731,9 @@ create_stake_manager_key
 unstake_manager_key
 	public entry fun
 	0xc8::bfc_system
+allocate_abfc
+	public(package) fun
+	0xc8::bfc_system
 create
 	public(package) fun
 	0xc8::bfc_system
@@ -5665,6 +5965,9 @@ has_vote
 token
 	public fun
 	0xb::message_types
+defi
+	public fun
+	0xb::message_types
 committee_blocklist
 	public fun
 	0xb::message_types
@@ -5878,6 +6181,12 @@ TokenTransferPayload
 TokenTransferPayloadV2
 	public struct
 	0xb::message
+DefiTransferOutPayload
+	public struct
+	0xb::message
+DefiTransferInPayload
+	public struct
+	0xb::message
 TokenTransferInPayload
 	public struct
 	0xb::message
@@ -5924,6 +6233,9 @@ ParsedTokenTransferMessageV2
 	public struct
 	0xb::message
 ParsedTokenTransferInMessage
+	public struct
+	0xb::message
+ParsedDefiTransferOutMessage
 	public struct
 	0xb::message
 AddTokenOnTokenList
@@ -6088,6 +6400,18 @@ create_withdraw_fee_cap
 create_add_tokens_on_sui_message
 	public fun
 	0xb::message
+create_defi_transfer_in_message
+	public fun
+	0xb::message
+create_defi_transfer_out_message
+	public fun
+	0xb::message
+extract_defi_transfer_in_payload
+	public fun
+	0xb::message
+extract_defi_transfer_out_payload
+	public fun
+	0xb::message
 create_key
 	public fun
 	0xb::message
@@ -6176,6 +6500,72 @@ token_event_idx_in
 	public fun
 	0xb::message
 token_fast_path_selector_in
+	public fun
+	0xb::message
+sender_address_defi_out
+	public fun
+	0xb::message
+target_chain_defi_out
+	public fun
+	0xb::message
+token_amount_defi_out
+	public fun
+	0xb::message
+token_tx_hash_defi_out
+	public fun
+	0xb::message
+token_event_idx_defi_out
+	public fun
+	0xb::message
+protocol_type_defi_out
+	public fun
+	0xb::message
+protocol_version_defi_out
+	public fun
+	0xb::message
+action_type_defi_out
+	public fun
+	0xb::message
+protocol_token_id_defi_out
+	public fun
+	0xb::message
+sender_address_defi_in
+	public fun
+	0xb::message
+target_chain_defi_in
+	public fun
+	0xb::message
+amount_defi_in
+	public fun
+	0xb::message
+lp_token_amount_defi_in
+	public fun
+	0xb::message
+tx_hash_defi_in
+	public fun
+	0xb::message
+event_idx_defi_in
+	public fun
+	0xb::message
+fast_path_selector_defi_in
+	public fun
+	0xb::message
+protocol_type_defi_in
+	public fun
+	0xb::message
+protocol_version_defi_in
+	public fun
+	0xb::message
+protocol_token_id_defi_in
+	public fun
+	0xb::message
+original_seq_num_defi_in
+	public fun
+	0xb::message
+principal_amount_defi_in
+	public fun
+	0xb::message
+action_type_defi_in
 	public fun
 	0xb::message
 emergency_op_type
@@ -6305,6 +6695,9 @@ to_parsed_token_transfer_message_v2
 	public fun
 	0xb::message
 to_parsed_token_transfer_in_message
+	public fun
+	0xb::message
+to_parsed_defi_transfer_out_message
 	public fun
 	0xb::message
 reverse_bytes
@@ -6646,6 +7039,78 @@ initial_transfer_limits
 update_transfer_limits
 	public(package) fun
 	0xb::limiter
+DefiProtocolConfig
+	public struct
+	0xb::defi_protocols
+DefiProtocolKey
+	public struct
+	0xb::defi_protocols
+DefiProtocolInfo
+	public struct
+	0xb::defi_protocols
+DefiProtocolEvent
+	public struct
+	0xb::defi_protocols
+borrow
+	public(package) fun
+	0xb::defi_protocols
+borrow_mut
+	public(package) fun
+	0xb::defi_protocols
+registry
+	public(package) fun
+	0xb::defi_protocols
+initial_defi_protocol
+	public(package) fun
+	0xb::defi_protocols
+add_defi_protocol
+	public(package) fun
+	0xb::defi_protocols
+delete_defi_protocol
+	public(package) fun
+	0xb::defi_protocols
+manage_fee
+	public(package) fun
+	0xb::defi_protocols
+manage_fee_v2
+	public(package) fun
+	0xb::defi_protocols
+calculate_withdraw_principal_amount
+	public(package) fun
+	0xb::defi_protocols
+new
+	public fun
+	0xb::defi_protocols
+get_protocol_info
+	public fun
+	0xb::defi_protocols
+is_valid_protocol
+	public fun
+	0xb::defi_protocols
+chain_id
+	public fun
+	0xb::defi_protocols
+protocol_type
+	public fun
+	0xb::defi_protocols
+protocol_version
+	public fun
+	0xb::defi_protocols
+protocol_token_id
+	public fun
+	0xb::defi_protocols
+fee_type
+	public fun
+	0xb::defi_protocols
+fee_rate
+	public fun
+	0xb::defi_protocols
+limit_stake_amount
+	public fun
+	0xb::defi_protocols
+limit_unstake_amount
+	public fun
+	0xb::defi_protocols
 BlocklistValidatorEvent
 	public struct
 	0xb::committee
@@ -6781,10 +7246,28 @@ Bridge
 BridgeInner
 	public struct
 	0xb::bridge
+DefiProtocolKey
+	public struct
+	0xb::bridge
+DefiHoldersKey
+	public struct
+	0xb::bridge
+DefiHolderInfo
+	public struct
+	0xb::bridge
 TokenDepositedEvent
 	public struct
 	0xb::bridge
 TokenDepositedEventV2
+	public struct
+	0xb::bridge
+DefiTransferOutEvent
+	public struct
+	0xb::bridge
+DefiTokensStakedEvent
+	public struct
+	0xb::bridge
+DefiTokensUnstakeEvent
 	public struct
 	0xb::bridge
 TokenSendBackEvent
@@ -6859,6 +7342,24 @@ init_token_list
 update_external_out_limit
 	public fun
 	0xb::bridge
+update_defi_protocol_info
+	public fun
+	0xb::bridge
+delete_defi_protocol_info
+	public fun
+	0xb::bridge
+get_defi_protocol_info_stake_limit
+	public fun
+	0xb::bridge
+get_defi_protocol_info_unstake_limit
+	public fun
+	0xb::bridge
+get_defi_protocol_info_fee_rate
+	public fun
+	0xb::bridge
+get_defi_protocol_info_fee_type
+	public fun
+	0xb::bridge
 committee_registration
 	public fun
 	0xb::bridge
@@ -6868,8 +7369,17 @@ update_node_url
 register_foreign_token
 	public fun
 	0xb::bridge
+defi_unstake_v2
+	public fun
+	0xb::bridge
 send_token
 	public fun
+	0xb::bridge
+defi_stake
+	public fun
+	0xb::bridge
+defi_stake_success
+	fun
 	0xb::bridge
 send_busd
 	public fun
@@ -6898,6 +7408,12 @@ approve_token_transfer_v2
 approve_token_transfer_in
 	public fun
 	0xb::bridge
+approve_defi_transfer_out
+	public fun
+	0xb::bridge
+approve_defi_transfer_in
+	public fun
+	0xb::bridge
 get_max_mint_busd_amount
 	public fun
 	0xb::bridge
@@ -6911,6 +7427,9 @@ claim_and_transfer_token
 	public fun
 	0xb::bridge
 claim_and_transfer_busd
+	public fun
+	0xb::bridge
+claim_and_transfer_busd_for_defi
 	public fun
 	0xb::bridge
 execute_system_message_with_ctx
@@ -6940,6 +7459,12 @@ withdraw_external_busd_coin
 withdraw_external_coin
 	public fun
 	0xb::bridge
+defi_holders_lp_token_amount_get
+	public fun
+	0xb::bridge
+defi_holders_amount_get
+	public fun
+	0xb::bridge
 get_unclaimed_bridge_fee
 	public fun
 	0xb::bridge
@@ -6952,6 +7477,9 @@ get_cross_in_fee_amount
 get_token_transfer_action_status
 	fun
 	0xb::bridge
+get_defi_transfer_action_status
+	fun
+	0xb::bridge
 get_external_token_transfer_action_status
 	fun
 	0xb::bridge
@@ -6959,6 +7487,9 @@ get_send_back_status
 	fun
 	0xb::bridge
 get_token_transfer_action_signatures
+	fun
+	0xb::bridge
+get_defi_transfer_out_action_signatures
 	fun
 	0xb::bridge
 multi_signature_passed
@@ -6983,6 +7514,15 @@ check_fast_path_limit
 	fun
 	0xb::bridge
 claim_stable_token_internal
+	fun
+	0xb::bridge
+adjust_amount_busd_out
+	fun
+	0xb::bridge
+adjust_amount_usdc_usdt_in
+	fun
+	0xb::bridge
+claim_stable_token_for_defi_internal
 	fun
 	0xb::bridge
 execute_emergency_op
@@ -7042,10 +7582,37 @@ execute_add_tokens_on_sui
 get_current_seq_num_and_increment
 	fun
 	0xb::bridge
+ensure_defi_holders_initialized
+	fun
+	0xb::bridge
+get_defi_holders_table_mut
+	fun
+	0xb::bridge
+get_defi_holders_table
+	fun
+	0xb::bridge
+defi_holders_table_exists
+	fun
+	0xb::bridge
+defi_holders_add
+	fun
+	0xb::bridge
+defi_holders_get
+	fun
+	0xb::bridge
+defi_holders_del
+	fun
+	0xb::bridge
 get_parsed_token_transfer_message
 	fun
 	0xb::bridge
 get_parsed_token_transfer_message_v2
+	fun
+	0xb::bridge
+get_parsed_defi_transfer_out_message
+	fun
+	0xb::bridge
+get_parsed_defi_transfer_message
 	fun
 	0xb::bridge
 to_bytes

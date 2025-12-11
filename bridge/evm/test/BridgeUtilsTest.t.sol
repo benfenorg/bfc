@@ -182,6 +182,23 @@ contract BridgeUtilsTest is BridgeBaseTest {
         );
     }
 
+
+    function testDecodeDefiTransferPayloadOnMove() public {
+        bytes memory payload =
+                hex"20000000000000000000000000000000000000000000000000000000000000abcd0c0000000002fa8ed800000000000000000000020000000000000001000000000000000400";
+        BridgeUtils.DefiTransferPayload memory _payload =
+            BridgeUtils.decodeDefiTransferPayload(payload);
+
+        assertEq(_payload.senderAddressLength, uint8(32));
+        assertEq(_payload.targetChain, uint8(12));
+        assertEq(_payload.protocolTokenID, BridgeUtils.USDT); 
+        assertEq(_payload.amount, uint64(49975000));
+        assertEq(_payload.protocolType, uint8(2));
+        assertEq(_payload.protocolVersion, uint8(1));
+        assertEq(_payload.actionType, uint8(0));
+
+    }
+
     function testDecodeTransferTokenPayload() public {
         // 20: sender length 1 bytes
         // 80ab1ee086210a3a37355300ca24672e81062fcdb5ced6618dab203f6a3b291c: sender 32 bytes
@@ -217,6 +234,48 @@ contract BridgeUtilsTest is BridgeBaseTest {
         assertEq(members[0], 0x68B43fD906C0B8F024a18C56e06744F7c6157c65);
         assertEq(members[1], 0xaCAEf39832CB995c4E049437A3E2eC6a7bad1Ab5);
         assertFalse(blocklisting);
+    }
+
+    function testDecodeDefiTransferPayload() public {
+        uint8 senderAddressLength = 32;
+        bytes memory senderAddress = abi.encode(0);
+        uint8 targetChain = chainID;
+        uint64 tokenID = BridgeUtils.USDC;
+        uint64 protocolType=0;
+
+        uint8 recipientAddressLength = 20;
+        address recipientAddress = bridgerA;
+        uint64 amount = 1_000_000;
+        uint16 eventIdx = 0;
+        uint64 protocolVersion=1;
+        uint64 protocolTokenID=tokenID;
+        uint8 actionType=0;
+
+        bytes memory payload = abi.encodePacked(
+            senderAddressLength,
+            senderAddress,
+            targetChain,
+            amount,
+            new bytes(0),
+            eventIdx,
+            protocolType,
+            protocolVersion,
+            protocolTokenID,
+            actionType
+        );
+
+        BridgeUtils.DefiTransferPayload memory _payload =
+            BridgeUtils.decodeDefiTransferPayload(payload);
+
+        assertEq(_payload.senderAddressLength, senderAddressLength);
+        assertEq(_payload.senderAddress, senderAddress);
+        assertEq(_payload.targetChain, targetChain);
+        assertEq(_payload.amount, amount);
+        assertEq(_payload.eventIdx, eventIdx);
+        assertEq(_payload.protocolType, protocolType);
+        assertEq(_payload.protocolVersion, protocolVersion);
+        assertEq(_payload.protocolTokenID, protocolTokenID);
+        assertEq(_payload.actionType, actionType);
     }
 
     function testDecodeUpdateLimitPayload() public {

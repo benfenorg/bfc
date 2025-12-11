@@ -82,3 +82,6 @@ test-ledger/
 test-ledger/**
 crates/sui-bridge/test-ledger/*
 crates/sui-bridge/test-ledger/**
+bridge/evm/broadcast/deploy_bridge.s.sol/12/run-*.json
+!bridge/evm/broadcast/deploy_bridge.s.sol/12/run-latest.json
+

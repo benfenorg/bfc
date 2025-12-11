@@ -1,0 +1,780 @@
+// Copyright (c) Mysten Labs, Inc.
+// SPDX-License-Identifier: Apache-2.0
+
+/// Defines the `Coin` type - platform wide representation of fungible
+/// tokens and coins. `Coin` can be described as a secure wrapper around
+/// `Balance` type.
+module sui::anonymous_coin {
+    use std::string;
+    use std::ascii;
+    use sui::anonymous_balance::{Self, Anonymous_Balance, Supply};
+    use sui::url::{Self, Url};
+    use sui::deny_list::DenyList;
+    use std::type_name;
+    use sui::coin::{Coin, Self};
+    // Allows calling `.split_vec(amounts, ctx)` on `coin`
+    public use fun sui::anonymous_pay::split_vec as Anonymous_Coin.split_vec;
+
+    // Allows calling `.join_vec(coins)` on `coin`
+    public use fun sui::anonymous_pay::join_vec as Anonymous_Coin.join_vec;
+
+    // Allows calling `.split_and_transfer(amount, recipient, ctx)` on `coin`
+    public use fun sui::anonymous_pay::split_and_transfer as Anonymous_Coin.split_and_transfer;
+
+
+    // A type passed to create_supply is not a one-time witness.
+    const EBadWitness: u64 = 0;
+    // Invalid arguments are passed to a function.
+    //const EInvalidArg: u64 = 1;
+    // Trying to split a coin more times than its balance allows.
+    const ENotEnough: u64 = 2;
+    // #[error]
+    // const EGlobalPauseNotAllowed: vector<u8> =
+    //    b"Kill switch was not allowed at the creation of the DenyCapV2";
+    const EGlobalPauseNotAllowed: u64 = 3;
+
+    // A type passed to create_supply is not a one-time witness.
+    const EBalanceNotAllowZero: u64 = 4;
+
+    /// A coin of type `T` worth `value`. Transferable and storable
+    public struct Anonymous_Coin<phantom T> has key, store {
+        id: UID,
+        balance: Anonymous_Balance<T>
+    }
+
+    #[allow(unused_field,lint(coin_field))]
+    public struct SwapPool<phantom T1, phantom T2> has store, key {
+        id: UID,
+        anonymous_coin: Anonymous_Coin<T1>,
+        normal_coin: Coin<T2>,
+        swap_rate: u64,
+        max_availalbe_normal_coin: u64,
+        //current max convert  T2 normal amount...
+    }
+
+    public entry fun bind_swap_pool<T1, T2>(anonymous_coin: Anonymous_Coin<T1>, coin: Coin<T2>, ctx: &mut TxContext) {
+        let value = coin.value();
+        transfer::share_object(SwapPool {
+            id: object::new(ctx),
+            anonymous_coin,
+            normal_coin: coin,
+            swap_rate: 1,
+            max_availalbe_normal_coin: value,
+        })
+    }
+
+
+    entry public fun swap_out_with_amount<T1, T2>(mut anonymous_coin: Anonymous_Coin<T1>,
+                                                  swap_out_amount: u64,
+                                                  swap_pool: &mut SwapPool<T1, T2>,
+                                                  ctx: &mut TxContext) {
+        assert!(swap_out_amount != 0, EBalanceNotAllowZero);
+        assert!(swap_out_amount <= swap_pool.max_availalbe_normal_coin, ENotEnough);
+        let compare_result = anonymous_coin.compare(swap_out_amount, ctx.sender());
+        let swap_out_acoin = anonymous_coin.split(swap_out_amount, ctx);
+        join(&mut swap_pool.anonymous_coin, swap_out_acoin, ctx);
+
+        if (compare_result == 0) {
+            anonymous_coin.destry_zero(ctx.sender());
+        } else {
+            transfer::public_transfer(anonymous_coin, tx_context::sender(ctx));
+        };
+
+        let normal_coin = coin::split(&mut swap_pool.normal_coin, swap_out_amount, ctx);
+        swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin - swap_out_amount;
+        transfer::public_transfer(normal_coin, tx_context::sender(ctx));
+    }
+
+    entry public fun swap_in<T1, T2>(coin: Coin<T2>, swap_pool: &mut SwapPool<T1, T2>, ctx: &mut TxContext) {
+        let value = coin::balance(&coin).value();
+        assert!(value != 0, EBalanceNotAllowZero);
+
+        coin::join(&mut swap_pool.normal_coin, coin);
+
+        swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin + value;
+
+        let anonymous_coin = split(&mut swap_pool.anonymous_coin, value, ctx);
+        transfer::public_transfer(anonymous_coin, tx_context::sender(ctx));
+    }
+
+
+    /// Each Coin type T created through `create_currency` function will have a
+    /// unique instance of CoinMetadata<T> that stores the metadata for this coin type.
+    public struct CoinMetadata<phantom T> has key, store {
+        id: UID,
+        /// Number of decimal places the coin uses.
+        /// A coin with `value ` N and `decimals` D should be shown as N / 10^D
+        /// E.g., a coin with `value` 7002 and decimals 3 should be displayed as 7.002
+        /// This is metadata for display usage only.
+        decimals: u8,
+        /// Name for the token
+        name: string::String,
+        /// Symbol for the token
+        symbol: ascii::String,
+        /// Description of the token
+        description: string::String,
+        /// URL for the token logo
+        icon_url: Option<Url>
+    }
+
+    /// Similar to CoinMetadata, but created only for regulated coins that use the DenyList.
+    /// This object is always immutable.
+    public struct RegulatedCoinMetadata<phantom T> has key {
+        id: UID,
+        /// The ID of the coin's CoinMetadata object.
+        coin_metadata_object: ID,
+        /// The ID of the coin's DenyCap object.
+        deny_cap_object: ID,
+    }
+
+    /// Capability allowing the bearer to mint and burn
+    /// coins of type `T`. Transferable
+    public struct TreasuryCap<phantom T> has key, store {
+        id: UID,
+        total_supply: Supply<T>
+    }
+
+    /// Capability allowing the bearer to deny addresses from using the currency's coins--
+    /// immediately preventing those addresses from interacting with the coin as an input to a
+    /// transaction and at the start of the next preventing them from receiving the coin.
+    /// If `allow_global_pause` is true, the bearer can enable a global pause that behaves as if
+    /// all addresses were added to the deny list.
+    public struct DenyCapV2<phantom T> has key, store {
+        id: UID,
+        allow_global_pause: bool,
+    }
+    // === Supply <-> TreasuryCap morphing and accessors  ===
+
+    /// Return the total number of `T`'s in circulation.
+    public fun total_supply<T>(cap: &TreasuryCap<T>): u64 {
+        anonymous_balance::supply_value(&cap.total_supply)
+    }
+
+    /// Unwrap `TreasuryCap` getting the `Supply`.
+    ///
+    /// Operation is irreversible. Supply cannot be converted into a `TreasuryCap` due
+    /// to different security guarantees (TreasuryCap can be created only once for a type)
+    public fun treasury_into_supply<T>(treasury: TreasuryCap<T>): Supply<T> {
+        let TreasuryCap { id, total_supply } = treasury;
+        id.delete();
+        total_supply
+    }
+
+    /// Get immutable reference to the treasury's `Supply`.
+    public fun supply_immut<T>(treasury: &TreasuryCap<T>): &Supply<T> {
+        &treasury.total_supply
+    }
+
+    /// Get mutable reference to the treasury's `Supply`.
+    public fun supply_mut<T>(treasury: &mut TreasuryCap<T>): &mut Supply<T> {
+        &mut treasury.total_supply
+    }
+
+    /// Get immutable reference to the balance of a coin.
+    public fun balance<T>(coin: &Anonymous_Coin<T>): &Anonymous_Balance<T> {
+        &coin.balance
+    }
+
+    /// Get a mutable reference to the balance of a coin.
+    public fun balance_mut<T>(coin: &mut Anonymous_Coin<T>): &mut Anonymous_Balance<T> {
+        &mut coin.balance
+    }
+
+    /// Wrap a balance into a Coin to make it transferable.
+    public fun from_balance<T>(balance: Anonymous_Balance<T>, ctx: &mut TxContext): Anonymous_Coin<T> {
+        Anonymous_Coin { id: object::new(ctx), balance }
+    }
+
+    /// Destruct a Coin wrapper and keep the balance.
+    public fun into_balance<T>(coin: Anonymous_Coin<T>): Anonymous_Balance<T> {
+        let Anonymous_Coin { id, balance } = coin;
+        id.delete();
+        balance
+    }
+
+    /// Take a `Coin` worth of `value` from `Balance`.
+    /// Aborts if `value > balance.value`
+    public fun take_anonymous<T>(
+        balance: &mut Anonymous_Balance<T>,
+        value1: vector<u8>,
+        value2: vector<u8>,
+        ctx: &mut TxContext,
+    ): Anonymous_Coin<T> {
+        Anonymous_Coin {
+            id: object::new(ctx),
+            balance: balance.split_anonymous(value1, value2, ctx.sender())
+        }
+    }
+
+    /// Take a `Coin` worth of `value` from `Balance`.
+    /// Aborts if `value > balance.value`
+    public fun take<T>(
+        balance: &mut Anonymous_Balance<T>, value: u64, ctx: &mut TxContext,
+    ): Anonymous_Coin<T> {
+
+        Anonymous_Coin {
+            id: object::new(ctx),
+            balance: balance.split(value, ctx.sender())
+        }
+    }
+
+
+    /// Put a `Coin<T>` to the `Balance<T>`.
+    public fun put<T>(balance: &mut Anonymous_Balance<T>, coin: Anonymous_Coin<T>, ctx: &mut TxContext) {
+        balance.join(into_balance(coin), ctx.sender());
+    }
+
+    // === Base Coin functionality ===
+
+    /// Consume the coin `c` and add its value to `self`.
+    /// Aborts if `c.value + self.value > U64_MAX`
+    public entry fun join<T>(self: &mut Anonymous_Coin<T>, c: Anonymous_Coin<T>, ctx: &mut TxContext) {
+        let Anonymous_Coin { id, balance } = c;
+        id.delete();
+        self.balance.join(balance, ctx.sender());
+    }
+
+    /// Split coin `self` to two coins, one with balance `split_amount`,
+    /// and the remaining balance is left is `self`.
+    public fun split<T>(
+        self: &mut Anonymous_Coin<T>, split_amount: u64, ctx: &mut TxContext
+    ): Anonymous_Coin<T> {
+        take(&mut self.balance, split_amount, ctx)
+    }
+
+    public fun split_anonymous<T>(
+        self: &mut Anonymous_Coin<T>,
+        value1: vector<u8>,
+        value2: vector<u8>,
+        ctx: &mut TxContext
+    ): Anonymous_Coin<T> {
+        take_anonymous(&mut self.balance, value1, value2, ctx)
+    }
+
+
+
+    public fun compare<T>(self: &mut Anonymous_Coin<T>, amount: u64, owner: address) : u8 {
+        self.balance.compare(amount, owner)
+    }
+
+    /// Make any Coin with a zero value. Useful for placeholding
+    /// bids/payments or preemptively making empty balances.
+    public fun zero<T>(ctx: &mut TxContext): Anonymous_Coin<T> {
+        Anonymous_Coin { id: object::new(ctx), balance: anonymous_balance::zero(ctx) }
+    }
+
+    /// Destroy a coin with value zero
+    public fun destry_zero<T>(c: Anonymous_Coin<T>, owner: address) {
+        let Anonymous_Coin { id, balance } = c;
+        id.delete();
+        balance.destroy_zero(owner)
+    }
+
+    // === Registering new coin types and managing the coin supply ===
+
+    // Create a new currency type `T` as and return the `TreasuryCap` for
+    // `T` to the caller. Can only be called with a `one-time-witness`
+    // type, ensuring that there's only one `TreasuryCap` per `T`.
+    //#[lint_warn("skip otw check....todo: open witness for annoymous_coin!!!!")]
+    public fun create_currency<T: drop>(
+        witness: T,
+        decimals: u8,
+        symbol: vector<u8>,
+        name: vector<u8>,
+        description: vector<u8>,
+        icon_url: Option<Url>,
+        ctx: &mut TxContext
+    ): (TreasuryCap<T>, CoinMetadata<T>) {
+        // Make sure there's only one instance of the type T
+        //todo: open witness for ABFC
+        assert!(sui::types::is_one_time_witness(&witness), EBadWitness);
+
+        (
+            TreasuryCap {
+                id: object::new(ctx),
+                total_supply: anonymous_balance::create_supply(witness)
+            },
+            CoinMetadata {
+                id: object::new(ctx),
+                decimals,
+                name: string::utf8(name),
+                symbol: ascii::string(symbol),
+                description: string::utf8(description),
+                icon_url
+            }
+        )
+    }
+
+
+    /// This creates a new currency, via `create_currency`, but with an extra capability that
+    /// allows for specific addresses to have their coins frozen. When an address is added to the
+    /// deny list, it is immediately unable to interact with the currency's coin as input objects.
+    /// Additionally at the start of the next epoch, they will be unable to receive the currency's
+    /// coin.
+    /// The `allow_global_pause` flag enables an additional API that will cause all addresses to be
+    /// be denied. Note however, that this doesn't affect per-address entries of the deny list and
+    /// will not change the result of the "contains" APIs.
+    public fun create_regulated_currency_v2<T: drop>(
+        witness: T,
+        decimals: u8,
+        symbol: vector<u8>,
+        name: vector<u8>,
+        description: vector<u8>,
+        icon_url: Option<Url>,
+        allow_global_pause: bool,
+        ctx: &mut TxContext,
+    ): (TreasuryCap<T>, DenyCapV2<T>, CoinMetadata<T>) {
+        let (treasury_cap, metadata) = create_currency(
+            witness,
+            decimals,
+            symbol,
+            name,
+            description,
+            icon_url,
+            ctx
+        );
+        let deny_cap = DenyCapV2 {
+            id: object::new(ctx),
+            allow_global_pause,
+        };
+        transfer::freeze_object(RegulatedCoinMetadata<T> {
+            id: object::new(ctx),
+            coin_metadata_object: object::id(&metadata),
+            deny_cap_object: object::id(&deny_cap),
+        });
+        (treasury_cap, deny_cap, metadata)
+    }
+
+    /// Given the `DenyCap` for a regulated currency, migrate it to the new `DenyCapV2` type.
+    /// All entries in the deny list will be migrated to the new format.
+    /// See `create_regulated_currency_v2` for details on the new v2 of the deny list.
+    public fun migrate_regulated_currency_to_v2<T>(
+        deny_list: &mut DenyList,
+        cap: DenyCap<T>,
+        allow_global_pause: bool,
+        ctx: &mut TxContext,
+    ): DenyCapV2<T> {
+        let DenyCap { id } = cap;
+        object::delete(id);
+        let ty = type_name::get_with_original_ids<T>().into_string().into_bytes();
+        deny_list.migrate_v1_to_v2(DENY_LIST_COIN_INDEX, ty, ctx);
+        DenyCapV2 {
+            id: object::new(ctx),
+            allow_global_pause,
+        }
+    }
+
+    /// Create a coin worth `value` and increase the total supply
+    /// in `cap` accordingly.
+    public fun mint<T>(
+        cap: &mut TreasuryCap<T>, value: u64, ctx: &mut TxContext,
+    ): Anonymous_Coin<T> {
+        Anonymous_Coin {
+            id: object::new(ctx),
+            balance: cap.total_supply.increase_supply(value, ctx)
+        }
+    }
+
+    /// Mint some amount of T as a `Balance` and increase the total
+    /// supply in `cap` accordingly.
+    /// Aborts if `value` + `cap.total_supply` >= U64_MAX
+    public fun mint_balance<T>(
+        cap: &mut TreasuryCap<T>, value: u64, ctx: &mut TxContext
+    ): Anonymous_Balance<T> {
+        cap.total_supply.increase_supply(value, ctx)
+    }
+
+    // /// Destroy the coin `c` and decrease the total supply in `cap`
+    // /// accordingly.
+    // public entry fun burn<T>(
+    //     cap: &mut TreasuryCap<T>,
+    //     c: Anonymous_Coin<T>,
+    //     signatures: vector<u8>,
+    //     anonymous_coin_id: address,
+    //     publickey: vector<u8>,
+    //     ctx: &mut TxContext,
+    // ): u64 {
+    //     let Anonymous_Coin { id, balance } = c;
+    //     id.delete();
+    //     cap.total_supply.decrease_supply(balance, signatures, anonymous_coin_id, publickey, ctx.sender())
+    // }
+
+    /// Adds the given address to the deny list, preventing it from interacting with the specified
+    /// coin type as an input to a transaction. Additionally at the start of the next epoch, the
+    /// address will be unable to receive objects of this coin type.
+    public fun deny_list_v2_add<T>(
+        deny_list: &mut DenyList,
+        _deny_cap: &mut DenyCapV2<T>,
+        addr: address,
+        ctx: &mut TxContext,
+    ) {
+        let ty = type_name::get_with_original_ids<T>().into_string().into_bytes();
+        deny_list.v2_add(DENY_LIST_COIN_INDEX, ty, addr, ctx)
+    }
+
+    /// Removes an address from the deny list. Similar to `deny_list_v2_add`, the effect for input
+    /// objects will be immediate, but the effect for receiving objects will be delayed until the
+    /// next epoch.
+    public fun deny_list_v2_remove<T>(
+        deny_list: &mut DenyList,
+        _deny_cap: &mut DenyCapV2<T>,
+        addr: address,
+        ctx: &mut TxContext,
+    ) {
+        let ty = type_name::get_with_original_ids<T>().into_string().into_bytes();
+        deny_list.v2_remove(DENY_LIST_COIN_INDEX, ty, addr, ctx)
+    }
+
+    /// Check if the deny list contains the given address for the current epoch. Denied addresses
+    /// in the current epoch will be unable to receive objects of this coin type.
+    public fun deny_list_v2_contains_current_epoch<T>(
+        deny_list: &DenyList,
+        addr: address,
+        ctx: &TxContext,
+    ): bool {
+        let ty = type_name::get_with_original_ids<T>().into_string().into_bytes();
+        deny_list.v2_contains_current_epoch(DENY_LIST_COIN_INDEX, ty, addr, ctx)
+    }
+
+    /// Check if the deny list contains the given address for the next epoch. Denied addresses in
+    /// the next epoch will immediately be unable to use objects of this coin type as inputs. At the
+    /// start of the next epoch, the address will be unable to receive objects of this coin type.
+    public fun deny_list_v2_contains_next_epoch<T>(
+        deny_list: &DenyList,
+        addr: address,
+    ): bool {
+        let ty = type_name::get_with_original_ids<T>().into_string().into_bytes();
+        deny_list.v2_contains_next_epoch(DENY_LIST_COIN_INDEX, ty, addr)
+    }
+
+    /// Enable the global pause for the given coin type. This will immediately prevent all addresses
+    /// from using objects of this coin type as inputs. At the start of the next epoch, all
+    /// addresses will be unable to receive objects of this coin type.
+    #[allow(unused_mut_parameter)]
+    public fun deny_list_v2_enable_global_pause<T>(
+        deny_list: &mut DenyList,
+        deny_cap: &mut DenyCapV2<T>,
+        ctx: &mut TxContext,
+    ) {
+        assert!(deny_cap.allow_global_pause, EGlobalPauseNotAllowed);
+        let ty = type_name::get_with_original_ids<T>().into_string().into_bytes();
+        deny_list.v2_enable_global_pause(DENY_LIST_COIN_INDEX, ty, ctx)
+    }
+
+    /// Disable the global pause for the given coin type. This will immediately allow all addresses
+    /// to resume using objects of this coin type as inputs. However, receiving objects of this coin
+    /// type will still be paused until the start of the next epoch.
+    #[allow(unused_mut_parameter)]
+    public fun deny_list_v2_disable_global_pause<T>(
+        deny_list: &mut DenyList,
+        deny_cap: &mut DenyCapV2<T>,
+        ctx: &mut TxContext,
+    ) {
+        assert!(deny_cap.allow_global_pause, EGlobalPauseNotAllowed);
+        let ty = type_name::get_with_original_ids<T>().into_string().into_bytes();
+        deny_list.v2_disable_global_pause(DENY_LIST_COIN_INDEX, ty, ctx)
+    }
+
+    /// Check if the global pause is enabled for the given coin type in the current epoch.
+    public fun deny_list_v2_is_global_pause_enabled_current_epoch<T>(
+        deny_list: &DenyList,
+        ctx: &TxContext,
+    ): bool {
+        let ty = type_name::get_with_original_ids<T>().into_string().into_bytes();
+        deny_list.v2_is_global_pause_enabled_current_epoch(DENY_LIST_COIN_INDEX, ty, ctx)
+    }
+
+    /// Check if the global pause is enabled for the given coin type in the next epoch.
+    public fun deny_list_v2_is_global_pause_enabled_next_epoch<T>(
+        deny_list: &DenyList,
+    ): bool {
+        let ty = type_name::get_with_original_ids<T>().into_string().into_bytes();
+        deny_list.v2_is_global_pause_enabled_next_epoch(DENY_LIST_COIN_INDEX, ty)
+    }
+
+    // === Entrypoints ===
+
+    /// Mint `amount` of `Coin` and send it to `recipient`. Invokes `mint()`.
+    public entry fun mint_and_transfer<T>(
+        c: &mut TreasuryCap<T>, amount: u64, recipient: address, ctx: &mut TxContext
+    ) {
+        transfer::public_transfer(mint(c, amount, ctx), recipient)
+    }
+
+    // === Update coin metadata ===
+
+    /// Update name of the coin in `CoinMetadata`
+    public entry fun update_name<T>(
+        _treasury: &TreasuryCap<T>, metadata: &mut CoinMetadata<T>, name: string::String
+    ) {
+        metadata.name = name;
+    }
+
+    /// Update the symbol of the coin in `CoinMetadata`
+    public entry fun update_symbol<T>(
+        _treasury: &TreasuryCap<T>, metadata: &mut CoinMetadata<T>, symbol: ascii::String
+    ) {
+        metadata.symbol = symbol;
+    }
+
+    /// Update the description of the coin in `CoinMetadata`
+    public entry fun update_description<T>(
+        _treasury: &TreasuryCap<T>, metadata: &mut CoinMetadata<T>, description: string::String
+    ) {
+        metadata.description = description;
+    }
+
+    /// Update the url of the coin in `CoinMetadata`
+    public entry fun update_icon_url<T>(
+        _treasury: &TreasuryCap<T>, metadata: &mut CoinMetadata<T>, url: ascii::String
+    ) {
+        metadata.icon_url = option::some(url::new_unsafe(url));
+    }
+
+    // === Get coin metadata fields for on-chain consumption ===
+
+    public fun get_decimals<T>(metadata: &CoinMetadata<T>): u8 {
+        metadata.decimals
+    }
+
+    public fun get_name<T>(metadata: &CoinMetadata<T>): string::String {
+        metadata.name
+    }
+
+    public fun get_symbol<T>(metadata: &CoinMetadata<T>): ascii::String {
+        metadata.symbol
+    }
+
+    public fun get_description<T>(metadata: &CoinMetadata<T>): string::String {
+        metadata.description
+    }
+
+    public fun get_icon_url<T>(metadata: &CoinMetadata<T>): Option<Url> {
+        metadata.icon_url
+    }
+
+    // === Test-only code ===
+
+    #[test_only]
+    /// Mint coins of any type for (obviously!) testing purposes only
+    public fun mint_for_testing<T>(value: u64, ctx: &mut TxContext): Anonymous_Coin<T> {
+        Anonymous_Coin { id: object::new(ctx), balance: anonymous_balance::create_for_testing(value, ctx.sender()) }
+    }
+
+    #[test_only]
+    /// Burn coins of any type for testing purposes only
+    public fun burn_for_testing<T>(coin: Anonymous_Coin<T>) {
+        let Anonymous_Coin { id, balance } = coin;
+        id.delete();
+        balance.destroy_for_testing()
+    }
+
+    #[test_only]
+    /// Create a `TreasuryCap` for any `Coin` for testing purposes.
+    public fun create_treasury_cap_for_testing<T>(
+        ctx: &mut TxContext
+    ): TreasuryCap<T> {
+        TreasuryCap {
+            id: object::new(ctx),
+            total_supply: anonymous_balance::create_supply_for_testing()
+        }
+    }
+
+    #[test_only]
+    public fun create_currency_for_testing<T: drop>(
+        witness: T,
+        decimals: u8,
+        symbol: vector<u8>,
+        name: vector<u8>,
+        description: vector<u8>,
+        icon_url: Option<Url>,
+        ctx: &mut TxContext
+    ): (TreasuryCap<T>, CoinMetadata<T>) {
+        (
+            TreasuryCap {
+                id: object::new(ctx),
+                total_supply: anonymous_balance::create_supply(witness)
+            },
+            CoinMetadata {
+                id: object::new(ctx),
+                decimals,
+                name: string::utf8(name),
+                symbol: ascii::string(symbol),
+                description: string::utf8(description),
+                icon_url
+            }
+        )
+    }
+    
+    #[test_only]
+    public fun create_regulated_currency_for_testing<T: drop>(
+        witness: T,
+        decimals: u8,
+        symbol: vector<u8>,
+        name: vector<u8>,
+        description: vector<u8>,
+        icon_url: Option<Url>,
+        ctx: &mut TxContext
+    ): (TreasuryCap<T>, DenyCap<T>, CoinMetadata<T>) {
+        let (treasury_cap, metadata) = create_currency_for_testing(
+            witness,
+            decimals,
+            symbol,
+            name,
+            description,
+            icon_url,
+            ctx
+        );
+        let deny_cap = DenyCap {
+            id: object::new(ctx),
+        };
+        transfer::freeze_object(RegulatedCoinMetadata<T> {
+            id: object::new(ctx),
+            coin_metadata_object: object::id(&metadata),
+            deny_cap_object: object::id(&deny_cap),
+        });
+        (treasury_cap, deny_cap, metadata)
+    }
+
+    #[test_only]
+    public fun create_regulated_currency_v2_for_testing<T: drop>(
+        witness: T,
+        decimals: u8,
+        symbol: vector<u8>,
+        name: vector<u8>,
+        description: vector<u8>,
+        icon_url: Option<Url>,
+        allow_global_pause: bool,
+        ctx: &mut TxContext,
+    ): (TreasuryCap<T>, DenyCapV2<T>, CoinMetadata<T>) {
+        let (treasury_cap, metadata) = create_currency_for_testing(
+            witness,
+            decimals,
+            symbol,
+            name,
+            description,
+            icon_url,
+            ctx
+        );
+        let deny_cap = DenyCapV2 {
+            id: object::new(ctx),
+            allow_global_pause,
+        };
+        transfer::freeze_object(RegulatedCoinMetadata<T> {
+            id: object::new(ctx),
+            coin_metadata_object: object::id(&metadata),
+            deny_cap_object: object::id(&deny_cap),
+        });
+        (treasury_cap, deny_cap, metadata)
+    }
+
+    // === Deprecated code ===
+
+    // oops, wanted treasury: &TreasuryCap<T>
+    public fun supply<T>(treasury: &mut TreasuryCap<T>): &Supply<T> {
+        &treasury.total_supply
+    }
+
+    // deprecated as we have CoinMetadata now
+    #[allow(unused_field)]
+    public struct CurrencyCreated<phantom T> has copy, drop {
+        decimals: u8
+    }
+
+    /// Capability allowing the bearer to freeze addresses, preventing those addresses from
+    /// interacting with the coin as an input to a transaction.
+    public struct DenyCap<phantom T> has key, store {
+        id: UID,
+    }
+
+    /// This creates a new currency, via `create_currency`, but with an extra capability that
+    /// allows for specific addresses to have their coins frozen. Those addresses cannot interact
+    /// with the coin as input objects.
+    #[deprecated(
+        note = b"For new coins, use `create_regulated_currency_v2`. To migrate existing regulated currencies, migrate with `migrate_regulated_currency_to_v2`"
+    )]
+    public fun create_regulated_currency<T: drop>(
+        witness: T,
+        decimals: u8,
+        symbol: vector<u8>,
+        name: vector<u8>,
+        description: vector<u8>,
+        icon_url: Option<Url>,
+        ctx: &mut TxContext
+    ): (TreasuryCap<T>, DenyCap<T>, CoinMetadata<T>) {
+        let (treasury_cap, metadata) = create_currency(
+            witness,
+            decimals,
+            symbol,
+            name,
+            description,
+            icon_url,
+            ctx
+        );
+        let deny_cap = DenyCap {
+            id: object::new(ctx),
+        };
+        transfer::freeze_object(RegulatedCoinMetadata<T> {
+            id: object::new(ctx),
+            coin_metadata_object: object::id(&metadata),
+            deny_cap_object: object::id(&deny_cap),
+        });
+        (treasury_cap, deny_cap, metadata)
+    }
+
+
+    /// The index into the deny list vector for the `sui::coin::Coin` type.
+    const DENY_LIST_COIN_INDEX: u64 = 0; // TODO public(package) const
+
+    /// Adds the given address to the deny list, preventing it
+    /// from interacting with the specified coin type as an input to a transaction.
+    #[deprecated(note = b"Use `migrate_regulated_currency_to_v2` to migrate to v2 and then use `deny_list_v2_add`")]
+    public fun deny_list_add<T>(
+        deny_list: &mut DenyList,
+        _deny_cap: &mut DenyCap<T>,
+        addr: address,
+        _ctx: &mut TxContext
+    ) {
+        let `type` =
+            type_name::into_string(type_name::get_with_original_ids<T>()).into_bytes();
+        deny_list.v1_add(
+            DENY_LIST_COIN_INDEX,
+            `type`,
+            addr,
+        )
+    }
+
+    /// Removes an address from the deny list.
+    /// Aborts with `ENotFrozen` if the address is not already in the list.
+    #[deprecated(note = b"Use `migrate_regulated_currency_to_v2` to migrate to v2 and then use `deny_list_v2_remove`")]
+    public fun deny_list_remove<T>(
+        deny_list: &mut DenyList,
+        _deny_cap: &mut DenyCap<T>,
+        addr: address,
+        _ctx: &mut TxContext
+    ) {
+        let `type` =
+            type_name::into_string(type_name::get_with_original_ids<T>()).into_bytes();
+        deny_list.v1_remove(
+            DENY_LIST_COIN_INDEX,
+            `type`,
+            addr,
+        )
+    }
+
+    /// Returns true iff the given address is denied for the given coin type. It will
+    /// return false if given a non-coin type.
+    #[deprecated(
+        note = b"Use `migrate_regulated_currency_to_v2` to migrate to v2 and then use `deny_list_v2_contains_next_epoch` or `deny_list_v2_contains_current_epoch`"
+    )]
+    public fun deny_list_contains<T>(
+        deny_list: &DenyList,
+        addr: address,
+    ): bool {
+        let name = type_name::get_with_original_ids<T>();
+        if (type_name::is_primitive(&name)) return false;
+
+        let `type` = type_name::into_string(name).into_bytes();
+        deny_list.v1_contains(DENY_LIST_COIN_INDEX, `type`, addr)
+    }
+}

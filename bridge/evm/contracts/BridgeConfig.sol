@@ -17,6 +17,11 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
     mapping(uint64 tokenID => uint64 tokenPrice) public tokenPrices;
     mapping(uint8 chainId => bool isSupported) public supportedChains;
 
+    //invest info
+    //protocolType => tokenID => LPTokenID
+    mapping(uint64 => mapping(uint64 => uint64)) public tokenToLP;
+    //protocolType => LPTokenID => tokenID
+    mapping(uint64 => mapping(uint64 => uint64)) public lpToToken;
     /* ========== INITIALIZER ========== */
 
     /// @notice Constructor function for the BridgeConfig contract.
@@ -33,7 +38,10 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         uint64[] memory _tokenPrices,
         uint64[] memory _tokenIds,
         uint8[] memory _suiDecimals,
-        uint8[] memory _supportedChains
+        uint8[] memory _supportedChains,
+        uint64 _protocolType,
+        uint64 _tokenID,
+        uint64 _lpTokenId
     ) external initializer {
         __CommitteeUpgradeable_init(_committee);
         require(
@@ -61,6 +69,8 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
             tokenPrices[_tokenIds[i]] = _tokenPrices[i];
         }
 
+        tokenToLP[_protocolType][_tokenID] = _lpTokenId;
+        lpToToken[_protocolType][_lpTokenId] = _tokenID;
         chainID = _chainID;
     }
 
@@ -87,6 +97,15 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         return tokenPrices[tokenID];
     }
 
+    function investLpTokenIdOf(uint64 protocolType,uint64 underlyingTokenId) public view override returns (uint64) {
+        return tokenToLP[protocolType][underlyingTokenId];
+    }
+
+    function underlyingTokenIdOf(uint64 protocolType,uint64 lpTokenId) public view override returns (uint64) {
+        return lpToToken[protocolType][lpTokenId];
+    }
+
+
     /// @notice Returns whether a token is supported in SuiBridge with the given ID.
     /// @param tokenID The ID of the token.
     /// @return true if the token is supported, false otherwise.
@@ -102,6 +121,31 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
     }
 
     /* ========== MUTATIVE FUNCTIONS ========== */
+
+    /// @notice Adds a LP token ID with the provided message if the provided signatures are valid.
+    /// @param signatures array of signatures to validate the message.
+    /// @param message BridgeMessage containing the add LP token payload.
+    /// @dev The function will revert if the payload length is invalid.
+    ///     Add LP token payload is 24 bytes.
+    ///     bytes 0-7    : protocol type (uint64)
+    ///     bytes 8-15   : token ID (uint64)
+    ///     bytes 16-23  : LP token ID (uint64)
+    /// @dev The function will revert if the token is already added.
+    function addLpTokenIdWithSignatures(
+        bytes[] memory signatures,
+        BridgeUtils.Message memory message
+    )
+        external 
+        nonReentrant  
+        verifyMessageAndSignatures(message, signatures, BridgeUtils.ADD_LP_TOKEN_ID)
+    {
+        (uint64 protocolType, uint64 tokenID, uint64 lpTokenId) = BridgeUtils.decodeAddLpTokenPayload(message.payload);
+        require(tokenToLP[protocolType][tokenID] == 0, "BridgeConfig: LPToken already added");
+        tokenToLP[protocolType][tokenID] = lpTokenId;
+        lpToToken[protocolType][lpTokenId] = tokenID;
+
+        emit LpTokenIdAdded(message.nonce,protocolType,tokenID,lpTokenId);
+    }
 
     /// @notice Updates the token price with the provided message if the provided signatures are valid.
     /// @param signatures array of signatures to validate the message.
@@ -172,9 +216,6 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         require(tokenAddress != address(0), "BridgeConfig: Invalid token address");
         require(suiDecimal > 0, "BridgeConfig: Invalid Sui decimal");
         require(tokenPrice > 0, "BridgeConfig: Invalid token price");
-
-        uint8 erc20Decimals = IERC20Metadata(tokenAddress).decimals();
-        require(erc20Decimals >= suiDecimal, "BridgeConfig: Invalid Sui decimal");
 
         supportedTokens[tokenID] = Token(tokenAddress, suiDecimal, native);
         tokenPrices[tokenID] = tokenPrice;

@@ -31,7 +31,7 @@ use sui_genesis_builder::Builder;
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig};
 
 use camino::Utf8PathBuf;
-use sui_config::{sui_config_dir, Config, PersistedConfig, FULL_NODE_DB_PATH, SUI_CLIENT_CONFIG, SUI_FULLNODE_CONFIG, SUI_NETWORK_CONFIG, local_ip_utils};
+use sui_config::{sui_config_dir, Config, PersistedConfig, FULL_NODE_DB_PATH, SUI_CLIENT_CONFIG, SUI_FULLNODE_CONFIG, SUI_NETWORK_CONFIG, local_ip_utils, BFC_ANNOYMOUS_CONFIG};
 use sui_config::{
     SUI_BENCHMARK_GENESIS_GAS_KEYSTORE_FILENAME, SUI_GENESIS_FILENAME, SUI_KEYSTORE_FILENAME, genesis_blob_exists
 };
@@ -62,6 +62,7 @@ use sui_types::base_types::SuiAddress;
 use tempfile::tempdir;
 use tracing;
 use tracing::info;
+use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
 use sui_keys::keypair_file::{read_authority_keypair_from_file, read_keypair_from_file, read_network_keypair_from_file};
 
 
@@ -774,7 +775,7 @@ async fn start(
         swarm_builder = swarm_builder.with_genesis_config(genesis_config);
         let epoch_duration_ms = epoch_duration_ms.unwrap_or(DEFAULT_EPOCH_DURATION_MS);
         swarm_builder = swarm_builder.with_epoch_duration_ms(epoch_duration_ms);
-        tempdir()?.into_path()
+        tempdir()?.keep()
     } else {
         // If the config path looks like a YAML file, it is treated as if it is the network.yaml
         // overriding the network.yaml found in the sui config directry. Otherwise it is treated as
@@ -882,7 +883,7 @@ async fn start(
     // note that this overrides the default configuration that is set when running the genesis
     // command, which sets data_ingestion_dir to None.
     if with_indexer.is_some() && data_ingestion_dir.is_none() {
-        data_ingestion_dir = Some(tempdir()?.into_path())
+        data_ingestion_dir = Some(tempdir()?.keep())
     }
 
     if let Some(ref dir) = data_ingestion_dir {
@@ -1305,6 +1306,14 @@ pub async fn genesis(
     client_config.save(&client_path)?;
     info!("Client config file is stored in {:?}.", client_path);
 
+
+    let mut annnoymous_config = AnonymousPrivateKeyConfig::new();
+    annnoymous_config.set_private_key("0x1111ffff0000".to_string());
+    annnoymous_config.set_fullnode_rpc_path("https://rpc-mainnet.benfen.org".to_string());
+    annnoymous_config.enable_anonymous_rpc(false);
+    annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010".parse()?, "http://127.0.0.1:9010".parse()?]);
+    annnoymous_config.set_zklogin_verify_rpc_path("https://zksimplerpc.benfen.org/verify_zk_login_sig".to_string());
+    annnoymous_config.save(sui_config_dir.join(BFC_ANNOYMOUS_CONFIG))?;
     Ok(())
 }
 
@@ -1380,6 +1389,14 @@ pub async fn genesis_private(
             bail!("Cannot run genesis with non-empty Bfc config directory {}, please use the --force/-f option to remove the existing configuration", sui_config_dir.to_str().unwrap());
         }
     }
+
+    let mut annnoymous_config = AnonymousPrivateKeyConfig::new();
+    annnoymous_config.set_private_key("0x1111ffff0000".to_string());
+    annnoymous_config.set_fullnode_rpc_path("https://rpc-mainnet.benfen.org".to_string());
+    annnoymous_config.enable_anonymous_rpc(false);
+    annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010".parse()?, "http://127.0.0.1:9010".parse()?]);
+    annnoymous_config.set_zklogin_verify_rpc_path("https://zksimplerpc.benfen.org/verify_zk_login_sig".to_string());
+    annnoymous_config.save(sui_config_dir.join(BFC_ANNOYMOUS_CONFIG))?;
 
     let network_path = sui_config_dir.join(SUI_NETWORK_CONFIG);
     let genesis_path = sui_config_dir.join(SUI_GENESIS_FILENAME);

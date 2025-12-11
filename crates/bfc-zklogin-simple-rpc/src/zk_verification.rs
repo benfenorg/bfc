@@ -18,15 +18,22 @@ use sui_types::error::SuiResult;
 use sui_types::signature::{GenericSignature, VerifyParams};
 use sui_types::transaction::TransactionData;
 use sui_types::zk_login_authenticator::ZkLoginAuthenticator;
-use im::hashmap::HashMap as ImHashMap;
+use im::hashmap::{Entry, HashMap as ImHashMap};
 use serde_json::{json, Value};
 use tracing::info;
+use tracing::warn;
 use std::env;
+use move_core_types::language_storage::TypeTag;
+use sui_sdk::SuiClientBuilder;
+use sui_types::authenticator_state::{ActiveJwk, AuthenticatorStateInner};
+use sui_types::dynamic_field::{derive_dynamic_field_id, Field};
+use sui_types::SUI_AUTHENTICATOR_STATE_OBJECT_ID;
 
 /// A response struct for the zk verification.
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ZkVerifyResponse {
     pub result: bool,
+    pub code: u32,
     pub message: String,
 }
 
@@ -49,9 +56,34 @@ impl IntoResponse for ZkVerifyResponse {
     }
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub enum ResultCode {
+    Success = 1000,
+    SignatureExpired = 1001,
+    InternalError = 1999,
+}
+
+impl ResultCode {
+    pub fn from_message(error_msg: &str) -> Self {
+        if error_msg.contains("ZKLogin expired at epoch") || error_msg.contains("JWK not found") {
+            ResultCode::SignatureExpired
+        } else {
+            ResultCode::InternalError
+        }
+    }
+
+    pub fn code(&self) -> u32 {
+        *self as u32
+    }
+}
+
 pub async fn verify_zk_login_sig(
     sig: String, bytes: String, intent_scope: u8, cur_epoch: Option<u64>, cur_rpc_url: Option<String>, author: String, env: String
 ) -> Result<SuiResult, anyhow::Error> {
+    if (cur_rpc_url.is_none() && cur_epoch.is_none()) || (cur_rpc_url.is_some() && cur_epoch.is_some()) {
+        return Err(anyhow!("You must provide either cur_epoch or cur_rpc_url"));
+    }
+
     let mut address_string = author.to_string();
     if address_string.to_ascii_lowercase().starts_with("bfc") {
         address_string = convert_to_evm_address(address_string);
@@ -60,6 +92,7 @@ pub async fn verify_zk_login_sig(
 
     let sig_decode_bytes = &Base64::decode(&sig).map_err(|e| anyhow!("Invalid base64 sig: {:?}", e))?;
     let zk = ZkLoginAuthenticator::from_bytes(sig_decode_bytes)?;
+    info!("author: {}, this sig's maxEpoch={}", author, zk.get_max_epoch());
 
     let client = Client::new();
     let provider = OIDCProvider::from_iss(zk.get_iss())
@@ -69,11 +102,14 @@ pub async fn verify_zk_login_sig(
         .unwrap_or_else(|_| "false".to_string())
         .parse()
         .unwrap_or(false);
-    let parsed: ImHashMap<JwkId, JWK> = if !query_non_jwks {
-        let jwks = fetch_jwks(&provider, &client).await?;
-        jwks.clone().into_iter().collect()
-    } else {
-        ImHashMap::new()
+    let parsed: ImHashMap<JwkId, JWK> = match (query_non_jwks, cur_epoch.is_some()) {
+        (true, _) => ImHashMap::new(),
+        (false, false) => fetch_jwks_on_chain(cur_rpc_url.clone().unwrap()).await?,
+        (false, true) => {
+            let jwks = fetch_jwks(&provider, &client).await
+                .map_err(|e| anyhow!("fetch iss jwk error {:?}", e))?;
+            jwks.into_iter().collect()
+        }
     };
     let zklogin_env = match env.as_str() { "test" => ZkLoginEnv::Test, _ => ZkLoginEnv::Prod };
 
@@ -147,6 +183,36 @@ pub async fn get_current_epoch(rpc_url: String) -> Result<u64, anyhow::Error>  {
         .as_str().ok_or_else(|| anyhow!("epoch is not a valid u64"))?;
 
     return epoch.parse::<u64>().map_err(|e| anyhow!("epoch not a integer: {:?}", e));
+}
+
+pub async fn fetch_jwks_on_chain(rpc_url: String) -> Result<ImHashMap<JwkId, JWK>, anyhow::Error> {
+    let authenticator_state_inner = get_authenticator_state_inner(rpc_url).await?;
+    let mut oidc_jwks = ImHashMap::new();
+    for active_jwk in &authenticator_state_inner.active_jwks {
+        let ActiveJwk { jwk_id, jwk, .. } = active_jwk;
+        match oidc_jwks.entry(jwk_id.clone()) {
+            Entry::Occupied(_) => {
+                warn!("JWK with kid {:?} already exists", jwk_id);
+            }
+            Entry::Vacant(entry) => {
+                entry.insert(jwk.clone());
+            }
+        }
+    }
+
+    return Ok(oidc_jwks);
+}
+
+pub async fn get_authenticator_state_inner(rpc_url: String) -> Result<AuthenticatorStateInner, anyhow::Error> {
+    let sui_client = SuiClientBuilder::default().build(rpc_url).await.map_err(|e| anyhow!("build sui client error {:?}", e))?;
+    let read_api = sui_client.read_api();
+    let obj_id = derive_dynamic_field_id(SUI_AUTHENTICATOR_STATE_OBJECT_ID, &TypeTag::U64, &bcs::to_bytes(&1u64).unwrap())
+        .map_err(|e| anyhow!("cannot derive dynamic field id: {:?}", e))?;
+    let bcs_data = read_api.get_move_object_bcs(obj_id).await.map_err(|e| anyhow!("get move bcs error {:?}", e))?;
+
+    let inner = bcs::from_bytes::<Field<u64, AuthenticatorStateInner>>(&bcs_data).unwrap()
+        .value;
+    Ok(inner)
 }
 
 pub async fn post_with_body(url: &str, body_data: String) ->  Result<Value, anyhow::Error>  {

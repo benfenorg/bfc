@@ -95,6 +95,16 @@ impl CoinReadApiServer for CoinReadApi {
         })
     }
 
+    async fn get_anonyment_coin_metadata(&self, coin_type: String) -> RpcResult<Option<SuiCoinMetadata>> {
+        self.fullnode.get_anonyment_coin_metadata(coin_type).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
+    }
+
     async fn get_total_supply(&self, coin_type: String) -> RpcResult<Supply> {
         self.fullnode.get_total_supply(coin_type).await.map_err(|e| {
             ErrorObject::owned(
@@ -104,6 +114,8 @@ impl CoinReadApiServer for CoinReadApi {
             )
         })
     }
+
+
 }
 
 impl SuiRpcModule for CoinReadApi {

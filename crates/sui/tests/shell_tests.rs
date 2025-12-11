@@ -15,8 +15,11 @@ use test_cluster::TestClusterBuilder;
 // These run the files as shell scripts and compares their output to the snapshots; use `cargo
 // insta test --review` to update the snapshots.
 
+#[allow(dead_code)]
 const TEST_DIR: &str = "tests/shell_tests";
+#[allow(dead_code)]
 const TEST_NET_DIR: &str = "tests/shell_tests/with_network";
+#[allow(dead_code)]
 const TEST_PATTERN: &str = r"\.sh$";
 
 /// run the bash script at [path], comparing its output to the insta snapshot of the same name.
@@ -26,6 +29,7 @@ const TEST_PATTERN: &str = r"\.sh$";
 /// If [cluster] is provided, the config file for the cluster is passed as the `CONFIG` environment
 /// variable.
 #[tokio::main]
+#[allow(dead_code)]
 async fn test_shell_snapshot(path: &Path) -> datatest_stable::Result<()> {
     // set up test cluster
     let cluster = if path.starts_with(TEST_NET_DIR) {
@@ -79,6 +83,8 @@ async fn test_shell_snapshot(path: &Path) -> datatest_stable::Result<()> {
     Ok(())
 }
 
+
+#[allow(dead_code)]
 /// return the path to the `sui` binary that is currently under test
 fn get_sui_bin_path() -> String {
     get_cargo_bin("bfc")

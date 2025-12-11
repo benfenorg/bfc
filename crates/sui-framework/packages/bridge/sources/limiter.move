@@ -543,6 +543,9 @@ module bridge::limiter {
 
     fun adjust_transfer_records(self: &mut TransferRecord, current_hour_since_epoch: u64) {
         if (self.hour_head == current_hour_since_epoch) {
+            if(self.per_hour_amounts.length() == 0) {
+                self.per_hour_amounts.push_back(0);
+            };
             return // nothing to backfill
         };
 

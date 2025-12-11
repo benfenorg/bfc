@@ -25,6 +25,10 @@ mod checked {
         RANDOMNESS_MODULE_NAME, RANDOMNESS_STATE_CREATE_FUNCTION_NAME,
         RANDOMNESS_STATE_UPDATE_FUNCTION_NAME,
     };
+    use sui_types::anonymous_status::{
+        ANONYMOUS_MODULE_NAME, ANONYMOUS_STATE_CREATE_FUNCTION_NAME,
+        ANONYMOUS_COIND_DEFAULT_ADDRESS,
+    };
     use sui_types::{BRIDGE_ADDRESS, SUI_BRIDGE_OBJECT_ID, SUI_RANDOMNESS_STATE_OBJECT_ID};
     use tracing::{info, instrument, trace, warn};
 
@@ -81,10 +85,12 @@ mod checked {
         SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS, SUI_FRAMEWORK_PACKAGE_ID,
         SUI_SYSTEM_PACKAGE_ID,
     };
+    use sui_types::BFC_SYSTEM_ADDRESS;
 
     use sui_types::bfc_system_state::{BFC_ROUND_FUNCTION_NAME, BFC_ROUND_V2_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME, WITHDRAW_BFC_FUNCTION_NAME};
     use sui_types::BFC_SYSTEM_PACKAGE_ID;
     use sui_types::stable_coin::stable::checked::STABLE;
+    use std::str::FromStr;
 
     const BFC_ROUND_V2_PROTOCOL_VERSION: u64 = 45;
     const BFC_COLLECT_OTHER_GAS_EPOCH : u64 = 397;
@@ -743,6 +749,10 @@ mod checked {
                             assert!(protocol_config.random_beacon());
                             builder = setup_randomness_state_create(builder);
                         }
+                        EndOfEpochTransactionKind::AnonymousStateCreate =>{
+                            assert!(protocol_config.enable_anonymous_coin_open());
+                            builder = setup_anonymous_state_create(builder);
+                        }
                         EndOfEpochTransactionKind::DenyListStateCreate => {
                             assert!(protocol_config.enable_coin_deny_list_v1());
                             builder = setup_coin_deny_list_state_create(builder);
@@ -981,7 +991,7 @@ mod checked {
             // create rewards in stable coin
             let rewards_bfc;
             if STABLE::is_outer_gas_type(&type_tag,param.current_protocol_version.as_u64()) {
-                if param.epoch > BFC_COLLECT_OTHER_GAS_EPOCH {
+                if param.epoch > BFC_COLLECT_OTHER_GAS_EPOCH || param.current_protocol_version.as_u64() > 75 {
                     let stable_charge_arg = builder
                         .input(CallArg::Pure(
                             bcs::to_bytes(&calculate_add(
@@ -1408,6 +1418,42 @@ mod checked {
             .expect("Unable to generate randomness_state_create transaction!");
         builder
     }
+
+    fn setup_anonymous_state_create(
+        mut builder: ProgrammableTransactionBuilder,
+    ) -> ProgrammableTransactionBuilder {
+        builder
+            .move_call(
+                SUI_FRAMEWORK_ADDRESS.into(),
+                ANONYMOUS_MODULE_NAME.to_owned(),
+                ANONYMOUS_STATE_CREATE_FUNCTION_NAME.to_owned(),
+                vec![],
+                vec![],
+            )
+            .expect("Unable to generate anonymous_state transaction!");
+
+        let abfc_supply = builder.programmable_move_call(
+            SUI_FRAMEWORK_ADDRESS.into(),
+            ident_str!("abfc").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let address1_arg = builder.input(CallArg::Pure(UID::new(ObjectID::from(SuiAddress::from_str(ANONYMOUS_COIND_DEFAULT_ADDRESS).unwrap())).to_bcs_bytes())).unwrap();
+
+        let arguments = vec![abfc_supply, address1_arg];
+        builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bfc_system").to_owned(),
+            ident_str!("allocate_abfc").to_owned(),
+            vec![],
+            arguments,
+        );
+
+        builder
+    }
+
 
     fn setup_bridge_create(
         mut builder: ProgrammableTransactionBuilder,

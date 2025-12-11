@@ -4,8 +4,13 @@ pragma solidity ^0.8.20;
 import "./BridgeBaseTest.t.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "../contracts/interfaces/ISuiBridge.sol";
+import "../contracts/interfaces/IBridgeConfig.sol";
 import "./mocks/MockSuiBridgeV2.sol";
-import {console2} from "forge-std/console2.sol";
+
+import {MockLPToken} from "./mocks/MockTokens.sol";
+
+
+import {MockArrow} from "./mocks/MockArrow.sol";
 
 
 contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
@@ -14,10 +19,15 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         setUpBridgeTest();
     }
 
+
+
+
     function testSuiBridgeInitialization() public {
         assertEq(address(bridge.committee()), address(committee));
         assertEq(address(bridge.vault()), address(vault));
     }
+
+
 
     function testTransferBridgedTokensWithSignaturesTokenDailyLimitExceeded() public {
         uint8 senderAddressLength = 32;
@@ -153,7 +163,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         signatures[1] = getSignature(messageHash, committeeMemberPkB);
         vm.expectRevert(bytes("MessageVerifier: message does not match type"));
         bridge.transferBridgedTokensWithSignatures(signatures, message);
-    }
+    } 
 
     function testTransferWETHWithValidSignatures() public {
         // Fill vault with WETH
@@ -206,6 +216,8 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         vm.expectRevert(bytes("SuiBridge: Message already processed"));
         bridge.transferBridgedTokensWithSignatures(signatures, message);
     }
+
+
 
     function testTransferUSDCWithValidSignatures() public {
         // Fill vault with USDC
@@ -260,26 +272,6 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         changePrank(USDCWhale);
         IERC20(USDC).transfer(address(vault), 100_000_000);
         changePrank(deployer);
-
-          
-
-        // BridgeUtils.TokenTransferPayload memory payload = BridgeUtils.TokenTransferPayload({
-        //     senderAddressLength: 32,
-        //     senderAddress: abi.encode(hex"80ab1ee086210a3a37355300ca24672e81062fcdb5ced6618dab203f6a3b291c"),
-        //     targetChain: chainID,
-        //     recipientAddressLength: 20,
-        //     recipientAddress: bridgerA,
-        //     tokenID: BridgeUtils.USDC,
-        //     // This is Sui amount (usdc decimal 9)
-        //     amount: 1_000_000_000,
-        //     txHash: new bytes(0),
-        //     eventIdx: 0
-        // });
-
-        // console2.log("test1234",payload.senderAddressLength);
-
-
-
         // // Create transfer payload
         uint8 senderAddressLength = 32;
         bytes memory senderAddress = hex"80ab1ee086210a3a37355300ca24672e81062fcdb5ced6618dab203f6a3b291c";
@@ -828,7 +820,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             "BridgeConfig.sol",
             abi.encodeCall(
                 BridgeConfig.initialize,
-                (address(committee), 11, _supportedTokens, tokenPrices, tokenIds, suiDecimals, _supportedDestinationChains)
+                (address(committee), 11, _supportedTokens, tokenPrices, tokenIds, suiDecimals, _supportedDestinationChains, 1, 3, 7)
             ),
             opts
         );
@@ -854,7 +846,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         address _suiBridge = Upgrades.deployUUPSProxy(
             "SuiBridge.sol",
             abi.encodeCall(
-                SuiBridge.initialize, (address(committee), address(vault), address(limiter))
+                SuiBridge.initialize, (address(committee), address(vault), address(limiter),address(0))
             ),
             opts
         );
@@ -946,7 +938,10 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
                     tokenPrices,
                     tokenIds,
                     suiDecimals,
-                    _supportedDestinationChains
+                    _supportedDestinationChains,
+                    1,
+                    3,
+                    7
                 )
             ),
             opts
@@ -975,7 +970,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         address _suiBridge = Upgrades.deployUUPSProxy(
             "SuiBridge.sol",
             abi.encodeCall(
-                SuiBridge.initialize, (address(committee), address(vault), address(limiter))
+                SuiBridge.initialize, (address(committee), address(vault), address(limiter),address(0))
             ),
             opts
         );
@@ -1025,7 +1020,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             "BridgeConfig.sol",
             abi.encodeCall(
                 BridgeConfig.initialize,
-                (address(committee), chainID, supportedTokens, tokenPrices, tokenIds, suiDecimals, supportedChains)
+                (address(committee), chainID, supportedTokens, tokenPrices, tokenIds, suiDecimals, supportedChains, 1, 3, 7)
             ),
             opts
         );
@@ -1053,7 +1048,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         address _suiBridge = Upgrades.deployUUPSProxy(
             "SuiBridge.sol",
             abi.encodeCall(
-                SuiBridge.initialize, (address(committee), address(vault), address(limiter))
+                SuiBridge.initialize, (address(committee), address(vault), address(limiter),address(0))
             ),
             opts
         );
@@ -1180,7 +1175,10 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
                     tokenPrices,
                     tokenIds,
                     suiDecimals,
-                    _supportedDestinationChains
+                    _supportedDestinationChains,
+                    1,
+                    3,
+                    7
                 )
             ),
             opts
@@ -1205,7 +1203,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         address _suiBridge = Upgrades.deployUUPSProxy(
             "SuiBridge.sol",
             abi.encodeCall(
-                SuiBridge.initialize, (address(committee), address(vault), address(limiter))
+                SuiBridge.initialize, (address(committee), address(vault), address(limiter),address(0))
             ),
             opts
         );

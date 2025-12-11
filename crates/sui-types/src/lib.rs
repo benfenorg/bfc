@@ -77,6 +77,7 @@ pub mod passkey_authenticator;
 pub mod programmable_transaction_builder;
 pub mod quorum_driver_types;
 pub mod randomness_state;
+pub mod anonymous_status;
 pub mod signature;
 pub mod signature_verification;
 pub mod storage;
@@ -145,6 +146,7 @@ built_in_ids! {
     SUI_CLOCK_ADDRESS / SUI_CLOCK_OBJECT_ID = 0x6;
     SUI_AUTHENTICATOR_STATE_ADDRESS / SUI_AUTHENTICATOR_STATE_OBJECT_ID = 0x7;
     SUI_RANDOMNESS_STATE_ADDRESS / SUI_RANDOMNESS_STATE_OBJECT_ID = 0x8;
+    BFC_ANONYMOUS_STATE_ADDRESS / BFC_ANONYMOUS_STATE_OBJECT_ID = 0xd9;
     SUI_BRIDGE_ADDRESS / SUI_BRIDGE_OBJECT_ID = 0x9;
     BFC_SYSTEM_STATE_ADDRESS / BFC_SYSTEM_STATE_OBJECT_ID = 0xc9;
     SUI_DENY_LIST_ADDRESS / SUI_DENY_LIST_OBJECT_ID = 0x403;

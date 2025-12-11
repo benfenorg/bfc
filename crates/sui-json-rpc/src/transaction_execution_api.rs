@@ -9,7 +9,7 @@ use fastcrypto::encoding::Base64;
 use fastcrypto::traits::ToFromBytes;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::RpcModule;
-
+use sui_json_rpc_types::SuiExecutionStatus;
 use crate::authority_state::StateRead;
 use crate::error::{Error, SuiRpcInputError};
 use crate::{
@@ -22,10 +22,7 @@ use sui_core::authority::AuthorityState;
 use sui_core::authority_client::NetworkAuthorityClient;
 use sui_core::transaction_orchestrator::TransactiondOrchestrator;
 use sui_json_rpc_api::{JsonRpcMetrics, WriteApiOpenRpc, WriteApiServer};
-use sui_json_rpc_types::{
-    DevInspectArgs, DevInspectResults, DryRunTransactionBlockResponse, SuiTransactionBlock,
-    SuiTransactionBlockEvents, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
-};
+use sui_json_rpc_types::{DevInspectArgs, DevInspectResults, DryRunTransactionBlockResponse, SuiTransactionBlock, SuiTransactionBlockEffects, SuiTransactionBlockEvents, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions};
 use sui_open_rpc::Module;
 use sui_types::base_types::SuiAddress;
 use sui_types::crypto::default_hash;
@@ -310,14 +307,31 @@ impl TransactionExecutionApi {
             transaction_effects.all_removed_objects(),
         )
         .await?;
+        for object_change in &object_changes {
+            let object_changes_str = format!("{:?}", object_change);
+            if object_changes_str.contains("module: Identifier(\"anonymous_coin\")") {
+                let effects = SuiTransactionBlockEffects::default_for_anonymous_coin(
+                    txn_digest, SuiExecutionStatus::Success);
 
-        Ok(DryRunTransactionBlockResponse {
+                let response = DryRunTransactionBlockResponse {
+                    effects: effects,
+                    events: resp.events,
+                    object_changes: Vec::new(),
+                    balance_changes: Vec::new(),
+                    input: resp.input,
+                };
+                return Ok(response);
+            }
+        }
+
+        let response = DryRunTransactionBlockResponse {
             effects: resp.effects,
             events: resp.events,
-            object_changes,
+            object_changes: object_changes,
             balance_changes,
             input: resp.input,
-        })
+        };
+        Ok(response)
     }
 }
 

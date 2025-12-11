@@ -18,6 +18,7 @@ pub mod object_storage_config;
 pub mod p2p;
 pub mod transaction_deny_config;
 pub mod verifier_signing_config;
+pub mod anonymous_privatekey_config;
 
 pub use node::{ConsensusConfig, ExecutionCacheConfig, NodeConfig};
 use sui_types::multiaddr::Multiaddr;
@@ -36,6 +37,9 @@ pub const SUI_DEV_NET_URL: &str = "https://testrpc.benfen.org/";
 pub const AUTHORITIES_DB_NAME: &str = "authorities_db";
 pub const CONSENSUS_DB_NAME: &str = "consensus_db";
 pub const FULL_NODE_DB_PATH: &str = "full_node_db";
+
+
+pub const BFC_ANNOYMOUS_CONFIG: &str = "bfc_anonymous_config.yaml";
 
 pub fn sui_config_dir() -> Result<PathBuf, anyhow::Error> {
     match std::env::var_os("SUI_CONFIG_DIR") {
