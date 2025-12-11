@@ -24,7 +24,7 @@ use std::time::Duration;
 use move_core_types::gas_algebra::InternalGas;
 use serde_json::{json};
 use serde_json::Value as JsonValue;
-use tracing::info;
+use tracing::{info, error};
 use anyhow::anyhow;
 use attohttpc::post;
 //use fastcrypto::hash::HashFunction;
@@ -143,7 +143,7 @@ pub fn hfe_ops_add(
         let (value1, value2, coord_seed_a) = match process_shares_data_convert(&num1, &num2, mask, anonymous_coordseed, get_user_address_salt(owner)){
             Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
             Err(e) => {
-                info!("Failed to convert num1 and num2 transmission shares to core shares: {}", e);
+                error!("Failed to convert num1 and num2 transmission shares to core shares: {}", e);
                 return Ok(NativeResult::err(
                     cost,
                     CONVERT_FROM_V1_TRANSMISSION_SHARES_ERROR,
@@ -154,7 +154,7 @@ pub fn hfe_ops_add(
         let (value3, value4, coord_seed_b) = match process_shares_data_convert(&num3, &num4, mask, anonymous_coordseed, get_user_address_salt(owner)) {
             Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
             Err(e) => {
-                info!("Failed to convert num1 and num2 transmission shares to core shares: {}", e);
+                error!("Failed to convert num3 and num4 transmission shares to core shares: {}", e);
                 return Ok(NativeResult::err(
                     cost,
                     CONVERT_FROM_V1_TRANSMISSION_SHARES_ERROR,
@@ -166,7 +166,8 @@ pub fn hfe_ops_add(
             Ok(result) => {
                 result
             }
-            Err(_) => {
+            Err(e) => {
+                error!("Failed to add_two_shared_secrets_v2 for bfcx_getAnonymousAdd: {}", e);
                 return Ok(NativeResult::err(
                     cost,
                     INVALID_SERVER_RESPONSE_ERROR,
@@ -178,6 +179,7 @@ pub fn hfe_ops_add(
                 result
             }
             Err(_) => {
+                error!("Failed to add_two_shared_secrets_v2 for bfcx_getAnonymousAdd: {}", e);
                 return Ok(NativeResult::err(
                     cost,
                     INVALID_SERVER_RESPONSE_ERROR,
@@ -278,7 +280,7 @@ pub fn hfe_ops_minus(
         let (value1, value2, coord_seed_a) = match process_shares_data_convert(&num1, &num2, mask, anonymous_coordseed, get_user_address_salt(owner)){
             Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
             Err(e) => {
-                info!("Failed to convert value1 and value2 transmission shares to core shares: {}", e);
+                error!("Failed to convert num1 and num2 transmission shares to core shares: {}", e);
                 return Ok(NativeResult::err(
                     cost,
                     CONVERT_FROM_V1_TRANSMISSION_SHARES_ERROR,
@@ -289,7 +291,7 @@ pub fn hfe_ops_minus(
         let (value3, value4, coord_seed_b) = match process_shares_data_convert(&num3, &num4, mask, anonymous_coordseed, get_user_address_salt(owner)){
             Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
             Err(e) => {
-                info!("Failed to convert value1 and value2 transmission shares to core shares: {}", e);
+                error!("Failed to convert num3 and value4 transmission shares to core shares: {}", e);
                 return Ok(NativeResult::err(
                     cost,
                     CONVERT_FROM_V1_TRANSMISSION_SHARES_ERROR,
@@ -302,7 +304,7 @@ pub fn hfe_ops_minus(
                 result
             }
             Err(e) => {
-                info!("Invalid parameters for bfcx_getAnonymousMinus: {}", e);
+                error!("Failed to sub_two_shared_secrets_v2 for bfcx_getAnonymousMinus: {}", e);
                 return Ok(NativeResult::err(
                     cost,
                     INVALID_SERVER_RESPONSE_ERROR,
@@ -314,7 +316,7 @@ pub fn hfe_ops_minus(
                 result
             }
             Err(e) => {
-                info!("Invalid parameters for bfcx_getAnonymousMinus: {}", e);
+                error!("Failed to sub_two_shared_secrets_v2 for bfcx_getAnonymousMinus: {}", e);
                 return Ok(NativeResult::err(
                     cost,
                     INVALID_SERVER_RESPONSE_ERROR,
@@ -416,7 +418,7 @@ pub fn hfe_ops_multiplied(
         let (value1, value2, coord_seed_a) = match process_shares_data_convert(&num1, &num2, mask, anonymous_coordseed, get_user_address_salt(owner)) {
             Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
             Err(e) => {
-                info!("Failed to convert value1 and value2 transmission shares to core shares: {}", e);
+                error!("Failed to convert num1 and num2 transmission shares to core shares: {}", e);
                 return Ok(NativeResult::err(
                     cost,
                     CONVERT_FROM_V1_TRANSMISSION_SHARES_ERROR,
@@ -427,7 +429,7 @@ pub fn hfe_ops_multiplied(
         let (value3, value4, coord_seed_b) = match process_shares_data_convert(&num3, &num4, mask, anonymous_coordseed, get_user_address_salt(owner)){
             Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
             Err(e) => {
-                info!("Failed to convert value1 and value2 transmission shares to core shares: {}", e);
+                error!("Failed to convert num3 and num4 transmission shares to core shares: {}", e);
                 return Ok(NativeResult::err(
                     cost,
                     CONVERT_FROM_V1_TRANSMISSION_SHARES_ERROR,
@@ -453,7 +455,7 @@ pub fn hfe_ops_multiplied(
         ) {
             Ok((result1, result2)) => (result1, result2),
             Err(e) => {
-                info!("Failed to multiply shared secrets: {}", e);
+                error!("Failed to mul_two_shared_secrets_v2 for bfcx_getAnonymousMultiplied: {}", e);
                 return Ok(NativeResult::err(
                         cost,
                         INVALID_SERVER_RESPONSE_ERROR,
