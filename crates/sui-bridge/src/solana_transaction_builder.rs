@@ -133,6 +133,10 @@ pub async fn build_solana_transaction(
             // It does not need a Sui tranaction to add tokens on EVM
             unreachable!()
         }
+        BridgeAction::SolanaToSuiBridgeAction(_) => {
+            // Not a governance action handled on Solana side
+            unreachable!()
+        }
         BridgeAction::RefundAdminAction(_) => {
             unreachable!()
         }
@@ -140,6 +144,7 @@ pub async fn build_solana_transaction(
             // It does not need a Sui tranaction to update fast path limit
             unreachable!()
         }
+        _ => unreachable!(),
     }
 
 }

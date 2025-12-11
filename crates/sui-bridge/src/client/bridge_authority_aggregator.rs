@@ -233,7 +233,7 @@ async fn request_sign_bridge_action_into_certification(
             ordering_pref: BTreeSet::new(),
             prefetch_timeout,
         }),
-        BridgeAction::EthToSuiBridgeAction(_) => None,
+        BridgeAction::EthToSuiBridgeAction(_) | BridgeAction::SolanaToSuiBridgeAction(_) => None,
         _ => {
             if action.chain_id().is_sui_chain() {
                 None

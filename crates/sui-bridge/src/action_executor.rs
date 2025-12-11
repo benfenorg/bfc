@@ -391,7 +391,8 @@ where
             | BridgeAction::EthToSuiBridgeAction(_)
             | BridgeAction::EthSendBackBridgeAction(_)
             | BridgeAction::SuiToEthDefiBridgeAction(_)
-            | BridgeAction::EthToSuiDefiBridgeAction(_) => (),
+            | BridgeAction::EthToSuiDefiBridgeAction(_)
+            | BridgeAction::SolanaToSuiBridgeAction(_) => (),
             _ => unreachable!("Non token transfer action should not reach here"),
         };
 

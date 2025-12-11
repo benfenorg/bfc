@@ -104,6 +104,14 @@ impl BridgeClient {
                     e.eth_bridge_event.fast_path_selector as u8
                 )
             },
+            BridgeAction::SolanaToSuiBridgeAction(e) => {
+                format!(
+                    "sign/bridge_tx/solana/sui/{}/{}/{}",
+                    e.solana_tx_signature,
+                    e.solana_event_index,
+                    e.solana_bridge_event.fast_path_selector as u8
+                )
+            }
             BridgeAction::BlocklistCommitteeAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();

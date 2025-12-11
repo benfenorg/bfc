@@ -26,6 +26,7 @@ use crate::types::EvmContractUpgradeAction;
 use crate::types::LimitUpdateAction;
 use crate::types::SingleTransferLimitUpdateAction;
 use crate::types::RefundAdminAction;
+use crate::types::SolanaToSuiBridgeAction;
 use crate::types::SuiToEthBridgeAction;
 use crate::types::SuiToEthDefiBridgeAction;
 use crate::types::UpdateBridgeFeeOnCrossOutAction;
@@ -345,6 +346,43 @@ impl BridgeMessageEncoding for EthToSuiBridgeAction {
         bytes.extend_from_slice(&e.event_idx.to_be_bytes());
 
         //add fast path selector
+        bytes.push(e.fast_path_selector as u8);
+
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for SolanaToSuiBridgeAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.solana_bridge_event;
+        bytes.push(BridgeActionType::TokenTransfer as u8);
+        bytes.push(TOKEN_TRANSFER_MESSAGE_VERSION_V2);
+        bytes.extend_from_slice(&e.nonce.to_be_bytes());
+        bytes.push(e.solana_chain_id as u8);
+        bytes.extend_from_slice(&self.as_payload_bytes());
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.solana_bridge_event;
+
+        bytes.push(32u8);
+        bytes.extend_from_slice(&e.solana_address.to_bytes());
+
+        bytes.push(e.sui_chain_id as u8);
+        bytes.push(SUI_ADDRESS_LENGTH as u8);
+        bytes.extend_from_slice(&e.sui_address.to_vec());
+
+        bytes.extend_from_slice(&e.token_id.to_be_bytes());
+        bytes.extend_from_slice(&e.sui_adjusted_amount.to_be_bytes());
+
+        bytes.push(e.tx_signature.len() as u8);
+        bytes.extend_from_slice(&e.tx_signature);
+
+        bytes.extend_from_slice(&e.event_idx.to_be_bytes());
+
         bytes.push(e.fast_path_selector as u8);
 
         bytes

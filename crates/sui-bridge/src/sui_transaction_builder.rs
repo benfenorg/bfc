@@ -245,6 +245,10 @@ pub fn build_sui_transaction(
             // It does not need a Sui tranaction to add tokens on EVM
             unreachable!()
         }
+        BridgeAction::SolanaToSuiBridgeAction(_) => {
+            // It does not need a Sui transaction to handle Solana->Sui action here
+            unreachable!()
+        }
         BridgeAction::RefundAdminAction(_) => build_refund_admin_operate_transaction(
             client_address,
             gas_object_ref,

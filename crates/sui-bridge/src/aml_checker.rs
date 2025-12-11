@@ -110,7 +110,11 @@ where
             info!("[DEBUG]  AMLChecker received action: {:?}", bridge_action);
             // Only token transfer action should reach here
             match &bridge_action {
-                BridgeAction::SuiToEthBridgeAction(_) | BridgeAction::EthToSuiBridgeAction(_) | BridgeAction::SuiToEthDefiBridgeAction(_) | BridgeAction::EthToSuiDefiBridgeAction(_) => (),
+                BridgeAction::SuiToEthBridgeAction(_)
+                | BridgeAction::EthToSuiBridgeAction(_)
+                | BridgeAction::SuiToEthDefiBridgeAction(_)
+                | BridgeAction::EthToSuiDefiBridgeAction(_)
+                | BridgeAction::SolanaToSuiBridgeAction(_) => (),
                 _ => unreachable!("Non token transfer action should not reach here"),
             };
             match &bridge_action {
@@ -152,6 +156,16 @@ where
                     }
                 },
                 BridgeAction::EthToSuiDefiBridgeAction(_) => {
+                    store.insert_pending_actions(&[bridge_action.clone()]).unwrap_or_else(|e| {
+                        panic!("Write to DB should not fail: {:?}", e);
+                    });
+                    submit_to_executor(&executor_sender, bridge_action.clone(),true).await.expect("Submit to executor should not fail");
+                    store.remove_pending_aml_checked_actions(&[bridge_action.digest()]).unwrap_or_else(|e| {
+                        panic!("Write to DB should not fail: {:?}", e);
+                    });
+                    sui_client.notify_something_done().await;
+                },
+                BridgeAction::SolanaToSuiBridgeAction(_) => {
                     store.insert_pending_actions(&[bridge_action.clone()]).unwrap_or_else(|e| {
                         panic!("Write to DB should not fail: {:?}", e);
                     });

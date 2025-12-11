@@ -9,6 +9,7 @@ use crate::crypto::{
 use crate::encoding::BridgeMessageEncoding;
 use crate::error::{BridgeError, BridgeResult};
 use crate::events::{EmittedEthTokenSendBackBridgeV1, EmittedExternalDepositStartBridgeV1, EmittedSuiToEthDefiBridgeV1, EmittedSuiToEthTokenBridgeV1};
+use crate::solana_events::TokensDeposited;
 use crate::fast_path::FastPathSelector;
 use enum_dispatch::enum_dispatch;
 use ethers::types::Address as EthAddress;
@@ -26,8 +27,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Debug;
 use strum_macros::Display;
 use sui_types::base_types::SuiAddress;
-use sui_types::bridge::{BridgeChainId, MoveTypeParsedTokenTransferMessageV2, MoveTypeTokenTransferPayload, MoveTypeTokenTransferPayloadV2, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SOLANA,APPROVAL_THRESHOLD_FAST_PATH_LIMIT_UPDATE, APPROVAL_THRESHOLD_REFUND_ADMIN, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER, BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER, TOKEN_ID_USDC, TOKEN_ID_USDT};
-use sui_types::bridge::{BridgeChainId, MoveTypeDefiTransferOutPayload, MoveTypeParsedDefiTransferOutMessage, MoveTypeParsedTokenTransferMessageV2, MoveTypeTokenTransferPayload, MoveTypeTokenTransferPayloadV2, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, APPROVAL_THRESHOLD_FAST_PATH_LIMIT_UPDATE, APPROVAL_THRESHOLD_REFUND_ADMIN, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER, BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER, TOKEN_ID_USDC, TOKEN_ID_USDT};
+use sui_types::bridge::{BridgeChainId, MoveTypeDefiTransferOutPayload, MoveTypeParsedDefiTransferOutMessage, MoveTypeParsedTokenTransferMessageV2, MoveTypeTokenTransferPayload, MoveTypeTokenTransferPayloadV2, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SOLANA,APPROVAL_THRESHOLD_FAST_PATH_LIMIT_UPDATE, APPROVAL_THRESHOLD_REFUND_ADMIN, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER, BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER, TOKEN_ID_USDC, TOKEN_ID_USDT};
 use sui_types::bridge::{
     MoveTypeParsedTokenTransferMessage, APPROVAL_THRESHOLD_ASSET_PRICE_UPDATE,
     APPROVAL_THRESHOLD_COMMITTEE_BLOCKLIST, APPROVAL_THRESHOLD_EMERGENCY_PAUSE,
@@ -324,6 +324,61 @@ pub struct EthToSuiDefiBridgeAction {
     pub eth_bridge_event: EthToSuiDefiBridgeV1,
 }
 
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
+pub struct SolanaToSuiTokenBridgeV1 {
+    pub nonce: u64,
+    pub sui_chain_id: BridgeChainId,
+    pub solana_chain_id: BridgeChainId,
+    pub sui_address: SuiAddress,
+    pub solana_address: Pubkey,
+    pub token_id: u64,
+    pub sui_adjusted_amount: u64,
+    pub tx_signature: Vec<u8>,
+    pub event_idx: u16,
+    pub fast_path_selector: FastPathSelector,
+}
+
+impl SolanaToSuiTokenBridgeV1 {
+    pub fn set_tx_signature(&mut self, tx_signature: Vec<u8>) {
+        self.tx_signature = tx_signature;
+    }
+
+    pub fn set_event_idx(&mut self, event_idx: u16) {
+        self.event_idx = event_idx;
+    }
+
+    pub fn set_fast_path_selector(&mut self, fast_path_selector: FastPathSelector) {
+        self.fast_path_selector = fast_path_selector;
+    }
+}
+
+impl TryFrom<&TokensDeposited> for SolanaToSuiTokenBridgeV1 {
+    type Error = BridgeError;
+    fn try_from(event: &TokensDeposited) -> BridgeResult<Self> {
+        Ok(Self {
+            nonce: event.nonce,
+            sui_chain_id: BridgeChainId::try_from(event.target_chain_id)?,
+            solana_chain_id: BridgeChainId::try_from(event.source_chain_id)?,
+            sui_address: SuiAddress::from_bytes(event.recipient_bytes.as_slice())?,
+            solana_address: Pubkey::new_from_array(event.sender_pubkey),
+            token_id: event.token_id,
+            sui_adjusted_amount: event.amount,
+            tx_signature: vec![],
+            event_idx: 0,
+            fast_path_selector: FastPathSelector::Finalized,
+        })
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct SolanaToSuiBridgeAction {
+    // Digest of the transaction where the event was emitted
+    pub solana_tx_signature: String,
+    // The index of the event in the transaction
+    pub solana_event_index: u16,
+    pub solana_bridge_event: SolanaToSuiTokenBridgeV1,
+}
+
 #[derive(
     Debug,
     Serialize,
@@ -610,6 +665,8 @@ pub enum BridgeAction {
     AddTokenOnSolanaAction(AddTokenOnSolanaAction),
     UpdateInvestAddressAction(UpdateInvestAddressAction),
     AddLpTokenIdAction(AddLpTokenIdAction),
+    /// solana to sui bridge action
+    SolanaToSuiBridgeAction(SolanaToSuiBridgeAction),
 }
 
 impl BridgeAction {
@@ -660,6 +717,7 @@ impl BridgeAction {
             BridgeAction::FastPathLimitUpdateAction(a) => a.chain_id,
             BridgeAction::UpdateInvestAddressAction(a) => a.chain_id,
             BridgeAction::AddLpTokenIdAction(a) => a.chain_id,
+            BridgeAction::SolanaToSuiBridgeAction(a) => a.solana_bridge_event.solana_chain_id,
         }
     }
 
@@ -723,6 +781,7 @@ impl BridgeAction {
             BridgeAction::AddTokensOnSuiAction(_) => BridgeActionType::AddTokensOnSui,
             BridgeAction::AddTokensOnEvmAction(_) => BridgeActionType::AddTokensOnEvm,
             BridgeAction::AddTokenOnSolanaAction(_) => BridgeActionType::AddTokensOnSolana,
+            BridgeAction::SolanaToSuiBridgeAction(_) => BridgeActionType::TokenTransfer,
             BridgeAction::RefundAdminAction(_) => BridgeActionType::RefundAdmin,
             BridgeAction::FastPathLimitUpdateAction(_) => BridgeActionType::FastPathLimitUpdate,
             BridgeAction::UpdateInvestAddressAction(_) => BridgeActionType::UpdateInvestAddress,
@@ -759,6 +818,7 @@ impl BridgeAction {
             BridgeAction::AddTokensOnSuiAction(a) => a.nonce,
             BridgeAction::AddTokensOnEvmAction(a) => a.nonce,
             BridgeAction::AddTokenOnSolanaAction(a) => a.nonce,
+            BridgeAction::SolanaToSuiBridgeAction(a) => a.solana_bridge_event.nonce,
             BridgeAction::RefundAdminAction(a) => a.nonce,
             BridgeAction::FastPathLimitUpdateAction(a) => a.nonce,
             BridgeAction::UpdateInvestAddressAction(a) => a.nonce,
@@ -797,6 +857,7 @@ impl BridgeAction {
             BridgeAction::AddTokensOnSuiAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI,
             BridgeAction::AddTokensOnEvmAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM,
             BridgeAction::AddTokenOnSolanaAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_SOLANA,
+            BridgeAction::SolanaToSuiBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::RefundAdminAction(_) => APPROVAL_THRESHOLD_REFUND_ADMIN,
             BridgeAction::FastPathLimitUpdateAction(_) => APPROVAL_THRESHOLD_FAST_PATH_LIMIT_UPDATE,
             BridgeAction::UpdateInvestAddressAction(_) => APPROVAL_THRESHOLD_UPDATE_INVEST_ADDRESS,
@@ -807,6 +868,10 @@ impl BridgeAction {
     pub fn is_stable_coin(&self) -> bool {
         match self {
             BridgeAction::EthToSuiBridgeAction(a) => a.eth_bridge_event.token_id ==TOKEN_ID_USDC || a.eth_bridge_event.token_id ==TOKEN_ID_USDT,
+            BridgeAction::SolanaToSuiBridgeAction(a) => {
+                a.solana_bridge_event.token_id == TOKEN_ID_USDC
+                    || a.solana_bridge_event.token_id == TOKEN_ID_USDT
+            }
             _ => false,
         }
     }
