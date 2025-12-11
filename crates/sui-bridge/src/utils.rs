@@ -5,7 +5,8 @@ use crate::abi::{
     EthBridgeCommittee, EthBridgeConfig, EthBridgeLimiter, EthBridgeVault, EthSuiBridge,
 };
 use crate::config::{
-    default_ed25519_key_pair, BridgeNodeConfig, EthConfig, MetricsConfig, SuiConfig, WatchdogConfig,
+    default_ed25519_key_pair, BridgeNodeConfig, ChainRpcUrls, EthConfig, ExternalChainRpcConfig,
+    MetricsConfig, SuiConfig, WatchdogConfig,
 };
 use crate::crypto::BridgeAuthorityKeyPair;
 use crate::crypto::BridgeAuthorityPublicKeyBytes;
@@ -341,20 +342,18 @@ pub fn generate_bridge_node_config_and_write_to_file(
             enable_fast_path_safe: false,
             enable_fast_path_finalized: true,
         },
-        evm: vec![
-            EthConfig {
-                eth_rpc_url: "your_bsc_rpc_url".to_string(),
-                eth_bridge_proxy_address: "0x0000000000000000000000000000000000000000".to_string(),
-                eth_bridge_chain_id: BridgeChainId::BscTestnet as u8,
-                eth_contracts_start_block_fallback: Some(0),
-                eth_contracts_start_block_override: None,
-                latest_fast_path_threshold: None,
-                safe_fast_path_threshold: None,
-                enable_fast_path_latest: false,
-                enable_fast_path_safe: false,
-                enable_fast_path_finalized: true,
-            },
-        ],
+        evm: vec![EthConfig {
+            eth_rpc_url: "your_bsc_rpc_url".to_string(),
+            eth_bridge_proxy_address: "0x0000000000000000000000000000000000000000".to_string(),
+            eth_bridge_chain_id: BridgeChainId::BscTestnet as u8,
+            eth_contracts_start_block_fallback: Some(0),
+            eth_contracts_start_block_override: None,
+            latest_fast_path_threshold: None,
+            safe_fast_path_threshold: None,
+            enable_fast_path_latest: false,
+            enable_fast_path_safe: false,
+            enable_fast_path_finalized: true,
+        }],
         aml_key: "your_aml_key".to_string(),
         approved_governance_actions: vec![],
         run_client,
@@ -372,6 +371,16 @@ pub fn generate_bridge_node_config_and_write_to_file(
             )]),
         }),
         user_limit_db_url: Some("pgpath".to_string()),
+        external_rpc: Some(ExternalChainRpcConfig {
+            solana: ChainRpcUrls {
+                mainnet_url: "https://your_solana_mainnet_rpc_url".to_string(),
+                testnet_url: "https://your_solana_testnet_rpc_url".to_string(),
+            },
+            tron: ChainRpcUrls {
+                mainnet_url: "https://your_tron_mainnet_rpc_url".to_string(),
+                testnet_url: "https://your_tron_testnet_rpc_url".to_string(),
+            },
+        }),
     };
     if run_client {
         config.sui.bridge_client_key_path = Some(PathBuf::from("/path/to/your/bridge_client_key"));
