@@ -15,13 +15,13 @@ use crate::server::BridgeNodePublicMetadata;
 use crate::sui_client::SuiClientInner;
 use crate::sui_transaction_builder::build_committee_register_transaction;
 use crate::sui_transaction_builder::{
-    build_add_tokenlist_transaction, build_add_tokens_on_sui_transaction,
-    build_add_center_tokenlist_transaction,
+    build_add_center_tokenlist_transaction, build_add_tokenlist_transaction,
+    build_add_tokens_on_sui_transaction,
 };
-use crate::types::{BridgeCommitteeValiditySignInfo, SuiToEthDefiBridgeAction};
 use crate::types::CertifiedBridgeAction;
 use crate::types::VerifiedCertifiedBridgeAction;
 use crate::types::{BridgeAction, BridgeActionStatus, SuiToEthBridgeAction};
+use crate::types::{BridgeCommitteeValiditySignInfo, SuiToEthDefiBridgeAction};
 use crate::utils::get_eth_signer_client;
 use crate::utils::publish_and_register_coins_return_add_coins_on_sui_action;
 use crate::utils::wait_for_server_to_be_up;
@@ -87,10 +87,10 @@ use move_core_types::ident_str;
 use std::process::Child;
 use sui_config::local_ip_utils::get_available_port;
 use sui_sdk::SuiClient;
-use sui_types::crypto::SuiKeyPair;
 use sui_types::base_types::SuiAddress;
 use sui_types::crypto::EncodeDecodeBase64;
 use sui_types::crypto::KeypairTraits;
+use sui_types::crypto::SuiKeyPair;
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use tap::TapFallible;
 use tempfile::tempdir;
@@ -1630,6 +1630,7 @@ pub(crate) async fn start_bridge_cluster(
             metrics: None,
             watchdog_config: None,
             user_limit_db_url: None,
+            external_rpc: None,
         };
         let prometheus_registry = Registry::new();
         if i == 0 {
@@ -2674,7 +2675,7 @@ async fn defi_unstake_sui_to_eth_package(
 ) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
     let mut builder = ProgrammableTransactionBuilder::new();
     let arg_target_chain = builder.pure(target_chain as u8).unwrap();
-    
+
     let arg_protocol_type = builder.pure(protocol_type).unwrap();
     let arg_protocol_version = builder.pure(protocol_version).unwrap();
     let arg_protocol_token_id = builder.pure(protocol_token_id).unwrap();
@@ -2707,10 +2708,14 @@ async fn defi_unstake_sui_to_eth_package(
             .unwrap(),
     );
     let tx = wallet_context.sign_transaction(&tx_data);
-    let result1 = wallet_context.execute_transaction_may_fail(tx.clone()).await;
+    let result1 = wallet_context
+        .execute_transaction_may_fail(tx.clone())
+        .await;
     if revoke_twice {
         tokio::time::sleep(tokio::time::Duration::from_secs(100)).await;
-        let result2 = wallet_context.execute_transaction_may_fail(tx.clone()).await;
+        let result2 = wallet_context
+            .execute_transaction_may_fail(tx.clone())
+            .await;
         return result2;
     }
     result1

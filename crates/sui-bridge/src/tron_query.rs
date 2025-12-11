@@ -1,13 +1,11 @@
+use crate::config::ChainRpcUrls;
+use bs58;
+use hex;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use sha2::{Digest, Sha256};
 use sui_types::bridge::BridgeChainId;
 use tracing::{debug, error, info};
-use bs58;
-use sha2::{Sha256, Digest};
-use hex;
-use serde_json::Value;
-
-const MAINNET_URL: &str = "https://go.getblock.io/8703fc5554244851be7ee8d84c338177";
-const TESTNET_URL: &str = "https://api.shasta.trongrid.io";
 
 #[derive(Debug, Serialize)]
 struct JsonRpcRequest<T> {
@@ -84,6 +82,7 @@ pub async fn check_tron_txn(
     whitelist: Vec<String>,
     expected_amount: u64,
     native_token: bool,
+    rpc_urls: &ChainRpcUrls,
 ) -> bool {
     info!(
         "Checking tron txn: chain_id: {:?}, tx_hash: {}, whitelist: {:?}, expected_amount: {}",
@@ -91,8 +90,8 @@ pub async fn check_tron_txn(
     );
 
     let base_url = match chain_id {
-        BridgeChainId::TronMainnet => MAINNET_URL,
-        BridgeChainId::TronTestnet => TESTNET_URL,
+        BridgeChainId::TronMainnet => rpc_urls.mainnet_url.as_str(),
+        BridgeChainId::TronTestnet => rpc_urls.testnet_url.as_str(),
         _ => {
             error!("Unsupported Tron chain id: {:?}", chain_id);
             return false;
@@ -108,10 +107,7 @@ pub async fn check_tron_txn(
     };
 
     let client = reqwest::Client::new();
-    let res = match client.post(&url)
-        .json(&request_body)
-        .send()
-        .await {
+    let res = match client.post(&url).json(&request_body).send().await {
         Ok(res) => res,
         Err(e) => {
             error!("Failed to send request to getblock: {:?}", e);
@@ -167,7 +163,7 @@ pub async fn check_tron_txn(
             }
         }
 
-        if let Some(logs) = get_tron_event_logs(chain_id, tx_hash).await {
+        if let Some(logs) = get_tron_event_logs(chain_id, tx_hash, rpc_urls).await {
             for log in logs {
                 // topics[1] is from，topics[2] is to，data is amount
                 if let (Some(topics), Some(data)) = (log.get("topics"), log.get("data")) {
@@ -339,10 +335,11 @@ pub fn is_address_match(address1: &str, address2: &str) -> bool {
 pub async fn get_tron_event_logs(
     chain_id: BridgeChainId,
     tx_hash: &str,
+    rpc_urls: &ChainRpcUrls,
 ) -> Option<Vec<Value>> {
     let base_url = match chain_id {
-        BridgeChainId::TronMainnet => MAINNET_URL,
-        BridgeChainId::TronTestnet => TESTNET_URL,
+        BridgeChainId::TronMainnet => rpc_urls.mainnet_url.as_str(),
+        BridgeChainId::TronTestnet => rpc_urls.testnet_url.as_str(),
         _ => {
             error!("Unsupported Tron chain id: {:?}", chain_id);
             return None;
@@ -399,6 +396,13 @@ mod tests {
     use tokio;
     use tracing_test::traced_test;
 
+    fn test_tron_rpc() -> ChainRpcUrls {
+        ChainRpcUrls {
+            mainnet_url: "https://go.getblock.io/8703fc5554244851be7ee8d84c338177".to_string(),
+            testnet_url: "https://api.shasta.trongrid.io".to_string(),
+        }
+    }
+
     #[traced_test]
     #[tokio::test]
     async fn test_check_tron_trx_txn_recharge() {
@@ -411,13 +415,16 @@ mod tests {
         let whitelist = vec![to_address];
         let amount: u64 = 19019953;
 
+        let rpc = test_tron_rpc();
         let result = check_tron_txn(
             BridgeChainId::TronMainnet,
             tx_hash,
             whitelist,
             amount,
             false,
-        ).await;
+            &rpc,
+        )
+        .await;
 
         assert!(result, "TRX transaction verification failed");
     }
@@ -434,13 +441,16 @@ mod tests {
         let whitelist = vec![to_address];
         let amount: u64 = 1400000;
 
+        let rpc = test_tron_rpc();
         let result = check_tron_txn(
             BridgeChainId::TronMainnet,
             tx_hash,
             whitelist,
             amount,
             false,
-        ).await;
+            &rpc,
+        )
+        .await;
 
         assert!(result, "TRX transaction verification failed");
     }
@@ -453,13 +463,16 @@ mod tests {
         let whitelist = vec![to_address];
         let amount: u64 = 1_000000;
 
+        let rpc = test_tron_rpc();
         let result = check_tron_txn(
             BridgeChainId::TronTestnet,
             tx_hash,
             whitelist,
             amount,
             false,
-        ).await;
+            &rpc,
+        )
+        .await;
 
         assert!(result, "TRX transaction verification failed");
     }
@@ -473,13 +486,16 @@ mod tests {
         let whitelist = vec![to_address];
         let amount: u64 = 3_000000;
 
+        let rpc = test_tron_rpc();
         let result = check_tron_txn(
             BridgeChainId::TronMainnet,
             tx_hash,
             whitelist,
             amount,
             true,
-        ).await;
+            &rpc,
+        )
+        .await;
 
         assert!(result, "TRX transaction verification failed");
     }
@@ -492,13 +508,16 @@ mod tests {
         let whitelist = vec![to_address];
         let amount: u64 = 500_000000;
 
+        let rpc = test_tron_rpc();
         let result = check_tron_txn(
             BridgeChainId::TronMainnet,
             tx_hash,
             whitelist,
             amount,
             false,
-        ).await;
+            &rpc,
+        )
+        .await;
 
         assert!(result, "Transaction verification failed");
 
@@ -507,13 +526,16 @@ mod tests {
         let whitelist = vec![to_address];
         let amount: u64 = 500000000; // 0x1dcd6500
 
+        let rpc = test_tron_rpc();
         let result = check_tron_txn(
             BridgeChainId::TronMainnet,
             tx_hash,
             whitelist,
             amount,
             false,
-        ).await;
+            &rpc,
+        )
+        .await;
 
         assert!(result, "TRC20 transaction verification failed");
     }
@@ -526,15 +548,21 @@ mod tests {
         let whitelist = vec![to_address];
         let amount: u64 = 500000000;
 
+        let rpc = test_tron_rpc();
         let result = check_tron_txn(
             BridgeChainId::TronMainnet,
             tx_hash,
             whitelist,
             amount,
             false,
-        ).await;
+            &rpc,
+        )
+        .await;
 
-        assert!(result, "Transaction verification with ETH address in whitelist failed");
+        assert!(
+            result,
+            "Transaction verification with ETH address in whitelist failed"
+        );
     }
 
     #[traced_test]
@@ -548,15 +576,21 @@ mod tests {
         ];
         let amount: u64 = 500000000;
 
+        let rpc = test_tron_rpc();
         let result = check_tron_txn(
             BridgeChainId::TronMainnet,
             tx_hash,
             whitelist,
             amount,
             false,
-        ).await;
+            &rpc,
+        )
+        .await;
 
-        assert!(result, "Transaction verification with mixed whitelist failed");
+        assert!(
+            result,
+            "Transaction verification with mixed whitelist failed"
+        );
     }
 
     #[test]
@@ -577,17 +611,29 @@ mod tests {
         let expected_tron = "TBUTD9rrESu8A1Q4za6qCsv92vdA58Y4BS";
 
         let converted = eth_to_tron_address(eth_address).unwrap();
-        assert_eq!(converted, expected_tron, "ETH to Tron conversion failed for standard address");
+        assert_eq!(
+            converted, expected_tron,
+            "ETH to Tron conversion failed for standard address"
+        );
 
         let eth_address_upper = "0x10800CA2A4458149EB947EAFED8B2C99CF96A10D";
         let converted = eth_to_tron_address(eth_address_upper).unwrap();
-        assert_eq!(converted, expected_tron, "ETH to Tron conversion failed for uppercase address");
+        assert_eq!(
+            converted, expected_tron,
+            "ETH to Tron conversion failed for uppercase address"
+        );
 
         let invalid_eth = "0x123";
-        assert!(eth_to_tron_address(invalid_eth).is_none(), "Should reject invalid ETH address");
+        assert!(
+            eth_to_tron_address(invalid_eth).is_none(),
+            "Should reject invalid ETH address"
+        );
 
         let non_eth = "not-an-eth-address";
-        assert!(eth_to_tron_address(non_eth).is_none(), "Should reject non-ETH format address");
+        assert!(
+            eth_to_tron_address(non_eth).is_none(),
+            "Should reject non-ETH format address"
+        );
     }
 
     #[test]
@@ -596,34 +642,59 @@ mod tests {
         let expected_eth = "0x10800CA2A4458149eb947eAFeD8B2c99cF96a10D";
 
         let converted = tron_to_eth_address(tron_address).unwrap();
-        assert_eq!(converted.to_uppercase(), expected_eth.to_uppercase(), "Tron to ETH conversion failed for standard address");
+        assert_eq!(
+            converted.to_uppercase(),
+            expected_eth.to_uppercase(),
+            "Tron to ETH conversion failed for standard address"
+        );
 
         let invalid_tron = "T123!@#";
-        assert!(tron_to_eth_address(invalid_tron).is_none(), "Should reject invalid Tron address");
+        assert!(
+            tron_to_eth_address(invalid_tron).is_none(),
+            "Should reject invalid Tron address"
+        );
 
         let non_tron = "0xa614f803b6fd780986a42c78ec9c7f77e6ded13c";
-        assert!(tron_to_eth_address(non_tron).is_none(), "Should reject non-Tron format address");
+        assert!(
+            tron_to_eth_address(non_tron).is_none(),
+            "Should reject non-Tron format address"
+        );
     }
 
     #[test]
     fn test_address_matching() {
         let eth1 = "0xa614f803b6fd780986a42c78ec9c7f77e6ded13c";
         let eth2 = "0xa614f803b6fd780986a42c78ec9c7f77e6ded13c";
-        assert!(is_address_match(eth1, eth2), "Same ETH addresses should match");
+        assert!(
+            is_address_match(eth1, eth2),
+            "Same ETH addresses should match"
+        );
 
         let tron1 = "TBUTD9rrESu8A1Q4za6qCsv92vdA58Y4BS";
         let tron2 = "TBUTD9rrESu8A1Q4za6qCsv92vdA58Y4BS";
-        assert!(is_address_match(tron1, tron2), "Same Tron addresses should match");
+        assert!(
+            is_address_match(tron1, tron2),
+            "Same Tron addresses should match"
+        );
 
         let eth = "0x10800CA2A4458149eb947eAFeD8B2c99cF96a10D";
         let tron = "TBUTD9rrESu8A1Q4za6qCsv92vdA58Y4BS";
-        assert!(is_address_match(eth, tron), "ETH and corresponding Tron address should match");
+        assert!(
+            is_address_match(eth, tron),
+            "ETH and corresponding Tron address should match"
+        );
 
         let eth_upper = "0x10800CA2A4458149EB947EAFED8B2C99CF96A10D";
-        assert!(is_address_match(eth_upper, tron), "Case-insensitive matching should work");
+        assert!(
+            is_address_match(eth_upper, tron),
+            "Case-insensitive matching should work"
+        );
 
         let other_eth = "0x0000000000000000000000000000000000000001";
-        assert!(!is_address_match(other_eth, tron), "Different addresses should not match");
+        assert!(
+            !is_address_match(other_eth, tron),
+            "Different addresses should not match"
+        );
     }
 
     #[test]
@@ -632,14 +703,20 @@ mod tests {
         let tron = eth_to_tron_address(original_eth).unwrap();
         let back_to_eth = tron_to_eth_address(&tron).unwrap();
 
-        assert_eq!(original_eth.to_lowercase(), back_to_eth.to_lowercase(),
-                   "Round-trip conversion ETH->Tron->ETH should preserve the address");
+        assert_eq!(
+            original_eth.to_lowercase(),
+            back_to_eth.to_lowercase(),
+            "Round-trip conversion ETH->Tron->ETH should preserve the address"
+        );
     }
 
     #[test]
     fn test_real_address_pairs() {
         let eth1 = "0x10800CA2A4458149eb947eAFeD8B2c99cF96a10D";
         let tron1 = "TBUTD9rrESu8A1Q4za6qCsv92vdA58Y4BS";
-        assert!(is_address_match(eth1, tron1), "Real address pair 1 should match");
+        assert!(
+            is_address_match(eth1, tron1),
+            "Real address pair 1 should match"
+        );
     }
 }

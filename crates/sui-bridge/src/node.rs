@@ -155,7 +155,8 @@ pub async fn run_bridge_node(
             server_config.evm_clients,
             server_config.approved_governance_actions,
             metrics.clone(),
-            fast_path_config
+            fast_path_config,
+            server_config.external_rpc,
         ),
         metrics,
         Arc::new(metadata),
@@ -744,6 +745,7 @@ mod tests {
             metrics: None,
             watchdog_config: None,
             user_limit_db_url: None,
+            external_rpc: None,
         };
         // Spawn bridge node in memory
         let _handle = run_bridge_node(
@@ -832,6 +834,7 @@ mod tests {
             metrics: None,
             watchdog_config: None,
             user_limit_db_url: None,
+            external_rpc: None,
         };
 
         let prometheus_registry = Registry::new();
@@ -949,6 +952,7 @@ mod tests {
             metrics: None,
             watchdog_config: None,
             user_limit_db_url: None,
+            external_rpc: None,
         };
         let prometheus_registry = Registry::new();
         let metrics = Arc::new(BridgeMetrics::new(&prometheus_registry));

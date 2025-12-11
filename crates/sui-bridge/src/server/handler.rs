@@ -99,6 +99,7 @@ struct SendBackActionVerifier<C, P> {
 
 struct ExternalCoinVerifier<C> {
     sui_client: Arc<SuiClient<C>>,
+    external_rpc: Option<Arc<crate::config::ExternalChainRpcConfig>>,
 }
 
 #[async_trait::async_trait]
@@ -252,7 +253,10 @@ where
                     // check tron txn: only support TRC20
                     // readme: amount is benfen amount, not tron amount, so we need to convert it
                     let tron_amount = amount / 1_000;
-                    let ok = check_tron_txn(chain_id, tx_hash, whitelist, tron_amount, false).await;
+                    let external_rpc = self.external_rpc.as_ref().ok_or_else(|| {
+                        BridgeError::Generic("External RPC config not found".to_string())
+                    })?;
+                    let ok = check_tron_txn(chain_id, tx_hash, whitelist, tron_amount, false, &external_rpc.tron).await;
                     if ok {
                         return Ok(action_rs);
                     }
@@ -262,7 +266,10 @@ where
 
                     // readme: amount is benfen amount, not solana amount, so we need to convert it
                     let sol_amount = amount / 1_000;
-                    let ok = check_solana_txn(chain_id, tx_hash, whitelist, sol_amount, false).await;
+                    let external_rpc = self.external_rpc.as_ref().ok_or_else(|| {
+                        BridgeError::Generic("External RPC config not found".to_string())
+                    })?;
+                    let ok = check_solana_txn(chain_id, tx_hash, whitelist, sol_amount, false, &external_rpc.solana).await;
                     if ok {
                         return Ok(action_rs);
                     }
@@ -570,6 +577,7 @@ impl BridgeRequestHandler {
         approved_governance_actions: Vec<BridgeAction>,
         metrics: Arc<BridgeMetrics>,
         fast_path_config: FastPathConfig,
+        external_rpc: Option<crate::config::ExternalChainRpcConfig>,
     ) -> Self {
         let (sui_signer_tx, sui_rx) = mysten_metrics::metered_channel::channel(
             1000,
@@ -623,6 +631,7 @@ impl BridgeRequestHandler {
             signer.clone(),
             ExternalCoinVerifier {
                 sui_client: sui_client.clone(),
+                external_rpc: external_rpc.map(Arc::new),
             },
             metrics.clone(),
         )
@@ -1065,6 +1074,7 @@ mod tests {
         let sui_client_mock = SuiMockClient::default();
         let external_verifier = ExternalCoinVerifier {
             sui_client: Arc::new(SuiClient::new_for_testing(sui_client_mock.clone())),
+            external_rpc: None,
         };
         let metrics: Arc<BridgeMetrics> = Arc::new(BridgeMetrics::new_for_testing());
         let mut external_signer_with_cache =
