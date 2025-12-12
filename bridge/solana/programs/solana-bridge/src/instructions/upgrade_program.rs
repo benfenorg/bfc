@@ -121,6 +121,9 @@ pub fn upgrade_program_with_signatures(
     let old_version = ctx.accounts.upgrade_authority.current_version;
     ctx.accounts.upgrade_authority.update_version(upgrade_version, &ctx.accounts.clock);
 
+
+    msg!("emit ProgramUpgradeEvent");
+
     //emit event
     emit!(ProgramUpgradeEvent {
         nonce,

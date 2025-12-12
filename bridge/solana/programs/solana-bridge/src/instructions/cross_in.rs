@@ -120,7 +120,8 @@ pub fn cross_in<'info>(
     )?;
 
     let adjusted_amount = convert_slp_to_benfen_decimal(  ctx.accounts.token_mint.decimals, token_config.benfen_decimal, amount)?;
-  
+
+    msg!("emit TokensDeposited");
     //emit event
     emit!(TokensDeposited {
         nonce: message.nonce(),

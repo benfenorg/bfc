@@ -155,8 +155,9 @@ fn add_token_internal<'a, 'b,'c,'info>(
     bridge_config.increment_token_count();
     let total_token_count = bridge_config.token_count;
 
-    
-    
+
+    msg!("emit TokenAddedEvent");
+
     emit!(TokenAddedEvent {
         nonce,
         token_id,

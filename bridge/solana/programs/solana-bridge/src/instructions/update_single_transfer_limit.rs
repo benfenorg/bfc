@@ -80,6 +80,8 @@ pub fn update_single_transfer_limit_with_signatures(
     require!(chain_limit.get_chain_id()==source_chain_id, BridgeLimiterError::InvalidChainId);
     chain_limit.set_single_transfer_limit(new_limit);
 
+    
+    msg!("emit SingleTransferLimitUpdated");
     emit!(SingleTransferLimitUpdated {
         nonce,
         source_chain_id,

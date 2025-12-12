@@ -10,7 +10,7 @@ pub struct InitializeUpgradeAuthority<'info> {
 
     #[account(
         mut,
-        // address = crate::admin::id() @ AdminError::NotApproved
+        address = crate::admin::id() @ AdminError::NotApproved
     )]
     pub payer: Signer<'info>,
     
