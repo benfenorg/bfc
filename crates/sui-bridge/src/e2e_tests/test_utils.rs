@@ -76,7 +76,7 @@ use tokio::time::{sleep, Instant};
 use tracing::error;
 use tracing::info;
 
-use crate::config::{BridgeNodeConfig, EthConfig, SuiConfig};
+use crate::config::{BridgeNodeConfig, EthConfig, SuiConfig, SolanaConfig};
 use crate::node::run_bridge_node;
 use crate::sui_client::SuiBridgeClient;
 use crate::BRIDGE_ENABLE_PROTOCOL_VERSION;
@@ -1629,6 +1629,13 @@ pub(crate) async fn start_bridge_cluster(
             metrics_key_pair: default_ed25519_key_pair(),
             metrics: None,
             watchdog_config: None,
+            solana: SolanaConfig {
+                getblock_base_url: "https://go.getblock.io/<ACCESS-TOKEN>/".to_string(),
+                bridge_proxy_address: "11111111111111111111111111111111".to_string(),
+                bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
+                contracts_start_block_fallback: Some(0),
+                contracts_start_block_override: None,
+            },
             user_limit_db_url: None,
             external_rpc: None,
         };

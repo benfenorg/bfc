@@ -6,7 +6,7 @@ use crate::abi::{
 };
 use crate::config::{
     default_ed25519_key_pair, BridgeNodeConfig, ChainRpcUrls, EthConfig, ExternalChainRpcConfig,
-    MetricsConfig, SuiConfig, WatchdogConfig,
+    MetricsConfig, SuiConfig, WatchdogConfig, SolanaConfig,
 };
 use crate::crypto::BridgeAuthorityKeyPair;
 use crate::crypto::BridgeAuthorityPublicKeyBytes;
@@ -370,6 +370,13 @@ pub fn generate_bridge_node_config_and_write_to_file(
                     .to_string(),
             )]),
         }),
+        solana: SolanaConfig {
+            getblock_base_url: "your_solana_getblock_base_url".to_string(),
+            bridge_proxy_address: "0x0000000000000000000000000000000000000000".to_string(),
+            bridge_chain_id: BridgeChainId::EthSepolia as u8,
+            contracts_start_block_fallback: Some(0),
+            contracts_start_block_override: None,
+        },
         user_limit_db_url: Some("pgpath".to_string()),
         external_rpc: Some(ExternalChainRpcConfig {
             solana: ChainRpcUrls {
