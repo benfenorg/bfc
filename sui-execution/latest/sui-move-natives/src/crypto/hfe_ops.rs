@@ -11,7 +11,7 @@ use move_vm_runtime::native_charge_gas_early_exit;
 use move_vm_runtime::native_functions::NativeContext;
 use smallvec::smallvec;
 use crate::NativesCostTable;
-use mpc_transmission_v2::{recover_value_from_shares_v2, mul_two_shared_secrets_v2, split_to_two_value_v2, recover_two_shares_v2, add_two_shared_secrets_v2, sub_two_shared_secrets_v2, process_shares_data_convert};
+use mpc_transmission_v2::{split_to_two_bytes_value_v2, recover_value_from_shares_v2, mul_two_shared_secrets_v2, recover_two_shares_v2, add_two_shared_secrets_v2, sub_two_shared_secrets_v2, process_shares_data_convert};
 
 use move_vm_types::{
     loaded_data::runtime_types::Type, natives::function::NativeResult, pop_arg,values::Value
@@ -52,7 +52,7 @@ pub const CONVERT_FROM_V1_TRANSMISSION_SHARES_ERROR: u64 = 6;
 //const THRESHOLD: usize = 2;
 //const TOTAL_SHARES: usize = 2;
 const MASK_SECRET: &str =  "0x1111ffff0000";
-
+const COORD_SEED :u64 = 116540450355;
 
 pub fn hfe_ops_add(
     context: &mut NativeContext,
@@ -81,7 +81,7 @@ pub fn hfe_ops_add(
         .extensions()
         .get::<NativesCostTable>()
         .anonymous_coordseed
-        .clone().unwrap_or_default();
+        .clone().unwrap_or(COORD_SEED);
 
     let enable_anonymous_rpc = &context
         .extensions()
@@ -100,11 +100,12 @@ pub fn hfe_ops_add(
     let number2 = pop_arg!(args, Vec<u8>);
     let number1 = pop_arg!(args, Vec<u8>);
 
-    let num1 = String::from_utf8(number1).unwrap_or_default();
-    let num2 = String::from_utf8(number2).unwrap_or_default();
-    let num3 = String::from_utf8(number3).unwrap_or_default();
-    let num4 = String::from_utf8(number4).unwrap_or_default();
+    let num1 = hex::encode(number1);
+    let num2 = hex::encode(number2);
+    let num3 = hex::encode(number3);
+    let num4 = hex::encode(number4);
     let cost = context.gas_used();
+
     if num1.is_empty() || num2.is_empty() || num3.is_empty() || num4.is_empty() {
         return Ok(NativeResult::err(
             cost,
@@ -178,7 +179,7 @@ pub fn hfe_ops_add(
             Ok(result) => {
                 result
             }
-            Err(_) => {
+            Err(e) => {
                 error!("Failed to add_two_shared_secrets_v2 for bfcx_getAnonymousAdd: {}", e);
                 return Ok(NativeResult::err(
                     cost,
@@ -223,7 +224,7 @@ pub fn hfe_ops_minus(
         .extensions()
         .get::<NativesCostTable>()
         .anonymous_coordseed
-        .clone().unwrap_or_default();
+        .clone().unwrap_or(COORD_SEED);
 
     let enable_anonymous_rpc = &context
         .extensions()
@@ -233,15 +234,15 @@ pub fn hfe_ops_minus(
     let cost = context.gas_used();
 
     let owner = pop_arg!(args, AccountAddress);
-
     let number4 = pop_arg!(args, Vec<u8>);
     let number3 = pop_arg!(args, Vec<u8>);
     let number2 = pop_arg!(args, Vec<u8>);
     let number1 = pop_arg!(args, Vec<u8>);
-    let num1 = String::from_utf8(number1).unwrap_or_default();
-    let num2 = String::from_utf8(number2).unwrap_or_default();
-    let num3 = String::from_utf8(number3).unwrap_or_default();
-    let num4 = String::from_utf8(number4).unwrap_or_default();
+    let num1 = hex::encode(number1.clone());
+    let num2 = hex::encode(number2.clone());
+    let num3 = hex::encode(number3.clone());
+    let num4 = hex::encode(number4.clone());
+
     if num1.is_empty() || num2.is_empty() || num3.is_empty() || num4.is_empty() {
         return Ok(NativeResult::err(
             cost,
@@ -299,7 +300,7 @@ pub fn hfe_ops_minus(
             }
         };
 
-        let result1 = match sub_two_shared_secrets_v2(value1, value3, mask, 0, get_user_address_salt(owner),coord_seed_a, coord_seed_b) {
+        let result1 = match sub_two_shared_secrets_v2(value1, value3, mask, 0, get_user_address_salt(owner), coord_seed_a, coord_seed_b) {
             Ok(result) => {
                 result
             }
@@ -361,7 +362,7 @@ pub fn hfe_ops_multiplied(
         .extensions()
         .get::<NativesCostTable>()
         .anonymous_coordseed
-        .clone().unwrap_or_default();
+        .clone().unwrap_or(COORD_SEED);
 
     let enable_anonymous_rpc = &context
         .extensions()
@@ -376,10 +377,10 @@ pub fn hfe_ops_multiplied(
     let number3 = pop_arg!(args, Vec<u8>);
     let number2 = pop_arg!(args, Vec<u8>);
     let number1 = pop_arg!(args, Vec<u8>);
-    let num1 = String::from_utf8(number1).unwrap_or_default();
-    let num2 = String::from_utf8(number2).unwrap_or_default();
-    let num3 = String::from_utf8(number3).unwrap_or_default();
-    let num4 = String::from_utf8(number4).unwrap_or_default();
+    let num1 = hex::encode(number1);
+    let num2 = hex::encode(number2);
+    let num3 = hex::encode(number3);
+    let num4 = hex::encode(number4);
     if num1.is_empty() || num2.is_empty() || num3.is_empty() || num4.is_empty() {
         return Ok(NativeResult::err(
             cost,
@@ -491,6 +492,7 @@ pub fn hfe_ops_encode_data(context: &mut NativeContext,
     );
 
     let owner = pop_arg!(args, AccountAddress);
+
     let value = pop_arg!(args, u64);
     let cost = context.gas_used();
 
@@ -505,7 +507,7 @@ pub fn hfe_ops_encode_data(context: &mut NativeContext,
         .extensions()
         .get::<NativesCostTable>()
         .anonymous_coordseed
-        .clone().unwrap_or_default();
+        .clone().unwrap_or(COORD_SEED);
 
     let enable_anonymous_rpc = &context
         .extensions()
@@ -540,10 +542,10 @@ pub fn hfe_ops_encode_data(context: &mut NativeContext,
         let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
             .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
 
-        let (result1, result2, _) = split_to_two_value_v2(value, get_user_address_salt(owner), mask, anonymous_coordseed);
+        let (result1, result2, _) = split_to_two_bytes_value_v2(value, get_user_address_salt(owner), mask, anonymous_coordseed);
         Ok(NativeResult::ok(
             cost,
-            smallvec![Value::vector_u8(result1.into_bytes()), Value::vector_u8(result2.into_bytes())]
+            smallvec![Value::vector_u8(result1), Value::vector_u8(result2)]
         ))
     }
 }
@@ -586,10 +588,10 @@ pub fn hfe_ops_compare_value1_and_value2(
     let number3 = pop_arg!(args, Vec<u8>);
     let number2 = pop_arg!(args, Vec<u8>);
     let number1 = pop_arg!(args, Vec<u8>);
-    let num1 = String::from_utf8(number1).unwrap_or_default();
-    let num2 = String::from_utf8(number2).unwrap_or_default();
-    let num3 = String::from_utf8(number3).unwrap_or_default();
-    let num4 = String::from_utf8(number4).unwrap_or_default();
+    let num1 = hex::encode(number1);
+    let num2 = hex::encode(number2);
+    let num3 = hex::encode(number3);
+    let num4 = hex::encode(number4);
     if num1.is_empty() || num2.is_empty() || num3.is_empty() || num4.is_empty(){
         return Ok(NativeResult::err(
             cost,
@@ -694,9 +696,8 @@ pub fn hfe_ops_compare_value(
 
     let number2 = pop_arg!(args, Vec<u8>);
     let number1 = pop_arg!(args, Vec<u8>);
-    let num1 = String::from_utf8(number1).unwrap_or_default();
-    let num2 = String::from_utf8(number2).unwrap_or_default();
-
+    let num1 = hex::encode(number1);
+    let num2 = hex::encode(number2);
     if num1.is_empty() || num2.is_empty() {
         return Ok(NativeResult::err(
             cost,

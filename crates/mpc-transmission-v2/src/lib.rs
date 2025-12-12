@@ -61,6 +61,7 @@ pub use two_party_share::{
     recover_value_v2,
     split_to_two_value_v2,
     sub_two_shared_secrets_v2,
+    split_to_two_bytes_value_v2,
 };
 
 // Share converter functions - conversion between mpc-transmission and mpc-transmission-v2 formats

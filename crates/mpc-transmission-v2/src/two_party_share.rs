@@ -67,6 +67,35 @@ pub fn split_to_two_value_v2(
     mask_secret: u64,
     coord_seed: u64,
 ) -> (String, String, u64) {
+    let (encoded_share1, encoded_share2, coord_seed) = split_to_two_bytes_value_v2(value, user_id, mask_secret, coord_seed);
+    (
+        hex::encode(encoded_share1),
+        hex::encode(encoded_share2),
+        coord_seed,
+    )
+}
+
+/// Split a secret value into two hex-encoded shares
+///
+/// Compatible with mpc-transmission API. Uses fixed-seed polynomial generation.
+///
+/// # Arguments
+/// * `value` - The u64 value to split
+/// * `user_id` - User identifier for data interleaving
+/// * `mask_secret` - Secret used for XOR masking and shuffle
+/// * `coord_seed` - Seed for generating x-coordinates
+///
+/// # Returns
+/// Tuple of (hex1, hex2, seed) where:
+/// - `hex1` - First hex-encoded share
+/// - `hex2` - Second hex-encoded share
+/// - `seed` - The seed used for coordinate generation
+pub fn split_to_two_bytes_value_v2(
+    value: u64,
+    user_id: u64,
+    mask_secret: u64,
+    coord_seed: u64,
+) -> (Vec<u8>, Vec<u8>, u64) {
     // Step 1: Use coord_seed to generate x-coordinates (independent of value!)
     let coords = get_two_party_coordinates(coord_seed);
 
@@ -84,8 +113,8 @@ pub fn split_to_two_value_v2(
 
     // Step 5: Return as hex strings
     (
-        hex::encode(encoded_share1),
-        hex::encode(encoded_share2),
+        encoded_share1,
+        encoded_share2,
         coord_seed,
     )
 }
