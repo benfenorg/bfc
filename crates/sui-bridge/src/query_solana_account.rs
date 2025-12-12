@@ -36,6 +36,16 @@ pub struct InitAccounts{
     pub upgrade_authority: Pubkey,
 }
 
+
+#[derive(Debug, Clone)]
+pub struct TransferLimitAccounts {
+    pub bridge_config: Pubkey,
+    pub bridge_committee: Pubkey,
+    pub chain_limit: Pubkey,
+    pub message_verifier: Pubkey,
+    pub message_config: Pubkey,
+}
+
 pub(crate) fn get_init_account(program_id: Pubkey,chain_id: u8) -> InitAccounts {
     // Derive PDAs to match Anchor seeds constraints exactly.
     let bridge_config_pda = Pubkey::find_program_address(&[BRIDGE_CONFIG_SEED], &program_id).0;
@@ -109,5 +119,37 @@ pub(crate) fn get_add_token_account(
         token_config,
         message_config,
         vault,
+    }
+}
+
+pub(crate) fn get_chain_limit_pda(program_id: Pubkey, benfen_chain_id: u8) -> Pubkey {
+    let bridge_config_pda = Pubkey::find_program_address(&[BRIDGE_CONFIG_SEED], &program_id).0;
+    Pubkey::find_program_address(&[CHAIN_LIMIT_SEED, &[benfen_chain_id], bridge_config_pda.as_ref()], &program_id).0
+}
+
+pub(crate) fn get_message_config_pda(program_id: Pubkey, message_type: u8) -> Pubkey {
+    let bridge_config_pda = Pubkey::find_program_address(&[BRIDGE_CONFIG_SEED], &program_id).0;
+    let committee_pda = Pubkey::find_program_address(&[BRIDGE_COMMITTEE_SEED, bridge_config_pda.as_ref()], &program_id).0;
+    let message_verifier_pda = Pubkey::find_program_address(&[MESSAGE_VERIFIER_SEED, committee_pda.as_ref()], &program_id).0;
+    Pubkey::find_program_address(&[MESSAGE_CONFIG_SEED, &[message_type], message_verifier_pda.as_ref()], &program_id).0
+}
+
+//单笔限额和24小时限额可以复用
+pub(crate) fn get_transfer_limit_account(
+    program_id: Pubkey,
+    benfen_chain_id: u8,
+    message_type: u8,
+) -> TransferLimitAccounts {
+    let bridge_config_pda = Pubkey::find_program_address(&[BRIDGE_CONFIG_SEED], &program_id).0;
+    let committee_pda = Pubkey::find_program_address(&[BRIDGE_COMMITTEE_SEED, bridge_config_pda.as_ref()], &program_id).0;
+    let chain_limit_pda = Pubkey::find_program_address(&[CHAIN_LIMIT_SEED, &[benfen_chain_id], bridge_config_pda.as_ref()], &program_id).0;
+    let message_verifier_pda = Pubkey::find_program_address(&[MESSAGE_VERIFIER_SEED, committee_pda.as_ref()], &program_id).0;
+    let message_config_pda = Pubkey::find_program_address(&[MESSAGE_CONFIG_SEED, &[message_type], message_verifier_pda.as_ref()], &program_id).0;
+    TransferLimitAccounts {
+        bridge_config: bridge_config_pda,
+        bridge_committee: committee_pda,
+        chain_limit: chain_limit_pda,
+        message_verifier: message_verifier_pda,
+        message_config: message_config_pda,
     }
 }
