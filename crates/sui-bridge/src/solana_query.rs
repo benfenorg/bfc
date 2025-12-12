@@ -1,9 +1,7 @@
+use crate::config::ChainRpcUrls;
 use serde::{Deserialize, Serialize};
 use sui_types::bridge::BridgeChainId;
 use tracing::{error, info};
-
-const MAINNET_URL: &str = "https://go.getblock.us/b980a627a55843d299a807760ab914ba";
-const TESTNET_URL: &str = MAINNET_URL;
 
 // USDC & USDT mint addresses on mainnet
 const USDC_MINT: &str = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
@@ -85,13 +83,13 @@ struct TokenBalance {
     ui_token_amount: UiTokenAmount,
 }
 
-
 pub async fn check_solana_txn(
     chain_id: BridgeChainId,
     tx_hash: &str,
     whitelist: Vec<String>,
     expected_amount: u64,
     native_token: bool,
+    rpc_urls: &ChainRpcUrls,
 ) -> bool {
     info!(
         "Checking solana txn: chain_id: {:?}, tx_hash: {}, whitelist: {:?}, expected_amount: {}",
@@ -99,8 +97,8 @@ pub async fn check_solana_txn(
     );
 
     let base_url = match chain_id {
-        BridgeChainId::SolanaMainnet => MAINNET_URL,
-        BridgeChainId::SolanaTestnet => TESTNET_URL,
+        BridgeChainId::SolanaMainnet => rpc_urls.mainnet_url.as_str(),
+        BridgeChainId::SolanaTestnet => rpc_urls.testnet_url.as_str(),
         _ => {
             error!("Unsupported Solana chain id: {:?}", chain_id);
             return false;

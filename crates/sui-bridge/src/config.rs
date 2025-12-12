@@ -138,6 +138,8 @@ pub struct BridgeNodeConfig {
     pub watchdog_config: Option<WatchdogConfig>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_limit_db_url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub external_rpc: Option<ExternalChainRpcConfig>,
 }
 
 pub fn default_ed25519_key_pair() -> NetworkKeyPair {
@@ -157,6 +159,20 @@ pub struct MetricsConfig {
 pub struct WatchdogConfig {
     /// Total supplies to watch on Sui. Mapping from coin name to coin type tag
     pub total_supplies: BTreeMap<String, String>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct ExternalChainRpcConfig {
+    pub solana: ChainRpcUrls,
+    pub tron: ChainRpcUrls,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct ChainRpcUrls {
+    pub mainnet_url: String,
+    pub testnet_url: String,
 }
 
 impl Config for BridgeNodeConfig {}
@@ -212,6 +228,21 @@ impl BridgeNodeConfig {
             );
         }
 
+        // Validate external_rpc configuration
+        let external_rpc = self.external_rpc.as_ref().ok_or_else(|| {
+            anyhow!(
+                "external_rpc configuration is required but not found in config file. \
+                Please add the following section to your config:\n\
+                external-rpc:\n\
+                  solana:\n\
+                    mainnet-url: \"https://your_solana_mainnet_rpc_url\"\n\
+                    testnet-url: \"https://your_solana_testnet_rpc_url\"\n\
+                  tron:\n\
+                    mainnet-url: \"https://your_tron_mainnet_rpc_url\"\n\
+                    testnet-url: \"https://your_tron_testnet_rpc_url\""
+            )
+        })?;
+
         let bridge_summary = sui_client
             .get_bridge_summary()
             .await
@@ -244,6 +275,7 @@ impl BridgeNodeConfig {
             eth_client: eth_client.clone(),
             evm_clients: evm_clients.clone(),
             approved_governance_actions,
+            external_rpc: Some(external_rpc.clone()),
         };
         // if !self.run_client {
         //     return Ok((bridge_server_config, None));
@@ -558,6 +590,7 @@ pub struct BridgeServerConfig {
     pub evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<MeteredEthHttpProvier>>>,
     /// A list of approved governance actions. Action in this list will be signed when requested by client.
     pub approved_governance_actions: Vec<BridgeAction>,
+    pub external_rpc: Option<ExternalChainRpcConfig>,
 }
 
 pub struct BridgeClientConfig {
@@ -607,7 +640,6 @@ pub struct BridgeClientEvmConfig {
     pub enable_fast_path_safe: bool,
     pub enable_fast_path_finalized: bool,
 }
-
 
 #[serde_as]
 #[derive(Clone, Debug, Deserialize, Serialize)]

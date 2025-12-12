@@ -58,7 +58,7 @@ pub async fn build_solana_transaction(
             // It does not need a Sui tranaction to add tokens on EVM
             unreachable!()
         },
-         BridgeAction::EthToSuiBridgeAction(_) => {
+        BridgeAction::EthToSuiBridgeAction(_) => {
             // It does not need a Sui tranaction to add tokens on EVM
             unreachable!()
         }
@@ -144,6 +144,10 @@ pub async fn build_solana_transaction(
             // It does not need a Sui tranaction to update fast path limit
             unreachable!()
         }
+        BridgeAction::SuiToEthDefiBridgeAction(sui_to_eth_defi_bridge_action) => todo!(),
+        BridgeAction::EthToSuiDefiBridgeAction(eth_to_sui_defi_bridge_action) => todo!(),
+        BridgeAction::UpdateInvestAddressAction(update_invest_address_action) => todo!(),
+        BridgeAction::AddLpTokenIdAction(add_lp_token_id_action) => todo!(),
         _ => unreachable!(),
     }
 
