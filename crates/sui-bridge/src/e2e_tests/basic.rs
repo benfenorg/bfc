@@ -30,6 +30,7 @@ use crate::sui_transaction_builder::{
 };
 
 use crate::solana_transaction_builder::build_solana_transaction;
+use crate::user_limit::schema::limit_config;
 use sui_json_rpc_types::SuiObjectDataOptions;
 // use ethers::types::Address;
 use ethers::types::Address as EthAddress;
@@ -48,6 +49,7 @@ use benfen_bridge::{
     accounts::BridgeConfig, 
     accounts::Committee,
     accounts::TokenConfigAccount,
+    accounts::ChainLimit,
 };
 
 use anchor_lang;
@@ -61,6 +63,7 @@ use crate::types::{
     RemoveExternalCoinAdminAction, RemoveExternalCoinTargetAction, RemoveExternalCoinWitnessAction,
     RemoveTokenOnTokenListAction, SingleTransferLimitUpdateAction, UpdateBridgeFeeOnCrossInAction,
     UpdateBridgeFeeOnCrossOutAction, WithdrawBridgeFeeAction,AddTokenOnSolanaAction,
+    LimitUpdateAction,
 };
 use crate::utils::publish_and_register_coins_return_add_coins_on_sui_action;
 use crate::BRIDGE_ENABLE_PROTOCOL_VERSION;
@@ -1493,6 +1496,176 @@ async fn test_set_single_transfer_limit_on_eth() {
 
     assert_eq!(amount, limit);
 }
+#[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+async fn test_update_single_limit_on_solana(){
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_solana_env(true)
+        .with_solana_chain_id(BridgeChainId::SolanaTestnet)
+        .with_bridge_cluster(false)
+        .with_num_validators(3) 
+        .build()
+        .await;
+    let env=bridge_test_cluster
+        .solana_env();
+    let solana_signer = env.get_signer().await.expect("Failed to get solana signer");
+
+    let client=env.client.clone();
+
+    // 100000
+    let limit=100_000*100_000_000;
+    let update_single_limit_action = BridgeAction::SingleTransferLimitUpdateAction(SingleTransferLimitUpdateAction {
+        nonce: 0,
+        chain_id: BridgeChainId::SolanaTestnet,
+        sending_chain_id: BridgeChainId::SuiCustom,
+        new_usd_limit: limit,
+    });
+
+     bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![update_single_limit_action.clone(), update_single_limit_action.clone()],
+        vec![update_single_limit_action.clone()],
+        vec![update_single_limit_action.clone()],
+    ]);
+
+    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee"),
+    );
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_solana_action = agg
+        .request_committee_signatures(update_single_limit_action)
+        .await
+        .expect("Failed to request committee signatures for update single limit action");
+
+    let program = Arc::new(client.program(benfen_bridge::ID).expect("Failed to get program"));
+
+    let single_transfer_action=build_solana_transaction(
+        program.clone(),
+        BridgeChainId::SolanaTestnet,
+        BridgeChainId::SuiCustom,
+        &solana_signer,
+        certified_solana_action,
+    ).await.expect("Failed to build solana transaction");
+
+
+    let signature = program
+        .request()
+        .instruction(single_transfer_action)
+        .signer(solana_signer.clone())
+        .send()
+        .await.expect("Failed to send and confirm transaction");
+
+    info!("update single transfer limit signature: {:?}", signature);
+
+
+    //Verify
+    let chain_limit_pda = query_solana_account::get_chain_limit_pda(program.clone().id(),  BridgeChainId::SuiCustom as u8);
+
+     let limit_account = program
+        .account::<ChainLimit>(chain_limit_pda)
+        .await.expect("Failed to get chain limit account");
+
+    let amount=limit_account.max_usd_limit;
+
+    assert_eq!(amount, limit);
+}
+
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+async fn test_24hours_limit_on_solana(){
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_solana_env(true)
+        .with_solana_chain_id(BridgeChainId::SolanaTestnet)
+        .with_bridge_cluster(false)
+        .with_num_validators(3) 
+        .build()
+        .await;
+    let env=bridge_test_cluster
+        .solana_env();
+    let solana_signer = env.get_signer().await.expect("Failed to get solana signer");
+
+    let client=env.client.clone();
+
+    // 100000
+    let limit=500_000*100_000_000;
+    let update_single_limit_action = BridgeAction::LimitUpdateAction(LimitUpdateAction {
+        nonce: 0,
+        chain_id: BridgeChainId::SolanaTestnet,
+        sending_chain_id: BridgeChainId::SuiCustom,
+        new_usd_limit: limit,
+    });
+
+     bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![update_single_limit_action.clone(), update_single_limit_action.clone()],
+        vec![update_single_limit_action.clone()],
+        vec![update_single_limit_action.clone()],
+    ]);
+
+    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee"),
+    );
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_solana_action = agg
+        .request_committee_signatures(update_single_limit_action)
+        .await
+        .expect("Failed to request committee signatures for 24hours limit");
+
+    let program = Arc::new(client.program(benfen_bridge::ID).expect("Failed to get program"));
+
+    let limit_action=build_solana_transaction(
+        program.clone(),
+        BridgeChainId::SolanaTestnet,
+        BridgeChainId::SuiCustom,
+        &solana_signer,
+        certified_solana_action,
+    ).await.expect("Failed to build solana transaction");
+
+
+    let signature = program
+        .request()
+        .instruction(limit_action)
+        .signer(solana_signer.clone())
+        .send()
+        .await.expect("Failed to send and confirm transaction");
+
+    info!("update 24hours limit signature: {:?}", signature);
+
+
+    //Verify
+    let chain_limit_pda = query_solana_account::get_chain_limit_pda(program.clone().id(),  BridgeChainId::SuiCustom as u8);
+
+     let limit_account = program
+        .account::<ChainLimit>(chain_limit_pda)
+        .await.expect("Failed to get chain limit account");
+
+    let amount=limit_account.total_limit;
+
+    assert_eq!(amount, limit);
+}
+
+
+
+
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_add_new_coin_on_solana() {
@@ -1507,7 +1680,7 @@ async fn test_add_new_coin_on_solana() {
     let env=bridge_test_cluster
         .solana_env();
 
-    let solana_signer = env.get_signer().await.expect("Failed to get solana signer");
+    let solana_signer: Arc<solana_sdk::signature::Keypair> = env.get_signer().await.expect("Failed to get solana signer");
 
     let client=env.client.clone();
     let usdc_deployment_result = crate::utils::deploy_usdc_in_anchor_client(
