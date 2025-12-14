@@ -3,7 +3,7 @@
 
 use crate::abi::{EthBridgeCommittee, EthBridgeEvent, EthERC20, EthSuiBridge, EthSuiBridgeEvents};
 use crate::abi::{EthBridgeConfig, EthBridgeLimiter};
-use crate::config::default_ed25519_key_pair;
+use crate::config::{default_ed25519_key_pair, ChainRpcUrls, ExternalChainRpcConfig};
 use crate::crypto::BridgeAuthorityKeyPair;
 use crate::crypto::BridgeAuthorityPublicKeyBytes;
 use crate::crypto::BridgeAuthoritySignInfo;
@@ -1630,7 +1630,16 @@ pub(crate) async fn start_bridge_cluster(
             metrics: None,
             watchdog_config: None,
             user_limit_db_url: None,
-            external_rpc: None,
+            external_rpc: Some(ExternalChainRpcConfig {
+                solana: ChainRpcUrls {
+                    mainnet_url: "http://127.0.0.1:8899".to_string(),
+                    testnet_url: "http://127.0.0.1:8899".to_string(),
+                },
+                tron: ChainRpcUrls {
+                    mainnet_url: "http://127.0.0.1:18190".to_string(),
+                    testnet_url: "http://127.0.0.1:18190".to_string(),
+                },
+            }),
         };
         let prometheus_registry = Registry::new();
         if i == 0 {
