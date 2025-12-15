@@ -8,6 +8,10 @@ use sui::bag::{Self, Bag};
 use std::string::{Self};
 use sui::anonymous_coin::TreasuryCap;
 use sui::package::UpgradeCap;
+use sui::event;
+
+
+
 const ENOT_ADMIN: u64 = 0;
 const ADMIN_ALREADY_EXISTS: u64 = 1;
 const ADMIN_REACH_MAX: u64 = 2;
@@ -46,6 +50,8 @@ public struct AnonymousVault has key, store {
     can_init_admin_status: bool,
     actions: vector<VaultAction>,
 
+    dynamic_keys: vector<string::String>,
+
     //1. use dynamic field to store objects: upgradeCap, treasuryCap, etc
     //2. use Bag to store tokens [token don't have key and store ability]
     vault_token_pool: Bag,
@@ -62,6 +68,59 @@ public struct VaultTokenPool<phantom T1, phantom T2> has store, key {
 }
 
 
+
+public struct VaultCreateEvent has copy, drop, store {
+    creator: address
+}
+public struct InitTokenPoolEvent has copy, drop, store {
+    creator: address
+}
+public struct InitAdminEvent has copy, drop, store {
+    creator: address
+}
+public struct DepositToken1Event has copy, drop, store {
+    creator: address,
+}
+public struct DepositToken2Event has copy, drop, store {
+    creator: address,
+}
+
+public struct DepositUpgradeCapEvent has copy, drop, store {
+    creator: address,
+    object_key: string::String,
+}
+public struct DepositTreasuryCapEvent has copy, drop, store {
+    creator: address,
+    object_key: string::String,
+}
+
+
+public struct CreateActionEvent has copy, drop, store {
+    creator: address,
+    action_type: u8,
+    action_index: u64,
+    action_receipt: address,
+    action_key: string::String,
+}
+
+public struct AdminVoteForActionEvent has copy, drop, store {
+    creator: address,
+    action_index: u64,
+}
+
+public struct WithdrawUpgradeCapEvent has copy, drop, store {
+    creator: address,
+    object_key: string::String,
+}
+
+public struct WithdrawTreasuryCapEvent has copy, drop, store {
+    creator: address,
+    object_key: string::String,
+}
+
+public struct WithdrawToken1Event has copy, drop, store {
+    creator: address,
+}
 
 fun init(ctx: &mut TxContext) {
     let vault = create_anonymous_vault(ctx);
@@ -80,8 +139,11 @@ entry fun init_token_pool<T1, T2>(anonymous_coin_1: Anonymous_Coin<T1>,
         anonymous_coin_2,
     };
     let vault_token_key = string::utf8(VAULT_TOKEN_KEY);
-    bag::add<string::String, VaultTokenPool<T1, T2>>(&mut vault.vault_token_pool, vault_token_key, pool)
+    bag::add<string::String, VaultTokenPool<T1, T2>>(&mut vault.vault_token_pool, vault_token_key, pool);
 
+    event::emit(InitTokenPoolEvent {
+        creator: tx_context::sender(ctx),
+    });
 
 }
 
@@ -95,7 +157,11 @@ entry fun init_admin(admin: address, vault: &mut AnonymousVault) {
     vector::push_back(&mut vault.admins, admin);
     if (vector::length(&vault.admins) == ADMIN_MAX_COUNT) {
         vault.can_init_admin_status = false;
-    }
+    };
+
+    event::emit(InitAdminEvent {
+        creator: admin,
+    });
 }
 
 
@@ -106,7 +172,9 @@ entry fun deposit_token1_to_vault_pool<T1, T2>( anonymous_coin: Anonymous_Coin<T
     let vault_token_pool = bag::borrow_mut<string::String, VaultTokenPool<T1, T2>>(&mut vault.vault_token_pool, vault_key);
     join(&mut vault_token_pool.anonymous_coin_1, anonymous_coin, ctx);
 
-
+    event::emit(DepositToken1Event {
+        creator: tx_context::sender(ctx),
+    });
 }
 
 
@@ -118,7 +186,9 @@ entry fun deposit_token2_to_vault_pool<T1, T2>( anonymous_coin: Anonymous_Coin<T
 
     join(&mut vault_token_pool.anonymous_coin_2, anonymous_coin, ctx);
 
-
+    event::emit(DepositToken2Event {
+        creator: tx_context::sender(ctx),
+    });
 }
 
 entry fun deposit_contract_upgrade_cap_to_vault( obj: UpgradeCap, object_key: string::String,  vault: &mut AnonymousVault, ctx: &TxContext){
@@ -129,6 +199,11 @@ entry fun deposit_contract_upgrade_cap_to_vault( obj: UpgradeCap, object_key: st
 
     assert!(!dynamic_field::exists_(&vault.id, object_key), EObjectAlreadyExists);
     dynamic_field::add(&mut vault.id, object_key, obj);
+    vector::push_back(&mut vault.dynamic_keys,object_key);
+    event::emit(DepositUpgradeCapEvent {
+        creator: sender,
+        object_key,
+    });
 }
 
 
@@ -139,6 +214,12 @@ entry fun deposit_treasury_cap_to_vault<T>( obj: TreasuryCap<T>, object_key: str
 
     assert!(!dynamic_field::exists_(&vault.id, object_key), EObjectAlreadyExists);
     dynamic_field::add(&mut vault.id, object_key, obj);
+    vector::push_back(&mut vault.dynamic_keys,object_key);
+
+    event::emit(DepositTreasuryCapEvent {
+        creator: sender,
+        object_key,
+    });
 }
 
 fun withdraw_upgrade_cap_object_to_receiver(
@@ -150,7 +231,14 @@ fun withdraw_upgrade_cap_object_to_receiver(
     assert!(dynamic_field::exists_(&vault.id, object_key), EObjectNotFound);
 
     let  obj: UpgradeCap = dynamic_field::remove(&mut vault.id, object_key);
+    let index = find_index_string(&vault.dynamic_keys, object_key);
+    vector::remove(&mut vault.dynamic_keys, index);
+
     transfer::public_transfer(obj, receiver);
+    event::emit(WithdrawUpgradeCapEvent {
+        creator: receiver,
+        object_key,
+    });
 }
 
 fun withdraw_treasure_cap_object_to_receiver<T>(
@@ -163,8 +251,13 @@ fun withdraw_treasure_cap_object_to_receiver<T>(
     assert!(dynamic_field::exists_(&vault.id, object_key), EObjectNotFound);
 
     let  obj: TreasuryCap<T> = dynamic_field::remove(&mut vault.id, object_key);
+    let index = find_index_string(&vault.dynamic_keys, object_key);
+    vector::remove(&mut vault.dynamic_keys, index);
     transfer::public_transfer(obj, receiver);
-
+    event::emit(WithdrawTreasuryCapEvent {
+        creator: receiver,
+        object_key,
+    });
 }
 
 entry fun admin_vote_for_action<T,T1, T2,>(action: &mut VaultAction, vault:& mut AnonymousVault, clock: &Clock, ctx: & TxContext){
@@ -180,8 +273,12 @@ entry fun admin_vote_for_action<T,T1, T2,>(action: &mut VaultAction, vault:& mut
     vector::push_back(&mut action.approve_admins, tx_context::sender(ctx));
     if(vector::length(&action.approve_admins) >= THRESHOLD_FOR_ACTION){
         do_action_if_reach_threshold<T, T1, T2>(action, vault);
-    }
+    };
 
+    event::emit(AdminVoteForActionEvent {
+        creator: sender,
+        action_index: action.action_index,
+    });
 }
 
 fun remove_admin(admin: address, vault:& mut AnonymousVault){
@@ -223,14 +320,25 @@ fun do_action_if_reach_threshold<T, T1, T2>(action: &mut VaultAction, vault:& mu
 }
 
 public fun create_anonymous_vault(ctx: &mut TxContext): AnonymousVault {
-    AnonymousVault {
+
+
+
+
+    let vault = AnonymousVault {
         id: object::new(ctx),
         latest_action_num: 0,
         admins: vector::empty<address>(),
         can_init_admin_status: true,
         actions: vector::empty<VaultAction>(),
         vault_token_pool: bag::new(ctx),
-    }
+        dynamic_keys: vector::empty<string::String>(),
+    };
+    event::emit(VaultCreateEvent {
+        creator: tx_context::sender(ctx),
+    });
+
+    vault
+
 }
 
 fun withdraw_token1<T1, T2>( vault: &mut AnonymousVault,
@@ -248,7 +356,6 @@ fun withdraw_token1<T1, T2>( vault: &mut AnonymousVault,
     transfer::public_transfer(token1, receiver);
     transfer::public_transfer(token2, receiver);
     object::delete(id);
-    //object::delete(vault_token_pool.id)
     //re-add poo
 
 }
@@ -295,7 +402,16 @@ entry fun create_action(action_type: u8,
     //vector::push_back(&mut vault.actions, action);
     vault.latest_action_num = vault.latest_action_num + 1;
 
+    event::emit(CreateActionEvent {
+        creator: tx_context::sender(ctx),
+        action_type,
+        action_index: action.action_index,
+        action_receipt: action_address,
+        action_key,
+    });
     transfer::share_object(action);
+
+
 }
 
 
@@ -311,6 +427,19 @@ fun find_index_address(vec: &vector<address>, addr: address): u64 {
     };
     len
 }
+fun find_index_string(vec: &vector<string::String>, key_string: string::String): u64 {
+    let mut i = 0;
+    let len = vector::length(vec);
+
+    while (i < len) {
+        if (*vector::borrow(vec, i) == key_string) {
+            return i
+        };
+        i = i + 1;
+    };
+    len
+}
+
 fun vector_contains(vec: &vector<address>, addr: &address): bool {
     let mut i = 0;
     let len = vector::length(vec);
@@ -323,6 +452,8 @@ fun vector_contains(vec: &vector<address>, addr: &address): bool {
     };
     false
 }
+
+
 
 
 #[test_only]
@@ -352,3 +483,6 @@ public fun create_testing_action(action_type: u8,
 
     action
 }
+
+
+
