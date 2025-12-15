@@ -10,6 +10,7 @@ module anonymous_vault::anonymous_vault_tests{
     use std::debug;
     use std::string::{Self};
     use sui::clock;
+    use anonymous_vault::testausd;
 
 
 #[test]
@@ -97,7 +98,19 @@ fun test_anonymous_vault_action() {
 
 #[test]
 fun test_anonymous_vault_object_control() {
-// pass
+    //pass
+    let mut scenario = test_scenario::begin(@0);
+    let mut treasury = testausd::new_for_testing(scenario.ctx());
+    testausd::mint(&mut treasury, 20000, scenario.ctx());
+    scenario.next_epoch(@0); // needed or else we won't have a value for `most_recent_id_for_address` coming up next.
+
+
+    //let coin = scenario.take_from_address<anonymous_coin::Anonymous_Coin<ausd::AUSD>>(@0);
+    transfer::public_transfer(treasury, tx_context::sender(scenario.ctx()));
+    //transfer::public_transfer(coin, tx_context::sender(scenario.ctx()));
+
+    test_scenario::next_tx(&mut scenario, @0x0);
+    scenario.end();
 }
 #[test]
 fun test_anonymous_vault_token_control(){
