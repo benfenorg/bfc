@@ -15,7 +15,10 @@ const NOT_INIT_ADMIN_STATUS: u64 = 3;
 const ADMIN_ALREADY_VOTED: u64 = 4;
 const EObjectNotFound: u64 = 6;
 const EObjectAlreadyExists: u64 = 7;
+const EACTION_STATUE :u64 = 8;
+const EACTION_OVERTIME :u64 = 9;
 
+const DEFAULT_ACTION_PERIOD: u64     = 1000 * 60 * 60  * 24 * 7; // 7 days || 7 hour for test
 
 
 const ADMIN_MAX_COUNT: u64 = 5;
@@ -28,9 +31,11 @@ const ACTION_STATUS_COMPLETED: u8 = 1;
 
 const ACTION_TYPE_ADD_ADMIN: u8 = 0;
 const ACTION_TYPE_REMOVE_ADMIN: u8 = 1;
-const ACTION_TYPE_WITHDRAW_OBJECT: u8 = 2;
-const ACTION_TYPE_WITHDRAW_TOKEN1: u8 = 3;
-const ACTION_TYPE_WITHDRAW_TOKEN2: u8 = 4;
+const ACTION_TYPE_WITHDRAW_TREASURY_CAP_OBJECT: u8 = 2;
+const ACTION_TYPE_WITHDRAW_UPGRADE_CAP_OBJECT: u8 = 3;
+
+const ACTION_TYPE_WITHDRAW_TOKEN1: u8 = 4;
+const ACTION_TYPE_WITHDRAW_TOKEN2: u8 = 5;
 
 const VAULT_TOKEN_KEY : vector<u8> = b"anonymous_vault_token_key";
 
@@ -84,7 +89,7 @@ entry fun init_admin(admin: address, vault: &mut AnonymousVault) {
 
     assert!(vault.can_init_admin_status == true, NOT_INIT_ADMIN_STATUS);
 
-    assert!(!vector_contains(&vault.admins, &admin) , ADMIN_ALREADY_EXISTS);
+    assert!(vector_contains(&vault.admins, &admin) == false, ADMIN_ALREADY_EXISTS);
     assert!(vector::length(&vault.admins) <= ADMIN_MAX_COUNT, ADMIN_REACH_MAX);
 
     vector::push_back(&mut vault.admins, admin);
@@ -136,8 +141,19 @@ entry fun deposit_treasury_cap_to_vault<T>( obj: TreasuryCap<T>, object_key: str
     dynamic_field::add(&mut vault.id, object_key, obj);
 }
 
+fun withdraw_upgrade_cap_object_to_receiver(
+    object_key: string::String,
+    vault: &mut AnonymousVault,
+    receiver: address,
+){
+    assert!(vector_contains(&vault.admins, &receiver), ENOT_ADMIN);
+    assert!(dynamic_field::exists_(&vault.id, object_key), EObjectNotFound);
 
-fun withdraw_object_to_receiver<T: key + store>(
+    let  obj: UpgradeCap = dynamic_field::remove(&mut vault.id, object_key);
+    transfer::public_transfer(obj, receiver);
+}
+
+fun withdraw_treasure_cap_object_to_receiver<T>(
                                     object_key: string::String,
                                     vault: &mut AnonymousVault,
                                     receiver: address,
@@ -146,16 +162,20 @@ fun withdraw_object_to_receiver<T: key + store>(
     assert!(vector_contains(&vault.admins, &receiver), ENOT_ADMIN);
     assert!(dynamic_field::exists_(&vault.id, object_key), EObjectNotFound);
 
-    let  obj: T = dynamic_field::remove(&mut vault.id, object_key);
+    let  obj: TreasuryCap<T> = dynamic_field::remove(&mut vault.id, object_key);
     transfer::public_transfer(obj, receiver);
 
 }
 
-entry fun admin_vote_for_action<T: key + store,T1, T2,>(action: &mut VaultAction, vault:& mut AnonymousVault, ctx: & TxContext){
+entry fun admin_vote_for_action<T,T1, T2,>(action: &mut VaultAction, vault:& mut AnonymousVault, clock: &Clock, ctx: & TxContext){
 
     let sender = tx_context::sender(ctx);
+    let current_time = clock::timestamp_ms(clock);
+
     assert!(vector_contains(&vault.admins, &sender), ENOT_ADMIN);
-    assert!(vector_contains(&action.approve_admins, &sender), ADMIN_ALREADY_VOTED);
+    assert!(action.action_status == ACTION_STATUS_PENDING, EACTION_STATUE);
+    assert!(vector_contains(&action.approve_admins, &sender) == false, ADMIN_ALREADY_VOTED);
+    assert!(current_time - action.start_time < DEFAULT_ACTION_PERIOD, EACTION_OVERTIME);
 
     vector::push_back(&mut action.approve_admins, tx_context::sender(ctx));
     if(vector::length(&action.approve_admins) >= THRESHOLD_FOR_ACTION){
@@ -177,7 +197,7 @@ fun add_admin(admin: address, vault:& mut AnonymousVault){
 }
 
 
-fun do_action_if_reach_threshold<T: key + store, T1, T2>(action: &mut VaultAction, vault:& mut AnonymousVault){
+fun do_action_if_reach_threshold<T, T1, T2>(action: &mut VaultAction, vault:& mut AnonymousVault){
     let receiver = action.action_receipt;
     if(action.action_type == ACTION_TYPE_ADD_ADMIN){
         add_admin(receiver, vault);
@@ -185,9 +205,11 @@ fun do_action_if_reach_threshold<T: key + store, T1, T2>(action: &mut VaultActio
     else if(action.action_type == ACTION_TYPE_REMOVE_ADMIN){
         remove_admin(receiver, vault);
     }
-    else if(action.action_type == ACTION_TYPE_WITHDRAW_OBJECT){
-        let key_string = string::utf8(b"object_key");
-        withdraw_object_to_receiver<T>(key_string, vault, receiver);
+    else if(action.action_type == ACTION_TYPE_WITHDRAW_TREASURY_CAP_OBJECT){
+        withdraw_treasure_cap_object_to_receiver<T>(action.action_key, vault, receiver);
+    }
+    else if(action.action_type == ACTION_TYPE_WITHDRAW_UPGRADE_CAP_OBJECT){
+        withdraw_upgrade_cap_object_to_receiver(action.action_key, vault, receiver);
     }
     else if(action.action_type == ACTION_TYPE_WITHDRAW_TOKEN1){
         withdraw_token1<T1, T2>(vault,receiver);
