@@ -94,7 +94,7 @@ entry fun init_admin(admin: address, vault: &mut AnonymousVault) {
 }
 
 
-entry fun deposit_token1_to_valut_pool<T1, T2>( anonymous_coin: Anonymous_Coin<T1>,
+entry fun deposit_token1_to_vault_pool<T1, T2>( anonymous_coin: Anonymous_Coin<T1>,
                                                 vault: &mut AnonymousVault,
                                                  ctx: &mut TxContext){
     let vault_key = string::utf8(VAULT_TOKEN_KEY);
@@ -105,7 +105,7 @@ entry fun deposit_token1_to_valut_pool<T1, T2>( anonymous_coin: Anonymous_Coin<T
 }
 
 
-entry fun deposit_token2_to_valut_pool<T1, T2>( anonymous_coin: Anonymous_Coin<T2>,
+entry fun deposit_token2_to_vault_pool<T1, T2>( anonymous_coin: Anonymous_Coin<T2>,
                                                 vault: &mut AnonymousVault,
                                                 ctx: &mut TxContext){
     let vault_key = string::utf8(VAULT_TOKEN_KEY);
@@ -116,7 +116,7 @@ entry fun deposit_token2_to_valut_pool<T1, T2>( anonymous_coin: Anonymous_Coin<T
 
 }
 
-entry fun deposit_treasury_upgrade_cap_to_vault( obj: UpgradeCap, object_key: string::String,  vault: &mut AnonymousVault, ctx: &TxContext){
+entry fun deposit_contract_upgrade_cap_to_vault( obj: UpgradeCap, object_key: string::String,  vault: &mut AnonymousVault, ctx: &TxContext){
     //transfer object to sub vault for objects
     let sender = tx_context::sender(ctx);
     assert!(vector_contains(&vault.admins, &sender), ENOT_ADMIN);
