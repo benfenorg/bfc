@@ -191,8 +191,9 @@ fun remove_admin(admin: address, vault:& mut AnonymousVault){
 
     vector::remove(&mut vault.admins, index);
 }
+
 fun add_admin(admin: address, vault:& mut AnonymousVault){
-    assert!(vector_contains(&vault.admins, &admin), ADMIN_ALREADY_EXISTS);
+    assert!(vector_contains(&vault.admins, &admin) == false, ADMIN_ALREADY_EXISTS);
     assert!(vector::length(&vault.admins) < ADMIN_MAX_COUNT, ADMIN_REACH_MAX);
     vector::push_back(&mut vault.admins, admin);
 }
