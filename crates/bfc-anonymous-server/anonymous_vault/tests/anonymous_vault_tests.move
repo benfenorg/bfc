@@ -4,7 +4,6 @@
 
 #[test_only]
 module anonymous_vault::anonymous_vault_tests{
-    const ENotImplemented: u64 = 0;
     use  anonymous_vault::anonymous_vault::{get_latest_action_num,
         new_for_testing, init_admin,create_testing_action,admin_vote_for_action, deposit_contract_upgrade_cap_to_vault
         ,deposit_treasury_cap_to_vault, init_token_pool};
@@ -17,7 +16,7 @@ module anonymous_vault::anonymous_vault_tests{
     use anonymous_vault::testausc;
 
     use sui::anonymous_coin;
-    use sui::package::{Self, UpgradeCap, UpgradeTicket};
+    use sui::package::Self;
     use anonymous_vault::testausd::{TESTAUSD};
     use anonymous_vault::testausc::{TESTAUSC};
 
@@ -164,7 +163,6 @@ module anonymous_vault::anonymous_vault_tests{
         let mut scenario = test_scenario::begin(@0x0);
 
         let mut _vault = new_for_testing(scenario.ctx());
-        let num = get_latest_action_num(&_vault);
         scenario.next_epoch(@0);
         let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario));
 
@@ -184,7 +182,7 @@ module anonymous_vault::anonymous_vault_tests{
         let mut scenario = test_scenario::begin(@0x1);
         let mut vault = new_for_testing(scenario.ctx());
 
-        let mut upgradeCap = package::test_publish(@0x42.to_id(), scenario.ctx());
+        let upgradeCap = package::test_publish(@0x42.to_id(), scenario.ctx());
         let mut treasury = testausd::new_for_testing(scenario.ctx());
         testausd::mint(&mut treasury, 20000, scenario.ctx());
         init_admin(@0x1, & mut vault);
@@ -214,7 +212,7 @@ module anonymous_vault::anonymous_vault_tests{
         let mut scenario = test_scenario::begin(@0x1);
         let mut vault = new_for_testing(scenario.ctx());
 
-        let mut upgradeCap = package::test_publish(@0x42.to_id(), scenario.ctx());
+        let upgradeCap = package::test_publish(@0x42.to_id(), scenario.ctx());
         let mut treasury_1 = testausd::new_for_testing(scenario.ctx());
         testausd::mint(&mut treasury_1, 20000, scenario.ctx());
         init_admin(@0x1, & mut vault);
