@@ -492,16 +492,16 @@ fn build_token_bridge_approve_transaction(
             (
                 bridge_event.solana_chain_id,
                 bridge_event.nonce,
-                bridge_event.solana_address.to_vec(),
+                bridge_event.solana_address.to_bytes().to_vec(),
                 bridge_event.sui_chain_id,
                 bridge_event.sui_address.to_vec(),
                 bridge_event.token_id,
                 bridge_event.sui_adjusted_amount,
-                bridge_event.tx_signature.as_bytes().to_vec(),
+                bridge_event.tx_signature.clone(),
                 bridge_event.event_idx,
                 "create_token_bridge_in_message",
                 "approve_token_transfer_in",
-                bridge_event.fast_path_selector,
+                Some(bridge_event.fast_path_selector),
             )
         }
         _ => unreachable!(),
