@@ -53,6 +53,8 @@ pub const METRICS_KEY_PATH: &str = "/metrics_pub_key";
 // Important: for BridgeActions, the paths need to match the ones in bridge_client.rs
 pub const ETH_TO_SUI_TX_PATH: &str =
     "/sign/bridge_tx/eth/sui/:tx_hash/:event_index/:fast_path_selector";
+pub const SOLANA_TO_SUI_TX_PATH: &str =
+    "/sign/bridge_tx/solana/sui/:tx_signature/:event_index/:fast_path_selector";
 pub const ETH_TO_SUI_DEFI_TX_PATH: &str =
     "/sign/bridge_tx/eth/sui/defi/:tx_hash/:event_index/:fast_path_selector";
 pub const EVM_TO_SUI_TX_PATH: &str =
@@ -177,6 +179,7 @@ pub(crate) fn make_router(
         .route(PING_PATH, get(ping))
         .route(METRICS_KEY_PATH, get(metrics_key_fetch))
         .route(ETH_TO_SUI_TX_PATH, get(handle_eth_tx_hash))
+        .route(SOLANA_TO_SUI_TX_PATH, get(handle_solana_tx_signature))
         .route(ETH_TO_SUI_DEFI_TX_PATH, get(handle_eth_tx_hash))
         .route(EVM_TO_SUI_TX_PATH, get(handle_evm_tx_hash))
         .route(SUI_TO_ETH_TX_PATH, get(handle_sui_tx_digest))
@@ -324,6 +327,29 @@ async fn handle_eth_tx_hash(
         Ok(sig)
     };
     with_metrics!(metrics.clone(), "handle_eth_tx_hash", future).await
+}
+
+#[instrument(level = "error", skip_all, fields(tx_signature=tx_signature, event_idx=event_idx))]
+async fn handle_solana_tx_signature(
+    Path((tx_signature, event_idx, fast_path_selector)): Path<(String, u16, u8)>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let sig = BridgeRequestHandlerTrait::handle_solana_tx_signature(
+            handler.as_ref(),
+            BridgeChainId::SolanaMainnet as u8,
+            tx_signature,
+            event_idx,
+            fast_path_selector,
+        )
+        .await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_solana_tx_signature", future).await
 }
 
 #[instrument(level = "error", skip_all, fields(tx_hash_hex=tx_hash_hex, event_idx=event_idx))]

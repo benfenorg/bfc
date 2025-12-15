@@ -15,6 +15,7 @@ use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::{BridgeAction, BridgeActionType, EthToSuiBridgeAction, SignedBridgeAction};
 use crate::tron_query::check_tron_txn;
 use crate::solana_query::check_solana_txn;
+use crate::solana_events::{SolanaBridgeEvent, SolanaLog, TokensDeposited};
 use async_trait::async_trait;
 use axum::Json;
 use ethers::providers::JsonRpcClient;
@@ -32,6 +33,8 @@ use tracing::log::error;
 use sui_types::bridge::BridgeChainId;
 use sui_types::bridge::BridgeChainId::SuiMainnet;
 use super::governance_verifier::GovernanceVerifier;
+use solana_sdk::signature::Signature;
+use serde_json::json;
 
 #[async_trait]
 pub trait BridgeRequestHandlerTrait {
@@ -42,6 +45,17 @@ pub trait BridgeRequestHandlerTrait {
         &self,
         chain_id: u8,
         tx_hash_hex: String,
+        event_idx: u16,
+        fast_path_selector: u8,
+    ) -> Result<Json<SignedBridgeAction>, BridgeError>;
+
+    /// Handles a request to sign a BridgeAction that bridges assets
+    /// from Solana to Sui. The inputs are a transaction signature on Solana
+    /// that emitted the bridge event and the Event index in that transaction
+    async fn handle_solana_tx_signature(
+        &self,
+        chain_id: u8,
+        tx_signature: String,
         event_idx: u16,
         fast_path_selector: u8,
     ) -> Result<Json<SignedBridgeAction>, BridgeError>;
@@ -88,6 +102,10 @@ struct EthActionVerifier<P> {
     eth_client: Arc<EthClient<P>>,
     evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<P>>>,
     fast_path_config: FastPathConfig,
+}
+
+struct SolanaActionVerifier {
+    external_rpc: Arc<crate::config::ExternalChainRpcConfig>,
 }
 
 struct SendBackActionVerifier<C, P> {
@@ -559,6 +577,10 @@ pub struct BridgeRequestHandler {
         (u8, TxHash, u16, u8),
         oneshot::Sender<BridgeResult<SignedBridgeAction>>,
     )>,
+    solana_signer_tx: mysten_metrics::metered_channel::Sender<(
+        (u8, String, u16, u8),
+        oneshot::Sender<BridgeResult<SignedBridgeAction>>,
+    )>,
     governance_signer_tx: mysten_metrics::metered_channel::Sender<(
         BridgeAction,
         oneshot::Sender<BridgeResult<SignedBridgeAction>>,
@@ -579,6 +601,7 @@ impl BridgeRequestHandler {
         fast_path_config: FastPathConfig,
         external_rpc: Option<crate::config::ExternalChainRpcConfig>,
     ) -> Self {
+        let external_rpc = external_rpc.map(Arc::new);
         let (sui_signer_tx, sui_rx) = mysten_metrics::metered_channel::channel(
             1000,
             &mysten_metrics::get_metrics()
@@ -600,6 +623,16 @@ impl BridgeRequestHandler {
                 .unwrap()
                 .channel_inflight
                 .with_label_values(&["server_eth_action_signing_queue"]),
+        );
+        let (solana_signer_tx, solana_rx) = mysten_metrics::metered_channel::channel::<(
+            (u8, String, u16, u8),
+            oneshot::Sender<BridgeResult<SignedBridgeAction>>,
+        )>(
+            1000,
+            &mysten_metrics::get_metrics()
+                .unwrap()
+                .channel_inflight
+                .with_label_values(&["server_solana_action_signing_queue"]),
         );
         let (external_coin_signer_tx, external_coin_rx) = mysten_metrics::metered_channel::channel(
             1000,
@@ -631,7 +664,7 @@ impl BridgeRequestHandler {
             signer.clone(),
             ExternalCoinVerifier {
                 sui_client: sui_client.clone(),
-                external_rpc: external_rpc.map(Arc::new),
+                external_rpc: external_rpc.clone(),
             },
             metrics.clone(),
         )
@@ -647,6 +680,26 @@ impl BridgeRequestHandler {
             metrics.clone(),
         )
             .spawn(eth_rx);
+
+        if let Some(external_rpc) = external_rpc.clone() {
+            SignerWithCache::new(
+                signer.clone(),
+                SolanaActionVerifier { external_rpc },
+                metrics.clone(),
+            )
+            .spawn(solana_rx);
+        } else {
+            // If Solana RPC config is missing, we still keep the channel, but requests will error.
+            // This avoids panics in environments that do not enable Solana.
+            tokio::spawn(async move {
+                let mut solana_rx = solana_rx;
+                while let Some((_, resp)) = solana_rx.recv().await {
+                    let _ = resp.send(Err(BridgeError::Generic(
+                        "External RPC config not found (solana)".to_string(),
+                    )));
+                }
+            });
+        }
         SignerWithCache::new(
             signer.clone(),
             GovernanceVerifier::new(approved_governance_actions).unwrap(),
@@ -671,8 +724,139 @@ impl BridgeRequestHandler {
             external_coin_signer_tx,
             send_back_signer_tx,
             eth_signer_tx,
+            solana_signer_tx,
             governance_signer_tx,
         }
+    }
+}
+
+async fn fetch_solana_log_messages(
+    chain_id: BridgeChainId,
+    tx_signature: &str,
+    rpc_urls: &crate::config::ChainRpcUrls,
+) -> BridgeResult<(u64, Vec<String>)> {
+    let base_url = match chain_id {
+        BridgeChainId::SolanaMainnet => rpc_urls.mainnet_url.as_str(),
+        BridgeChainId::SolanaTestnet => rpc_urls.testnet_url.as_str(),
+        _ => {
+            return Err(BridgeError::Generic(format!(
+                "Unsupported Solana chain id: {:?}",
+                chain_id
+            )));
+        }
+    };
+
+    let request_body = json!({
+        "jsonrpc": "2.0",
+        "id": "sui-bridge",
+        "method": "getTransaction",
+        "params": [
+            tx_signature,
+            {
+                "encoding": "json",
+                "commitment": "finalized"
+            }
+        ]
+    });
+
+    let client = reqwest::Client::new();
+    let res = client
+        .post(base_url)
+        .json(&request_body)
+        .send()
+        .await
+        .map_err(|e| BridgeError::Generic(format!("Failed to send Solana RPC request: {e:?}")))?;
+    let text = res
+        .text()
+        .await
+        .map_err(|e| BridgeError::Generic(format!("Failed to read Solana RPC response: {e:?}")))?;
+
+    let v: serde_json::Value = serde_json::from_str(&text).map_err(|e| {
+        BridgeError::Generic(format!("Failed to parse Solana RPC response as JSON: {e:?}"))
+    })?;
+
+    let slot = v
+        .get("result")
+        .and_then(|r| r.get("slot"))
+        .and_then(|s| s.as_u64())
+        .unwrap_or(0);
+    let logs = v
+        .get("result")
+        .and_then(|r| r.get("meta"))
+        .and_then(|m| m.get("logMessages"))
+        .and_then(|l| l.as_array())
+        .ok_or_else(|| {
+            BridgeError::Generic(format!(
+                "Missing result.meta.logMessages in Solana RPC response for tx {tx_signature}"
+            ))
+        })?
+        .iter()
+        .filter_map(|x| x.as_str().map(|s| s.to_string()))
+        .collect::<Vec<_>>();
+
+    Ok((slot, logs))
+}
+
+#[async_trait::async_trait]
+impl ActionVerifier<(u8, String, u16, u8)> for SolanaActionVerifier {
+    fn name(&self) -> &'static str {
+        "SolanaActionVerifier"
+    }
+
+    async fn verify(&self, key: (u8, String, u16, u8)) -> BridgeResult<BridgeAction> {
+        let (chain_id, tx_signature, event_idx, fast_path_selector) = key;
+        let bridge_chain_id = BridgeChainId::try_from(chain_id)?;
+        if !bridge_chain_id.is_solana_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Invalid chain id for SolanaActionVerifier: {:?}",
+                bridge_chain_id
+            )));
+        }
+
+        let signature =
+            Signature::from_str(&tx_signature).map_err(|_e| BridgeError::InvalidTxHash)?;
+
+        let (slot, log_messages) =
+            fetch_solana_log_messages(bridge_chain_id, &tx_signature, &self.external_rpc.solana)
+                .await?;
+        let solana_log = SolanaLog {
+            signature,
+            slot,
+            log_messages,
+        };
+        let events = SolanaBridgeEvent::try_from_logs(&solana_log);
+        let tokens_deposited_events: Vec<TokensDeposited> = events
+            .into_iter()
+            .filter_map(|e| match e {
+                SolanaBridgeEvent::TokensDeposited(ev) => Some(ev),
+                _ => None,
+            })
+            .collect();
+
+        let idx = event_idx as usize;
+        let deposited = tokens_deposited_events.get(idx).ok_or_else(|| {
+            BridgeError::Generic(format!(
+                "TokensDeposited event index {} out of range (found {}) for solana tx {}",
+                event_idx,
+                tokens_deposited_events.len(),
+                tx_signature
+            ))
+        })?;
+
+        let mut bridge_event = crate::types::SolanaToSuiTokenBridgeV1::try_from(deposited)?;
+        bridge_event.set_tx_signature(solana_log.signature.as_ref().to_vec());
+        bridge_event.set_event_idx(event_idx);
+        bridge_event.set_fast_path_selector(
+            FastPathSelector::try_from_primitive(fast_path_selector).unwrap(),
+        );
+
+        Ok(BridgeAction::SolanaToSuiBridgeAction(
+            crate::types::SolanaToSuiBridgeAction {
+                solana_tx_signature: tx_signature,
+                solana_event_index: event_idx,
+                solana_bridge_event: bridge_event,
+            },
+        ))
     }
 }
 
@@ -692,6 +876,24 @@ impl BridgeRequestHandlerTrait for BridgeRequestHandler {
             .send(((chain_id, tx_hash, event_idx, fast_path_selector), tx))
             .await
             .unwrap_or_else(|_| panic!("Server eth signing channel is closed"));
+        let signed_action = rx
+            .await
+            .unwrap_or_else(|_| panic!("Server signing task's oneshot channel is dropped"))?;
+        Ok(Json(signed_action))
+    }
+
+    async fn handle_solana_tx_signature(
+        &self,
+        chain_id: u8,
+        tx_signature: String,
+        event_idx: u16,
+        fast_path_selector: u8,
+    ) -> Result<Json<SignedBridgeAction>, BridgeError> {
+        let (tx, rx) = oneshot::channel();
+        self.solana_signer_tx
+            .send(((chain_id, tx_signature, event_idx, fast_path_selector), tx))
+            .await
+            .unwrap_or_else(|_| panic!("Server solana signing channel is closed"));
         let signed_action = rx
             .await
             .unwrap_or_else(|_| panic!("Server signing task's oneshot channel is dropped"))?;
