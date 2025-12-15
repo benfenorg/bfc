@@ -25,7 +25,7 @@ const ENotEnough: u64 = 2;
 
 const DEFAULT_COMPARE_RESULT_LESS_THAN: u8 = 2;
 
-const ANONYMOUS_DATA_VERSION_V1 : u8 = 0;
+//const ANONYMOUS_DATA_VERSION_V1 : u8 = 0;
 const ANONYMOUS_DATA_VERSION_V2 : u8 = 2;
 
 /// A Supply of T. Used for minting and burning.
