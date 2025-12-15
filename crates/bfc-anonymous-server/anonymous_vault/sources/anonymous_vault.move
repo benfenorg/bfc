@@ -307,6 +307,11 @@ fun add_admin(admin: address, vault:& mut AnonymousVault){
     assert!(vector_contains(&vault.admins, &admin), ADMIN_ALREADY_EXISTS);
     assert!(vector::length(&vault.admins) < ADMIN_MAX_COUNT, ADMIN_REACH_MAX);
     vector::push_back(&mut vault.admins, admin);
+
+    //in case we remove too many admins, allow to init again
+    if(vector::length(&vault.admins) >= THRESHOLD_FOR_ACTION){
+        vault.can_init_admin_status = false;
+    };
     event::emit(AddAdminEvent {
         new_admin: admin,
     });
