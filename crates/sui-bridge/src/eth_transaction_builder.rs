@@ -39,6 +39,9 @@ pub async fn build_eth_transaction(
         BridgeAction::SuiToEthBridgeAction(_) => {
             unreachable!()
         }
+        BridgeAction::SuiToSolanaBridgeAction(_) => {
+            unreachable!()
+        }
         BridgeAction::SuiToEthDefiBridgeAction(_) => {
             //todo: @fei deal the defi bridge
             unreachable!()
@@ -148,6 +151,7 @@ pub async fn build_eth_transaction(
         BridgeAction::FastPathLimitUpdateAction(_) => {
             unreachable!()
         }
+        _ => unreachable!(),
     }
 }
 

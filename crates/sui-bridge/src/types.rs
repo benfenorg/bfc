@@ -8,7 +8,10 @@ use crate::crypto::{
 };
 use crate::encoding::BridgeMessageEncoding;
 use crate::error::{BridgeError, BridgeResult};
-use crate::events::{EmittedEthTokenSendBackBridgeV1, EmittedExternalDepositStartBridgeV1, EmittedSuiToEthDefiBridgeV1, EmittedSuiToEthTokenBridgeV1};
+use crate::events::{
+    EmittedEthTokenSendBackBridgeV1, EmittedExternalDepositStartBridgeV1,
+    EmittedSuiToEthDefiBridgeV1, EmittedSuiToEthTokenBridgeV1, EmittedSuiToSolanaTokenBridgeV1,
+};
 use crate::solana_events::TokensDeposited;
 use crate::fast_path::FastPathSelector;
 use enum_dispatch::enum_dispatch;
@@ -280,6 +283,15 @@ pub struct SuiToEthBridgeAction {
     // The index of the event in the transaction
     pub sui_tx_event_index: u16,
     pub sui_bridge_event: EmittedSuiToEthTokenBridgeV1,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct SuiToSolanaBridgeAction {
+    // Digest of the transaction where the event was emitted
+    pub sui_tx_digest: TransactionDigest,
+    // The index of the event in the transaction
+    pub sui_tx_event_index: u16,
+    pub sui_bridge_event: EmittedSuiToSolanaTokenBridgeV1,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -636,6 +648,8 @@ pub struct AddTokensOnEvmAction {
 pub enum BridgeAction {
     /// Sui to Eth bridge action
     SuiToEthBridgeAction(SuiToEthBridgeAction),
+    /// Sui to Solana bridge action
+    SuiToSolanaBridgeAction(SuiToSolanaBridgeAction),
     SuiToEthDefiBridgeAction(SuiToEthDefiBridgeAction),
     EthSendBackBridgeAction(EthSendBackBridgeAction),
     ExternalDepositStartBridgeAction(ExternalDepositStartBridgeAction),
@@ -689,6 +703,7 @@ impl BridgeAction {
     pub fn chain_id(&self) -> BridgeChainId {
         match self {
             BridgeAction::SuiToEthBridgeAction(a) => a.sui_bridge_event.sui_chain_id,
+            BridgeAction::SuiToSolanaBridgeAction(a) => a.sui_bridge_event.sui_chain_id,
             BridgeAction::SuiToEthDefiBridgeAction(a) => a.sui_bridge_event.sui_chain_id,
             BridgeAction::EthSendBackBridgeAction(a) => a.sui_bridge_event.sui_chain_id,
             BridgeAction::ExternalDepositStartBridgeAction(a) => a.sui_bridge_event.source_chain,
@@ -757,6 +772,7 @@ impl BridgeAction {
     pub fn action_type(&self) -> BridgeActionType {
         match self {
             BridgeAction::SuiToEthBridgeAction(_) => BridgeActionType::TokenTransfer,
+            BridgeAction::SuiToSolanaBridgeAction(_) => BridgeActionType::TokenTransfer,
             BridgeAction::SuiToEthDefiBridgeAction(_) => BridgeActionType::Defi,
             BridgeAction::EthSendBackBridgeAction(_) => BridgeActionType::TokenTransfer,
             BridgeAction::ExternalDepositStartBridgeAction(_) => BridgeActionType::TokenTransfer,
@@ -794,6 +810,7 @@ impl BridgeAction {
     pub fn seq_number(&self) -> u64 {
         match self {
             BridgeAction::SuiToEthBridgeAction(a) => a.sui_bridge_event.nonce,
+            BridgeAction::SuiToSolanaBridgeAction(a) => a.sui_bridge_event.nonce,
             BridgeAction::SuiToEthDefiBridgeAction(a) => a.sui_bridge_event.nonce,
             BridgeAction::EthSendBackBridgeAction(a) => a.sui_bridge_event.nonce,
             BridgeAction::ExternalDepositStartBridgeAction(a) => a.sui_bridge_event.nonce,
@@ -830,6 +847,7 @@ impl BridgeAction {
     pub fn approval_threshold(&self) -> u64 {
         match self {
             BridgeAction::SuiToEthBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
+            BridgeAction::SuiToSolanaBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::SuiToEthDefiBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::EthSendBackBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::ExternalDepositStartBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,

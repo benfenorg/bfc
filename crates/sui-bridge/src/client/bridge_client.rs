@@ -56,6 +56,10 @@ impl BridgeClient {
                 "sign/bridge_tx/sui/eth/{}/{}",
                 e.sui_tx_digest, e.sui_tx_event_index
             ),
+            BridgeAction::SuiToSolanaBridgeAction(e) => format!(
+                "sign/bridge_tx/sui/solana/{}/{}",
+                e.sui_tx_digest, e.sui_tx_event_index
+            ),
             BridgeAction::SuiToEthDefiBridgeAction(e) => format!(
                 "sign/bridge_tx/sui/eth/defi/{}/{}",
                 e.sui_tx_digest, e.sui_tx_event_index
@@ -390,6 +394,7 @@ impl BridgeClient {
                     "sign/update_fast_path_limit/{chain_id}/{nonce}/{token_id}/{amount}/{chain_id_evm}"
                 )
             }
+            _ => unreachable!("BridgeAction variant is not supported by bridge_action_to_path"),
         }
     }
 

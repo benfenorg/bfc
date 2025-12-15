@@ -388,6 +388,7 @@ where
         match &action {
             BridgeAction::ExternalDepositStartBridgeAction(_)
             | BridgeAction::SuiToEthBridgeAction(_)
+            | BridgeAction::SuiToSolanaBridgeAction(_)
             | BridgeAction::EthToSuiBridgeAction(_)
             | BridgeAction::EthSendBackBridgeAction(_)
             | BridgeAction::SuiToEthDefiBridgeAction(_)

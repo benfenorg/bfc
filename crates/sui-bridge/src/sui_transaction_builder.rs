@@ -86,6 +86,16 @@ pub fn build_sui_transaction(
             sui_token_type_tags,
             rgp,
         ),
+        BridgeAction::SuiToSolanaBridgeAction(_) => build_token_bridge_approve_transaction(
+            client_address,
+            gas_object_ref,
+            action,
+            false,
+            bridge_object_arg,
+            admin_cap_arg,
+            sui_token_type_tags,
+            rgp,
+        ),
         BridgeAction::SuiToEthDefiBridgeAction(_) => build_defi_bridge_approve_transaction(
             client_address,
             gas_object_ref,
@@ -427,6 +437,23 @@ fn build_token_bridge_approve_transaction(
                 bridge_event.sui_address.to_vec(),
                 bridge_event.eth_chain_id,
                 bridge_event.eth_address.to_fixed_bytes().to_vec(),
+                bridge_event.token_id,
+                bridge_event.amount_sui_adjusted,
+                vec![],
+                0u16,
+                "create_token_bridge_message_v2",
+                "approve_token_transfer_v2",
+                None,
+            )
+        }
+        BridgeAction::SuiToSolanaBridgeAction(a) => {
+            let bridge_event = a.sui_bridge_event;
+            (
+                bridge_event.sui_chain_id,
+                bridge_event.nonce,
+                bridge_event.sui_address.to_vec(),
+                bridge_event.solana_chain_id,
+                bridge_event.solana_address.to_bytes().to_vec(),
                 bridge_event.token_id,
                 bridge_event.amount_sui_adjusted,
                 vec![],

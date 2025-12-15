@@ -111,6 +111,7 @@ where
             // Only token transfer action should reach here
             match &bridge_action {
                 BridgeAction::SuiToEthBridgeAction(_)
+                | BridgeAction::SuiToSolanaBridgeAction(_)
                 | BridgeAction::EthToSuiBridgeAction(_)
                 | BridgeAction::SuiToEthDefiBridgeAction(_)
                 | BridgeAction::EthToSuiDefiBridgeAction(_)
