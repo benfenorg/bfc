@@ -119,8 +119,16 @@ public struct WithdrawTreasuryCapEvent has copy, drop, store {
 }
 
 public struct WithdrawToken1Event has copy, drop, store {
-    creator: address,
+    receiver: address,
 }
+public struct AddAdminEvent has copy, drop, store {
+    new_admin: address,
+}
+
+public struct RemoveAdminEvent has copy, drop, store {
+    removed_admin: address,
+}
+
 
 fun init(ctx: &mut TxContext) {
     let vault = create_anonymous_vault(ctx);
@@ -286,11 +294,22 @@ fun remove_admin(admin: address, vault:& mut AnonymousVault){
     let index = find_index_address(&vault.admins, admin);
 
     vector::remove(&mut vault.admins, index);
+
+    //in case we remove too many admins, allow to init again
+    if(vector::length(&vault.admins) < THRESHOLD_FOR_ACTION){
+        vault.can_init_admin_status = true;
+    };
+    event::emit(RemoveAdminEvent {
+        removed_admin: admin,
+    });
 }
 fun add_admin(admin: address, vault:& mut AnonymousVault){
     assert!(vector_contains(&vault.admins, &admin), ADMIN_ALREADY_EXISTS);
     assert!(vector::length(&vault.admins) < ADMIN_MAX_COUNT, ADMIN_REACH_MAX);
     vector::push_back(&mut vault.admins, admin);
+    event::emit(AddAdminEvent {
+        new_admin: admin,
+    });
 }
 
 
@@ -320,9 +339,6 @@ fun do_action_if_reach_threshold<T, T1, T2>(action: &mut VaultAction, vault:& mu
 }
 
 public fun create_anonymous_vault(ctx: &mut TxContext): AnonymousVault {
-
-
-
 
     let vault = AnonymousVault {
         id: object::new(ctx),
@@ -356,6 +372,9 @@ fun withdraw_token1<T1, T2>( vault: &mut AnonymousVault,
     transfer::public_transfer(token1, receiver);
     transfer::public_transfer(token2, receiver);
     object::delete(id);
+    event::emit(WithdrawToken1Event {
+        receiver: receiver,
+    });
     //re-add poo
 
 }
