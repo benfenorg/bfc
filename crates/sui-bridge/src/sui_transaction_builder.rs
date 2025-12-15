@@ -487,6 +487,23 @@ fn build_token_bridge_approve_transaction(
                 Some(bridge_event.fast_path_selector),
             )
         }
+        BridgeAction::SolanaToSuiBridgeAction(a) => {
+            let bridge_event = a.solana_bridge_event;
+            (
+                bridge_event.solana_chain_id,
+                bridge_event.nonce,
+                bridge_event.solana_address.to_vec(),
+                bridge_event.sui_chain_id,
+                bridge_event.sui_address.to_vec(),
+                bridge_event.token_id,
+                bridge_event.sui_adjusted_amount,
+                bridge_event.tx_signature.as_bytes().to_vec(),
+                bridge_event.event_idx,
+                "create_token_bridge_in_message",
+                "approve_token_transfer_in",
+                bridge_event.fast_path_selector,
+            )
+        }
         _ => unreachable!(),
     };
     let source_chain = builder.pure(source_chain as u8).unwrap();
