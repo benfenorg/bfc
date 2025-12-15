@@ -81,20 +81,33 @@ fun test_anonymous_vault_admin_after_init_manager_test() {
 
     let user1 = @0x1;
     let user2 = @0x2;
+    let user3 = @0x3;
 
 
 
     let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario));
 
     //remove admin 0x1
-    let action  = create_testing_action(1, @0x1, string::utf8(b"object_key"), & mut vault, &clock, scenario.ctx());
+    let mut action  = create_testing_action(1, @0x1, string::utf8(b"object_key"), & mut vault, &clock, scenario.ctx());
     //vote for action
     //create   for user1
+    test_scenario::next_tx(&mut scenario, user1);
+    {
+        admin_vote_for_action<TESTAUSD, TESTAUSD, TESTAUSD>( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
+    };
+    test_scenario::next_tx(&mut scenario, user2);
+    {
+        admin_vote_for_action<TESTAUSD, TESTAUSD, TESTAUSD>( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
+    };
+    test_scenario::next_tx(&mut scenario, user3);
+    {
+        admin_vote_for_action<TESTAUSD, TESTAUSD, TESTAUSD>( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
+    };
+
 //    test_scenario::next_tx(&mut scenario, user1);
 //    {
-//        admin_vote_for_action( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
+//        admin_vote_for_action<TESTAUSD, TESTAUSD, TESTAUSD>( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
 //    };
-
     transfer::public_transfer(vault, tx_context::sender(scenario.ctx()));
 
     transfer::public_transfer(action, tx_context::sender(scenario.ctx()));
