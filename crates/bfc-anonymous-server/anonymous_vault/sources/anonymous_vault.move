@@ -136,7 +136,7 @@ fun init(ctx: &mut TxContext) {
 }
 
 
-entry fun init_token_pool<T1, T2>(anonymous_coin_1: Anonymous_Coin<T1>,
+public entry fun init_token_pool<T1, T2>(anonymous_coin_1: Anonymous_Coin<T1>,
                                     anonymous_coin_2: Anonymous_Coin<T2>,
                                     vault: &mut AnonymousVault,
                                     ctx: &mut TxContext) {
@@ -199,7 +199,7 @@ entry fun deposit_token2_to_vault_pool<T1, T2>( anonymous_coin: Anonymous_Coin<T
     });
 }
 
-entry fun deposit_contract_upgrade_cap_to_vault( obj: UpgradeCap, object_key: string::String,  vault: &mut AnonymousVault, ctx: &TxContext){
+public entry fun deposit_contract_upgrade_cap_to_vault( obj: UpgradeCap, object_key: string::String,  vault: &mut AnonymousVault, ctx: &TxContext){
     //transfer object to sub vault for objects
     let sender = tx_context::sender(ctx);
     assert!(vector_contains(&vault.admins, &sender), ENOT_ADMIN);
@@ -215,7 +215,7 @@ entry fun deposit_contract_upgrade_cap_to_vault( obj: UpgradeCap, object_key: st
 }
 
 
-entry fun deposit_treasury_cap_to_vault<T>( obj: TreasuryCap<T>, object_key: string::String,  vault: &mut AnonymousVault, ctx: &TxContext){
+public entry fun deposit_treasury_cap_to_vault<T>( obj: TreasuryCap<T>, object_key: string::String,  vault: &mut AnonymousVault, ctx: &TxContext){
     //transfer object to sub vault for objects
     let sender = tx_context::sender(ctx);
     assert!(vector_contains(&vault.admins, &sender), ENOT_ADMIN);
@@ -268,7 +268,7 @@ fun withdraw_treasure_cap_object_to_receiver<T>(
     });
 }
 
-entry fun admin_vote_for_action<T,T1, T2,>(action: &mut VaultAction, vault:& mut AnonymousVault, clock: &Clock, ctx: & TxContext){
+public entry fun admin_vote_for_action<T,T1, T2,>(action: &mut VaultAction, vault:& mut AnonymousVault, clock: &Clock, ctx: & TxContext){
 
     let sender = tx_context::sender(ctx);
     let current_time = clock::timestamp_ms(clock);
