@@ -12,7 +12,7 @@
       "name": "Apache-2.0",
       "url": "https://www.benfen.org/"
     },
-    "version": "1.24.2"
+    "version": "1.24.4"
   },
   "methods": [
     {
@@ -1325,7 +1325,7 @@
             "name": "Result",
             "value": {
               "minSupportedProtocolVersion": "1",
-              "maxSupportedProtocolVersion": "76",
+              "maxSupportedProtocolVersion": "78",
               "protocolVersion": "6",
               "featureFlags": {
                 "accept_zklogin_in_multisig": false,
