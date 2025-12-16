@@ -3,13 +3,18 @@
 use std::sync::Arc;
 use sui_types::bridge::BridgeChainId;
 use crate::types::{BridgeAction, VerifiedCertifiedBridgeAction};
-use crate::types::{AddTokenOnSolanaAction,SingleTransferLimitUpdateAction,LimitUpdateAction};
+use crate::types::{
+    AddTokenOnSolanaAction,AssetPriceUpdateAction,
+    SingleTransferLimitUpdateAction,LimitUpdateAction};
 use crate::error::{BridgeError, BridgeResult};
 use crate::idl::SolanaMessage;
 use crate::types::BridgeCommitteeValiditySignInfo; 
 use crate::utils::SolanaSigner;
 
-use crate::query_solana_account::{get_transfer_limit_account,get_add_token_account};
+use crate::query_solana_account::{
+    get_transfer_limit_account,get_add_token_account,
+    get_update_token_price_account,
+};
 use solana_sdk::{
     signature::Keypair,
     signer::Signer, 
@@ -100,8 +105,16 @@ pub async fn build_solana_transaction(
             )
             .await
         }
-        BridgeAction::AssetPriceUpdateAction(_) => {
-            unreachable!()
+        BridgeAction::AssetPriceUpdateAction(action) => {
+            build_update_price_on_solana_transaction(
+                program,
+                solana_chain_id,
+                benfen_chain_id,
+                signer,
+                action.clone(),
+                sigs,
+            )
+            .await
         }
         BridgeAction::EvmContractUpgradeAction(_) => {
             // It does not need a Sui tranaction to execute EVM contract upgrade
@@ -213,6 +226,57 @@ pub async fn build_limit_update_on_solana_transaction(
     Ok(ix)
 }
 
+
+pub async  fn build_update_price_on_solana_transaction(
+    program: Arc<Program<Arc<Keypair>>>,
+    solana_chain_id: BridgeChainId,
+    benfen_chain_id: BridgeChainId,
+    signer: &SolanaSigner,
+    action: AssetPriceUpdateAction,
+    sigs:  &BridgeCommitteeValiditySignInfo,
+)-> BridgeResult<Instruction>{
+    let program_id = program.id();
+    let message: SolanaMessage =action.clone().into();
+    let payload = message.payload.clone();
+
+    let signatures = sigs
+        .signatures
+        .values()
+        .map(|sig| sig.as_ref().to_vec())
+        .collect::<Vec<Vec<u8>>>();
+    let update_token_price_accounts = get_update_token_price_account(
+        program_id,
+        benfen_chain_id as u8,
+        action.token_id,
+        message.message_type,
+    );
+
+
+    let chain_id = action.chain_id as u8;
+
+    let ix = program
+        .request()
+        .accounts(accounts::UpdateTokenPrice {
+            payer: signer.pubkey(),
+            message_config: update_token_price_accounts.message_config,
+            token_config: update_token_price_accounts.token_config,
+            bridge_config: update_token_price_accounts.bridge_config,
+            verifier: update_token_price_accounts.message_verifier,
+            committee: update_token_price_accounts.bridge_committee,
+            system_program: system_program::ID,
+        })
+        .args(args::UpdateTokenPrice {
+            message_type: message.message_type,
+            version: message.version,
+            nonce: action.nonce,
+            chain_id,
+            payload,
+            signatures,
+        })
+        .instructions()?
+        .remove(0);
+    Ok(ix)
+}
 
 pub async fn build_single_transfer_limit_on_solana_transaction(
     program: Arc<Program<Arc<Keypair>>>,

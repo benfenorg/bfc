@@ -38,6 +38,61 @@ pub struct InitAccounts{
 
 
 #[derive(Debug, Clone)]
+pub struct UpdateTokenPriceAccounts {
+    pub bridge_config: Pubkey,
+    pub bridge_committee: Pubkey,
+    pub chain_limit: Pubkey,
+    pub message_verifier: Pubkey,
+    pub token_config: Pubkey,
+    pub message_config: Pubkey,
+}
+
+pub(crate) fn get_update_token_price_account(
+    program_id: Pubkey,
+    benfen_chain_id: u8,
+    token_id: u64,
+    message_type: u8,
+) -> UpdateTokenPriceAccounts {
+    let bridge_config_pda = Pubkey::find_program_address(&[BRIDGE_CONFIG_SEED], &program_id).0;
+    let committee_pda = Pubkey::find_program_address(
+        &[BRIDGE_COMMITTEE_SEED, bridge_config_pda.as_ref()],
+        &program_id,
+    )
+    .0;
+    let chain_limit_pda = Pubkey::find_program_address(
+        &[CHAIN_LIMIT_SEED, &[benfen_chain_id], bridge_config_pda.as_ref()],
+        &program_id,
+    )
+    .0;
+    let message_verifier_pda = Pubkey::find_program_address(
+        &[MESSAGE_VERIFIER_SEED, committee_pda.as_ref()],
+        &program_id,
+    )
+    .0;
+    let token_id_bytes = token_id.to_be_bytes();
+    let token_config_pda =
+        Pubkey::find_program_address(&[TOKEN_CONFIG_SEED, &token_id_bytes], &program_id).0;
+    let message_config_pda = Pubkey::find_program_address(
+        &[
+            MESSAGE_CONFIG_SEED,
+            &[message_type],
+            message_verifier_pda.as_ref(),
+        ],
+        &program_id,
+    )
+    .0;
+
+    UpdateTokenPriceAccounts {
+        bridge_config: bridge_config_pda,
+        bridge_committee: committee_pda,
+        chain_limit: chain_limit_pda,
+        message_verifier: message_verifier_pda,
+        token_config: token_config_pda,
+        message_config: message_config_pda,
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct TransferLimitAccounts {
     pub bridge_config: Pubkey,
     pub bridge_committee: Pubkey,
