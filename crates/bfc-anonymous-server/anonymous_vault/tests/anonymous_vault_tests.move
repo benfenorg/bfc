@@ -6,7 +6,8 @@
 module anonymous_vault::anonymous_vault_tests{
     use  anonymous_vault::anonymous_vault::{get_latest_action_num,
         new_for_testing, init_admin,create_testing_action,admin_vote_for_action, deposit_contract_upgrade_cap_to_vault
-        ,deposit_treasury_cap_to_vault, init_token_pool};
+        ,deposit_treasury_cap_to_vault, init_token_pool, deposit_token1_to_vault_pool};
+    use sui::anonymous_coin::TreasuryCap;
 
     use sui::test_scenario::{Self};
     use std::debug;
@@ -19,6 +20,7 @@ module anonymous_vault::anonymous_vault_tests{
     use sui::package::Self;
     use anonymous_vault::testausd::{TESTAUSD};
     use anonymous_vault::testausc::{TESTAUSC};
+    use sui::package::UpgradeCap;
 
 
     #[test]
@@ -59,6 +61,194 @@ module anonymous_vault::anonymous_vault_tests{
 
         scenario.end();
 
+    }
+
+    #[test]
+    fun test_anonymous_depoist_and_withdraw_token() {
+        //pass
+        let mut scenario = test_scenario::begin(@0x1);
+        let mut vault = new_for_testing(scenario.ctx());
+
+
+        init_admin(@0x1, & mut vault);
+        init_admin(@0x2, & mut vault);
+        init_admin(@0x3, & mut vault);
+        init_admin(@0x4, & mut vault);
+        init_admin(@0x5, & mut vault);
+        scenario.next_epoch(@0x1); // needed or else we won't have a value for `most_recent_id_for_address` coming up next.
+        let user1 = @0x1;
+        let user2 = @0x2;
+        let user3 = @0x3;
+
+        let mut treasury = testausd::new_for_testing(scenario.ctx());
+
+        // init
+        testausd::mint(&mut treasury, 20000, scenario.ctx());
+        test_scenario::next_tx(&mut scenario, @0x1);
+        let coin1 = scenario.take_from_address<anonymous_coin::Anonymous_Coin<TESTAUSD>>(@0x1);
+        testausd::mint(&mut treasury, 30000, scenario.ctx());
+        test_scenario::next_tx(&mut scenario, user1);
+        let coin2 = scenario.take_from_address<anonymous_coin::Anonymous_Coin<TESTAUSD>>(@0x1);
+        init_token_pool(coin1, coin2, & mut vault, scenario.ctx());
+        let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario));
+
+        // depoist token1 and token2
+        testausd::mint(&mut treasury, 40000, scenario.ctx());
+        test_scenario::next_tx(&mut scenario, user1);
+        let coin3 = scenario.take_from_address<anonymous_coin::Anonymous_Coin<TESTAUSD>>(@0x1);
+        testausd::mint(&mut treasury, 50000, scenario.ctx());
+        test_scenario::next_tx(&mut scenario, user1);
+        let coin4 = scenario.take_from_address<anonymous_coin::Anonymous_Coin<TESTAUSD>>(@0x1);
+        deposit_token1_to_vault_pool<TESTAUSD, TESTAUSD>(coin3, & mut vault, scenario.ctx());
+        deposit_token1_to_vault_pool<TESTAUSD, TESTAUSD>(coin4, & mut vault, scenario.ctx());
+
+
+        //remove admin 0x1
+        let mut action  = create_testing_action(4, @0x4, string::utf8(b"object_key_upgrade"), & mut vault, &clock, scenario.ctx());
+        //vote for action
+        //create   for user1
+        test_scenario::next_tx(&mut scenario, user1);
+        {
+            admin_vote_for_action<TESTAUSD, TESTAUSD, TESTAUSD>( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
+        };
+
+        test_scenario::next_tx(&mut scenario, user2);
+        {
+            admin_vote_for_action<TESTAUSD, TESTAUSD, TESTAUSD>( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
+        };
+        test_scenario::next_tx(&mut scenario, user3);
+        {
+            admin_vote_for_action<TESTAUSD, TESTAUSD, TESTAUSD>( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
+        };
+        test_scenario::next_tx(&mut scenario, @0x0);
+        let coin = scenario.take_from_address<anonymous_coin::Anonymous_Coin<TESTAUSD>>(@0x4);
+        debug::print(&coin);
+
+        transfer::public_transfer(vault, tx_context::sender(scenario.ctx()));
+        transfer::public_transfer(action, tx_context::sender(scenario.ctx()));
+        transfer::public_transfer(treasury, tx_context::sender(scenario.ctx()));
+        testausd::transfer(coin, tx_context::sender(scenario.ctx()));
+        //testausd::transfer(coin1, tx_context::sender(scenario.ctx()));
+        //testausd::transfer(coin2, tx_context::sender(scenario.ctx()));
+
+        clock::destroy_for_testing(clock);
+
+        test_scenario::next_tx(&mut scenario, @0x1);
+        scenario.end();
+    }
+
+    #[test]
+    fun test_anonymous_withdraw_upgrade_cap() {
+        //pass
+        let mut scenario = test_scenario::begin(@0x1);
+        let mut vault = new_for_testing(scenario.ctx());
+
+        let upgradeCap = package::test_publish(@0x42.to_id(), scenario.ctx());
+
+        init_admin(@0x1, & mut vault);
+        init_admin(@0x2, & mut vault);
+        init_admin(@0x3, & mut vault);
+        init_admin(@0x4, & mut vault);
+        init_admin(@0x5, & mut vault);
+        scenario.next_epoch(@0x1); // needed or else we won't have a value for `most_recent_id_for_address` coming up next.
+
+        //deposit_treasury_cap_to_vault<TESTAUSD>(treasury,string::utf8(b"object_key_treasury"), &mut vault, scenario.ctx());
+
+        deposit_contract_upgrade_cap_to_vault(upgradeCap,string::utf8(b"object_key_upgrade"), &mut vault, scenario.ctx());
+
+        let user1 = @0x1;
+        let user2 = @0x2;
+        let user3 = @0x3;
+        let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario));
+
+        //remove admin 0x1
+        let mut action  = create_testing_action(3, @0x4, string::utf8(b"object_key_upgrade"), & mut vault, &clock, scenario.ctx());
+        //vote for action
+        //create   for user1
+        test_scenario::next_tx(&mut scenario, user1);
+        {
+            admin_vote_for_action<TESTAUSD, TESTAUSD, TESTAUSD>( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
+        };
+        test_scenario::next_tx(&mut scenario, user2);
+        {
+            admin_vote_for_action<TESTAUSD, TESTAUSD, TESTAUSD>( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
+        };
+        test_scenario::next_tx(&mut scenario, user3);
+        {
+            admin_vote_for_action<TESTAUSD, TESTAUSD, TESTAUSD>( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
+        };
+        test_scenario::next_tx(&mut scenario, @0x0);
+
+        let upgradeCap = scenario.take_from_address<UpgradeCap>(@0x4);
+        debug::print(&upgradeCap);
+
+        transfer::public_transfer(upgradeCap, tx_context::sender(scenario.ctx()));
+        transfer::public_transfer(vault, tx_context::sender(scenario.ctx()));
+        transfer::public_transfer(action, tx_context::sender(scenario.ctx()));
+        // transfer::public_transfer(treasury, tx_context::sender(scenario.ctx()));
+
+        clock::destroy_for_testing(clock);
+
+        test_scenario::next_tx(&mut scenario, @0x1);
+        scenario.end();
+    }
+
+    #[test]
+    fun test_anonymous_withdraw_treasury_cap() {
+        //pass
+        let mut scenario = test_scenario::begin(@0x1);
+        let mut vault = new_for_testing(scenario.ctx());
+
+        let upgradeCap = package::test_publish(@0x42.to_id(), scenario.ctx());
+        let mut treasury = testausd::new_for_testing(scenario.ctx());
+        testausd::mint(&mut treasury, 20000, scenario.ctx());
+        init_admin(@0x1, & mut vault);
+        init_admin(@0x2, & mut vault);
+        init_admin(@0x3, & mut vault);
+        init_admin(@0x4, & mut vault);
+        init_admin(@0x5, & mut vault);
+        scenario.next_epoch(@0x1); // needed or else we won't have a value for `most_recent_id_for_address` coming up next.
+
+        deposit_treasury_cap_to_vault<TESTAUSD>(treasury,string::utf8(b"object_key_treasury"), &mut vault, scenario.ctx());
+
+        deposit_contract_upgrade_cap_to_vault(upgradeCap,string::utf8(b"object_key_upgrade"), &mut vault, scenario.ctx());
+
+        let user1 = @0x1;
+        let user2 = @0x2;
+        let user3 = @0x3;
+        let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario));
+
+        //remove admin 0x1
+        let mut action  = create_testing_action(2, @0x4, string::utf8(b"object_key_treasury"), & mut vault, &clock, scenario.ctx());
+        //vote for action
+        //create   for user1
+        test_scenario::next_tx(&mut scenario, user1);
+        {
+            admin_vote_for_action<TESTAUSD, TESTAUSD, TESTAUSD>( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
+        };
+        test_scenario::next_tx(&mut scenario, user2);
+        {
+            admin_vote_for_action<TESTAUSD, TESTAUSD, TESTAUSD>( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
+        };
+        test_scenario::next_tx(&mut scenario, user3);
+        {
+            admin_vote_for_action<TESTAUSD, TESTAUSD, TESTAUSD>( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
+        };
+        test_scenario::next_tx(&mut scenario, @0x0);
+
+        let treasuryCap = scenario.take_from_address<TreasuryCap<TESTAUSD>>(@0x4);
+        debug::print(&treasuryCap);
+
+        //transfer::public_transfer(treasury, tx_context::sender(scenario.ctx()));
+        transfer::public_transfer(treasuryCap, tx_context::sender(scenario.ctx()));
+        transfer::public_transfer(vault, tx_context::sender(scenario.ctx()));
+        transfer::public_transfer(action, tx_context::sender(scenario.ctx()));
+        // transfer::public_transfer(treasury, tx_context::sender(scenario.ctx()));
+
+        clock::destroy_for_testing(clock);
+
+        test_scenario::next_tx(&mut scenario, @0x1);
+        scenario.end();
     }
 
     #[test]
@@ -142,10 +332,12 @@ module anonymous_vault::anonymous_vault_tests{
             admin_vote_for_action<TESTAUSD, TESTAUSD, TESTAUSD>( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
         };
         test_scenario::next_tx(&mut scenario, user2);
+
         {
             admin_vote_for_action<TESTAUSD, TESTAUSD, TESTAUSD>( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
         };
-            test_scenario::next_tx(&mut scenario, user3);
+        test_scenario::next_tx(&mut scenario, user3);
+
         {
             admin_vote_for_action<TESTAUSD, TESTAUSD, TESTAUSD>( &mut action,&mut vault, &clock, test_scenario::ctx(&mut scenario));
         };
