@@ -889,6 +889,7 @@ pub fn build_token_send_back_transaction(
 ) -> BridgeResult<TransactionData> {
     match &action {
         BridgeAction::EthToSuiBridgeAction(_) => (),
+        BridgeAction::SolanaToSuiBridgeAction(_) => (),
         _ => unreachable!("Non token transfer action should not reach here"),
     };
     let mut builder = ProgrammableTransactionBuilder::new();
@@ -903,6 +904,17 @@ pub fn build_token_send_back_transaction(
                 bridge_event.sui_adjusted_amount,
                 a.eth_tx_hash.as_bytes().to_vec(),
                 a.eth_event_index,
+            )
+        }
+        BridgeAction::SolanaToSuiBridgeAction(a) => {
+            let bridge_event = a.solana_bridge_event;
+            (
+                bridge_event.solana_chain_id,
+                bridge_event.solana_address.to_bytes().to_vec(),
+                bridge_event.token_id,
+                bridge_event.sui_adjusted_amount,
+                a.solana_tx_signature.as_bytes().to_vec(), 
+                a.solana_event_index,
             )
         }
         _ => unreachable!(),

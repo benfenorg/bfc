@@ -6,7 +6,7 @@ use sui_json_rpc_types::{SuiExecutionStatus, SuiTransactionBlockEffectsAPI, SuiT
 use sui_types::{base_types::{ObjectID, ObjectRef, SuiAddress}, crypto::{Signature, SuiKeyPair}, digests::TransactionDigest, gas_coin::GasCoin, object::Owner, transaction::{ObjectArg, Transaction}};
 use tracing::{error, info};
 
-use crate::{action_executor::{submit_to_executor, BridgeActionExecutionWrapper, CHANNEL_SIZE}, aml::check_aml_risk_score, fast_path::FastPathSelector, metrics::BridgeMetrics, storage::BridgeOrchestratorTables, sui_client::SuiClientInner, sui_transaction_builder::build_token_send_back_transaction, types::{BridgeAction, BridgeActionStatus}};
+use crate::{action_executor::{BridgeActionExecutionWrapper, CHANNEL_SIZE, submit_to_executor}, aml::{check_aml_risk_score, check_aml_risk_score_solana}, fast_path::FastPathSelector, metrics::BridgeMetrics, storage::BridgeOrchestratorTables, sui_client::SuiClientInner, sui_transaction_builder::build_token_send_back_transaction, types::{BridgeAction, BridgeActionStatus}};
 use crate::sui_client::SuiClient;
 
 #[derive(Debug)]
@@ -166,15 +166,35 @@ where
                     });
                     sui_client.notify_something_done().await;
                 },
-                BridgeAction::SolanaToSuiBridgeAction(_) => {
-                    store.insert_pending_actions(&[bridge_action.clone()]).unwrap_or_else(|e| {
-                        panic!("Write to DB should not fail: {:?}", e);
-                    });
-                    submit_to_executor(&executor_sender, bridge_action.clone(),true).await.expect("Submit to executor should not fail");
-                    store.remove_pending_aml_checked_actions(&[bridge_action.digest()]).unwrap_or_else(|e| {
-                        panic!("Write to DB should not fail: {:?}", e);
-                    });
-                    sui_client.notify_something_done().await;
+                BridgeAction::SolanaToSuiBridgeAction(action_inner) => {
+                    let solana_address = action_inner.solana_bridge_event.solana_address;
+
+                    let is_passed = check_aml_risk_score_solana(
+                        action_inner.solana_bridge_event.solana_chain_id,
+                        action_inner.solana_bridge_event.token_id,
+                        solana_address,
+                        aml_key.clone()).await;
+                    info!("aml checker solana address:{:?} is_passed: {:?} tx_hash: {:?}", &solana_address, &is_passed, &action_inner.solana_tx_signature);
+                    if is_passed {
+                        store.insert_pending_actions(&[bridge_action.clone()]).unwrap_or_else(|e| {
+                            panic!("Write to DB should not fail: {:?}", e);
+                        });
+                        submit_to_executor(&executor_sender, bridge_action.clone(),true).await.expect("Submit to executor should not fail");
+                        store.remove_pending_aml_checked_actions(&[bridge_action.digest()]).unwrap_or_else(|e| {
+                            panic!("Write to DB should not fail: {:?}", e);
+                        });
+                        sui_client.notify_something_done().await;
+                    }else{
+                        // only finalized fast path selector will be sent back
+                        if action_inner.solana_bridge_event.fast_path_selector == FastPathSelector::Finalized {
+                            Self::send_back(bridge_action.clone(), store, key, metrics,sui_client,sui_address,gas_object_id,bridge_object_arg).await;
+                        }else{
+                            store.remove_pending_aml_checked_actions(&[bridge_action.digest()]).unwrap_or_else(|e| {
+                                panic!("remove from DB should not fail: {:?}", e);
+                            });
+                            info!("fast path selector is not finalized, skipping send back address:{:?} tx_hash:{:?}", &solana_address, &action_inner.solana_tx_signature);
+                        }
+                    }
                 },
                 _ => {
                     continue;
