@@ -84,7 +84,7 @@ async fn sim_test_mint_ausd() -> Result<(), anyhow::Error>{
         = publish_coin::do_publish(&mut test_cluster, "tests/test_ausd").await.unwrap();
 
     //mint
-    let move_call_response = publish_coin::do_mint_anonymous(&mut test_cluster,package,30000000000000000).await;
+    let move_call_response = publish_coin::do_mint_ausd(&mut test_cluster,package,30000000000000000).await;
 
     let filter=format!("{}{}{}","0x2::anonymous_coin::Anonymous_Coin<",package,"::test_ausd::TEST_AUSD>");
     let abfc_objects =
