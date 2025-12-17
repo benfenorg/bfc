@@ -681,7 +681,7 @@ async fn handle_anonymous_encode_data_array_for_zklogin_address(request: JsonRpc
                 let mut result_array = Vec::new();
                 for value in value_array_u64 {
                     let (result1, result2, _) =
-                        split_to_two_value_v2(value,
+                        split_to_two_bytes_value_v2(value,
                                            get_user_address_salt(encode_to_two_value_params.owner),
                                            mask_secret_and_coord_seed.mask_secret,
                                            mask_secret_and_coord_seed.coord_seed);
@@ -963,7 +963,7 @@ async fn handle_anonymous_encode_data(request: JsonRpcRequest) -> JsonRpcRespons
                 };
 
                 let value = encode_to_two_value_params.value;
-                let (result1, result2, _) = split_to_two_value_v2(value, get_user_address_salt(encode_to_two_value_params.owner), mask_secret_and_coord_seed.mask_secret, mask_secret_and_coord_seed.coord_seed);
+                let (result1, result2, _) = split_to_two_bytes_value_v2(value, get_user_address_salt(encode_to_two_value_params.owner), mask_secret_and_coord_seed.mask_secret, mask_secret_and_coord_seed.coord_seed);
                 JsonRpcResponse {
                     jsonrpc: "2.0".to_string(),
                     id: request.id,
@@ -1057,7 +1057,7 @@ async fn handle_anonymous_encode_data_array_for_client(request: JsonRpcRequest) 
                 let mut result_array = Vec::new();
                 for value in value_array_u64 {
                     let (result1, result2, _) =
-                        split_to_two_value_v2(value,
+                        split_to_two_bytes_value_v2(value,
                                            get_user_address_salt(encode_to_two_value_params.owner),
                                            mask_secret_and_coord_seed.mask_secret,
                                            mask_secret_and_coord_seed.coord_seed);
