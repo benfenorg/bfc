@@ -768,8 +768,8 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
                         object_ids = format!("{}{}", object_ids, anonymous_restore_value.objectid);
                         info!("data1 len: {}, data2 len: {}", data1.len(), data2.len());
 
-                        let data_str1 = String::from_utf8(data1).unwrap_or_default();
-                        let data_str2 = String::from_utf8(data2).unwrap_or_default();
+                        let data_str1 = hex::encode(data1).unwrap_or_default();
+                        let data_str2 = hex::encode(data2).unwrap_or_default();
                         info!("=== data_str1: {}, data_str2: {} ===", data_str1, data_str2);
 
                         match recover_value_from_shares_v2(data_str1, data_str2, mask_secret_and_coord_seed.mask_secret) {
@@ -906,8 +906,8 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
                 let data2 = anonymous_restore_value.value2.clone();
                 info!("data1 len: {}, data2 len: {}", data1.len(), data2.len());
 
-                let data_str1 = String::from_utf8(data1).unwrap_or_default();
-                let data_str2 = String::from_utf8(data2).unwrap_or_default();
+                let data_str1 = hex::encode(data1).unwrap_or_default();
+                let data_str2 = hex::encode(data2).unwrap_or_default();
                 info!("=== data_str1: {}, data_str2: {} ===", data_str1, data_str2);
 
                 match recover_value_from_shares_v2(data_str1, data_str2, mask_secret_and_coord_seed.mask_secret) {
