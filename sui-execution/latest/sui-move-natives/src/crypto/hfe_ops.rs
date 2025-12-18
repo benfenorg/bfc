@@ -52,6 +52,7 @@ pub const CONVERT_FROM_V1_TRANSMISSION_SHARES_ERROR: u64 = 6;
 //const THRESHOLD: usize = 2;
 //const TOTAL_SHARES: usize = 2;
 const MASK_SECRET: &str =  "0x1111ffff0000";
+const COORD_SEED :u64 = 116540450355;
 
 
 pub fn hfe_ops_add(
@@ -81,7 +82,7 @@ pub fn hfe_ops_add(
         .extensions()
         .get::<NativesCostTable>()
         .anonymous_coordseed
-        .clone().unwrap_or_default();
+        .clone().unwrap_or(COORD_SEED);
 
     let enable_anonymous_rpc = &context
         .extensions()
@@ -105,6 +106,7 @@ pub fn hfe_ops_add(
     let num3 = String::from_utf8(number3).unwrap_or_default();
     let num4 = String::from_utf8(number4).unwrap_or_default();
     let cost = context.gas_used();
+
     if num1.is_empty() || num2.is_empty() || num3.is_empty() || num4.is_empty() {
         return Ok(NativeResult::err(
             cost,
@@ -178,7 +180,7 @@ pub fn hfe_ops_add(
             Ok(result) => {
                 result
             }
-            Err(_) => {
+            Err(e) => {
                 error!("Failed to add_two_shared_secrets_v2 for bfcx_getAnonymousAdd: {}", e);
                 return Ok(NativeResult::err(
                     cost,
@@ -189,7 +191,7 @@ pub fn hfe_ops_add(
 
         Ok(NativeResult::ok(
             cost,
-            smallvec![Value::vector_u8(result1),Value::vector_u8(result2)]
+            smallvec![Value::vector_u8(hex::encode(result1).into_bytes()),Value::vector_u8(hex::encode(result2).into_bytes())]
         ))
     }
 }
@@ -223,7 +225,7 @@ pub fn hfe_ops_minus(
         .extensions()
         .get::<NativesCostTable>()
         .anonymous_coordseed
-        .clone().unwrap_or_default();
+        .clone().unwrap_or(COORD_SEED);
 
     let enable_anonymous_rpc = &context
         .extensions()
@@ -238,6 +240,7 @@ pub fn hfe_ops_minus(
     let number3 = pop_arg!(args, Vec<u8>);
     let number2 = pop_arg!(args, Vec<u8>);
     let number1 = pop_arg!(args, Vec<u8>);
+
     let num1 = String::from_utf8(number1).unwrap_or_default();
     let num2 = String::from_utf8(number2).unwrap_or_default();
     let num3 = String::from_utf8(number3).unwrap_or_default();
@@ -326,7 +329,7 @@ pub fn hfe_ops_minus(
 
         Ok(NativeResult::ok(
             cost,
-            smallvec![Value::vector_u8(result1),Value::vector_u8(result2)]
+            smallvec![Value::vector_u8(hex::encode(result1).into_bytes()),Value::vector_u8(hex::encode(result2).into_bytes())]
         ))
     }
 }
@@ -361,7 +364,7 @@ pub fn hfe_ops_multiplied(
         .extensions()
         .get::<NativesCostTable>()
         .anonymous_coordseed
-        .clone().unwrap_or_default();
+        .clone().unwrap_or(COORD_SEED);
 
     let enable_anonymous_rpc = &context
         .extensions()
@@ -505,7 +508,7 @@ pub fn hfe_ops_encode_data(context: &mut NativeContext,
         .extensions()
         .get::<NativesCostTable>()
         .anonymous_coordseed
-        .clone().unwrap_or_default();
+        .clone().unwrap_or(COORD_SEED);
 
     let enable_anonymous_rpc = &context
         .extensions()
