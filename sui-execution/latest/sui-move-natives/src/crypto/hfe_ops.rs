@@ -467,7 +467,7 @@ pub fn hfe_ops_multiplied(
 
         return Ok(NativeResult::ok(
             cost,
-            smallvec![Value::vector_u8(encoded_result_0),Value::vector_u8(encoded_result_1)]
+            smallvec![Value::vector_u8(hex::encode(encoded_result_0).into_bytes()),Value::vector_u8(hex::encode(encoded_result_1).into_bytes())]
         ))
     }
 
