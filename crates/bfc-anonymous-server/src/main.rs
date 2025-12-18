@@ -16,13 +16,11 @@ use crate::utils::public_key_bytes_to_sui_address;
 use clap::Parser;
 use fastcrypto::encoding::{Base64, Encoding};
 use move_core_types::account_address::AccountAddress;
-use mpc_transmission::{get_sui_config_directory, get_user_address_salt, two_party_share::{
-    recover_two_shares,
-}};
+use mpc_transmission::{get_sui_config_directory, get_user_address_salt};
 
 use mpc_transmission::get_mask_secret_and_coord_seed_from_config;
-use mpc_transmission_v2::{mul_two_shared_secrets_v2, process_shares_data_convert, recover_value_from_shares_v2};
-use mpc_transmission_v2::two_party_share::{add_two_shared_secrets_v2, sub_two_shared_secrets_v2, split_to_two_value_v2};
+use mpc_transmission_v2::{mul_two_shared_secrets_v2, process_shares_data_convert, recover_value_from_shares_v2, split_to_two_bytes_value_v2};
+use mpc_transmission_v2::two_party_share::{add_two_shared_secrets_v2, sub_two_shared_secrets_v2};
 
 use serde::{Deserialize, Serialize};
 use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
@@ -681,7 +679,7 @@ async fn handle_anonymous_encode_data_array_for_zklogin_address(request: JsonRpc
                 let mut result_array = Vec::new();
                 for value in value_array_u64 {
                     let (result1, result2, _) =
-                        split_to_two_value_v2(value,
+                        split_to_two_bytes_value_v2(value,
                                            get_user_address_salt(encode_to_two_value_params.owner),
                                            mask_secret_and_coord_seed.mask_secret,
                                            mask_secret_and_coord_seed.coord_seed);
@@ -768,8 +766,8 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
                         object_ids = format!("{}{}", object_ids, anonymous_restore_value.objectid);
                         info!("data1 len: {}, data2 len: {}", data1.len(), data2.len());
 
-                        let data_str1 = String::from_utf8(data1).unwrap_or_default();
-                        let data_str2 = String::from_utf8(data2).unwrap_or_default();
+                        let data_str1 = hex::encode(data1);
+                        let data_str2 = hex::encode(data2);
                         info!("=== data_str1: {}, data_str2: {} ===", data_str1, data_str2);
 
                         match recover_value_from_shares_v2(data_str1, data_str2, mask_secret_and_coord_seed.mask_secret) {
@@ -906,8 +904,8 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
                 let data2 = anonymous_restore_value.value2.clone();
                 info!("data1 len: {}, data2 len: {}", data1.len(), data2.len());
 
-                let data_str1 = String::from_utf8(data1).unwrap_or_default();
-                let data_str2 = String::from_utf8(data2).unwrap_or_default();
+                let data_str1 = hex::encode(data1);
+                let data_str2 = hex::encode(data2);
                 info!("=== data_str1: {}, data_str2: {} ===", data_str1, data_str2);
 
                 match recover_value_from_shares_v2(data_str1, data_str2, mask_secret_and_coord_seed.mask_secret) {
@@ -963,7 +961,7 @@ async fn handle_anonymous_encode_data(request: JsonRpcRequest) -> JsonRpcRespons
                 };
 
                 let value = encode_to_two_value_params.value;
-                let (result1, result2, _) = split_to_two_value_v2(value, get_user_address_salt(encode_to_two_value_params.owner), mask_secret_and_coord_seed.mask_secret, mask_secret_and_coord_seed.coord_seed);
+                let (result1, result2, _) = split_to_two_bytes_value_v2(value, get_user_address_salt(encode_to_two_value_params.owner), mask_secret_and_coord_seed.mask_secret, mask_secret_and_coord_seed.coord_seed);
                 JsonRpcResponse {
                     jsonrpc: "2.0".to_string(),
                     id: request.id,
@@ -1057,7 +1055,7 @@ async fn handle_anonymous_encode_data_array_for_client(request: JsonRpcRequest) 
                 let mut result_array = Vec::new();
                 for value in value_array_u64 {
                     let (result1, result2, _) =
-                        split_to_two_value_v2(value,
+                        split_to_two_bytes_value_v2(value,
                                            get_user_address_salt(encode_to_two_value_params.owner),
                                            mask_secret_and_coord_seed.mask_secret,
                                            mask_secret_and_coord_seed.coord_seed);

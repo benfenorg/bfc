@@ -8,8 +8,8 @@ publish = false
 
 [dependencies]
 anyhow = "1.0.79"
-axum = { version = "0.6.6", features = ["macros"] }
-mysten-service = { git = "https://github.com/mystenlabs/sui.git", branch = "releases/sui-v1.24.0-release", package = "mysten-service" }
+axum = { version = "0.7.5", features = ["macros"] }
+mysten-service = { git = "https://github.com/benfenorg/bfc.git", branch = "develop_v1.24.1", package = "mysten-service" }
 prometheus = "0.13.3"
 tracing = "0.1.40"
 serde = { version = "1.0.188", features = ["derive"] }

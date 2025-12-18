@@ -54,7 +54,6 @@ pub const CONVERT_FROM_V1_TRANSMISSION_SHARES_ERROR: u64 = 6;
 const MASK_SECRET: &str =  "0x1111ffff0000";
 const COORD_SEED :u64 = 116540450355;
 
-
 pub fn hfe_ops_add(
     context: &mut NativeContext,
     _ty_args: Vec<Type>,

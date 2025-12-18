@@ -42,7 +42,6 @@ pub use beaver_cache::{BeaverTripleCache, CacheStats, CachedTriple};
 // Export from encrypted_beaver module
 pub use encrypted_beaver::EncryptedBeaverProcessor;
 use log::info;
-use mpc_transmission::get_user_address_salt;
 // Export from two_party_share module - Two-party secret sharing operations
 pub use two_party_share::{
     add_two_shared_secrets_v2,
@@ -61,6 +60,7 @@ pub use two_party_share::{
     recover_value_v2,
     split_to_two_value_v2,
     sub_two_shared_secrets_v2,
+    split_to_two_bytes_value_v2,
 };
 
 // Share converter functions - conversion between mpc-transmission and mpc-transmission-v2 formats
@@ -140,7 +140,7 @@ pub fn process_shares_data_convert(transmission_hex1: &str, transmission_hex2: &
     Ok(ConvertedData {
         value1,
         value2,
-        coord_seed,
+        coord_seed: coord_seed_a,
     })
 }
 
