@@ -90,6 +90,8 @@ pub struct BridgeMetrics {
     pub(crate) last_synced_sui_checkpoints: IntGaugeVec,
     pub(crate) last_finalized_eth_block: IntGauge,
     pub(crate) last_synced_eth_blocks: IntGaugeVec,
+    pub(crate) last_finalized_solana_slot: IntGauge,
+    pub(crate) last_synced_solana_slot: IntGaugeVec,
 
     pub(crate) sui_watcher_received_events: IntCounter,
     pub(crate) sui_watcher_received_actions: IntCounter,
@@ -292,6 +294,19 @@ impl BridgeMetrics {
             last_finalized_eth_block: register_int_gauge_with_registry!(
                 "bridge_last_finalized_eth_block",
                 "The latest finalized eth block observed",
+                registry,
+            )
+            .unwrap(),
+            last_finalized_solana_slot: register_int_gauge_with_registry!(
+                "bridge_last_finalized_solana_slot",
+                "The latest finalized solana slot observed",
+                registry,
+            )
+            .unwrap(),
+            last_synced_solana_slot: register_int_gauge_vec_with_registry!(
+                "bridge_last_synced_solana_slot",
+                "The latest synced solana slot for each address",
+                &["address"],
                 registry,
             )
             .unwrap(),

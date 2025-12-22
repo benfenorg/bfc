@@ -23,6 +23,8 @@ use std::collections::HashSet;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
+use url::Url;
+use solana_sdk::pubkey::Pubkey;
 use sui_config::Config;
 use sui_json_rpc_types::Coin;
 use sui_keys::keypair_file::read_key;
@@ -136,6 +138,7 @@ pub struct BridgeNodeConfig {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub watchdog_config: Option<WatchdogConfig>,
+    pub solana: SolanaConfig,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_limit_db_url: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -159,6 +162,18 @@ pub struct MetricsConfig {
 pub struct WatchdogConfig {
     /// Total supplies to watch on Sui. Mapping from coin name to coin type tag
     pub total_supplies: BTreeMap<String, String>,
+}
+
+#[serde_as]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct SolanaConfig {
+    pub getblock_base_url: String,
+    pub bridge_proxy_address: String,
+    pub bridge_chain_id: u8,
+    pub contracts_start_block_fallback: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub contracts_start_block_override: Option<u64>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -242,6 +257,26 @@ impl BridgeNodeConfig {
                     testnet-url: \"https://your_tron_testnet_rpc_url\""
             )
         })?;
+
+        // Validate solana configuration
+        if self.solana.getblock_base_url.trim().is_empty() {
+            anyhow::bail!("solana.getblock_base_url must be set to a valid http(s) url");
+        }
+        let parsed = Url::parse(&self.solana.getblock_base_url)
+            .map_err(|e| anyhow!("Invalid solana.getblock_base_url: {}", e))?;
+        if parsed.scheme() != "http" && parsed.scheme() != "https" {
+            anyhow::bail!("solana.getblock_base_url must use http or https scheme");
+        }
+        if self.run_client && self.solana.contracts_start_block_fallback.is_none() {
+            anyhow::bail!("solana.contracts_start_block_fallback is required when run_client is true");
+        }
+        BridgeChainId::try_from(self.solana.bridge_chain_id)
+            .map_err(|_| anyhow!("Invalid solana.bridge_chain_id: {}", self.solana.bridge_chain_id))?;
+        if self.solana.bridge_proxy_address.trim().is_empty() {
+            anyhow::bail!("solana.bridge_proxy_address must be set");
+        }
+        Pubkey::from_str(&self.solana.bridge_proxy_address)
+            .map_err(|_| anyhow!("solana.bridge_proxy_address must be a valid Solana address (base58)"))?;
 
         let bridge_summary = sui_client
             .get_bridge_summary()
