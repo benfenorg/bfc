@@ -129,7 +129,7 @@ module bridge::bridge {
         amount: u64,
     }
 
-     public struct TokenDepositedEventV2 has copy, drop {
+    public struct TokenDepositedEventV2 has copy, drop {
         seq_num: u64,
         source_chain: u8,
         sender_address: vector<u8>,
@@ -139,6 +139,18 @@ module bridge::bridge {
         amount_before_fee: u64,
         amount_after_fee: u64
     }
+
+    public struct TokenDepositedEventForSolanaV2 has copy, drop {
+        seq_num: u64,
+        source_chain: u8,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount_before_fee: u64,
+        amount_after_fee: u64,
+    }
+
     //defi event: benfen to evm
     public struct DefiTransferOutEvent has copy, drop {
         seq_num: u64,
@@ -957,18 +969,33 @@ module bridge::bridge {
         );
 
         // emit event
-        emit(
-            TokenDepositedEventV2 {
-                seq_num: bridge_seq_num,
-                source_chain: inner.chain_id,
-                sender_address: address::to_bytes(ctx.sender()),
-                target_chain,
-                target_address,
-                token_type: token_id,
-                amount_before_fee: token_amount,
-                amount_after_fee,
-            },
-        );
+        if (target_chain == chain_ids::solana_testnet() || target_chain == chain_ids::solana_mainnet()) {
+            emit(
+                TokenDepositedEventForSolanaV2 {
+                    seq_num: bridge_seq_num,
+                    source_chain: inner.chain_id,
+                    sender_address: address::to_bytes(ctx.sender()),
+                    target_chain,
+                    target_address,
+                    token_type: token_id,
+                    amount_before_fee: token_amount,
+                    amount_after_fee,
+                },
+            );
+        } else {    
+            emit(
+                TokenDepositedEventV2 {
+                    seq_num: bridge_seq_num,
+                    source_chain: inner.chain_id,
+                    sender_address: address::to_bytes(ctx.sender()),
+                    target_chain,
+                    target_address,
+                    token_type: token_id,
+                    amount_before_fee: token_amount,
+                    amount_after_fee,
+                },
+            );
+        }
     }
 
     // Create bridge request to send token back to EVM, the request will be in
