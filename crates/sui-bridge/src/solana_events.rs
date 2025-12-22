@@ -8,6 +8,7 @@ use base64::Engine;
 use std::io::Cursor;
 use std::io::Read;
 use tracing;
+use std::str::FromStr;
 
 // 声明程序以生成事件类型
 anchor_lang::declare_program!(benfen_bridge);
@@ -220,6 +221,29 @@ impl SolanaBridgeEvent {
         parsed_events
     }
 
+    pub fn try_from_client_transaction(
+        tx: &crate::solana_client::SolanaTransaction,
+    ) -> Vec<SolanaBridgeEvent> {
+        let signature = tx
+            .transaction
+            .as_ref()
+            .and_then(|t| t.signatures.get(0))
+            .and_then(|s| Signature::from_str(s).ok())
+            .unwrap_or_else(|| Signature::default());
+        let slot = tx.slot.unwrap_or_default();
+        let log_messages = tx
+            .meta
+            .as_ref()
+            .map(|m| m.log_messages.clone())
+            .unwrap_or_default();
+        let sol_log = SolanaLog {
+            signature,
+            slot,
+            log_messages,
+        };
+        Self::try_from_logs(&sol_log)
+    }
+
     pub fn test_try_from_logs(log_msg: &str) -> Vec<SolanaBridgeEvent> {
         let log = SolanaLog {
             signature: Signature::default(),
@@ -326,4 +350,3 @@ mod tests {
         }
     }
 }
-

@@ -50,6 +50,19 @@ impl SolanaClient {
         Ok(n)
     }
 
+    pub async fn get_slot(&self, commitment: Option<&str>) -> Result<u64> {
+        let params = match commitment {
+            Some(c) => json!([{ "commitment": c }]),
+            None => json!([null]),
+        };
+        let v = self.send("getSlot", params).await?;
+        let result = v.get("result").ok_or_else(|| anyhow!("empty result"))?;
+        let n = result
+            .as_u64()
+            .ok_or_else(|| anyhow!("invalid result type"))?;
+        Ok(n)
+    }
+
     pub async fn get_signatures_for_address(
         &self,
         address: &str,
@@ -72,10 +85,7 @@ impl SolanaClient {
         Ok(out)
     }
 
-    pub async fn get_transaction(
-        &self,
-        signature: &str,
-    ) -> Result<SolanaTransaction> {
+    pub async fn get_transaction(&self, signature: &str) -> Result<SolanaTransaction> {
         let config = GetTransactionConfig {
             encoding: Some("json".to_string()),
             commitment: Some("finalized".to_string()),
@@ -153,6 +163,8 @@ pub struct SolanaTransactionMeta {
     pub pre_token_balances: Vec<TokenBalance>,
     #[serde(default, rename = "postTokenBalances")]
     pub post_token_balances: Vec<TokenBalance>,
+    #[serde(default, rename = "logMessages")]
+    pub log_messages: Vec<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -183,6 +195,12 @@ mod tests {
     use std::net::SocketAddr;
     use tokio::sync::oneshot;
     use tokio::task::JoinHandle;
+
+    fn real_solana_rpc_url() -> Option<String> {
+        std::env::var("SOLANA_RPC_URL")
+            .ok()
+            .or_else(|| std::env::var("GETBLOCK_SOLANA_RPC_URL").ok())
+    }
 
     #[derive(Clone)]
     struct MockState;
@@ -303,12 +321,20 @@ mod tests {
     // TODO: delete this test, it is just a real solana client test
     #[tokio::test]
     async fn test_real_solana_client() {
-        let base_url = format!("https://go.getblock.us/b980a627a55843d299a807760ab914ba/");
+        let Some(base_url) = real_solana_rpc_url() else {
+            eprintln!("Skipping real Solana RPC test: set SOLANA_RPC_URL or GETBLOCK_SOLANA_RPC_URL");
+            return;
+        };
         let client = SolanaClient::new(&base_url);
 
         // test get block height
         let n = client.get_block_height(None).await.unwrap();
         assert!(n > 364267566);
+
+        // test get slot
+        let n = client.get_slot(None).await.unwrap();
+        assert!(n > 364267566);
+        println!("slot: {:?}", n);
 
         let client = SolanaClient::new(&base_url);
 
@@ -328,6 +354,72 @@ mod tests {
         let v = client.get_transaction(&v[0].signature).await.unwrap();
         assert!(v.slot.is_some());
         assert!(v.transaction.is_some());
+        assert!(v.meta.is_some());
+
         println!("{:?}", v);
+        assert!(!v.meta.as_ref().unwrap().log_messages.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_real_get_signatures_for_address_ordering() {
+        let Some(base_url) = real_solana_rpc_url() else {
+            eprintln!("Skipping real Solana RPC test: set SOLANA_RPC_URL or GETBLOCK_SOLANA_RPC_URL");
+            return;
+        };
+
+        let client = SolanaClient::new(&base_url);
+
+        // Use a well-known address with lots of history.
+        let address = "Vote111111111111111111111111111111111111111";
+
+        // Page 1: default query should return newest -> oldest (descending by slot/time)
+        let cfg = GetSignaturesConfig {
+            commitment: Some("finalized".to_string()),
+            limit: Some(20),
+            ..Default::default()
+        };
+
+        let page1 = client
+            .get_signatures_for_address(address, Some(cfg.clone()))
+            .await
+            .unwrap();
+        assert!(page1.len() >= 5);
+
+        for w in page1.windows(2) {
+            assert!(
+                w[0].slot >= w[1].slot,
+                "expected slots to be non-increasing (newest->oldest), got {} then {}",
+                w[0].slot,
+                w[1].slot
+            );
+
+            if let (Some(t0), Some(t1)) = (w[0].block_time, w[1].block_time) {
+                assert!(
+                    t0 >= t1,
+                    "expected block_time to be non-increasing (newest->oldest), got {} then {}",
+                    t0,
+                    t1
+                );
+            }
+        }
+
+        // Page 2: using `before` should move further back in history.
+        let last_sig_page1 = page1.last().unwrap().signature.clone();
+        let cfg2 = GetSignaturesConfig {
+            before: Some(last_sig_page1),
+            ..cfg
+        };
+        let page2 = client
+            .get_signatures_for_address(address, Some(cfg2))
+            .await
+            .unwrap();
+        assert!(!page2.is_empty());
+
+        assert!(
+            page1.last().unwrap().slot >= page2.first().unwrap().slot,
+            "expected page2 to be older than page1 when using before; got page1_last_slot={} page2_first_slot={}",
+            page1.last().unwrap().slot,
+            page2.first().unwrap().slot
+        );
     }
 }

@@ -30,6 +30,10 @@ pub struct BridgeOrchestratorTables {
     pub(crate) sui_syncer_cursors: DBMap<Identifier, EventID>,
     /// contract address to the last processed block
     pub(crate) eth_syncer_cursors: DBMap<EthSyncerCursorsKey, u64>,
+    /// Solana contract address to the last processed signature
+    pub(crate) solana_signature_cursors: DBMap<String, String>,
+    /// Solana contract address to the last processed slot (for resilience if signature is pruned)
+    pub(crate) solana_slot_cursors: DBMap<String, u64>,
     /// pending actions that are waiting for aml check
     pub(crate) pending_aml_checked_actions: DBMap<BridgeActionDigest, BridgeAction>,
 }
@@ -222,6 +226,62 @@ impl BridgeOrchestratorTables {
             .map_err(|e| {
                 BridgeError::StorageError(format!("Couldn't get sui_syncer_cursors: {:?}", e))
             })
+    }
+
+    pub(crate) fn update_solana_signature_cursor(
+        &self,
+        key: String,
+        sig: String,
+    ) -> BridgeResult<()> {
+        let mut batch = self.solana_signature_cursors.batch();
+        batch
+            .insert_batch(&self.solana_signature_cursors, [(key, sig)])
+            .map_err(|e| {
+                BridgeError::StorageError(format!(
+                    "Coudln't insert into solana_signature_cursors: {:?}",
+                    e
+                ))
+            })?;
+        batch
+            .write()
+            .map_err(|e| BridgeError::StorageError(format!("Couldn't write batch: {:?}", e)))
+    }
+
+    pub fn get_solana_signature_cursors(
+        &self,
+        keys: &[String],
+    ) -> BridgeResult<Vec<Option<String>>> {
+        self.solana_signature_cursors.multi_get(keys).map_err(|e| {
+            BridgeError::StorageError(format!("Couldn't get solana_signature_cursors: {:?}", e))
+        })
+    }
+
+    pub(crate) fn update_solana_slot_cursor(
+        &self,
+        key: String,
+        slot: u64,
+    ) -> BridgeResult<()> {
+        let mut batch = self.solana_slot_cursors.batch();
+        batch
+            .insert_batch(&self.solana_slot_cursors, [(key, slot)])
+            .map_err(|e| {
+                BridgeError::StorageError(format!(
+                    "Couldn't insert into solana_slot_cursors: {:?}",
+                    e
+                ))
+            })?;
+        batch
+            .write()
+            .map_err(|e| BridgeError::StorageError(format!("Couldn't write batch: {:?}", e)))
+    }
+
+    pub fn get_solana_slot_cursors(
+        &self,
+        keys: &[String],
+    ) -> BridgeResult<Vec<Option<u64>>> {
+        self.solana_slot_cursors.multi_get(keys).map_err(|e| {
+            BridgeError::StorageError(format!("Couldn't get solana_slot_cursors: {:?}", e))
+        })
     }
 }
 
