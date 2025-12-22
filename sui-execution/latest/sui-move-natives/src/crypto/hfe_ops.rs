@@ -79,9 +79,10 @@ pub fn hfe_ops_add(
 
     let anonymous_coordseed = context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .anonymous_coordseed
         .clone().unwrap_or(COORD_SEED);
+
 
     let enable_anonymous_rpc = &context
         .extensions()
@@ -222,7 +223,7 @@ pub fn hfe_ops_minus(
 
     let anonymous_coordseed = context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .anonymous_coordseed
         .clone().unwrap_or(COORD_SEED);
 
@@ -361,7 +362,7 @@ pub fn hfe_ops_multiplied(
 
     let anonymous_coordseed = context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .anonymous_coordseed
         .clone().unwrap_or(COORD_SEED);
 
@@ -505,7 +506,7 @@ pub fn hfe_ops_encode_data(context: &mut NativeContext,
 
     let anonymous_coordseed = context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .anonymous_coordseed
         .clone().unwrap_or(COORD_SEED);
 

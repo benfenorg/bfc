@@ -3576,15 +3576,12 @@ impl ProtocolConfig {
                     cfg.feature_flags.uncompressed_g1_group_elements = true;
                     cfg.max_age_of_jwk_in_epochs = Some(365);
                 }
+
                 78 => {
-
-
                     if chain != Chain::Mainnet {
                         cfg.consensus_gc_depth = Some(60);
                         cfg.feature_flags.consensus_linearize_subdag_v2 = true;
                     }
-                }
-                78 => {
                     cfg.feature_flags.move_native_context = true;
                     cfg.tx_context_fresh_id_cost_base = Some(52);
                     cfg.tx_context_sender_cost_base = Some(30);
