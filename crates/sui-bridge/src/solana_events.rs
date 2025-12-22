@@ -1,14 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::error::BridgeResult;
+use crate::types::{BridgeAction, SolanaToSuiBridgeAction, SolanaToSuiTokenBridgeV1};
+use base64::Engine;
 use serde::{Deserialize, Serialize};
 use solana_sdk::signature::Signature;
 use solana_transaction_status::EncodedConfirmedTransactionWithStatusMeta;
-use base64::Engine;
 use std::io::Cursor;
 use std::io::Read;
-use tracing;
 use std::str::FromStr;
+use tracing;
 
 // 声明程序以生成事件类型
 anchor_lang::declare_program!(benfen_bridge);
@@ -303,6 +305,37 @@ impl SolanaBridgeEvent {
                     [206, 150, 127, 84, 112, 102, 128, 219] => Some("ProgramUpgradeEvent"),
                     _ => None,
                 }
+            }
+        }
+    }
+
+    pub fn try_into_bridge_action(
+        &self,
+        solana_tx_signature: String,
+        event_index: u16,
+    ) -> BridgeResult<Option<BridgeAction>> {
+        match self {
+            SolanaBridgeEvent::TokensDeposited(tokens_deposited) => {
+                let mut bridge_event = SolanaToSuiTokenBridgeV1::try_from(tokens_deposited)?;
+                
+                bridge_event.set_tx_signature(solana_tx_signature.as_bytes().to_vec());
+                bridge_event.set_event_idx(event_index);
+                
+                let action = SolanaToSuiBridgeAction {
+                    solana_tx_signature,
+                    solana_event_index: event_index,
+                    solana_bridge_event: bridge_event,
+                };
+                
+                Ok(Some(BridgeAction::SolanaToSuiBridgeAction(action)))
+            }
+            SolanaBridgeEvent::RawEvent { discriminator, .. } => {
+                tracing::debug!(
+                    "Skipping RawEvent with discriminator: {:?}, event_name: {:?}",
+                    discriminator,
+                    self.event_name()
+                );
+                Ok(None)
             }
         }
     }

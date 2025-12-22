@@ -1,11 +1,3 @@
-// Copyright (c) Mysten Labs, Inc.
-// SPDX-License-Identifier: Apache-2.0
-
-//! The SolanaSyncer module is responsible for synchronizing Events emitted on Solana blockchain
-//! from the bridge contract. Each contract address is associated with a start slot, and the syncer
-//! will only query from that slot onwards. The syncer also keeps track of the last finalized slot
-//! on Solana and will only query for events up to that slot.
-
 use crate::error::BridgeResult;
 use crate::metrics::BridgeMetrics;
 use crate::retry_with_max_elapsed_time;

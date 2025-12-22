@@ -402,24 +402,6 @@ async fn start_client_components(
     .await
     .expect("Failed to start solana syncer");
     all_handles.extend(sol_handles);
-    let store_clone = store.clone();
-    all_handles.push(spawn_logged_monitored_task!(async move {
-        while let Some((address, wrapper)) = sol_events_rx.recv().await {
-            // Persist both signature and slot for resilience
-            // Signature is the primary cursor, slot is fallback if signature is pruned from RPC
-            if let Some(sig) = wrapper.newest_signature.clone() {
-                store_clone
-                    .update_solana_signature_cursor(address.clone(), sig)
-                    .expect("Store operation should not fail");
-            }
-            if let Some(slot) = wrapper.newest_slot {
-                store_clone
-                    .update_solana_slot_cursor(address.clone(), slot)
-                    .expect("Store operation should not fail");
-            }
-        }
-    }));
-
     let bridge_auth_agg = Arc::new(ArcSwap::from(Arc::new(BridgeAuthorityAggregator::new(
         committee,
         metrics.clone(),
@@ -492,6 +474,7 @@ async fn start_client_components(
         sui_client,
         sui_events_rx,
         evm_events_rx,
+        sol_events_rx,
         store.clone(),
         sui_monitor_tx,
         eth_monitor_tx,
