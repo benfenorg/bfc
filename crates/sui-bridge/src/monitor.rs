@@ -124,6 +124,7 @@ where
             SuiBridgeEvent::SuiToEthDefiTokensStaked(_) => (),
             SuiBridgeEvent::SuiToEthTokenBridgeV1(_) => (),
             SuiBridgeEvent::SuiToEthTokenBridgeV2(_) => (),
+            SuiBridgeEvent::SuiToSolanaTokenBridgeV2(_) => (),
             SuiBridgeEvent::SuiToEthDefiBridgeV1(_) => (),
             SuiBridgeEvent::TokenSendBackEvent(_) => (),
             SuiBridgeEvent::TokenSendBackEventV2(_) => (),

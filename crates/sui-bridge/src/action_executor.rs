@@ -715,9 +715,20 @@ pub async fn submit_to_executor(
                 .await
                 .map_err(|e| BridgeError::Generic(e.to_string()))
             },
-            _ => {
-                return Err(BridgeError::Generic("Not a stable coin".to_string()));
+            BridgeAction::SolanaToSuiBridgeAction(action_inner) => {
+                let action = crate::types::SolanaToSuiBridgeAction {
+                    solana_tx_signature: action_inner.solana_tx_signature,
+                    solana_event_index: action_inner.solana_event_index,
+                    solana_bridge_event: crate::types::SolanaToSuiTokenBridgeV1::try_from(
+                        &action_inner.solana_bridge_event,
+                    )
+                    .unwrap(),
+                };
+                tx.send(BridgeActionExecutionWrapper(BridgeAction::SolanaToSuiBridgeAction(action), retry_times_count))
+                    .await
+                    .map_err(|e| BridgeError::Generic(e.to_string()))
             }
+            _ => Err(BridgeError::Generic("Not a stable coin".to_string())),
         }
     }else{
         tx.send(BridgeActionExecutionWrapper(action, retry_times_count))

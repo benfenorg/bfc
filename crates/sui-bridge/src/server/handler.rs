@@ -508,20 +508,32 @@ where
         match verifier.verify(key.clone()).await {
             Ok(bridge_action) => {
                 let bridge_action = if bridge_action.is_stable_coin() {
-                    let action_inner = match bridge_action {
+                    match bridge_action {
                         BridgeAction::EthToSuiBridgeAction(action_inner) => {
-                            action_inner
+                            let action = EthToSuiBridgeAction {
+                                eth_tx_hash: action_inner.eth_tx_hash,
+                                eth_event_index: action_inner.eth_event_index,
+                                eth_bridge_event: EthToSuiTokenBridgeV1::try_from(
+                                    &action_inner.eth_bridge_event,
+                                )
+                                .unwrap(),
+                            };
+                            BridgeAction::EthToSuiBridgeAction(action)
+                        }
+                        BridgeAction::SolanaToSuiBridgeAction(action_inner) => {
+                            BridgeAction::SolanaToSuiBridgeAction(crate::types::SolanaToSuiBridgeAction {
+                                solana_tx_signature: action_inner.solana_tx_signature,
+                                solana_event_index: action_inner.solana_event_index,
+                                solana_bridge_event: crate::types::SolanaToSuiTokenBridgeV1::try_from(
+                                    &action_inner.solana_bridge_event,
+                                )
+                                .unwrap(),
+                            })
                         }
                         _ => {
                             return Err(BridgeError::Generic("Not a stable coin".to_string()));
                         }
-                    };
-                    let action = EthToSuiBridgeAction {
-                        eth_tx_hash: action_inner.eth_tx_hash,
-                        eth_event_index: action_inner.eth_event_index,
-                        eth_bridge_event: EthToSuiTokenBridgeV1::try_from(&action_inner.eth_bridge_event).unwrap(),
-                    };
-                    BridgeAction::EthToSuiBridgeAction(action)
+                    }
                 } else {
                     bridge_action
                 };

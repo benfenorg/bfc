@@ -66,6 +66,7 @@ module bridge::bridge {
     const TRANSFER_STATUS_NOT_FOUND: u8 = 3;
 
     const EVM_ADDRESS_LENGTH: u64 = 20;
+    const SOLANA_ADDRESS_LENGTH: u64 = 32;
 
     //defi
     const STAKE: u8 = 0;
@@ -707,7 +708,11 @@ module bridge::bridge {
         let (inner,parent_id) = load_inner_mut_and_uid(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
-        assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+        if (target_chain == chain_ids::solana_testnet() || target_chain == chain_ids::solana_mainnet()) {
+            assert!(target_address.length() == SOLANA_ADDRESS_LENGTH, EInvalidEvmAddress);
+        } else {
+            assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+        };
 
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::token());
         let token_id = inner.treasury.token_id<T>();
@@ -893,7 +898,11 @@ module bridge::bridge {
         assert!(tokenlist::is_supported_from_benfen(bridge_id, target_chain as u64, token_id_expect),EInvalidChainIDAndTokenIDExpect);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
-        assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+        if (target_chain == chain_ids::solana_testnet() || target_chain == chain_ids::solana_mainnet()) {
+            assert!(target_address.length() == SOLANA_ADDRESS_LENGTH, EInvalidEvmAddress);
+        } else {
+            assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+        };
         let is_busd = type_name::get<T>() == type_name::get<BUSD>();
         assert!(is_busd, EOnlySupportBusd);
         assert!(token_id_expect == 3 || token_id_expect == 4, EInvalidTokenIdExpect);

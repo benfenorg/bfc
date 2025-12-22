@@ -10,7 +10,7 @@ use crate::encoding::BridgeMessageEncoding;
 use crate::error::{BridgeError, BridgeResult};
 use crate::events::{
     EmittedEthTokenSendBackBridgeV1, EmittedExternalDepositStartBridgeV1,
-    EmittedSuiToEthDefiBridgeV1, EmittedSuiToEthTokenBridgeV1, EmittedSuiToSolanaTokenBridgeV1,
+    EmittedSuiToEthDefiBridgeV1, EmittedSuiToEthTokenBridgeV1,  EmittedSuiToSolanaTokenBridgeV2,
 };
 use crate::solana_events::TokensDeposited;
 use crate::fast_path::FastPathSelector;
@@ -30,7 +30,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Debug;
 use strum_macros::Display;
 use sui_types::base_types::SuiAddress;
-use sui_types::bridge::{BridgeChainId, MoveTypeDefiTransferOutPayload, MoveTypeParsedDefiTransferOutMessage, MoveTypeParsedTokenTransferMessageV2, MoveTypeTokenTransferPayload, MoveTypeTokenTransferPayloadV2, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SOLANA,APPROVAL_THRESHOLD_FAST_PATH_LIMIT_UPDATE, APPROVAL_THRESHOLD_REFUND_ADMIN, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER, BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER, TOKEN_ID_USDC, TOKEN_ID_USDT};
+use sui_types::bridge::{BridgeChainId, MoveTypeDefiTransferOutPayload, MoveTypeParsedDefiTransferOutMessage, MoveTypeParsedTokenTransferMessageV2, MoveTypeTokenTransferPayload, MoveTypeTokenTransferPayloadV2, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SOLANA,APPROVAL_THRESHOLD_FAST_PATH_LIMIT_UPDATE, APPROVAL_THRESHOLD_REFUND_ADMIN, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER, BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER, TOKEN_ID_BUSD, TOKEN_ID_USDC, TOKEN_ID_USDT};
 // use sui_types::bridge::{BridgeChainId, MoveTypeDefiTransferOutPayload, MoveTypeParsedDefiTransferOutMessage, MoveTypeParsedTokenTransferMessageV2, MoveTypeTokenTransferPayload, MoveTypeTokenTransferPayloadV2, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, APPROVAL_THRESHOLD_FAST_PATH_LIMIT_UPDATE, APPROVAL_THRESHOLD_REFUND_ADMIN, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER, BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER, TOKEN_ID_USDC, TOKEN_ID_USDT, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SOLANA};
 use sui_types::bridge::{
     MoveTypeParsedTokenTransferMessage, APPROVAL_THRESHOLD_ASSET_PRICE_UPDATE,
@@ -291,7 +291,7 @@ pub struct SuiToSolanaBridgeAction {
     pub sui_tx_digest: TransactionDigest,
     // The index of the event in the transaction
     pub sui_tx_event_index: u16,
-    pub sui_bridge_event: EmittedSuiToSolanaTokenBridgeV1,
+    pub sui_bridge_event: EmittedSuiToSolanaTokenBridgeV2,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -379,6 +379,28 @@ impl TryFrom<&TokensDeposited> for SolanaToSuiTokenBridgeV1 {
             tx_signature: vec![],
             event_idx: 0,
             fast_path_selector: FastPathSelector::Finalized,
+        })
+    }
+}
+
+impl TryFrom<&SolanaToSuiTokenBridgeV1> for SolanaToSuiTokenBridgeV1 {
+    type Error = BridgeError;
+    fn try_from(msg: &SolanaToSuiTokenBridgeV1) -> BridgeResult<Self> {
+        Ok(Self {
+            nonce: msg.nonce,
+            sui_chain_id: msg.sui_chain_id,
+            solana_chain_id: msg.solana_chain_id,
+            sui_address: msg.sui_address,
+            solana_address: msg.solana_address,
+            token_id: if msg.token_id == TOKEN_ID_USDC || msg.token_id == TOKEN_ID_USDT {
+                TOKEN_ID_BUSD
+            } else {
+                msg.token_id
+            },
+            sui_adjusted_amount: msg.sui_adjusted_amount,
+            tx_signature: msg.tx_signature.clone(),
+            event_idx: msg.event_idx,
+            fast_path_selector: msg.fast_path_selector,
         })
     }
 }
