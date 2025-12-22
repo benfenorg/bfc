@@ -17,6 +17,7 @@ use crate::error::BridgeError;
 use crate::events::SuiBridgeEvent;
 use crate::fast_path::{FastPathConfig, FastPathSelector};
 use crate::metrics::BridgeMetrics;
+use crate::solana_syncer::{SolanaEventWrapper, SolanaSyncerCursorsKey};
 use crate::storage::{BridgeOrchestratorTables, EthSyncerCursorsKey};
 use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::{BridgeAction, ETHLogWrapper};
@@ -35,6 +36,8 @@ pub struct BridgeOrchestrator<C> {
     sui_events_rx: mysten_metrics::metered_channel::Receiver<(Identifier, Vec<SuiEvent>)>,
     eth_events_rx:
         mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, ETHLogWrapper)>,
+    sol_events_rx:
+        mysten_metrics::metered_channel::Receiver<(SolanaSyncerCursorsKey, SolanaEventWrapper)>,
     store: Arc<BridgeOrchestratorTables>,
     sui_monitor_tx: mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
     eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
@@ -54,6 +57,10 @@ where
             u64,
             ETHLogWrapper,
         )>,
+        sol_events_rx: mysten_metrics::metered_channel::Receiver<(
+            SolanaSyncerCursorsKey,
+            SolanaEventWrapper,
+        )>,
         store: Arc<BridgeOrchestratorTables>,
         sui_monitor_tx: mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
         eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
@@ -64,6 +71,7 @@ where
             _sui_client: sui_client,
             sui_events_rx,
             eth_events_rx,
+            sol_events_rx,
             store,
             sui_monitor_tx,
             eth_monitor_tx,
@@ -90,6 +98,7 @@ where
         let executor_sender_clone4 = executor_sender.clone();
         task_handles.extend(handles);
         let (aml_checker_handles, aml_checker_sender) = aml_checker.run(executor_sender_clone);
+        let aml_checker_sender_clone = aml_checker_sender.clone();
         task_handles.extend(aml_checker_handles);
         let metrics_clone = self.metrics.clone();
         task_handles.push(spawn_logged_monitored_task!(Self::run_sui_watcher(
@@ -134,6 +143,16 @@ where
             metrics_clone,
             fast_path_config,
             self.user_limit_handle,
+        )));
+
+        // Spawn Solana watcher
+        let store_clone = self.store.clone();
+        let metrics_clone = self.metrics.clone();
+        task_handles.push(spawn_logged_monitored_task!(Self::run_solana_watcher(
+            store_clone,
+            aml_checker_sender_clone,
+            self.sol_events_rx,
+            metrics_clone,
         )));
 
         task_handles
@@ -384,6 +403,141 @@ where
         }
         panic!("Eth event channel was closed");
     }
+
+    /// Solana watcher task that processes Solana bridge events
+    /// 
+    /// This task:
+    /// 1. Receives Solana events from SolanaSyncer
+    /// 2. Parses events and converts them to BridgeActions
+    /// 3. Submits actions to AML checker for processing
+    /// 4. Updates cursor in storage for crash recovery
+    async fn run_solana_watcher(
+        store: Arc<BridgeOrchestratorTables>,
+        aml_checker_tx: mysten_metrics::metered_channel::Sender<AMLCheckerWrapper>,
+        mut sol_events_rx: mysten_metrics::metered_channel::Receiver<(
+            SolanaSyncerCursorsKey,
+            SolanaEventWrapper,
+        )>,
+        metrics: Arc<BridgeMetrics>,
+    ) {
+        info!("Starting solana watcher task");
+        while let Some((address, wrapper)) = sol_events_rx.recv().await {
+            // Skip if no events
+            if wrapper.parsed_events.is_empty() {
+                // Still update cursor even if no events
+                if let Some(sig) = wrapper.newest_signature.clone() {
+                    store
+                        .update_solana_signature_cursor(address.clone(), sig)
+                        .expect("Store operation should not fail");
+                }
+                if let Some(slot) = wrapper.newest_slot {
+                    store
+                        .update_solana_slot_cursor(address.clone(), slot)
+                        .expect("Store operation should not fail");
+                }
+                continue;
+            }
+
+            info!(
+                address = %address,
+                event_count = wrapper.parsed_events.len(),
+                tx_count = wrapper.txs.len(),
+                newest_signature = ?wrapper.newest_signature,
+                newest_slot = ?wrapper.newest_slot,
+                "Received Solana events"
+            );
+            metrics
+                .solana_watcher_received_events
+                .inc_by(wrapper.parsed_events.len() as u64);
+
+            // Convert events to BridgeActions
+            let mut actions = vec![];
+            for (event_idx, event) in wrapper.parsed_events.iter().enumerate() {
+                // Get the transaction signature for this event
+                let tx_signature = wrapper
+                    .txs
+                    .get(event_idx)
+                    .and_then(|tx| tx.transaction.as_ref())
+                    .and_then(|t| t.signatures.first())
+                    .cloned()
+                    .unwrap_or_else(|| wrapper.newest_signature.clone().unwrap_or_default());
+
+                match event.try_into_bridge_action(tx_signature.clone(), event_idx as u16) {
+                    Ok(Some(action)) => {
+                        info!(
+                            tx_signature = %tx_signature,
+                            event_idx = event_idx,
+                            action_type = ?action.action_type(),
+                            chain_id = ?action.chain_id(),
+                            seq_num = action.seq_number(),
+                            "Converted Solana event to BridgeAction"
+                        );
+                        metrics.last_observed_actions_seq_num.with_label_values(&[
+                            action.chain_id().to_string().as_str(),
+                            action.action_type().to_string().as_str(),
+                        ]);
+                        actions.push(action);
+                    }
+                    Ok(None) => {
+                        // Event type doesn't need to be converted to BridgeAction
+                        info!(
+                            tx_signature = %tx_signature,
+                            event_idx = event_idx,
+                            event_name = ?event.event_name(),
+                            "Skipping Solana event (not a bridge action)"
+                        );
+                    }
+                    Err(e) => {
+                        error!(
+                            tx_signature = %tx_signature,
+                            event_idx = event_idx,
+                            "Error converting Solana event to BridgeAction: {:?}",
+                            e
+                        );
+                        metrics.solana_watcher_unrecognized_events.inc();
+                    }
+                }
+            }
+
+            // Process actions
+            if !actions.is_empty() {
+                info!(
+                    address = %address,
+                    action_count = actions.len(),
+                    "Processing Solana bridge actions"
+                );
+                metrics
+                    .solana_watcher_received_actions
+                    .inc_by(actions.len() as u64);
+
+                // Write actions to pending WAL for AML check
+                store
+                    .insert_pending_aml_checked_actions(&actions)
+                    .expect("Store operation should not fail");
+
+                // Submit to AML checker
+                for action in actions {
+                    submit_to_aml_checker(&aml_checker_tx, action)
+                        .await
+                        .expect("Submit to aml checker should not fail");
+                }
+            }
+
+            // Update cursors for crash recovery
+            // Signature is the primary cursor, slot is fallback if signature is pruned from RPC
+            if let Some(sig) = wrapper.newest_signature.clone() {
+                store
+                    .update_solana_signature_cursor(address.clone(), sig)
+                    .expect("Store operation should not fail");
+            }
+            if let Some(slot) = wrapper.newest_slot {
+                store
+                    .update_solana_slot_cursor(address.clone(), slot)
+                    .expect("Store operation should not fail");
+            }
+        }
+        panic!("Solana event channel was closed unexpectedly");
+    }
 }
 
 async fn process_actions(
@@ -467,6 +621,8 @@ mod tests {
             sui_events_rx,
             _eth_events_tx,
             eth_events_rx,
+            _sol_events_tx,
+            sol_events_rx,
             sui_monitor_tx,
             _sui_monitor_rx,
             eth_monitor_tx,
@@ -484,6 +640,7 @@ mod tests {
             Arc::new(sui_client),
             sui_events_rx,
             eth_events_rx,
+            sol_events_rx,
             store.clone(),
             sui_monitor_tx,
             eth_monitor_tx,
@@ -535,6 +692,8 @@ mod tests {
             sui_events_rx,
             _eth_events_tx,
             eth_events_rx,
+            _sol_events_tx,
+            sol_events_rx,
             sui_monitor_tx,
             _sui_monitor_rx,
             eth_monitor_tx,
@@ -552,6 +711,7 @@ mod tests {
             Arc::new(sui_client),
             sui_events_rx,
             eth_events_rx,
+            sol_events_rx,
             store.clone(),
             sui_monitor_tx,
             eth_monitor_tx,
@@ -601,6 +761,8 @@ mod tests {
             _sui_events_rx,
             _eth_events_tx,
             _eth_events_rx,
+            _sol_events_tx,
+            _sol_events_rx,
             _sui_monitor_tx,
             _sui_monitor_rx,
             _eth_monitor_tx,
@@ -646,6 +808,8 @@ mod tests {
             sui_events_rx,
             _eth_events_tx,
             eth_events_rx,
+            _sol_events_tx,
+            sol_events_rx,
             sui_monitor_tx,
             _sui_monitor_rx,
             eth_monitor_tx,
@@ -663,6 +827,7 @@ mod tests {
             Arc::new(sui_client),
             sui_events_rx,
             eth_events_rx,
+            sol_events_rx,
             store.clone(),
             sui_monitor_tx,
             eth_monitor_tx,
@@ -750,6 +915,8 @@ mod tests {
             sui_events_rx,
             eth_events_tx,
             eth_events_rx,
+            _sol_events_tx,
+            sol_events_rx,
             sui_monitor_tx,
             _sui_monitor_rx,
             eth_monitor_tx,
@@ -767,6 +934,7 @@ mod tests {
             Arc::new(sui_client),
             sui_events_rx,
             eth_events_rx,
+            sol_events_rx,
             store.clone(),
             sui_monitor_tx,
             eth_monitor_tx,
@@ -844,6 +1012,8 @@ mod tests {
             sui_events_rx,
             _eth_events_tx,
             eth_events_rx,
+            _sol_events_tx,
+            sol_events_rx,
             sui_monitor_tx,
             _sui_monitor_rx,
             eth_monitor_tx,
@@ -876,6 +1046,7 @@ mod tests {
             Arc::new(sui_client),
             sui_events_rx,
             eth_events_rx,
+            sol_events_rx,
             store.clone(),
             sui_monitor_tx,
             eth_monitor_tx,
@@ -900,6 +1071,8 @@ mod tests {
         mysten_metrics::metered_channel::Receiver<(Identifier, Vec<SuiEvent>)>,
         mysten_metrics::metered_channel::Sender<(EthSyncerCursorsKey, u64, ETHLogWrapper)>,
         mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, ETHLogWrapper)>,
+        mysten_metrics::metered_channel::Sender<(SolanaSyncerCursorsKey, SolanaEventWrapper)>,
+        mysten_metrics::metered_channel::Receiver<(SolanaSyncerCursorsKey, SolanaEventWrapper)>,
         mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
         mysten_metrics::metered_channel::Receiver<SuiBridgeEvent>,
         mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
@@ -935,6 +1108,15 @@ mod tests {
                 .channel_inflight
                 .with_label_values(&["unit_test_sui_events_queue"]),
         );
+
+        let (sol_events_tx, sol_events_rx) = mysten_metrics::metered_channel::channel(
+            100,
+            &mysten_metrics::get_metrics()
+                .unwrap()
+                .channel_inflight
+                .with_label_values(&["unit_test_sol_events_queue"]),
+        );
+
         let (sui_monitor_tx, sui_monitor_rx) = mysten_metrics::metered_channel::channel(
             10000,
             &mysten_metrics::get_metrics()
@@ -955,6 +1137,8 @@ mod tests {
             sui_events_rx,
             eth_events_tx,
             eth_events_rx,
+            sol_events_tx,
+            sol_events_rx,
             sui_monitor_tx,
             sui_monitor_rx,
             eth_monitor_tx,
