@@ -11,7 +11,7 @@ use move_vm_runtime::native_charge_gas_early_exit;
 use move_vm_runtime::native_functions::NativeContext;
 use smallvec::smallvec;
 use crate::NativesCostTable;
-use mpc_transmission::two_party_share::{mul_two_shared_secrets, sub_two_shared_secrets, recover_two_shares, recover_value, split_to_two_value, add_two_shared_secrets};
+use mpc_transmission_v2::{recover_value_from_shares_v2, mul_two_shared_secrets_v2, split_to_two_value_v2, recover_two_shares_v2, add_two_shared_secrets_v2, sub_two_shared_secrets_v2, process_shares_data_convert};
 
 use move_vm_types::{
     loaded_data::runtime_types::Type, natives::function::NativeResult, pop_arg,values::Value
@@ -24,7 +24,7 @@ use std::time::Duration;
 use move_core_types::gas_algebra::InternalGas;
 use serde_json::{json};
 use serde_json::Value as JsonValue;
-use tracing::info;
+use tracing::{info, error};
 use anyhow::anyhow;
 use attohttpc::post;
 //use fastcrypto::hash::HashFunction;
@@ -47,10 +47,12 @@ pub const NOT_FOUND_ANONYMOUS_RPC_ADDRESS: u64 = 4;
 
 pub const INVALID_SERVER_RESPONSE_ERROR: u64 = 5;
 
+pub const CONVERT_FROM_V1_TRANSMISSION_SHARES_ERROR: u64 = 6;
+
 //const THRESHOLD: usize = 2;
 //const TOTAL_SHARES: usize = 2;
 const MASK_SECRET: &str =  "0x1111ffff0000";
-
+const COORD_SEED :u64 = 116540450355;
 
 pub fn hfe_ops_add(
     context: &mut NativeContext,
@@ -74,6 +76,13 @@ pub fn hfe_ops_add(
         .get::<NativesCostTable>()?
         .anonymous_privatekey
         .clone().unwrap_or_default();
+
+    let anonymous_coordseed = context
+        .extensions()
+        .get::<NativesCostTable>()
+        .anonymous_coordseed
+        .clone().unwrap_or(COORD_SEED);
+
     let enable_anonymous_rpc = &context
         .extensions()
         .get::<NativesCostTable>()?
@@ -96,6 +105,7 @@ pub fn hfe_ops_add(
     let num3 = String::from_utf8(number3).unwrap_or_default();
     let num4 = String::from_utf8(number4).unwrap_or_default();
     let cost = context.gas_used();
+
     if num1.is_empty() || num2.is_empty() || num3.is_empty() || num4.is_empty() {
         return Ok(NativeResult::err(
             cost,
@@ -131,29 +141,57 @@ pub fn hfe_ops_add(
             .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
 
         info!("hfe_ops_add calculate in local");
-        let value1_share = recover_two_shares(num1, num2, mask);
-        let value2_share = recover_two_shares(num3, num4, mask);
-        if value1_share.is_err() || value2_share.is_err() {
-            return Ok(NativeResult::err(
-                cost,
-                INVALID_PARAMS_ERROR,
-            ));
-        }
-        match add_two_shared_secrets(value1_share.unwrap(), value2_share.unwrap(), mask){
+        let (value1, value2, coord_seed_a) = match process_shares_data_convert(&num1, &num2, mask, anonymous_coordseed, get_user_address_salt(owner)){
+            Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
+            Err(e) => {
+                error!("Failed to convert num1 and num2 transmission shares to core shares: {}", e);
+                return Ok(NativeResult::err(
+                    cost,
+                    CONVERT_FROM_V1_TRANSMISSION_SHARES_ERROR,
+                ));
+            }
+        };
+
+        let (value3, value4, coord_seed_b) = match process_shares_data_convert(&num3, &num4, mask, anonymous_coordseed, get_user_address_salt(owner)) {
+            Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
+            Err(e) => {
+                error!("Failed to convert num3 and num4 transmission shares to core shares: {}", e);
+                return Ok(NativeResult::err(
+                    cost,
+                    CONVERT_FROM_V1_TRANSMISSION_SHARES_ERROR,
+                ));
+            }
+        };
+
+        let result1 = match add_two_shared_secrets_v2(value1, value3, mask, 0, get_user_address_salt(owner), coord_seed_a, coord_seed_b) {
             Ok(result) => {
-                let (result1, result2) = split_to_two_value(result, get_user_address_salt(owner), mask);
-                Ok(NativeResult::ok(
-                    cost,
-                    smallvec![Value::vector_u8(result1.into_bytes()),Value::vector_u8(result2.into_bytes())]
-                ))
+                result
             }
-            Err(_e) => {
-                Ok(NativeResult::err(
+            Err(e) => {
+                error!("Failed to add_two_shared_secrets_v2 for bfcx_getAnonymousAdd: {}", e);
+                return Ok(NativeResult::err(
                     cost,
-                    ARITHMETIC_OVERFLOW_ERROR,
-                ))
+                    INVALID_SERVER_RESPONSE_ERROR,
+                ));
             }
-        }
+        };
+        let result2 = match add_two_shared_secrets_v2(value2, value4, mask, 1, get_user_address_salt(owner), coord_seed_a, coord_seed_b) {
+            Ok(result) => {
+                result
+            }
+            Err(e) => {
+                error!("Failed to add_two_shared_secrets_v2 for bfcx_getAnonymousAdd: {}", e);
+                return Ok(NativeResult::err(
+                    cost,
+                    INVALID_SERVER_RESPONSE_ERROR,
+                ));
+            }
+        };
+
+        Ok(NativeResult::ok(
+            cost,
+            smallvec![Value::vector_u8(hex::encode(result1).into_bytes()),Value::vector_u8(hex::encode(result2).into_bytes())]
+        ))
     }
 }
 
@@ -181,6 +219,13 @@ pub fn hfe_ops_minus(
         .get::<NativesCostTable>()?
         .anonymous_privatekey
         .clone().unwrap_or_default();
+
+    let anonymous_coordseed = context
+        .extensions()
+        .get::<NativesCostTable>()
+        .anonymous_coordseed
+        .clone().unwrap_or(COORD_SEED);
+
     let enable_anonymous_rpc = &context
         .extensions()
         .get::<NativesCostTable>()?
@@ -194,6 +239,7 @@ pub fn hfe_ops_minus(
     let number3 = pop_arg!(args, Vec<u8>);
     let number2 = pop_arg!(args, Vec<u8>);
     let number1 = pop_arg!(args, Vec<u8>);
+
     let num1 = String::from_utf8(number1).unwrap_or_default();
     let num2 = String::from_utf8(number2).unwrap_or_default();
     let num3 = String::from_utf8(number3).unwrap_or_default();
@@ -226,43 +272,64 @@ pub fn hfe_ops_minus(
                     }
                 }
             },
-            None => return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
+            None => Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS)),
         }
     } else {
         let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
             .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
 
         info!("hfe_ops_minus calculate in local");
-        let value1_share = recover_two_shares(num1, num2, mask);
-        let value2_share = recover_two_shares(num3, num4, mask);
-
-        if value1_share.is_err() || value2_share.is_err() {
+        let (value1, value2, coord_seed_a) = match process_shares_data_convert(&num1, &num2, mask, anonymous_coordseed, get_user_address_salt(owner)){
+            Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
+            Err(e) => {
+                error!("Failed to convert num1 and num2 transmission shares to core shares: {}", e);
                 return Ok(NativeResult::err(
                     cost,
-                    INVALID_PARAMS_ERROR,
+                    CONVERT_FROM_V1_TRANSMISSION_SHARES_ERROR,
                 ));
-        }
+            }
+        };
 
-        match sub_two_shared_secrets(
-            value1_share.unwrap(),
-            value2_share.unwrap(),
-            mask
-        ) {
+        let (value3, value4, coord_seed_b) = match process_shares_data_convert(&num3, &num4, mask, anonymous_coordseed, get_user_address_salt(owner)){
+            Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
+            Err(e) => {
+                error!("Failed to convert num3 and value4 transmission shares to core shares: {}", e);
+                return Ok(NativeResult::err(
+                    cost,
+                    CONVERT_FROM_V1_TRANSMISSION_SHARES_ERROR,
+                ));
+            }
+        };
+
+        let result1 = match sub_two_shared_secrets_v2(value1, value3, mask, 0, get_user_address_salt(owner),coord_seed_a, coord_seed_b) {
             Ok(result) => {
-                let (result1, result2) = split_to_two_value(result, get_user_address_salt(owner), mask);
+                result
+            }
+            Err(e) => {
+                error!("Failed to sub_two_shared_secrets_v2 for bfcx_getAnonymousMinus: {}", e);
+                return Ok(NativeResult::err(
+                    cost,
+                    INVALID_SERVER_RESPONSE_ERROR,
+                ));
+            }
+        };
+        let result2 = match sub_two_shared_secrets_v2(value2, value4, mask, 1,  get_user_address_salt(owner), coord_seed_a, coord_seed_b) {
+            Ok(result) => {
+                result
+            }
+            Err(e) => {
+                error!("Failed to sub_two_shared_secrets_v2 for bfcx_getAnonymousMinus: {}", e);
+                return Ok(NativeResult::err(
+                    cost,
+                    INVALID_SERVER_RESPONSE_ERROR,
+                ));
+            }
+        };
 
-                Ok(NativeResult::ok(
-                    cost,
-                    smallvec![Value::vector_u8(result1.into_bytes()),Value::vector_u8(result2.into_bytes())]
-                ))
-            }
-            Err(_e) => {
-               Ok(NativeResult::err(
-                    cost,
-                    ARITHMETIC_OVERFLOW_ERROR,
-                ))
-            }
-        }
+        Ok(NativeResult::ok(
+            cost,
+            smallvec![Value::vector_u8(hex::encode(result1).into_bytes()),Value::vector_u8(hex::encode(result2).into_bytes())]
+        ))
     }
 }
 
@@ -291,6 +358,13 @@ pub fn hfe_ops_multiplied(
         .get::<NativesCostTable>()?
         .anonymous_privatekey
         .clone().unwrap_or_default();
+
+    let anonymous_coordseed = context
+        .extensions()
+        .get::<NativesCostTable>()
+        .anonymous_coordseed
+        .clone().unwrap_or(COORD_SEED);
+
     let enable_anonymous_rpc = &context
         .extensions()
         .get::<NativesCostTable>()?
@@ -343,32 +417,58 @@ pub fn hfe_ops_multiplied(
         let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
             .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
 
-        let value1_share =  recover_two_shares(num1, num2, mask);
-        let value2_share =  recover_two_shares(num3, num4, mask);
+        let (value1, value2, coord_seed_a) = match process_shares_data_convert(&num1, &num2, mask, anonymous_coordseed, get_user_address_salt(owner)) {
+            Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
+            Err(e) => {
+                error!("Failed to convert num1 and num2 transmission shares to core shares: {}", e);
+                return Ok(NativeResult::err(
+                    cost,
+                    CONVERT_FROM_V1_TRANSMISSION_SHARES_ERROR,
+                ));
+            }
+        };
 
-        if value1_share.is_err() || value2_share.is_err() {
-            return Ok(NativeResult::err(
-                cost,
-                INVALID_PARAMS_ERROR,
-            ));
+        let (value3, value4, coord_seed_b) = match process_shares_data_convert(&num3, &num4, mask, anonymous_coordseed, get_user_address_salt(owner)){
+            Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
+            Err(e) => {
+                error!("Failed to convert num3 and num4 transmission shares to core shares: {}", e);
+                return Ok(NativeResult::err(
+                    cost,
+                    CONVERT_FROM_V1_TRANSMISSION_SHARES_ERROR,
+                ));
+            }
+        };
+
+        // Ensure coordinate seeds match for multiplication
+        if coord_seed_a != coord_seed_b {
+            info!("Coordinate seeds don't match (a={}, b={}), using coord_seed_a", coord_seed_a, coord_seed_b);
         }
 
-        match mul_two_shared_secrets(value1_share.unwrap(), value2_share.unwrap(), mask) {
-            Ok(result) => {
-                let (result1, result2) = split_to_two_value(result,  get_user_address_salt(owner), mask);
+        // Use the high-level multiplication function
+        let (encoded_result_0, encoded_result_1) = match mul_two_shared_secrets_v2(
+            value1,
+            value2,
+            value3,
+            value4,
+            mask,
+            get_user_address_salt(owner),
+            coord_seed_a,
+            coord_seed_b,
+        ) {
+            Ok((result1, result2)) => (result1, result2),
+            Err(e) => {
+                error!("Failed to mul_two_shared_secrets_v2 for bfcx_getAnonymousMultiplied: {}", e);
+                return Ok(NativeResult::err(
+                        cost,
+                        INVALID_SERVER_RESPONSE_ERROR,
+                    ));
+            }
+        };
 
-                Ok(NativeResult::ok(
-                    cost,
-                    smallvec![Value::vector_u8(result1.into_bytes()),Value::vector_u8(result2.into_bytes())]
-                ))
-            }
-            Err(_e) => {
-                Ok(NativeResult::err(
-                    cost,
-                    ARITHMETIC_OVERFLOW_ERROR,
-                ))
-            }
-        }
+        return Ok(NativeResult::ok(
+            cost,
+            smallvec![Value::vector_u8(hex::encode(encoded_result_0).into_bytes()),Value::vector_u8(hex::encode(encoded_result_1).into_bytes())]
+        ))
     }
 
 
@@ -402,6 +502,13 @@ pub fn hfe_ops_encode_data(context: &mut NativeContext,
         .get::<NativesCostTable>()?
         .anonymous_privatekey
         .clone().unwrap_or_default();
+
+    let anonymous_coordseed = context
+        .extensions()
+        .get::<NativesCostTable>()
+        .anonymous_coordseed
+        .clone().unwrap_or(COORD_SEED);
+
     let enable_anonymous_rpc = &context
         .extensions()
         .get::<NativesCostTable>()?
@@ -435,7 +542,7 @@ pub fn hfe_ops_encode_data(context: &mut NativeContext,
         let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
             .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
 
-        let (result1, result2) = split_to_two_value(value, get_user_address_salt(owner), mask);
+        let (result1, result2, _) = split_to_two_value_v2(value, get_user_address_salt(owner), mask, anonymous_coordseed);
         Ok(NativeResult::ok(
             cost,
             smallvec![Value::vector_u8(result1.into_bytes()), Value::vector_u8(result2.into_bytes())]
@@ -525,8 +632,8 @@ pub fn hfe_ops_compare_value1_and_value2(
         let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
             .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
 
-        let new_number1 = recover_value(num1, num2, mask);
-        let new_number2 = recover_value(num3, num4, mask);
+        let new_number1 = recover_value_from_shares_v2(num1, num2, mask);
+        let new_number2 = recover_value_from_shares_v2(num3, num4, mask);
 
         if new_number1.is_err() || new_number2.is_err() {
             return Ok(NativeResult::err(
@@ -632,7 +739,7 @@ pub fn hfe_ops_compare_value(
         let mask = get_mask_secret_from_anonymous_privatekey(anonymous_privatekey)
             .unwrap_or(get_mask_secret_from_anonymous_privatekey(MASK_SECRET.to_string()).unwrap());
 
-        match recover_value(num1, num2, mask) {
+        match recover_value_from_shares_v2(num1, num2, mask) {
             Ok(value_a) => {
                 let value_b = number3;
                 let comparison = if value_a > value_b {

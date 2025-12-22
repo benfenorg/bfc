@@ -1,6 +1,3 @@
----
-source: external-crates/move/crates/move-transactional-test-runner/src/framework.rs
----
 processed 6 tasks
 
 init:
@@ -39,26 +36,8 @@ Response: {
   "jsonrpc": "2.0",
   "id": 0,
   "result": {
-    "digest": "6LWjSjETQBUvcdiXm3iph1Fhg5UK77wiRKMt1UJNxagK",
+    "digest": "DcGDcA8cDQffuc9GazCMDpF3rGvnoKm6uDSnnXKtTuGz",
     "objectChanges": [
-      {
-        "type": "wrapped",
-        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
-        "objectType": "0x5e85c04b91cd8dadb3ed84d599d4ed19f3a4bc955140671dae307cb255c243a2::M::I",
-        "objectId": "BFC397611c7c0926dc88189358b8c8a2493cbc6f51c17a0811f46977a25c1c89f37c1cb",
-        "version": "3"
-      },
-      {
-        "type": "created",
-        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
-        "owner": {
-          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
-        },
-        "objectType": "0x5e85c04b91cd8dadb3ed84d599d4ed19f3a4bc955140671dae307cb255c243a2::M::O",
-        "objectId": "BFC3e97c46ae755dc6a00e8cc6de6860e1f5a66acbd015a0e73f677c73723bbcc6c53f1",
-        "version": "3",
-        "digest": "amKWJ13z8v4ybXhHFujekKf668Qb9QxP3dTA36GCH4j"
-      },
       {
         "type": "mutated",
         "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
@@ -66,13 +45,29 @@ Response: {
           "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
         },
         "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
-        "objectId": "BFCb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c8503d3",
+        "objectId": "BFC1368f3ce1a354a08e6a92821900897ceb1ad5c9ba4ddcde7c0f0f88a2e9bfbfd4278",
         "version": "3",
         "previousVersion": "2",
-        "digest": "FN4JLP3kPKCteDxhUm8nEFqV9JfenfTZR4DcF8fEcUTy"
+        "digest": "4CMNAFrWjCYZ2nR86f6q5b8FQS5ohLJnuJsnBNBLcahZ"
+      },
+      {
+        "type": "created",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
+        "owner": {
+          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
+        },
+        "objectType": "0x5b4313c6c4c9d965536c9b534c4ff0af9fd42aa5ec77b5b0c0bb31029b9eed59::M::O",
+        "objectId": "BFC17549d79fe25af970ec2c6eef55e5c51a195b9772413277bf6d3273c388d72a1eb4f",
+        "version": "3",
+        "digest": "97ZibVDhmVXsbevf2x6H1J5XXtmFWtKdpcnRci8aDrHF"
+      },
+      {
+        "type": "wrapped",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
+        "objectType": "0x5b4313c6c4c9d965536c9b534c4ff0af9fd42aa5ec77b5b0c0bb31029b9eed59::M::I",
+        "objectId": "BFC727e46d79e5fd9a0dab3aeb789458e1da8bca9515de8b5bfe6851fd9881026a441db",
+        "version": "3"
       }
-    ],
-    "timestampMs": "0",
-    "checkpoint": "1"
+    ]
   }
 }

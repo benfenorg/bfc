@@ -28,8 +28,7 @@ custom coins with <code><a href="../sui/anonymous_balance.md#sui_anonymous_balan
 -  [Function `destroy_supply`](#sui_anonymous_balance_destroy_supply)
 
 
-<pre><code><b>use</b> <a href="../std/option.md#std_option">std::option</a>;
-<b>use</b> <a href="../std/vector.md#std_vector">std::vector</a>;
+<pre><code><b>use</b> <a href="../std/vector.md#std_vector">std::vector</a>;
 <b>use</b> <a href="../sui/hfe_ops.md#sui_hfe_ops">sui::hfe_ops</a>;
 <b>use</b> <a href="../sui/tx_context.md#sui_tx_context">sui::tx_context</a>;
 </code></pre>
@@ -118,22 +117,39 @@ d to store coins which don't need the key ability.
 ## Constants
 
 
+<a name="sui_anonymous_balance_ANONYMOUS_DATA_VERSION_V2"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_ANONYMOUS_DATA_VERSION_V2">ANONYMOUS_DATA_VERSION_V2</a>: u8 = 2;
+</code></pre>
+
+
+
+<a name="sui_anonymous_balance_BALANCE_TYPE_SHARING"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_BALANCE_TYPE_SHARING">BALANCE_TYPE_SHARING</a>: u32 = 1;
+</code></pre>
+
+
+
+<a name="sui_anonymous_balance_DEFAULT_COMPARE_RESULT_LESS_THAN"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_DEFAULT_COMPARE_RESULT_LESS_THAN">DEFAULT_COMPARE_RESULT_LESS_THAN</a>: u8 = 2;
+</code></pre>
+
+
+
 <a name="sui_anonymous_balance_ENonZero"></a>
 
 For when trying to destroy a non-zero balance.
 
 
 <pre><code><b>const</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_ENonZero">ENonZero</a>: u64 = 0;
-</code></pre>
-
-
-
-<a name="sui_anonymous_balance_EOverflow"></a>
-
-For when an overflow is happening on Supply operations.
-
-
-<pre><code><b>const</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_EOverflow">EOverflow</a>: u64 = 1;
 </code></pre>
 
 
@@ -148,20 +164,12 @@ For when trying to withdraw more than there is.
 
 
 
-<a name="sui_anonymous_balance_DEFAULT_COMPARE_RESULT_LESS_THAN"></a>
+<a name="sui_anonymous_balance_EOverflow"></a>
+
+For when an overflow is happening on Supply operations.
 
 
-
-<pre><code><b>const</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_DEFAULT_COMPARE_RESULT_LESS_THAN">DEFAULT_COMPARE_RESULT_LESS_THAN</a>: u8 = 2;
-</code></pre>
-
-
-
-<a name="sui_anonymous_balance_BALANCE_TYPE_SHARING"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_BALANCE_TYPE_SHARING">BALANCE_TYPE_SHARING</a>: u32 = 1;
+<pre><code><b>const</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_EOverflow">EOverflow</a>: u64 = 1;
 </code></pre>
 
 
@@ -184,7 +192,7 @@ For when trying to withdraw more than there is.
 <pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_create_by_value">create_by_value</a>&lt;T&gt;(value: u64, owner: <b>address</b>): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
     <b>let</b> <b>mut</b> encode_data = b"";
     <b>let</b> balance_type = <a href="../sui/anonymous_balance.md#sui_anonymous_balance_BALANCE_TYPE_SHARING">BALANCE_TYPE_SHARING</a>;
-    <b>let</b> version = 0;
+    <b>let</b> version = <a href="../sui/anonymous_balance.md#sui_anonymous_balance_ANONYMOUS_DATA_VERSION_V2">ANONYMOUS_DATA_VERSION_V2</a>;
     <b>let</b> (<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>)   = hfe_ops_encode_data(value, owner);
     vector::append(&<b>mut</b> encode_data, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>);
     vector::append(&<b>mut</b> encode_data, b",");
@@ -221,7 +229,7 @@ For when trying to withdraw more than there is.
 <pre><code><b>public</b> <b>fun</b> <a href="../sui/anonymous_balance.md#sui_anonymous_balance_create_by_value1_and_value2">create_by_value1_and_value2</a>&lt;T&gt;(<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>: vector&lt;u8&gt;, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>: vector&lt;u8&gt;): <a href="../sui/anonymous_balance.md#sui_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
     <b>let</b> <b>mut</b> encode_data = b"";
     <b>let</b> balance_type = <a href="../sui/anonymous_balance.md#sui_anonymous_balance_BALANCE_TYPE_SHARING">BALANCE_TYPE_SHARING</a>;
-    <b>let</b>  version = 0;
+    <b>let</b>  version = <a href="../sui/anonymous_balance.md#sui_anonymous_balance_ANONYMOUS_DATA_VERSION_V2">ANONYMOUS_DATA_VERSION_V2</a>;
     vector::append(&<b>mut</b> encode_data, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value1">value1</a>);
     vector::append(&<b>mut</b> encode_data, b",");
     vector::append(&<b>mut</b> encode_data, <a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>);
@@ -435,6 +443,7 @@ Create a zero <code>Balance</code> for type <code>T</code>.
     vector::append(&<b>mut</b> encode_data, b",");
     vector::append(&<b>mut</b> encode_data, self.<a href="../sui/anonymous_balance.md#sui_anonymous_balance_value2">value2</a>);
     self.encode_data = encode_data;
+    self.version = <a href="../sui/anonymous_balance.md#sui_anonymous_balance_ANONYMOUS_DATA_VERSION_V2">ANONYMOUS_DATA_VERSION_V2</a>;
 }
 </code></pre>
 

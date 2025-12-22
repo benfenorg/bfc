@@ -1392,6 +1392,7 @@ pub async fn genesis(
 
     let mut annnoymous_config = AnonymousPrivateKeyConfig::new();
     annnoymous_config.set_private_key("0x1111ffff0000".to_string());
+    annnoymous_config.set_anonymous_coordseed(116540450355);
     annnoymous_config.set_fullnode_rpc_path("https://rpc-mainnet.benfen.org".to_string());
     annnoymous_config.enable_anonymous_rpc(false);
     annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010".parse()?, "http://127.0.0.1:9010".parse()?]);
@@ -1476,6 +1477,7 @@ pub async fn genesis_private(
 
     let mut annnoymous_config = AnonymousPrivateKeyConfig::new();
     annnoymous_config.set_private_key("0x1111ffff0000".to_string());
+    annnoymous_config.set_anonymous_coordseed(116540450355);
     annnoymous_config.set_fullnode_rpc_path("https://rpc-mainnet.benfen.org".to_string());
     annnoymous_config.enable_anonymous_rpc(false);
     annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010".parse()?, "http://127.0.0.1:9010".parse()?]);

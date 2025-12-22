@@ -17,10 +17,12 @@ use clap::Parser;
 use fastcrypto::encoding::{Base64, Encoding};
 use move_core_types::account_address::AccountAddress;
 use mpc_transmission::{get_sui_config_directory, get_user_address_salt, two_party_share::{
-    add_two_shared_secrets, mul_two_shared_secrets, recover_two_shares, recover_value,
-    split_to_two_value, sub_two_shared_secrets,
+    recover_two_shares,
 }};
-use mpc_transmission::{get_mask_secret_from_config};
+
+use mpc_transmission::get_mask_secret_and_coord_seed_from_config;
+use mpc_transmission_v2::{mul_two_shared_secrets_v2, process_shares_data_convert, recover_value_from_shares_v2};
+use mpc_transmission_v2::two_party_share::{add_two_shared_secrets_v2, sub_two_shared_secrets_v2, split_to_two_value_v2};
 
 use serde::{Deserialize, Serialize};
 use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
@@ -242,6 +244,7 @@ fn create_error_response(requestid : serde_json::Value, code: i32, message: Stri
     };
     result
 }
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let subscriber = fmt::Subscriber::new();
@@ -380,8 +383,8 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
                     config_path = Some(args_result.unwrap().config);
                 }
 
-                let mask_secret = match get_mask_secret_from_config(config_path) {
-                    Ok(secret) => secret,
+                let mask_secret_and_coord_seed = match get_mask_secret_and_coord_seed_from_config(config_path) {
+                    Ok(mask_secret_and_coord_seed) => mask_secret_and_coord_seed,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
                         return create_error_response(request.id,
@@ -391,35 +394,51 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
                     }
                 };
 
-                let value1_share = recover_two_shares(add_params.value1, add_params.value2, mask_secret);
-                let value2_share = recover_two_shares(add_params.value3, add_params.value4, mask_secret);
-                if value1_share.is_err() || value2_share.is_err() {
-                    return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": "invalid params"})));
-                }
+                let (value1, value2, coord_seed_a) = match process_shares_data_convert(&add_params.value1, &add_params.value2, mask_secret_and_coord_seed.mask_secret, mask_secret_and_coord_seed.coord_seed, get_user_address_salt(add_params.owner)) {
+                    Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
+                    Err(e) => {
+                        warn!("Failed to convert value1 and value2 transmission shares to core shares: {}", e);
+                        return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})));
+                    }
+                };
 
-                match add_two_shared_secrets(
-                    value1_share.unwrap(),
-                    value2_share.unwrap(),
-                    mask_secret,
-                ) {
+                let (value3, value4, coord_seed_b) = match process_shares_data_convert(&add_params.value3, &add_params.value4, mask_secret_and_coord_seed.mask_secret, mask_secret_and_coord_seed.coord_seed, get_user_address_salt(add_params.owner)) {
+                    Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
+                    Err(e) => {
+                        warn!("Failed to convert value3 and value4 transmission shares to core shares: {}", e);
+                        return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})));
+                    }
+                };
+
+                let result1 = match add_two_shared_secrets_v2(value1, value3, mask_secret_and_coord_seed.mask_secret, 0, get_user_address_salt(add_params.owner), coord_seed_a, coord_seed_b) {
                     Ok(result) => {
-                        let (result1, result2) = split_to_two_value(result,get_user_address_salt(add_params.owner), mask_secret);
-                        JsonRpcResponse {
-                            jsonrpc: "2.0".to_string(),
-                            id: request.id,
-                            result: Some(serde_json::json!({
-                                "result1": result1,
-                                "result2": result2,
-                                "operation": "anonymous_add",
-                                "timestamp": chrono::Utc::now().timestamp()
-                            })),
-                            error: None,
-                        }
+                        result
                     }
                     Err(e) => {
                         warn!("Invalid parameters for bfcx_getAnonymousAdd: {}", e);
-                        create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+                        return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
                     }
+                };
+                let result2 = match add_two_shared_secrets_v2(value2, value4, mask_secret_and_coord_seed.mask_secret, 1, get_user_address_salt(add_params.owner), coord_seed_a, coord_seed_b) {
+                    Ok(result) => {
+                        result
+                    }
+                    Err(e) => {
+                        warn!("Invalid parameters for bfcx_getAnonymousAdd: {}", e);
+                        return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+                    }
+                };
+
+                JsonRpcResponse {
+                    jsonrpc: "2.0".to_string(),
+                    id: request.id,
+                    result: Some(serde_json::json!({
+                        "result1": hex::encode(result1),
+                        "result2": hex::encode(result2),
+                        "operation": "anonymous_add",
+                        "timestamp": chrono::Utc::now().timestamp()
+                    })),
+                    error: None,
                 }
             }
             Err(e) => {
@@ -443,7 +462,7 @@ async fn handle_anonymous_minus(request: JsonRpcRequest) -> JsonRpcResponse {
                     config_path = Some(args_result.unwrap().config);
                 }
 
-                let mask_secret = match get_mask_secret_from_config(config_path) {
+                let mask_secret_and_coord_seed = match get_mask_secret_and_coord_seed_from_config(config_path) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
@@ -451,36 +470,51 @@ async fn handle_anonymous_minus(request: JsonRpcRequest) -> JsonRpcResponse {
                     }
                 };
 
-                let value1_share = recover_two_shares(minus_params.value1, minus_params.value2, mask_secret);
-                let value2_share = recover_two_shares(minus_params.value3, minus_params.value4, mask_secret);
-                if value1_share.is_err() || value2_share.is_err() {
-                    return create_error_response(request.id, -32602, "Invalid params".to_string(),
-                                                 Some(serde_json::json!({"error": "invalid params"})));
-                }
+                let (value1, value2, coord_seed_a) = match process_shares_data_convert(&minus_params.value1, &minus_params.value2, mask_secret_and_coord_seed.mask_secret, mask_secret_and_coord_seed.coord_seed, get_user_address_salt(minus_params.owner)) {
+                    Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
+                    Err(e) => {
+                        warn!("Failed to convert value1 and value2 transmission shares to core shares: {}", e);
+                        return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})));
+                    }
+                };
 
-                match sub_two_shared_secrets(
-                    value1_share.unwrap(),
-                    value2_share.unwrap(),
-                    mask_secret,
-                ) {
+                let (value3, value4, coord_seed_b) = match process_shares_data_convert(&minus_params.value3, &minus_params.value4, mask_secret_and_coord_seed.mask_secret, mask_secret_and_coord_seed.coord_seed, get_user_address_salt(minus_params.owner)){
+                    Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
+                    Err(e) => {
+                        warn!("Failed to convert value1 and value2 transmission shares to core shares: {}", e);
+                        return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})));
+                    }
+                };
+
+                let result1 = match sub_two_shared_secrets_v2(value1, value3, mask_secret_and_coord_seed.mask_secret, 0, get_user_address_salt(minus_params.owner),coord_seed_a, coord_seed_b) {
                     Ok(result) => {
-                        let (result1, result2) = split_to_two_value(result, get_user_address_salt(minus_params.owner), mask_secret);
-                        JsonRpcResponse {
-                            jsonrpc: "2.0".to_string(),
-                            id: request.id,
-                            result: Some(serde_json::json!({
-                                "result1": result1,
-                                "result2": result2,
-                                "operation": "anonymous_minus",
-                                "timestamp": chrono::Utc::now().timestamp()
-                            })),
-                            error: None,
-                        }
+                        result
                     }
                     Err(e) => {
                         warn!("Invalid parameters for bfcx_getAnonymousMinus: {}", e);
-                        create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+                        return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
                     }
+                };
+                let result2 = match sub_two_shared_secrets_v2(value2, value4, mask_secret_and_coord_seed.mask_secret, 1,  get_user_address_salt(minus_params.owner), coord_seed_a, coord_seed_b) {
+                    Ok(result) => {
+                        result
+                    }
+                    Err(e) => {
+                        warn!("Invalid parameters for bfcx_getAnonymousMinus: {}", e);
+                        return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+                    }
+                };
+
+                JsonRpcResponse {
+                    jsonrpc: "2.0".to_string(),
+                    id: request.id,
+                    result: Some(serde_json::json!({
+                        "result1": hex::encode(result1),
+                        "result2": hex::encode(result2),
+                        "operation": "anonymous_minus",
+                        "timestamp": chrono::Utc::now().timestamp()
+                    })),
+                    error: None,
                 }
             }
             Err(e) => {
@@ -503,7 +537,7 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
                 if args_result.is_ok() {
                     config_path = Some(args_result.unwrap().config);
                 }
-                let mask_secret = match get_mask_secret_from_config(config_path) {
+                let mask_secret_and_coord_seed = match get_mask_secret_and_coord_seed_from_config(config_path) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
@@ -514,39 +548,60 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
                     }
                 };
 
-                let value1_share =
-                    recover_two_shares(multiply_params.value1, multiply_params.value2, mask_secret);
-                let value2_share =
-                    recover_two_shares(multiply_params.value3, multiply_params.value4, mask_secret);
-                if value1_share.is_err() || value2_share.is_err() {
-                    return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": "invalid params"})));
+                let user_id = get_user_address_salt(multiply_params.owner);
 
-                }
-
-                match mul_two_shared_secrets(
-                    value1_share.unwrap(),
-                    value2_share.unwrap(),
-                    mask_secret,
-                ) {
-                    Ok(result) => {
-                        let (result1, result2) = split_to_two_value(result, get_user_address_salt(multiply_params.owner), mask_secret);
-                        JsonRpcResponse {
-                            jsonrpc: "2.0".to_string(),
-                            id: request.id,
-                            result: Some(serde_json::json!({
-                                "result1": result1,
-                                "result2": result2,
-                                "operation": "anonymous_multiply",
-                                "timestamp": chrono::Utc::now().timestamp()
-                            })),
-                            error: None,
-                        }
-                    }
+                let (value1, value2, coord_seed_a) = match process_shares_data_convert(&multiply_params.value1, &multiply_params.value2, mask_secret_and_coord_seed.mask_secret, mask_secret_and_coord_seed.coord_seed, get_user_address_salt(multiply_params.owner)){
+                    Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
                     Err(e) => {
-                        warn!("Invalid parameters for bfcx_getAnonymousMultiply: {}", e);
-                        create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+                        warn!("Failed to convert value1 and value2 transmission shares to core shares: {}", e);
+                        return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})));
                     }
+                };
+
+                let (value3, value4, coord_seed_b) = match process_shares_data_convert(&multiply_params.value3, &multiply_params.value4, mask_secret_and_coord_seed.mask_secret, mask_secret_and_coord_seed.coord_seed, get_user_address_salt(multiply_params.owner)){
+                    Ok(data_convert) => (data_convert.value1, data_convert.value2, data_convert.coord_seed),
+                    Err(e) => {
+                        warn!("Failed to convert value1 and value2 transmission shares to core shares: {}", e);
+                        return create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})));
+                    }
+                };
+
+                // Ensure coordinate seeds match for multiplication
+                if coord_seed_a != coord_seed_b {
+                    warn!("Coordinate seeds don't match (a={}, b={}), using coord_seed_a", coord_seed_a, coord_seed_b);
                 }
+
+                // Use the high-level multiplication function
+                let (encoded_result_0, encoded_result_1) = match mul_two_shared_secrets_v2(
+                    value1,
+                    value2,
+                    value3,
+                    value4,
+                    mask_secret_and_coord_seed.mask_secret,
+                    user_id,
+                    coord_seed_a,
+                    coord_seed_b,
+                ) {
+                    Ok((result1, result2)) => (result1, result2),
+                    Err(e) => {
+                        warn!("Failed to multiply shared secrets: {}", e);
+                        return create_error_response(request.id, -32603, "Internal error".to_string(), Some(serde_json::json!({"error": e.to_string()})));
+                    }
+                };
+
+                JsonRpcResponse {
+                    jsonrpc: "2.0".to_string(),
+                    id: request.id,
+                    result: Some(serde_json::json!({
+                        "result1": hex::encode(encoded_result_0),
+                        "result2": hex::encode(encoded_result_1),
+                        "operation": "anonymous_multiply",
+                        "timestamp": chrono::Utc::now().timestamp()
+                    })),
+                    error: None,
+                }
+
+
             }
             Err(e) => {
                 warn!("Invalid parameters for bfcx_getAnonymousMultiply: {}", e);
@@ -558,6 +613,7 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
         }
     }
 }
+
 
 async fn handle_anonymous_encode_data_array_for_zklogin_address(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
@@ -610,7 +666,7 @@ async fn handle_anonymous_encode_data_array_for_zklogin_address(request: JsonRpc
                                                  Some(serde_json::json!({"error": "verify signature or get owner address failed"})));
                 }
 
-                let mask_secret = match get_mask_secret_from_config(config_path) {
+                let mask_secret_and_coord_seed = match get_mask_secret_and_coord_seed_from_config(config_path) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
@@ -624,10 +680,11 @@ async fn handle_anonymous_encode_data_array_for_zklogin_address(request: JsonRpc
 
                 let mut result_array = Vec::new();
                 for value in value_array_u64 {
-                    let (result1, result2) =
-                        split_to_two_value(value,
+                    let (result1, result2, _) =
+                        split_to_two_value_v2(value,
                                            get_user_address_salt(encode_to_two_value_params.owner),
-                                           mask_secret);
+                                           mask_secret_and_coord_seed.mask_secret,
+                                           mask_secret_and_coord_seed.coord_seed);
                     result_array.push(serde_json::json!({
                         "result1": result1,
                         "result2": result2
@@ -691,7 +748,7 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
                                                      Some(serde_json::json!({"error": "verify signature or get owner address failed"})));
                     }
 
-                    let mask_secret = match get_mask_secret_from_config(config_path) {
+                    let mask_secret_and_coord_seed = match get_mask_secret_and_coord_seed_from_config(config_path) {
                         Ok(secret) => secret,
                         Err(e) => {
                             warn!("Failed to get mask secret from config: {}", e);
@@ -715,7 +772,7 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
                         let data_str2 = String::from_utf8(data2).unwrap_or_default();
                         info!("=== data_str1: {}, data_str2: {} ===", data_str1, data_str2);
 
-                        match recover_value(data_str1, data_str2, mask_secret) {
+                        match recover_value_from_shares_v2(data_str1, data_str2, mask_secret_and_coord_seed.mask_secret) {
                             Ok(value) => {
                                 restore_result_array.push(value);
                             },
@@ -836,10 +893,10 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
                     config_path = Some(args_result.unwrap().config);
                 }
 
-                let mask_secret = match get_mask_secret_from_config(config_path) {
-                    Ok(secret) => secret,
+                let mask_secret_and_coord_seed = match get_mask_secret_and_coord_seed_from_config(config_path) {
+                    Ok(config) => config,
                     Err(e) => {
-                        info!("get_mask_secret_from_config failed, caused by: {}", e);
+                        info!("get_mask_secret_and_coord_seed_from_config failed, caused by: {}", e);
                         restore_result_array.push(0);
                         continue;
                     }
@@ -853,7 +910,7 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
                 let data_str2 = String::from_utf8(data2).unwrap_or_default();
                 info!("=== data_str1: {}, data_str2: {} ===", data_str1, data_str2);
 
-                match recover_value(data_str1, data_str2, mask_secret) {
+                match recover_value_from_shares_v2(data_str1, data_str2, mask_secret_and_coord_seed.mask_secret) {
                     Ok(value) => {
                         restore_result_array.push(value);
                     },
@@ -894,7 +951,7 @@ async fn handle_anonymous_encode_data(request: JsonRpcRequest) -> JsonRpcRespons
                 if args_result.is_ok() {
                     config_path = Some(args_result.unwrap().config);
                 }
-                let mask_secret = match get_mask_secret_from_config(config_path) {
+                let mask_secret_and_coord_seed = match get_mask_secret_and_coord_seed_from_config(config_path) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
@@ -906,7 +963,7 @@ async fn handle_anonymous_encode_data(request: JsonRpcRequest) -> JsonRpcRespons
                 };
 
                 let value = encode_to_two_value_params.value;
-                let (result1, result2) = split_to_two_value(value, get_user_address_salt(encode_to_two_value_params.owner), mask_secret);
+                let (result1, result2, _) = split_to_two_value_v2(value, get_user_address_salt(encode_to_two_value_params.owner), mask_secret_and_coord_seed.mask_secret, mask_secret_and_coord_seed.coord_seed);
                 JsonRpcResponse {
                     jsonrpc: "2.0".to_string(),
                     id: request.id,
@@ -986,7 +1043,7 @@ async fn handle_anonymous_encode_data_array_for_client(request: JsonRpcRequest) 
                 if args_result.is_ok() {
                     config_path = Some(args_result.unwrap().config);
                 }
-                let mask_secret = match get_mask_secret_from_config(config_path) {
+                let mask_secret_and_coord_seed = match get_mask_secret_and_coord_seed_from_config(config_path) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
@@ -999,10 +1056,11 @@ async fn handle_anonymous_encode_data_array_for_client(request: JsonRpcRequest) 
 
                 let mut result_array = Vec::new();
                 for value in value_array_u64 {
-                    let (result1, result2) =
-                        split_to_two_value(value,
+                    let (result1, result2, _) =
+                        split_to_two_value_v2(value,
                                            get_user_address_salt(encode_to_two_value_params.owner),
-                                           mask_secret);
+                                           mask_secret_and_coord_seed.mask_secret,
+                                           mask_secret_and_coord_seed.coord_seed);
                     result_array.push(serde_json::json!({
                         "result1": result1,
                         "result2": result2
@@ -1039,7 +1097,7 @@ async fn handle_anonymous_compare(request: JsonRpcRequest) -> JsonRpcResponse {
                 if args_result.is_ok() {
                     config_path = Some(args_result.unwrap().config);
                 }
-                let mask_secret = match get_mask_secret_from_config(config_path) {
+                let mask_secret_and_coord_seed = match get_mask_secret_and_coord_seed_from_config(config_path) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
@@ -1050,35 +1108,34 @@ async fn handle_anonymous_compare(request: JsonRpcRequest) -> JsonRpcResponse {
                     }
                 };
 
-                match recover_value(compare_params.value1, compare_params.value2, mask_secret) {
-                    Ok(value_a) => {
-                        let value_b = compare_params.value3;
-                        let comparison = if value_a > value_b {
-                            "1"
-                        } else if value_a < value_b {
-                            "2"
-                        } else {
-                            "0"
-                        };
-                        JsonRpcResponse {
-                            jsonrpc: "2.0".to_string(),
-                            id: request.id,
-                            result: Some(serde_json::json!({
-                                "result1": comparison.to_string(),
-                                "result2": "0".to_string(),
-                                "operation": "anonymous_compare",
-                                "timestamp": chrono::Utc::now().timestamp()
-                            })),
-                            error: None,
-                        }
-                    }
+                let value_a = match recover_value_from_shares_v2(compare_params.value1, compare_params.value2, mask_secret_and_coord_seed.mask_secret) {
+                    Ok(value) => value,
                     Err(e) => {
-                        warn!("Invalid parameters for bfcx_getAnonymousCompare: {}", e);
-                        create_error_response(request.id,
-                                              -32602,
-                                              "Invalid params".to_string(),
-                                              Some(serde_json::json!({"error": e.to_string()})))
+                        return create_error_response(request.id,
+                                                     -32602,
+                                                     "Invalid params".to_string(),
+                                                     Some(serde_json::json!({"error": e})));
                     }
+                };
+
+                let value_b = compare_params.value3;
+                let comparison = if value_a > value_b {
+                    "1"
+                } else if value_a < value_b {
+                    "2"
+                } else {
+                    "0"
+                };
+                JsonRpcResponse {
+                    jsonrpc: "2.0".to_string(),
+                    id: request.id,
+                    result: Some(serde_json::json!({
+                        "result1": comparison.to_string(),
+                        "result2": "0".to_string(),
+                        "operation": "anonymous_compare",
+                        "timestamp": chrono::Utc::now().timestamp()
+                    })),
+                    error: None,
                 }
             }
             Err(e) => {
@@ -1101,7 +1158,7 @@ async fn handle_anonymous_compare_value1_and_value2(request: JsonRpcRequest) -> 
                 if args_result.is_ok() {
                     config_path = Some(args_result.unwrap().config);
                 }
-                let mask_secret = match get_mask_secret_from_config(config_path) {
+                let mask_secret_and_coord_seed = match get_mask_secret_and_coord_seed_from_config(config_path) {
                     Ok(secret) => secret,
                     Err(e) => {
                         warn!("Failed to get mask secret from config: {}", e);
@@ -1112,17 +1169,27 @@ async fn handle_anonymous_compare_value1_and_value2(request: JsonRpcRequest) -> 
                     }
                 };
 
-                let new_value1 = recover_value(compare_params.value1, compare_params.value2, mask_secret);
-                let new_value2 = recover_value(compare_params.value3, compare_params.value4, mask_secret);
-                if new_value1.is_err() || new_value2.is_err() {
-                    warn!("Invalid parameters for bfcx_getAnonymousCompareValue1AndValue2");
-                    return create_error_response(request.id,
-                                          -32602,
-                                          "Invalid params".to_string(),
-                                          Some(serde_json::json!("error: recover failed")));
-                }
-                let value_a = new_value1.unwrap();
-                let value_b = new_value2.unwrap();
+
+                let value_a = match recover_value_from_shares_v2(compare_params.value1, compare_params.value2, mask_secret_and_coord_seed.mask_secret) {
+                    Ok(value) => value,
+                    Err(e) => {
+                        return create_error_response(request.id,
+                                                     -32602,
+                                                     "Invalid params".to_string(),
+                                                     Some(serde_json::json!({"error": e})));
+                    }
+                };
+
+                let value_b = match recover_value_from_shares_v2(compare_params.value3, compare_params.value4, mask_secret_and_coord_seed.mask_secret) {
+                    Ok(value) => value,
+                    Err(e) => {
+                        return create_error_response(request.id,
+                                                     -32602,
+                                                     "Invalid params".to_string(),
+                                                     Some(serde_json::json!({"error": e})));
+                    }
+                };
+
                 let comparison = if value_a > value_b {
                     "1"
                 } else if value_a < value_b {

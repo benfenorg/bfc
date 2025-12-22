@@ -1,6 +1,3 @@
----
-source: external-crates/move/crates/move-transactional-test-runner/src/framework.rs
----
 processed 6 tasks
 
 init:
@@ -28,28 +25,8 @@ Response: {
   "jsonrpc": "2.0",
   "id": 0,
   "result": {
-    "digest": "3dJEcGHCLatftNQRf7BaRHBj6dVhqccjWV9JDQf8vUSG",
+    "digest": "A1a5zUHQxaSmb2wuUtk6GVp1FjFdbPGY6u6WxvZjjNsK",
     "objectChanges": [
-      {
-        "type": "created",
-        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
-        "owner": {
-          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
-        },
-        "objectType": "0x2::package::UpgradeCap",
-        "objectId": "BFC453aee1aa336076adf31813a47a28c86cb4168c9e316f132d4f51e8d29407d3faeaa",
-        "version": "2",
-        "digest": "5PovafCHJtkKc1ZDjHXz8LJCAHUwPTsw5i1desNS5oRD"
-      },
-      {
-        "type": "published",
-        "packageId": "BFCa85b5c9cca942214e73b329bd059518c5d2fd4e5c3d87a419de4b133f4bf6a1c2a63",
-        "version": "1",
-        "digest": "Axcz4em9GnCQRGFXtoRsNeLMmvWhQxVM2hiq6Tnnd2q6",
-        "modules": [
-          "M"
-        ]
-      },
       {
         "type": "mutated",
         "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
@@ -57,14 +34,32 @@ Response: {
           "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
         },
         "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
-        "objectId": "BFCb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c8503d3",
+        "objectId": "BFC1368f3ce1a354a08e6a92821900897ceb1ad5c9ba4ddcde7c0f0f88a2e9bfbfd4278",
         "version": "2",
         "previousVersion": "1",
-        "digest": "7mG82WBJ9uTRQ9AYh8LFeTbABSFyekQ1KtVHTfyaHR15"
+        "digest": "D74EvQSW7QKjyhQnVejr78Yduvyj5nDCJ29yZjpakLkg"
+      },
+      {
+        "type": "published",
+        "packageId": "BFCe3f6ef2813bfa1b2e37cd9c956c743f18448345075a65f8fcecce5cdff58606472f1",
+        "version": "1",
+        "digest": "6yHJy6mVcq28RnybvPW5bi7Gn4ZyHU8yk4DdM2KE9teg",
+        "modules": [
+          "M"
+        ]
+      },
+      {
+        "type": "created",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
+        "owner": {
+          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
+        },
+        "objectType": "0x2::package::UpgradeCap",
+        "objectId": "BFCff5993f8e714927c0c235f093f4975c4c61eec835f10a61f57d2f2afa00071a7dfd0",
+        "version": "2",
+        "digest": "BMehQqw3uxQy9kkLoR4XvT4UZuZKKhJH1wmUfUK3LQN8"
       }
-    ],
-    "timestampMs": "0",
-    "checkpoint": "1"
+    ]
   }
 }
 
@@ -74,7 +69,7 @@ Response: {
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "digest": "DC6wzWUCNTfhHpa6c2pfkGdm8rBEkUYu2Ze6gLnSg1qq",
+    "digest": "6m4zgaYYGEz9KniKrFihY1fEVcGET9n8YCkcwGVkMUjg",
     "objectChanges": [
       {
         "type": "mutated",
@@ -82,17 +77,17 @@ Response: {
         "owner": {
           "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
         },
-        "objectType": "0x2::package::UpgradeCap",
-        "objectId": "BFC453aee1aa336076adf31813a47a28c86cb4168c9e316f132d4f51e8d29407d3faeaa",
+        "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
+        "objectId": "BFC1368f3ce1a354a08e6a92821900897ceb1ad5c9ba4ddcde7c0f0f88a2e9bfbfd4278",
         "version": "3",
         "previousVersion": "2",
-        "digest": "9edzqwKpFSbzd7f71b59LLKe3DU8MtU84kHk8oKjH1oV"
+        "digest": "DKARwqRcUXszkkDAPRJ62BotB4p18fYEeRhms1dg9BC1"
       },
       {
         "type": "published",
-        "packageId": "BFCb01b9ab16726d196982619ce7d920eef263400d90b1809f60db0a03b81155847d818",
+        "packageId": "BFCe319975ddbc3e5af0fc315ae4018f4c39591622b91a3b546ebfca1d5b5682d618c87",
         "version": "2",
-        "digest": "66TbgHpbqX8nK2mg6NK1jnUUkTYPidghcZJPmUSSvADC",
+        "digest": "XC8HqV3EAjwKhWA16X37gMumLtUu2Ca95XAP8AEwED1",
         "modules": [
           "M",
           "N"
@@ -104,14 +99,12 @@ Response: {
         "owner": {
           "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
         },
-        "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
-        "objectId": "BFCb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c8503d3",
+        "objectType": "0x2::package::UpgradeCap",
+        "objectId": "BFCff5993f8e714927c0c235f093f4975c4c61eec835f10a61f57d2f2afa00071a7dfd0",
         "version": "3",
         "previousVersion": "2",
-        "digest": "DDiye6GX4rWXA2XbBzthwoz1R7p4vjuScoWFrbFuCvUU"
+        "digest": "EwbLXLni9hEBBmAV2CqacqH4RhQx3YZjtQC4MyXfy8ZF"
       }
-    ],
-    "timestampMs": "0",
-    "checkpoint": "1"
+    ]
   }
 }

@@ -14,6 +14,10 @@ pub struct AnonymousPrivateKeyConfig {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[arg(long)]
+    pub anonymous_coordseed: Option<u64>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[arg(long)]
     pub anonymous_rpc: Option<Vec<String>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -39,8 +43,16 @@ impl AnonymousPrivateKeyConfig {
         self.anonymous_privatekey.clone()
     }
 
+    pub fn get_anonymous_coordseed(&self) -> Option<u64> {
+        self.anonymous_coordseed.clone()
+    }
+
     pub fn set_private_key(&mut self, key: String) {
         self.anonymous_privatekey = Some(key);
+    }
+
+    pub fn set_anonymous_coordseed(&mut self, key: u64) {
+        self.anonymous_coordseed = Some(key);
     }
 
     pub fn set_fullnode_rpc_path(&mut self, key: String) {
@@ -80,6 +92,10 @@ impl AnonymousPrivateKeyConfig {
             .and_then(|v| v.as_str())
             .map(|s| s.to_string());
 
+        let coord_seed = yaml_value
+            .get("anonymous-coordseed")
+            .and_then(|s| s.as_u64());
+
         let enable_anonymous_rpc = yaml_value
             .get("enable-anonymous-rpc")
             .and_then(|v| v.as_bool());
@@ -106,6 +122,7 @@ impl AnonymousPrivateKeyConfig {
             
         Ok(AnonymousPrivateKeyConfig { 
             anonymous_privatekey: private_key,
+            anonymous_coordseed: coord_seed,
             anonymous_rpc,
             enable_anonymous_rpc,
             fullnode_rpc_path,
@@ -136,10 +153,13 @@ mod tests {
         let config = AnonymousPrivateKeyConfig::from_yaml_file(&path)
             .expect("Failed to load config from yaml file");
         println!("the config key is {:?}", config.anonymous_privatekey);
+        println!("the coord seed is {:?}", config.anonymous_coordseed);
+
         println!("the anonymous_rpc is {:?}", config.anonymous_rpc);
 
         assert!(config.anonymous_privatekey.is_some());
-        //assert_eq!(config.anonymous_privatekey.unwrap(), "your-private-key-here");
+        assert!(config.anonymous_coordseed.is_some());
+        assert_eq!(config.anonymous_coordseed.unwrap(), 116540450355);
     }
 
 

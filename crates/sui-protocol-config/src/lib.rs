@@ -3575,6 +3575,9 @@ impl ProtocolConfig {
                 77 => {
                     cfg.feature_flags.uncompressed_g1_group_elements = true;
                     cfg.max_age_of_jwk_in_epochs = Some(365);
+                }
+                78 => {
+
 
                     if chain != Chain::Mainnet {
                         cfg.consensus_gc_depth = Some(60);

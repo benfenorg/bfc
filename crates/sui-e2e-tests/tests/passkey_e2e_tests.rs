@@ -247,7 +247,7 @@ async fn sim_test_passkey_feature_deny() {
 }
 
 #[sim_test]
-async fn test_passkey_authenticator_verifies() {
+async fn sim_test_passkey_authenticator_verifies() {
     let test_cluster = TestClusterBuilder::new().build().await;
     let response = create_credential_and_sign_test_tx(&test_cluster, None, false, false).await;
     let tx = make_good_passkey_tx(response);
@@ -256,7 +256,7 @@ async fn test_passkey_authenticator_verifies() {
 }
 
 #[sim_test]
-async fn test_passkey_fails_mismatched_challenge() {
+async fn sim_test_passkey_fails_mismatched_challenge() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     // Tweak intent in challenge that is sent to passkey.
