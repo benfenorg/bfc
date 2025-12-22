@@ -53,8 +53,11 @@ use sui_types::{
 use tokio::task::JoinHandle;
 use tracing::info;
 use crate::storage::EthSyncerCursorsKey;
+use crate::solana_client::SolanaClient;
+use crate::solana_syncer::{SolanaSyncer, SolanaTargetAddressInfo};
 
 const ETH_EVENTS_CHANNEL_SIZE: usize = 1000;
+const SOLANA_EVENTS_CHANNEL_SIZE: usize = 1000;
 
 pub async fn run_bridge_node(
     config: BridgeNodeConfig,
@@ -124,6 +127,7 @@ pub async fn run_bridge_node(
             Arc::new(get_validator_names_by_pub_keys(&committee, &sui_system).await);
         let client_components = start_client_components(
             client_config,
+            config.solana.clone(),
             committee.clone(),
             committee_keys_to_names,
             metrics.clone(),
@@ -235,6 +239,7 @@ async fn start_watchdog(
 // TODO: is there a way to clean up the overrides after it's stored in DB?
 async fn start_client_components(
     client_config: BridgeClientConfig,
+    solana_config: crate::config::SolanaConfig,
     committee: Arc<BridgeCommittee>,
     committee_keys_to_names: Arc<BTreeMap<BridgeAuthorityPublicKeyBytes, String>>,
     metrics: Arc<BridgeMetrics>,
@@ -266,6 +271,13 @@ async fn start_client_components(
             .unwrap()
             .channel_inflight
             .with_label_values(&["evm_events_queue"]),
+    );
+    let (sol_events_tx, mut sol_events_rx) = mysten_metrics::metered_channel::channel(
+        SOLANA_EVENTS_CHANNEL_SIZE,
+        &mysten_metrics::get_metrics()
+            .unwrap()
+            .channel_inflight
+            .with_label_values(&["solana_events_queue"]),
     );
     if client_config.eth_enable_fast_path_finalized {
         let (task_handles, _) =
@@ -372,6 +384,41 @@ async fn start_client_components(
         .await
         .expect("Failed to start sui syncer");
     all_handles.extend(task_handles);
+
+    let sol_client = Arc::new(SolanaClient::new(&solana_config.getblock_base_url));
+    let sol_keys = vec![solana_config.bridge_proxy_address.clone()];
+    let sol_targets_to_watch = get_solana_targets_to_watch(
+        &store,
+        &sol_keys,
+        solana_config.contracts_start_block_fallback.unwrap_or(0),
+        solana_config.contracts_start_block_override,
+    );
+    let (sol_handles, _last_finalized_solana_slot_rx) = SolanaSyncer::new(
+        sol_client.clone(),
+        sol_targets_to_watch,
+        sol_events_tx,
+    )
+    .run(metrics.clone())
+    .await
+    .expect("Failed to start solana syncer");
+    all_handles.extend(sol_handles);
+    let store_clone = store.clone();
+    all_handles.push(spawn_logged_monitored_task!(async move {
+        while let Some((address, wrapper)) = sol_events_rx.recv().await {
+            // Persist both signature and slot for resilience
+            // Signature is the primary cursor, slot is fallback if signature is pruned from RPC
+            if let Some(sig) = wrapper.newest_signature.clone() {
+                store_clone
+                    .update_solana_signature_cursor(address.clone(), sig)
+                    .expect("Store operation should not fail");
+            }
+            if let Some(slot) = wrapper.newest_slot {
+                store_clone
+                    .update_solana_slot_cursor(address.clone(), slot)
+                    .expect("Store operation should not fail");
+            }
+        }
+    }));
 
     let bridge_auth_agg = Arc::new(ArcSwap::from(Arc::new(BridgeAuthorityAggregator::new(
         committee,
@@ -529,6 +576,44 @@ fn get_eth_contracts_to_watch(
     eth_contracts_to_watch
 }
 
+
+fn get_solana_targets_to_watch(
+    store: &std::sync::Arc<BridgeOrchestratorTables>,
+    keys: &[String],
+    solana_contracts_start_slot_fallback: u64,
+    solana_contracts_start_slot_override: Option<u64>,
+) -> HashMap<String, SolanaTargetAddressInfo> {
+    let stored_sigs = store
+        .get_solana_signature_cursors(keys)
+        .expect("Failed to get solana signature cursors from storage");
+    let stored_slots = store
+        .get_solana_slot_cursors(keys)
+        .expect("Failed to get solana slot cursors from storage");
+    let mut targets = HashMap::new();
+    for ((addr, stored_sig), stored_slot) in keys.iter().zip(stored_sigs).zip(stored_slots) {
+        // Priority: override > stored_slot > fallback
+        // This ensures we resume from the correct position after restart
+        let start_slot = solana_contracts_start_slot_override
+            .unwrap_or_else(|| stored_slot.unwrap_or(solana_contracts_start_slot_fallback));
+        
+        info!(
+            address = %addr,
+            start_slot = start_slot,
+            stored_slot = ?stored_slot,
+            stored_sig = ?stored_sig,
+            "Initializing Solana target to watch"
+        );
+        
+        targets.insert(
+            addr.clone(),
+            SolanaTargetAddressInfo {
+                start_slot,
+                until_signature: stored_sig,
+            },
+        );
+    }
+    targets
+}
 #[cfg(test)]
 mod tests {
     use ethers::types::Address as EthAddress;
@@ -609,6 +694,23 @@ mod tests {
                 .into_iter()
                 .collect::<HashMap<_, _>>()
         );
+    }
+
+    #[tokio::test]
+    async fn test_get_solana_addresses_to_watch() {
+        telemetry_subscribers::init_for_testing();
+        let temp_dir = tempfile::tempdir().unwrap();
+        let store = BridgeOrchestratorTables::new(temp_dir.path());
+        let keys = vec![
+            "11111111111111111111111111111111".to_string(),
+            "Vote111111111111111111111111111111111111111".to_string(),
+        ];
+        let targets = get_solana_targets_to_watch(&store, &keys, 10, None);
+        assert_eq!(targets.get(&keys[0]).unwrap().start_slot, 10u64);
+        assert_eq!(targets.get(&keys[1]).unwrap().start_slot, 10u64);
+        let targets = get_solana_targets_to_watch(&store, &keys, 10, Some(420));
+        assert_eq!(targets.get(&keys[0]).unwrap().start_slot, 420u64);
+        assert_eq!(targets.get(&keys[1]).unwrap().start_slot, 420u64);
     }
 
     #[tokio::test]
@@ -744,6 +846,13 @@ mod tests {
             metrics_key_pair: default_ed25519_key_pair(),
             metrics: None,
             watchdog_config: None,
+            solana: crate::config::SolanaConfig {
+                getblock_base_url: "https://go.getblock.io/<ACCESS-TOKEN>/".to_string(),
+                bridge_proxy_address: "11111111111111111111111111111111".to_string(),
+                bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
+                contracts_start_block_fallback: Some(0),
+                contracts_start_block_override: None,
+            },
             user_limit_db_url: None,
             external_rpc: None,
         };
@@ -833,6 +942,13 @@ mod tests {
             metrics_key_pair: default_ed25519_key_pair(),
             metrics: None,
             watchdog_config: None,
+            solana: crate::config::SolanaConfig {
+                getblock_base_url: "https://go.getblock.io/<ACCESS-TOKEN>/".to_string(),
+                bridge_proxy_address: "11111111111111111111111111111111".to_string(),
+                bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
+                contracts_start_block_fallback: Some(0),
+                contracts_start_block_override: None,
+            },
             user_limit_db_url: None,
             external_rpc: None,
         };
@@ -951,6 +1067,13 @@ mod tests {
             metrics_key_pair: default_ed25519_key_pair(),
             metrics: None,
             watchdog_config: None,
+            solana: crate::config::SolanaConfig {
+                getblock_base_url: "https://go.getblock.io/<ACCESS-TOKEN>/".to_string(),
+                bridge_proxy_address: "11111111111111111111111111111111".to_string(),
+                bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
+                contracts_start_block_fallback: Some(0),
+                contracts_start_block_override: Some(0),
+            },
             user_limit_db_url: None,
             external_rpc: None,
         };
