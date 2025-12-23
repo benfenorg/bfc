@@ -374,8 +374,8 @@ pub fn generate_bridge_node_config_and_write_to_file(
             getblock_base_url: "your_solana_getblock_base_url".to_string(),
             bridge_proxy_address: "0x0000000000000000000000000000000000000000".to_string(),
             bridge_chain_id: BridgeChainId::EthSepolia as u8,
-            contracts_start_block_fallback: Some(0),
-            contracts_start_block_override: None,
+            contracts_start_slot_fallback: Some(0),
+            contracts_start_slot_override: None,
         },
         user_limit_db_url: Some("pgpath".to_string()),
         external_rpc: Some(ExternalChainRpcConfig {
