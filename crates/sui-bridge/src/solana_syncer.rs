@@ -1,7 +1,7 @@
 use crate::error::BridgeResult;
 use crate::metrics::BridgeMetrics;
 use crate::retry_with_max_elapsed_time;
-use crate::solana_client::{GetSignaturesConfig, SignatureInfo, SolanaClient, SolanaTransaction};
+use crate::solana_client::{GetSignaturesConfig, SignatureInfo, SolanaClient};
 use crate::solana_events::SolanaBridgeEvent;
 use mysten_metrics::metered_channel::Sender;
 use mysten_metrics::spawn_logged_monitored_task;
@@ -208,7 +208,7 @@ impl SolanaSyncer {
             }
 
             // Fetch transactions and parse events
-            let (txs, parsed_events, fetch_ok) =
+            let (parsed_events, fetch_ok) =
                 Self::fetch_transactions_and_parse_events(&sol_client, &collected).await;
 
             if !fetch_ok {
@@ -227,7 +227,7 @@ impl SolanaSyncer {
             // the last element is the newest
             let newest_signature = collected.last().map(|s| s.signature.clone());
             let newest_slot = collected.last().map(|s| s.slot);
-            let len = txs.len();
+            let tx_count = collected.len();
             let event_count = parsed_events.len();
 
             // Update cursor for next iteration
@@ -246,20 +246,19 @@ impl SolanaSyncer {
                     .set(slot as i64);
             }
 
-            if len != 0 {
+            if tx_count != 0 {
                 info!(
                     address = %address_str,
-                    tx_count = len,
+                    tx_count = tx_count,
                     event_count = event_count,
                     newest_signature = ?newest_signature,
                     newest_slot = ?newest_slot,
                     "Observed {} new Solana transactions",
-                    len
+                    tx_count
                 );
             }
 
             let wrapper = SolanaEventWrapper {
-                txs,
                 parsed_events,
                 newest_signature,
                 newest_slot,
@@ -358,13 +357,12 @@ impl SolanaSyncer {
 
     /// Fetch full transaction details and parse bridge events
     ///
-    /// Returns (transactions, parsed_events, success)
+    /// Returns (parsed_events_with_signatures, success)
     async fn fetch_transactions_and_parse_events(
         sol_client: &Arc<SolanaClient>,
         signatures: &[SignatureInfo],
-    ) -> (Vec<SolanaTransaction>, Vec<SolanaBridgeEvent>, bool) {
-        let mut txs: Vec<SolanaTransaction> = Vec::new();
-        let mut parsed_events: Vec<SolanaBridgeEvent> = Vec::new();
+    ) -> (Vec<SolanaParsedEvent>, bool) {
+        let mut parsed_events: Vec<SolanaParsedEvent> = Vec::new();
 
         for sig in signatures {
             let Ok(Ok(tx)) = retry_with_max_elapsed_time!(
@@ -377,7 +375,7 @@ impl SolanaSyncer {
                     "Failed to get transaction details from Solana client"
                 );
                 // Return what we have so far as failed - don't advance cursor
-                return (txs, parsed_events, false);
+                return (parsed_events, false);
             };
 
             // Parse bridge events from transaction logs
@@ -389,23 +387,34 @@ impl SolanaSyncer {
                     event_count = events.len(),
                     "Parsed bridge events from Solana transaction"
                 );
-                parsed_events.extend(events);
+                // Attach transaction signature to each event
+                for event in events {
+                    parsed_events.push(SolanaParsedEvent {
+                        tx_signature: sig.signature.clone(),
+                        event,
+                    });
+                }
             }
-
-            txs.push(tx);
         }
 
-        (txs, parsed_events, true)
+        (parsed_events, true)
     }
+}
+
+/// Parsed event with its transaction signature
+#[derive(Debug, Clone)]
+pub struct SolanaParsedEvent {
+    /// The transaction signature this event belongs to
+    pub tx_signature: String,
+    /// The parsed bridge event
+    pub event: SolanaBridgeEvent,
 }
 
 /// Wrapper for Solana events to be sent through the channel
 #[derive(Debug, Clone)]
 pub struct SolanaEventWrapper {
-    /// Raw transactions in chronological order (oldest to newest)
-    pub txs: Vec<SolanaTransaction>,
-    /// Parsed bridge events in chronological order
-    pub parsed_events: Vec<SolanaBridgeEvent>,
+    /// Parsed bridge events with their transaction signatures
+    pub parsed_events: Vec<SolanaParsedEvent>,
     /// The newest signature in this batch (used as cursor for next query)
     pub newest_signature: Option<String>,
     /// The newest slot in this batch (used for metrics and fallback cursor)
@@ -768,8 +777,8 @@ mod tests {
         assert_eq!(*finalized_slot_rx.borrow(), 12346);
 
         let (_addr, wrapper) = rx.recv().await.unwrap();
-        assert_eq!(wrapper.txs.len(), 1);
-        assert_eq!(wrapper.txs[0].slot, Some(12340));
+        // No bridge events parsed from mock transaction, but we should receive the wrapper
+        assert_eq!(wrapper.parsed_events.len(), 0);
         assert_eq!(wrapper.newest_slot, Some(12340));
 
         tx.send(()).ok();
@@ -859,16 +868,8 @@ mod tests {
         let (_addr, wrapper) = rx.recv().await.unwrap();
         assert_eq!(wrapper.newest_signature.as_deref(), Some("sig_new"));
         // Only sig_new should be included (sig_cursor and sig_old filtered out)
-        assert_eq!(wrapper.txs.len(), 1);
-        assert_eq!(
-            wrapper
-                .txs
-                .first()
-                .and_then(|tx| tx.transaction.as_ref())
-                .and_then(|t| t.signatures.first())
-                .map(|s| s.as_str()),
-            Some("sig_new")
-        );
+        // No bridge events parsed from mock transaction
+        assert_eq!(wrapper.parsed_events.len(), 0);
 
         tx.send(()).ok();
         handle.abort();
@@ -1371,7 +1372,8 @@ mod tests {
 
         let (_addr, wrapper) = events_rx.recv().await.unwrap();
         // Only sig_new should be included (sig_old filtered by start_slot)
-        assert_eq!(wrapper.txs.len(), 1);
+        // No bridge events parsed from mock transaction
+        assert_eq!(wrapper.parsed_events.len(), 0);
         assert_eq!(wrapper.newest_signature.as_deref(), Some("sig_new"));
         assert_eq!(wrapper.newest_slot, Some(12400));
 
@@ -1522,7 +1524,8 @@ mod tests {
 
         let (_addr, wrapper) = events_rx.recv().await.unwrap();
         // Only sig_success should be included (sig_failed filtered due to err)
-        assert_eq!(wrapper.txs.len(), 1);
+        // No bridge events parsed from mock transaction
+        assert_eq!(wrapper.parsed_events.len(), 0);
         assert_eq!(wrapper.newest_signature.as_deref(), Some("sig_success"));
 
         tx.send(()).ok();

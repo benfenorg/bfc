@@ -441,7 +441,6 @@ where
             info!(
                 address = %address,
                 event_count = wrapper.parsed_events.len(),
-                tx_count = wrapper.txs.len(),
                 newest_signature = ?wrapper.newest_signature,
                 newest_slot = ?wrapper.newest_slot,
                 "Received Solana events"
@@ -452,17 +451,10 @@ where
 
             // Convert events to BridgeActions
             let mut actions = vec![];
-            for (event_idx, event) in wrapper.parsed_events.iter().enumerate() {
-                // Get the transaction signature for this event
-                let tx_signature = wrapper
-                    .txs
-                    .get(event_idx)
-                    .and_then(|tx| tx.transaction.as_ref())
-                    .and_then(|t| t.signatures.first())
-                    .cloned()
-                    .unwrap_or_else(|| wrapper.newest_signature.clone().unwrap_or_default());
+            for (event_idx, parsed_event) in wrapper.parsed_events.iter().enumerate() {
+                let tx_signature = &parsed_event.tx_signature;
 
-                match event.try_into_bridge_action(tx_signature.clone(), event_idx as u16) {
+                match parsed_event.event.try_into_bridge_action(tx_signature.clone(), event_idx as u16) {
                     Ok(Some(action)) => {
                         info!(
                             tx_signature = %tx_signature,
@@ -483,7 +475,7 @@ where
                         info!(
                             tx_signature = %tx_signature,
                             event_idx = event_idx,
-                            event_name = ?event.event_name(),
+                            event_name = ?parsed_event.event.event_name(),
                             "Skipping Solana event (not a bridge action)"
                         );
                     }
