@@ -1111,6 +1111,9 @@ mod tests {
         let split_result_1 = client.test_split(10, 1).await.response.unwrap();
         info!("Split 10 Result: {:?}", split_result_1);
 
+        // v2 split 1: "8423594fbec37400d0c6030098003710e46033a30024702400009bfa4f000c00"
+        // v2 split 2: "d08d375f9bec0c09985123c5e47733340054007f001700f50066001300fd00d7"
+
         let object_id1 = "BFC47c715b758d549e531baf6ef516b1fa716f766e312a209123bdc9acd7cb5810374dc";
         let result = client
             .test_get_anonymous_data_version(
@@ -1129,6 +1132,29 @@ mod tests {
             .unwrap();
         info!("Get Anonymous Data Version Result: {:?}", result);
 
+
+
+        let result = client
+            .test_get_anonymous_data_version(
+                Vec::from("8423594fbec37400d0c6030098003710e46033a30024702400009bfa4f000c00"),
+                Vec::from("d08d375f9bec0c09985123c5e47733340054007f001700f50066001300fd00d7"),
+                object_id1.to_string(),
+            )
+            .await
+            .response
+            .unwrap();
+        info!("Get Anonymous Data Version Result: {:?}", result);
+
+        let result = client
+            .test_get_anonymous_data_version(
+                Vec::from("273722273623d0c93698010c9b33e400c936"),
+                Vec::from("d003376d9b6d0c7c987c2392e492336d0079"),
+                object_id1.to_string(),
+            )
+            .await
+            .response
+            .unwrap();
+        info!("Get Anonymous Data Version Result: {:?}", result);
 
     }
     #[tokio::test]
