@@ -53,7 +53,7 @@ impl AnonymousPrivateKeyConfig {
     }
 
     pub fn get_anonymous_data_v2_open_epoch(&self) -> u64 {
-        self.anonymous_data_v2_open_epoch.unwrap_or(DEFAULT_ANONYMOUS_DATA_V2_OPEN_EPCHO)
+        self.anonymous_data_v2_open_epoch.unwrap_or(DEFAULT_ANONYMOUS_DATA_V2_OPEN_EPOCH)
     }
 
     pub fn set_enable_anonymous_version_v2(&mut self, value: bool) {
