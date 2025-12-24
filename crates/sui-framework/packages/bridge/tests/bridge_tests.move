@@ -307,6 +307,16 @@ fun test_execute_send_token() {
 }
 
 #[test]
+fun test_execute_send_token_to_solana() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    let usdc: Coin<USDC> = env.get_usdc(1);
+    let solana_address = x"0000000000000000000000000000000000000000000000000000000000000000";
+    env.send_token(@0xABCD, chain_ids::solana_testnet(), solana_address, usdc);
+    env.destroy_env();
+} 
+
+#[test]
 fun test_btc_bridge_v2() {
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
@@ -1031,6 +1041,19 @@ fun test_execute_send_back_token() {
     let btc_id = 1;
     let btc_amount = 100;
     env.send_back_token(@0xABCD, chain_ids::eth_sepolia(), eth_address, btc_id, btc_amount, tx_hash);
+    env.destroy_env();
+}
+
+#[test]
+fun test_execute_send_back_token_to_solana() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    // Solana address must be 32 bytes
+    let solana_address = x"0000000000000000000000000000000000000000000000000000000000000000";
+    let tx_hash = hex::decode(b"56335bb5461b430c3ccf94efe91494e64f21e12e9b8b007b0e1c56c7d1e8de3b");
+    let usdc_id = 3;
+    let usdc_amount = 100;
+    env.send_back_token(@0xABCD, chain_ids::solana_testnet(), solana_address, usdc_id, usdc_amount, tx_hash);
     env.destroy_env();
 }
 

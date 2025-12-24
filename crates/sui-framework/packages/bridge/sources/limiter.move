@@ -649,6 +649,11 @@ module bridge::limiter {
         );
 
         self.update_route_limit(
+            &chain_ids::get_route(chain_ids::solana_mainnet(), chain_ids::sui_mainnet()),
+            1_000_000_000 * USD_VALUE_MULTIPLIER
+        );
+
+        self.update_route_limit(
             &chain_ids::get_route(chain_ids::bsc_testnet(), chain_ids::sui_testnet()),
             MAX_TRANSFER_LIMIT
         );
@@ -765,6 +770,16 @@ module bridge::limiter {
 
         self.update_route_limit(
             &chain_ids::get_route(chain_ids::avax_custom(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::solana_testnet(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::solana_testnet(), chain_ids::sui_custom()),
             MAX_TRANSFER_LIMIT
         );
     }

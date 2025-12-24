@@ -19,8 +19,10 @@ module bridge::bridge_env {
         Bridge,
         EmergencyOpEvent,
         TokenDepositedEventV2,
+        TokenDepositedEventForSolanaV2,
         ExternalDepositedEventV2,
         TokenSendBackEventV2,
+        TokenSendBackEventForSolanaV2,
         TokenTransferAlreadyApproved,
         TokenTransferAlreadyClaimed,
         TokenTransferApproved,
@@ -1718,20 +1720,37 @@ module bridge::bridge_env {
         assert!(
             total_supply_before - coin_value == get_total_supply<T>(&bridge),
         );
-        let deposited_events = event::events_by_type<TokenDepositedEventV2>();
-        assert!(deposited_events.length() == 1);
-        let (
-            event_seq_num,
-            _event_source_chain,
-            _event_sender_address,
-            _event_target_chain,
-            _event_target_address,
-            _event_token_type,
-            event_amount_before_fee,
-            _event_amount_after_fee
-        ) = deposited_events[0].unwrap_deposited_event_v2();
-        assert!(event_seq_num == seq_num);
-        assert!(event_amount_before_fee == coin_value);
+        if (target_chain_id == chain_ids::solana_testnet() || target_chain_id == chain_ids::solana_mainnet()) {
+            let deposited_events = event::events_by_type<TokenDepositedEventForSolanaV2>();
+            assert!(deposited_events.length() == 1);
+            let (
+                event_seq_num,
+                _event_source_chain,
+                _event_sender_address,
+                _event_target_chain,
+                _event_target_address,
+                _event_token_type,
+                event_amount_before_fee,
+                _event_amount_after_fee
+            ) = deposited_events[0].unwrap_deposited_event_for_solana_v2();
+            assert!(event_seq_num == seq_num);
+            assert!(event_amount_before_fee == coin_value);
+        } else {
+            let deposited_events = event::events_by_type<TokenDepositedEventV2>();
+            assert!(deposited_events.length() == 1);
+            let (
+                event_seq_num,
+                _event_source_chain,
+                _event_sender_address,
+                _event_target_chain,
+                _event_target_address,
+                _event_token_type,
+                event_amount_before_fee,
+                _event_amount_after_fee
+            ) = deposited_events[0].unwrap_deposited_event_v2();
+            assert!(event_seq_num == seq_num);
+            assert!(event_amount_before_fee == coin_value);
+        };
         assert_key(chain_id, &bridge);
 
         // tear down
@@ -1758,21 +1777,39 @@ module bridge::bridge_env {
         // run send
         bridge.send_back_token_v2(target_chain_id, eth_address,token_type, amount, tx_hash, 0u16, scenario.ctx());
         // verify send events
-        let send_back_events = event::events_by_type<TokenSendBackEventV2>();
-        assert!(send_back_events.length() == 1);
-        let (
-            event_seq_num,
-            _event_source_chain,
-            _event_sender_address,
-            _event_target_chain,
-            _event_target_address,
-            _event_token_type,
-            event_amount,
-            event_tx_hash,
-        ) = send_back_events[0].unwrap_send_back_event_v2();
-        assert!(event_seq_num == seq_num);
-        assert!(event_amount == 100);
-        assert!(event_tx_hash == tx_hash);
+        if (target_chain_id == chain_ids::solana_testnet() || target_chain_id == chain_ids::solana_mainnet()) {
+            let send_back_events = event::events_by_type<TokenSendBackEventForSolanaV2>();
+            assert!(send_back_events.length() == 1);
+            let (
+                event_seq_num,
+                _event_source_chain,
+                _event_sender_address,
+                _event_target_chain,
+                _event_target_address,
+                _event_token_type,
+                event_amount,
+                event_tx_hash,
+            ) = send_back_events[0].unwrap_send_back_event_for_solana_v2();
+            assert!(event_seq_num == seq_num);
+            assert!(event_amount == amount);
+            assert!(event_tx_hash == tx_hash);
+        } else {
+            let send_back_events = event::events_by_type<TokenSendBackEventV2>();
+            assert!(send_back_events.length() == 1);
+            let (
+                event_seq_num,
+                _event_source_chain,
+                _event_sender_address,
+                _event_target_chain,
+                _event_target_address,
+                _event_token_type,
+                event_amount,
+                event_tx_hash,
+            ) = send_back_events[0].unwrap_send_back_event_v2();
+            assert!(event_seq_num == seq_num);
+            assert!(event_amount == amount);
+            assert!(event_tx_hash == tx_hash);
+        };
         assert_key(chain_id, &bridge);
 
         // tear down

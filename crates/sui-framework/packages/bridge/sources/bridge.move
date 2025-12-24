@@ -3657,6 +3657,22 @@ module bridge::bridge {
     }
 
     #[test_only]
+    public fun unwrap_deposited_event_for_solana_v2(
+        event: TokenDepositedEventForSolanaV2,
+    ): (u64, u8, vector<u8>, u8, vector<u8>, u64, u64, u64) {
+        (
+            event.seq_num,
+            event.source_chain,
+            event.sender_address,
+            event.target_chain,
+            event.target_address,
+            event.token_type,
+            event.amount_before_fee,
+            event.amount_after_fee,
+        )
+    }
+
+    #[test_only]
     public fun unwrap_send_back_event(event: TokenSendBackEvent): (u64, u8, vector<u8>, u8, vector<u8>, u64, u64, vector<u8>) {
         (
             event.seq_num,
@@ -3672,6 +3688,22 @@ module bridge::bridge {
 
     #[test_only]
     public fun unwrap_send_back_event_v2(event: TokenSendBackEventV2): (u64, u8, vector<u8>, u8, vector<u8>, u64, u64, vector<u8>) {
+        (
+            event.seq_num,
+            event.source_chain,
+            event.sender_address,
+            event.target_chain,
+            event.target_address,
+            event.token_type,
+            event.amount,
+            event.tx_hash,
+        )
+    }
+
+    #[test_only]
+    public fun unwrap_send_back_event_for_solana_v2(
+        event: TokenSendBackEventForSolanaV2,
+    ): (u64, u8, vector<u8>, u8, vector<u8>, u64, u64, vector<u8>) {
         (
             event.seq_num,
             event.source_chain,
