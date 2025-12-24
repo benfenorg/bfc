@@ -17,7 +17,6 @@ use fastcrypto::encoding::Base58;
 use fastcrypto::encoding::Encoding;
 use fastcrypto::hash::MultisetHash;
 use itertools::Itertools;
-use sui_config::BFC_ANNOYMOUS_CONFIG;
 use move_binary_format::binary_config::BinaryConfig;
 use move_binary_format::CompiledModule;
 use move_core_types::annotated_value::MoveStructLayout;
@@ -76,7 +75,6 @@ use crate::jsonrpc_index::{CoinInfo, ObjectIndexChanges};
 use mysten_common::debug_fatal;
 use shared_crypto::intent::{AppId, Intent, IntentMessage, IntentScope, IntentVersion};
 use sui_archival::reader::ArchiveReaderBalancer;
-use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
 use sui_config::genesis::Genesis;
 use sui_config::node::{DBCheckpointConfig, ExpensiveSafetyCheckConfig};
 use sui_framework::{BuiltInFramework, SystemPackage};
@@ -5206,18 +5204,6 @@ impl AuthorityState {
         //let proposal_result = self.get_proposal_state(next_bfc_p_version).await;
         info!("===========protocol: {:?} detecting next version:{:?}", version, next_bfc_p_version);
         info!("===========system package size {:?}", next_epoch_system_packages.len());
-
-        let path = Self::get_sui_config_directory().join(BFC_ANNOYMOUS_CONFIG);
-        let mut annnoymous_config = AnonymousPrivateKeyConfig::from_yaml_file(&path).unwrap_or(AnonymousPrivateKeyConfig::default());
-        let anonymous_data_v2_open_epoch = annnoymous_config.get_anonymous_data_v2_open_epoch();
-        if next_epoch >= anonymous_data_v2_open_epoch {
-            info!("=========set enable_anonymous_version_v2 true, now epoch is {:?}, anonymous data v2 open epoch is {:?}=============", next_epoch, annnoymous_config.anonymous_data_v2_open_epoch);
-            annnoymous_config.set_enable_anonymous_version_v2(true);
-        } else {
-            info!("=========set enable_anonymous_version_v2 false, now epoch is {:?}, anonymous data v2 open epoch is {:?}=============", next_epoch, annnoymous_config.anonymous_data_v2_open_epoch);
-            annnoymous_config.set_enable_anonymous_version_v2(false);
-        }
-        annnoymous_config.save(path)?;
 
         // if cfg!(feature="bfc_skip_dao_update") {
         //     info!("===========msim test skip ========");

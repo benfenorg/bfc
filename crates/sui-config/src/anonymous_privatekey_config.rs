@@ -34,10 +34,6 @@ pub struct AnonymousPrivateKeyConfig {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[arg(long)]
-    pub enable_anonymous_version_v2: Option<bool>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[arg(long)]
     pub anonymous_data_v2_open_epoch: Option<u64>,
 }
 
@@ -54,14 +50,6 @@ impl AnonymousPrivateKeyConfig {
 
     pub fn get_anonymous_data_v2_open_epoch(&self) -> u64 {
         self.anonymous_data_v2_open_epoch.unwrap_or(DEFAULT_ANONYMOUS_DATA_V2_OPEN_EPOCH)
-    }
-
-    pub fn set_enable_anonymous_version_v2(&mut self, value: bool) {
-        self.enable_anonymous_version_v2 = Some(value);
-    }
-
-    pub fn enable_anonymous_version_v2(&self) -> Option<bool> {
-        self.enable_anonymous_version_v2.clone()
     }
 
     pub fn get_private_key(&self) -> Option<String> {
@@ -145,10 +133,6 @@ impl AnonymousPrivateKeyConfig {
             .and_then(|v| v.as_str())
             .map(|s| s.to_string());
 
-        let enable_anonymous_version_v2 = yaml_value
-            .get("enable-anonymous-version-v2")
-            .and_then(|v| v.as_bool());
-
         let anonymous_data_v2_open_epoch = yaml_value
             .get("anonymous-data-v2-open-epoch")
             .and_then(|s| s.as_u64());
@@ -160,7 +144,6 @@ impl AnonymousPrivateKeyConfig {
             enable_anonymous_rpc,
             fullnode_rpc_path,
             zklogin_verify_rpc_path,
-            enable_anonymous_version_v2,
             anonymous_data_v2_open_epoch,
         })
     }

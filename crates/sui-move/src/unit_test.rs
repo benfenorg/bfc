@@ -123,7 +123,7 @@ fn new_testing_object_and_natives_cost_runtime(ext: &mut NativeContextExtensions
         0, // epoch id
     ));
     ext.add(NativesCostTable::from_protocol_config(
-        &ProtocolConfig::get_for_max_version_UNSAFE(),
+        &ProtocolConfig::get_for_max_version_UNSAFE(), 0
     ));
 
     ext.add(store);

@@ -96,7 +96,7 @@ mod checked {
             metrics,
             current_epoch_id,
         ));
-        extensions.add(NativesCostTable::from_protocol_config(protocol_config));
+        extensions.add(NativesCostTable::from_protocol_config(protocol_config, current_epoch_id as u64));
         extensions
     }
 
