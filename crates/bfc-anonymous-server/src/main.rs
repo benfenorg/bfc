@@ -23,10 +23,11 @@ use mpc_transmission::{get_sui_config_directory, get_user_address_salt, two_part
 }};
 
 use mpc_transmission::get_mask_secret_and_coord_seed_from_config;
-use mpc_transmission_v2::{mul_two_shared_secrets_v2, process_shares_data_convert, recover_value_from_shares_v2};
+use mpc_transmission_v2::{is_v1_transmission_shares_format, mul_two_shared_secrets_v2, process_shares_data_convert, recover_value_from_shares_v2};
 use mpc_transmission_v2::two_party_share::{add_two_shared_secrets_v2, sub_two_shared_secrets_v2, split_to_two_value_v2};
 
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 use tracing::{info, warn};
 use tracing_subscriber::fmt;
@@ -39,7 +40,7 @@ use server_utils::{
     JsonRpcError, JsonRpcRequest, JsonRpcResponse,
 
 };
-use crate::server_utils::{create_error_response, AnonymousCompareParams, AnonymousCompareValue1AndValue2Params, AnonymousEncodeValueArrayParams, AnonymousEncodeValueInternalParams, AnonymousMinusParams, AnonymousRestoreArrayParams, Args};
+use crate::server_utils::{create_error_response, AnonymousCompareParams, AnonymousCompareValue1AndValue2Params, AnonymousEncodeValueArrayParams, AnonymousEncodeValueInternalParams, AnonymousMinusParams, AnonymousRestoreArrayParams, Args, GetAnonymousObjectVersionParams};
 
 impl warp::reject::Reject for RpcError {}
 
@@ -180,6 +181,7 @@ async fn handle_rpc_request_for_client(request: JsonRpcRequest) -> Result<impl w
         "bfcx_getAnonymousRestoreValueArray" => handle_anonymous_restore_value_array(request).await,
         "bfcx_getAnonymousRestoreValueArrayForZKloginAddress" => handle_anonymous_restore_value_array_for_zklogin_address(request).await,
         "bfcx_ping" => handle_ping(request).await,
+        "bfcx_getAnonymouseObjectVersion" => handle_get_anonymouse_object_version(request).await,
         _ => JsonRpcResponse {
             jsonrpc: "2.0".to_string(),
             id: request.id,
@@ -1060,6 +1062,66 @@ async fn handle_ping(request: JsonRpcRequest) -> JsonRpcResponse {
             "timestamp": chrono::Utc::now().timestamp()
         })),
         error: None,
+    }
+}
+
+
+
+async fn handle_get_anonymouse_object_version(request: JsonRpcRequest) -> JsonRpcResponse {
+    match request.params {
+        Some(params) => match serde_json::from_value::<GetAnonymousObjectVersionParams>(params) {
+            Ok(get_version_params) => {
+                let args_result = Args::try_parse();
+                let mut config_path : Option<String> = None;
+                if args_result.is_ok() {
+                    config_path = Some(args_result.unwrap().config);
+                }
+                let object_id = get_version_params.object_id;
+                let data1 = get_version_params.value1.clone();
+                let data2 = get_version_params.value2.clone();
+                info!("data1 len: {}, data2 len: {}", data1.len(), data2.len());
+
+                let data_str1 = String::from_utf8(data1).unwrap_or_default();
+                let data_str2 = String::from_utf8(data2).unwrap_or_default();
+                let mask_secret_and_coord_seed = match get_mask_secret_and_coord_seed_from_config(config_path) {
+                    Ok(secret) => secret,
+                    Err(e) => {
+                        warn!("Failed to get mask secret from config: {}", e);
+                        return create_error_response(request.id,
+                                                     -32603,
+                                                     "Internal error: Failed to load configuration".to_string(),
+                                                     Some(serde_json::json!({"error": e.to_string()})));
+                    }
+                };
+
+                let is_version_1 = is_v1_transmission_shares_format(&data_str1, &data_str2, mask_secret_and_coord_seed.mask_secret);
+                let mut version = 1;
+                if is_version_1 {
+                    version = 1;
+                }
+                else {
+                    version = 2;
+                }
+                JsonRpcResponse {
+                    jsonrpc: "2.0".to_string(),
+                    id: request.id,
+                    result: Some(serde_json::json!({
+                                "objectid": object_id,
+                                "version": version,
+                                "operation": "get_anonymouse_object_version",
+                                "timestamp": chrono::Utc::now().timestamp()
+                            })),
+                    error: None,
+                }
+            }
+            Err(e) => {
+                warn!("Invalid parameters for bfcx_getAnonymouseObjectVersion: {}", e);
+                create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+            }
+        },
+        None => {
+            create_error_response(request.id, -32602, "Missing params".to_string(), None)
+        }
     }
 }
 

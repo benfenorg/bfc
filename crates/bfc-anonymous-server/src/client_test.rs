@@ -474,6 +474,37 @@ impl AnonymousClient {
         }
     }
 
+    pub async fn test_get_anonymous_data_version(&self,
+                                                 value1: Vec<u8>,
+                                                 value2: Vec<u8>,
+                                                 object_id: String) -> TestResult {
+        let user_address = AccountAddress::from_hex_literal("0x1").unwrap();
+        let params = json!({
+            "owner": user_address,
+            "object_id": object_id,
+            "value1": value1,
+            "value2": value2,
+        });
+
+        match self
+            .send_rpc_request("bfcx_getAnonymouseObjectVersion", params, 4, "rpc")
+            .await
+        {
+            Ok(response) => TestResult {
+                method: "bfcx_getAnonymouseObjectVersion".to_string(),
+                success: true,
+                response: Some(response),
+                error: None,
+            },
+            Err(e) => TestResult {
+                method: "bfcx_getAnonymouseObjectVersion".to_string(),
+                success: false,
+                response: None,
+                error: Some(e.to_string()),
+            },
+        }
+    }
+
     pub async fn test_ping(&self) -> TestResult {
         match self.send_rpc_request("bfcx_ping", json!({}), 5, "rpc").await {
             Ok(response) => TestResult {
@@ -610,6 +641,7 @@ mod tests {
     use std::net::SocketAddr;
     use move_core_types::account_address::AccountAddress;
     use tracing::info;
+    use tracing_subscriber::fmt;
     use crate::client_test::hex_to_bytes;
 
     #[tokio::test]
@@ -1053,6 +1085,52 @@ mod tests {
         Ok(())
     }
 
+
+    #[tokio::test]
+    async fn test_get_anonymous_data_version(){
+        let subscriber = fmt::Subscriber::new();
+        tracing::subscriber::set_global_default(subscriber)
+             .expect("Failed to set tracing subscriber");
+        let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
+
+        info!("the address is {:?}", addr);
+        let server = AnonymousServer::new(None);
+        let _server_handle = tokio::spawn(async move {
+            if let Err(e) = server.start(addr).await {
+                eprintln!("Server error: {:?}", e);
+            }
+        });
+
+        let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
+        let ping_result = client.test_ping().await.response.unwrap();
+        info!("Ping Result: {:?}", ping_result);
+
+        // test split first
+        let split_result_0 = client.test_split(20, 1).await.response.unwrap();
+        info!("Split 20 Result: {:?}", split_result_0);
+        let split_result_1 = client.test_split(10, 1).await.response.unwrap();
+        info!("Split 10 Result: {:?}", split_result_1);
+
+        let object_id1 = "BFC47c715b758d549e531baf6ef516b1fa716f766e312a209123bdc9acd7cb5810374dc";
+        let result = client
+            .test_get_anonymous_data_version(
+                Vec::from(split_result_0["result"]["result1"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned()),
+                Vec::from(split_result_0["result"]["result1"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned()),
+                object_id1.to_string(),
+            )
+            .await
+            .response
+            .unwrap();
+        info!("Get Anonymous Data Version Result: {:?}", result);
+
+
+    }
     #[tokio::test]
     async fn test_write_unsigned_leb128(){
         // test zero
