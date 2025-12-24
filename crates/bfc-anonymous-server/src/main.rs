@@ -18,9 +18,7 @@ use crate::utils::public_key_bytes_to_sui_address;
 use clap::Parser;
 use fastcrypto::encoding::{Base64, Encoding};
 use move_core_types::account_address::AccountAddress;
-use mpc_transmission::{get_sui_config_directory, get_user_address_salt, two_party_share::{
-    recover_two_shares,
-}};
+use mpc_transmission::{get_sui_config_directory, get_user_address_salt};
 
 use mpc_transmission::get_mask_secret_and_coord_seed_from_config;
 use mpc_transmission_v2::{is_v1_transmission_shares_format, mul_two_shared_secrets_v2, process_shares_data_convert, recover_value_from_shares_v2};

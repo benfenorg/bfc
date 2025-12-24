@@ -14022,6 +14022,7 @@ dependencies = [
  "criterion",
  "dashmap",
  "diffy",
+ "dirs 4.0.0",
  "either",
  "enum_dispatch",
  "expect-test",

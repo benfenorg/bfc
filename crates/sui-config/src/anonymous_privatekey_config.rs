@@ -31,12 +31,37 @@ pub struct AnonymousPrivateKeyConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[arg(long)]
     pub zklogin_verify_rpc_path: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[arg(long)]
+    pub enable_anonymous_version_v2: Option<bool>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[arg(long)]
+    pub anonymous_data_v2_open_epcho: Option<u64>,
 }
 
+pub const DEFAULT_ANONYMOUS_DATA_V2_OPEN_EPCHO :u64 = 0;
 
 impl AnonymousPrivateKeyConfig {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn set_anonymous_data_v2_open_epcho(&mut self, anonymous_data_v2_open_epcho: u64) {
+        self.anonymous_data_v2_open_epcho = Some(anonymous_data_v2_open_epcho);
+    }
+
+    pub fn get_anonymous_data_v2_open_epcho(&self) -> u64 {
+        self.anonymous_data_v2_open_epcho.unwrap_or(DEFAULT_ANONYMOUS_DATA_V2_OPEN_EPCHO)
+    }
+
+    pub fn set_enable_anonymous_version_v2(&mut self, value: bool) {
+        self.enable_anonymous_version_v2 = Some(value);
+    }
+
+    pub fn enable_anonymous_version_v2(&self) -> Option<bool> {
+        self.enable_anonymous_version_v2.clone()
     }
 
     pub fn get_private_key(&self) -> Option<String> {
@@ -119,7 +144,15 @@ impl AnonymousPrivateKeyConfig {
             .get("zklogin-verify-rpc-path")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string());
-            
+
+        let enable_anonymous_version_v2 = yaml_value
+            .get("enable-anonymous-version-v1")
+            .and_then(|v| v.as_bool());
+
+        let anonymous_data_v2_open_epcho = yaml_value
+            .get("anonymous-data-v2-open-epcho")
+            .and_then(|s| s.as_u64());
+
         Ok(AnonymousPrivateKeyConfig { 
             anonymous_privatekey: private_key,
             anonymous_coordseed: coord_seed,
@@ -127,6 +160,8 @@ impl AnonymousPrivateKeyConfig {
             enable_anonymous_rpc,
             fullnode_rpc_path,
             zklogin_verify_rpc_path,
+            enable_anonymous_version_v2,
+            anonymous_data_v2_open_epcho,
         })
     }
 
