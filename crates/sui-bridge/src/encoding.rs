@@ -26,6 +26,7 @@ use crate::types::EvmContractUpgradeAction;
 use crate::types::LimitUpdateAction;
 use crate::types::SingleTransferLimitUpdateAction;
 use crate::types::RefundAdminAction;
+use crate::types::SolanaSendBackBridgeAction;
 use crate::types::SolanaToSuiBridgeAction;
 use crate::types::SuiToEthBridgeAction;
 use crate::types::SuiToSolanaBridgeAction;
@@ -284,6 +285,57 @@ impl BridgeMessageEncoding for EthSendBackBridgeAction {
         bytes.push(EthAddress::len_bytes() as u8);
         // Add dest address
         bytes.extend_from_slice(e.eth_address.as_bytes());
+
+        // Add token id
+        bytes.extend_from_slice(&e.token_id.to_be_bytes());
+
+        // Add token amount
+        bytes.extend_from_slice(&e.amount_sui_adjusted.to_be_bytes());
+
+        // Add tx hash
+        bytes.push(e.tx_hash.len() as u8);
+        bytes.extend_from_slice(&e.tx_hash.to_vec());
+
+        // Add event idx
+        bytes.extend_from_slice(&e.event_idx.to_be_bytes());
+
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for SolanaSendBackBridgeAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.sui_bridge_event;
+        // Add message type
+        bytes.push(BridgeActionType::TokenTransfer as u8);
+        // Add message version
+        bytes.push(TOKEN_TRANSFER_MESSAGE_VERSION_V3);
+        // Add nonce
+        bytes.extend_from_slice(&e.nonce.to_be_bytes());
+        // Add source chain id
+        bytes.push(e.sui_chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.sui_bridge_event;
+
+        // Add source address length
+        bytes.push(SUI_ADDRESS_LENGTH as u8);
+        // Add source address
+        bytes.extend_from_slice(&e.sui_address.to_vec());
+        // Add dest chain id
+        bytes.push(e.solana_chain_id as u8);
+        // Add dest address length
+        bytes.push(PUBKEY_BYTES as u8);
+        // Add dest address
+        bytes.extend_from_slice(&e.solana_address.to_bytes());
 
         // Add token id
         bytes.extend_from_slice(&e.token_id.to_be_bytes());

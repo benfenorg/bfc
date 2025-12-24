@@ -128,6 +128,7 @@ where
             SuiBridgeEvent::SuiToEthDefiBridgeV1(_) => (),
             SuiBridgeEvent::TokenSendBackEvent(_) => (),
             SuiBridgeEvent::TokenSendBackEventV2(_) => (),
+            SuiBridgeEvent::TokenSendBackForSolanaV2(_) => (),
             SuiBridgeEvent::ExternalDepositStartBridgeV1(_) => (),
             SuiBridgeEvent::TokenTransferApproved(_) => (),
             SuiBridgeEvent::TokenTransferClaimed(_) => (),

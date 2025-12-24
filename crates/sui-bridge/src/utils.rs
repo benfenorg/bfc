@@ -16,7 +16,6 @@ use crate::types::{AddTokensOnSuiAction, AddTokenOnSolanaAction,BridgeAction};
 use anyhow::anyhow;
 use ethers::core::k256::ecdsa::SigningKey;
 use ethers::middleware::SignerMiddleware;
-use ethers::prelude::*;
 use ethers::providers::{Http, Provider};
 use ethers::signers::Wallet;
 use ethers::types::Address as EthAddress;
@@ -50,9 +49,8 @@ use sui_types::transaction::{ObjectArg, TransactionData};
 use sui_types::BRIDGE_PACKAGE_ID;
 
 use solana_client::rpc_client::RpcClient;
-use anchor_client::{Program,Client, Cluster};
+use anchor_client::Client;
 use solana_sdk::{
-    commitment_config::CommitmentConfig,
     signature::{Keypair, Signer},
     pubkey::Pubkey,
     system_instruction,

@@ -217,6 +217,18 @@ module bridge::bridge {
         event_idx: u16,
     }
 
+    public struct TokenSendBackEventForSolanaV2 has copy, drop {
+        seq_num: u64,
+        source_chain: u8,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+    }
+
     public struct EmergencyOpEvent has copy, drop {
         frozen: bool,
     }
@@ -769,18 +781,33 @@ module bridge::bridge {
         );
 
         // emit event
-        emit(
-            TokenDepositedEventV2 {
-                seq_num: bridge_seq_num,
-                source_chain: inner.chain_id,
-                sender_address: address::to_bytes(ctx.sender()),
-                target_chain,
-                target_address,
-                token_type: token_id,
-                amount_before_fee: token_amount,
-                amount_after_fee,
-            },
-        );
+        if (target_chain == chain_ids::solana_testnet() || target_chain == chain_ids::solana_mainnet()) {
+            emit(
+                TokenDepositedEventForSolanaV2 {
+                    seq_num: bridge_seq_num,
+                    source_chain: inner.chain_id,
+                    sender_address: address::to_bytes(ctx.sender()),
+                    target_chain,
+                    target_address,
+                    token_type: token_id,
+                    amount_before_fee: token_amount,
+                    amount_after_fee,
+                },
+            );
+        } else {
+            emit(
+                TokenDepositedEventV2 {
+                    seq_num: bridge_seq_num,
+                    source_chain: inner.chain_id,
+                    sender_address: address::to_bytes(ctx.sender()),
+                    target_chain,
+                    target_address,
+                    token_type: token_id,
+                    amount_before_fee: token_amount,
+                    amount_after_fee,
+                },
+            );
+        }
     }
 
     public fun defi_stake<T>(
@@ -1079,7 +1106,11 @@ module bridge::bridge {
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
         assert!(!inner.refund_records.contains(message::key_refund(tx_hash)), EDuplicateRefund);
-        assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+        if (target_chain == chain_ids::solana_testnet() || target_chain == chain_ids::solana_mainnet()) {
+            assert!(target_address.length() == SOLANA_ADDRESS_LENGTH, EInvalidEvmAddress);
+        } else {
+            assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+        };
         assert!(token_amount > 0, ETokenValueIsZero);
         assert!(tx_hash.length() >= 1, EInvalidTxHash);
         assert!(inner.is_refund_admin(ctx.sender().to_ascii_string()), EInvalidSender);
@@ -1115,20 +1146,35 @@ module bridge::bridge {
             },
         );
 
-        // emit event
-        emit(
-            TokenSendBackEventV2 {
-                seq_num: bridge_seq_num,
-                source_chain: inner.chain_id,
-                sender_address: address::to_bytes(ctx.sender()),
-                target_chain,
-                target_address,
-                token_type: token_type,
-                amount: token_amount,
-                tx_hash,
-                event_idx,
-            },
-        );
+        if (target_chain == chain_ids::solana_testnet() || target_chain == chain_ids::solana_mainnet()) {
+            emit(
+                TokenSendBackEventForSolanaV2 {
+                    seq_num: bridge_seq_num,
+                    source_chain: inner.chain_id,
+                    sender_address: address::to_bytes(ctx.sender()),
+                    target_chain,
+                    target_address,
+                    token_type: token_type,
+                    amount: token_amount,
+                    tx_hash,
+                    event_idx,
+                },
+            );
+        } else {
+            emit(
+                TokenSendBackEventV2 {
+                    seq_num: bridge_seq_num,
+                    source_chain: inner.chain_id,
+                    sender_address: address::to_bytes(ctx.sender()),
+                    target_chain,
+                    target_address,
+                    token_type: token_type,
+                    amount: token_amount,
+                    tx_hash,
+                    event_idx,
+                },
+            );
+        }
     }
 
     public fun fast_path_limit_by_sender(

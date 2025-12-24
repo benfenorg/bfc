@@ -9,8 +9,7 @@ use crate::crypto::{
 use crate::encoding::BridgeMessageEncoding;
 use crate::error::{BridgeError, BridgeResult};
 use crate::events::{
-    EmittedEthTokenSendBackBridgeV1, EmittedExternalDepositStartBridgeV1,
-    EmittedSuiToEthDefiBridgeV1, EmittedSuiToEthTokenBridgeV1,  EmittedSuiToSolanaTokenBridgeV2,
+    EmittedEthTokenSendBackBridgeV1, EmittedExternalDepositStartBridgeV1, EmittedSolanaTokenSendBackV2, EmittedSuiToEthDefiBridgeV1, EmittedSuiToEthTokenBridgeV1, EmittedSuiToSolanaTokenBridgeV2
 };
 use crate::solana_events::TokensDeposited;
 use crate::fast_path::FastPathSelector;
@@ -319,6 +318,15 @@ pub struct EthSendBackBridgeAction {
     // The index of the event in the transaction
     pub sui_tx_event_index: u16,
     pub sui_bridge_event: EmittedEthTokenSendBackBridgeV1,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct SolanaSendBackBridgeAction {
+    // Digest of the transaction where the event was emitted
+    pub sui_tx_digest: TransactionDigest,
+    // The index of the event in the transaction
+    pub sui_tx_event_index: u16,
+    pub sui_bridge_event: EmittedSolanaTokenSendBackV2,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -674,6 +682,7 @@ pub enum BridgeAction {
     SuiToSolanaBridgeAction(SuiToSolanaBridgeAction),
     SuiToEthDefiBridgeAction(SuiToEthDefiBridgeAction),
     EthSendBackBridgeAction(EthSendBackBridgeAction),
+    SolanaSendBackBridgeAction(SolanaSendBackBridgeAction),
     ExternalDepositStartBridgeAction(ExternalDepositStartBridgeAction),
     /// Eth to sui bridge action
     EthToSuiBridgeAction(EthToSuiBridgeAction),
@@ -728,6 +737,7 @@ impl BridgeAction {
             BridgeAction::SuiToSolanaBridgeAction(a) => a.sui_bridge_event.sui_chain_id,
             BridgeAction::SuiToEthDefiBridgeAction(a) => a.sui_bridge_event.sui_chain_id,
             BridgeAction::EthSendBackBridgeAction(a) => a.sui_bridge_event.sui_chain_id,
+            BridgeAction::SolanaSendBackBridgeAction(a) => a.sui_bridge_event.sui_chain_id,
             BridgeAction::ExternalDepositStartBridgeAction(a) => a.sui_bridge_event.source_chain,
             BridgeAction::EthToSuiBridgeAction(a) => a.eth_bridge_event.eth_chain_id,
             BridgeAction::EthToSuiDefiBridgeAction(a) => a.eth_bridge_event.eth_chain_id,
@@ -797,6 +807,7 @@ impl BridgeAction {
             BridgeAction::SuiToSolanaBridgeAction(_) => BridgeActionType::TokenTransfer,
             BridgeAction::SuiToEthDefiBridgeAction(_) => BridgeActionType::Defi,
             BridgeAction::EthSendBackBridgeAction(_) => BridgeActionType::TokenTransfer,
+            BridgeAction::SolanaSendBackBridgeAction(_) => BridgeActionType::TokenTransfer,
             BridgeAction::ExternalDepositStartBridgeAction(_) => BridgeActionType::TokenTransfer,
             BridgeAction::EthToSuiBridgeAction(_) => BridgeActionType::TokenTransfer,
             BridgeAction::EthToSuiDefiBridgeAction(_) => BridgeActionType::Defi,
@@ -835,6 +846,7 @@ impl BridgeAction {
             BridgeAction::SuiToSolanaBridgeAction(a) => a.sui_bridge_event.nonce,
             BridgeAction::SuiToEthDefiBridgeAction(a) => a.sui_bridge_event.nonce,
             BridgeAction::EthSendBackBridgeAction(a) => a.sui_bridge_event.nonce,
+            BridgeAction::SolanaSendBackBridgeAction(a) => a.sui_bridge_event.nonce,
             BridgeAction::ExternalDepositStartBridgeAction(a) => a.sui_bridge_event.nonce,
             BridgeAction::EthToSuiBridgeAction(a) => a.eth_bridge_event.nonce,
             BridgeAction::EthToSuiDefiBridgeAction(a) => a.eth_bridge_event.nonce,
@@ -872,6 +884,7 @@ impl BridgeAction {
             BridgeAction::SuiToSolanaBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::SuiToEthDefiBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::EthSendBackBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
+            BridgeAction::SolanaSendBackBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::ExternalDepositStartBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::EthToSuiBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::EthToSuiDefiBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
