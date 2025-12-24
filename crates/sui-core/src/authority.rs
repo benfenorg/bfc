@@ -5209,12 +5209,12 @@ impl AuthorityState {
 
         let path = Self::get_sui_config_directory().join(BFC_ANNOYMOUS_CONFIG);
         let mut annnoymous_config = AnonymousPrivateKeyConfig::from_yaml_file(&path).unwrap_or(AnonymousPrivateKeyConfig::default());
-        let anonymous_data_v2_open_epcho = annnoymous_config.get_anonymous_data_v2_open_epcho();
-        if next_epoch >= anonymous_data_v2_open_epcho {
-            info!("=========set enable_anonymous_version_v2 true, now epoch is {:?}, anonymous data v2 open epcho is {:?}=============", next_epoch, annnoymous_config.anonymous_data_v2_open_epcho);
+        let anonymous_data_v2_open_epoch = annnoymous_config.get_anonymous_data_v2_open_epoch();
+        if next_epoch >= anonymous_data_v2_open_epoch {
+            info!("=========set enable_anonymous_version_v2 true, now epoch is {:?}, anonymous data v2 open epoch is {:?}=============", next_epoch, annnoymous_config.anonymous_data_v2_open_epoch);
             annnoymous_config.set_enable_anonymous_version_v2(true);
         } else {
-            info!("=========set enable_anonymous_version_v2 false, now epoch is {:?}, anonymous data v2 open epcho is {:?}=============", next_epoch, annnoymous_config.anonymous_data_v2_open_epcho);
+            info!("=========set enable_anonymous_version_v2 false, now epoch is {:?}, anonymous data v2 open epoch is {:?}=============", next_epoch, annnoymous_config.anonymous_data_v2_open_epoch);
             annnoymous_config.set_enable_anonymous_version_v2(false);
         }
         annnoymous_config.save(path)?;

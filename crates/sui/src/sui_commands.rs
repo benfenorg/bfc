@@ -1315,7 +1315,7 @@ pub async fn genesis(
     annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010".parse()?, "http://127.0.0.1:9010".parse()?]);
     annnoymous_config.set_zklogin_verify_rpc_path("https://zksimplerpc.benfen.org/verify_zk_login_sig".to_string());
     annnoymous_config.set_enable_anonymous_version_v2(true);
-    annnoymous_config.set_anonymous_data_v2_open_epcho(0);
+    annnoymous_config.set_anonymous_data_v2_open_epoch(0);
 
     annnoymous_config.save(sui_config_dir.join(BFC_ANNOYMOUS_CONFIG))?;
     Ok(())
@@ -1402,7 +1402,7 @@ pub async fn genesis_private(
     annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010".parse()?, "http://127.0.0.1:9010".parse()?]);
     annnoymous_config.set_zklogin_verify_rpc_path("https://zksimplerpc.benfen.org/verify_zk_login_sig".to_string());
     annnoymous_config.set_enable_anonymous_version_v2(true);
-    annnoymous_config.set_anonymous_data_v2_open_epcho(0);
+    annnoymous_config.set_anonymous_data_v2_open_epoch(0);
 
     annnoymous_config.save(sui_config_dir.join(BFC_ANNOYMOUS_CONFIG))?;
 
