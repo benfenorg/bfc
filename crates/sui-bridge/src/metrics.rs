@@ -99,6 +99,9 @@ pub struct BridgeMetrics {
     pub(crate) eth_watcher_received_events: IntCounter,
     pub(crate) eth_watcher_received_actions: IntCounter,
     pub(crate) eth_watcher_unrecognized_events: IntCounter,
+    pub(crate) solana_watcher_received_events: IntCounter,
+    pub(crate) solana_watcher_received_actions: IntCounter,
+    pub(crate) solana_watcher_unrecognized_events: IntCounter,
     pub(crate) action_executor_already_processed_actions: IntCounter,
     pub(crate) action_executor_signing_queue_received_actions: IntCounter,
     pub(crate) action_executor_signing_queue_skipped_actions: IntCounter,
@@ -223,6 +226,24 @@ impl BridgeMetrics {
             eth_watcher_unrecognized_events: register_int_counter_with_registry!(
                 "bridge_eth_watcher_unrecognized_events",
                 "Total number of unrecognized events in eth watcher",
+                registry,
+            )
+            .unwrap(),
+            solana_watcher_received_events: register_int_counter_with_registry!(
+                "bridge_solana_watcher_received_events",
+                "Total number of received events in solana watcher",
+                registry,
+            )
+            .unwrap(),
+            solana_watcher_received_actions: register_int_counter_with_registry!(
+                "bridge_solana_watcher_received_actions",
+                "Total number of received actions in solana watcher",
+                registry,
+            )
+            .unwrap(),
+            solana_watcher_unrecognized_events: register_int_counter_with_registry!(
+                "bridge_solana_watcher_unrecognized_events",
+                "Total number of unrecognized events in solana watcher",
                 registry,
             )
             .unwrap(),

@@ -1,14 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::error::BridgeResult;
+use crate::types::{BridgeAction, SolanaToSuiBridgeAction, SolanaToSuiTokenBridgeV1};
+use base64::Engine;
 use serde::{Deserialize, Serialize};
 use solana_sdk::signature::Signature;
 use solana_transaction_status::EncodedConfirmedTransactionWithStatusMeta;
-use base64::Engine;
 use std::io::Cursor;
 use std::io::Read;
-use tracing;
 use std::str::FromStr;
+use tracing;
 
 // 声明程序以生成事件类型
 anchor_lang::declare_program!(benfen_bridge);
@@ -306,6 +308,37 @@ impl SolanaBridgeEvent {
             }
         }
     }
+
+    pub fn try_into_bridge_action(
+        &self,
+        solana_tx_signature: String,
+        event_index: u16,
+    ) -> BridgeResult<Option<BridgeAction>> {
+        match self {
+            SolanaBridgeEvent::TokensDeposited(tokens_deposited) => {
+                let mut bridge_event = SolanaToSuiTokenBridgeV1::try_from(tokens_deposited)?;
+                
+                bridge_event.set_tx_signature(solana_tx_signature.as_bytes().to_vec());
+                bridge_event.set_event_idx(event_index);
+                
+                let action = SolanaToSuiBridgeAction {
+                    solana_tx_signature,
+                    solana_event_index: event_index,
+                    solana_bridge_event: bridge_event,
+                };
+                
+                Ok(Some(BridgeAction::SolanaToSuiBridgeAction(action)))
+            }
+            SolanaBridgeEvent::RawEvent { discriminator, .. } => {
+                tracing::debug!(
+                    "Skipping RawEvent with discriminator: {:?}, event_name: {:?}",
+                    discriminator,
+                    self.event_name()
+                );
+                Ok(None)
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -346,6 +379,67 @@ mod tests {
             }
             SolanaBridgeEvent::RawEvent { discriminator, .. } => {
                 panic!("Expected TokensDeposited event, got RawEvent with discriminator: {:?}", discriminator);
+            }
+        }
+    }
+
+    /// Test parsing real Solana log data
+    /// Real log from user:
+    /// Program FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm invoke [1]
+    /// Program log: Instruction: MockCross
+    /// In Program log: emit TokensDeposited
+    /// Program data: xNnHWCN1PGABAAAAAAAAAD0CAwAAAAAAAABAQg8AAAAAAOXaYE6RS0pYLywuTnxDVWpNC5vNpLb2ZR5oXqMkmrq8IAAAAK6o6kznyCufMoNfXO4QV6GdxnPPcbMT248r8B8cx6ke
+    /// Program FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm consumed 1333 of 200000 compute units
+    /// Program FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm success
+    #[test]
+    fn test_parse_real_solana_log_data() {
+        let base64_str = "xNnHWCN1PGABAAAAAAAAAD0CAwAAAAAAAABAQg8AAAAAAOXaYE6RS0pYLywuTnxDVWpNC5vNpLb2ZR5oXqMkmrq8IAAAAK6o6kznyCufMoNfXO4QV6GdxnPPcbMT248r8B8cx6ke";
+        let log_msg = format!("Program data: {}", base64_str);
+
+        let events = SolanaBridgeEvent::test_try_from_logs(&log_msg);
+        assert_eq!(events.len(), 1, "Should parse exactly one event");
+
+        match &events[0] {
+            SolanaBridgeEvent::TokensDeposited(tokens_deposited) => {
+                // Verify discriminator
+                assert_eq!(
+                    tokens_deposited.discriminator,
+                    [196, 217, 199, 88, 35, 117, 60, 96],
+                    "Discriminator should match TokensDeposited"
+                );
+
+                // Verify parsed fields
+                assert_eq!(tokens_deposited.nonce, 1);
+                assert_eq!(tokens_deposited.source_chain_id, 61); // 0x3D
+                assert_eq!(tokens_deposited.target_chain_id, 2);
+                assert_eq!(tokens_deposited.token_id, 3);
+                assert_eq!(tokens_deposited.amount, 1000000);
+                assert_eq!(tokens_deposited.recipient_length, 32);
+                assert_eq!(tokens_deposited.recipient_bytes.len(), 32);
+
+                // Verify sender pubkey (base58)
+                assert_eq!(
+                    tokens_deposited.sender_base58(),
+                    "GUFVktRxvzKofrHb8htuAKB5gWj3sdbXchznjro9aVU7"
+                );
+
+                // Verify recipient address (hex)
+                assert_eq!(
+                    tokens_deposited.recipient_hex(),
+                    "aea8ea4ce7c82b9f32835f5cee1057a19dc673cf71b313db8f2bf01f1cc7a91e"
+                );
+
+                println!("== Real Solana Log Parsed Successfully ==");
+                println!("nonce: {}", tokens_deposited.nonce);
+                println!("source_chain_id: {}", tokens_deposited.source_chain_id);
+                println!("target_chain_id: {}", tokens_deposited.target_chain_id);
+                println!("token_id: {}", tokens_deposited.token_id);
+                println!("amount: {}", tokens_deposited.amount);
+                println!("sender(base58): {}", tokens_deposited.sender_base58());
+                println!("recipient(hex): {}", tokens_deposited.recipient_hex());
+            }
+            SolanaBridgeEvent::RawEvent { discriminator, .. } => {
+                panic!("Expected TokensDeposited, got RawEvent with discriminator: {:?}", discriminator);
             }
         }
     }

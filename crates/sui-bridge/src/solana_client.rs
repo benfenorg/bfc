@@ -3,6 +3,10 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
+use crate::error::{BridgeError, BridgeResult};
+use crate::solana_events::SolanaBridgeEvent;
+use crate::types::BridgeAction;
+
 #[derive(Clone)]
 pub struct SolanaClient {
     client: reqwest::Client,
@@ -97,6 +101,35 @@ impl SolanaClient {
         let tx: SolanaTransaction = serde_json::from_value(result.clone())?;
         Ok(tx)
     }
+
+    /// Returns BridgeAction from a Solana Transaction with transaction signature
+    /// and the event index.
+    pub async fn get_bridge_action_maybe(
+        &self,
+        tx_signature: &str,
+        event_idx: u16,
+    ) -> BridgeResult<BridgeAction> {
+        let tx = self
+            .get_transaction(tx_signature)
+            .await
+            .map_err(|e| BridgeError::ProviderError(e.to_string()))?;
+
+        // Parse events from transaction logs
+        let events = SolanaBridgeEvent::try_from_client_transaction(&tx);
+        if events.is_empty() {
+            return Err(BridgeError::NoBridgeEventsInTxPosition);
+        }
+
+        // Get the event at the specified index
+        let event = events
+            .get(event_idx as usize)
+            .ok_or(BridgeError::NoBridgeEventsInTxPosition)?;
+
+        // Convert event to bridge action
+        event
+            .try_into_bridge_action(tx_signature.to_string(), event_idx)?
+            .ok_or(BridgeError::BridgeEventNotActionable)
+    }
 }
 
 #[derive(Serialize, Clone, Default)]
@@ -188,6 +221,7 @@ pub struct TokenBalance {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::solana_events::SolanaBridgeEvent;
     use axum::extract::State;
     use axum::http::StatusCode;
     use axum::routing::post;
@@ -421,5 +455,207 @@ mod tests {
             page1.last().unwrap().slot,
             page2.first().unwrap().slot
         );
+    }
+
+    #[tokio::test]
+    async fn test_get_bridge_action_maybe_with_mock() {
+        // Mock server handler for bridge action test
+        async fn bridge_handler(
+            State(_): State<MockState>,
+            Json(body): Json<Value>,
+        ) -> (StatusCode, Json<Value>) {
+            let method = body
+                .get("method")
+                .and_then(|m| m.as_str())
+                .unwrap_or_default();
+            match method {
+                "getTransaction" => {
+                    // Return a transaction with TokensDeposited event log
+                    let rsp = json!({
+                        "jsonrpc": "2.0",
+                        "id": 1,
+                        "result": {
+                            "slot": 123456,
+                            "transaction": {
+                                "signatures": ["test_signature"]
+                            },
+                            "meta": {
+                                "err": null,
+                                "fee": 5000,
+                                "logMessages": [
+                                    "Program FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm invoke [1]",
+                                    "Program log: Instruction: MockCross",
+                                    "Program log: emit TokensDeposited",
+                                    "Program data: xNnHWCN1PGABAAAAAAAAADMBAwAAAAAAAABAQg8AAAAAAOXaYE6RS0pYLywuTnxDVWpNC5vNpLb2ZR5oXqMkmrq8IAAAAK6o6kznyCufMoNfXO4QV6GdxnPPcbMT248r8B8cx6ke",
+                                    "Program FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm consumed 1333 of 200000 compute units",
+                                    "Program FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm success"
+                                ]
+                            }
+                        }
+                    });
+                    (StatusCode::OK, Json(rsp))
+                }
+                _ => {
+                    let rsp = json!({ "jsonrpc": "2.0", "id": 1, "error": { "code": -32601, "message": "Method not found" }});
+                    (StatusCode::OK, Json(rsp))
+                }
+            }
+        }
+
+        let state = MockState;
+        let app = Router::new()
+            .route("/", post(bridge_handler))
+            .with_state(state);
+        let addr: SocketAddr = "127.0.0.1:0".parse().unwrap();
+        let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+        let local_addr = listener.local_addr().unwrap();
+        let (tx, rx) = oneshot::channel();
+        let handle = tokio::spawn(async move {
+            let server = axum::serve(listener, app);
+            tokio::select! {
+                _ = server => {},
+                _ = rx => {},
+            }
+        });
+
+        let base_url = format!("http://{local_addr}/");
+        let client = SolanaClient::new(&base_url);
+
+        // Test get_bridge_action_maybe
+        let result = client.get_bridge_action_maybe("test_signature", 0).await;
+        assert!(result.is_ok(), "Expected Ok, got {:?}", result);
+
+        let action = result.unwrap();
+        match action {
+            BridgeAction::SolanaToSuiBridgeAction(solana_action) => {
+                println!("SolanaToSuiBridgeAction: {:?}", solana_action);
+                assert_eq!(solana_action.solana_tx_signature, "test_signature");
+                assert_eq!(solana_action.solana_event_index, 0);
+            }
+            _ => panic!("Expected SolanaToSuiBridgeAction"),
+        }
+
+        tx.send(()).ok();
+        handle.abort();
+    }
+
+    #[tokio::test]
+    async fn test_get_bridge_action_maybe_no_events() {
+        // Mock server handler that returns transaction without bridge events
+        async fn no_event_handler(
+            State(_): State<MockState>,
+            Json(body): Json<Value>,
+        ) -> (StatusCode, Json<Value>) {
+            let method = body
+                .get("method")
+                .and_then(|m| m.as_str())
+                .unwrap_or_default();
+            match method {
+                "getTransaction" => {
+                    let rsp = json!({
+                        "jsonrpc": "2.0",
+                        "id": 1,
+                        "result": {
+                            "slot": 123456,
+                            "transaction": {
+                                "signatures": ["test_signature"]
+                            },
+                            "meta": {
+                                "err": null,
+                                "fee": 5000,
+                                "logMessages": [
+                                    "Program log: some other log"
+                                ]
+                            }
+                        }
+                    });
+                    (StatusCode::OK, Json(rsp))
+                }
+                _ => {
+                    let rsp = json!({ "jsonrpc": "2.0", "id": 1, "error": { "code": -32601, "message": "Method not found" }});
+                    (StatusCode::OK, Json(rsp))
+                }
+            }
+        }
+
+        let state = MockState;
+        let app = Router::new()
+            .route("/", post(no_event_handler))
+            .with_state(state);
+        let addr: SocketAddr = "127.0.0.1:0".parse().unwrap();
+        let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+        let local_addr = listener.local_addr().unwrap();
+        let (tx, rx) = oneshot::channel();
+        let handle = tokio::spawn(async move {
+            let server = axum::serve(listener, app);
+            tokio::select! {
+                _ = server => {},
+                _ = rx => {},
+            }
+        });
+
+        let base_url = format!("http://{local_addr}/");
+        let client = SolanaClient::new(&base_url);
+
+        // Test get_bridge_action_maybe with no events
+        let result = client.get_bridge_action_maybe("test_signature", 0).await;
+        assert!(matches!(result, Err(BridgeError::NoBridgeEventsInTxPosition)));
+
+        tx.send(()).ok();
+        handle.abort();
+    }
+
+    /// Test parsing real Solana log data provided by user
+    #[test]
+    fn test_parse_real_solana_log() {
+        // Real log data from user:
+        // Program FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm invoke [1]
+        // Program log: Instruction: MockCross
+        // In Program log: emit TokensDeposited
+        // Program data: xNnHWCN1PGABAAAAAAAAAD0CAwAAAAAAAABAQg8AAAAAAOXaYE6RS0pYLywuTnxDVWpNC5vNpLb2ZR5oXqMkmrq8IAAAAK6o6kznyCufMoNfXO4QV6GdxnPPcbMT248r8B8cx6ke
+        // Program FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm consumed 1333 of 200000 compute units
+        // Program FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm success
+
+        let base64_data = "xNnHWCN1PGABAAAAAAAAAD0CAwAAAAAAAABAQg8AAAAAAOXaYE6RS0pYLywuTnxDVWpNC5vNpLb2ZR5oXqMkmrq8IAAAAK6o6kznyCufMoNfXO4QV6GdxnPPcbMT248r8B8cx6ke";
+        let log_msg = format!("Program data: {}", base64_data);
+
+        let events = SolanaBridgeEvent::test_try_from_logs(&log_msg);
+        assert_eq!(events.len(), 1, "Should parse exactly one event");
+
+        match &events[0] {
+            SolanaBridgeEvent::TokensDeposited(tokens_deposited) => {
+                // Verify discriminator (TokensDeposited)
+                assert_eq!(
+                    tokens_deposited.discriminator,
+                    [196, 217, 199, 88, 35, 117, 60, 96],
+                    "Discriminator should match TokensDeposited"
+                );
+
+                // Verify parsed fields
+                assert_eq!(tokens_deposited.nonce, 1, "nonce should be 1");
+                assert_eq!(tokens_deposited.source_chain_id, 61, "source_chain_id should be 61 (0x3D)");
+                assert_eq!(tokens_deposited.target_chain_id, 2, "target_chain_id should be 2");
+                assert_eq!(tokens_deposited.token_id, 3, "token_id should be 3");
+                assert_eq!(tokens_deposited.amount, 1000000, "amount should be 1000000");
+                
+                // Print actual values for verification
+                println!("== Parsed TokensDeposited ==");
+                println!("nonce: {}", tokens_deposited.nonce);
+                println!("source_chain_id: {}", tokens_deposited.source_chain_id);
+                println!("target_chain_id: {}", tokens_deposited.target_chain_id);
+                println!("token_id: {}", tokens_deposited.token_id);
+                println!("amount: {}", tokens_deposited.amount);
+                println!("sender_address(base58): {}", tokens_deposited.sender_base58());
+                println!("recipient_length: {}", tokens_deposited.recipient_length);
+                println!("recipient_address(hex): {}", tokens_deposited.recipient_hex());
+
+                // Verify recipient length
+                assert_eq!(tokens_deposited.recipient_length, 32, "recipient_length should be 32");
+                assert_eq!(tokens_deposited.recipient_bytes.len(), 32, "recipient_bytes should be 32 bytes");
+            }
+            SolanaBridgeEvent::RawEvent { discriminator, .. } => {
+                panic!("Expected TokensDeposited event, got RawEvent with discriminator: {:?}", discriminator);
+            }
+        }
     }
 }
