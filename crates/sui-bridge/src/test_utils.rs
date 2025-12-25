@@ -8,7 +8,8 @@ use crate::fast_path::FastPathSelector;
 use crate::server::mock_handler::run_mock_server;
 use crate::sui_transaction_builder::build_sui_transaction;
 use crate::types::{
-    BridgeCommittee, BridgeCommitteeValiditySignInfo, CertifiedBridgeAction, ExternalDepositStartBridgeAction, VerifiedCertifiedBridgeAction
+    BridgeCommittee, BridgeCommitteeValiditySignInfo, CertifiedBridgeAction, ExternalDepositStartBridgeAction, VerifiedCertifiedBridgeAction,
+    SolanaToSuiBridgeAction, SolanaToSuiTokenBridgeV1,
 };
 use crate::{
     crypto::{BridgeAuthorityKeyPair, BridgeAuthorityPublicKey, BridgeAuthoritySignInfo},
@@ -46,6 +47,7 @@ use sui_types::object::Owner;
 use sui_types::transaction::{CallArg, ObjectArg};
 use sui_types::{base_types::SuiAddress, crypto::get_key_pair, digests::TransactionDigest};
 use sui_types::{BRIDGE_PACKAGE_ID, SUI_BRIDGE_OBJECT_ID};
+use solana_sdk::pubkey::Pubkey;
 use tokio::task::JoinHandle;
 
 pub const DUMMY_MUTALBE_BRIDGE_OBJECT_ARG: ObjectArg = ObjectArg::SharedObject {
@@ -144,6 +146,32 @@ pub fn get_test_eth_to_sui_bridge_action(
             sui_address: sui_address.unwrap_or_else(SuiAddress::random_for_testing_only),
             eth_address: EthAddress::random(),
             tx_hash: tx_hash.as_bytes().to_vec(),
+            event_idx: 0,
+            fast_path_selector: FastPathSelector::Finalized,
+        },
+    })
+}
+
+pub fn get_test_solana_to_sui_bridge_action(
+    nonce: Option<u64>,
+    amount: Option<u64>,
+    sui_address: Option<SuiAddress>,
+    token_id: Option<u64>,
+    tx_signature: Option<String>,
+) -> BridgeAction {
+    let signature = tx_signature.unwrap_or_else(|| format!("test_sig_{}", rand::random::<u64>()));
+    BridgeAction::SolanaToSuiBridgeAction(SolanaToSuiBridgeAction {
+        solana_tx_signature: signature.clone(),
+        solana_event_index: 0,
+        solana_bridge_event: SolanaToSuiTokenBridgeV1 {
+            nonce: nonce.unwrap_or_default(),
+            sui_chain_id: BridgeChainId::SuiCustom,
+            solana_chain_id: BridgeChainId::SolanaTestnet,
+            sui_address: sui_address.unwrap_or_else(SuiAddress::random_for_testing_only),
+            solana_address: Pubkey::new_unique(),
+            token_id: token_id.unwrap_or(TOKEN_ID_ETH),
+            sui_adjusted_amount: amount.unwrap_or(100_000),
+            tx_signature: signature.as_bytes().to_vec(),
             event_idx: 0,
             fast_path_selector: FastPathSelector::Finalized,
         },

@@ -272,7 +272,7 @@ async fn start_client_components(
             .channel_inflight
             .with_label_values(&["evm_events_queue"]),
     );
-    let (sol_events_tx, mut sol_events_rx) = mysten_metrics::metered_channel::channel(
+    let (sol_events_tx, sol_events_rx) = mysten_metrics::metered_channel::channel(
         SOLANA_EVENTS_CHANNEL_SIZE,
         &mysten_metrics::get_metrics()
             .unwrap()
