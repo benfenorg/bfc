@@ -15,7 +15,7 @@ use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::{BridgeAction, BridgeActionType, EthToSuiBridgeAction, SignedBridgeAction};
 use crate::tron_query::check_tron_txn;
 use crate::solana_query::check_solana_txn;
-use crate::solana_events::{SolanaBridgeEvent, SolanaLog, TokensDeposited};
+use crate::solana_client::SolanaClient;
 use async_trait::async_trait;
 use axum::Json;
 use ethers::providers::JsonRpcClient;
@@ -33,8 +33,6 @@ use tracing::log::error;
 use sui_types::bridge::BridgeChainId;
 use sui_types::bridge::BridgeChainId::SuiMainnet;
 use super::governance_verifier::GovernanceVerifier;
-use solana_sdk::signature::Signature;
-use serde_json::json;
 
 #[async_trait]
 pub trait BridgeRequestHandlerTrait {
@@ -105,7 +103,7 @@ struct EthActionVerifier<P> {
 }
 
 struct SolanaActionVerifier {
-    external_rpc: Arc<crate::config::ExternalChainRpcConfig>,
+    solana_client: Arc<SolanaClient>,
 }
 
 struct SendBackActionVerifier<C, P> {
@@ -695,9 +693,10 @@ impl BridgeRequestHandler {
             .spawn(eth_rx);
 
         if let Some(external_rpc) = external_rpc.clone() {
+            let solana_client = Arc::new(SolanaClient::new(&external_rpc.solana.mainnet_url));
             SignerWithCache::new(
                 signer.clone(),
-                SolanaActionVerifier { external_rpc },
+                SolanaActionVerifier { solana_client },
                 metrics.clone(),
             )
             .spawn(solana_rx);
@@ -743,74 +742,6 @@ impl BridgeRequestHandler {
     }
 }
 
-async fn fetch_solana_log_messages(
-    chain_id: BridgeChainId,
-    tx_signature: &str,
-    rpc_urls: &crate::config::ChainRpcUrls,
-) -> BridgeResult<(u64, Vec<String>)> {
-    let base_url = match chain_id {
-        BridgeChainId::SolanaMainnet => rpc_urls.mainnet_url.as_str(),
-        BridgeChainId::SolanaTestnet => rpc_urls.testnet_url.as_str(),
-        _ => {
-            return Err(BridgeError::Generic(format!(
-                "Unsupported Solana chain id: {:?}",
-                chain_id
-            )));
-        }
-    };
-
-    let request_body = json!({
-        "jsonrpc": "2.0",
-        "id": "sui-bridge",
-        "method": "getTransaction",
-        "params": [
-            tx_signature,
-            {
-                "encoding": "json",
-                "commitment": "finalized"
-            }
-        ]
-    });
-
-    let client = reqwest::Client::new();
-    let res = client
-        .post(base_url)
-        .json(&request_body)
-        .send()
-        .await
-        .map_err(|e| BridgeError::Generic(format!("Failed to send Solana RPC request: {e:?}")))?;
-    let text = res
-        .text()
-        .await
-        .map_err(|e| BridgeError::Generic(format!("Failed to read Solana RPC response: {e:?}")))?;
-
-    let v: serde_json::Value = serde_json::from_str(&text).map_err(|e| {
-        BridgeError::Generic(format!("Failed to parse Solana RPC response as JSON: {e:?}"))
-    })?;
-
-    let slot = v
-        .get("result")
-        .and_then(|r| r.get("slot"))
-        .and_then(|s| s.as_u64())
-        .unwrap_or(0);
-    let logs = v
-        .get("result")
-        .and_then(|r| r.get("meta"))
-        .and_then(|m| m.get("logMessages"))
-        .and_then(|l| l.as_array())
-        .ok_or_else(|| {
-            BridgeError::Generic(format!(
-                "Missing result.meta.logMessages in Solana RPC response for tx {tx_signature}"
-            ))
-        })?
-        .iter()
-        .filter_map(|x| x.as_str().map(|s| s.to_string()))
-        .collect::<Vec<_>>();
-
-    Ok((slot, logs))
-}
-
-// todo: solana client @lin
 #[async_trait::async_trait]
 impl ActionVerifier<(u8, String, u16, u8)> for SolanaActionVerifier {
     fn name(&self) -> &'static str {
@@ -827,50 +758,19 @@ impl ActionVerifier<(u8, String, u16, u8)> for SolanaActionVerifier {
             )));
         }
 
-        let signature =
-            Signature::from_str(&tx_signature).map_err(|_e| BridgeError::InvalidTxHash)?;
+        let mut action = self
+            .solana_client
+            .get_bridge_action_maybe(&tx_signature, event_idx)
+            .await
+            .tap_ok(|action| info!("Solana action found: {:?}", action))?;
 
-        let (slot, log_messages) =
-            fetch_solana_log_messages(bridge_chain_id, &tx_signature, &self.external_rpc.solana)
-                .await?;
-        let solana_log = SolanaLog {
-            signature,
-            slot,
-            log_messages,
-        };
-        let events = SolanaBridgeEvent::try_from_logs(&solana_log);
-        let tokens_deposited_events: Vec<TokensDeposited> = events
-            .into_iter()
-            .filter_map(|e| match e {
-                SolanaBridgeEvent::TokensDeposited(ev) => Some(ev),
-                _ => None,
-            })
-            .collect();
+        if let BridgeAction::SolanaToSuiBridgeAction(ref mut inner) = action {
+            inner.solana_bridge_event.set_fast_path_selector(
+                FastPathSelector::try_from_primitive(fast_path_selector).unwrap(),
+            );
+        }
 
-        let idx = event_idx as usize;
-        let deposited = tokens_deposited_events.get(idx).ok_or_else(|| {
-            BridgeError::Generic(format!(
-                "TokensDeposited event index {} out of range (found {}) for solana tx {}",
-                event_idx,
-                tokens_deposited_events.len(),
-                tx_signature
-            ))
-        })?;
-
-        let mut bridge_event = crate::types::SolanaToSuiTokenBridgeV1::try_from(deposited)?;
-        bridge_event.set_tx_signature(solana_log.signature.as_ref().to_vec());
-        bridge_event.set_event_idx(event_idx);
-        bridge_event.set_fast_path_selector(
-            FastPathSelector::try_from_primitive(fast_path_selector).unwrap(),
-        );
-
-        Ok(BridgeAction::SolanaToSuiBridgeAction(
-            crate::types::SolanaToSuiBridgeAction {
-                solana_tx_signature: tx_signature,
-                solana_event_index: event_idx,
-                solana_bridge_event: bridge_event,
-            },
-        ))
+        Ok(action)
     }
 }
 
