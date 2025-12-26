@@ -308,7 +308,6 @@ where
     }
 }
 
-// todo: solana client @lin
 #[async_trait::async_trait]
 impl<C, P> ActionVerifier<(u8, TransactionDigest, u16)> for SendBackActionVerifier<C, P>
 where
@@ -483,6 +482,15 @@ where
                         solana_to_sui_action.solana_bridge_event.token_id
                     )));
                 }
+                if solana_to_sui_action.solana_bridge_event.solana_chain_id
+                    != send_back_action.sui_bridge_event.solana_chain_id
+                {
+                    return Err(BridgeError::Generic(format!(
+                        "Solana chain ID mismatch: expected {:?}, got {:?}",
+                        send_back_action.sui_bridge_event.solana_chain_id,
+                        solana_to_sui_action.solana_bridge_event.solana_chain_id
+                    )));
+                }
                 if solana_to_sui_action.solana_bridge_event.solana_address
                     != send_back_action.sui_bridge_event.solana_address
                 {
@@ -501,8 +509,10 @@ where
 
             return Ok(action_rs);
         }
-        //todo: mofei fix the error
-        Err(BridgeError::ActionIsNotGovernanceAction(action_rs))
+        Err(BridgeError::Generic(format!(
+            "Expected EthSendBackBridgeAction or SolanaSendBackBridgeAction, got {:?}",
+            action_rs.action_type()
+        )))
     }
 }
 
