@@ -110,6 +110,7 @@ struct SendBackActionVerifier<C, P> {
     sui_client: Arc<SuiClient<C>>,
     eth_client: Arc<EthClient<P>>,
     evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<P>>>,
+    solana_client: Option<Arc<SolanaClient>>,
     fast_path_config: FastPathConfig,
 }
 
@@ -423,6 +424,69 @@ where
             }
             return Ok(action_rs);
         }
+        if let BridgeAction::SolanaSendBackBridgeAction(ref send_back_action) = action_rs {
+            let tx_hash_bytes = send_back_action.sui_bridge_event.tx_hash.to_vec();
+            let event_idx = send_back_action.sui_bridge_event.event_idx;
+
+            let solana_client = self.solana_client.as_ref().ok_or_else(|| {
+                BridgeError::Generic("External RPC config not found (solana)".to_string())
+            })?;
+
+            let mut tx_signature = std::str::from_utf8(&tx_hash_bytes)
+                .map(|s| s.trim().to_string())
+                .unwrap_or_else(|_| bs58::encode(&tx_hash_bytes).into_string());
+            if tx_signature.is_empty() {
+                tx_signature = bs58::encode(&tx_hash_bytes).into_string();
+            }
+
+            let action = solana_client
+                .get_bridge_action_maybe(&tx_signature, event_idx)
+                .await
+                .tap_ok(|action| info!("Solana action found: {:?}", action))?;
+
+            if action.action_type() != BridgeActionType::TokenTransfer {
+                return Err(BridgeError::Generic(format!(
+                    "Expected SolanaToSuiBridgeAction, got {:?}",
+                    action.action_type()
+                )));
+            }
+            if let BridgeAction::SolanaToSuiBridgeAction(ref solana_to_sui_action) = action {
+                if solana_to_sui_action.solana_bridge_event.sui_adjusted_amount
+                    != send_back_action.sui_bridge_event.amount_sui_adjusted
+                {
+                    return Err(BridgeError::Generic(format!(
+                        "Amount mismatch: expected {}, got {}",
+                        send_back_action.sui_bridge_event.amount_sui_adjusted,
+                        solana_to_sui_action.solana_bridge_event.sui_adjusted_amount
+                    )));
+                }
+                if solana_to_sui_action.solana_bridge_event.token_id
+                    != send_back_action.sui_bridge_event.token_id
+                {
+                    return Err(BridgeError::Generic(format!(
+                        "Token ID mismatch: expected {}, got {}",
+                        send_back_action.sui_bridge_event.token_id,
+                        solana_to_sui_action.solana_bridge_event.token_id
+                    )));
+                }
+                if solana_to_sui_action.solana_bridge_event.solana_address
+                    != send_back_action.sui_bridge_event.solana_address
+                {
+                    return Err(BridgeError::Generic(format!(
+                        "Target address mismatch: expected {}, got {}",
+                        send_back_action.sui_bridge_event.solana_address,
+                        solana_to_sui_action.solana_bridge_event.solana_address
+                    )));
+                }
+            } else {
+                return Err(BridgeError::Generic(format!(
+                    "Expected SolanaToSuiBridgeAction, got {:?}",
+                    action.action_type()
+                )));
+            }
+
+            return Ok(action_rs);
+        }
         //todo: mofei fix the error
         Err(BridgeError::ActionIsNotGovernanceAction(action_rs))
     }
@@ -725,6 +789,9 @@ impl BridgeRequestHandler {
                 sui_client: sui_client.clone(),
                 eth_client: eth_client.clone(),
                 evm_clients: evm_clients.clone(),
+                solana_client: external_rpc
+                    .as_ref()
+                    .map(|cfg| Arc::new(SolanaClient::new(&cfg.solana.mainnet_url))),
                 fast_path_config: fast_path_config.clone(),
             },
             metrics.clone(),
