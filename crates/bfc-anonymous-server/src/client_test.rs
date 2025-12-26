@@ -456,7 +456,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousEncodeData", params, 4, "rpc_internal")
+            .send_rpc_request("bfcx_getAnonymousEncodeData", params, 4, "rpc_internal_v1")
             .await
         {
             Ok(response) => TestResult {
