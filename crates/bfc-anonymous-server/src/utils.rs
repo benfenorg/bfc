@@ -1,4 +1,4 @@
-use crate::parse_response;
+use crate::parse_response_and_check_balance;
 use anyhow::anyhow;
 use fastcrypto::ed25519::Ed25519PublicKey;
 use fastcrypto::traits::ToFromBytes;
@@ -112,8 +112,8 @@ pub async fn verify_zklogin_signature(
     }
 }
 
-pub async fn get_object_owneraddress(
-    object_id: String,
+pub async fn get_object_owner_address(
+    object_id: String, value1: Vec<u8>, value2: Vec<u8>
 ) -> Result<String, Box<dyn std::error::Error>> {
     let path = get_sui_config_directory().join("bfc_anonymous_config.yaml");
     let config = AnonymousPrivateKeyConfig::from_yaml_file(&path)
@@ -146,7 +146,7 @@ pub async fn get_object_owneraddress(
 
     let result = response.text().await?;
 
-    let object_id = parse_response(&result.clone());
+    let object_id = parse_response_and_check_balance(&result.clone(), value1, value2);
     match object_id {
         Some(val) => return Ok(val),
         None => return Err(anyhow!("object owner not exit").into()),

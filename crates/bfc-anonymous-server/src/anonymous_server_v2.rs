@@ -6,7 +6,7 @@ use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 use crate::create_error_response;
 use crate::server_utils::{GetAnonymousObjectVersionParams, AnonymousAddParams, AnonymousCompareParams, AnonymousCompareValue1AndValue2Params, AnonymousEncodeValueArrayForZkloginAddressParams, AnonymousEncodeValueArrayParams, AnonymousEncodeValueInternalParams, AnonymousMinusParams, AnonymousMultiplyParams, AnonymousRestoreArrayParams, AnonymousRestoreArrayParamsZKLoginParams, Args, JsonRpcError, JsonRpcRequest, JsonRpcResponse};
 use crate::signature::verify_signature;
-use crate::utils::{convert_value_array_to_string, create_sign_message, get_object_owneraddress, public_key_bytes_to_sui_address, verify_zklogin_signature};
+use crate::utils::{convert_value_array_to_string, create_sign_message, get_object_owner_address, public_key_bytes_to_sui_address, verify_zklogin_signature};
 use anyhow::anyhow;
 use warp::Rejection;
 use mpc_transmission_v2::{is_v1_transmission_shares_format, mul_two_shared_secrets_v2, process_shares_data_convert, recover_value_from_shares_v2};
@@ -711,14 +711,34 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
 
                     let mut object_ids =  String::new();
 
-                    for anonymous_restore_value in &restore_value_params.anonymous_restore_array {
-                        let data1 = anonymous_restore_value.value1.clone();
-                        let data2 = anonymous_restore_value.value2.clone();
-                        object_ids = format!("{}{}", object_ids, anonymous_restore_value.objectid);
-                        info!("data1 len: {}, data2 len: {}", data1.len(), data2.len());
+                    let mut pass_authentication: bool;
+                    for anonymous_restore_value in restore_value_params.anonymous_restore_array {
+                        let anonymous_restore_value1 = anonymous_restore_value.value1;
+                        let anonymous_restore_value2 = anonymous_restore_value.value2;
 
-                        let data_str1 = String::from_utf8(data1).unwrap_or_default();
-                        let data_str2 = String::from_utf8(data2).unwrap_or_default();
+                        match get_object_owner_address(anonymous_restore_value.objectid.to_string(), anonymous_restore_value1.clone(), anonymous_restore_value2.clone()).await {
+                            Ok(owner_address_value) => {
+                                let owner_address_from_send = restore_value_params.owner;
+                                let evm_addr_from_system =
+                                    convert_to_evm_address(owner_address_value);
+                                pass_authentication = evm_addr_from_system
+                                    == owner_address_from_send.to_hex_with_hex_head();
+                            }
+                            Err(error) => {
+                                info!("failed get owner address: {}", error);
+                                pass_authentication = false;
+                            }
+                        }
+
+                        if pass_authentication == false {
+                            return create_error_response(request.id, -32602, "verify owner address failed".to_string(), None);
+                        }
+
+                        object_ids = format!("{}{}", object_ids, anonymous_restore_value.objectid);
+                        info!("data1 len: {}, data2 len: {}", anonymous_restore_value1.len(), anonymous_restore_value2.len());
+
+                        let data_str1 = String::from_utf8(anonymous_restore_value1).unwrap_or_default();
+                        let data_str2 = String::from_utf8(anonymous_restore_value2).unwrap_or_default();
                         info!("=== data_str1: {}, data_str2: {} ===", data_str1, data_str2);
 
                         match recover_value_from_shares_v2(data_str1, data_str2, mask_secret_and_coord_seed.mask_secret) {
@@ -731,8 +751,6 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
                             }
                         }
                     }
-
-
 
                     if !signature_bytes.eq(&Base64::encode(object_ids)) {
                         warn!(
@@ -805,9 +823,9 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
             info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
             let mut restore_result_array = Vec::new();
 
-            for anonymous_restore_value in &anonymous_restore_value_array.anonymous_restore_array {
+            for anonymous_restore_value in anonymous_restore_value_array.anonymous_restore_array {
                 let objectid = anonymous_restore_value.objectid.clone();
-                match get_object_owneraddress(objectid.clone()).await {
+                match get_object_owner_address(objectid.clone(), anonymous_restore_value.value1.clone(), anonymous_restore_value.value2.clone()).await {
                     Ok(owner_address_value) => {
                         let sui_address_from_send_result = public_key_bytes_to_sui_address(
                             anonymous_restore_value_array.publickey.clone(),

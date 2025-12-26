@@ -9,7 +9,7 @@ mod server_utils;
 mod anonymous_server_v2;
 
 use std::net::SocketAddr;
-use crate::bfc_object::parse_response;
+use crate::bfc_object::parse_response_and_check_balance;
 use clap::Parser;
 use mpc_transmission::get_sui_config_directory;
 use serde::{Deserialize, Serialize};
