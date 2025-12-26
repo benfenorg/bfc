@@ -67,6 +67,9 @@ pub const SUI_TO_ETH_SEND_BACK_TX_PATH: &str =
     "/sign/bridge_tx/sui/eth/send/back/:tx_digest/:event_index";
 pub const SUI_TO_EVM_SEND_BACK_TX_PATH: &str =
     "/sign/bridge_tx/sui/evm/send/back/:tx_digest/:event_index";
+//todo: add solana send back tx path @lifei
+pub const SUI_TO_SOLANA_SEND_BACK_TX_PATH: &str =
+    "/sign/bridge_tx/sui/solana/send/back/:tx_digest/:event_index";
 pub const EXTERNAL_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/external/sui/:tx_digest/:event_index";
 pub const COMMITTEE_BLOCKLIST_UPDATE_PATH: &str =
     "/sign/update_committee_blocklist/:chain_id/:nonce/:type/:keys";
@@ -189,6 +192,10 @@ pub(crate) fn make_router(
         .route(SUI_TO_EVM_TX_PATH, get(handle_sui_tx_digest))
         .route(
             SUI_TO_ETH_SEND_BACK_TX_PATH,
+            get(handle_send_back_tx_digest),
+        )
+        .route(
+            SUI_TO_SOLANA_SEND_BACK_TX_PATH,
             get(handle_send_back_tx_digest),
         )
         .route(
