@@ -521,6 +521,40 @@ impl AnonymousClient {
             },
         }
     }
+    pub async fn test_v1_working_status(&self) -> TestResult {
+        match self.send_rpc_request("bfcx_getV1Working", json!({}), 5, "rpc_internal_v1").await {
+            Ok(response) => TestResult {
+                method: "bfcx_getV1Working".to_string(),
+                success: true,
+                response: Some(response),
+                error: None,
+            },
+            Err(e) => TestResult {
+                method: "bfcx_getV1Working".to_string(),
+                success: false,
+                response: None,
+                error: Some(e.to_string()),
+            },
+        }
+    }
+
+    pub async fn test_v2_working_status(&self) -> TestResult {
+        match self.send_rpc_request("bfcx_getV2Working", json!({}), 5, "rpc_internal_v2").await {
+            Ok(response) => TestResult {
+                method: "bfcx_getV2Working".to_string(),
+                success: true,
+                response: Some(response),
+                error: None,
+            },
+            Err(e) => TestResult {
+                method: "bfcx_getV2Working".to_string(),
+                success: false,
+                response: None,
+                error: Some(e.to_string()),
+            },
+        }
+    }
+
 
     async fn test_encode_data_array_with_signature_for_zklogin(&self, value : Vec<String>) -> TestResult {
         let signature = "BQNNMTUyNzczMDQzNTY4ODY3ODExMDI3MTIzMTM5NDU3ODYwMzAzNjI1MjEyODU4Mzg5OTQxNzE4Nzc3MjA3MzY3NjgwNzQ2NTI5MzA0MjFNMjEyNzU0MDk1NDEzMTA2OTYxNDQyNDA5NDQ0NzU3ODM3NTUxNjA2NTM3NTEwMTg1Nzc1MzI1MjM4NDA4Njk0Mjg0MTM4ODcxOTU5MTEBMQMCTTEyNDI1NDAxOTAyMjI3NzYwODczMjY4NTgzNTczNjQ3ODY0NzQzNDM2NzQ4MTY3MDA3NDk1NDA3NTU5MjI3Nzc2NjE1MzM1MzI1MjMzTDUyMjM4NTQyMDY0NjU2OTgwNTI5MjgxMjM5OTg4MjQ0ODcxMDgwNTE3MTUyNzA0MDM4NjEzNTY2MDEwNjUxMDk3MTQ5NzM3NTQ3MDECTDcyMDgxNTMzNTk4MzQ5NzYyMjg3MzI2MzA0ODM5NjM2NzEyNjM2OTIxNzI0NzQ0NTg0NDMyMDEzMDAxMDczOTg1OTk0MjkxNDg5ODlNMTMwNTI3MDQ4MDQ3NDgxNDU1ODkwMDI1OTU5NTcwODU1MzMwMzE1NTc0MTcxMTUzMDgwODMzNzExMTA2OTcyNzIwMDY2MjkxOTQxNTkCATEBMANNMTk2NDA3MjU4NjI4ODY0OTkzMTE1NDIyMzQ3MDI0MTU1MDc2MDc1MjQ0NTMzNDE4NTYxODkwODA1MzQ1MzQ5NjM4Mjk3OTU0MjkxNDNMNDU3OTI3MTAyMTg5NzQwMjcyMDE0MTgxMjI4MTA0OTE3Mjk2MjAyNTQyNzkyNjU3MTcwNjA2ODcyMTk4Mzc5NzE3MzU4NTQxMDIyNAExMXlKcGMzTWlPaUpvZEhSd2N6b3ZMMkZqWTI5MWJuUnpMbWR2YjJkc1pTNWpiMjBpTEMBZmV5SmhiR2NpT2lKU1V6STFOaUlzSW10cFpDSTZJalJtWldJME5HWXdaamRoTjJVeU4yTTNZelF3TXpNM09XRm1aakl3WVdZMVl6aGpaalV5WkdNaUxDSjBlWEFpT2lKS1YxUWlmUU0xNjI3MTI3MjgzMDEwNzY1NDQ3MzQ2MTc0OTc3ODYzNDYyMzA4NDUwMzczNDAzNzgyMzU3NTE2MDAwOTM4NTI1NjU0Mjc2Mzc2OTc4N4kBAAAAAAAAYQD6rQDMXyHOgTZriGFhoo2kZTJm3wMdOhhJ6grSEJEEUnkKOWJjJ/32jOQZn30zLYsDk9t7qQRkIaXFpLNeVrUK1AOWWqwvXa6U4LDD6ZhU979QOp2XBQDyAA/aUkas+oQ=".to_string();
@@ -768,6 +802,29 @@ mod tests {
     async fn test_client_without_server() {
         let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
         assert_eq!(client.base_url, "http://localhost:9010");
+    }
+
+
+    #[tokio::test]
+    async fn test_client_v1_v2_path(){
+        let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
+
+        info!("the address is {:?}", addr);
+        let server = AnonymousServer::new(None);
+        let _server_handle = tokio::spawn(async move {
+            if let Err(e) = server.start(addr).await {
+                eprintln!("Server error: {:?}", e);
+            }
+        });
+
+        let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
+        let ping_result = client.test_ping().await.response.unwrap();
+        info!("Ping Result: {:?}", ping_result);
+        let result =  client.test_v1_working_status().await.response.unwrap();
+        println!("V1 Working Status: {:?}", result);
+        let result =  client.test_v2_working_status().await.response.unwrap();
+        println!("V2 Working Status: {:?}", result);
+
     }
 
     #[ignore]

@@ -25,6 +25,8 @@ pub async fn handle_rpc_request_internal_v1(request: JsonRpcRequest) -> Result<i
         "bfcx_getAnonymousCompare" => handle_anonymous_compare_v1(request).await,
         "bfcx_getAnonymousCompareValue1AndValue2" => handle_anonymous_compare_value1_and_value2_v1(request).await,
         "bfcx_getAnonymousEncodeData" => handle_anonymous_encode_data_v1(request).await,
+        "bfcx_getV1Working" => handle_v1_working_status(request).await,
+
         _ => JsonRpcResponse {
             jsonrpc: "2.0".to_string(),
             id: request.id,
@@ -406,7 +408,16 @@ async fn handle_anonymous_compare_value1_and_value2_v1(request: JsonRpcRequest) 
     }
 }
 
-
+async fn handle_v1_working_status(request: JsonRpcRequest) -> JsonRpcResponse {
+    JsonRpcResponse {
+        jsonrpc: "2.0".to_string(),
+        id: request.id,
+        result: Some(serde_json::json!({
+            "status": "v1 working"
+        })),
+        error: None,
+    }
+}
 
 #[derive(Debug)]
 #[allow(dead_code)]

@@ -108,7 +108,8 @@ fn create_routes() -> impl Filter<Extract = impl warp::Reply, Error = warp::Reje
                 "endpoints": {
                     "rpc": "/rpc",
                     "health": "/health",
-                    "rpc_internal" : "/rpc_internal"
+                    "rpc_internal_v1" : "/rpc_internal_v1",
+                    "rpc_internal_v2" : "/rpc_internal_v2",
 
                 }
             });
