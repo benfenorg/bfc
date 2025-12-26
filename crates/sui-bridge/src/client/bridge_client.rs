@@ -77,6 +77,10 @@ impl BridgeClient {
                     )
                 }
             },
+            BridgeAction::SolanaSendBackBridgeAction(e) => format!(
+                "sign/bridge_tx/sui/solana/send/back/{}/{}",
+                e.sui_tx_digest, e.sui_tx_event_index
+            ),
             BridgeAction::ExternalDepositStartBridgeAction(e) => format!(
                 "sign/bridge_tx/external/sui/{}/{}",
                 e.sui_tx_digest,

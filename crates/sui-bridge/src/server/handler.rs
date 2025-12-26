@@ -16,6 +16,7 @@ use crate::types::{BridgeAction, BridgeActionType, EthToSuiBridgeAction, SignedB
 use crate::tron_query::check_tron_txn;
 use crate::solana_query::check_solana_txn;
 use crate::solana_client::SolanaClient;
+use crate::config::ExternalChainRpcConfig;
 use async_trait::async_trait;
 use axum::Json;
 use ethers::providers::JsonRpcClient;
@@ -110,13 +111,13 @@ struct SendBackActionVerifier<C, P> {
     sui_client: Arc<SuiClient<C>>,
     eth_client: Arc<EthClient<P>>,
     evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<P>>>,
-    solana_client: Option<Arc<SolanaClient>>,
     fast_path_config: FastPathConfig,
+    external_rpc: Option<Arc<ExternalChainRpcConfig>>,
 }
 
 struct ExternalCoinVerifier<C> {
     sui_client: Arc<SuiClient<C>>,
-    external_rpc: Option<Arc<crate::config::ExternalChainRpcConfig>>,
+    external_rpc: Option<Arc<ExternalChainRpcConfig>>,
 }
 
 #[async_trait::async_trait]
@@ -428,10 +429,23 @@ where
             let tx_hash_bytes = send_back_action.sui_bridge_event.tx_hash.to_vec();
             let event_idx = send_back_action.sui_bridge_event.event_idx;
 
-            let solana_client = self.solana_client.as_ref().ok_or_else(|| {
+            let external_rpc = self.external_rpc.as_ref().ok_or_else(|| {
                 BridgeError::Generic("External RPC config not found (solana)".to_string())
             })?;
+            let base_url = match send_back_action.sui_bridge_event.solana_chain_id {
+                BridgeChainId::SolanaMainnet => external_rpc.solana.mainnet_url.as_str(),
+                BridgeChainId::SolanaTestnet => external_rpc.solana.testnet_url.as_str(),
+                other => {
+                    return Err(BridgeError::Generic(format!(
+                        "Unsupported Solana chain id in send-back action: {:?}",
+                        other
+                    )))
+                }
+            };
+            let solana_client = SolanaClient::new(base_url);
 
+            // tx_hash 字段在 Solana send-back 事件里承载原始 Solana tx signature（bytes）。
+            // 优先按 UTF-8 解析（兼容直接存字符串），失败则 fallback 到 base58。
             let mut tx_signature = std::str::from_utf8(&tx_hash_bytes)
                 .map(|s| s.trim().to_string())
                 .unwrap_or_else(|_| bs58::encode(&tx_hash_bytes).into_string());
@@ -789,10 +803,8 @@ impl BridgeRequestHandler {
                 sui_client: sui_client.clone(),
                 eth_client: eth_client.clone(),
                 evm_clients: evm_clients.clone(),
-                solana_client: external_rpc
-                    .as_ref()
-                    .map(|cfg| Arc::new(SolanaClient::new(&cfg.solana.mainnet_url))),
                 fast_path_config: fast_path_config.clone(),
+                external_rpc: external_rpc.clone(),
             },
             metrics.clone(),
         )
