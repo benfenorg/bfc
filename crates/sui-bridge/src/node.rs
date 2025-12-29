@@ -1103,4 +1103,91 @@ mod tests {
             .build()
             .await
     }
+
+    #[tokio::test]
+    async fn test_load_solana_config_from_file() {
+        telemetry_subscribers::init_for_testing();
+        let tmp_dir = tempdir().unwrap().keep();
+        let authority_key_path = tmp_dir.join("bridge_authority_key.key");
+        let db_path = tmp_dir.join("client_db");
+        let (_, kp): (_, Secp256k1KeyPair) = get_key_pair();
+        let kp = SuiKeyPair::from(kp);
+        std::fs::write(&authority_key_path, kp.encode_base64()).unwrap();
+
+        let yaml_str = format!(
+            r#"
+server-listen-port: 8080
+metrics-port: 9090
+bridge-authority-key-path: "{}"
+run-client: true
+db-path: "{}"
+approved-governance-actions: []
+aml-key: "test_key"
+sui:
+    sui-rpc-url: "http://127.0.0.1:5001"
+    sui-bridge-chain-id: 255
+eth:
+    eth-rpc-url: "http://127.0.0.1:8545"
+    eth-bridge-proxy-address: "0x0000000000000000000000000000000000000000"
+    eth-bridge-chain-id: 254
+    eth-contracts-start-block-fallback: 0
+    enable-fast-path-latest: false
+    enable-fast-path-safe: false
+    enable-fast-path-finalized: true
+evm:
+  - eth-rpc-url: "http://127.0.0.1:8545"
+    eth-bridge-proxy-address: "0x0000000000000000000000000000000000000000"
+    eth-bridge-chain-id: 254
+    eth-contracts-start-block-fallback: 0
+    enable-fast-path-latest: false
+    enable-fast-path-safe: false
+    enable-fast-path-finalized: true
+
+external-rpc:
+    solana:
+        mainnet-url: "http://solana-mainnet-test.com"
+        testnet-url: "http://solana-testnet-test.com"
+    tron:
+        mainnet-url: "http://tron-mainnet-test.com"
+        testnet-url: "http://tron-testnet-test.com"
+solana:
+    getblock-base-url: "http://solana-test.com"
+    bridge-proxy-address: "Brdg4A3kL1R81GSy2rGKaSQtnwmKLaaSPu94sS5n1Smy"
+    bridge-chain-id: 10
+    contracts-start-slot-fallback: 12345
+    contracts-start-slot-override: 54321
+"#,
+            authority_key_path.to_str().unwrap(),
+            db_path.to_str().unwrap()
+        );
+
+        let config: BridgeNodeConfig = serde_yaml::from_str(&yaml_str).unwrap();
+        // external rpc
+        assert_eq!(
+            config.external_rpc.as_ref().unwrap().solana.mainnet_url,
+            "http://solana-mainnet-test.com"
+        );
+        assert_eq!(
+            config.external_rpc.as_ref().unwrap().solana.testnet_url,
+            "http://solana-testnet-test.com"
+        );
+        assert_eq!(
+            config.external_rpc.as_ref().unwrap().tron.mainnet_url,
+            "http://tron-mainnet-test.com"
+        );
+        assert_eq!(
+            config.external_rpc.as_ref().unwrap().tron.testnet_url,
+            "http://tron-testnet-test.com"
+        );
+
+        // solana config
+        assert_eq!(config.solana.getblock_base_url, "http://solana-test.com");
+        assert_eq!(
+            config.solana.bridge_proxy_address,
+            "Brdg4A3kL1R81GSy2rGKaSQtnwmKLaaSPu94sS5n1Smy"
+        );
+        assert_eq!(config.solana.bridge_chain_id, 10);
+        assert_eq!(config.solana.contracts_start_slot_fallback, Some(12345));
+        assert_eq!(config.solana.contracts_start_slot_override, Some(54321));
+    }
 }
