@@ -226,6 +226,8 @@ mod tests {
     use axum::http::StatusCode;
     use axum::routing::post;
     use axum::{Json, Router};
+    use sha2::digest::crypto_common::rand_core::le;
+    use std::collections::HashMap;
     use std::net::SocketAddr;
     use tokio::sync::oneshot;
     use tokio::task::JoinHandle;
@@ -454,6 +456,234 @@ mod tests {
             "expected page2 to be older than page1 when using before; got page1_last_slot={} page2_first_slot={}",
             page1.last().unwrap().slot,
             page2.first().unwrap().slot
+        );
+    }
+
+    #[tokio::test]
+    async fn test_real_get_signatures_for_address_min_context_slot_no_stop_with_pagination() {
+        // min_context_slot is a lower bound on the slots returned. slots >= min_context_slot.
+        let Some(base_url) = real_solana_rpc_url() else {
+            eprintln!("Skipping real Solana RPC test: set SOLANA_RPC_URL or GETBLOCK_SOLANA_RPC_URL");
+            return;
+        };
+
+        let client = SolanaClient::new(&base_url);
+        let address = "Vote111111111111111111111111111111111111111";
+
+        let seed_cfg = GetSignaturesConfig {
+            commitment: Some("finalized".to_string()),
+            limit: Some(10),
+            ..Default::default()
+        };
+        let seed = client
+            .get_signatures_for_address(address, Some(seed_cfg))
+            .await
+            .unwrap();
+        assert!(seed.len() == 10, "expected enough history to run pagination test");
+
+        // API returns newest -> oldest.
+        let candidate_idx = seed.len() - 1;
+        let min_slot = seed[candidate_idx].slot;
+        if !seed.iter().any(|s| s.slot >= min_slot) {
+            eprintln!(
+                "Skipping min_context_slot test: seed window does not include any slots below chosen min_slot={}, (candidate_idx={})",
+                min_slot, candidate_idx
+            );
+            assert!(false);
+            return;
+        }
+
+        let limit: u64 = 12;
+        let mut before_with_min: Option<String> = None;
+        let mut pages_with_min: usize = 0;
+        let mut saw_slot_below_min_with_min_context_slot: bool = false;
+        let mut last_slot: Option<u64> = None;
+
+        for _ in 0..100 {
+            let cfg = GetSignaturesConfig {
+                commitment: Some("finalized".to_string()),
+                min_context_slot: Some(min_slot),
+                limit: Some(limit),
+                before: before_with_min.clone(),
+                ..Default::default()
+            };
+
+            let page = client
+                .get_signatures_for_address(address, Some(cfg))
+                .await
+                .unwrap();
+
+            if page.is_empty() {
+                break;
+            }
+
+            pages_with_min += 1;
+
+            assert!(
+                page.iter().all(|s| s.slot >= min_slot),
+                "expected all returned slots to be >= min_slot when min_context_slot is set; min_slot={} slots={:?}",
+                min_slot,
+                page.iter().map(|s| s.slot).collect::<Vec<_>>()
+            );
+
+            assert!(min_slot <= page.last().unwrap().slot);
+            if page.iter().any(|s| s.slot < min_slot) {
+                saw_slot_below_min_with_min_context_slot = true;
+                break;
+            }
+
+            before_with_min = page.last().map(|s| s.signature.clone());
+
+            if page.len() < limit as usize {
+                assert_eq!(page.last().unwrap().slot, min_slot);
+                last_slot = Some(page.last().unwrap().slot);
+                break;
+            }
+
+            last_slot = Some(page.last().unwrap().slot);
+        }
+        assert!(
+            pages_with_min >= 2,
+            "expected to exercise pagination with min_context_slot; pages_with_min={}",
+            pages_with_min
+        );
+        assert!(
+            !saw_slot_below_min_with_min_context_slot,
+            "expected min_context_slot to prevent returning slots below min_slot when paginating; min_slot={} pages_with_min={}",
+            min_slot,
+            pages_with_min
+        );
+
+        assert!(
+            last_slot.is_some(),
+            "expected to have seen last_slot after pagination with min_context_slot"
+        );
+        assert!(
+            last_slot.unwrap() == min_slot,
+            "expected pagination with min_context_slot to end exactly at min_slot; last_slot={} min_slot={}",
+            last_slot.unwrap(),
+            min_slot
+        );
+    }
+
+    #[tokio::test]
+    async fn test_real_get_signatures_for_address_before_until_range_with_pagination() {
+        // results between (until < result < before), exclusive
+        let Some(base_url) = real_solana_rpc_url() else {
+            eprintln!("Skipping real Solana RPC test: set SOLANA_RPC_URL or GETBLOCK_SOLANA_RPC_URL");
+            return;
+        };
+
+        let client = SolanaClient::new(&base_url);
+        let address = "Vote111111111111111111111111111111111111111";
+
+        // Seed a window large enough to pick `before` and `until` that are far apart.
+        let seed_cfg = GetSignaturesConfig {
+            commitment: Some("finalized".to_string()),
+            limit: Some(100),
+            ..Default::default()
+        };
+        let seed = client
+            .get_signatures_for_address(address, Some(seed_cfg))
+            .await
+            .unwrap();
+        assert!(seed.len() >= 90, "expected enough history to run range test");
+
+        // API returns newest -> oldest. Choose `before` newer, `until` older.
+        let before_idx: usize = 5;
+        let until_idx: usize = 80;
+        let before_sig = seed[before_idx].signature.clone();
+        let until_sig = seed[until_idx].signature.clone();
+
+        let mut sig_to_index: HashMap<String, usize> = HashMap::new();
+        for (idx, s) in seed.iter().enumerate() {
+            sig_to_index.insert(s.signature.clone(), idx);
+        }
+
+        let limit: u64 = 7;
+        let mut cursor_sig = before_sig.clone();
+        let mut cursor_idx = before_idx;
+        let mut collected: Vec<SignatureInfo> = Vec::new();
+
+        for i in 0..50 {
+            let cfg = GetSignaturesConfig {
+                commitment: Some("finalized".to_string()),
+                before: Some(cursor_sig.clone()),
+                until: Some(until_sig.clone()),
+                limit: Some(limit),
+                ..Default::default()
+            };
+
+            let page = client
+                .get_signatures_for_address(address, Some(cfg))
+                .await
+                .unwrap();
+
+            if page.is_empty() {
+                assert!(
+                    i > 0,
+                    "expected at least one page of results between (until, before) range"
+                );
+                break;
+            }
+
+            for s in &page {
+                assert_ne!(
+                    s.signature, before_sig,
+                    "before signature must be exclusive and not appear in results"
+                );
+                assert_ne!(
+                    s.signature, until_sig,
+                    "until signature must be exclusive and not appear in results"
+                );
+
+                let idx = *sig_to_index
+                    .get(&s.signature)
+                    .expect("expected signature to be within the seeded range");
+                assert!(
+                    idx > before_idx,
+                    "expected idx to be after before_idx (older), got idx={} before_idx={} sig={}",
+                    idx,
+                    before_idx,
+                    s.signature
+                );
+                assert!(
+                    idx < until_idx,
+                    "expected idx to be before until_idx (newer), got idx={} until_idx={} sig={}",
+                    idx,
+                    until_idx,
+                    s.signature
+                );
+                assert!(
+                    idx > cursor_idx,
+                    "expected pagination to progress to older signatures; got idx={} cursor_idx={} sig={}",
+                    idx,
+                    cursor_idx,
+                    s.signature
+                );
+            }
+
+            collected.extend(page.clone());
+
+            cursor_sig = page.last().unwrap().signature.clone();
+            cursor_idx = *sig_to_index
+                .get(&cursor_sig)
+                .expect("expected cursor signature to be within the seeded range");
+
+            if page.len() < limit as usize {
+                break;
+            }
+        }
+
+        assert!(
+            !collected.is_empty(),
+            "expected some results for the (until, before) range"
+        );
+        assert!(
+            collected.len() > limit as usize,
+            "expected pagination to be exercised; collected_len={} limit={}",
+            collected.len(),
+            limit
         );
     }
 
