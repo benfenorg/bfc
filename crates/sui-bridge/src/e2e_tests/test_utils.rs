@@ -3,7 +3,7 @@
 
 use crate::abi::{EthBridgeCommittee, EthBridgeEvent, EthERC20, EthSuiBridge, EthSuiBridgeEvents};
 use crate::abi::{EthBridgeConfig, EthBridgeLimiter};
-use crate::config::default_ed25519_key_pair;
+use crate::config::{default_ed25519_key_pair, ChainRpcUrls, ExternalChainRpcConfig};
 use crate::crypto::BridgeAuthorityKeyPair;
 use crate::crypto::BridgeAuthorityPublicKeyBytes;
 use crate::crypto::BridgeAuthoritySignInfo;
@@ -1285,11 +1285,15 @@ impl SolanaBridgeEnvironment{
             gossip_port = get_available_port("127.0.0.1");
         }
         
-        // 分配连续 12 个端口用于动态端口范围
+        // 分配连续 20 个端口用于动态端口范围
         let dynamic_port_start = loop {
             let candidate = get_available_port("127.0.0.1");
+            // 确保端口范围有效且不溢出
+            if candidate > 65000 {
+                continue;
+            }
             let mut all_free = true;
-            for offset in 0..12 {
+            for offset in 0..20 {
                 if !is_port_free(candidate + offset) {
                     all_free = false;
                     break;
@@ -1299,13 +1303,14 @@ impl SolanaBridgeEnvironment{
                 break candidate;
             }
         };
-        let dynamic_port_end = dynamic_port_start + 12;
+        // 范围是 inclusive 的，所以 end = start + count - 1
+        let dynamic_port_end = dynamic_port_start + 19;
 
         let mut solana_environment_process = std::process::Command::new("solana-test-validator")
             .arg("--rpc-port").arg(rpc_port.to_string())
             .arg("--faucet-port").arg(faucet_port.to_string())
             .arg("--gossip-port").arg(gossip_port.to_string())
-            .arg("--dynamic-port-range").arg(format!("{}-{}", dynamic_port_start, dynamic_port_end))
+            //.arg("--dynamic-port-range").arg(format!("{}-{}", dynamic_port_start, dynamic_port_end))
             .arg("--ledger")
             .arg(&ledger_path)
             .arg("--reset")
@@ -1740,7 +1745,16 @@ pub(crate) async fn start_bridge_cluster(
                 contracts_start_slot_override: None,
             },
             user_limit_db_url: None,
-            external_rpc: None,
+            external_rpc: Some(ExternalChainRpcConfig {
+                solana: ChainRpcUrls {
+                    mainnet_url: "http://127.0.0.1:8899".to_string(),
+                    testnet_url: "http://127.0.0.1:8899".to_string(),
+                },
+                tron: ChainRpcUrls {
+                    mainnet_url: "http://127.0.0.1:18190".to_string(),
+                    testnet_url: "http://127.0.0.1:18190".to_string(),
+                },
+            }),
         };
         let prometheus_registry = Registry::new();
         if i == 0 {
