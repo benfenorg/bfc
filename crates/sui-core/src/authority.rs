@@ -5119,14 +5119,6 @@ impl AuthorityState {
         Some(tx)
     }
 
-    pub fn get_sui_config_directory() -> PathBuf {
-        match dirs::home_dir() {
-            Some(v) => v.join(".bfc").join("bfc_config"),
-            None => panic!("Cannot obtain home directory path"),
-        }
-    }
-
-
 
     /// Creates and execute the advance epoch transaction to effects without committing it to the database.
     /// The effects of the change epoch tx are only written to the database after a certified checkpoint has been
