@@ -575,7 +575,7 @@ pub fn hfe_ops_compare_value1_and_value2_v2(
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
 
 
-    let _owner = pop_arg!(args, AccountAddress);
+    let owner = pop_arg!(args, AccountAddress);
 
     let number4 = pop_arg!(args, Vec<u8>);
     let number3 = pop_arg!(args, Vec<u8>);
@@ -598,7 +598,7 @@ pub fn hfe_ops_compare_value1_and_value2_v2(
                     return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS));
                 }
                 let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
-                let result = client.compare_value1_and_value2(num1, num2, num3, num4);
+                let result = client.compare_value1_and_value2(num1, num2, num3, num4, owner);
                 match result.success {
                     true => {
                         let result = result.value1.parse::<u8>();
@@ -683,7 +683,7 @@ pub fn hfe_ops_compare_value_v2(
 
     let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
 
-    let _owner = pop_arg!(args, AccountAddress);
+    let owner = pop_arg!(args, AccountAddress);
 
     let number3 = pop_arg!(args, u64);
 
@@ -705,7 +705,7 @@ pub fn hfe_ops_compare_value_v2(
                     return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS));
                 }
                 let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
-                let result = client.compare_value(num1, num2, number3);
+                let result = client.compare_value(num1, num2, number3, owner);
                 match result.success {
                     true => {
                         let result = result.value1.parse::<u8>();
@@ -1024,11 +1024,12 @@ impl AnonymousClient {
         }
     }
 
-    pub fn compare_value(&self, value1: String, value2: String, value3: u64) -> AnonymousResult  {
+    pub fn compare_value(&self, value1: String, value2: String, value3: u64, owner: AccountAddress) -> AnonymousResult  {
         let params = json!({
             "value1": value1,
             "value2": value2,
             "value3": value3,
+            "owner": owner,
         });
 
         match self.atto_http_post("bfcx_getAnonymousCompare", params, 3) {
@@ -1050,13 +1051,13 @@ impl AnonymousClient {
         }
     }
 
-    pub fn compare_value1_and_value2(&self, value1: String, value2: String, value3: String, value4: String) -> AnonymousResult  {
+    pub fn compare_value1_and_value2(&self, value1: String, value2: String, value3: String, value4: String, owner: AccountAddress) -> AnonymousResult  {
         let params = json!({
             "value1": value1,
             "value2": value2,
             "value3": value3,
             "value4": value4,
-
+            "owner": owner
         });
 
         match self.atto_http_post("bfcx_getAnonymousCompareValue1AndValue2", params, 3) {
@@ -1084,6 +1085,7 @@ impl AnonymousClient {
             "value2": value2,
             "value3": value3,
             "value4": value4,
+            "owner" : owner,
         });
 
         match self.atto_http_post("bfcx_getAnonymousMultiply", params, 3) {
