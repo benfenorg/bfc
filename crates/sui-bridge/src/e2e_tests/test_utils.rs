@@ -1255,22 +1255,101 @@ impl SolanaBridgeEnvironment{
         );
         fs::create_dir_all(&ledger_path)
             .expect("failed to create unique solana-test-ledger directory");
-        let solana_environment_process = std::process::Command::new("solana-test-validator")
+
+        // 分配 gossip 端口和动态端口范围，避免使用默认端口导致冲突
+        let get_available_port = |host: &str| -> u16 {
+            std::net::TcpListener::bind((host, 0))
+                .unwrap()
+                .local_addr()
+                .unwrap()
+                .port()
+        };
+        let is_port_free = |p: u16| -> bool {
+            std::net::TcpListener::bind(("127.0.0.1", p)).map(|l| drop(l)).is_ok()
+        };
+        
+        let mut gossip_port = get_available_port("127.0.0.1");
+        while gossip_port == rpc_port || gossip_port == faucet_port {
+            gossip_port = get_available_port("127.0.0.1");
+        }
+        
+        // 分配连续 12 个端口用于动态端口范围
+        let dynamic_port_start = loop {
+            let candidate = get_available_port("127.0.0.1");
+            let mut all_free = true;
+            for offset in 0..12 {
+                if !is_port_free(candidate + offset) {
+                    all_free = false;
+                    break;
+                }
+            }
+            if all_free && candidate != rpc_port && candidate != faucet_port && candidate != gossip_port {
+                break candidate;
+            }
+        };
+        let dynamic_port_end = dynamic_port_start + 12;
+
+        let mut solana_environment_process = std::process::Command::new("solana-test-validator")
             .arg("--rpc-port").arg(rpc_port.to_string())
             .arg("--faucet-port").arg(faucet_port.to_string())
+            .arg("--gossip-port").arg(gossip_port.to_string())
+            .arg("--dynamic-port-range").arg(format!("{}-{}", dynamic_port_start, dynamic_port_end))
             .arg("--ledger")
             .arg(&ledger_path)
             .arg("--reset")
-            .arg("--quiet")
             .arg("--bpf-program")
-            .arg(program_id)
-            .arg(program_path)
+            .arg(&program_id)
+            .arg(&program_path)
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
             .spawn()
             .expect("Failed to start solana-test-validator");
 
-         Self::wait_for_rpc_ready(rpc_url, Duration::from_secs(15)).await?;
+        info!("Started solana-test-validator with PID: {:?}, rpc_port: {}, program: {}, program_path: {:?}", 
+              solana_environment_process.id(), rpc_port, program_id, program_path);
 
-         Self::wait_for_program_loaded(rpc_url, program_keypair.pubkey(), Duration::from_secs(15)).await?;
+        // 等待一小段时间让进程启动
+        tokio::time::sleep(Duration::from_secs(2)).await;
+
+        // 检查进程是否还在运行
+        match solana_environment_process.try_wait() {
+            Ok(Some(status)) => {
+                // 进程已退出，读取错误输出
+                let stderr = solana_environment_process.stderr.take();
+                let stdout = solana_environment_process.stdout.take();
+                let stderr_output = if let Some(mut stderr) = stderr {
+                    let mut buf = String::new();
+                    use std::io::Read;
+                    let _ = stderr.read_to_string(&mut buf);
+                    buf
+                } else {
+                    String::new()
+                };
+                let stdout_output = if let Some(mut stdout) = stdout {
+                    let mut buf = String::new();
+                    use std::io::Read;
+                    let _ = stdout.read_to_string(&mut buf);
+                    buf
+                } else {
+                    String::new()
+                };
+                anyhow::bail!(
+                    "solana-test-validator exited immediately with status: {}, stderr: {}, stdout: {}",
+                    status, stderr_output, stdout_output
+                );
+            }
+            Ok(None) => {
+                // 进程仍在运行，继续
+                info!("solana-test-validator is running");
+            }
+            Err(e) => {
+                anyhow::bail!("Failed to check solana-test-validator status: {}", e);
+            }
+        }
+
+         Self::wait_for_rpc_ready(rpc_url, Duration::from_secs(60)).await?;
+
+         Self::wait_for_program_loaded(rpc_url, program_keypair.pubkey(), Duration::from_secs(30)).await?;
 
         let admin_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/admin.json");
         if !admin_path.exists(){
@@ -1288,6 +1367,22 @@ impl SolanaBridgeEnvironment{
             signer.clone(),
             CommitmentConfig::confirmed(),
         ));
+
+        // 在部署 USDC 之前，先给 payer 账户空投 SOL
+        let rpc_client = solana_client::rpc_client::RpcClient::new_with_commitment(
+            rpc_url.to_string(),
+            CommitmentConfig::confirmed(),
+        );
+        let payer_pubkey = signer.pubkey();
+        let sig = rpc_client.request_airdrop(
+            &payer_pubkey,
+            solana_sdk::native_token::LAMPORTS_PER_SOL * 10,
+        )?;
+        rpc_client.confirm_transaction_with_commitment(
+            &sig,
+            CommitmentConfig::confirmed(),
+        )?;
+        info!("Airdropped 10 SOL to payer: {}", payer_pubkey);
 
         //部署usdc 
         let usdc = crate::utils::deploy_usdc_in_anchor_client(&client.clone(), program_keypair.pubkey(), &signer, 1_000_000_000, 6).await?;
@@ -1307,17 +1402,21 @@ impl SolanaBridgeEnvironment{
      async fn wait_for_rpc_ready(rpc_url: &str, timeout: Duration) -> anyhow::Result<()> {
         let client = RpcClient::new(rpc_url.to_string());
         let start = std::time::Instant::now();
+        let mut last_error = None;
 
         loop {
             if start.elapsed() > timeout {
-                anyhow::bail!("RPC not ready");
+                anyhow::bail!("RPC not ready after {:?}, last error: {:?}, url: {}", timeout, last_error, rpc_url);
             }
 
-            if client.get_health().is_ok() {
-                return Ok(());
+            match client.get_health() {
+                Ok(_) => return Ok(()),
+                Err(e) => {
+                    last_error = Some(e.to_string());
+                }
             }
 
-            tokio::time::sleep(Duration::from_millis(200)).await;
+            tokio::time::sleep(Duration::from_millis(500)).await;
         }
     }
 
