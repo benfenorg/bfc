@@ -272,7 +272,7 @@ async fn start_client_components(
             .channel_inflight
             .with_label_values(&["evm_events_queue"]),
     );
-    let (sol_events_tx, mut sol_events_rx) = mysten_metrics::metered_channel::channel(
+    let (sol_events_tx, sol_events_rx) = mysten_metrics::metered_channel::channel(
         SOLANA_EVENTS_CHANNEL_SIZE,
         &mysten_metrics::get_metrics()
             .unwrap()
@@ -390,8 +390,8 @@ async fn start_client_components(
     let sol_targets_to_watch = get_solana_targets_to_watch(
         &store,
         &sol_keys,
-        solana_config.contracts_start_block_fallback.unwrap_or(0),
-        solana_config.contracts_start_block_override,
+        solana_config.contracts_start_slot_fallback.unwrap_or(0),
+        solana_config.contracts_start_slot_override,
     );
     let (sol_handles, _last_finalized_solana_slot_rx) = SolanaSyncer::new(
         sol_client.clone(),
@@ -833,8 +833,8 @@ mod tests {
                 getblock_base_url: "https://go.getblock.io/<ACCESS-TOKEN>/".to_string(),
                 bridge_proxy_address: "11111111111111111111111111111111".to_string(),
                 bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
-                contracts_start_block_fallback: Some(0),
-                contracts_start_block_override: None,
+                contracts_start_slot_fallback: Some(0),
+                contracts_start_slot_override: None,
             },
             user_limit_db_url: None,
             external_rpc: None,
@@ -929,8 +929,8 @@ mod tests {
                 getblock_base_url: "https://go.getblock.io/<ACCESS-TOKEN>/".to_string(),
                 bridge_proxy_address: "11111111111111111111111111111111".to_string(),
                 bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
-                contracts_start_block_fallback: Some(0),
-                contracts_start_block_override: None,
+                contracts_start_slot_fallback: Some(0),
+                contracts_start_slot_override: None,
             },
             user_limit_db_url: None,
             external_rpc: None,
@@ -1054,8 +1054,8 @@ mod tests {
                 getblock_base_url: "https://go.getblock.io/<ACCESS-TOKEN>/".to_string(),
                 bridge_proxy_address: "11111111111111111111111111111111".to_string(),
                 bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
-                contracts_start_block_fallback: Some(0),
-                contracts_start_block_override: Some(0),
+                contracts_start_slot_fallback: Some(0),
+                contracts_start_slot_override: Some(0),
             },
             user_limit_db_url: None,
             external_rpc: None,
