@@ -1253,6 +1253,18 @@ impl SolanaBridgeEnvironment{
             std::process::id(),
             rng.gen::<u32>()
         );
+
+        let admin_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/admin.json");
+        if !admin_path.exists(){
+            error!(
+                "Admin keypair file not found at {:?}. Run `anchor build` in `bridge/solana` first.",
+                admin_path
+            );
+        }
+        let payer =
+            read_keypair_file(admin_path.to_str().unwrap())
+                .expect("Failed to read admin keypair");
+        let signer = std::sync::Arc::new(payer);
         fs::create_dir_all(&ledger_path)
             .expect("failed to create unique solana-test-ledger directory");
         let solana_environment_process = std::process::Command::new("solana-test-validator")
@@ -1268,26 +1280,19 @@ impl SolanaBridgeEnvironment{
             .spawn()
             .expect("Failed to start solana-test-validator");
 
-         Self::wait_for_rpc_ready(rpc_url, Duration::from_secs(15)).await?;
+        //  Self::airdrop_sol().await?;
+         Self::wait_for_rpc_ready(rpc_url, Duration::from_secs(150)).await?;
 
-         Self::wait_for_program_loaded(rpc_url, program_keypair.pubkey(), Duration::from_secs(15)).await?;
+         Self::wait_for_program_loaded(rpc_url, program_keypair.pubkey(), Duration::from_secs(150)).await?;
 
-        let admin_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/admin.json");
-        if !admin_path.exists(){
-            error!(
-                "Admin keypair file not found at {:?}. Run `anchor build` in `bridge/solana` first.",
-                admin_path
-            );
-        }
-        let payer =
-            read_keypair_file(admin_path.to_str().unwrap())
-                .expect("Failed to read admin keypair");
-        let signer = std::sync::Arc::new(payer);
+        
         let client = Arc::new(Client::new_with_options(
             Cluster::Custom(rpc_url.to_string(), ws_url.to_string()),
             signer.clone(),
             CommitmentConfig::confirmed(),
         ));
+         let program = client.program(program_keypair.pubkey()).expect("Failed to get program");
+         program.rpc().request_airdrop(&signer.clone().pubkey(), 100*solana_sdk::native_token::LAMPORTS_PER_SOL).await?;
 
         //部署usdc 
         let usdc = crate::utils::deploy_usdc_in_anchor_client(&client.clone(), program_keypair.pubkey(), &signer, 1_000_000_000, 6).await?;

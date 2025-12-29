@@ -228,6 +228,7 @@ pub async fn deploy_usdc_in_anchor_client(
     decimals: u8,
 )-> anyhow::Result<USDCDeploymentResult>{
     let program = client.program(program_id).expect("Failed to get program");
+    program.rpc().request_airdrop(&payer.pubkey(), 1000000000).await?;
     let balance = program.rpc().get_balance(&payer.pubkey()).await.expect("get balance failed");
     println!("Payer balance: {}", balance);
     let mint = Keypair::new();
