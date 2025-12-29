@@ -1117,7 +1117,7 @@ impl AnonymousClient {
             "id": id
         });
 
-        let resp = post(&format!("{}/rpc", self.base_url)).timeout(Duration::from_secs(10))
+        let resp = post(&format!("{}/rpc_internal_v2", self.base_url)).timeout(Duration::from_secs(10))
             .json(&data)?
             .send();
         match resp {
