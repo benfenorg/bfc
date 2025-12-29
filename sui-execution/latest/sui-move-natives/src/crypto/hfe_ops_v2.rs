@@ -114,7 +114,7 @@ pub fn hfe_ops_add_v2(
                    return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS));
                 }
                 let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
-                let result = client.add(num1, num2, num3, num4);
+                let result = client.add(num1, num2, num3, num4, owner);
                 match result.success {
                     true => {
                         Ok(NativeResult::ok(
@@ -252,7 +252,7 @@ pub fn hfe_ops_minus_v2(
                     return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS));
                 }
                 let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
-                let result = client.minus(num1, num2, num3, num4);
+                let result = client.minus(num1, num2, num3, num4, owner);
                 match result.success {
                     true => {
                         Ok(NativeResult::ok(
@@ -390,7 +390,7 @@ pub fn hfe_ops_multiplied_v2(
                     return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS));
                 }
                 let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
-                let result = client.multiply(num1, num2, num3, num4);
+                let result = client.multiply(num1, num2, num3, num4, owner);
                 match result.success {
                     true => {
                         Ok(NativeResult::ok(
@@ -516,7 +516,7 @@ pub fn hfe_ops_encode_data_v2(context: &mut NativeContext,
                     return Ok(NativeResult::err(cost, NOT_FOUND_ANONYMOUS_RPC_ADDRESS));
                 }
                 let client = AnonymousClient::new( v.pop().unwrap_or_default().as_str());
-                let result = client.encode_data(value);
+                let result = client.encode_data(value, owner);
                 match result.success {
                     true => {
                         Ok(NativeResult::ok(
@@ -880,12 +880,13 @@ impl AnonymousClient {
         }
     }
 
-    pub fn add(&self, value1: String, value2: String, value3: String, value4: String) -> AnonymousResult {
+    pub fn add(&self, value1: String, value2: String, value3: String, value4: String, owner: AccountAddress) -> AnonymousResult {
         let params = json!({
             "value1": value1,
             "value2": value2,
             "value3": value3,
-            "value4": value4
+            "value4": value4,
+            "owner": owner
         });
 
         match self.atto_http_post("bfcx_getAnonymousAdd", params, 1) {
@@ -911,12 +912,13 @@ impl AnonymousClient {
         }
     }
 
-    pub fn minus(&self, value1: String, value2: String, value3: String, value4: String) -> AnonymousResult {
+    pub fn minus(&self, value1: String, value2: String, value3: String, value4: String, owner: AccountAddress) -> AnonymousResult {
         let params = json!({
             "value1": value1,
             "value2": value2,
             "value3": value3,
             "value4": value4,
+            "owner": owner,
         });
 
         match self.atto_http_post("bfcx_getAnonymousMinus", params, 2) {
@@ -995,9 +997,10 @@ impl AnonymousClient {
     //     }
     // }
 
-    pub fn encode_data(&self, value1: u64) -> AnonymousResult  {
+    pub fn encode_data(&self, value1: u64,  owner: AccountAddress) -> AnonymousResult  {
         let params = json!({
             "value": value1,
+            "owner": owner,
         });
 
         match self.atto_http_post("bfcx_getAnonymousEncodeData", params, 3) {
@@ -1075,7 +1078,7 @@ impl AnonymousClient {
         }
     }
 
-    pub fn multiply(&self, value1: String, value2: String, value3: String, value4: String) -> AnonymousResult  {
+    pub fn multiply(&self, value1: String, value2: String, value3: String, value4: String, owner: AccountAddress) -> AnonymousResult  {
         let params = json!({
             "value1": value1,
             "value2": value2,
