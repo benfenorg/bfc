@@ -310,6 +310,7 @@ impl BridgeTestClusterBuilder {
             let (handles, minter_info) = start_bridge_cluster(
                 &test_cluster,
                 &eth_environment,
+                &solana_environment,
                 approved_governace_actions,
                 self.enable_fast_path_latest,
                 self.enable_fast_path_safe,
@@ -608,6 +609,7 @@ impl BridgeTestCluster {
         let (handles, minter_info) = start_bridge_cluster(
             &self.test_cluster,
             &self.eth_environment,
+            &self.sol_environment,
             approved_governace_actions,
             enable_fast_path_latest,
             enable_fast_path_safe,
@@ -1655,6 +1657,7 @@ impl Drop for EthBridgeEnvironment {
 pub(crate) async fn start_bridge_cluster(
     test_cluster: &TestClusterWrapper,
     eth_environment: &EthBridgeEnvironment,
+    sol_environment: &SolanaBridgeEnvironment,
     approved_governance_actions: Vec<Vec<BridgeAction>>,
     enable_fast_path_latest: bool,
     enable_fast_path_safe: bool,
@@ -1738,8 +1741,8 @@ pub(crate) async fn start_bridge_cluster(
             metrics: None,
             watchdog_config: None,
             solana: SolanaConfig {
-                getblock_base_url: "https://go.getblock.io/<ACCESS-TOKEN>/".to_string(),
-                bridge_proxy_address: "11111111111111111111111111111111".to_string(),
+                getblock_base_url: sol_environment.rpc_url.clone(),
+                bridge_proxy_address: sol_environment.contract().to_string(),
                 bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
                 contracts_start_slot_fallback: Some(0),
                 contracts_start_slot_override: None,
