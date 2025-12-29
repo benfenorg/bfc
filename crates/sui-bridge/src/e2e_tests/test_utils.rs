@@ -797,6 +797,7 @@ pub(crate) async fn init_solana_program(
         .instructions()?
         .remove(0);
 
+    let transfer_pdas=crate::query_solana_account::get_transfer_upgrade_authority_account(program.id());
 
     let node_len = bridge_authority_keys.len();
     let stake = TOTAL_VOTING_POWER / (node_len as u64);
@@ -898,6 +899,18 @@ pub(crate) async fn init_solana_program(
         .instructions()?
         .remove(0);
 
+    let transfer_upgrade_authority_ix = program.request()
+        .accounts(accounts::TransferUpgradeAuthority {
+            old_upgrade_authority: solana_signer.pubkey(),
+            new_upgrade_authority: transfer_pdas.upgrade_authority,
+            program: program.id(),
+            program_data: transfer_pdas.program_data,
+            bpf_loader_upgradeable: transfer_pdas.bpf_loader_upgradeable,
+        })
+        .args(args::TransferUpgradeAuthority {})
+        .instructions()?
+        .remove(0);
+
     let signature = program
         .request()
         .instruction(initialize_bridge_config_ix)
@@ -906,6 +919,7 @@ pub(crate) async fn init_solana_program(
         .instruction(initialize_bridge_limiter_ix)
         .instruction(initialize_benfen_bridge_ix)
         .instruction(initialize_upgrade_authority_ix)
+        .instruction(transfer_upgrade_authority_ix)
         .signer(solana_signer.clone())
         .send()
         .await?;
@@ -1246,6 +1260,18 @@ impl SolanaBridgeEnvironment{
         // program_keypair.
         let program_id = program_keypair.pubkey().to_string();
 
+        let admin_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/admin.json");
+        if !admin_path.exists(){
+            error!(
+                "Admin keypair file not found at {:?}. Run `anchor build` in `bridge/solana` first.",
+                admin_path
+            );
+        }
+        let payer =
+            read_keypair_file(admin_path.to_str().unwrap())
+                .expect("Failed to read admin keypair");
+        let signer = std::sync::Arc::new(payer);
+
         // Use a unique ledger directory per run to avoid conflicts.
         let mut rng = SmallRng::from_entropy();
         let ledger_path = format!(
@@ -1268,21 +1294,24 @@ impl SolanaBridgeEnvironment{
             .spawn()
             .expect("Failed to start solana-test-validator");
 
-         Self::wait_for_rpc_ready(rpc_url, Duration::from_secs(15)).await?;
+        // let solana_environment_process = std::process::Command::new("solana-test-validator")
+        //     .arg("--rpc-port").arg(rpc_port.to_string())
+        //     .arg("--faucet-port").arg(faucet_port.to_string())
+        //     .arg("--ledger")
+        //     .arg(&ledger_path)
+        //     .arg("--reset")
+        //     .arg("--quiet")
+        //     .arg("--upgradeable-program")
+        //     .arg(program_id)
+        //     .arg(program_path)
+        //     .arg(signer.pubkey().to_string())
+        //     .spawn()
+        //     .expect("Failed to start solana-test-validator");
 
-         Self::wait_for_program_loaded(rpc_url, program_keypair.pubkey(), Duration::from_secs(15)).await?;
+        Self::wait_for_rpc_ready(rpc_url, Duration::from_secs(15)).await?;
 
-        let admin_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/admin.json");
-        if !admin_path.exists(){
-            error!(
-                "Admin keypair file not found at {:?}. Run `anchor build` in `bridge/solana` first.",
-                admin_path
-            );
-        }
-        let payer =
-            read_keypair_file(admin_path.to_str().unwrap())
-                .expect("Failed to read admin keypair");
-        let signer = std::sync::Arc::new(payer);
+        Self::wait_for_program_loaded(rpc_url, program_keypair.pubkey(), Duration::from_secs(15)).await?;
+
         let client = Arc::new(Client::new_with_options(
             Cluster::Custom(rpc_url.to_string(), ws_url.to_string()),
             signer.clone(),

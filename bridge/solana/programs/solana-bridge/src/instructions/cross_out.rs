@@ -75,11 +75,18 @@ pub struct CrossOut<'info> {
     pub token_config: AccountLoader<'info, TokenConfigAccount>,
 
     //message verifier account
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = verifier.committee == committee.key() @ BridgeError::InvalidCommittee,
+    )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 
     //committee account
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = committee.key() == bridge.committee @ BridgeError::InvalidCommittee,
+        
+    )]
     pub committee:  AccountLoader<'info, Committee>,
     #[account(mut)]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,

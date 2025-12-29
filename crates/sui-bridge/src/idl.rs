@@ -4,12 +4,18 @@ use crate::types::{
     AddTokenOnSolanaAction,AssetPriceUpdateAction,
     SingleTransferLimitUpdateAction,
     LimitUpdateAction,
+    ExtendProgramOnSolanaAction,
+    BlocklistCommitteeAction,
+    EmergencyAction
 };
 use crate::encoding::{
     ADD_TOKENS_ON_SOLANA_MESSAGE_VERSION, 
     ASSET_PRICE_UPDATE_MESSAGE_VERSION,
     SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION,
     LIMIT_UPDATE_MESSAGE_VERSION,
+    EXTEND_PROGRAM_MESSAGE_VERSION,
+    EMERGENCY_BUTTON_MESSAGE_VERSION,
+    COMMITTEE_BLOCKLIST_MESSAGE_VERSION,
     BridgeMessageEncoding
 };
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -36,6 +42,43 @@ impl From<AddTokenOnSolanaAction> for SolanaMessage {
     }
 }
 
+impl From<ExtendProgramOnSolanaAction> for SolanaMessage {
+    fn from(action: ExtendProgramOnSolanaAction) -> Self {
+        SolanaMessage {
+            message_type: BridgeActionType::ExtendProgramOnSolana as u8,
+            version: EXTEND_PROGRAM_MESSAGE_VERSION,
+            nonce: action.nonce,
+            chain_id: action.chain_id as u8,
+            payload: action.as_payload_bytes().clone(),
+        }
+    }
+}
+
+
+impl From<EmergencyAction>for SolanaMessage {
+    fn from(action: EmergencyAction) -> Self {
+        SolanaMessage {
+            message_type: BridgeActionType::EmergencyButton as u8,
+            version: EMERGENCY_BUTTON_MESSAGE_VERSION,
+            nonce: action.nonce,
+            chain_id: action.chain_id as u8,
+            payload: action.as_payload_bytes().clone(),
+        }
+    }
+}
+
+
+impl From<BlocklistCommitteeAction>for SolanaMessage {
+    fn from(action: BlocklistCommitteeAction) -> Self {
+        SolanaMessage {
+            message_type: BridgeActionType::UpdateCommitteeBlocklist as u8,
+            version: COMMITTEE_BLOCKLIST_MESSAGE_VERSION,
+            nonce: action.nonce,
+            chain_id: action.chain_id as u8,
+            payload: action.as_payload_bytes().clone(),
+        }
+    }
+}
 
 impl From<AssetPriceUpdateAction> for SolanaMessage {
     fn from(action: AssetPriceUpdateAction) -> Self {

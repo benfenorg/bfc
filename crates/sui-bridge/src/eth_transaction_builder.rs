@@ -55,6 +55,9 @@ pub async fn build_eth_transaction(
         BridgeAction::SolanaToSuiBridgeAction(_) => {
             unreachable!()
         }
+        BridgeAction::UpgradeProgramOnSolanaAction(_) => {
+            unreachable!();
+        }
         BridgeAction::EmergencyAction(action) => {
             build_emergency_op_approve_transaction(contract_address, signer, action.clone(), sigs)
                 .await
@@ -147,6 +150,10 @@ pub async fn build_eth_transaction(
         }
         BridgeAction::FastPathLimitUpdateAction(_) => {
             unreachable!()
+        }
+
+        BridgeAction::ExtendProgramOnSolanaAction(_) => {
+            unreachable!();
         }
     }
 }

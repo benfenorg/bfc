@@ -179,4 +179,8 @@ pub enum BridgeError {
     TransferAlreadyProcessed,
     #[msg("Single transfer amount exceeds limit")]
     SingleTransferAmountExceedsLimit,
+
+
+    #[msg("Invalid committee")]
+    InvalidCommittee,
 }

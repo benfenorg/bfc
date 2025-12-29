@@ -380,6 +380,26 @@ impl BridgeClient {
                     "sign/add_token_on_solana/{chain_id}/{nonce}/{native}/{token_id}/{token_address}/{benfen_decimal}/{token_price}"
                 )
             }
+            BridgeAction::UpgradeProgramOnSolanaAction(a) =>{
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let program = a.proxy.to_string();
+                let implementation = a.implementation.to_string();
+                let version = a.version.to_string();
+                format!(
+                    "sign/upgrade_program_on_solana/{chain_id}/{nonce}/{program}/{implementation}/{version}"
+                )
+            }
+
+            BridgeAction::ExtendProgramOnSolanaAction(a ) => {
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let program = a.program_id.to_string();
+                let size =a.size.to_string();
+                format!(
+                    "sign/extend_program_on_solana/{chain_id}/{nonce}/{program}/{size}"
+                )
+            }
             BridgeAction::FastPathLimitUpdateAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();

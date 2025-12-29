@@ -5,7 +5,11 @@ use sui_types::bridge::BridgeChainId;
 use crate::types::{BridgeAction, VerifiedCertifiedBridgeAction};
 use crate::types::{
     AddTokenOnSolanaAction,AssetPriceUpdateAction,
-    SingleTransferLimitUpdateAction,LimitUpdateAction};
+    SingleTransferLimitUpdateAction,LimitUpdateAction,
+    ExtendProgramOnSolanaAction,
+    BlocklistCommitteeAction,
+    EmergencyAction,
+};
 use crate::error::{BridgeError, BridgeResult};
 use crate::idl::SolanaMessage;
 use crate::types::BridgeCommitteeValiditySignInfo; 
@@ -14,6 +18,8 @@ use crate::utils::SolanaSigner;
 use crate::query_solana_account::{
     get_transfer_limit_account,get_add_token_account,
     get_update_token_price_account,
+    get_extend_program_account,
+    get_emergency_op_account,
 };
 use solana_sdk::{
     signature::Keypair,
@@ -86,13 +92,29 @@ pub async fn build_solana_transaction(
             // It does not need a Sui tranaction to add tokens on EVM
             unreachable!()
         }
-        BridgeAction::BlocklistCommitteeAction(_) => {
-            // It does not need a Sui tranaction to add tokens on EVM
-            unreachable!()
+        BridgeAction::BlocklistCommitteeAction(action) => {
+            build_blocklist_committee_on_solana_transaction(
+                program,
+                solana_chain_id,
+                benfen_chain_id,
+                signer,
+                action.clone(),
+                sigs,
+            )
+            .await
         }
-        BridgeAction::EmergencyAction(_) => {
+        BridgeAction::EmergencyAction(action) => {
             // It does not need a Sui tranaction to add tokens on EVM
-            unreachable!()
+            build_update_emergency_op_transaction(
+                program,
+                solana_chain_id,
+                benfen_chain_id,
+                signer,
+                action.clone(),
+                sigs,
+            )
+            .await
+            
         }
         BridgeAction::LimitUpdateAction(action) => {
             build_limit_update_on_solana_transaction(
@@ -115,6 +137,22 @@ pub async fn build_solana_transaction(
                 sigs,
             )
             .await
+        }
+
+        BridgeAction::ExtendProgramOnSolanaAction(action ) => {
+            build_extend_program_on_solana_transaction(
+                program,
+                solana_chain_id,
+                benfen_chain_id,
+                signer,
+                action.clone(),
+                sigs,
+            )
+            .await
+        }
+
+        BridgeAction::UpgradeProgramOnSolanaAction(_) => {
+            unreachable!();
         }
         BridgeAction::EvmContractUpgradeAction(_) => {
             // It does not need a Sui tranaction to execute EVM contract upgrade
@@ -214,6 +252,52 @@ pub async fn build_limit_update_on_solana_transaction(
             system_program: system_program::ID,
         })
         .args(args::UpdateBridgeLimiter {
+            message_type: message.message_type,
+            version: message.version,
+            nonce: action.nonce,
+            chain_id,
+            payload,
+            signatures,
+        })
+        .instructions()?
+        .remove(0);
+    Ok(ix)
+}
+
+pub async fn build_update_emergency_op_transaction(
+    program: Arc<Program<Arc<Keypair>>>,
+    solana_chain_id: BridgeChainId,
+    _benfen_chain_id: BridgeChainId,
+    signer: &SolanaSigner,
+    action: EmergencyAction,
+    sigs: &BridgeCommitteeValiditySignInfo,
+) -> BridgeResult<Instruction> {
+    let program_id = program.id();
+    let message: SolanaMessage = action.clone().into();
+    let payload = message.payload.clone();
+
+    let signatures = sigs
+        .signatures
+        .values()
+        .map(|sig| sig.as_ref().to_vec())
+        .collect::<Vec<Vec<u8>>>();
+
+    let accounts = get_emergency_op_account(program_id);
+
+    let chain_id = action.chain_id as u8;
+
+    let ix = program
+        .request()
+        .accounts(accounts::UpdateEmergencyOp {
+            signer: signer.pubkey(),
+            message_config: accounts.message_config,
+            bridge_config: accounts.bridge_config,
+            verifier: accounts.message_verifier,
+            committee: accounts.bridge_committee,
+            bridge: accounts.benfen_bridge,
+            system_program: system_program::ID,
+        })
+        .args(args::UpdateEmergencyOp {
             message_type: message.message_type,
             version: message.version,
             nonce: action.nonce,
@@ -329,6 +413,116 @@ pub async fn build_single_transfer_limit_on_solana_transaction(
 }
 
 
+pub async  fn build_blocklist_committee_on_solana_transaction(
+    program: Arc<Program<Arc<Keypair>>>,
+    solana_chain_id: BridgeChainId,
+    benfen_chain_id: BridgeChainId,
+    signer: &SolanaSigner,
+    action: BlocklistCommitteeAction,
+    sigs:  &BridgeCommitteeValiditySignInfo,
+)-> BridgeResult<Instruction>{
+    let program_id = program.id();
+    let message: SolanaMessage = action.clone().into();
+    let payload = message.payload.clone();
+
+    let signatures = sigs
+        .signatures
+        .values()
+        .map(|sig| sig.as_ref().to_vec())
+        .collect::<Vec<Vec<u8>>>();
+
+    let accounts = crate::query_solana_account::get_update_committee_blocklist_account(
+        program_id,
+        benfen_chain_id as u8,
+    );
+
+    let chain_id = action.chain_id as u8;
+
+    let ix = program
+        .request()
+        .accounts(accounts::UpdateBlockList {
+            payer: signer.pubkey(),
+            message_config: accounts.message_config,
+            bridge_config: accounts.bridge_config,
+            verifier: accounts.message_verifier,
+            committee: accounts.bridge_committee,
+            system_program: system_program::ID,
+        })
+        .args(args::UpdateBlockList {
+            message_type: message.message_type,
+            version: message.version,
+            nonce: action.nonce,
+            chain_id,
+            payload,
+            signatures,
+        })
+        .instructions()?
+        .remove(0);
+    Ok(ix)
+}
+
+
+pub async  fn build_extend_program_on_solana_transaction(
+    program: Arc<Program<Arc<Keypair>>>,
+    solana_chain_id: BridgeChainId,
+    benfen_chain_id: BridgeChainId,
+    signer: &SolanaSigner,
+    action: ExtendProgramOnSolanaAction,
+    sigs:  &BridgeCommitteeValiditySignInfo,
+)-> BridgeResult<Instruction>{
+    let program_id = program.id();
+    let message: SolanaMessage =action.clone().into();
+    let payload = message.payload.clone();
+
+    let signatures = sigs
+        .signatures
+        .values()
+        .map(|sig| sig.as_ref().to_vec())
+        .collect::<Vec<Vec<u8>>>();
+
+    let extend_program_accounts = get_extend_program_account(program_id);
+
+    let chain_id = action.chain_id as u8;
+
+    //    payer: provider.wallet.publicKey,
+    //     bridgeConfig: bridgeConfigPDA,
+    //     committee: committeePDA,
+    //     verifier: messageVerifierPDA,
+    //     messageConfig: messageConfigPDA,
+    //     upgradeAuthority: upgradeAuthorityPDA,
+    //     program: program.programId,
+    //     programData: programDataAddress,
+    //     systemProgram: anchor.web3.SystemProgram.programId,
+    //     bpfLoader: new anchor.web3.PublicKey("BPFLoaderUpgradeab1e11111111
+
+    let ix = program
+        .request()
+        .accounts(accounts::ExtendProgram {
+            payer: signer.pubkey(),
+            bridge_config: extend_program_accounts.bridge_config,
+            message_config: extend_program_accounts.message_config,
+            verifier: extend_program_accounts.message_verifier,
+            upgrade_authority: extend_program_accounts.upgrade_authority,
+            committee: extend_program_accounts.bridge_committee,
+            program: extend_program_accounts.program,
+            program_data: extend_program_accounts.program_data,
+            system_program: system_program::ID,
+            bpf_loader: extend_program_accounts.bpf_loader_upgradeable,
+        })
+        .args(args::ExtendProgram {
+            message_type: message.message_type,
+            version: message.version,
+            nonce: action.nonce,
+            chain_id,
+            payload,
+            signatures,
+        })
+        .instructions()?
+        .remove(0);
+    Ok(ix)
+}
+
+
 pub async fn build_add_token_on_solana_transaction(
     program: Arc<Program<Arc<Keypair>>>,
     solana_chain_id: BridgeChainId,
@@ -389,7 +583,6 @@ pub async fn build_add_token_on_solana_transaction(
         .remove(0);
     Ok(add_token_ix)
 }
-
 
 
 
