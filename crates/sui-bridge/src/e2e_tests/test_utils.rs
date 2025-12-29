@@ -1253,6 +1253,18 @@ impl SolanaBridgeEnvironment{
             std::process::id(),
             rng.gen::<u32>()
         );
+
+        let admin_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/admin.json");
+        if !admin_path.exists(){
+            error!(
+                "Admin keypair file not found at {:?}. Run `anchor build` in `bridge/solana` first.",
+                admin_path
+            );
+        }
+        let payer =
+            read_keypair_file(admin_path.to_str().unwrap())
+                .expect("Failed to read admin keypair");
+        let signer = std::sync::Arc::new(payer);
         fs::create_dir_all(&ledger_path)
             .expect("failed to create unique solana-test-ledger directory");
 
@@ -1351,22 +1363,14 @@ impl SolanaBridgeEnvironment{
 
          Self::wait_for_program_loaded(rpc_url, program_keypair.pubkey(), Duration::from_secs(30)).await?;
 
-        let admin_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/admin.json");
-        if !admin_path.exists(){
-            error!(
-                "Admin keypair file not found at {:?}. Run `anchor build` in `bridge/solana` first.",
-                admin_path
-            );
-        }
-        let payer =
-            read_keypair_file(admin_path.to_str().unwrap())
-                .expect("Failed to read admin keypair");
-        let signer = std::sync::Arc::new(payer);
+        
         let client = Arc::new(Client::new_with_options(
             Cluster::Custom(rpc_url.to_string(), ws_url.to_string()),
             signer.clone(),
             CommitmentConfig::confirmed(),
         ));
+         let program = client.program(program_keypair.pubkey()).expect("Failed to get program");
+         program.rpc().request_airdrop(&signer.clone().pubkey(), 100*solana_sdk::native_token::LAMPORTS_PER_SOL).await?;
 
         // 在部署 USDC 之前，先给 payer 账户空投 SOL
         let rpc_client = solana_client::rpc_client::RpcClient::new_with_commitment(
@@ -1732,8 +1736,8 @@ pub(crate) async fn start_bridge_cluster(
                 getblock_base_url: "https://go.getblock.io/<ACCESS-TOKEN>/".to_string(),
                 bridge_proxy_address: "11111111111111111111111111111111".to_string(),
                 bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
-                contracts_start_block_fallback: Some(0),
-                contracts_start_block_override: None,
+                contracts_start_slot_fallback: Some(0),
+                contracts_start_slot_override: None,
             },
             user_limit_db_url: None,
             external_rpc: None,

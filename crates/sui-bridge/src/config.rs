@@ -171,9 +171,9 @@ pub struct SolanaConfig {
     pub getblock_base_url: String,
     pub bridge_proxy_address: String,
     pub bridge_chain_id: u8,
-    pub contracts_start_block_fallback: Option<u64>,
+    pub contracts_start_slot_fallback: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub contracts_start_block_override: Option<u64>,
+    pub contracts_start_slot_override: Option<u64>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -267,8 +267,8 @@ impl BridgeNodeConfig {
         if parsed.scheme() != "http" && parsed.scheme() != "https" {
             anyhow::bail!("solana.getblock_base_url must use http or https scheme");
         }
-        if self.run_client && self.solana.contracts_start_block_fallback.is_none() {
-            anyhow::bail!("solana.contracts_start_block_fallback is required when run_client is true");
+        if self.run_client && self.solana.contracts_start_slot_fallback.is_none() {
+            anyhow::bail!("solana.contracts_start_slot_fallback is required when run_client is true");
         }
         BridgeChainId::try_from(self.solana.bridge_chain_id)
             .map_err(|_| anyhow!("Invalid solana.bridge_chain_id: {}", self.solana.bridge_chain_id))?;
