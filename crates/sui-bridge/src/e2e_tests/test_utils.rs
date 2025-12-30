@@ -2659,7 +2659,7 @@ pub async fn initiate_defi_bridge_unstake_sui_to_eth(
     Ok(bridge_event)
 }
 
-async fn wait_for_transfer_action_status(
+pub(crate) async fn wait_for_transfer_action_status(
     sui_bridge_client: &SuiBridgeClient,
     chain_id: BridgeChainId,
     nonce: u64,
