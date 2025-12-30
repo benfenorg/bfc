@@ -39,6 +39,7 @@ use solana_client::rpc_client::RpcClient;
 use crate::query_solana_account;
 
 use crate::types::BridgeActionType::{AddTokensOnSolana};
+use crate::types::BridgeActionType;
 
 
 anchor_lang::declare_program!(benfen_bridge);
@@ -330,9 +331,16 @@ async fn test_bridge_from_solana_to_sui() {
     let program = client.program(benfen_bridge::ID).expect("Failed to get program");
     let init_pdas = crate::query_solana_account::get_init_account(program.id(), bridge_test_cluster.sui_chain_id() as u8);
 
-    let (token_vault, _) = Pubkey::find_program_address(&[b"vault", &token_id.to_le_bytes()], &benfen_bridge::ID);
-    let (token_config, _) = Pubkey::find_program_address(&[b"token_config", &token_id.to_le_bytes()], &benfen_bridge::ID);
-    let (message_config, _) = Pubkey::find_program_address(&[b"message_config"], &benfen_bridge::ID);
+    let (token_vault, _) = Pubkey::find_program_address(&[b"vault", &token_id.to_be_bytes()], &benfen_bridge::ID);
+    let (token_config, _) = Pubkey::find_program_address(&[b"token_config", &token_id.to_be_bytes()], &benfen_bridge::ID);
+    let (message_config, _) = Pubkey::find_program_address(
+        &[
+            b"message_config",
+            &[BridgeActionType::TokenTransfer as u8],
+            init_pdas.message_verifier.as_ref(),
+        ],
+        &benfen_bridge::ID,
+    );
 
     let cross_ix = program
         .request()
