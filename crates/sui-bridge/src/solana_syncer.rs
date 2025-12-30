@@ -103,7 +103,7 @@ impl SolanaSyncer {
         sol_client: Arc<SolanaClient>,
         metrics: Arc<BridgeMetrics>,
     ) {
-        info!("Starting Solana finalized slot refresh task");
+        info!("[SolanaSyncer] Starting Solana finalized slot refresh task");
         let mut last_slot = 0u64;
         let mut interval = time::interval(FINALIZED_SLOT_QUERY_INTERVAL);
         interval.set_missed_tick_behavior(time::MissedTickBehavior::Skip);
@@ -115,7 +115,7 @@ impl SolanaSyncer {
                 sol_client.get_slot(Some("finalized")),
                 RPC_RETRY_MAX_DURATION
             ) else {
-                error!("Failed to get finalized slot from Solana client after retry");
+                error!("[SolanaSyncer] Failed to get finalized slot from Solana client after retry");
                 continue;
             };
 
@@ -128,7 +128,7 @@ impl SolanaSyncer {
                 info!(
                     old_slot = last_slot,
                     new_slot = new_slot,
-                    "Observed new finalized Solana slot"
+                    "[SolanaSyncer] Observed new finalized Solana slot"
                 );
                 last_slot = new_slot;
             }
@@ -163,7 +163,7 @@ impl SolanaSyncer {
             address = %address_str,
             start_slot = target_info.start_slot,
             until_signature = ?target_info.until_signature,
-            "Starting Solana signature listening task"
+            "[SolanaSyncer] Starting Solana signature listening task"
         );
 
         loop {
@@ -181,7 +181,7 @@ impl SolanaSyncer {
                     address = %address_str,
                     finalized_slot = current_finalized_slot,
                     start_slot = target_info.start_slot,
-                    "Finalized slot is before start slot, skipping"
+                    "[SolanaSyncer] Finalized slot is before start slot, skipping"
                 );
                 continue;
             }
@@ -199,11 +199,21 @@ impl SolanaSyncer {
             .await;
 
             if !window_ok {
+                error!(
+                    address = %address_str,
+                    "[SolanaSyncer] Failed to collect signatures for Solana address, retrying in next window"
+                );
+
                 continue;
             }
 
             // If no new signatures, continue waiting
             if collected.is_empty() {
+                info!(
+                    address = %address_str,
+                    "[SolanaSyncer] No new Solana signatures observed, continuing"
+                );
+
                 continue;
             }
 
@@ -213,13 +223,18 @@ impl SolanaSyncer {
 
             if !fetch_ok {
                 // Don't advance cursor on failure
+                error!(
+                    address = %address_str,
+                    "[SolanaSyncer] Failed to fetch transactions or parse events, retrying in next window"
+                );
+
                 continue;
             }
 
             info!(
                 address = %address_str,
                 signature_count = collected.len(),
-                "Querying Solana signatures took {:?}",
+                "[SolanaSyncer] Querying Solana signatures took {:?}",
                 timer.elapsed()
             );
 
@@ -253,7 +268,7 @@ impl SolanaSyncer {
                     event_count = event_count,
                     newest_signature = ?newest_signature,
                     newest_slot = ?newest_slot,
-                    "Observed {} new Solana transactions",
+                    "[SolanaSyncer] Observed {} new Solana transactions",
                     tx_count
                 );
             }
@@ -302,7 +317,7 @@ impl SolanaSyncer {
             ) else {
                 error!(
                     address = %address,
-                    "Failed to get signatures for address from Solana client"
+                    "[SolanaSyncer] Failed to get signatures for address from Solana client"
                 );
                 return (collected, false);
             };
@@ -319,6 +334,13 @@ impl SolanaSyncer {
                     // Note: min_context_slot in the API is just a hint for RPC context,
                     // it doesn't filter results. We must filter manually.
                     if s.slot < target_info.start_slot {
+                        warn!(
+                            signature = %s.signature,
+                            slot = s.slot,
+                            start_slot = target_info.start_slot,
+                            "[SolanaSyncer] Skipping Solana transaction before start_slot"
+                        );
+
                         return false;
                     }
                     // Skip failed transactions
@@ -327,10 +349,17 @@ impl SolanaSyncer {
                             signature = %s.signature,
                             slot = s.slot,
                             err = ?s.err,
-                            "Skipping failed Solana transaction"
+                            "[SolanaSyncer] Skipping failed Solana transaction"
                         );
                         return false;
                     }
+
+                    info!(
+                        signature = %s.signature,
+                        slot = s.slot,
+                        "[SolanaSyncer] Collected Solana transaction signature"
+                    );
+
                     true
                 })
                 .collect();
@@ -372,7 +401,7 @@ impl SolanaSyncer {
                 error!(
                     signature = %sig.signature,
                     slot = sig.slot,
-                    "Failed to get transaction details from Solana client"
+                    "[SolanaSyncer] Failed to get transaction details from Solana client"
                 );
                 // Return what we have so far as failed - don't advance cursor
                 return (parsed_events, false);
@@ -385,15 +414,28 @@ impl SolanaSyncer {
                     signature = %sig.signature,
                     slot = sig.slot,
                     event_count = events.len(),
-                    "Parsed bridge events from Solana transaction"
+                    "[SolanaSyncer] Parsed bridge events from Solana transaction"
                 );
                 // Attach transaction signature to each event
                 for event in events {
+                    info!(
+                        signature = %sig.signature,
+                        slot = sig.slot,
+                        event = ?event,
+                        "[SolanaSyncer] Parsed Solana bridge event"
+                    );
+
                     parsed_events.push(SolanaParsedEvent {
                         tx_signature: sig.signature.clone(),
                         event,
                     });
                 }
+            } else {
+                info!(
+                    signature = %sig.signature,
+                    slot = sig.slot,
+                    "[SolanaSyncer] No bridge events found in Solana transaction"
+                );
             }
         }
 
