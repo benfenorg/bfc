@@ -24,17 +24,31 @@ impl SolanaClient {
 
     async fn send(&self, method: &str, params: Value) -> Result<Value> {
         let body = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
-        let resp = self
+        let resp_result = self
             .client
             .post(&self.base_url)
             .header("Content-Type", "application/json")
             .json(&body)
             .timeout(Duration::from_secs(30))
             .send()
-            .await?;
+            .await;
+        let resp = match resp_result {
+            Ok(resp) => resp,
+            Err(e) => {
+                tracing::error!("bbking100 send error url: {:?}, error: {:?}", self.base_url, e);
+                return Err(anyhow!(e.to_string()));
+            }
+        };
         let status = resp.status();
-        let text = resp.text().await?;
-        tracing::error!("Solana RPC response for method {}: status: {}, text: {}", method, status, text);
+        let text_result = resp.text().await;
+        let text = match text_result {
+            Ok(text) => text,
+            Err(e) => {
+                tracing::error!("bbking100 send text error: {:?}", e);
+                return Err(anyhow!(e.to_string()));
+            }
+        };
+        tracing::error!("Solana RPC response for method url: {:?}, method: {:?}, status: {}, text: {} params: {:?}", self.base_url, method, status, text, params);
         let v: Value = serde_json::from_str(&text)?;
         if !status.is_success() {
             return Err(anyhow!(format!("http {}", status)));
