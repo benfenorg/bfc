@@ -302,12 +302,11 @@ async fn request_sign_bridge_action_into_certification(
                         }
                     }
                     Err(e) => {
-                        warn!(
-                            "Failed to get signature from {:?}. Error: {:?}",
-                            name.concise(),
-                            e
-                        );
-                        state.add_bad_stake(stake, &name);
+                                            error!(
+                                                "Failed to get signature from {:?}. Error: {:?}",
+                                                name.concise(),
+                                                e
+                                            );                        state.add_bad_stake(stake, &name);
                     }
                 };
 

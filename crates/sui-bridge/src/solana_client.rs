@@ -2,6 +2,7 @@ use anyhow::anyhow;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use std::time::Duration;
 
 use crate::error::{BridgeError, BridgeResult};
 use crate::solana_events::SolanaBridgeEvent;
@@ -28,6 +29,7 @@ impl SolanaClient {
             .post(&self.base_url)
             .header("Content-Type", "application/json")
             .json(&body)
+            .timeout(Duration::from_secs(30))
             .send()
             .await?;
         let status = resp.status();
@@ -97,7 +99,7 @@ impl SolanaClient {
 
         let params = json!([signature, config]);
         let v = self.send("getTransaction", params).await?;
-        tracing::info!("bbking100 get_transaction v: {:?}", v);
+        tracing::error!("bbking100 get_transaction v: {:?}", v);
         let result = v.get("result").ok_or_else(|| anyhow!("empty result"))?;
         let tx: SolanaTransaction = serde_json::from_value(result.clone())?;
         Ok(tx)
@@ -110,28 +112,62 @@ impl SolanaClient {
         tx_signature: &str,
         event_idx: u16,
     ) -> BridgeResult<BridgeAction> {
-        tracing::info!("bbking100 get_bridge_action_maybe tx_signature: {:?}", tx_signature);
-        let tx = self
-            .get_transaction(tx_signature)
-            .await
-            .map_err(|e| BridgeError::ProviderError(e.to_string()))?;
-        tracing::info!("bbking100 get_bridge_action_maybe tx: {:?}", tx);
+        tracing::error!("bbking100 get_bridge_action_maybe tx_signature: {:?}", tx_signature);
+        let tx = match self.get_transaction(tx_signature).await {
+            Ok(t) => t,
+            Err(e) => {
+                tracing::error!(
+                    "[get_bridge_action_maybe] Failed to get transaction for signature {}: {:?}",
+                    tx_signature, e
+                );
+                return Err(BridgeError::ProviderError(e.to_string()));
+            }
+        };
+        tracing::error!("bbking100 get_bridge_action_maybe tx: {:?}", tx);
         // Parse events from transaction logs
         let events = SolanaBridgeEvent::try_from_client_transaction(&tx);
-        tracing::info!("bbking100 get_bridge_action_maybe events: {:?}", events);
+        tracing::error!("bbking100 get_bridge_action_maybe events: {:?}", events);
         if events.is_empty() {
+            tracing::error!(
+                "No bridge events found in transaction {} at index {}",
+                tx_signature, event_idx
+            );
             return Err(BridgeError::NoBridgeEventsInTxPosition);
         }
 
         // Get the event at the specified index
-        let event = events
-            .get(event_idx as usize)
-            .ok_or(BridgeError::NoBridgeEventsInTxPosition)?;
+        let event = match events.get(event_idx as usize) {
+            Some(e) => e,
+            None => {
+                tracing::error!(
+                    "Event at index {} not found in transaction {}",
+                    event_idx, tx_signature
+                );
+                return Err(BridgeError::NoBridgeEventsInTxPosition);
+            }
+        };
 
         // Convert event to bridge action
-        event
-            .try_into_bridge_action(tx_signature.to_string(), event_idx)?
-            .ok_or(BridgeError::BridgeEventNotActionable)
+        let bridge_action_option = match event
+            .try_into_bridge_action(tx_signature.to_string(), event_idx)
+        {
+            Ok(action_opt) => action_opt,
+            Err(e) => {
+                tracing::error!(
+                    "Failed to convert event to bridge action for transaction {} at index {}: {:?}",
+                    tx_signature, event_idx, e
+                );
+                return Err(e);
+            }
+        };
+
+        bridge_action_option.ok_or_else(|| {
+            tracing::error!(
+                "Bridge event not actionable for transaction {} at index {}",
+                tx_signature, event_idx
+            );
+            BridgeError::BridgeEventNotActionable
+        })
     }
 }
 
@@ -232,6 +268,7 @@ mod tests {
     use sha2::digest::crypto_common::rand_core::le;
     use std::collections::HashMap;
     use std::net::SocketAddr;
+    use tokio::time;
     use tokio::sync::oneshot;
     use tokio::task::JoinHandle;
 
@@ -313,6 +350,54 @@ mod tests {
             }
         });
         (local_addr, handle, tx)
+    }
+
+    async fn hanging_handler(
+        State(_): State<MockState>,
+        Json(_body): Json<Value>,
+    ) -> (StatusCode, Json<Value>) {
+        let () = futures::future::pending().await;
+        unreachable!();
+    }
+
+    async fn start_hanging_server() -> (SocketAddr, JoinHandle<()>, oneshot::Sender<()>) {
+        let state = MockState;
+        let app = Router::new().route("/", post(hanging_handler)).with_state(state);
+        let addr: SocketAddr = "127.0.0.1:0".parse().unwrap();
+        let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+        let local_addr = listener.local_addr().unwrap();
+        let (tx, rx) = oneshot::channel();
+        let handle = tokio::spawn(async move {
+            let server = axum::serve(listener, app);
+            tokio::select! {
+                _ = server => {},
+                _ = rx => {},
+            }
+        });
+        (local_addr, handle, tx)
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn test_send_timeout() {
+        let (addr, handle, tx) = start_hanging_server().await;
+        let base_url = format!("http://{addr}/");
+        let client = SolanaClient::new(&base_url);
+
+        let start = time::Instant::now();
+        let req = tokio::spawn(async move { client.get_block_height(None).await });
+
+        time::advance(Duration::from_secs(11)).await;
+
+        let res = req.await.unwrap();
+        let err = res.unwrap_err();
+        let reqwest_err = err
+            .downcast_ref::<reqwest::Error>()
+            .expect("expected reqwest::Error");
+        assert!(reqwest_err.is_timeout());
+        assert!(start.elapsed() >= Duration::from_secs(10));
+
+        tx.send(()).ok();
+        handle.abort();
     }
 
     #[tokio::test]
