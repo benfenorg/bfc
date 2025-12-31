@@ -97,6 +97,7 @@ impl SolanaClient {
 
         let params = json!([signature, config]);
         let v = self.send("getTransaction", params).await?;
+        tracing::info!("bbking100 get_transaction v: {:?}", v);
         let result = v.get("result").ok_or_else(|| anyhow!("empty result"))?;
         let tx: SolanaTransaction = serde_json::from_value(result.clone())?;
         Ok(tx)
