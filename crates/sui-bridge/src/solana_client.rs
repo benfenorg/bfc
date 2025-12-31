@@ -33,7 +33,9 @@ impl SolanaClient {
             .send()
             .await?;
         let status = resp.status();
-        let v: Value = resp.json().await?;
+        let text = resp.text().await?;
+        tracing::error!("Solana RPC response for method {}: status: {}, text: {}", method, status, text);
+        let v: Value = serde_json::from_str(&text)?;
         if !status.is_success() {
             return Err(anyhow!(format!("http {}", status)));
         }
