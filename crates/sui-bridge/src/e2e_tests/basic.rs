@@ -2787,7 +2787,6 @@ async fn test_solana_client_with_test_validator() {
     assert!(tx_info.meta.is_some(), "Transaction info should have meta data");
     info!("transaction info for {}: {:?}", signature, tx_info);
 
-    let tx_info = client.get_transaction("5BM32aN75RmaxpPr8gSTGt4poQdCKEAzowRgZo7ZJL6wn5rW9kWCiL58dWma4e5dm2u4cBvdrbd8wXRYCWR4gPNi").await.unwrap();
-
-    assert!(false);
+    let tx_info = client.get_transaction("5BM32aN75RmaxpPr8gSTGt4poQdCKEAzowRgZo7ZJL6wn5rW9kWCiL58dWma4e5dm2u4cBvdrbd8wXRYCWR4gPNi").await;
+    assert!(tx_info.is_err(), "Expected no transaction info for invalid signature");
 }
