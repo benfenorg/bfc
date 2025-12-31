@@ -1750,8 +1750,8 @@ pub(crate) async fn start_bridge_cluster(
             user_limit_db_url: None,
             external_rpc: Some(ExternalChainRpcConfig {
                 solana: ChainRpcUrls {
-                    mainnet_url: "http://127.0.0.1:8899".to_string(),
-                    testnet_url: "http://127.0.0.1:8899".to_string(),
+                    mainnet_url: sol_environment.rpc_url.clone(),
+                    testnet_url: sol_environment.rpc_url.clone(),
                 },
                 tron: ChainRpcUrls {
                     mainnet_url: "http://127.0.0.1:18190".to_string(),

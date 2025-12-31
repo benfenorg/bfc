@@ -45,6 +45,18 @@ pub fn build_sui_transaction(
             sui_token_type_tags,
             rgp,
         ),
+        BridgeAction::SolanaToSuiBridgeAction(_) => {
+            build_token_bridge_approve_transaction(
+                client_address,
+                gas_object_ref,
+                action,
+                true,
+                bridge_object_arg,
+                admin_cap_arg,
+                sui_token_type_tags,
+                rgp,
+            )
+        }
         BridgeAction::EthToSuiDefiBridgeAction(_) => build_defi_bridge_approve_transaction(
             client_address,
             gas_object_ref,
@@ -263,10 +275,6 @@ pub fn build_sui_transaction(
         ),
         BridgeAction::AddTokensOnEvmAction(_) => {
             // It does not need a Sui tranaction to add tokens on EVM
-            unreachable!()
-        }
-        BridgeAction::SolanaToSuiBridgeAction(_) => {
-            // It does not need a Sui transaction to handle Solana->Sui action here
             unreachable!()
         }
         BridgeAction::RefundAdminAction(_) => build_refund_admin_operate_transaction(

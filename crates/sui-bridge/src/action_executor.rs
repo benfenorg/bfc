@@ -653,6 +653,7 @@ where
                 //     "Expected TokenTransferAlreadyClaimed, TokenTransferClaimed, TokenTransferApproved or TokenTransferAlreadyApproved event but got: {:?}",
                 //     events,
                 //     );
+                info!("Sui transaction effects: {:?}", effects);
                 info!(?tx_digest, "Sui transaction executed successfully");
                 store
                     .remove_pending_actions(&[action.digest()])

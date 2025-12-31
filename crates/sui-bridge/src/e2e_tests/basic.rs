@@ -382,8 +382,8 @@ async fn test_bridge_from_solana_to_sui() {
     );
 
     // 等待 Bridge 处理并在 Sui 上 claim token
-    // nonce = 1 (第一笔跨链交易，nonce 从 1 开始)
-    let nonce = 1u64;
+    // nonce = 0 (第一笔跨链交易，nonce 从 0 开始)
+    let nonce = 0u64;
     wait_for_transfer_action_status(
         bridge_test_cluster.bridge_client(),
         solana_chain_id,
