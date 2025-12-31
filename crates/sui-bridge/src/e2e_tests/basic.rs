@@ -30,6 +30,7 @@ use crate::sui_transaction_builder::{
 };
 
 use crate::solana_transaction_builder::build_solana_transaction;
+use crate::solana_client::{GetSignaturesConfig, SolanaClient};
 use sui_json_rpc_types::SuiObjectDataOptions;
 // use ethers::types::Address;
 use ethers::types::Address as EthAddress;
@@ -2718,4 +2719,75 @@ async fn test_bridge_api_compatibility() {
         .get_bridge_object_initial_shared_version()
         .await
         .unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+async fn test_solana_client_with_test_validator() {
+    telemetry_subscribers::init_for_testing();
+    let bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_solana_env(true)
+        .with_solana_chain_id(BridgeChainId::SolanaTestnet)
+        .with_bridge_cluster(false)
+        .with_num_validators(1)
+        .build()
+        .await;
+
+    let rpc_url = bridge_test_cluster.solana_env().rpc_url.clone();
+    let client = SolanaClient::new(&rpc_url);
+
+    // test get block height
+    let n = client.get_block_height(None).await.unwrap();
+    assert!(n > 0, "Block height should be greater than 0");
+    info!("block height: {:?}", n);
+
+    // test get slot
+    let slot = client.get_slot(None).await.unwrap();
+    assert!(slot > 0, "Slot should be greater than 0");
+    info!("slot: {:?}", slot);
+
+    // Make a transaction to ensure the signer has at least one signature
+    let solana_signer = bridge_test_cluster.solana_env().get_signer().await.unwrap();
+    let rpc_client = RpcClient::new(rpc_url.clone());
+    let from_pubkey = solana_signer.pubkey();
+    let to_pubkey = solana_sdk::pubkey::new_rand();
+
+    use solana_sdk::system_instruction;
+    use solana_sdk::transaction::Transaction;
+    use solana_sdk::signer::Signer;
+
+    let instruction = system_instruction::transfer(&from_pubkey, &to_pubkey, rpc_client.get_minimum_balance_for_rent_exemption(0).unwrap()); // transfer rent-exempt amount
+    let recent_blockhash = rpc_client.get_latest_blockhash().unwrap();
+    let tx = Transaction::new_signed_with_payer(
+        &[instruction],
+        Some(&from_pubkey),
+        &[&*solana_signer],
+        recent_blockhash,
+    );
+
+    rpc_client.send_and_confirm_transaction(&tx).unwrap();
+
+    // test get signatures for address
+    let cfg = GetSignaturesConfig {
+        limit: Some(1),
+        ..Default::default()
+    };
+    let v = client
+        .get_signatures_for_address(&from_pubkey.to_string(), Some(cfg))
+        .await
+        .unwrap();
+
+    assert!(!v.is_empty(), "Expected to find at least one signature");
+    info!("signatures: {:?}", v);
+
+    // test get transaction
+    let signature = &v[0].signature;
+    let tx_info = client.get_transaction(signature).await.unwrap();
+    assert!(tx_info.slot.is_some(), "Transaction info should have a slot");
+    assert!(tx_info.transaction.is_some(), "Transaction info should have transaction data");
+    assert!(tx_info.meta.is_some(), "Transaction info should have meta data");
+    info!("transaction info for {}: {:?}", signature, tx_info);
+
+    let tx_info = client.get_transaction("5BM32aN75RmaxpPr8gSTGt4poQdCKEAzowRgZo7ZJL6wn5rW9kWCiL58dWma4e5dm2u4cBvdrbd8wXRYCWR4gPNi").await.unwrap();
+
+    assert!(false);
 }
