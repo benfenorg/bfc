@@ -109,13 +109,15 @@ impl SolanaClient {
         tx_signature: &str,
         event_idx: u16,
     ) -> BridgeResult<BridgeAction> {
+        tracing::info!("bbking100 get_bridge_action_maybe tx_signature: {:?}", tx_signature);
         let tx = self
             .get_transaction(tx_signature)
             .await
             .map_err(|e| BridgeError::ProviderError(e.to_string()))?;
-
+        tracing::info!("bbking100 get_bridge_action_maybe tx: {:?}", tx);
         // Parse events from transaction logs
         let events = SolanaBridgeEvent::try_from_client_transaction(&tx);
+        tracing::info!("bbking100 get_bridge_action_maybe events: {:?}", events);
         if events.is_empty() {
             return Err(BridgeError::NoBridgeEventsInTxPosition);
         }
