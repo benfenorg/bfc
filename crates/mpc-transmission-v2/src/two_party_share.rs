@@ -101,7 +101,7 @@ pub fn split_to_two_bytes_value_v2(
 
     // Step 2: Shamir split the ORIGINAL value (split first!)
     let (share1, share2) =
-        split_to_two_value_v2_internal(value, &coords).expect("Internal split should not fail");
+        split_to_two_value_v2_internal(value, &coords);
 
     // Step 3: Convert shares to bytes
     let share1_bytes = share_to_bytes(&share1);
