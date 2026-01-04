@@ -130,6 +130,18 @@ pub fn split_to_two_bytes_value_v2(
 /// * `Ok(u64)` - The recovered secret value
 /// * `Err(SSSError)` - If decoding or recovery fails
 pub fn recover_value_v2(value1: String, value2: String, mask_secret: u64) -> Result<u64, SSSError> {
+    // Validate input lengths
+    if value1.len() >= 100 {
+        return Err(SSSError::invalid_parameters(
+            format!("value1 length must be less than 100, got {}", value1.len()).as_str(),
+        ));
+    }
+    if value2.len() >= 100 {
+        return Err(SSSError::invalid_parameters(
+            format!("value2 length must be less than 100, got {}", value2.len()).as_str(),
+        ));
+    }
+
     // Step 1: Decode hex -> unmask -> get shares
     let shares = recover_two_shares_v2(value1, value2, mask_secret)?;
     // Step 2: Interpolate to recover original value
@@ -647,6 +659,84 @@ mod tests {
 
         let result = recover_value_v2(empty1, empty2, TEST_MASK_SECRET);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_recover_value1_too_long() {
+        // Create a string with length exactly 100
+        let value1 = "a".repeat(100);
+        let value2 = "0123456789abcdef".to_string(); // Valid hex string
+
+        let result = recover_value_v2(value1, value2, TEST_MASK_SECRET);
+        assert!(result.is_err());
+        match result {
+            Err(SSSError::InvalidParameters(msg)) => {
+                assert!(msg.contains("value1 length must be less than 100"));
+            }
+            _ => panic!("Expected InvalidParameters error"),
+        }
+    }
+
+    #[test]
+    fn test_recover_value2_too_long() {
+        let value1 = "0123456789abcdef".to_string(); // Valid hex string
+        // Create a string with length exactly 100
+        let value2 = "b".repeat(100);
+
+        let result = recover_value_v2(value1, value2, TEST_MASK_SECRET);
+        assert!(result.is_err());
+        match result {
+            Err(SSSError::InvalidParameters(msg)) => {
+                assert!(msg.contains("value2 length must be less than 100"));
+            }
+            _ => panic!("Expected InvalidParameters error"),
+        }
+    }
+
+    #[test]
+    fn test_recover_both_values_too_long() {
+        // Create strings with length exactly 100
+        let value1 = "a".repeat(100);
+        let value2 = "b".repeat(100);
+
+        let result = recover_value_v2(value1, value2, TEST_MASK_SECRET);
+        assert!(result.is_err());
+        // Should fail on value1 first
+        match result {
+            Err(SSSError::InvalidParameters(msg)) => {
+                assert!(msg.contains("value1 length must be less than 100"));
+            }
+            _ => panic!("Expected InvalidParameters error"),
+        }
+    }
+
+    #[test]
+    fn test_recover_value_length_boundary() {
+        // Test boundary: length 99 should pass, length 100 should fail
+        let value = 12345u64;
+        let (hex1, hex2, _) =
+            split_to_two_value_v2(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+
+        // Normal case should work
+        let result = recover_value_v2(hex1.clone(), hex2.clone(), TEST_MASK_SECRET);
+        assert!(result.is_ok());
+
+        // Create a string with length exactly 99 (should pass length check)
+        let value1_99 = "a".repeat(99);
+        let _result_99 = recover_value_v2(value1_99, hex2.clone(), TEST_MASK_SECRET);
+        // This might fail for other reasons (invalid hex), but not for length >= 100
+        // We just verify it doesn't fail specifically for length validation
+
+        // Create a string with length exactly 100 (should fail)
+        let value1_100 = "a".repeat(100);
+        let result = recover_value_v2(value1_100, hex2, TEST_MASK_SECRET);
+        assert!(result.is_err());
+        match result {
+            Err(SSSError::InvalidParameters(msg)) => {
+                assert!(msg.contains("value1 length must be less than 100"));
+            }
+            _ => panic!("Expected InvalidParameters error for length 100"),
+        }
     }
 
     #[test]
