@@ -799,6 +799,7 @@ pub(crate) async fn init_solana_program(
         .instructions()?
         .remove(0);
 
+    let transfer_pdas=crate::query_solana_account::get_transfer_upgrade_authority_account(program.id());
 
     let node_len = bridge_authority_keys.len();
     let stake = TOTAL_VOTING_POWER / (node_len as u64);
@@ -900,6 +901,18 @@ pub(crate) async fn init_solana_program(
         .instructions()?
         .remove(0);
 
+    let transfer_upgrade_authority_ix = program.request()
+        .accounts(accounts::TransferUpgradeAuthority {
+            old_upgrade_authority: solana_signer.pubkey(),
+            new_upgrade_authority: transfer_pdas.upgrade_authority,
+            program: program.id(),
+            program_data: transfer_pdas.program_data,
+            bpf_loader_upgradeable: transfer_pdas.bpf_loader_upgradeable,
+        })
+        .args(args::TransferUpgradeAuthority {})
+        .instructions()?
+        .remove(0);
+
     let signature = program
         .request()
         .instruction(initialize_bridge_config_ix)
@@ -908,6 +921,7 @@ pub(crate) async fn init_solana_program(
         .instruction(initialize_bridge_limiter_ix)
         .instruction(initialize_benfen_bridge_ix)
         .instruction(initialize_upgrade_authority_ix)
+        .instruction(transfer_upgrade_authority_ix)
         .signer(solana_signer.clone())
         .send()
         .await?;
@@ -1248,6 +1262,18 @@ impl SolanaBridgeEnvironment{
         // program_keypair.
         let program_id = program_keypair.pubkey().to_string();
 
+        let admin_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("./solana-configs/admin.json");
+        if !admin_path.exists(){
+            error!(
+                "Admin keypair file not found at {:?}. Run `anchor build` in `bridge/solana` first.",
+                admin_path
+            );
+        }
+        let payer =
+            read_keypair_file(admin_path.to_str().unwrap())
+                .expect("Failed to read admin keypair");
+        let signer = std::sync::Arc::new(payer);
+
         // Use a unique ledger directory per run to avoid conflicts.
         let mut rng = SmallRng::from_entropy();
         let ledger_path = format!(
@@ -1316,9 +1342,10 @@ impl SolanaBridgeEnvironment{
             .arg("--ledger")
             .arg(&ledger_path)
             .arg("--reset")
-            .arg("--bpf-program")
+            .arg("--upgradeable-program")
             .arg(&program_id)
             .arg(&program_path)
+            .arg(signer.pubkey().to_string())
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
             .spawn()

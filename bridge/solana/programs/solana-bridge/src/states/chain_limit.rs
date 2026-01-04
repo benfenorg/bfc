@@ -12,23 +12,18 @@ pub struct ChainLimit {
     pub bump: [u8;1],
     pub config : Pubkey,
     pub chain_id: [u8;1],
-    //single transfer limit
-    pub max_usd_limit: u64, 
-    //24-hour total limit
-    pub total_limit: u64, 
-    //current hour index
-    pub hourly_transfer_index: u8, 
-    //24-hour sliding window
-    pub hourly_transfer_amount: [ChainHourlyTransferAmount; HOUR_TRANSFER_NUM], 
-    //padding upgrade
-    pub padding: [u64; 8],
+    pub max_usd_limit: u64, //单笔限额
+    pub total_limit: u64,  // 24小时总限额
+    pub hourly_transfer_index: u8, //当前小时索引
+    pub hourly_transfer_amount: [ChainHourlyTransferAmount; HOUR_TRANSFER_NUM], //24 小时的滑动窗口
+    pub padding: [u64; 8],// 用于未来升级合约
 }
 
 #[zero_copy]
 #[repr(C, packed)]
 #[derive(Default, Debug)]
 pub struct ChainHourlyTransferAmount {
-    pub hour: u64,  
+    pub hour: u64,   //每个小时时间戳
     pub amount: u64,
 }
 
@@ -93,7 +88,6 @@ impl ChainLimit {
         ((amount as u128 * price as u128) / 10u128.pow(decimal as u32)) as u64
     }
 
-    /// Calculate total transfer amount within sliding window (24 hours from current time) in USD
     pub fn calculate_window_limit(&mut self) -> u64 {
         let current_hour = match self.current_hour() {
             Ok(hour) => hour,
@@ -106,27 +100,28 @@ impl ChainLimit {
         let mut total = 0;
         let last_hour_index = self.hourly_transfer_index as usize;
         
-        //Check if the latest recorded time is valid
+        // 检查最新记录的时间是否有效
         let time = self.hourly_transfer_amount[last_hour_index].hour;
         
         if current_hour < time {
             return 0
         }
 
+        // 从下一个索引开始遍历（按时间顺序）
         let mut index = (last_hour_index + 1) % HOUR_TRANSFER_NUM;
 
-        //include 24 hours containing current time
+        //包含当前时间的24小时
         let window_start = current_hour.saturating_sub(23);
         
         for _ in 0..HOUR_TRANSFER_NUM {
             let h = &self.hourly_transfer_amount[index];
             
-            // Only count valid data within the sliding window
+            // 只统计在滑动窗口内的有效数据
             if h.hour >= window_start && h.hour <= current_hour && h.hour != 0 {
                 total += h.amount;
             }
             
-            //move to next index 
+            // 移动到下一个索引（循环）
             index = (index + 1) % HOUR_TRANSFER_NUM;
         }
         
@@ -143,6 +138,7 @@ impl ChainLimit {
     }
 
 
+    // amount 是转换后的价值usd的数量
     pub fn record_bridge_transfers(&mut self, amount: u64, price: u64, decimal: u8) -> Result<()> {
         let current_hour = self.current_hour().unwrap();
         self.record_bridge_transfers_internal(current_hour,amount, price, decimal)
@@ -161,24 +157,24 @@ impl ChainLimit {
         let current_hour_in_array = self.hourly_transfer_amount[current_index].hour;
         
         if current_hour_in_array == current_hour {
-            // same hour, accumulate amount
+            // 同一小时，累加金额
             self.hourly_transfer_amount[current_index].amount = 
             self.hourly_transfer_amount[current_index].amount.saturating_add(amount_in_usd);        
         } else if current_hour > current_hour_in_array {
-            // new hour, need to move to next position
+            // 新的小时，需要移动到下一个位置
             let hours_diff =current_hour - current_hour_in_array;
             
             if hours_diff >= HOUR_TRANSFER_NUM as u64 {
-                //  exceeds 24 hours, clear all data
+                // 跳跃超过24小时，清空所有数据
                 for i in 0..HOUR_TRANSFER_NUM {
                     self.hourly_transfer_amount[i] = ChainHourlyTransferAmount::default();
                 }
                 self.hourly_transfer_index = 0;
             } else {
-                //  normal sliding window
+                // 正常滑动窗口
                 for i in 1..=hours_diff {
                     self.hourly_transfer_index = (self.hourly_transfer_index + 1) % HOUR_TRANSFER_NUM as u8;
-                    // Clear data at new position, but set correct hour timestamp
+                    // 清空新位置的数据，但设置正确的小时时间戳
                     let new_index = self.hourly_transfer_index as usize;
                     let hour_for_this_slot = current_hour_in_array + i;
                     self.hourly_transfer_amount[new_index] = ChainHourlyTransferAmount {
@@ -188,7 +184,7 @@ impl ChainLimit {
                 }
             }
             
-            // Set data for new hour
+            // 设置新小时的数据
             let final_index = self.hourly_transfer_index as usize;
             self.hourly_transfer_amount[final_index].hour = current_hour;
             self.hourly_transfer_amount[final_index].amount = amount_in_usd;

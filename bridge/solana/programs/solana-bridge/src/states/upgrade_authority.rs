@@ -3,7 +3,8 @@ use anchor_lang::prelude::*;
 use crate::errors::BridgeUpgradeError;
 
 pub const UPGRADE_AUTHORITY_SEED: &str = "upgrade_authority";
-pub const UPGRADE_COOLDOWN_PERIOD: i64 = 24 * 60 * 60; 
+pub const UPGRADE_COOLDOWN_PERIOD: i64 = 24 * 60 * 60; // 24小时（以秒为单位）
+
 #[account]
 pub struct UpgradeAuthority {
     pub enabled: bool,

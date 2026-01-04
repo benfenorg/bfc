@@ -18,6 +18,10 @@ pub struct TokenConfigAccount {
     pub benfen_decimal: u8, // benfen decimal
     pub is_native: u8, //0: false, 1: true
     pub padding: [u8; 24], // upgrade padding
+
+    // // test upgrade
+    // pub version: u8, // token config version
+    // pub padding: [u8; 23], // upgrade padding
 }
  
 
@@ -83,6 +87,14 @@ impl TokenConfigAccount {
     pub fn is_native(&self) -> bool {
         self.is_native == 1
     }
+
+    // pub fn version(&self) -> u8 {
+    //     self.version
+    // }
+
+    // pub fn update_version(&mut self, version: u8) {
+    //     self.version = version;
+    // }
 
     pub fn price(&self) -> u64 {
         self.price

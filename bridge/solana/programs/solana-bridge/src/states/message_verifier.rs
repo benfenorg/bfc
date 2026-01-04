@@ -8,8 +8,9 @@ pub const MESSAGE_VERIFIER_SEED: &str = "message_verifier";
 pub struct MessageVerifier {
     /// Bump seed for PDA
     pub bump: [u8;1],
-    pub message_number: u64,  
-    pub committee: Pubkey,
+
+    pub message_number: u64,    //有多少message 创建
+     pub committee: Pubkey,
 }
 
 

@@ -63,7 +63,7 @@ pub struct CrossOut<'info> {
         seeds = [PROCESSED_TRANSFER_SEED.as_bytes(),&[message::TOKEN_TRANSFER],&[chain_id], nonce.to_be_bytes().as_ref()],
         bump ,
     )]
-    //Process transfer record on Benfen chain
+    //处理benfen 上的交易记录
     pub process_transfer: Account<'info, ProcessTransfer>,
 
     //chain limit account
@@ -165,7 +165,9 @@ pub fn cross_out_with_signature(
 
 
     process_transfer.mark_processed()?;
-    //emit event
+
+    msg!("emit TokensClaimed");
+    //触发event
     emit!(
         TokensClaimed{
             nonce: process_transfer.nonce(),

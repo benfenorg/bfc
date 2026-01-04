@@ -5,14 +5,20 @@ pub mod errors;
 pub mod events;
 pub mod util;
 use instructions::*;
-pub mod admin {
-    use anchor_lang::prelude::declare_id;
-    #[cfg(feature = "devnet")]
-    declare_id!("GUFVktRxvzKofrHb8htuAKB5gWj3sdbXchznjro9aVU7");
-    #[cfg(not(feature = "devnet"))]
-    declare_id!("GUFVktRxvzKofrHb8htuAKB5gWj3sdbXchznjro9aVU7");
-}
+
+#[cfg(feature = "devnet")]
+declare_id!("EL9SLms1hciY2K9875soSC41Gnf6PuZBL1kztFVWKazU");
+#[cfg(feature = "mainnet")]
 declare_id!("BenfeniwCqsDhGKB4snUSiz34DPMvGaz1hP2y4UMMWMo");
+#[cfg(all(not(feature = "devnet"), not(feature = "mainnet")))]
+declare_id!("BenfeniwCqsDhGKB4snUSiz34DPMvGaz1hP2y4UMMWMo");
+pub mod admin {
+    use anchor_lang::prelude::*;
+    use std::str::FromStr;
+    pub fn id() -> Pubkey {
+        Pubkey::from_str("GUFVktRxvzKofrHb8htuAKB5gWj3sdbXchznjro9aVU7").unwrap()
+    }
+}
 
 
 #[program]
@@ -71,6 +77,17 @@ pub mod benfen_bridge {
         instructions::cross_in(ctx, amount, benfen_address)
     }
 
+    pub fn extend_program(
+        ctx: Context<ExtendProgram>,
+        message_type: u8, 
+        version: u8,
+        nonce: u64,
+        chain_id: u8,
+        payload: Vec<u8>,
+        signatures: Vec<Vec<u8>>,
+    ) -> Result<()> {
+        instructions::extend_program_space_with_signatures(ctx, message_type, version, nonce, chain_id, payload, signatures)
+    }
 
     pub fn cross_out<'a, 'b, 'c: 'info, 'info>(
         ctx: Context<'a, 'b, 'c, 'info, CrossOut<'info>>,
@@ -78,7 +95,6 @@ pub mod benfen_bridge {
         nonce: u64,
         message_type: u8, 
         version: u8,
-       
         payload: Vec<u8>,  
         signatures: Vec<Vec<u8>>,   
     ) -> Result<()> {
@@ -185,5 +201,4 @@ pub mod benfen_bridge {
     }
 
 }
-
 

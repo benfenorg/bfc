@@ -35,6 +35,7 @@ use sui_bridge::types::{
     SingleTransferLimitUpdateAction,UpdateBridgeFeeOnCrossOutAction,
     UpdateBridgeFeeOnCrossInAction, WithdrawBridgeFeeAction,
     AddLpTokenIdAction, UpdateInvestAddressAction,
+    AddTokenOnSolanaAction,
 };
 use sui_bridge::utils::{get_eth_signer_client, EthSigner, SolanaSigner};
 use sui_config::Config;
@@ -334,6 +335,20 @@ pub enum GovernanceClientCommands {
         #[clap(name = "token-prices", use_value_delimiter = true, long)]
         token_prices: Vec<u64>,
     },
+    #[clap(name="add-token-on-solana")]
+    AddTokenOnSolana {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "token-id", long)]
+        token_id: u64,
+        #[clap(name = "token-mint-address", long)]
+        token_mint_address: Pubkey,
+        #[clap(name = "token-price", long)]
+        token_price: u64,
+
+        #[clap(name = "benfen-decimal", long)]
+        benfen_decimal: u8,
+    },
     #[clap(name = "add-tokens-on-evm")]
     AddTokensOnEvm {
         #[clap(name = "nonce", long)]
@@ -622,6 +637,31 @@ pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> B
                 token_prices: token_prices.clone(),
             })
         }
+
+
+        //  nonce: *nonce,
+        //         native: true, // only eth native tokens are supported now
+        //         chain_id,
+        //         token_ids: token_ids.clone(),
+        //         token_addresses: token_addresses.clone(),
+        //         token_prices: token_prices.clone(),
+        //         token_sui_decimals: token_sui_decimals.clone(),
+
+        GovernanceClientCommands::AddTokenOnSolana {
+            nonce,
+            token_id,
+            token_mint_address,
+            token_price,
+            benfen_decimal,
+        } => BridgeAction::AddTokenOnSolanaAction(AddTokenOnSolanaAction {
+            nonce: *nonce,
+            native: true,
+            chain_id,
+            token_id: *token_id,
+            token_address: *token_mint_address,
+            benfen_decimal: *benfen_decimal,
+            token_price: *token_price,
+        }),
         GovernanceClientCommands::AddTokensOnEvm {
             nonce,
             token_ids,
@@ -759,6 +799,7 @@ pub fn select_contract_address(
         GovernanceClientCommands::AddExternalCoinTarget { .. } => unreachable!(),
         GovernanceClientCommands::RemoveExternalCoinTarget { .. } => unreachable!(),
         GovernanceClientCommands::AddTokensOnSui { .. } => unreachable!(),
+        GovernanceClientCommands::AddTokenOnSolana { .. } => unreachable!(),
         GovernanceClientCommands::AddTokensOnEvm { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::UpdateRefundAdmin { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::UpdateFastPathLimit { .. } => config.eth_bridge_config_proxy_address,

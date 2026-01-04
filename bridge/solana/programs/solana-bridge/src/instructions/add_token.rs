@@ -146,17 +146,22 @@ fn add_token_internal<'a, 'b,'c,'info>(
 )-> Result<()>{
     require!(token_mint.decimals > 0, BridgeTokenError::InvalidFungibleTokenDecimals);
     
+    // 验证benfen_decimal不能为0
     require!(benfen_decimal > 0, BridgeTokenError::InvalidTokenBenfenDecimal);
     
 
     // token_config
     token_config.initialize(bridge_config.key(),chain_limit.key(),token_mint.key(),token_id, price, token_mint.decimals,benfen_decimal, 0)?;
     
+    // 增加代币计数
     bridge_config.increment_token_count();
     let total_token_count = bridge_config.token_count;
 
+
+
+    msg!("emit TokenAddedEvent");
     
-    
+    // 发出代币添加事件
     emit!(TokenAddedEvent {
         nonce,
         token_id,

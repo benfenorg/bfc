@@ -84,14 +84,16 @@ pub fn update_block_list_with_signatures(
     for address in &block_list.addresses {
         require!(committee.is_member(address), BridgeCommitteeError::NotCommitteeMember);
     }
-    // Keep consistent with EVM values
+    //和 evm 值保持一致
     let flag=if block_list.is_blocklisted{
-         0
+         1 //true
     }else{
-         1
+         0 //false
     };
 
     committee.update_blocklist(&block_list.addresses, flag );
+
+    msg!("emit BlocklistUpdatedEvent");
 
     emit!(BlocklistUpdatedEvent {
         nonce,

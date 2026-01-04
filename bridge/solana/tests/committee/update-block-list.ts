@@ -273,12 +273,12 @@ describe("BenfenBridge - Update Block List", () => {
         let committee = await program.account.committee.fetch(committeePDA);
         console.log(committee.members);
         console.log(committee.members[index]);
-        expect(committee.members[index].isBlocklisted).to.be.equal(0);
+        expect(committee.members[index].isBlocklisted).to.be.equal(1);
         for (let i = 0; i < committeeInfo.length; i++) {
             if (i!=index) {
-                expect(committee.members[i].isBlocklisted).to.be.equal(1);
-            }else{
                 expect(committee.members[i].isBlocklisted).to.be.equal(0);
+            }else{
+                expect(committee.members[i].isBlocklisted).to.be.equal(1);
             }
         }
     })

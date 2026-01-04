@@ -160,7 +160,9 @@ pub fn build_sui_transaction(
         BridgeAction::UpdateInvestAddressAction(_) => {
             unreachable!()
         }
-
+        BridgeAction::ExtendProgramOnSolanaAction(_) => {
+            unreachable!();
+        }
         BridgeAction::AssetPriceUpdateAction(_) => build_asset_price_update_approve_transaction(
             client_address,
             gas_object_ref,
@@ -173,6 +175,9 @@ pub fn build_sui_transaction(
             unreachable!()
         }
         BridgeAction::AddTokenOnSolanaAction(_)=> {
+            unreachable!();
+        }
+        BridgeAction::UpgradeProgramOnSolanaAction(_) => {
             unreachable!();
         }
         BridgeAction::AddExternalCoinAdminAction(_) => build_add_external_coin_admin_transaction(

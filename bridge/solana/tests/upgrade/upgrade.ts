@@ -22,7 +22,7 @@ describe("upgrade program", () => {
     let chain_id=CHAIN_IDS.SOLANA_TESTNET;
 
       // 最新编译的代码写到buffer中
-      const buffer = new anchor.web3.PublicKey("6PXJzWhbK1fF5uczh5rLERaSxZWJJ5it8mQz3NniT8Vq");
+      const buffer = new anchor.web3.PublicKey("HHRdRBvq6pjoPLVXsYj2BPe4bNW4CV5ZLbitAZF3JzkB");
 
       //管理系统升级合约的程序ID
       const BPF_LOADER_UPGRADEABLE_ID = new anchor.web3.PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
@@ -32,7 +32,7 @@ describe("upgrade program", () => {
 
 
     const [programData] = anchor.web3.PublicKey.findProgramAddressSync(
-      [program.programId.toBuffer()],
+      [targetProgram.toBuffer()],
       BPF_LOADER_UPGRADEABLE_ID
     );
 
@@ -114,8 +114,7 @@ try {
 
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-
-        const tx = await program.methods
+                const tx = await program.methods
             .upgradeProgram(
                 message_type,
                 version,
@@ -126,7 +125,7 @@ try {
             )
             .accounts({
                 payer: provider.wallet.publicKey,
-                spill: provider.wallet.publicKey,
+                spill: nonAdminKeypair.publicKey,
                 upgradeAuthority: upgradeAuthorityPDA,
                 buffer,
                 program: targetProgram,
@@ -139,6 +138,18 @@ try {
                 // bpfLoaderUpgradeable: BPF_LOADER_UPGRADEABLE_ID,
             } as any)
             .rpc();
+
+
+        // try {
+          
+
+        // }catch(error){
+        //     console.log(error)
+
+        // }
+
+
+  
 
 
 

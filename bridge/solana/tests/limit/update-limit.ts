@@ -185,12 +185,16 @@ describe("BenfenBridge - Update Limit", () => {
 
         await program.provider.connection.confirmTransaction(tx);
 
+        console.log("update limit ",tx)
+
         let chainLimit = await program.account.chainLimit.fetch(chainLimitPDA);
         expect(chainLimit.totalLimit.toNumber()).to.be.equal(limit);
 
         let messageConfig1 = await program.account.messageConfig.fetch(messageConfigPDA);
         expect(messageConfig1.messageType).to.be.equal(MESSAGE_TYPES.UPDATE_BRIDGE_LIMIT);
         expect(messageConfig1.nonce.toNumber()).to.be.equal(nonce+1);
+
+
     })
 
 
