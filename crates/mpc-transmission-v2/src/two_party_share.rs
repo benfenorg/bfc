@@ -327,11 +327,6 @@ pub fn mul_two_shared_secrets_v2(
     _coord_seed_x: u64,
     _coord_seed_y: u64,
 ) -> Result<(Vec<u8>, Vec<u8>), SSSError> {
-    use crate::beaver::BeaverTriple;
-    use rand::SeedableRng;
-    use rand_chacha::ChaCha20Rng;
-    use rand_core::RngCore;
-
     // Step 1: Decode hex strings to bytes
     let x_bytes_1 = hex::decode(&hex_x1)
         .map_err(|e| SSSError::InvalidParameters(format!("Invalid hex in hex_x1: {}", e)))?;
@@ -362,21 +357,8 @@ pub fn mul_two_shared_secrets_v2(
         )));
     }
 
-    // Step 5: Get x-coordinates from the shares
-    let x_coords = [x_share_1.0, x_share_2.0];
-
-    // Step 6: Generate Beaver triple using the same x-coordinates
-    let mut rng = ChaCha20Rng::seed_from_u64(mask_secret);
-    let a = rng.next_u64();
-    let b = rng.next_u64();
-
-    let beaver_triple = BeaverTriple::new_with_coordinates(
-        a,
-        b,
-        &x_coords,
-        THRESHOLD,
-        &mut rng,
-    )?;
+    // Step 5: Generate Beaver triple
+    let beaver_triple = generate_beaver_triple()?;
 
     // Step 7: Compute masked differences d = x - a, e = y - b for both parties
     let d_share_1 = mul_step1_compute_masked_diff(&x_share_1, &beaver_triple.a_shares[0]);
@@ -916,7 +898,7 @@ mod tests {
         let y = 7u64;
 
         // Generate Beaver triple
-        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple().unwrap();
 
         // Create proper shares for x and y using Beaver triple's x-coordinates
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
@@ -970,7 +952,7 @@ mod tests {
         let x = 5u64;
         let y = 7u64;
 
-        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple().unwrap();
 
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
         let y_field: FieldElement = FieldElementTrait::from_u64(y);
@@ -1017,7 +999,7 @@ mod tests {
         let x = 100u64;
         let y = 0u64;
 
-        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple().unwrap();
 
         // Create shares using Beaver triple coordinates
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
@@ -1067,7 +1049,7 @@ mod tests {
         let x = 42u64;
         let y = 1u64;
 
-        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple().unwrap();
 
         // Create shares using Beaver triple coordinates
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
@@ -1333,7 +1315,7 @@ mod tests {
         let x = 1000000u64;
         let y = 2000000u64;
 
-        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple().unwrap();
 
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
         let y_field: FieldElement = FieldElementTrait::from_u64(y);
@@ -1379,7 +1361,7 @@ mod tests {
     #[test]
     fn test_mul_step1_from_hex() {
         let x = 7u64;
-        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple().unwrap();
 
         // Create x shares using Beaver triple coordinates
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
@@ -1452,7 +1434,7 @@ mod tests {
     #[test]
     fn test_mul_step1_from_hex_different_coord_seeds_fails() {
         let x = 7u64;
-        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple().unwrap();
 
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
         let poly_x = Polynomial::new_with_fixed_seed(THRESHOLD - 1, x_field);

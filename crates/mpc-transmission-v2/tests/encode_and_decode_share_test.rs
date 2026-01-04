@@ -610,7 +610,7 @@ fn test_recover_from_shares_with_beaver_multiplication() {
     let y = 11u64;
     
     // Generate Beaver triple first to get the x-coordinates
-    let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+    let triple = generate_beaver_triple().unwrap();
     
     // Create shares using Beaver triple coordinates
     use crate::field::FieldElement as FieldElementTrait;
