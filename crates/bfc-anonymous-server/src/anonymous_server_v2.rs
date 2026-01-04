@@ -6,7 +6,7 @@ use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 use crate::create_error_response;
 use crate::server_utils::{GetAnonymousObjectVersionParams, AnonymousAddParams, AnonymousCompareParams, AnonymousCompareValue1AndValue2Params, AnonymousEncodeValueArrayForZkloginAddressParams, AnonymousEncodeValueArrayParams, AnonymousEncodeValueInternalParams, AnonymousMinusParams, AnonymousMultiplyParams, AnonymousRestoreArrayParams, AnonymousRestoreArrayParamsZKLoginParams, Args, JsonRpcError, JsonRpcRequest, JsonRpcResponse};
 use crate::signature::verify_signature;
-use crate::utils::{convert_value_array_to_string, create_sign_message, get_object_owner_address, public_key_bytes_to_sui_address, verify_zklogin_signature};
+use crate::utils::{convert_value_array_to_string, create_sign_message, get_object_owner_address, get_object_value1_and_value2, public_key_bytes_to_sui_address, verify_zklogin_signature};
 use anyhow::anyhow;
 use warp::Rejection;
 use mpc_transmission_v2::{is_v1_transmission_shares_format, mul_two_shared_secrets_v2, process_shares_data_convert, recover_value_from_shares_v2};
@@ -14,6 +14,7 @@ use mpc_transmission::get_mask_secret_and_coord_seed_from_config;
 use mpc_transmission::get_user_address_salt;
 use mpc_transmission_v2::two_party_share::{add_two_shared_secrets_v2, sub_two_shared_secrets_v2, split_to_two_value_v2};
 use mpc_transmission::get_zklogin_rpc_address_from_config;
+use sui_types::balance;
 
 impl warp::reject::Reject for RpcError {}
 
@@ -979,8 +980,15 @@ async fn handle_get_anonymouse_object_version(request: JsonRpcRequest) -> JsonRp
                     config_path = Some(args_result.unwrap().config);
                 }
                 let object_id = get_version_params.object_id;
-                let data1 = get_version_params.value1.clone();
-                let data2 = get_version_params.value2.clone();
+                //let data1 = get_version_params.value1.clone();
+                //let data2 = get_version_params.value2.clone();
+
+
+                let object_balance = get_object_value1_and_value2(object_id.clone()).await;
+                let data = object_balance.unwrap().clone();
+                let data1 = data.clone().0;
+                let data2 = data.clone().1;
+
                 info!("data1 len: {}, data2 len: {}", data1.len(), data2.len());
 
                 let data_str1 = String::from_utf8(data1).unwrap_or_default();

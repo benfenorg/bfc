@@ -148,3 +148,49 @@ pub fn parse_response_and_check_balance(response: &str, value1: Vec<u8>, value2:
         }
     }
 }
+
+
+
+pub fn parse_response_and_return_balance(response: &str) -> (Option<Vec<u8>>,Option<Vec<u8>>) {
+    let rpc_response: RpcResponse = match serde_json::from_str(response) {
+        Ok(parsed) => parsed,
+        Err(_) =>  return (None,None)
+    };
+
+    match (rpc_response.error, rpc_response.result) {
+        // Top-level RPC error (e.g., invalid request)
+        (Some(err), _) => {
+            info!("RPC Error ({}): {}", err.code, err.message);
+            return (None,None);
+        }
+
+        // Successful response with object data
+        (
+            None,
+            Some(SuiObjectResponse {
+                     data: Some(obj),
+                     error: None,
+                 }),
+        ) => {
+            return (Some(obj.content.fields.balance.fields.value1), Some(obj.content.fields.balance.fields.value2))
+        }
+
+        // Object-specific error (e.g., not found)
+        (
+            None,
+            Some(SuiObjectResponse {
+                     data: None,
+                     error: Some(obj_err),
+                 }),
+        ) => {
+            info!("Object Error ({}): {}", obj_err.code, obj_err.message);
+            return (None,None);
+        }
+
+        // Invalid response cases
+        _ => {
+            info!("Unexpected response format");
+            return (None,None);
+        }
+    }
+}
