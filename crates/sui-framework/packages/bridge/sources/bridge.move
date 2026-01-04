@@ -139,7 +139,7 @@ module bridge::bridge {
         amount_before_fee: u64,
         amount_after_fee: u64
     }
-
+    
     public struct TokenDepositedEventForSolanaV2 has copy, drop {
         seq_num: u64,
         source_chain: u8,
@@ -257,7 +257,7 @@ module bridge::bridge {
     const ETokenAlreadyClaimedOrHitLimit: u64 = 15;
     const EInvalidBridgeRoute: u64 = 16;
     const EMustBeTokenMessage: u64 = 17;
-    const EInvalidEvmAddress: u64 = 18;
+    const EInvalidAddress: u64 = 18;
     const ETokenValueIsZero: u64 = 19;
 
     const EInvalidSender: u64 = 20;
@@ -732,10 +732,10 @@ module bridge::bridge {
         let (inner,parent_id) = load_inner_mut_and_uid(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
-        if (target_chain == chain_ids::solana_testnet() || target_chain == chain_ids::solana_mainnet()) {
-            assert!(target_address.length() == SOLANA_ADDRESS_LENGTH, EInvalidEvmAddress);
+        if (is_solana_chain(target_chain)) {
+            assert!(target_address.length() == get_expected_address_length(target_chain), EInvalidAddress);
         } else {
-            assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+            assert!(target_address.length() == get_expected_address_length(target_chain), EInvalidAddress);
         };
 
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::token());
@@ -781,7 +781,7 @@ module bridge::bridge {
         );
 
         // emit event
-        if (target_chain == chain_ids::solana_testnet() || target_chain == chain_ids::solana_mainnet()) {
+        if (is_solana_chain(target_chain)) {
             emit(
                 TokenDepositedEventForSolanaV2 {
                     seq_num: bridge_seq_num,
@@ -937,10 +937,10 @@ module bridge::bridge {
         assert!(tokenlist::is_supported_from_benfen(bridge_id, target_chain as u64, token_id_expect),EInvalidChainIDAndTokenIDExpect);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
-        if (target_chain == chain_ids::solana_testnet() || target_chain == chain_ids::solana_mainnet()) {
-            assert!(target_address.length() == SOLANA_ADDRESS_LENGTH, EInvalidEvmAddress);
+        if (is_solana_chain(target_chain)) {
+            assert!(target_address.length() == get_expected_address_length(target_chain), EInvalidAddress);
         } else {
-            assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+            assert!(target_address.length() == get_expected_address_length(target_chain), EInvalidAddress);
         };
         let is_busd = type_name::get<T>() == type_name::get<BUSD>();
         assert!(is_busd, EOnlySupportBusd);
@@ -996,7 +996,7 @@ module bridge::bridge {
         );
 
         // emit event
-        if (target_chain == chain_ids::solana_testnet() || target_chain == chain_ids::solana_mainnet()) {
+        if (is_solana_chain(target_chain)) {
             emit(
                 TokenDepositedEventForSolanaV2 {
                     seq_num: bridge_seq_num,
@@ -1041,7 +1041,7 @@ module bridge::bridge {
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
         assert!(!inner.refund_records.contains(message::key_refund(tx_hash)), EDuplicateRefund);
-        assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+        assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidAddress);
         assert!(token_amount > 0, ETokenValueIsZero);
         assert!(tx_hash.length() >= 1, EInvalidTxHash);
         assert!(inner.is_refund_admin(ctx.sender().to_ascii_string()), EInvalidSender);
@@ -1107,9 +1107,9 @@ module bridge::bridge {
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
         assert!(!inner.refund_records.contains(message::key_refund(tx_hash)), EDuplicateRefund);
         if (target_chain == chain_ids::solana_testnet() || target_chain == chain_ids::solana_mainnet()) {
-            assert!(target_address.length() == SOLANA_ADDRESS_LENGTH, EInvalidEvmAddress);
+            assert!(target_address.length() == SOLANA_ADDRESS_LENGTH, EInvalidAddress);
         } else {
-            assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+            assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidAddress);
         };
         assert!(token_amount > 0, ETokenValueIsZero);
         assert!(tx_hash.length() >= 1, EInvalidTxHash);
@@ -3104,6 +3104,14 @@ module bridge::bridge {
         let record = &inner.token_transfer_records[key];
         let message = &record.message;
         option::some(to_parsed_token_transfer_message_v2(message))
+    }
+
+    fun is_solana_chain(chain_id: u8): bool {
+        chain_id == chain_ids::solana_testnet() || chain_id == chain_ids::solana_mainnet()
+    }
+
+    fun get_expected_address_length(chain_id: u8): u64 {
+        if (is_solana_chain(chain_id)) SOLANA_ADDRESS_LENGTH else EVM_ADDRESS_LENGTH
     }
 
     //////////////////////////////////////////////////////
