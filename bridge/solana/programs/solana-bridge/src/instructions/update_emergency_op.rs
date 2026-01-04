@@ -84,6 +84,8 @@ pub fn update_emergency_op_with_signatures(
         bridge.unpause()?;
     }
 
+
+    msg!("emit EmergencyOperation");
     emit!(
         EmergencyOperation{
             nonce: nonce,

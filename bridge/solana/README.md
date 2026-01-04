@@ -7,8 +7,11 @@
    - 参考文档：https://www.anchor-lang.com/docs/installation
 
 ### 部署准备工作
+
+
 0. 部署合约，并指定合约大小，Solana合约最大10MB
-    solana program deploy target/deploy/benfen_bridge.so --max-len 10000000
+    solana program deploy target/deploy/benfen_bridge.so --max-len 10485760
+    solana program deploy --program-id target/deploy/benfen_bridge-keypair.json --max-len 10485760 target/deploy/benfen_bridge.so
 1. 初始化步骤
    - initialize_bridge_config 
    - initialize_committee_with_config 
@@ -32,9 +35,9 @@
    ```
    solana program write-buffer target/deploy/benfen_bridge.so
    ```
-   3. 获得一个buffer地址 4iqTJKfDECfZPtMTXFwbRvJL7kko73YsB4HFteTtw9P4
+   3. 获得一个buffer地址 4uab8JHfmouQK3jqWK8RPF7QRcUD1tdJTHwJ9DQ92oaG
    4. 将权限地址给程序控制的地址
-       solana program set-buffer-authority 4iqTJKfDECfZPtMTXFwbRvJL7kko73YsB4HFteTtw9P4 --new-buffer-authority 7nqbKtMwEBAZ4taNWrEcyHnLNaGxvoNKSrPF7czpuH6D
+       solana program set-buffer-authority HHRdRBvq6pjoPLVXsYj2BPe4bNW4CV5ZLbitAZF3JzkB --new-buffer-authority 7nqbKtMwEBAZ4taNWrEcyHnLNaGxvoNKSrPF7czpuH6D
    5. 获取bridge node 的签名 调用指令升级
      调用 upgrade_program 指令
 ### 部署脚本准备

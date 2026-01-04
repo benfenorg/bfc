@@ -57,7 +57,8 @@ export const MESSAGE_TYPES = {
   UPGRADE: 5,
   ADD_EVM_TOKENS: 7,
   UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT: 19,
-  ADD_SVM_TOKENS: 20,
+  ADD_SVM_TOKENS: 30,
+  EXTEND_PROGRAM: 31,
 } as const;
 
 // Required stakes
@@ -685,3 +686,16 @@ export function createUpgradePayload(
   
   return payload;
 }
+
+export function createExtendPayload(
+  proxy: PublicKey,
+  size: number, //u32
+): Uint8Array{
+  const payload = new Uint8Array(36);
+   payload.set(proxy.toBytes(), 0);
+   const sizeBytes = Buffer.alloc(4);
+   sizeBytes.writeUInt32BE(size,0);
+   payload.set(sizeBytes, 32);
+   return payload;
+}
+

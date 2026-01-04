@@ -464,7 +464,7 @@ describe("BenfenBridge - Add Token", () => {
 
 
         const messageConfig = await program.account.messageConfig.fetch(messageConfigPDA);
-        expect(messageConfig.messageType).to.be.equal(20);
+        expect(messageConfig.messageType).to.be.equal(30);
 
         expect(messageConfig.nonce.toNumber()).to.be.equal(1);
 
@@ -600,7 +600,7 @@ describe("BenfenBridge - Add Token", () => {
 
 
         const messageConfig = await program.account.messageConfig.fetch(messageConfigPDA);
-        expect(messageConfig.messageType).to.be.equal(20);
+        expect(messageConfig.messageType).to.be.equal(30);
         expect(messageConfig.nonce.toNumber()).to.be.equal(2);
         const [vaultPDA]= anchor.web3.PublicKey.findProgramAddressSync(
             [Buffer.from(SEEDS.VAULT),tokenIdBytes],

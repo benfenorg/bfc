@@ -323,6 +323,89 @@
       ]
     },
     {
+      "name": "extend_program",
+      "discriminator": [
+        143,
+        117,
+        164,
+        255,
+        235,
+        226,
+        17,
+        239
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "bridge_config",
+          "writable": true
+        },
+        {
+          "name": "committee",
+          "writable": true
+        },
+        {
+          "name": "verifier",
+          "writable": true
+        },
+        {
+          "name": "message_config",
+          "writable": true
+        },
+        {
+          "name": "upgrade_authority",
+          "writable": true
+        },
+        {
+          "name": "program",
+          "writable": true
+        },
+        {
+          "name": "program_data",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "bpf_loader"
+        }
+      ],
+      "args": [
+        {
+          "name": "message_type",
+          "type": "u8"
+        },
+        {
+          "name": "version",
+          "type": "u8"
+        },
+        {
+          "name": "nonce",
+          "type": "u64"
+        },
+        {
+          "name": "chain_id",
+          "type": "u8"
+        },
+        {
+          "name": "payload",
+          "type": "bytes"
+        },
+        {
+          "name": "signatures",
+          "type": {
+            "vec": "bytes"
+          }
+        }
+      ]
+    },
+    {
       "name": "initialize_benfen_bridge",
       "discriminator": [
         238,
@@ -723,21 +806,15 @@
         {
           "name": "new_upgrade_authority",
           "docs": [
-            "New upgrade authority holder, managed by PDA"
+            "PDA 管理升级"
           ]
         },
         {
           "name": "program_data",
-          "docs": [
-            "Program data account that stores the program's executable data"
-          ],
           "writable": true
         },
         {
-          "name": "bpf_loader_upgradeable",
-          "docs": [
-            "BPF upgrade loader program for handling upgrade authority transfer"
-          ]
+          "name": "bpf_loader_upgradeable"
         }
       ],
       "args": []
@@ -1070,102 +1147,6 @@
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "message_type",
-          "type": "u8"
-        },
-        {
-          "name": "version",
-          "type": "u8"
-        },
-        {
-          "name": "nonce",
-          "type": "u64"
-        },
-        {
-          "name": "chain_id",
-          "type": "u8"
-        },
-        {
-          "name": "payload",
-          "type": "bytes"
-        },
-        {
-          "name": "signatures",
-          "type": {
-            "vec": "bytes"
-          }
-        }
-      ]
-    },
-    {
-      "name": "upgrade_program",
-      "discriminator": [
-        223,
-        236,
-        39,
-        89,
-        111,
-        204,
-        114,
-        37
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "spill",
-          "writable": true
-        },
-        {
-          "name": "upgrade_authority",
-          "writable": true
-        },
-        {
-          "name": "committee",
-          "writable": true
-        },
-        {
-          "name": "buffer",
-          "docs": [
-            "Buffer account containing the new program code"
-          ],
-          "writable": true
-        },
-        {
-          "name": "program",
-          "docs": [
-            "Program account to be upgraded"
-          ],
-          "writable": true
-        },
-        {
-          "name": "program_data",
-          "writable": true
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
-        },
-        {
-          "name": "clock",
-          "address": "SysvarC1ock11111111111111111111111111111111"
-        },
-        {
-          "name": "bpf_loader",
-          "docs": [
-            "BPF loader program for upgrade operations"
-          ]
         }
       ],
       "args": [
@@ -1763,6 +1744,9 @@
     },
     {
       "name": "ChainLimitUpdated",
+      "docs": [
+        "跨链转账限制事件"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -1873,6 +1857,9 @@
     },
     {
       "name": "EmergencyOperation",
+      "docs": [
+        "桥接暂停事件"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -2029,6 +2016,9 @@
     },
     {
       "name": "SingleTransferLimitUpdated",
+      "docs": [
+        "单笔转账限制事件"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -2135,6 +2125,9 @@
     },
     {
       "name": "TokenPriceUpdated",
+      "docs": [
+        "代币价格更新事件"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -2155,6 +2148,9 @@
     },
     {
       "name": "TokensClaimed",
+      "docs": [
+        "跨链转账完成事件"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -2191,6 +2187,9 @@
     },
     {
       "name": "TokensDeposited",
+      "docs": [
+        "跨链转账发起事件"
+      ],
       "type": {
         "kind": "struct",
         "fields": [

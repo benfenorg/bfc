@@ -12,13 +12,12 @@ pub struct BridgeConfig {
     pub bump: [u8;1],
     // solana chain id in bridge node
     pub chain_id: u8, 
-    // Record the number of tokens currently supported by the bridge
+    // 记录当前bridge支持的token数量
     pub token_count: u64, 
-    // Record the number of chains currently supported for cross-chain transfers
-    // (Reserved field, currently designed to support only one chain (To Benfen)),
-    // Each additional chain will create a new ChainLimiter
+    // 记录当前支持跨到的链数(预留字段，暂时设计只支持一个链(To Benfen))，
+    // 每增加一个链，就会多创建一个 ChainLimiter 
     pub chain_count: u8, 
-    // Same as above, each chain corresponds to a ChainLimiter
+    // 同上,每个链对应一个ChainLimiter 
     pub supported_chains: [u8; 256], 
 
     // upgrade  padding
@@ -148,6 +147,7 @@ pub mod test_bridge_config {
         let bump=255;
         let bridge_config = build_bridge_config(bump,solana_mainnet_chain_id);
         
+        // 测试多次增加token计数
         for i in 1..=5 {
             bridge_config.borrow_mut().increment_token_count();
             let token_count=bridge_config.borrow().token_count;
@@ -161,6 +161,7 @@ pub mod test_bridge_config {
         let bump=255;
         let bridge_config = build_bridge_config(bump,solana_mainnet_chain_id);
         
+        // 测试添加相同链ID应该失败
         let result = bridge_config.borrow_mut().add_target_chain(solana_mainnet_chain_id);
         assert!(result.is_err());
     }
@@ -172,9 +173,11 @@ pub mod test_bridge_config {
         let bump=255;
         let bridge_config = build_bridge_config(bump,solana_mainnet_chain_id);
         
+        // 第一次添加应该成功
         bridge_config.borrow_mut().add_target_chain(benfen_mainnet_chain_id).unwrap();
         assert!(bridge_config.borrow().is_chain_supported(benfen_mainnet_chain_id));
         
+        // 第二次添加相同链应该失败
         let result = bridge_config.borrow_mut().add_target_chain(benfen_mainnet_chain_id);
         assert!(result.is_err());
     }
@@ -185,7 +188,7 @@ pub mod test_bridge_config {
         let bump=255;
         let bridge_config = build_bridge_config(bump,solana_mainnet_chain_id);
         
-        let chains_to_add = [0, 1, 2, 3, 4]; 
+        let chains_to_add = [0, 1, 2, 3, 4]; // 添加多个不同的链
         
         for (index, &chain_id) in chains_to_add.iter().enumerate() {
             bridge_config.borrow_mut().add_target_chain(chain_id).unwrap();
@@ -193,6 +196,7 @@ pub mod test_bridge_config {
             assert_eq!(bridge_config.borrow().chain_count, (index + 1) as u8);
         }
         
+        // 验证所有链都被支持
         for &chain_id in &chains_to_add {
             assert!(bridge_config.borrow().is_chain_supported(chain_id));
         }
@@ -204,6 +208,7 @@ pub mod test_bridge_config {
         let bump=255;
         let bridge_config = build_bridge_config(bump,solana_mainnet_chain_id);
         
+        // 测试空配置时不支持任何链
         assert!(!bridge_config.borrow().is_chain_supported(0));
         assert!(!bridge_config.borrow().is_chain_supported(1));
         assert!(!bridge_config.borrow().is_chain_supported(255));
@@ -218,6 +223,7 @@ pub mod test_bridge_config {
         assert_eq!(token_count, 0);
         //assert_eq!(config.token_count, 0);
         assert_eq!(config.chain_count, 0);
+        // 对于packed结构体，需要复制字段内容以避免对齐问题
         let supported_chains_copy = config.supported_chains;
         let padding_copy = config.padding;
         assert_eq!(supported_chains_copy, [255; 256]);
@@ -226,6 +232,7 @@ pub mod test_bridge_config {
 
     #[test]
     fn test_bridge_config_size() {
+        // 验证LEN常量计算正确
         assert_eq!(BridgeConfig::LEN, 8 + 1 + 1 + 8 + 1 + 256 + 24);
         assert_eq!(BridgeConfig::LEN, 299);
     }
@@ -282,6 +289,7 @@ pub mod test_bridge_config {
         for (index, &chain_id) in chains_to_add.iter().enumerate() {
             bridge_config.borrow_mut().add_target_chain(chain_id).unwrap();
             
+            // 验证链ID被正确存储在数组中
             assert_eq!(bridge_config.borrow().supported_chains[index], chain_id);
         }
     }

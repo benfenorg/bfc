@@ -55,6 +55,10 @@ pub const UPGRADE: u8 = 5;
 
 pub const UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT: u8 = 19;
 pub const ADD_SVM_TOKENS: u8 = 30;
+pub const EXTEND_PROGRAM: u8 = 31;
+pub const UPGRADE_PROGRAM: u8 = 32;
+
+// pub const 
 
 
 
@@ -69,7 +73,7 @@ pub const BRIDGE_LIMIT_STAKE_REQUIRED: u32 = 5001;
 pub const UPDATE_TOKEN_PRICE_STAKE_REQUIRED: u32 = 5001;
 pub const ADD_EVM_TOKENS_STAKE_REQUIRED: u32 = 5001;
 pub const ADD_SVM_TOKENS_STAKE_REQUIRED: u32 = 5001;
-
+pub const EXTEND_PROGRAM_STAKE_REQUIRED: u32 = 5001;
 pub const UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT_STAKE_REQUIRED: u32 = 5001;
 
 // Token IDs
@@ -150,12 +154,21 @@ pub fn compute_required_stake(message: &Message) -> u32 {
         UPDATE_TOKEN_PRICE => UPDATE_TOKEN_PRICE_STAKE_REQUIRED,
         UPGRADE => UPGRADE_STAKE_REQUIRED,
         ADD_SVM_TOKENS => ADD_SVM_TOKENS_STAKE_REQUIRED,
+        EXTEND_PROGRAM => EXTEND_PROGRAM_STAKE_REQUIRED,
         UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT => UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT_STAKE_REQUIRED,
         _ => 0,
     }
 }
 
-/// Converts a token amount from SLP decimal precision to Benfen decimal precision
+/// Converts a token amount from ERC20 decimal precision to Sui decimal precision
+/// 
+/// # Arguments
+/// * `erc20_decimal` - The decimal precision of the ERC20 token
+/// * `sui_decimal` - The decimal precision used in Sui
+/// * `amount` - The amount to convert, in ERC20 token precision
+/// 
+/// # Returns
+/// The converted amount in Sui decimal precision, or an error if the conversion fails
 pub fn convert_slp_to_benfen_decimal(
     slp_decimal: u8,
     benfen_decimal: u8,
@@ -180,7 +193,15 @@ pub fn convert_slp_to_benfen_decimal(
     Ok(adjusted_amount)
 }
 
-/// Converts a token amount from Sui decimal precision to SLP decimal precision
+/// Converts a token amount from Sui decimal precision to ERC20 decimal precision
+/// 
+/// # Arguments
+/// * `erc20_decimal` - The decimal precision of the ERC20 token
+/// * `sui_decimal` - The decimal precision used in Sui
+/// * `amount` - The amount to convert, in Sui decimal precision
+/// 
+/// # Returns
+/// The converted amount in ERC20 decimal precision, or an error if the conversion fails
 pub fn convert_benfen_to_slp_decimal(
     benfen_decimal: u8,
     slp_decimal: u8,
@@ -197,6 +218,10 @@ pub fn convert_benfen_to_slp_decimal(
         amount.checked_mul(factor).ok_or(BridgeConvertError::AmountTooLarge)?
     } else {
         let factor = 10u64.pow((benfen_decimal - slp_decimal) as u32);
+        // require!(
+        //     amount % factor == 0,
+        //     BridgeError::AmountTooSmall 
+        // );
         amount.checked_div(factor).ok_or(BridgeConvertError::AmountTooSmall)?
     };
 
@@ -205,8 +230,19 @@ pub fn convert_benfen_to_slp_decimal(
 }
 
 /// Decodes a token transfer payload from bytes to a TokenTransferPayload struct
+///
+/// # Arguments
+/// * `payload` - The payload bytes to be decoded
+///
+/// # Returns
+/// The decoded token transfer payload as a TokenTransferPayload struct
+///
+/// # Errors
+/// * Returns error if payload length is invalid
+/// * Returns error if sender address length is not 32 bytes
+/// * Returns error if target address length is not 20 bytes
 pub fn decode_token_transfer_payload(payload: &[u8]) -> Result<TokenTransferPayload> {
-    require!(payload.len() >= 83, MessageError::InvalidPayloadLength); 
+    require!(payload.len() >= 83, MessageError::InvalidPayloadLength); // 最小长度应该是83字节
 
     let sender_address_length = payload[0] as u8;
     require!(
@@ -259,6 +295,16 @@ pub fn decode_token_transfer_payload(payload: &[u8]) -> Result<TokenTransferPayl
     })
 }
 /// Decodes a blocklist payload from bytes to a BlocklistPayload struct
+///
+/// # Arguments
+/// * `payload` - The payload bytes to be decoded
+///
+/// # Returns
+/// The decoded blocklist payload as a BlocklistPayload struct
+///
+/// # Errors
+/// * Returns error if payload length is invalid
+/// * Returns error if member address length is not 20 bytes
 pub fn decode_blocklist_payload(payload: &[u8]) -> Result<BlocklistPayload> {
     require!(payload.len() >= 2, MessageError::InvalidPayloadLength);
 
@@ -288,7 +334,16 @@ pub fn decode_blocklist_payload(payload: &[u8]) -> Result<BlocklistPayload> {
 }
 
 /// Decodes an emergency operation payload from bytes to an operation code
-
+///
+/// # Arguments
+/// * `payload` - The payload bytes to be decoded
+///
+/// # Returns
+/// The decoded operation code as a u8
+///
+/// # Errors
+/// * Returns error if payload length is invalid
+/// * Returns error if operation code is invalid
 pub fn decode_emergency_op_payload(payload: &[u8]) -> Result<bool> {
     require!(payload.len() == 1, MessageError::InvalidPayloadLength);
 
@@ -300,6 +355,17 @@ pub fn decode_emergency_op_payload(payload: &[u8]) -> Result<bool> {
 }
 
 /// Decodes an update limit payload from bytes to a chain ID and a new limit
+///
+/// # Arguments
+/// * `payload` - The payload bytes to be decoded
+///
+/// # Returns
+/// A tuple containing:
+/// * The sending chain ID to update the limit of
+/// * The new limit for the sending chain
+///
+/// # Errors
+/// * Returns error if payload length is invalid
 pub fn decode_update_limit_payload(payload: &[u8]) -> Result<(u8, u64)> {
     require!(payload.len() == 9, MessageError::InvalidPayloadLength);
     
@@ -309,7 +375,18 @@ pub fn decode_update_limit_payload(payload: &[u8]) -> Result<(u8, u64)> {
     Ok((sender_chain_id, new_limit))
 }
 
-
+/// Decodes an update single transfer limit payload from bytes to a chain ID and a new limit
+///
+/// # Arguments
+/// * `payload` - The payload bytes to be decoded
+///
+/// # Returns
+/// A tuple containing:
+/// * The sending chain ID to update the limit of
+/// * The new single transfer limit for the sending chain
+///
+/// # Errors
+/// * Returns error if payload length is invalid
 pub fn decode_update_single_transfer_limit_payload(payload: &[u8]) -> Result<(u8, u64)> {
     require!(payload.len() == 9, MessageError::InvalidPayloadLength);
     
@@ -319,8 +396,21 @@ pub fn decode_update_single_transfer_limit_payload(payload: &[u8]) -> Result<(u8
     Ok((sender_chain_id, new_limit))
 }
 
-/// Decodes an upgrade payload from bytes to proxy and implementation addresses and version
+/// Decodes an upgrade payload from bytes to proxy and implementation addresses and call data
+///
+/// # Arguments
+/// * `payload` - The payload bytes to be decoded
+///
+/// # Returns
+/// A tuple containing:
+/// * The proxy address to be upgraded
+/// * The new implementation address
+/// * The call data to be used in the upgrade
+///
+/// # Errors
+/// * Returns error if payload length is invalid
 pub fn decode_upgrade_payload(payload: &[u8]) -> Result<(Pubkey, Pubkey, u8)> {
+    // First 32 bytes for proxy address
     require!(payload.len() >= 65, MessageError::InvalidPayloadLength);
     
     let proxy = Pubkey::new_from_array(payload[0..32].try_into().unwrap());
@@ -328,11 +418,25 @@ pub fn decode_upgrade_payload(payload: &[u8]) -> Result<(Pubkey, Pubkey, u8)> {
 
     let version=payload[64];
     
-
+    // // Remaining bytes are call data
+    // let mut call_data = Vec::new();
+    // call_data.extend_from_slice(&payload[64..]);
+    
     Ok((proxy, implementation, version))
 }
 
 /// Decodes an update token price payload from bytes to a token ID and a new price
+///
+/// # Arguments
+/// * `payload` - The payload bytes to be decoded
+///
+/// # Returns
+/// A tuple containing:
+/// * The token ID to update the price of
+/// * The new price of the token
+///
+/// # Errors
+/// * Returns error if payload length is invalid
 pub fn decode_update_token_price_payload(payload: &[u8]) -> Result<(u64, u64)> {
     require!(payload.len() == 16, MessageError::InvalidPayloadLength);
     
@@ -340,6 +444,16 @@ pub fn decode_update_token_price_payload(payload: &[u8]) -> Result<(u64, u64)> {
     let token_price = u64::from_be_bytes(payload[8..16].try_into().unwrap());
     
     Ok((token_id, token_price))
+}
+
+
+pub fn decode_extend_payload(payload: &[u8]) -> Result<(Pubkey, u32)> {
+    require!(payload.len() == 36, MessageError::InvalidPayloadLength);
+
+    let program = Pubkey::new_from_array(payload[0..32].try_into().unwrap());
+    let additional_bytes = u32::from_be_bytes(payload[32..36].try_into().unwrap());
+
+    Ok((program, additional_bytes))
 }
 
 
@@ -524,14 +638,14 @@ pub mod bridge_utils_test{
 
     #[test]
     fn test_decode_block_list_payload() {
-        // encode payload
+        // 创建测试 payload
         let payload = hex::decode("010268b43fd906c0b8f024a18c56e06744f7c6157c65acaef39832cb995c4e049437a3e2ec6a7bad1ab5").unwrap();
         
-        // decode payload
+        // 解码 payload
         let payload = decode_blocklist_payload(&payload).unwrap();
         //println!("payload {:?}",payload.is_blocklisted as u8);
 
-        // verify
+        // 验证成员数量
         assert_eq!(payload.addresses.len(), 2);
         let eth_address1: [u8; 20] 
             = hex::decode("0x68B43fD906C0B8F024a18C56e06744F7c6157c65"
@@ -547,7 +661,7 @@ pub mod bridge_utils_test{
             .try_into()
             .unwrap();
         
-        // verify
+        // 验证成员地址
         assert_eq!(
            payload.addresses[0],
            eth_address1,
@@ -580,13 +694,13 @@ pub mod bridge_utils_test{
 
     #[test]
     fn test_decode_emergency_op_payload() {
-        //encode
+        // 创建单字节 payload
         let payload = vec![1u8];
         
-        //decode
+        // 解码 payload
         let pausing = decode_emergency_op_payload(&payload).unwrap();
         
-        // verify
+        // 验证结果
         assert!(!pausing);
     }
     #[derive(AnchorSerialize, AnchorDeserialize, PartialEq, Debug)]
