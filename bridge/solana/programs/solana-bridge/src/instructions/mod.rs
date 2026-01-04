@@ -11,6 +11,9 @@ pub mod update_bridge_limit;
 pub mod update_single_transfer_limit;
 pub mod transfer_upgrade_authority;
 
+pub mod extend_program;
+
+
 
 pub use initialize::*;
 pub use add_token::*;
@@ -23,7 +26,7 @@ pub use cross_out::*;
 pub use update_bridge_limit::*;
 pub use update_single_transfer_limit::*;
 pub use transfer_upgrade_authority::*;
-
+pub use extend_program::*;
 
 
 

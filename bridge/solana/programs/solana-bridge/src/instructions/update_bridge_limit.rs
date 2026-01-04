@@ -83,6 +83,7 @@ pub fn update_limit_with_signatures(
     require!(chain_limit.get_chain_id()==source_chain_id, BridgeLimiterError::InvalidChainId);
     require!(bridge_config.supported_chains.contains(&source_chain_id), BridgeLimiterError::UnsupportedChain);
     chain_limit.set_total_limit(new_limit);
+    msg!("emit ChainLimitUpdated");
     emit!(ChainLimitUpdated {
         nonce,
         source_chain_id,

@@ -13,7 +13,7 @@
     ],
     "minCommitteeStakeRequired": 10000,
     "sourceChainId": 61,
-    "destinationChainId": 1200,
+    "destinationChainId": 2,
     "supportedChainLimitsInDollars":10000000000,
     "maxSingleTransferLimitInDollars":10000000000
 }

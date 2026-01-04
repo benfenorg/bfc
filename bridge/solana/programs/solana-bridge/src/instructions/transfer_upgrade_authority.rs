@@ -6,7 +6,7 @@ use crate::errors::AdminError;
 
 #[derive(Accounts)]
 pub struct TransferUpgradeAuthority<'info> {
-    /// CHECK: Program account address validation is handled by BPF upgrade loader 
+    /// CHECK: Loader  校验
     pub program: UncheckedAccount<'info>,
 
     #[account(
@@ -15,15 +15,12 @@ pub struct TransferUpgradeAuthority<'info> {
     )]
     pub old_upgrade_authority: Signer<'info>,
 
-    /// New upgrade authority holder, managed by PDA
+    /// PDA 管理升级
     pub new_upgrade_authority: Box<Account<'info, UpgradeAuthority>>,
-
-    /// Program data account that stores the program's executable data
-    /// CHECK: Program data account is validated by BPF upgrade loader
+     /// CHECK:
     #[account(mut)]
     pub program_data: UncheckedAccount<'info>,
-    /// BPF upgrade loader program for handling upgrade authority transfer
-    /// CHECK: Loader validation
+    /// CHECK: Loader 校验
     pub bpf_loader_upgradeable: UncheckedAccount<'info>,
 }
 
@@ -36,8 +33,8 @@ pub fn transfer_upgrade_authority(
 
   let ix = bpf_loader_upgradeable::set_upgrade_authority(
        &ctx.accounts.program.key(),
-       &ctx.accounts.old_upgrade_authority.key(),
-       Some(&ctx.accounts.new_upgrade_authority.key()), 
+     &ctx.accounts.old_upgrade_authority.key(),
+    Some(&ctx.accounts.new_upgrade_authority.key()), 
     );
 
    anchor_lang::solana_program::program::invoke(

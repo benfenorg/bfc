@@ -56,7 +56,8 @@ impl Default for Committee {
                 stake: 0,
                 index: i as u8,
                 //is_blocklisted keep consistent with EVM contract
-                is_blocklisted: 0,
+                // 0 is false 1 is true
+                is_blocklisted: 1,
             };
         }
         Self {
@@ -95,7 +96,8 @@ impl Committee {
                 .checked_add(member.stake)
                 .ok_or(BridgeCommitteeError::StakeOverflow)?;
             self.members[i] = *member;
-            self.members[i].is_blocklisted = 1;
+            // set is_blocklisted to 0 (false)
+            self.members[i].is_blocklisted = 0; //0 = false, 1 = true
         }
         
         require!(total_stake >= min_stake_required, BridgeCommitteeError::InsufficientStake);
@@ -136,7 +138,7 @@ impl Committee {
                 .find(|m| m.address == signer)
                 .ok_or(BridgeCommitteeError::InvalidSigner)?;
 
-            require!(member.is_blocklisted == 1, BridgeCommitteeError::SignerBlocklisted);
+            require!(member.is_blocklisted == 0, BridgeCommitteeError::SignerBlocklisted);
             require!(member.stake > 0, BridgeCommitteeError::InsufficientStake);
             require!(member.index < MAX_MEMBER_INDEX, BridgeCommitteeError::InvalidMemberIndex);
 
@@ -169,7 +171,7 @@ impl Committee {
 
 
     pub fn is_blocklisted(&self, address: &[u8; ETH_ADDRESS_LENGTH]) -> bool {
-        self.members.iter().any(|m| m.address == *address && m.is_blocklisted == 0)
+        self.members.iter().any(|m| m.address == *address && m.is_blocklisted == 1)
     }
 
     pub fn is_member(&self, address: &[u8; ETH_ADDRESS_LENGTH]) -> bool {
@@ -178,6 +180,18 @@ impl Committee {
 
 
     /// Splits the provided signature into its r, s, and v components
+    ///
+    /// # Arguments
+    /// * `signature` - The signature to be split
+    ///
+    /// # Returns
+    /// A tuple containing:
+    /// * r - The r component of the signature
+    /// * s - The s component of the signature
+    /// * v - The v component of the signature (adjusted for Ethereum verification)
+    ///
+    /// # Errors
+    /// * Returns error if signature length is not 65 bytes
     pub fn split_signature(signature: &[u8]) -> Result<([u8; 32], [u8; 32], u8)> {
         require!(signature.len() == SIGNATURE_LENGTH, BridgeCommitteeError::InvalidSignature);
 
@@ -198,6 +212,13 @@ impl Committee {
 
 
     /// Recovers the signer's Ethereum address from a message hash and signature
+    ///
+    /// # Arguments
+    /// * `hash` - The message hash that was signed
+    /// * `signature` - The signature bytes
+    ///
+    /// # Returns
+    /// The recovered Ethereum address if successful
     pub fn recover_signer(hash: &[u8; 32], signature: &[u8]) -> Result<[u8; 20]> {
         require!(signature.len() == 65, BridgeCommitteeError::InvalidSignature);
 
@@ -231,6 +252,8 @@ impl Committee {
 
     pub fn key(&self) -> Pubkey {
         Pubkey::create_program_address(&self.seeds(), &crate::id()).unwrap()
+        //  Pubkey::create_program_address(&self.seeds(), &crate::id()).unwrap()
+
     }
 } 
 
@@ -408,7 +431,7 @@ pub mod committee_test {
         let committee = build_default_committee_with_config().0;
         let address = get_default_addresses().0[0];
         assert_eq!(committee.borrow().is_blocklisted(&address), false);
-        committee.borrow_mut().update_blocklist(&[address], 0);
+        committee.borrow_mut().update_blocklist(&[address], 1);
         assert_eq!(committee.borrow().is_blocklisted(&address), true);
     }
 
@@ -453,7 +476,7 @@ pub mod committee_test {
                 address: [i as u8; 20],
                 stake: 100,
                 index: i as u8,
-                is_blocklisted: 1,
+                is_blocklisted: 0,
             })
             .collect();
 
@@ -466,7 +489,7 @@ pub mod committee_test {
             address: [1; 20],
             stake: 100,
             index: MAX_MEMBER_INDEX, // Invalid index
-            is_blocklisted: 1,
+            is_blocklisted: 0,
         };
         let result = committee.initialize(bump,&[invalid_index_member], 100);
         assert!(result.is_err());
@@ -477,7 +500,7 @@ pub mod committee_test {
                 address: [i as u8; 20],
                 stake: u16::MAX / 2 + 1,
                 index: i as u8,
-                is_blocklisted: 1,
+                is_blocklisted: 0,
             })
             .collect();
         let result = committee.initialize(bump,&high_stake_members, 100);
@@ -489,7 +512,7 @@ pub mod committee_test {
                 address: [i as u8; 20],
                 stake: 50,
                 index: i as u8,
-                is_blocklisted: 1,
+                is_blocklisted: 0,
             })
             .collect();
         let result = committee.initialize(bump,&low_stake_members, 200);
@@ -503,22 +526,22 @@ pub mod committee_test {
         
         // Test normal blocklist update
         assert_eq!(committee.borrow().is_blocklisted(&addresses[0]), false);
-        committee.borrow_mut().update_blocklist(&[addresses[0]], 0);
+        committee.borrow_mut().update_blocklist(&[addresses[0]], 1);
         assert_eq!(committee.borrow().is_blocklisted(&addresses[0]), true);
         
         // Test blocklist removal
-        committee.borrow_mut().update_blocklist(&[addresses[0]], 1);
+        committee.borrow_mut().update_blocklist(&[addresses[0]], 0);
         assert_eq!(committee.borrow().is_blocklisted(&addresses[0]), false);
         
         // Test multiple addresses blocklist
-        committee.borrow_mut().update_blocklist(&[addresses[0], addresses[1]], 0);
+        committee.borrow_mut().update_blocklist(&[addresses[0], addresses[1]], 1);
         assert_eq!(committee.borrow().is_blocklisted(&addresses[0]), true);
         assert_eq!(committee.borrow().is_blocklisted(&addresses[1]), true);
         assert_eq!(committee.borrow().is_blocklisted(&addresses[2]), false);
         
         // Test non-existent address
         let non_existent_address = [255u8; 20];
-        committee.borrow_mut().update_blocklist(&[non_existent_address], 0);
+        committee.borrow_mut().update_blocklist(&[non_existent_address], 1);
         assert_eq!(committee.borrow().is_blocklisted(&non_existent_address), false);
     }
 
@@ -570,7 +593,7 @@ pub mod committee_test {
         let (addresses, wallets) = get_default_addresses();
         
         // Test with blocklisted signer
-        committee.borrow_mut().update_blocklist(&[addresses[0]], 0);
+        committee.borrow_mut().update_blocklist(&[addresses[0]], 1);
         
         let message = Message {
             message_type: 1,
@@ -588,7 +611,7 @@ pub mod committee_test {
         assert!(result.is_err());
         
         // Reset blocklist
-        committee.borrow_mut().update_blocklist(&[addresses[0]], 1);
+        committee.borrow_mut().update_blocklist(&[addresses[0]], 0);
         
         // Test duplicate signatures
         let sig1 = get_signature(&hash, &wallets[0]);
@@ -719,6 +742,45 @@ pub mod committee_test {
         
         let result = committee.borrow().verify_signatures(vec![sig0,sig1,sig2,sig3], &invalid_message);
         assert_eq!(result.unwrap_err(), BridgeCommitteeError::DuplicateSignature.into())
-    }   
+    }
+
+    // #[test]
+    // fn test_verify_signatures_with_invalid_nonce() {
+    //     let committee = build_default_committee_with_config().0;
+
+    //     let (_, wallets) = get_default_addresses();
+
+    //     let invalid_message = Message {
+    //         message_type: 2, // EMERGENCY_OP
+    //         version: 1,
+    //         nonce: 2,
+    //         chain_id: 1,
+    //         payload: vec![0], // true for freezing
+    //     };
+
+    //     let encoded = encode_message(&invalid_message);
+    //     let hash = keccak256(&encoded);
+    //     let sig0 = get_signature(&hash, &wallets[0]);
+    //     let sig1 = get_signature(&hash, &wallets[1]);
+    //     let sig2 = get_signature(&hash, &wallets[2]);
+    //     let sig3 = get_signature(&hash, &wallets[3]);
+
+
+    //     let result = committee.borrow().verify_signatures(vec![sig0,sig1,sig2,sig3], &invalid_message);
+    //    // assert_eq!(result.unwrap_err(), BridgeError::InvalidNonce.into())
+    // }
+
+
+    #[test]
+    fn test_get_address(){
+        let (_, addresses) = get_default_addresses();
+        //println!("{:?}",addresses[0].address());
+
+        for address in addresses.iter() {
+            println!("{:?}",address.address());
+        }
+    }
+
+   
 }
 

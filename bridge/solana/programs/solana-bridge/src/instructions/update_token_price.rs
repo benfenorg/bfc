@@ -76,6 +76,7 @@ pub fn update_token_price_with_signature(
         &message,
         signatures
     )?; 
+    //(token_id,price)
     let (token_id,price)=message::decode_update_token_price_payload(&payload)?;
 
     let mut token_config_loader = ctx.accounts.token_config.load_mut()?;
@@ -84,6 +85,7 @@ pub fn update_token_price_with_signature(
 
   token_config_loader.update_price(price)?;
 
+  msg!("emit TokenPriceUpdated");
   //emit event
   emit!(TokenPriceUpdated {
     nonce,

@@ -309,6 +309,8 @@ describe("BenfenBridge - Cross Chain", () => {
 
         await program.provider.connection.confirmTransaction(crossInTx);
 
+        console.log("USDCUSDC 跨到Benfen",crossInTx)
+
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         // 检查关联tokenValut账户的资金

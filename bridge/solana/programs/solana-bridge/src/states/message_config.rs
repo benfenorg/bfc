@@ -10,8 +10,8 @@ use crate::errors::MessageError;
 #[derive(Default,Debug)]
 pub struct MessageConfig {
     pub verifier: Pubkey, 
-    pub message_type: u8,      
-    pub nonce: u64,           
+    pub message_type: u8,      // 消息类型
+    pub nonce: u64,           // 该类型的 nonce
     //padding upgrade
     pub padding: [u8; 32],
 }

@@ -47,6 +47,8 @@ use sui_types::bridge::{
     APPROVAL_THRESHOLD_WITHDRAW_BRIDGE_FEE,
     APPROVAL_THRESHOLD_ADD_LP_TOKEN_ID,
     APPROVAL_THRESHOLD_UPDATE_INVEST_ADDRESS,
+    APPROVAL_THRESHOLD_EXTEND_PROGRAM_ON_SOLANA,
+    APPROVAL_THRESHOLD_UPGRADE_PROGRAM_ON_SOLANA,
 };
 use sui_types::committee::CommitteeTrait;
 use sui_types::committee::StakeUnit;    
@@ -247,6 +249,8 @@ pub enum BridgeActionType {
   
     //solana start
     AddTokensOnSolana = 30,
+    ExtendProgramOnSolana = 31,
+    UpgradeProgramOnSolana = 32,
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -661,6 +665,24 @@ pub struct AddTokenOnSolanaAction{
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct ExtendProgramOnSolanaAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub program_id: Pubkey,
+    pub size: u32,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct UpgradeProgramOnSolanaAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub proxy: Pubkey,
+    pub implementation: Pubkey,
+    pub version: u8,
+}
+
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct AddTokensOnEvmAction {
     pub nonce: u64,
     pub chain_id: BridgeChainId,
@@ -713,6 +735,8 @@ pub enum BridgeAction {
     AddLpTokenIdAction(AddLpTokenIdAction),
     /// solana to sui bridge action
     SolanaToSuiBridgeAction(SolanaToSuiBridgeAction),
+    ExtendProgramOnSolanaAction(ExtendProgramOnSolanaAction),
+    UpgradeProgramOnSolanaAction(UpgradeProgramOnSolanaAction),
 }
 
 impl BridgeAction {
@@ -766,6 +790,8 @@ impl BridgeAction {
             BridgeAction::UpdateInvestAddressAction(a) => a.chain_id,
             BridgeAction::AddLpTokenIdAction(a) => a.chain_id,
             BridgeAction::SolanaToSuiBridgeAction(a) => a.solana_bridge_event.solana_chain_id,
+            BridgeAction::ExtendProgramOnSolanaAction(a) => a.chain_id,
+            BridgeAction::UpgradeProgramOnSolanaAction(a) => a.chain_id,
         }
     }
 
@@ -797,6 +823,8 @@ impl BridgeAction {
             BridgeActionType::FastPathLimitUpdate => true,
             BridgeActionType::UpdateInvestAddress => true,
             BridgeActionType::AddLpTokenId => true,
+            BridgeActionType::ExtendProgramOnSolana => true,
+            BridgeActionType::UpgradeProgramOnSolana => true,
         }
     }
 
@@ -836,6 +864,8 @@ impl BridgeAction {
             BridgeAction::FastPathLimitUpdateAction(_) => BridgeActionType::FastPathLimitUpdate,
             BridgeAction::UpdateInvestAddressAction(_) => BridgeActionType::UpdateInvestAddress,
             BridgeAction::AddLpTokenIdAction(_) => BridgeActionType::AddLpTokenId,
+            BridgeAction::ExtendProgramOnSolanaAction(_) => BridgeActionType::ExtendProgramOnSolana,
+            BridgeAction::UpgradeProgramOnSolanaAction(_) => BridgeActionType::UpgradeProgramOnSolana,
         }
     }
 
@@ -875,6 +905,8 @@ impl BridgeAction {
             BridgeAction::FastPathLimitUpdateAction(a) => a.nonce,
             BridgeAction::UpdateInvestAddressAction(a) => a.nonce,
             BridgeAction::AddLpTokenIdAction(a) => a.nonce,
+            BridgeAction::ExtendProgramOnSolanaAction(a) => a.nonce,
+            BridgeAction::UpgradeProgramOnSolanaAction(a) => a.nonce,
         }
     }
 
@@ -916,6 +948,8 @@ impl BridgeAction {
             BridgeAction::FastPathLimitUpdateAction(_) => APPROVAL_THRESHOLD_FAST_PATH_LIMIT_UPDATE,
             BridgeAction::UpdateInvestAddressAction(_) => APPROVAL_THRESHOLD_UPDATE_INVEST_ADDRESS,
             BridgeAction::AddLpTokenIdAction(_) => APPROVAL_THRESHOLD_ADD_LP_TOKEN_ID,
+            BridgeAction::ExtendProgramOnSolanaAction(_) => APPROVAL_THRESHOLD_EXTEND_PROGRAM_ON_SOLANA,
+            BridgeAction::UpgradeProgramOnSolanaAction(_) => APPROVAL_THRESHOLD_UPGRADE_PROGRAM_ON_SOLANA,
         }
     }
 

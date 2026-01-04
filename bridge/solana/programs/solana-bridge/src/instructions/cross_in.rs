@@ -20,6 +20,7 @@ use crate::errors::BridgeTokenError;
 const BENFEN_ADDRESS_LENGTH: usize = 32;
 
 #[derive(Accounts)]
+
 pub struct CrossIn<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -36,6 +37,7 @@ pub struct CrossIn<'info> {
         constraint = token_vault.owner == bridge.key() @ BridgeTokenError::InvalidTokenOwner,
     )]
     pub token_vault: Account<'info, TokenAccount>,
+
     #[account(
         init_if_needed,
         payer = payer,
@@ -48,41 +50,52 @@ pub struct CrossIn<'info> {
         bump
     )]
     pub message_config: Box<Account<'info, MessageConfig>>,
+
+    
+
     #[account(
         mut,
         constraint = token_config.load()?.mint == token_mint.key() @ BridgeTokenError::InvalidTokenMint,
         //constraint = token_config.load()?.mint == token_account.mint @ BridgeError::InvalidTokenId,
     )]
     pub token_config: AccountLoader<'info, TokenConfigAccount>,
+
     #[account(mut)]
     pub chain_limit: AccountLoader<'info, ChainLimit>,
+
    #[account(
         constraint = bridge_config.load()?.supported_chains.contains(&chain_limit.load()?.get_chain_id()) @ BridgeError::UnsupportedCrossToChainId,
         //constraint = bridge_config.load()?.owner == bridge.config() @ BridgeError::InvalidOwner,
     )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
+
+   
     #[account(
         mut,
         constraint = bridge.config == bridge_config.load()?.key() @ BridgeError::InvalidBridgeConfig,
         //constraint = bridge.limiter == committee.load()?.key() @ BridgeError::InvalidCommittee,
     )]
     pub bridge: Account<'info, BenfenBridge>,
+
     pub verifier: AccountLoader<'info, MessageVerifier>,
+
     pub token_mint: Box<InterfaceAccount<'info, Mint>>,
+
     pub token_program: Interface<'info, TokenInterface>,
+
     /// To create a new program account
     pub system_program: Program<'info, System>,
 
 }
 
-// For SOL tokens, they need to be converted to WSOL first before processing
-// SDK has interface, need to convert to WSOL when calling
+//对于sol代币要先转成 wsol之后再进行操作
+//sdk有接口 调用时需要先转成wsol
 pub fn cross_in<'info>(
     ctx: Context<'_, '_, '_, 'info, CrossIn<'info>>,
     amount: u64,
     benfen_address: Vec<u8>,
 ) -> Result<()> {
-    //First check if bridge is paused
+    //先检查bridge 是否暂停，
     ctx.accounts.bridge.require_not_paused()?;
     require!(benfen_address.len() == BENFEN_ADDRESS_LENGTH, BridgeError::InvalidBenfenAddress);
     require!(amount > 0, BridgeError::InvalidAmount);
@@ -95,17 +108,17 @@ pub fn cross_in<'info>(
     let source_chain_id=bridge_conifg_loader.chain_id;
     let dst_chain_id = chain_limit.get_chain_id();
 
-    //Check if dst_chain_id is supported
+    //检查 dst_chain_id 是否支持
     require!(bridge_conifg_loader.supported_chains.contains(&dst_chain_id), BridgeError::UnsupportedCrossToChainId);
 
-    //Check if token is supported
+    //检查token 是否支持
    let token_config = ctx.accounts.token_config.load()?;
 //    let token_mint = ctx.accounts.token_mint.key();
    
    //require!(token_account.mint == token_mint, BridgeError::UnsupportedTokenId);
    //require!(token_config.token_id() == token_id, BridgeError::UnsupportedTokenId);
 
-    //Check if user has sufficient balance
+    //检查用户余额是否足够
     require!(token_account.amount >= amount, BridgeError::InsufficientBalance);
     let single_transfer_limit = chain_limit.get_single_transfer_limit();
     require!(chain_limit.calculate_amount_in_usd(amount, token_config.price(), token_config.decimal()) < single_transfer_limit, BridgeError::SingleTransferAmountExceedsLimit);
@@ -121,7 +134,8 @@ pub fn cross_in<'info>(
 
     let adjusted_amount = convert_slp_to_benfen_decimal(  ctx.accounts.token_mint.decimals, token_config.benfen_decimal, amount)?;
   
-    //emit event
+    msg!("emit TokensDeposited");
+    //触发 event
     emit!(TokensDeposited {
         nonce: message.nonce(),
         source_chain_id,

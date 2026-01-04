@@ -36,6 +36,8 @@ use crate::types::UpdateBridgeFeeOnCrossInAction;
 use crate::types::WithdrawBridgeFeeAction;
 use crate::types::AddLpTokenIdAction;
 use crate::types::UpdateInvestAddressAction;
+use crate::types::ExtendProgramOnSolanaAction;
+use crate::types::UpgradeProgramOnSolanaAction;
 use enum_dispatch::enum_dispatch;
 // use ethers::core::k256::elliptic_curve::ff::derive::bitvec::view::AsBits;
 use ethers::types::Address as EthAddress;
@@ -73,6 +75,8 @@ pub const SET_CROSS_IN_BRIDGE_FEE_MESSAGE_VERSION: u8 = 1;
 pub const WITHDRAW_BRIDGE_FEE_MESSAGE_VERSION: u8 = 1;
 pub const ADD_LP_TOKEN_ID_MESSAGE_VERSION: u8 = 1;
 pub const UPDATE_INVEST_ADDRESS_MESSAGE_VERSION: u8 = 1;
+pub const EXTEND_PROGRAM_MESSAGE_VERSION: u8=1;
+pub const UPGRADE_PROGRAM_MESSAGE_VERSION: u8=1;
 
 
 
@@ -781,6 +785,66 @@ impl BridgeMessageEncoding for UpdateInvestAddressAction {
         bytes.extend_from_slice(&self.invest_address.as_bytes().to_vec());
         bytes
     }
+}
+
+impl BridgeMessageEncoding for UpgradeProgramOnSolanaAction{
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::UpgradeProgramOnSolana as u8);
+        // Add message version
+        bytes.push(UPGRADE_PROGRAM_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+     fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // UPGRADE  Program
+        bytes.extend_from_slice(&self.proxy.to_bytes());
+
+        bytes.extend_from_slice(&self.implementation.to_bytes());
+
+        bytes.push(self.version as u8);
+        bytes
+    }
+
+}
+
+impl BridgeMessageEncoding for ExtendProgramOnSolanaAction{
+     fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::ExtendProgramOnSolana as u8);
+        // Add message version
+        bytes.push(EXTEND_PROGRAM_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add Program
+        bytes.extend_from_slice(&self.program_id.to_bytes());
+        // Add Program Size
+        bytes.extend_from_slice(&self.size.to_be_bytes());
+        bytes
+    }
+    
 }
 
 impl BridgeMessageEncoding for AssetPriceUpdateAction {
