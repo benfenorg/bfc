@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(gh api:*)",
+      "Bash(gh pr comment:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

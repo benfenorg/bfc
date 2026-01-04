@@ -2251,7 +2251,7 @@ module bridge::bridge_env {
     // Mint some coins
     fun mint_some<T>(bridge: &mut Bridge, ctx: &mut TxContext): Coin<T> {
         let treasury = bridge.test_load_inner_mut().inner_treasury_mut();
-        let coin = treasury.mint<T>(1_000_000_000, ctx);
+        let coin = treasury.mint<T>(1_000_000_000_000_000, ctx);
         coin
     }
 
