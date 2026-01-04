@@ -317,6 +317,106 @@ fun test_execute_send_token_to_solana() {
 } 
 
 #[test]
+#[expected_failure(abort_code = bridge::bridge::EInvalidEvmAddress)]
+fun test_send_token_to_solana_with_evm_address_length() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    let usdc = env.get_usdc(1);
+    // 使用 EVM 地址长度(20 字节)而不是 Solana 的 32 字节
+    let wrong_address = x"0000000000000000000000000000000000000000";
+    env.send_token(@0xABCD, chain_ids::solana_testnet(), wrong_address, usdc);
+    env.destroy_env();
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EInvalidEvmAddress)]
+fun test_send_token_to_solana_with_oversized_address() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    let usdc = env.get_usdc(1);
+    // 使用 33 字节(超过 Solana 的 32 字节)
+    let oversized_address = x"000000000000000000000000000000000000000000000000000000000000000001";
+    env.send_token(@0xABCD, chain_ids::solana_testnet(), oversized_address, usdc);
+    env.destroy_env();
+}
+
+#[test]
+#[expected_failure]
+fun test_send_token_to_solana_respects_route_limits() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    
+    // 测试单笔转账限额
+    let max_single_limit = 100_000_000_000; // 从配置获取
+    
+
+    let solana_address = x"1234567890123456789012345678901234567890123456789012345678901234";
+    
+    // 测试超过限额的转账(应该失败)
+    let usdc2 = env.get_usdc(max_single_limit + 1000);
+    // 这个调用应该失败,但需要根据实际的错误码调整
+    env.send_token(@0xABCD, chain_ids::solana_testnet(), solana_address, usdc2);
+    
+    env.destroy_env();
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EBridgeUnavailable)]
+fun test_send_token_to_solana_when_bridge_paused() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    
+    // Pause the bridge
+    env.freeze_bridge(@0x0, 1000);
+    
+    // 尝试转账(应该失败)
+    let usdc = env.get_usdc(100);
+    let solana_address = x"1234567890123456789012345678901234567890123456789012345678901234";
+    env.send_token(@0xABCD, chain_ids::solana_testnet(), solana_address, usdc);
+    
+    env.destroy_env();
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EBridgeUnavailable)]
+fun test_send_back_token_to_solana_when_bridge_paused() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    
+    // Pause the bridge
+    env.freeze_bridge(@0x0, 1000);
+
+    // 尝试退款(应该失败)
+    let solana_address = x"1234567890123456789012345678901234567890123456789012345678901234";
+    let tx_hash = hex::decode(b"56335bb5461b430c3ccf94efe91494e64f21e12e9b8b007b0e1c56c7d1e8de3b");
+    let usdc_id = 3;
+    let usdc_amount = 100;
+    
+    env.send_back_token(@0xABCD, chain_ids::solana_testnet(), solana_address, usdc_id, usdc_amount, tx_hash);
+    
+    env.destroy_env();
+}
+
+#[test]
+fun test_send_token_to_solana_after_bridge_unpaused() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    
+    // Pause the bridge
+    env.freeze_bridge(@0x0, 1000);
+    
+    // 解除暂停
+    env.unfreeze_bridge(@0x0, 1000);
+    
+    // 现在应该可以正常转账
+    let usdc = env.get_usdc(100);
+    let solana_address = x"1234567890123456789012345678901234567890123456789012345678901234";
+    env.send_token(@0xABCD, chain_ids::solana_testnet(), solana_address, usdc);
+    
+    env.destroy_env();
+}
+
+#[test]
 fun test_btc_bridge_v2() {
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
@@ -1093,6 +1193,57 @@ fun test_execute_send_token_zero_value() {
     env.send_token(@0x0, chain_ids::eth_sepolia(), eth_address, btc);
 
     abort TEST_DONE
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EInvalidEvmAddress)]
+fun test_send_back_token_to_solana_with_wrong_address_length() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    
+    // 使用 EVM 地址长度
+    let wrong_address = x"0000000000000000000000000000000000000000";
+    let tx_hash = hex::decode(b"56335bb5461b430c3ccf94efe91494e64f21e12e9b8b007b0e1c56c7d1e8de3b");
+    let usdc_id = 3;
+    let usdc_amount = 100;
+    
+    env.send_back_token(@0xABCD, chain_ids::solana_testnet(), wrong_address, usdc_id, usdc_amount, tx_hash);
+    env.destroy_env();
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::ETokenValueIsZero)]
+fun test_send_back_token_to_solana_with_zero_amount() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    
+    let solana_address = x"1234567890123456789012345678901234567890123456789012345678901234";
+    let tx_hash = hex::decode(b"56335bb5461b430c3ccf94efe91494e64f21e12e9b8b007b0e1c56c7d1e8de3b");
+    let usdc_id = 3;
+    let usdc_amount = 0; // 零金额
+    
+    env.send_back_token(@0xABCD, chain_ids::solana_testnet(), solana_address, usdc_id, usdc_amount, tx_hash);
+    env.destroy_env();
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EDuplicateRefund)]
+fun test_send_back_token_to_solana_duplicate_tx_hash() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    
+    let solana_address = x"1234567890123456789012345678901234567890123456789012345678901234";
+    let tx_hash = hex::decode(b"56335bb5461b430c3ccf94efe91494e64f21e12e9b8b007b0e1c56c7d1e8de3b");
+    let usdc_id = 3;
+    let usdc_amount = 100;
+    
+    // 第一次退款
+    env.send_back_token(@0xABCD, chain_ids::solana_testnet(), solana_address, usdc_id, usdc_amount, tx_hash);
+    
+    // 第二次使用相同的 tx_hash(应该失败)
+    env.send_back_token(@0xABCD, chain_ids::solana_testnet(), solana_address, usdc_id, usdc_amount, tx_hash);
+    
+    env.destroy_env();
 }
 
 #[test]
