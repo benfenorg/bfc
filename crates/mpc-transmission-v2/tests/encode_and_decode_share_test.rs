@@ -245,7 +245,7 @@ fn test_generate_shares_u64_consistency_with_split_to_two_value_v2() {
     use crate::two_party_helper::get_two_party_coordinates;
     use crate::two_party_helper::split_to_two_value_v2_internal;
     let coords = get_two_party_coordinates(coord_seed);
-    let (share1, share2) = split_to_two_value_v2_internal(secret, &coords).unwrap();
+    let (share1, share2) = split_to_two_value_v2_internal(secret, &coords);
 
     // Compare coordinates - they should match
     assert_eq!(shares[0].0, share1.0);

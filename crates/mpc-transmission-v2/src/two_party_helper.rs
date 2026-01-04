@@ -445,7 +445,7 @@ mod tests {
     fn test_split_and_recover_internal() {
         let secret = 12345u64;
         let coords = get_two_party_coordinates(TEST_MASK_SECRET);
-        let (share1, share2) = split_to_two_value_v2_internal(secret, &coords).unwrap();
+        let (share1, share2) = split_to_two_value_v2_internal(secret, &coords);
 
         let recovered = recover_from_shares_internal(&[share1, share2]).unwrap();
         assert_eq!(recovered, secret);
