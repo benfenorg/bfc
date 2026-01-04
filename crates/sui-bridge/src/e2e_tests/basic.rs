@@ -3505,6 +3505,7 @@ async fn test_bridge_busd_to_solana() {
     
     // Wait for TokenTransferApproved event which indicates the committee has signed
     // and approve_token_transfer_v2 has been executed
+    tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
     let approval_events = bridge_test_cluster
         .new_bridge_events(
             HashSet::from_iter([
@@ -3524,8 +3525,8 @@ async fn test_bridge_busd_to_solana() {
         .any(|e| e.type_.name.as_str() == "TokenTransferApproved");
     
     assert!(
-        has_deposit_event || has_approval_event,
-        "Should have received either TokenDepositedEventForSolanaV2 or TokenTransferApproved event. Got: {:?}",
+        has_deposit_event && has_approval_event,
+        "Should have received both TokenDepositedEventForSolanaV2 and TokenTransferApproved events. Got: {:?}",
         approval_events.iter().map(|e| e.type_.name.as_str()).collect::<Vec<_>>()
     );
     
@@ -3538,8 +3539,6 @@ async fn test_bridge_busd_to_solana() {
     let sui_chain_id = bridge_test_cluster.sui_chain_id() as u8;
     let nonce = 0u64; // First transfer has nonce 0
     
-    // Wait a bit for the approval to be processed
-    tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
     
     // Try to get the parsed token transfer message to verify it was approved
     let parsed_msg_result = bridge_test_cluster
@@ -3801,6 +3800,7 @@ async fn test_bridge_solana() {
     // The bridge monitors TokenDepositedEventForSolanaV2 events and automatically:
     // 1. Collects committee signatures via request_committee_signatures
     // 2. Executes approve_token_transfer_v2 on the Sui contract
+    tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
     info!("Waiting for bridge committee to automatically approve the transfer...");
     // Wait for TokenTransferApproved event which indicates the committee has signed
     // and approve_token_transfer_v2 has been executed
@@ -3820,8 +3820,8 @@ async fn test_bridge_solana() {
     let has_approval_event = approval_events.iter()
         .any(|e| e.type_.name.as_str() == "TokenTransferApproved");
     assert!(
-        has_deposit_event || has_approval_event,
-        "Should have received either TokenDepositedEventForSolanaV2 or TokenTransferApproved event. Got: {:?}",
+        has_deposit_event && has_approval_event,
+        "Should have received both TokenDepositedEventForSolanaV2 and TokenTransferApproved events. Got: {:?}",
         approval_events.iter().map(|e| e.type_.name.as_str()).collect::<Vec<_>>()
     );
     if has_approval_event {
@@ -3830,7 +3830,7 @@ async fn test_bridge_solana() {
     // Step 11: Verify the transfer status via bridge client
     let sui_chain_id = bridge_test_cluster.sui_chain_id() as u8;
     let nonce = 0u64; // First transfer has nonce 0
-    tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+    
     let parsed_msg_result = bridge_test_cluster
         .bridge_client()
         .get_parsed_token_transfer_message(sui_chain_id, nonce)
