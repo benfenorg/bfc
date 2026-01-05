@@ -180,7 +180,4 @@ pub struct AnonymousRestoreArrayParamsZKLoginParams {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct GetAnonymousObjectVersionParams {
     pub object_id: String,
-    pub value1: Vec<u8>,
-    pub value2: Vec<u8>,
-    pub owner: AccountAddress
 }

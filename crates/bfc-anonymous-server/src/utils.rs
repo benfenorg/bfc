@@ -180,7 +180,7 @@ pub async fn get_object_value1_and_value2(
     let fullnode_rpc = config
         .fullnode_rpc_path
         .unwrap_or("https://devrpc4.openblock.vip".to_string());
-
+    println!("using fullnode rpc: {}", fullnode_rpc);
     let client = reqwest::Client::new();
     let response = client
         .post(fullnode_rpc)
@@ -202,8 +202,9 @@ pub async fn get_object_value1_and_value2(
         }))
         .send()
         .await?;
-
+    println!("response status: {}", response.status());
     let result = response.text().await?;
+
 
     let value_array = parse_response_and_return_balance(&result.clone());
     match value_array.0.clone() {

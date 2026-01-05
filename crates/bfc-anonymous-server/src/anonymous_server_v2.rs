@@ -985,6 +985,13 @@ async fn handle_get_anonymouse_object_version(request: JsonRpcRequest) -> JsonRp
 
 
                 let object_balance = get_object_value1_and_value2(object_id.clone()).await;
+                match object_balance {
+                    Ok(_) => {}
+                    Err(error) =>{
+                        return create_error_response(request.id, -32602, "Object not found or has no anonymous data".to_string(), None);
+                    }
+                }
+
                 let data = object_balance.unwrap().clone();
                 let data1 = data.clone().0;
                 let data2 = data.clone().1;
