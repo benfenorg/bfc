@@ -3803,7 +3803,7 @@ async fn test_bridge_solana() {
     // The bridge monitors TokenDepositedEventForSolanaV2 events and automatically:
     // 1. Collects committee signatures via request_committee_signatures
     // 2. Executes approve_token_transfer_v2 on the Sui contract
-    tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+    tokio::time::sleep(tokio::time::Duration::from_secs(15)).await;
     info!("Waiting for bridge committee to automatically approve the transfer...");
     // Wait for TokenTransferApproved event which indicates the committee has signed
     // and approve_token_transfer_v2 has been executed
