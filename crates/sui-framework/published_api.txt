@@ -7621,6 +7621,12 @@ get_parsed_defi_transfer_out_message
 get_parsed_defi_transfer_message
 	fun
 	0xb::bridge
+is_solana_chain
+	fun
+	0xb::bridge
+get_expected_address_length
+	fun
+	0xb::bridge
 to_bytes
 	public fun
 	0x1::bcs

@@ -132,6 +132,8 @@ title: Module `bridge::bridge`
 -  [Function `get_parsed_token_transfer_message_v2`](#bridge_bridge_get_parsed_token_transfer_message_v2)
 -  [Function `get_parsed_defi_transfer_out_message`](#bridge_bridge_get_parsed_defi_transfer_out_message)
 -  [Function `get_parsed_defi_transfer_message`](#bridge_bridge_get_parsed_defi_transfer_message)
+-  [Function `is_solana_chain`](#bridge_bridge_is_solana_chain)
+-  [Function `get_expected_address_length`](#bridge_bridge_get_expected_address_length)
 
 
 <pre><code><b>use</b> <a href="../bfc_system/auth_utils.md#bfc_system_auth_utils">bfc_system::auth_utils</a>;
@@ -1944,6 +1946,15 @@ title: Module `bridge::bridge`
 
 
 
+<a name="bridge_bridge_EInvalidAddress"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_EInvalidAddress">EInvalidAddress</a>: u64 = 18;
+</code></pre>
+
+
+
 <a name="bridge_bridge_EInvalidBridgeRoute"></a>
 
 
@@ -1967,15 +1978,6 @@ title: Module `bridge::bridge`
 
 
 <pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_EInvalidChainIDOnTokenList">EInvalidChainIDOnTokenList</a>: u64 = 35;
-</code></pre>
-
-
-
-<a name="bridge_bridge_EInvalidEvmAddress"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_EInvalidEvmAddress">EInvalidEvmAddress</a>: u64 = 18;
 </code></pre>
 
 
@@ -3030,10 +3032,10 @@ title: Module `bridge::bridge`
     <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
     <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>assert</b>!(<a href="../bridge/chain_ids.md#bridge_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="../bridge/bridge.md#bridge_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
-    <b>if</b> (target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>() || target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>()) {
-        <b>assert</b>!(target_address.length() == <a href="../bridge/bridge.md#bridge_bridge_SOLANA_ADDRESS_LENGTH">SOLANA_ADDRESS_LENGTH</a>, <a href="../bridge/bridge.md#bridge_bridge_EInvalidEvmAddress">EInvalidEvmAddress</a>);
+    <b>if</b> (<a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(target_chain)) {
+        <b>assert</b>!(target_address.length() == <a href="../bridge/bridge.md#bridge_bridge_get_expected_address_length">get_expected_address_length</a>(target_chain), <a href="../bridge/bridge.md#bridge_bridge_EInvalidAddress">EInvalidAddress</a>);
     } <b>else</b> {
-        <b>assert</b>!(target_address.length() == <a href="../bridge/bridge.md#bridge_bridge_EVM_ADDRESS_LENGTH">EVM_ADDRESS_LENGTH</a>, <a href="../bridge/bridge.md#bridge_bridge_EInvalidEvmAddress">EInvalidEvmAddress</a>);
+        <b>assert</b>!(target_address.length() == <a href="../bridge/bridge.md#bridge_bridge_get_expected_address_length">get_expected_address_length</a>(target_chain), <a href="../bridge/bridge.md#bridge_bridge_EInvalidAddress">EInvalidAddress</a>);
     };
     <b>let</b> bridge_seq_num = inner.<a href="../bridge/bridge.md#bridge_bridge_get_current_seq_num_and_increment">get_current_seq_num_and_increment</a>(<a href="../bridge/message_types.md#bridge_message_types_token">message_types::token</a>());
     <b>let</b> token_id = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.token_id&lt;T&gt;();
@@ -3073,7 +3075,7 @@ title: Module `bridge::bridge`
         },
     );
     // emit event
-    <b>if</b> (target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>() || target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>()) {
+    <b>if</b> (<a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(target_chain)) {
         emit(
             <a href="../bridge/bridge.md#bridge_bridge_TokenDepositedEventForSolanaV2">TokenDepositedEventForSolanaV2</a> {
                 seq_num: bridge_seq_num,
@@ -3277,10 +3279,10 @@ title: Module `bridge::bridge`
     <b>assert</b>!(<a href="../bridge/tokenlist.md#bridge_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(bridge_id, target_chain <b>as</b> u64, token_id_expect),<a href="../bridge/bridge.md#bridge_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
     <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>assert</b>!(<a href="../bridge/chain_ids.md#bridge_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="../bridge/bridge.md#bridge_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
-    <b>if</b> (target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>() || target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>()) {
-        <b>assert</b>!(target_address.length() == <a href="../bridge/bridge.md#bridge_bridge_SOLANA_ADDRESS_LENGTH">SOLANA_ADDRESS_LENGTH</a>, <a href="../bridge/bridge.md#bridge_bridge_EInvalidEvmAddress">EInvalidEvmAddress</a>);
+    <b>if</b> (<a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(target_chain)) {
+        <b>assert</b>!(target_address.length() == <a href="../bridge/bridge.md#bridge_bridge_get_expected_address_length">get_expected_address_length</a>(target_chain), <a href="../bridge/bridge.md#bridge_bridge_EInvalidAddress">EInvalidAddress</a>);
     } <b>else</b> {
-        <b>assert</b>!(target_address.length() == <a href="../bridge/bridge.md#bridge_bridge_EVM_ADDRESS_LENGTH">EVM_ADDRESS_LENGTH</a>, <a href="../bridge/bridge.md#bridge_bridge_EInvalidEvmAddress">EInvalidEvmAddress</a>);
+        <b>assert</b>!(target_address.length() == <a href="../bridge/bridge.md#bridge_bridge_get_expected_address_length">get_expected_address_length</a>(target_chain), <a href="../bridge/bridge.md#bridge_bridge_EInvalidAddress">EInvalidAddress</a>);
     };
     <b>let</b> is_busd = type_name::get&lt;T&gt;() == type_name::get&lt;BUSD&gt;();
     <b>assert</b>!(is_busd, <a href="../bridge/bridge.md#bridge_bridge_EOnlySupportBusd">EOnlySupportBusd</a>);
@@ -3332,7 +3334,7 @@ title: Module `bridge::bridge`
         },
     );
     // emit event
-    <b>if</b> (target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>() || target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>()) {
+    <b>if</b> (<a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(target_chain)) {
         emit(
             <a href="../bridge/bridge.md#bridge_bridge_TokenDepositedEventForSolanaV2">TokenDepositedEventForSolanaV2</a> {
                 seq_num: bridge_seq_num,
@@ -3395,7 +3397,7 @@ title: Module `bridge::bridge`
     <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>assert</b>!(<a href="../bridge/chain_ids.md#bridge_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="../bridge/bridge.md#bridge_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
     <b>assert</b>!(!inner.refund_records.contains(<a href="../bridge/message.md#bridge_message_key_refund">message::key_refund</a>(tx_hash)), <a href="../bridge/bridge.md#bridge_bridge_EDuplicateRefund">EDuplicateRefund</a>);
-    <b>assert</b>!(target_address.length() == <a href="../bridge/bridge.md#bridge_bridge_EVM_ADDRESS_LENGTH">EVM_ADDRESS_LENGTH</a>, <a href="../bridge/bridge.md#bridge_bridge_EInvalidEvmAddress">EInvalidEvmAddress</a>);
+    <b>assert</b>!(target_address.length() == <a href="../bridge/bridge.md#bridge_bridge_EVM_ADDRESS_LENGTH">EVM_ADDRESS_LENGTH</a>, <a href="../bridge/bridge.md#bridge_bridge_EInvalidAddress">EInvalidAddress</a>);
     <b>assert</b>!(token_amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
     <b>assert</b>!(tx_hash.length() &gt;= 1, <a href="../bridge/bridge.md#bridge_bridge_EInvalidTxHash">EInvalidTxHash</a>);
     <b>assert</b>!(inner.<a href="../bridge/bridge.md#bridge_bridge_is_refund_admin">is_refund_admin</a>(ctx.sender().to_ascii_string()), <a href="../bridge/bridge.md#bridge_bridge_EInvalidSender">EInvalidSender</a>);
@@ -3481,9 +3483,9 @@ title: Module `bridge::bridge`
     <b>assert</b>!(<a href="../bridge/chain_ids.md#bridge_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="../bridge/bridge.md#bridge_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
     <b>assert</b>!(!inner.refund_records.contains(<a href="../bridge/message.md#bridge_message_key_refund">message::key_refund</a>(tx_hash)), <a href="../bridge/bridge.md#bridge_bridge_EDuplicateRefund">EDuplicateRefund</a>);
     <b>if</b> (target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>() || target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>()) {
-        <b>assert</b>!(target_address.length() == <a href="../bridge/bridge.md#bridge_bridge_SOLANA_ADDRESS_LENGTH">SOLANA_ADDRESS_LENGTH</a>, <a href="../bridge/bridge.md#bridge_bridge_EInvalidEvmAddress">EInvalidEvmAddress</a>);
+        <b>assert</b>!(target_address.length() == <a href="../bridge/bridge.md#bridge_bridge_SOLANA_ADDRESS_LENGTH">SOLANA_ADDRESS_LENGTH</a>, <a href="../bridge/bridge.md#bridge_bridge_EInvalidAddress">EInvalidAddress</a>);
     } <b>else</b> {
-        <b>assert</b>!(target_address.length() == <a href="../bridge/bridge.md#bridge_bridge_EVM_ADDRESS_LENGTH">EVM_ADDRESS_LENGTH</a>, <a href="../bridge/bridge.md#bridge_bridge_EInvalidEvmAddress">EInvalidEvmAddress</a>);
+        <b>assert</b>!(target_address.length() == <a href="../bridge/bridge.md#bridge_bridge_EVM_ADDRESS_LENGTH">EVM_ADDRESS_LENGTH</a>, <a href="../bridge/bridge.md#bridge_bridge_EInvalidAddress">EInvalidAddress</a>);
     };
     <b>assert</b>!(token_amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
     <b>assert</b>!(tx_hash.length() &gt;= 1, <a href="../bridge/bridge.md#bridge_bridge_EInvalidTxHash">EInvalidTxHash</a>);
@@ -6778,6 +6780,54 @@ title: Module `bridge::bridge`
     <b>let</b> record = &inner.token_transfer_records[key];
     <b>let</b> <a href="../bridge/message.md#bridge_message">message</a> = &record.<a href="../bridge/message.md#bridge_message">message</a>;
     option::some(to_parsed_token_transfer_message_v2(<a href="../bridge/message.md#bridge_message">message</a>))
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_is_solana_chain"></a>
+
+## Function `is_solana_chain`
+
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(chain_id: u8): bool
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(chain_id: u8): bool {
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>() || chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>()
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_expected_address_length"></a>
+
+## Function `get_expected_address_length`
+
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_expected_address_length">get_expected_address_length</a>(chain_id: u8): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_expected_address_length">get_expected_address_length</a>(chain_id: u8): u64 {
+    <b>if</b> (<a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(chain_id)) <a href="../bridge/bridge.md#bridge_bridge_SOLANA_ADDRESS_LENGTH">SOLANA_ADDRESS_LENGTH</a> <b>else</b> <a href="../bridge/bridge.md#bridge_bridge_EVM_ADDRESS_LENGTH">EVM_ADDRESS_LENGTH</a>
 }
 </code></pre>
 
