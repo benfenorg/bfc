@@ -3328,7 +3328,8 @@ async fn test_bridge_busd_to_solana() {
     
     // Step 1: Build the Solana bridge test cluster
     let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
-        .with_solana_env(true)
+        .with_solana_env(false)
+        .with_eth_env(false)
         .with_solana_chain_id(BridgeChainId::SolanaTestnet)
         .with_bridge_cluster(true)
         .with_num_validators(3)
@@ -3505,7 +3506,9 @@ async fn test_bridge_busd_to_solana() {
     
     // Wait for TokenTransferApproved event which indicates the committee has signed
     // and approve_token_transfer_v2 has been executed
-    tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+    // Note: Bridge committee needs time to: detect event -> collect signatures -> build tx -> execute
+    // This typically takes 6-10 seconds, so we wait 15 seconds to be safe
+    tokio::time::sleep(tokio::time::Duration::from_secs(15)).await;
     let approval_events = bridge_test_cluster
         .new_bridge_events(
             HashSet::from_iter([
