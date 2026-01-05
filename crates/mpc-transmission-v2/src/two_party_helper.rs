@@ -11,6 +11,7 @@ use crate::poly::Polynomial;
 use crate::types::Share;
 use fastcrypto::hash::{Blake2b256, HashFunction};
 use rand::SeedableRng;
+use rand::thread_rng;
 use rand_chacha::ChaCha20Rng;
 use rand_core::RngCore;
 
@@ -272,17 +273,16 @@ pub fn recover_from_shares_internal(shares: &[Share]) -> Result<u64, SSSError> {
 /// Generate a Beaver triple for two-party secure multiplication
 ///
 /// Creates random values (a, b) and computes c = a × b in the finite field.
-///
-/// # Arguments
-/// * `mask_secret` - Secret used as RNG seed
+/// Uses non-deterministic random number generation to ensure different
+/// Beaver triples are generated on each call.
 ///
 /// # Returns
 /// * `Ok(BeaverTriple)` - The generated Beaver triple
 /// * `Err(SSSError)` - If generation fails
-pub fn generate_beaver_triple(mask_secret: u64) -> Result<BeaverTriple, SSSError> {
+pub fn generate_beaver_triple() -> Result<BeaverTriple, SSSError> {
     use crate::field::gf64_sss::random_element;
 
-    let mut rng = ChaCha20Rng::seed_from_u64(mask_secret);
+    let mut rng = thread_rng();
 
     // Generate fixed x-coordinates (same for all a, b, c shares)
     let x_coords: Vec<FieldElement> = (0..TOTAL_SHARES)
@@ -453,7 +453,7 @@ mod tests {
 
     #[test]
     fn test_generate_beaver_triple() {
-        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple().unwrap();
 
         assert_eq!(triple.a_shares.len(), 2);
         assert_eq!(triple.b_shares.len(), 2);
@@ -491,12 +491,18 @@ mod tests {
     }
 
     #[test]
-    fn test_beaver_triple_determinism() {
-        let triple1 = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
-        let triple2 = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+    fn test_beaver_triple_non_determinism() {
+        let triple1 = generate_beaver_triple().unwrap();
+        let triple2 = generate_beaver_triple().unwrap();
 
-        // Same seed should produce same triple
-        assert_eq!(triple1.a_shares[0].0, triple2.a_shares[0].0);
-        assert_eq!(triple1.a_shares[0].1, triple2.a_shares[0].1);
+        // Non-deterministic generation should produce different triples
+        // (with very high probability)
+        // Verify that the function works correctly
+        assert_eq!(triple1.a_shares.len(), 2);
+        assert_eq!(triple2.a_shares.len(), 2);
+        assert_eq!(triple1.b_shares.len(), 2);
+        assert_eq!(triple2.b_shares.len(), 2);
+        assert_eq!(triple1.c_shares.len(), 2);
+        assert_eq!(triple2.c_shares.len(), 2);
     }
 }

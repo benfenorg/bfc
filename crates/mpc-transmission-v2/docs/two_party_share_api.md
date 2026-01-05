@@ -173,7 +173,7 @@ Steps to compute x × y:
 
 ```rust
 // Random generation
-let triple = generate_beaver_triple(mask_secret)?;
+let triple = generate_beaver_triple()?;
 
 // Or specify a, b values
 let triple = generate_beaver_triple_with_values(a, b, mask_secret)?;
@@ -261,7 +261,7 @@ let x = 7u64;
 let y = 11u64;
 
 // 1. Generate Beaver triple
-let triple = generate_beaver_triple(mask_secret)?;
+let triple = generate_beaver_triple()?;
 
 // 2. Create shares for x and y (using Beaver triple coordinates)
 let x_field: FieldElement = FieldElementTrait::from_u64(x);

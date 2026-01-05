@@ -54,37 +54,6 @@ Uses (threshold, n) threshold scheme:
 - At least threshold shares are required to reconstruct any secret
 - Fewer than threshold malicious parties cannot obtain useful information
 
-## Usage Examples
-
-```rust
-use mpc_framework_core::beaver::{BeaverTriple, BeaverMultiplication};
-use mpc_framework_core::secret::SecretSharing;
-use rand::SeedableRng;
-use rand_chacha::ChaCha20Rng;
-
-// Create test data
-let mut rng = ChaCha20Rng::seed_from_u64(42);
-let a = 5u64;
-let b = 7u64;
-let threshold = 3;
-let total_shares = 5;
-
-// Create Beaver triple
-let triple = BeaverTriple::new(a, b, threshold, total_shares, &mut rng)?;
-
-// Create secret shares
-let x_secret = 10u64;
-let y_secret = 20u64;
-let x_sharing = SecretSharing::split(x_secret, threshold, total_shares, &mut rng)?;
-let y_sharing = SecretSharing::split(y_secret, threshold, total_shares, &mut rng)?;
-let x_shares = x_sharing.get_shares();
-let y_shares = y_sharing.get_shares();
-
-// Execute secure multiplication (requires same coordinate system)
-// let result = BeaverMultiplication::multiply_with_beaver(&x_shares, &y_shares, &triple)?;
-# Ok::<(), Box<dyn std::error::Error>>(())
-```
-
 ## Module Structure
 
 - `BeaverTriple`: Triple data structure and basic operations
