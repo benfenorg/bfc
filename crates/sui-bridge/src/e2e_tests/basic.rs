@@ -3585,13 +3585,15 @@ async fn test_bridge_busd_to_solana() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_bridge_solana() {
-  use spl_associated_token_account::get_associated_token_address;
+     use spl_associated_token_account::get_associated_token_address;
     use crate::e2e_tests::test_utils::wait_for_transfer_action_status;
     use crate::types::BridgeActionStatus;
     use solana_sdk::signer::Signer;
     use anchor_lang::solana_program::system_program;
 
     telemetry_subscribers::init_for_testing();
+
+    let timer = std::time::Instant::now();
     let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
         .with_solana_env(true)
         .with_eth_env(false)
@@ -3601,6 +3603,13 @@ async fn test_bridge_solana() {
         .build()
         .await;
 
+    info!(
+        "[Timer] Bridge test cluster started in {:?}",
+        timer.elapsed()
+    );
+
+    // bridge in flow
+    let timer = std::time::Instant::now();
     let sol_env = bridge_test_cluster.solana_env();
     let solana_signer = sol_env.get_signer().await.expect("Failed to get solana signer");
     let rpc_url = sol_env.rpc_url.clone();
@@ -3662,6 +3671,11 @@ async fn test_bridge_solana() {
         .send()
         .await
         .expect("Failed to send cross_token_to_bridge transaction");
+    info!(
+        "[Timer] Solana cross_token_to_bridge TX sent in {:?}, signature: {}",
+        timer.elapsed(),
+        signature
+    );
     let nonce = 0u64;
     wait_for_transfer_action_status(
         bridge_test_cluster.bridge_client(),
@@ -3671,6 +3685,10 @@ async fn test_bridge_solana() {
     )
     .await
     .expect("Failed to wait for Solana to Sui bridge transfer to be claimed");
+    info!(
+        "[Timer] Solana to Sui bridge transfer claimed in {:?}",
+        timer.elapsed()
+    );
     let events = bridge_test_cluster
         .new_bridge_events(
             HashSet::from_iter([
@@ -3681,32 +3699,33 @@ async fn test_bridge_solana() {
         )
         .await;
     assert!(events.len() >= 2, "Expected at least 2 events (approved + claimed), got {}", events.len());
+    info!(
+        "[Timer] Solana to Sui bridge transfer completed successfully in {:?}",
+        timer.elapsed()
+    );
 
-    // brdge out BUSD to Solana
-    let http_client = bridge_test_cluster.test_cluster.inner.rpc_client().clone();    
+    // bridge out flow
+    let address = bridge_test_cluster.sui_user_address();
+    let http_client = bridge_test_cluster.test_cluster.inner.rpc_client().clone();
     let busd_objects = auth::do_get_owned_objects_with_filter(
         "0x2::coin::Coin<0xc8::busd::BUSD>",
         &http_client,
-        sui_address
+        address
     ).await.expect("Failed to get BUSD objects");
+    
     assert!(!busd_objects.is_empty(), "Should have at least one BUSD coin object");
     
     let busd_coin = busd_objects.first().unwrap().object().unwrap();
     let busd_balance = auth::get_balance(busd_coin);
     assert!(busd_balance > 0, "BUSD balance should be greater than 0");
-    info!("BUSD balance: {}", busd_balance);
-    
-    // Step 4: Get bridge object for the transfer
+    info!("BUSD balance: {}", busd_balance);    
     let bridge_object_arg = bridge_test_cluster
         .bridge_client()
         .get_mutable_bridge_object_arg_must_succeed()
         .await;
-    // Step 5: Setup bridge transfer parameters
     let target_chain = BridgeChainId::SolanaTestnet as u8;
-    // Generate a random Solana address (32 bytes)
     let solana_target_address = Pubkey::new_unique();
     let target_address_bytes = solana_target_address.to_bytes().to_vec();
-    // Token ID for USDC (3) or USDT (4) - BUSD is converted to these on the target chain
     let expect_token_id = 3u64; // USDC
     info!(
         "Initiating bridge transfer: {} BUSD from Sui to Solana address {}",
@@ -3727,7 +3746,6 @@ async fn test_bridge_solana() {
         .any(|e| e.type_.name.as_str() == "TokenTransferApproved");
     assert!(has_approval_event == false);
     assert!(has_deposit_event == false);
-    // Step 6: Build the send_busd transaction
     let mut builder = ProgrammableTransactionBuilder::new();
     let bridge_arg = builder.obj(bridge_object_arg).unwrap();
     let bfc_system_state_arg = builder.obj(ObjectArg::SharedObject {
@@ -3758,12 +3776,12 @@ async fn test_bridge_solana() {
     let pt = builder.finish();
     let gas = bridge_test_cluster.test_cluster.inner
         .wallet
-        .get_one_gas_object_owned_by_address(sui_address)
+        .get_one_gas_object_owned_by_address(address)
         .await
         .unwrap()
-        .unwrap();
+        .unwrap();    
     let tx_data = TransactionData::new_programmable(
-        sui_address,
+        address,
         vec![gas],
         pt,
         500_000_000,
@@ -3780,6 +3798,7 @@ async fn test_bridge_solana() {
         )
         .await
         .expect("Failed to execute bridge transaction");
+    
     info!("Bridge transaction response: {:?}", tx_response);
     let effects = tx_response.effects.as_ref().unwrap();
     match effects.status() {
@@ -3799,14 +3818,8 @@ async fn test_bridge_solana() {
         "Should have emitted TokenDepositedEventForSolanaV2 event"
     );
     info!("✅ TokenDepositedEventForSolanaV2 event emitted: {:?}", solana_bridge_events);
-    // Step 10: Wait for bridge committee to automatically sign and execute approve_token_transfer_v2
-    // The bridge monitors TokenDepositedEventForSolanaV2 events and automatically:
-    // 1. Collects committee signatures via request_committee_signatures
-    // 2. Executes approve_token_transfer_v2 on the Sui contract
-    tokio::time::sleep(tokio::time::Duration::from_secs(15)).await;
     info!("Waiting for bridge committee to automatically approve the transfer...");
-    // Wait for TokenTransferApproved event which indicates the committee has signed
-    // and approve_token_transfer_v2 has been executed
+    tokio::time::sleep(tokio::time::Duration::from_secs(15)).await;
     let approval_events = bridge_test_cluster
         .new_bridge_events(
             HashSet::from_iter([
@@ -3817,7 +3830,6 @@ async fn test_bridge_solana() {
         )
         .await;
     info!("Bridge events received: {:?}", approval_events);
-    // Verify we got both the deposit event and the approval event
     let has_deposit_event = approval_events.iter()
         .any(|e| e.type_.name.as_str() == "TokenDepositedEventForSolanaV2");
     let has_approval_event = approval_events.iter()
@@ -3830,10 +3842,8 @@ async fn test_bridge_solana() {
     if has_approval_event {
         info!("✅ Bridge committee has automatically approved the transfer!");
     }
-    // Step 11: Verify the transfer status via bridge client
     let sui_chain_id = bridge_test_cluster.sui_chain_id() as u8;
     let nonce = 0u64; // First transfer has nonce 0
-    
     let parsed_msg_result = bridge_test_cluster
         .bridge_client()
         .get_parsed_token_transfer_message(sui_chain_id, nonce)
@@ -3850,7 +3860,7 @@ async fn test_bridge_solana() {
     let busd_objects_after = auth::do_get_owned_objects_with_filter(
         "0x2::coin::Coin<0xc8::busd::BUSD>",
         &http_client,
-        sui_address
+        address
     ).await.expect("Failed to get BUSD objects after transfer");
     let total_balance_after: u64 = busd_objects_after.iter()
         .filter_map(|obj| obj.object().ok())
