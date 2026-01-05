@@ -14,7 +14,7 @@ use mpc_transmission::get_mask_secret_and_coord_seed_from_config;
 use mpc_transmission::get_user_address_salt;
 use mpc_transmission_v2::two_party_share::{add_two_shared_secrets_v2, sub_two_shared_secrets_v2, split_to_two_value_v2};
 use mpc_transmission::get_zklogin_rpc_address_from_config;
-use sui_types::balance;
+//use sui_types::balance;
 
 impl warp::reject::Reject for RpcError {}
 
@@ -987,7 +987,7 @@ async fn handle_get_anonymouse_object_version(request: JsonRpcRequest) -> JsonRp
                 let object_balance = get_object_value1_and_value2(object_id.clone()).await;
                 match object_balance {
                     Ok(_) => {}
-                    Err(error) =>{
+                    Err(_error) =>{
                         return create_error_response(request.id, -32602, "Object not found or has no anonymous data".to_string(), None);
                     }
                 }

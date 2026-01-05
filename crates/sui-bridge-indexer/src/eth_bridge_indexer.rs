@@ -492,6 +492,8 @@ pub struct EthDataMapper {
     pub metrics: BridgeIndexerMetrics,
 }
 
+
+#[allow(unreachable_patterns,unused_variables)]
 impl DataMapper<RawEthData, ProcessedTxnData> for EthDataMapper {
     fn map(
         &self,

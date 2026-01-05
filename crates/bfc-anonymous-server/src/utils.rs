@@ -61,6 +61,7 @@ pub fn create_sign_message(message: String) -> Vec<u8> {
 
 
 
+#[allow(dead_code)]
 pub fn create_deep_compress_message(raw_message: String) -> Vec<u8> {
     // Create SHA-256 hasher
     let mut hasher = Sha256::new();
@@ -208,7 +209,7 @@ pub async fn get_object_value1_and_value2(
 
     let value_array = parse_response_and_return_balance(&result.clone());
     match value_array.0.clone() {
-        Some(val) => return Ok((value_array.0.unwrap(), value_array.1.unwrap())),
+        Some(_val) => return Ok((value_array.0.unwrap(), value_array.1.unwrap())),
         None => return Err(anyhow!("object owner not exit").into()),
     }
 }
