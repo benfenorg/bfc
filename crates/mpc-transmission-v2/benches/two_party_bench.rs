@@ -210,7 +210,7 @@ fn bench_beaver_triple_generation(c: &mut Criterion) {
 
     group.bench_function("generate_beaver_triple", |bench| {
         bench.iter(|| {
-            generate_beaver_triple()
+            generate_beaver_triple(black_box(BENCH_MASK_SECRET))
                 .expect("beaver triple generation should succeed")
         })
     });
@@ -226,7 +226,7 @@ fn bench_beaver_multiplication(c: &mut Criterion) {
     let y = 11u64;
 
     // Pre-generate Beaver triple
-    let triple = generate_beaver_triple().unwrap();
+    let triple = generate_beaver_triple(BENCH_MASK_SECRET).unwrap();
 
     // Create x and y shares using same coordinates as Beaver triple
     let x_field: FieldElement = FieldElementTrait::from_u64(x);

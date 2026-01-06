@@ -370,7 +370,7 @@ pub fn mul_two_shared_secrets_v2(
     }
 
     // Step 5: Generate Beaver triple
-    let beaver_triple = generate_beaver_triple()?;
+    let beaver_triple = generate_beaver_triple(mask_secret)?;
 
     // Step 7: Compute masked differences d = x - a, e = y - b for both parties
     let d_share_1 = mul_step1_compute_masked_diff(&x_share_1, &beaver_triple.a_shares[0]);
@@ -988,7 +988,7 @@ mod tests {
         let y = 7u64;
 
         // Generate Beaver triple
-        let triple = generate_beaver_triple().unwrap();
+        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
 
         // Create proper shares for x and y using Beaver triple's x-coordinates
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
@@ -1042,7 +1042,7 @@ mod tests {
         let x = 5u64;
         let y = 7u64;
 
-        let triple = generate_beaver_triple().unwrap();
+        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
 
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
         let y_field: FieldElement = FieldElementTrait::from_u64(y);
@@ -1089,7 +1089,7 @@ mod tests {
         let x = 100u64;
         let y = 0u64;
 
-        let triple = generate_beaver_triple().unwrap();
+        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
 
         // Create shares using Beaver triple coordinates
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
@@ -1139,7 +1139,7 @@ mod tests {
         let x = 42u64;
         let y = 1u64;
 
-        let triple = generate_beaver_triple().unwrap();
+        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
 
         // Create shares using Beaver triple coordinates
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
@@ -1405,7 +1405,7 @@ mod tests {
         let x = 1000000u64;
         let y = 2000000u64;
 
-        let triple = generate_beaver_triple().unwrap();
+        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
 
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
         let y_field: FieldElement = FieldElementTrait::from_u64(y);
@@ -1451,7 +1451,7 @@ mod tests {
     #[test]
     fn test_mul_step1_from_hex() {
         let x = 7u64;
-        let triple = generate_beaver_triple().unwrap();
+        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
 
         // Create x shares using Beaver triple coordinates
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
@@ -1524,7 +1524,7 @@ mod tests {
     #[test]
     fn test_mul_step1_from_hex_different_coord_seeds_fails() {
         let x = 7u64;
-        let triple = generate_beaver_triple().unwrap();
+        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
 
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
         let poly_x = Polynomial::new_with_fixed_seed(THRESHOLD - 1, x_field);

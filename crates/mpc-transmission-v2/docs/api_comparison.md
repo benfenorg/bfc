@@ -212,7 +212,7 @@ pub fn mul_step2_and_3_combined(
 ) -> Result<Vec<u8>, SSSError>
 
 // Beaver triple generation
-pub fn generate_beaver_triple() -> Result<BeaverTriple, SSSError>
+pub fn generate_beaver_triple(mask_secret: u64) -> Result<BeaverTriple, SSSError>
 pub fn generate_beaver_triple_with_values(a: u64, b: u64, mask_secret: u64) -> Result<BeaverTriple, SSSError>
 ```
 
@@ -299,7 +299,7 @@ let result = add_two_shared_secrets_v2(shares1, shares2, mask_secret)?;  // 150
 #### mpc-framework-core (Beaver Protocol)
 ```rust
 // 1. Generate Beaver triple
-let triple = generate_beaver_triple()?;
+let triple = generate_beaver_triple(mask_secret)?;
 
 // 2. Create shares for x and y (using triple coordinates)
 let x_shares = create_shares_with_triple_coords(x, &triple);
