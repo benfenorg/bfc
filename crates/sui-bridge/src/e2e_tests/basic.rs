@@ -3526,6 +3526,198 @@ async fn test_add_refund_admin_and_bridge_from_solana() {
         "✅ Part 2 completed: Refund (send_back_token_v2) processed successfully in {:?}",
         timer.elapsed()
     );
+
+    // ========== Part 3: 在 Solana 上领取退款 token ==========
+    info!("Part 3: Claiming refund on Solana...");
+    let timer = std::time::Instant::now();
+
+    // 获取链上签名（退款的 nonce 是 0）
+    let sui_chain_id = bridge_test_cluster.sui_chain_id() as u8;
+    let refund_nonce = 0u64;
+
+    let onchain_sigs = bridge_test_cluster
+        .bridge_client()
+        .get_token_transfer_action_onchain_signatures_until_success(sui_chain_id, refund_nonce)
+        .await;
+
+    assert!(onchain_sigs.is_some(), "Should have onchain signatures for the approved refund");
+    let onchain_sigs = onchain_sigs.unwrap();
+    info!("Got {} onchain signatures for refund claim", onchain_sigs.len());
+
+    // 获取 parsed token transfer message
+    let parsed_msg = bridge_test_cluster
+        .bridge_client()
+        .get_parsed_token_transfer_message(sui_chain_id, refund_nonce)
+        .await
+        .expect("Failed to get parsed token transfer message")
+        .expect("Parsed token transfer message should exist");
+
+    info!("Parsed refund message: source_chain={}, seq_num={}, token_type={}, amount={}",
+          parsed_msg.source_chain, parsed_msg.seq_num,
+          parsed_msg.parsed_payload.token_type, parsed_msg.parsed_payload.amount);
+
+    // 构建 Solana cross_out 交易
+    let sol_env = bridge_test_cluster.solana_env();
+    let solana_signer = sol_env.get_signer().await.expect("Failed to get solana signer");
+    let rpc_url = sol_env.rpc_url.clone();
+    let ws_url = sol_env.ws_url.clone();
+
+    let claim_client = Client::new_with_options(
+        Cluster::Custom(rpc_url, ws_url),
+        solana_signer.clone(),
+        CommitmentConfig::confirmed(),
+    );
+
+    let claim_program = claim_client.program(benfen_bridge::ID).expect("Failed to get program");
+    let claim_init_pdas = crate::query_solana_account::get_init_account(claim_program.id(), sui_chain_id);
+
+    // 获取目标 token 的 token_id (USDC = 3)
+    let claim_token_id = token_id;
+    let (claim_token_vault, _) = Pubkey::find_program_address(&[b"vault", &claim_token_id.to_be_bytes()], &benfen_bridge::ID);
+    let (claim_token_config, _) = Pubkey::find_program_address(&[b"token_config", &claim_token_id.to_be_bytes()], &benfen_bridge::ID);
+    let (claim_message_config, _) = Pubkey::find_program_address(
+        &[
+            b"message_config",
+            &[BridgeActionType::TokenTransfer as u8],
+            claim_init_pdas.message_verifier.as_ref(),
+        ],
+        &benfen_bridge::ID,
+    );
+
+    // 计算 process_transfer PDA
+    let (process_transfer, _) = Pubkey::find_program_address(
+        &[
+            b"processed_transfer",
+            &[BridgeActionType::TokenTransfer as u8],
+            &[sui_chain_id],
+            &refund_nonce.to_be_bytes(),
+        ],
+        &benfen_bridge::ID,
+    );
+
+    // 退款的目标地址是原始 Solana 发送者
+    let solana_recipient = Pubkey::try_from(parsed_msg.parsed_payload.target_address.as_slice())
+        .expect("Failed to parse solana recipient address");
+    let usdc_mint = sol_env.usdc();
+    let recipient_token_account = spl_associated_token_account::get_associated_token_address(
+        &solana_recipient,
+        &usdc_mint,
+    );
+
+    // 检查 recipient token account 是否存在
+    let recipient_account_info = claim_program.rpc().get_account(&recipient_token_account).await;
+    if recipient_account_info.is_err() {
+        info!("Creating recipient token account...");
+        let create_ata_ix = spl_associated_token_account::instruction::create_associated_token_account(
+            &solana_signer.pubkey(),
+            &solana_recipient,
+            &usdc_mint,
+            &spl_token::ID,
+        );
+        let _ = claim_program
+            .request()
+            .instruction(create_ata_ix)
+            .signer(solana_signer.clone())
+            .send()
+            .await
+            .expect("Failed to create recipient token account");
+        info!("Recipient token account created");
+    }
+
+    // 构建 payload
+    use crate::encoding::BridgeMessageEncoding;
+    use crate::events::EmittedSuiToSolanaTokenBridgeV2;
+
+    let sui_to_solana_event = EmittedSuiToSolanaTokenBridgeV2 {
+        nonce: parsed_msg.seq_num,
+        sui_chain_id: BridgeChainId::try_from(parsed_msg.source_chain as u8).unwrap(),
+        solana_chain_id: BridgeChainId::try_from(parsed_msg.parsed_payload.target_chain as u8).unwrap(),
+        sui_address: SuiAddress::from_bytes(&parsed_msg.parsed_payload.sender_address).unwrap(),
+        solana_address: solana_recipient,
+        token_id: parsed_msg.parsed_payload.token_type as u64,
+        amount_sui_adjusted: parsed_msg.parsed_payload.amount,
+        tx_hash: parsed_msg.parsed_payload.tx_hash,
+        event_idx: parsed_msg.parsed_payload.event_idx as u16,
+    };
+
+    let bridge_action = crate::types::SuiToSolanaBridgeAction {
+        sui_tx_digest: sui_types::digests::TransactionDigest::default(),
+        sui_tx_event_index: 0,
+        sui_bridge_event: sui_to_solana_event,
+    };
+
+    let payload_bytes = bridge_action.as_payload_bytes();
+    let message_type = BridgeActionType::TokenTransfer as u8;
+    let message_version = 3u8; // TOKEN_TRANSFER_MESSAGE_VERSION_V3
+
+    info!(
+        "Building cross_out instruction: chain_id={}, nonce={}, message_type={}, version={}, payload_len={}",
+        sui_chain_id, refund_nonce, message_type, message_version, payload_bytes.len()
+    );
+
+    // 构建 cross_out 指令
+    let cross_out_ix = claim_program
+        .request()
+        .accounts(accounts::CrossOut {
+            signer: solana_signer.pubkey(),
+            token_account: recipient_token_account,
+            token_vault: claim_token_vault,
+            message_config: claim_message_config,
+            process_transfer,
+            chain_limit: claim_init_pdas.bridge_limiter,
+            token_config: claim_token_config,
+            verifier: claim_init_pdas.message_verifier,
+            committee: claim_init_pdas.bridge_committee,
+            bridge_config: claim_init_pdas.bridge_config,
+            bridge: claim_init_pdas.benfen_bridge,
+            token_mint: usdc_mint,
+            token_program: spl_token::ID,
+            system_program: anchor_lang::solana_program::system_program::ID,
+        })
+        .args(args::CrossOut {
+            chain_id: sui_chain_id,
+            nonce: refund_nonce,
+            message_type,
+            version: message_version,
+            payload: payload_bytes,
+            signatures: onchain_sigs,
+        })
+        .instructions()
+        .expect("Failed to build cross_out instructions")
+        .remove(0);
+
+    // 发送 cross_out 交易
+    let claim_signature = claim_program
+        .request()
+        .instruction(cross_out_ix)
+        .signer(solana_signer.clone())
+        .send()
+        .await
+        .expect("Failed to send cross_out transaction");
+
+    info!("✅ Solana cross_out TX sent, signature: {}", claim_signature);
+
+    // 等待交易确认
+    tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+
+    // 验证 recipient 收到了退款的 token
+    let recipient_balance = claim_program.rpc()
+        .get_token_account_balance(&recipient_token_account)
+        .await
+        .expect("Failed to get recipient token balance");
+
+    info!(
+        "✅ Part 3 completed: Refund claimed on Solana! Recipient USDC balance: {} (took {:?})",
+        recipient_balance.ui_amount.unwrap_or(0.0),
+        timer.elapsed()
+    );
+
+    assert!(
+        recipient_balance.amount.parse::<u64>().unwrap_or(0) > 0,
+        "Recipient should have received refunded USDC on Solana"
+    );
+
+    info!("✅ Test completed: Refund admin added, bridge from Solana triggered refund, and refund claimed on Solana!");
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
