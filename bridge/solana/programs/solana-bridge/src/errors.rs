@@ -89,7 +89,10 @@ pub enum BridgeLimiterError {
     UnsupportedChain,
     #[msg("Invalid limiter pubkey")]
     InvalidLimiterPubkey,
-    
+    #[msg("Calculation overflow")]
+    CalculationOverflow,
+    #[msg("Invalid decimal")]
+    InvalidDecimal,
     #[msg("Invalid hour")]
     InvalidHour,
 }
@@ -102,6 +105,12 @@ pub enum BridgeConfigError {
     ChainAlreadySupported,
     #[msg("Invalid config pubkey")]
     InvalidConfigPubkey,
+
+    #[msg("Invalid supported chains")]
+    InvalidSupportedChains,
+
+    #[msg("Invalid chain ID")]
+    InvalidChainId,
 }
 
 #[error_code]
@@ -179,7 +188,8 @@ pub enum BridgeError {
     TransferAlreadyProcessed,
     #[msg("Single transfer amount exceeds limit")]
     SingleTransferAmountExceedsLimit,
-
+    #[msg("Invalid token id")]
+    InvalidTokenId,
     #[msg("Invalid committee")]
     InvalidCommittee,
 }

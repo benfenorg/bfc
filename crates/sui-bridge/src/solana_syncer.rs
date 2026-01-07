@@ -12,8 +12,6 @@ use tokio::task::JoinHandle;
 use tokio::time::{self, Duration, Instant};
 use tracing::{error, info, warn};
 
-/// Interval for querying the latest finalized slot
-const FINALIZED_SLOT_QUERY_INTERVAL: Duration = Duration::from_secs(10);
 /// Maximum number of signatures to fetch per query
 const SOLANA_SIGNATURE_QUERY_MAX_LIMIT: u64 = 1000;
 /// Maximum retry duration for RPC calls
@@ -57,6 +55,7 @@ impl SolanaSyncer {
     pub async fn run(
         self,
         metrics: Arc<BridgeMetrics>,
+        finalized_slot_query_interval: Duration,
     ) -> BridgeResult<(Vec<JoinHandle<()>>, watch::Receiver<u64>)> {
         // Get initial finalized slot
         let last_finalized_slot = self.sol_client.get_slot(Some("finalized")).await?;
@@ -68,11 +67,13 @@ impl SolanaSyncer {
         // Spawn finalized slot refresh task
         let sol_client_clone = self.sol_client.clone();
         let metrics_clone = metrics.clone();
+        let finalized_slot_query_interval_clone = finalized_slot_query_interval;
         task_handles.push(spawn_logged_monitored_task!(
             Self::run_finalized_slot_refresh_task(
                 last_finalized_slot_tx,
                 sol_client_clone,
                 metrics_clone,
+                finalized_slot_query_interval_clone,
             )
         ));
 
@@ -102,10 +103,11 @@ impl SolanaSyncer {
         last_finalized_slot_sender: watch::Sender<u64>,
         sol_client: Arc<SolanaClient>,
         metrics: Arc<BridgeMetrics>,
+        finalized_slot_query_interval: Duration,
     ) {
         info!("[SolanaSyncer] Starting Solana finalized slot refresh task");
         let mut last_slot = 0u64;
-        let mut interval = time::interval(FINALIZED_SLOT_QUERY_INTERVAL);
+        let mut interval = time::interval(finalized_slot_query_interval);
         interval.set_missed_tick_behavior(time::MissedTickBehavior::Skip);
 
         loop {
@@ -806,7 +808,10 @@ mod tests {
         );
 
         let (_handles, mut finalized_slot_rx) = SolanaSyncer::new(client.clone(), addresses, sol_events_tx)
-            .run(Arc::new(BridgeMetrics::new_for_testing()))
+            .run(
+                Arc::new(BridgeMetrics::new_for_testing()),
+                Duration::from_millis(50),
+            )
             .await
             .unwrap();
 
@@ -856,7 +861,10 @@ mod tests {
 
         let (_handles, _finalized_slot_rx) =
             SolanaSyncer::new(client.clone(), addresses, sol_events_tx)
-                .run(Arc::new(BridgeMetrics::new_for_testing()))
+                .run(
+                    Arc::new(BridgeMetrics::new_for_testing()),
+                    Duration::from_millis(50),
+                )
                 .await
                 .unwrap();
 
@@ -899,7 +907,10 @@ mod tests {
 
         let (_handles, mut finalized_slot_rx) =
             SolanaSyncer::new(client.clone(), addresses, sol_events_tx)
-                .run(Arc::new(BridgeMetrics::new_for_testing()))
+                .run(
+                    Arc::new(BridgeMetrics::new_for_testing()),
+                    Duration::from_millis(50),
+                )
                 .await
                 .unwrap();
 
@@ -940,7 +951,10 @@ mod tests {
 
         let (_handles, mut finalized_slot_rx) =
             SolanaSyncer::new(client.clone(), addresses, sol_events_tx)
-                .run(Arc::new(BridgeMetrics::new_for_testing()))
+                .run(
+                    Arc::new(BridgeMetrics::new_for_testing()),
+                    Duration::from_millis(50),
+                )
                 .await
                 .unwrap();
 
@@ -1101,7 +1115,10 @@ mod tests {
 
         let (_handles, mut finalized_slot_rx) =
             SolanaSyncer::new(client.clone(), addresses, sol_events_tx)
-                .run(Arc::new(BridgeMetrics::new_for_testing()))
+                .run(
+                    Arc::new(BridgeMetrics::new_for_testing()),
+                    Duration::from_millis(50),
+                )
                 .await
                 .unwrap();
 
@@ -1246,7 +1263,10 @@ mod tests {
 
         let (_handles, mut finalized_slot_rx) =
             SolanaSyncer::new(client.clone(), addresses, sol_events_tx)
-                .run(Arc::new(BridgeMetrics::new_for_testing()))
+                .run(
+                    Arc::new(BridgeMetrics::new_for_testing()),
+                    Duration::from_millis(50),
+                )
                 .await
                 .unwrap();
 
@@ -1404,7 +1424,10 @@ mod tests {
 
         let (_handles, mut finalized_slot_rx) =
             SolanaSyncer::new(client.clone(), addresses, sol_events_tx)
-                .run(Arc::new(BridgeMetrics::new_for_testing()))
+                .run(
+                    Arc::new(BridgeMetrics::new_for_testing()),
+                    Duration::from_millis(50),
+                )
                 .await
                 .unwrap();
 
@@ -1556,7 +1579,10 @@ mod tests {
 
         let (_handles, mut finalized_slot_rx) =
             SolanaSyncer::new(client.clone(), addresses, sol_events_tx)
-                .run(Arc::new(BridgeMetrics::new_for_testing()))
+                .run(
+                    Arc::new(BridgeMetrics::new_for_testing()),
+                    Duration::from_millis(50),
+                )
                 .await
                 .unwrap();
 

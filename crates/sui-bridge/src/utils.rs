@@ -375,6 +375,7 @@ pub fn generate_bridge_node_config_and_write_to_file(
             bridge_chain_id: BridgeChainId::EthSepolia as u8,
             contracts_start_slot_fallback: Some(0),
             contracts_start_slot_override: None,
+            query_interval_secs: None,
         },
         user_limit_db_url: Some("pgpath".to_string()),
         external_rpc: Some(ExternalChainRpcConfig {

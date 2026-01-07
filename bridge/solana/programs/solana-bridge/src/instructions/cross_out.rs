@@ -84,7 +84,12 @@ pub struct CrossOut<'info> {
     #[account(mut)]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = bridge.config == bridge_config.load()?.key() @ BridgeError::InvalidBridgeConfig,
+        constraint = bridge.committee == committee.load()?.key() @ BridgeError::InvalidCommittee,
+    )]
+
     pub bridge: Account<'info, BenfenBridge>,
 
     pub token_mint: Box<InterfaceAccount<'info, Mint>>,

@@ -51,12 +51,10 @@ pub struct CrossIn<'info> {
     )]
     pub message_config: Box<Account<'info, MessageConfig>>,
 
-    
-
     #[account(
         mut,
         constraint = token_config.load()?.mint == token_mint.key() @ BridgeTokenError::InvalidTokenMint,
-        //constraint = token_config.load()?.mint == token_account.mint @ BridgeError::InvalidTokenId,
+        constraint = token_config.load()?.mint == token_account.mint @ BridgeTokenError::InvalidTokenMint,
     )]
     pub token_config: AccountLoader<'info, TokenConfigAccount>,
 
@@ -65,7 +63,6 @@ pub struct CrossIn<'info> {
 
    #[account(
         constraint = bridge_config.load()?.supported_chains.contains(&chain_limit.load()?.get_chain_id()) @ BridgeError::UnsupportedCrossToChainId,
-        //constraint = bridge_config.load()?.owner == bridge.config() @ BridgeError::InvalidOwner,
     )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
@@ -73,7 +70,6 @@ pub struct CrossIn<'info> {
     #[account(
         mut,
         constraint = bridge.config == bridge_config.load()?.key() @ BridgeError::InvalidBridgeConfig,
-        //constraint = bridge.limiter == committee.load()?.key() @ BridgeError::InvalidCommittee,
     )]
     pub bridge: Account<'info, BenfenBridge>,
 
@@ -113,15 +109,23 @@ pub fn cross_in<'info>(
 
     //检查token 是否支持
    let token_config = ctx.accounts.token_config.load()?;
-//    let token_mint = ctx.accounts.token_mint.key();
+
+
+   let token_mint = ctx.accounts.token_mint.key();
    
-   //require!(token_account.mint == token_mint, BridgeError::UnsupportedTokenId);
+   require!(token_account.mint == token_mint, BridgeError::InvalidTokenId);
    //require!(token_config.token_id() == token_id, BridgeError::UnsupportedTokenId);
+
+   
+    let single_transfer_limit = chain_limit.get_single_transfer_limit();
+    let usd_amount = chain_limit.calculate_amount_in_usd(amount, token_config.price(), token_config.decimal())?;
+    require!(usd_amount < single_transfer_limit, BridgeError::SingleTransferAmountExceedsLimit);
+ 
 
     //检查用户余额是否足够
     require!(token_account.amount >= amount, BridgeError::InsufficientBalance);
-    let single_transfer_limit = chain_limit.get_single_transfer_limit();
-    require!(chain_limit.calculate_amount_in_usd(amount, token_config.price(), token_config.decimal()) < single_transfer_limit, BridgeError::SingleTransferAmountExceedsLimit);
+
+   
 
 
     transfer_from_user_to_bridge_vault(

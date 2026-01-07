@@ -175,6 +175,8 @@ pub struct SolanaConfig {
     pub contracts_start_slot_fallback: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub contracts_start_slot_override: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub query_interval_secs: Option<u64>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

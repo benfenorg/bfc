@@ -124,7 +124,7 @@ impl Committee {
         signatures: Vec<Vec<u8>>,
         message: &Message,
     ) -> Result<()> {
-        let required_stake = compute_required_stake(message);
+        let required_stake = compute_required_stake(message)?;
         let message_hash = compute_message_hash(message);
         let mut approval_stake = 0u16;
         let mut bitmap = 0u128;
@@ -239,7 +239,7 @@ impl Committee {
         ).map_err(|_| BridgeCommitteeError::InvalidSignature)?;
        
 
-        Ok(pubkey_to_eth_address(pubkey.0))
+        Ok(pubkey_to_eth_address(&pubkey.0))
     }
 
     pub fn seeds(&self) -> [&[u8]; 3] {
@@ -783,4 +783,3 @@ pub mod committee_test {
 
    
 }
-

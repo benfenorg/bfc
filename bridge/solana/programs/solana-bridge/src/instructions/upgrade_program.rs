@@ -6,10 +6,13 @@ use crate::states::committee::Committee;
 use crate::states::message::{UPGRADE_PROGRAM, create_message, decode_upgrade_payload};
 use crate::states::message_config::{MessageConfig,MESSAGE_CONFIG_SEED};
 use crate::states::message_verifier::MessageVerifier;
+use bincode::deserialize;
+
 
 use crate::states::upgrade_authority::UpgradeAuthority;
 use crate::instructions::verify_message::verify_bridge_signature;
 use anchor_lang::prelude::*;
+use anchor_lang::solana_program::bpf_loader_upgradeable;
 use anchor_lang::solana_program::program::invoke_signed;
 use std::convert::Into;
 use crate::states::{
@@ -50,8 +53,11 @@ pub struct UpgradeProgram<'info> {
     )]
     pub upgrade_authority: Box<Account<'info, UpgradeAuthority>>,
 
-    /// CHECK:
-    #[account(mut)]
+    /// CHECK: validated by constraints + runtime checks
+    #[account(
+        mut,
+        constraint = program_data.key() == solana_loader_v3_interface::get_program_data_address(program.key) @ BridgeConfigError::InvalidConfigPubkey
+    )]
     pub program: UncheckedAccount<'info>,
 
     #[account(
@@ -59,19 +65,23 @@ pub struct UpgradeProgram<'info> {
         constraint = program_data.upgrade_authority_address == Some(upgrade_authority.key()),
     )]
     pub program_data: Box<Account<'info, ProgramData>>,
+    
     #[account(mut)]
     pub spill: SystemAccount<'info>,
 
-    /// CHECK:
-    #[account(mut)]
+    /// CHECK: validated by owner constraint + runtime state parsing
+    #[account(
+        mut,
+        constraint = buffer.owner == &bpf_loader_upgradeable::ID @ BridgeUpgradeError::InvalidBufferOwner
+    )]
     pub buffer: UncheckedAccount<'info>,
 
     pub system_program: Program<'info, System>,
-
     pub rent: Sysvar<'info, Rent>,
     pub clock: Sysvar<'info, Clock>,
 
-    /// CHECK:
+    /// CHECK: kept to explicitly pin the loader program id
+    #[account(address = bpf_loader_upgradeable::ID)]
     pub bpf_loader: UncheckedAccount<'info>,
 }
 
@@ -88,35 +98,48 @@ pub fn upgrade_program_with_signatures(
     // ctx.accounts
     //     .upgrade_authority
     //     .can_upgrade(&ctx.accounts.clock)?;
-    let mut message_config =  ctx.accounts.message_config.deref_mut();
-    let mut bridge_config = ctx.accounts.bridge_config.load_mut()?;
-    let mut verifier = ctx.accounts.verifier.load_mut()?;
-    let mut committee = ctx.accounts.committee.load_mut()?;
+
+
+    // -----------------------------
+    // 1) Build message + verify signatures
+    // -----------------------------
+    require!(message_type == UPGRADE_PROGRAM, MessageError::InvalidMessageType);
 
     // create message and verify signatures
     let message = create_message(message_type, version, nonce, chain_id, payload.clone());
 
-    require!(message_type == UPGRADE_PROGRAM, MessageError::InvalidMessageType);
+   {
+        // Load state accounts
+        let mut message_config =  ctx.accounts.message_config.deref_mut();
+        let mut bridge_config = ctx.accounts.bridge_config.load_mut()?;
+        let mut verifier = ctx.accounts.verifier.load_mut()?;
+        let mut committee = ctx.accounts.committee.load_mut()?;
 
-    verify_bridge_signature(
-        &mut message_config,
-        &mut bridge_config,
-        &mut verifier,
-        &mut committee,
-        &message,
-        signatures
-    )?; 
+        verify_bridge_signature(
+            &mut message_config,
+            &mut bridge_config,
+            &mut verifier,
+            &mut committee,
+            &message,
+            signatures
+        )?; 
+        // mutable borrows of loader accounts drop here
+    }
 
-
-    // decode upgrade payload
+    
+    // -----------------------------
+    // 2) Decode payload and validate parameters
+    // -----------------------------
     let (proxy, implementation, upgrade_version) = decode_upgrade_payload(&payload)?;
 
-    // 验证版本号
+
+    // Only allow monotonic version upgrades
     require!(
         upgrade_version > ctx.accounts.upgrade_authority.current_version,
         BridgeUpgradeError::ProgramVersionMismatch
     );
 
+    // Payload must match the provided accounts
     require!(
         proxy == ctx.accounts.program.key(),
         BridgeConfigError::InvalidConfigPubkey
@@ -126,34 +149,41 @@ pub fn upgrade_program_with_signatures(
         BridgeConfigError::InvalidConfigPubkey
     );
 
+    // Program must be an upgradeable loader program
+    require!(
+        ctx.accounts.program.owner == &bpf_loader_upgradeable::ID,
+        BridgeUpgradeError::InvalidProgramData
+    );
+
+    // ProgramData upgrade authority must match our UpgradeAuthority account
     require!(
         ctx.accounts.program_data.upgrade_authority_address
             == Some(ctx.accounts.upgrade_authority.key()),
         BridgeUpgradeError::InvalidProgramData
     );
 
-    // require!(*ctx.accounts.buffer.owner == bpf_loader_upgradeable::id(), BridgeUpgradeError::InvalidBufferOwner);
-    // let buffer_data = ctx.accounts.buffer.try_borrow_data()?;
-    // let state: UpgradeableLoaderState = deserialize(&buffer_data).map_err(|_| BridgeUpgradeError::InvalidBufferOwner)?;
-    
-    // match state {
-    //     UpgradeableLoaderState::Buffer { authority_address } => {
-    //         require!(authority_address == Some(ctx.accounts.upgrade_authority.key()), BridgeUpgradeError::InvalidBufferOwner);
-    //     }
-    //     _ => return Err(BridgeUpgradeError::InvalidBufferOwner.into()),
-    // }
 
-
-    // Ensure the program PDA matches the supplied program data account
-    let expected_program_data =
-        solana_loader_v3_interface::get_program_data_address(&ctx.accounts.program.key());
-
-    require!(
-        expected_program_data == ctx.accounts.program_data.key(),
-        BridgeConfigError::InvalidConfigPubkey
-    );
-
-    // Prepare upgrade instruction
+    // -----------------------------
+    // 3) Validate buffer account is a real Buffer and controlled by our authority
+    // -----------------------------
+    // NOTE: Checking owner alone is not sufficient; we must ensure it is *Buffer* state
+    // and the buffer's authority matches our upgrade authority.
+    {
+        let buffer_data = ctx.accounts.buffer.try_borrow_data()?;
+        let state: UpgradeableLoaderState = deserialize(&buffer_data).map_err(|_| BridgeUpgradeError::InvalidBufferOwner)?;
+        
+        match state {
+            UpgradeableLoaderState::Buffer { authority_address } => {
+                require!(authority_address == Some(ctx.accounts.upgrade_authority.key()), BridgeUpgradeError::InvalidBufferOwner);
+            }
+            _ => return Err(BridgeUpgradeError::InvalidBufferOwner.into()),
+        }
+        // Explicitly drop buffer data borrow before CPI
+        drop(buffer_data);
+    }
+    // -----------------------------
+    // 4) Invoke loader upgrade instruction via CPI
+    // -----------------------------
     let upgrade_ix = solana_loader_v3_interface::instruction::upgrade(
         &ctx.accounts.program.key(),
         &ctx.accounts.buffer.key(),
@@ -161,7 +191,7 @@ pub fn upgrade_program_with_signatures(
         &ctx.accounts.spill.key(),
     );
 
-    // Create account infos for CPI
+    // Account metas must match the loader's expected order
     let account_infos = vec![
         ctx.accounts.program_data.to_account_info(),
         ctx.accounts.program.to_account_info(),
@@ -171,6 +201,7 @@ pub fn upgrade_program_with_signatures(
         ctx.accounts.clock.to_account_info(),
         ctx.accounts.upgrade_authority.to_account_info(),
     ];
+
     // Execute upgrade instruction
     invoke_signed(
         &upgrade_ix,
@@ -178,7 +209,12 @@ pub fn upgrade_program_with_signatures(
         &[&ctx.accounts.upgrade_authority.seeds()],
     )?;
 
-    //Update Program Version And record timestamp
+
+    
+
+    // -----------------------------
+    // 5) Update local version + emit event
+    // -----------------------------
     let old_version = ctx.accounts.upgrade_authority.current_version;
     ctx.accounts
         .upgrade_authority

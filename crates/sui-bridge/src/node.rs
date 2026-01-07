@@ -393,12 +393,17 @@ async fn start_client_components(
         solana_config.contracts_start_slot_fallback.unwrap_or(0),
         solana_config.contracts_start_slot_override,
     );
+
+    let finalized_slot_query_interval = solana_config
+        .query_interval_secs
+        .map(Duration::from_secs)
+        .unwrap_or(Duration::from_secs(10));
     let (sol_handles, _last_finalized_solana_slot_rx) = SolanaSyncer::new(
         sol_client.clone(),
         sol_targets_to_watch,
         sol_events_tx,
     )
-    .run(metrics.clone())
+    .run(metrics.clone(), finalized_slot_query_interval)
     .await
     .expect("Failed to start solana syncer");
     all_handles.extend(sol_handles);
@@ -836,6 +841,7 @@ mod tests {
                 bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
                 contracts_start_slot_fallback: Some(0),
                 contracts_start_slot_override: None,
+                query_interval_secs: None,
             },
             user_limit_db_url: None,
             external_rpc: None,
@@ -933,6 +939,7 @@ mod tests {
                 bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
                 contracts_start_slot_fallback: Some(0),
                 contracts_start_slot_override: None,
+                query_interval_secs: None,
             },
             user_limit_db_url: None,
             external_rpc: None,
@@ -1059,6 +1066,7 @@ mod tests {
                 bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
                 contracts_start_slot_fallback: Some(0),
                 contracts_start_slot_override: Some(0),
+                query_interval_secs: None,
             },
             user_limit_db_url: None,
             external_rpc: None,

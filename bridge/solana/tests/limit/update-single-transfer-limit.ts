@@ -29,7 +29,7 @@ describe("BenfenBridge - Update Single Transfer Limit", () => {
         let version=1;
         let chain_id=CHAIN_IDS.SOLANA_TESTNET;
 
-        let limit=5000*100000000;
+        let limit=500000*100000000;
         let targetChainId=CHAIN_IDS.BENFEN_TESTNET;
         const [bridgeConfigPDA] = anchor.web3.PublicKey.findProgramAddressSync(
             [Buffer.from(SEEDS.BRIDGE_CONFIG)],

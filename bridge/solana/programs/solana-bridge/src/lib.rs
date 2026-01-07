@@ -105,7 +105,6 @@ pub mod benfen_bridge {
 
     pub fn add_token_to_bridge(
         ctx: Context<AddToken>,
-       
         token_id: u64, 
         message_type: u8, 
         version: u8,

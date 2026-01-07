@@ -134,7 +134,7 @@ pub fn add_token_with_signatures(
 
 
 
-fn add_token_internal<'a, 'b,'c,'info>(
+fn add_token_internal(
     bridge_config:  &mut RefMut< BridgeConfig>,
     token_config: &mut RefMut< TokenConfigAccount>,
     chain_limit: &Ref<ChainLimit>,
