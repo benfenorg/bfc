@@ -18,10 +18,6 @@ describe("Extend Program size", () => {
 
   it("Transfer program upgrade authority to PDA", async () => {
     const bpfLoaderUpgradeable = new anchor.web3.PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
-
-
-
-
     
     // 计算committee PDA
     const [bridgeConfigPDA] = anchor.web3.PublicKey.findProgramAddressSync(
@@ -67,7 +63,6 @@ describe("Extend Program size", () => {
     const info = await anchor.getProvider().connection.getAccountInfo(programDataAddress);
   console.log('ProgramData Address:', programDataAddress.toBase58());
   console.log('Data Length:', info?.data.length);
-    return
 
     let message_type=MESSAGE_TYPES.EXTEND_PROGRAM;
     let nonce = 0; 

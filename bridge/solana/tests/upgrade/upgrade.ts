@@ -22,7 +22,7 @@ describe("upgrade program", () => {
     let chain_id=CHAIN_IDS.SOLANA_TESTNET;
 
       // 最新编译的代码写到buffer中
-      const buffer = new anchor.web3.PublicKey("HHRdRBvq6pjoPLVXsYj2BPe4bNW4CV5ZLbitAZF3JzkB");
+      const buffer = new anchor.web3.PublicKey("3MWj5y6LFUu89utM7jxF99tBNty6oxzXpQybwVwsGt4r");
 
       //管理系统升级合约的程序ID
       const BPF_LOADER_UPGRADEABLE_ID = new anchor.web3.PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
@@ -49,16 +49,33 @@ describe("upgrade program", () => {
        console.log("Committee PDA:", committeePDA.toString());
 
 
+        const [messageVerifierPDA] = anchor.web3.PublicKey.findProgramAddressSync(
+             [Buffer.from(SEEDS.MESSAGE_VERIFIER),committeePDA.toBuffer()],
+             targetProgram
+           );
+
+
     //   const [upgradeAuthorityPDA] = anchor.web3.PublicKey.findProgramAddressSync(
     //         [Buffer.from(SEEDS.UPGRADE_AUTHORITY),committeePDA.toBuffer()],
     //         program.programId
     //  );
 
 
+        const [messageConfigPDA]= anchor.web3.PublicKey.findProgramAddressSync(
+                [Buffer.from(SEEDS.MESSAGE_CONFIG),Buffer.from([message_type]),messageVerifierPDA.toBuffer()],
+                targetProgram
+            );
+
+
+
+
     const [upgradeAuthorityPDA] = anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from(SEEDS.UPGRADE_AUTHORITY),committeePDA.toBuffer()],
      targetProgram
     );
+
+
+
 
     console.log("Target Program:", targetProgram.toString());
     console.log("program", program.programId);
@@ -129,13 +146,15 @@ try {
                 upgradeAuthority: upgradeAuthorityPDA,
                 buffer,
                 program: targetProgram,
+                bridgeConfig: bridgeConfigPDA,
+                verifier: messageVerifierPDA,
+                messageConfig: messageConfigPDA,
                 programData,
                 committee: committeePDA,
                 bpfLoader: BPF_LOADER_UPGRADEABLE_ID,   
                 systemProgram: anchor.web3.SystemProgram.programId,
                 clock: anchor.web3.SYSVAR_CLOCK_PUBKEY,
                 rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-                // bpfLoaderUpgradeable: BPF_LOADER_UPGRADEABLE_ID,
             } as any)
             .rpc();
 

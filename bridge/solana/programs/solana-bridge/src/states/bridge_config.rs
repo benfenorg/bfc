@@ -20,6 +20,8 @@ pub struct BridgeConfig {
     // 同上,每个链对应一个ChainLimiter 
     pub supported_chains: [u8; 256], 
 
+
+
     // upgrade  padding
     pub padding: [u64; 3], 
 }

@@ -12,19 +12,19 @@ pub struct ChainLimit {
     pub bump: [u8;1],
     pub config : Pubkey,
     pub chain_id: [u8;1],
-    pub max_usd_limit: u64, //单笔限额
-    pub total_limit: u64,  // 24小时总限额
-    pub hourly_transfer_index: u8, //当前小时索引
-    pub hourly_transfer_amount: [ChainHourlyTransferAmount; HOUR_TRANSFER_NUM], //24 小时的滑动窗口
-    pub padding: [u64; 8],// 用于未来升级合约
+    pub max_usd_limit: u64, // single transfer limit in USD
+    pub total_limit: u64,  // 24-hour total limit in USD
+    pub hourly_transfer_index: u8, // current hour index
+    pub hourly_transfer_amount: [ChainHourlyTransferAmount; HOUR_TRANSFER_NUM], // 24-hour sliding window
+    pub padding: [u64; 8],// reserved for future upgrades
 }
 
 #[zero_copy]
 #[repr(C, packed)]
 #[derive(Default, Debug)]
 pub struct ChainHourlyTransferAmount {
-    pub hour: u64,   //每个小时时间戳
-    pub amount: u64,
+    pub hour: u64,   // hour timestamp
+    pub amount: u64, // transfer amount in USD
 }
 
 
@@ -84,8 +84,21 @@ impl ChainLimit {
         Ok((clock.unix_timestamp / 3600) as u64)
     }
 
-    pub fn calculate_amount_in_usd(&self, amount: u64,price: u64, decimal: u8) -> u64 {
-        ((amount as u128 * price as u128) / 10u128.pow(decimal as u32)) as u64
+    pub fn calculate_amount_in_usd(&self, amount: u64,price: u64, decimal: u8) -> Result<u64> {
+        let amount_u128 = amount as u128;
+        let price_u128 = price as u128;
+        let result = amount_u128.checked_mul(price_u128)
+        .ok_or(BridgeLimiterError::CalculationOverflow)?;
+        let divisor = 10u128.checked_pow(decimal as u32)
+        .ok_or(BridgeLimiterError::InvalidDecimal)?;
+        let usd_amount = result.checked_div(divisor).ok_or(BridgeLimiterError::CalculationOverflow)?;
+        let usd_u64 = match u64::try_from(usd_amount) {
+            Ok(v) => v,
+            Err(_) => return Err(BridgeLimiterError::CalculationOverflow.into()),
+        };
+        Ok(usd_u64)
+
+        // ((amount as u128 * price as u128) / 10u128.pow(decimal as u32)) as u64
     }
 
     pub fn calculate_window_limit(&mut self) -> u64 {
@@ -129,8 +142,10 @@ impl ChainLimit {
     }
 
     pub fn will_amount_exceed_limit(&mut self, amount: u64,price: u64, decimal: u8) ->bool{
-        let amount_in_usd = self.calculate_amount_in_usd(amount, price, decimal);
-        self.calculate_window_limit() + amount_in_usd > self.total_limit
+        match self.calculate_amount_in_usd(amount, price, decimal) {
+            Ok(amount_in_usd) => self.calculate_window_limit() + amount_in_usd > self.total_limit,
+            Err(_) => true,
+        }
     }
 
     pub fn will_usd_amount_exceed_limit_internal(&mut self, current_hour: u64,amount_in_usd: u64) -> bool {
@@ -148,7 +163,7 @@ impl ChainLimit {
 
     pub fn record_bridge_transfers_internal(&mut self, current_hour: u64,amount: u64, price: u64, decimal: u8) -> Result<()> {
         require!(amount >0, BridgeLimiterError::InvalidAmountIsZero);
-        let amount_in_usd = self.calculate_amount_in_usd(amount, price, decimal);
+        let amount_in_usd = self.calculate_amount_in_usd(amount, price, decimal)?;
         require!(amount_in_usd > 0, BridgeLimiterError::InvalidAmountIsZero);
 
         require!(!self.will_usd_amount_exceed_limit_internal(current_hour,amount_in_usd), BridgeLimiterError::ExceedWindowLimit);
@@ -219,9 +234,9 @@ pub mod chain_limit_test{
         let result = amount/10;
 
         chain_limit.set_single_transfer_limit(amount);
-        let amount_in_usd = chain_limit.calculate_amount_in_usd(amount, price, decimal);
+        let amount_in_usd = chain_limit.calculate_amount_in_usd(amount, price, decimal).unwrap();
         println!("amount_in_usd:{}",amount_in_usd);
-       assert_eq!(amount_in_usd, result);
+        assert_eq!(amount_in_usd, result);
     }
 
 
@@ -320,4 +335,3 @@ pub mod chain_limit_test{
         assert_eq!(result.unwrap_err().to_string().contains("Exceed window limit"), true);
     }
 }
-
