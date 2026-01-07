@@ -1773,6 +1773,7 @@ pub(crate) async fn start_bridge_cluster(
                 bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
                 contracts_start_slot_fallback: Some(0),
                 contracts_start_slot_override: None,
+                query_interval_secs: None,
             },
             user_limit_db_url: None,
             external_rpc: Some(ExternalChainRpcConfig {
