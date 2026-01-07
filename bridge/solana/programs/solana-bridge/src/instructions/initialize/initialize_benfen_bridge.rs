@@ -4,6 +4,8 @@ use crate::states::bridge_config::BridgeConfig;
 use crate::states::committee::Committee;
 // use crate::states::vault::{UniversalVault,UNIVERSAL_VAULT_SEED};
 use crate::errors::AdminError;
+use crate::errors::BridgeCommitteeError;
+use crate::errors::BridgeConfigError;
 
 /// Initialize the BenfenBridge account
 #[derive(Accounts)]
@@ -23,7 +25,6 @@ pub struct InitializeBenfenBridge<'info> {
     )]
     pub bridge: Account<'info, BenfenBridge>,
 
-
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
     pub committee: AccountLoader<'info, Committee>,
@@ -35,7 +36,13 @@ pub fn initialize_benfen_bridge(
     ctx: Context<InitializeBenfenBridge>,
 ) -> Result<()> {
     let bridge = &mut ctx.accounts.bridge;
+
+    let bridge_config = ctx.accounts.bridge_config.load()?;
+    require!(bridge_config.chain_id > 0, BridgeConfigError::InvalidChainId);
     
+    let committee = ctx.accounts.committee.load()?;
+    require!(committee.member_count > 0, BridgeCommitteeError::CommitteeSizeExceeded);
+
     let committee_key = ctx.accounts.committee.key();
     let config_key = ctx.accounts.bridge_config.key();
     

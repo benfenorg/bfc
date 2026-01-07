@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use solana_program::keccak::hashv;
 use crate::errors::MessageError;
+use crate::errors::BridgeError;
 use crate::errors::BridgeConvertError;
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone,Debug)]
@@ -134,29 +135,40 @@ pub fn compute_message_hash(message: &Message) -> [u8; 32] {
     keccak256_hash(encoded.as_slice())
 }
 
-
-pub fn pubkey_to_eth_address(pubkey: [u8;64]) -> [u8; 20] {
-    let keccak = hashv(&[&pubkey]).0;
+/// Derives the Ethereum address from a secp256k1 uncompressed public key
+///
+/// Safety and rationale:
+/// - Ethereum addresses are defined as the last 20 bytes of the Keccak-256 hash
+///   of the uncompressed public key (64 bytes: X||Y, without the 0x04 prefix).
+/// - Taking keccak[12..32] selects the lower 160 bits, which is the canonical
+///   Ethereum address representation.
+///
+/// Preconditions:
+/// - `pubkey` must be 64 bytes representing the concatenation of the X and Y coordinates.
+pub fn pubkey_to_eth_address(pubkey: &[u8]) -> [u8; 20] {
+    assert!(pubkey.len() == 64, "Public key must be 64 bytes");
+    let keccak = hashv(&[pubkey]).0;
     let mut eth_address = [0u8; 20];
     eth_address.copy_from_slice(&keccak[12..32]);
     eth_address
 }
 /// Computes the required stake for a message type
-pub fn compute_required_stake(message: &Message) -> u32 {
+pub fn compute_required_stake(message: &Message) -> Result<u32> {
     match message.message_type {
-        TOKEN_TRANSFER => TRANSFER_STAKE_REQUIRED,
-        BLOCKLIST => BLOCKLIST_STAKE_REQUIRED,
+        TOKEN_TRANSFER => Ok(TRANSFER_STAKE_REQUIRED),
+        BLOCKLIST => Ok(BLOCKLIST_STAKE_REQUIRED),
         EMERGENCY_OP => {
-            let op_code = decode_emergency_op_payload(&message.payload).unwrap();
-            if op_code { FREEZING_STAKE_REQUIRED } else { UNFREEZING_STAKE_REQUIRED }
+            let op_code = decode_emergency_op_payload(&message.payload)?;
+            Ok(if op_code { FREEZING_STAKE_REQUIRED } else { UNFREEZING_STAKE_REQUIRED })
         },
-        UPDATE_BRIDGE_LIMIT => BRIDGE_LIMIT_STAKE_REQUIRED,
-        UPDATE_TOKEN_PRICE => UPDATE_TOKEN_PRICE_STAKE_REQUIRED,
-        UPGRADE => UPGRADE_STAKE_REQUIRED,
-        ADD_SVM_TOKENS => ADD_SVM_TOKENS_STAKE_REQUIRED,
-        EXTEND_PROGRAM => EXTEND_PROGRAM_STAKE_REQUIRED,
-        UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT => UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT_STAKE_REQUIRED,
-        _ => 0,
+        UPDATE_BRIDGE_LIMIT => Ok(BRIDGE_LIMIT_STAKE_REQUIRED),
+        UPDATE_TOKEN_PRICE => Ok(UPDATE_TOKEN_PRICE_STAKE_REQUIRED),
+        //UPGRADE => Ok(UPGRADE_STAKE_REQUIRED),
+        UPGRADE_PROGRAM => Ok(UPGRADE_STAKE_REQUIRED),
+        ADD_SVM_TOKENS => Ok(ADD_SVM_TOKENS_STAKE_REQUIRED),
+        EXTEND_PROGRAM => Ok(EXTEND_PROGRAM_STAKE_REQUIRED),
+        UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT => Ok(UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT_STAKE_REQUIRED),
+        _ => Err(MessageError::InvalidMessageType.into()),
     }
 }
 
@@ -731,9 +743,9 @@ pub mod bridge_utils_test{
     #[test]
     fn test_required_stake_invaild_type(){
         let invalid_type = 100;
-        let message=create_message(invalid_type, 0,    0, 0, vec![]);
+        let message=create_message(invalid_type, 0, 0, 0, vec![]);
         let required_stake = compute_required_stake(&message);
-        assert_eq!(required_stake,0);
+        assert!(required_stake.is_err());
     }
 
 
