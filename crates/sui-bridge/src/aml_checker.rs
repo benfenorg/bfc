@@ -31,6 +31,7 @@ pub struct AMLChecker<P> {
     metrics: Arc<BridgeMetrics>,
     key: SuiKeyPair,
     aml_key: String,
+    aml_block_list: Vec<String>,
 }
 
 impl<P> AMLCheckerTrait for AMLChecker<P>
@@ -52,7 +53,7 @@ where
         let store_clone = self.store.clone();
         let mut tasks = vec![];
         tasks.push(spawn_logged_monitored_task!(
-            Self::run_inner(&self.sui_client, receiver, &store_clone, executor_sender_clone.clone(), &self.metrics,self.sui_address,self.gas_object_id,self.bridge_object_arg,&self.key,self.aml_key.clone())
+            Self::run_inner(&self.sui_client, receiver, &store_clone, executor_sender_clone.clone(), &self.metrics,self.sui_address,self.gas_object_id,self.bridge_object_arg,&self.key,self.aml_key.clone(),self.aml_block_list.clone())
         ));
         tasks.push(spawn_logged_monitored_task!(
             Self::resubmit_pending_actions(&self.store,executor_sender)
@@ -72,6 +73,7 @@ where
         key: SuiKeyPair,
         metrics: Arc<BridgeMetrics>,
         aml_key: String,
+        aml_block_list: Vec<String>,
     ) -> Self {
         let bridge_object_arg = sui_client
             .get_mutable_bridge_object_arg_must_succeed()
@@ -85,6 +87,7 @@ where
             key,
             metrics,
             aml_key,
+            aml_block_list,
         }
     }
 
@@ -102,7 +105,7 @@ where
             }
     }
 
-    async fn run_inner(sui_client: &Arc<SuiClient<P>>,mut receiver: mysten_metrics::metered_channel::Receiver<AMLCheckerWrapper>, store: &Arc<BridgeOrchestratorTables>, executor_sender: mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>,metrics: &Arc<BridgeMetrics>,sui_address: SuiAddress,gas_object_id: ObjectID,bridge_object_arg: ObjectArg,key: &SuiKeyPair,aml_key: String){
+    async fn run_inner(sui_client: &Arc<SuiClient<P>>,mut receiver: mysten_metrics::metered_channel::Receiver<AMLCheckerWrapper>, store: &Arc<BridgeOrchestratorTables>, executor_sender: mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>,metrics: &Arc<BridgeMetrics>,sui_address: SuiAddress,gas_object_id: ObjectID,bridge_object_arg: ObjectArg,key: &SuiKeyPair,aml_key: String,aml_block_list: Vec<String>){
         info!("[DEBUG] AMLChecker run_inner started");
 
         while let Some(action) = receiver.recv().await {
@@ -131,7 +134,8 @@ where
                         action_inner.eth_bridge_event.eth_chain_id,
                         action_inner.eth_bridge_event.token_id,
                         eth_address,
-                        aml_key.clone()
+                        aml_key.clone(),
+                        aml_block_list.clone()
                     ).await;
 
                     info!("aml checker eth address:{:?} is_passed: {:?} tx_hash: {:?}", &eth_address, &is_passed, &action_inner.eth_tx_hash);
@@ -173,7 +177,9 @@ where
                         action_inner.solana_bridge_event.solana_chain_id,
                         action_inner.solana_bridge_event.token_id,
                         solana_address,
-                        aml_key.clone()).await;
+                        aml_key.clone(),
+                        aml_block_list.clone()
+                    ).await;
                     info!("aml checker solana address:{:?} is_passed: {:?} tx_hash: {:?}", &solana_address, &is_passed, &action_inner.solana_tx_signature);
                     if is_passed {
                         store.insert_pending_actions(&[bridge_action.clone()]).unwrap_or_else(|e| {
@@ -305,6 +311,9 @@ where
         let tx_hash = match action {
             BridgeAction::EthToSuiBridgeAction(a) => {
                 a.eth_tx_hash.as_bytes().to_vec()
+            }
+            BridgeAction::SolanaToSuiBridgeAction(a) => {
+                a.solana_tx_signature.as_bytes().to_vec()
             }
             _ => unreachable!(),
         };

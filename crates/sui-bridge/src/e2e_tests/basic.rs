@@ -17,6 +17,7 @@ use crate::events::{
 };
 use crate::e2e_tests::{auth, stable};
 use crate::events::SuiToSolanaTokenBridgeV2;
+use ethers::core::k256::elliptic_curve::ff::derive::bitvec::vec;
 use move_core_types::ident_str;
 use sui_json_rpc_api::WriteApiClient;
 use sui_json_rpc_types::SuiTransactionBlockResponseOptions;
@@ -284,160 +285,6 @@ async fn test_bridge_from_eth_to_sui_to_eth() {
     assert_eq!(
         eth_signer.get_balance(eth_address_1, None).await.unwrap(),
         U256::from(amount) * U256::exp10(18)
-    );
-}
-
-/// 测试从 Solana 跨入 Sui
-/// 流程：
-/// 1. 用户在 Solana 上调用 cross_token_to_bridge 存入 USDC
-/// 2. Bridge Node 监听到 Solana 上的 TokensDeposited 事件
-/// 3. Bridge Node 自动在 Sui 上执行 approve 和 claim
-/// 4. 验证用户在 Sui 上收到对应的 token
-#[tokio::test(flavor = "multi_thread", worker_threads = 8)]
-async fn test_bridge_from_solana_to_sui() {
-    use spl_associated_token_account::get_associated_token_address;
-    use crate::e2e_tests::test_utils::wait_for_transfer_action_status;
-    use crate::types::BridgeActionStatus;
-    use solana_sdk::signer::Signer;
-    use anchor_lang::solana_program::system_program;
-
-    telemetry_subscribers::init_for_testing();
-
-    let timer = std::time::Instant::now();
-    
-    // 创建测试集群，同时启用 Solana 和 Eth 环境
-    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
-        .with_solana_env(true)
-        .with_eth_env(false)
-        .with_solana_chain_id(BridgeChainId::SolanaTestnet)
-        .with_bridge_cluster(true)
-        .with_num_validators(3)
-        .build()
-        .await;
-
-    info!(
-        "[Timer] Bridge test cluster started in {:?}",
-        timer.elapsed()
-    );
-
-    let timer = std::time::Instant::now();
-
-    // 获取 Solana 环境和签名者
-    let sol_env = bridge_test_cluster.solana_env();
-    let solana_signer = sol_env.get_signer().await.expect("Failed to get solana signer");
-    let rpc_url = sol_env.rpc_url.clone();
-    let ws_url = sol_env.ws_url.clone();
-    let usdc_mint = sol_env.usdc();
-
-    // 获取 Sui 用户地址
-    let sui_address = bridge_test_cluster.sui_user_address();
-    let solana_chain_id = bridge_test_cluster.solana_chain_id();
-
-    // token_id = 3 是 USDC (在 start_solana_env 中已注册)
-    let token_id: u64 = 3;
-    let amount: u64 = 1_000_000; // 1 USDC (6 decimals)
-
-    // 获取用户的 USDC token 账户
-    let source_token_account = get_associated_token_address(&solana_signer.pubkey(), &usdc_mint);
-
-    info!(
-        "Initiating Solana to Sui bridge transfer: amount={}, token_type={}, sui_address={:?}",
-        amount, token_id, sui_address
-    );
-
-    // 构建并发送 cross_token_to_bridge 交易
-    let client = Client::new_with_options(
-        Cluster::Custom(rpc_url.clone(), ws_url.clone()),
-        solana_signer.clone(),
-        CommitmentConfig::confirmed(),
-    );
-
-    let program = client.program(benfen_bridge::ID).expect("Failed to get program");
-    let init_pdas = crate::query_solana_account::get_init_account(program.id(), bridge_test_cluster.sui_chain_id() as u8);
-
-    let (token_vault, _) = Pubkey::find_program_address(&[b"vault", &token_id.to_be_bytes()], &benfen_bridge::ID);
-    let (token_config, _) = Pubkey::find_program_address(&[b"token_config", &token_id.to_be_bytes()], &benfen_bridge::ID);
-    let (message_config, _) = Pubkey::find_program_address(
-        &[
-            b"message_config",
-            &[BridgeActionType::TokenTransfer as u8],
-            init_pdas.message_verifier.as_ref(),
-        ],
-        &benfen_bridge::ID,
-    );
-
-    let cross_ix = program
-        .request()
-        .accounts(accounts::CrossTokenToBridge {
-            payer: solana_signer.pubkey(),
-            token_account: source_token_account,
-            token_vault,
-            message_config,
-            token_config,
-            chain_limit: init_pdas.bridge_limiter,
-            bridge_config: init_pdas.bridge_config,
-            bridge: init_pdas.benfen_bridge,
-            verifier: init_pdas.message_verifier,
-            token_mint: usdc_mint,
-            token_program: spl_token::ID,
-            system_program: system_program::ID,
-        })
-        .args(args::CrossTokenToBridge {
-            amount,
-            benfen_address: sui_address.to_vec(),
-        })
-        .instructions()
-        .expect("Failed to build cross_token_to_bridge instructions")
-        .remove(0);
-
-    let signature = program
-        .request()
-        .instruction(cross_ix)
-        .signer(solana_signer.clone())
-        .send()
-        .await
-        .expect("Failed to send cross_token_to_bridge transaction");
-
-    info!(
-        "[Timer] Solana cross_token_to_bridge TX sent in {:?}, signature: {}",
-        timer.elapsed(),
-        signature
-    );
-
-    // 等待 Bridge 处理并在 Sui 上 claim token
-    // nonce = 0 (第一笔跨链交易，nonce 从 0 开始)
-    let nonce = 0u64;
-    wait_for_transfer_action_status(
-        bridge_test_cluster.bridge_client(),
-        solana_chain_id,
-        nonce,
-        BridgeActionStatus::Claimed,
-    )
-    .await
-    .expect("Failed to wait for Solana to Sui bridge transfer to be claimed");
-
-    info!(
-        "[Timer] Solana to Sui bridge transfer claimed in {:?}",
-        timer.elapsed()
-    );
-
-    // 验证用户在 Sui 上收到了 token
-    let events = bridge_test_cluster
-        .new_bridge_events(
-            HashSet::from_iter([
-                TokenTransferApproved.get().unwrap().clone(),
-                TokenTransferClaimed.get().unwrap().clone(),
-            ]),
-            true,
-        )
-        .await;
-
-    // 应该有 approved 和 claimed 事件
-    assert!(events.len() >= 2, "Expected at least 2 events (approved + claimed), got {}", events.len());
-
-    info!(
-        "[Timer] Solana to Sui bridge transfer completed successfully in {:?}",
-        timer.elapsed()
     );
 }
 
@@ -714,7 +561,7 @@ async fn test_add_external_admin() {
         vec![add_admin_action.clone()],
         vec![remove_admin_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -791,7 +638,7 @@ async fn test_add_external_witness() {
         vec![add_witness_action.clone()],
         vec![remove_witness_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -865,7 +712,7 @@ async fn test_add_external_target() {
         vec![add_target_action.clone()],
         vec![remove_target_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -929,7 +776,7 @@ async fn test_add_refund_admin() {
         vec![add_refund_action.clone()],
         vec![add_refund_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -1002,7 +849,7 @@ async fn test_remove_external_admin() {
         vec![add_admin_action.clone()],
         vec![remove_admin_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -1077,7 +924,7 @@ async fn test_remove_external_witness() {
         vec![add_witness_action.clone()],
         vec![remove_witness_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -1151,7 +998,7 @@ async fn test_remove_external_target() {
         vec![add_target_action.clone()],
         vec![remove_target_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -1227,7 +1074,7 @@ async fn test_set_bridge_fee_on_cross_out() {
         vec![add_action.clone()],
         vec![remove_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -1294,7 +1141,7 @@ async fn test_add_lp_token_on_evm(){
         vec![add_lp_token.clone()],
     ]);
 
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -1359,7 +1206,7 @@ async  fn test_update_invest_address(){
     ]);
 
 
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -1437,7 +1284,7 @@ async fn test_set_bridge_fee_on_cross_in() {
         vec![add_action.clone()],
         vec![remove_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -1524,7 +1371,7 @@ async fn test_withdraw_fee_cap() {
         vec![add_action.clone()],
         vec![remove_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -1618,7 +1465,7 @@ async fn test_add_token_on_token_list() {
         vec![add_action.clone()],
         vec![remove_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -1692,7 +1539,7 @@ async fn test_remove_token_on_token_list() {
         vec![add_action.clone()],
         vec![remove_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -1765,7 +1612,7 @@ async fn test_set_single_transfer_limit_on_eth() {
         vec![remove_action.clone()],
     ]);
 
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -1828,7 +1675,7 @@ async fn test_puase_bridge_on_solana(){
         vec![action.clone()],
     ]);
 
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -1880,7 +1727,6 @@ async fn test_puase_bridge_on_solana(){
     assert_eq!(status,true);
 }
 
-
  #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
  async fn test_update_committee_blocklist_on_solana(){
     telemetry_subscribers::init_for_testing();
@@ -1915,7 +1761,7 @@ async fn test_puase_bridge_on_solana(){
         vec![action.clone()],
     ]);
 
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -1998,7 +1844,7 @@ async fn test_puase_bridge_on_solana(){
         vec![action.clone()],
         vec![action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -2079,7 +1925,7 @@ async fn test_update_single_limit_on_solana(){
         vec![update_single_limit_action.clone()],
     ]);
 
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -2163,7 +2009,7 @@ async  fn test_update_token_price_on_solana(){
         vec![update_token_price.clone()],
     ]);
 
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -2253,7 +2099,7 @@ async fn test_24hours_limit_on_solana(){
         vec![update_single_limit_action.clone()],
     ]);
 
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -2358,7 +2204,7 @@ async fn test_add_new_coin_on_solana() {
         vec![add_solana_coin_action.clone()],
     ]);
 
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -2461,7 +2307,7 @@ async fn test_add_new_coins_on_sui_and_eth() {
         vec![sui_action.clone()],
         vec![eth_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -3320,6 +3166,369 @@ async fn test_solana_client_with_test_validator() {
 
     let tx_info = client.get_transaction("5BM32aN75RmaxpPr8gSTGt4poQdCKEAzowRgZo7ZJL6wn5rW9kWCiL58dWma4e5dm2u4cBvdrbd8wXRYCWR4gPNi").await;
     assert!(tx_info.is_err(), "Expected no transaction info for invalid signature");
+}
+
+/// 测试从 Solana 跨入 Sui
+/// 流程：
+/// 1. 用户在 Solana 上调用 cross_token_to_bridge 存入 USDC
+/// 2. Bridge Node 监听到 Solana 上的 TokensDeposited 事件
+/// 3. Bridge Node 自动在 Sui 上执行 approve 和 claim
+/// 4. 验证用户在 Sui 上收到对应的 token
+#[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+async fn test_bridge_from_solana_to_sui() {
+    use spl_associated_token_account::get_associated_token_address;
+    use crate::e2e_tests::test_utils::wait_for_transfer_action_status;
+    use crate::types::BridgeActionStatus;
+    use solana_sdk::signer::Signer;
+    use anchor_lang::solana_program::system_program;
+
+    telemetry_subscribers::init_for_testing();
+
+    let timer = std::time::Instant::now();
+    
+    // 创建测试集群，同时启用 Solana 和 Eth 环境
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_solana_env(true)
+        .with_eth_env(false)
+        .with_solana_chain_id(BridgeChainId::SolanaTestnet)
+        .with_bridge_cluster(true)
+        .with_num_validators(3)
+        .build()
+        .await;
+
+    info!(
+        "[Timer] Bridge test cluster started in {:?}",
+        timer.elapsed()
+    );
+
+    let timer = std::time::Instant::now();
+
+    // 获取 Solana 环境和签名者
+    let sol_env = bridge_test_cluster.solana_env();
+    let solana_signer = sol_env.get_signer().await.expect("Failed to get solana signer");
+    let rpc_url = sol_env.rpc_url.clone();
+    let ws_url = sol_env.ws_url.clone();
+    let usdc_mint = sol_env.usdc();
+
+    // 获取 Sui 用户地址
+    let sui_address = bridge_test_cluster.sui_user_address();
+    let solana_chain_id = bridge_test_cluster.solana_chain_id();
+
+    // token_id = 3 是 USDC (在 start_solana_env 中已注册)
+    let token_id: u64 = 3;
+    let amount: u64 = 1_000_000; // 1 USDC (6 decimals)
+
+    // 获取用户的 USDC token 账户
+    let source_token_account = get_associated_token_address(&solana_signer.pubkey(), &usdc_mint);
+
+    info!(
+        "Initiating Solana to Sui bridge transfer: amount={}, token_type={}, sui_address={:?}",
+        amount, token_id, sui_address
+    );
+
+    // 构建并发送 cross_token_to_bridge 交易
+    let client = Client::new_with_options(
+        Cluster::Custom(rpc_url.clone(), ws_url.clone()),
+        solana_signer.clone(),
+        CommitmentConfig::confirmed(),
+    );
+
+    let program = client.program(benfen_bridge::ID).expect("Failed to get program");
+    let init_pdas = crate::query_solana_account::get_init_account(program.id(), bridge_test_cluster.sui_chain_id() as u8);
+
+    let (token_vault, _) = Pubkey::find_program_address(&[b"vault", &token_id.to_be_bytes()], &benfen_bridge::ID);
+    let (token_config, _) = Pubkey::find_program_address(&[b"token_config", &token_id.to_be_bytes()], &benfen_bridge::ID);
+    let (message_config, _) = Pubkey::find_program_address(
+        &[
+            b"message_config",
+            &[BridgeActionType::TokenTransfer as u8],
+            init_pdas.message_verifier.as_ref(),
+        ],
+        &benfen_bridge::ID,
+    );
+
+    let cross_ix = program
+        .request()
+        .accounts(accounts::CrossTokenToBridge {
+            payer: solana_signer.pubkey(),
+            token_account: source_token_account,
+            token_vault,
+            message_config,
+            token_config,
+            chain_limit: init_pdas.bridge_limiter,
+            bridge_config: init_pdas.bridge_config,
+            bridge: init_pdas.benfen_bridge,
+            verifier: init_pdas.message_verifier,
+            token_mint: usdc_mint,
+            token_program: spl_token::ID,
+            system_program: system_program::ID,
+        })
+        .args(args::CrossTokenToBridge {
+            amount,
+            benfen_address: sui_address.to_vec(),
+        })
+        .instructions()
+        .expect("Failed to build cross_token_to_bridge instructions")
+        .remove(0);
+
+    let signature = program
+        .request()
+        .instruction(cross_ix)
+        .signer(solana_signer.clone())
+        .send()
+        .await
+        .expect("Failed to send cross_token_to_bridge transaction");
+
+    info!(
+        "[Timer] Solana cross_token_to_bridge TX sent in {:?}, signature: {}",
+        timer.elapsed(),
+        signature
+    );
+
+    // 等待 Bridge 处理并在 Sui 上 claim token
+    // nonce = 0 (第一笔跨链交易，nonce 从 0 开始)
+    let nonce = 0u64;
+    wait_for_transfer_action_status(
+        bridge_test_cluster.bridge_client(),
+        solana_chain_id,
+        nonce,
+        BridgeActionStatus::Claimed,
+    )
+    .await
+    .expect("Failed to wait for Solana to Sui bridge transfer to be claimed");
+
+    info!(
+        "[Timer] Solana to Sui bridge transfer claimed in {:?}",
+        timer.elapsed()
+    );
+
+    // 验证用户在 Sui 上收到了 token
+    let events = bridge_test_cluster
+        .new_bridge_events(
+            HashSet::from_iter([
+                TokenTransferApproved.get().unwrap().clone(),
+                TokenTransferClaimed.get().unwrap().clone(),
+            ]),
+            true,
+        )
+        .await;
+
+    // 应该有 approved 和 claimed 事件
+    assert!(events.len() >= 2, "Expected at least 2 events (approved + claimed), got {}", events.len());
+
+    info!(
+        "[Timer] Solana to Sui bridge transfer completed successfully in {:?}",
+        timer.elapsed()
+    );
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+async fn test_add_refund_admin_and_bridge_from_solana() {
+    use spl_associated_token_account::get_associated_token_address;
+    use crate::e2e_tests::test_utils::wait_for_transfer_action_status;
+    use crate::types::BridgeActionStatus;
+    use solana_sdk::signer::Signer;
+    use anchor_lang::solana_program::system_program;
+
+    telemetry_subscribers::init_for_testing();
+
+    let timer = std::time::Instant::now();
+
+    // Step 1: 创建测试集群，启用 Solana 环境
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_solana_env(true)
+        .with_eth_env(false)
+        .with_solana_chain_id(BridgeChainId::SolanaTestnet)
+        .with_bridge_cluster(false)
+        .with_num_validators(3)
+        .build()
+        .await;
+
+    info!(
+        "[Timer] Bridge test cluster started in {:?}",
+        timer.elapsed()
+    );
+
+    let sender = bridge_test_cluster.sui_user_address();
+    let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
+
+    // ========== Part 1: 添加 refund 管理员 ==========
+    info!("Part 1: Adding refund admin...");
+
+    // op_type: 0 = add, 1 = remove
+    let add_refund_action = BridgeAction::RefundAdminAction(RefundAdminAction {
+        nonce: 0,
+        chain_id: BridgeChainId::SuiCustom,
+        op_type: 0,
+        sui_address: sender.to_string(),
+    });
+
+    bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![add_refund_action.clone()],
+        vec![add_refund_action.clone()],
+        vec![add_refund_action.clone()],
+    ]);
+
+    let sol_env = bridge_test_cluster.solana_env();
+    let solana_signer = sol_env.get_signer().await.expect("Failed to get solana signer");
+    let solana_address = solana_signer.pubkey().to_string();
+    info!("bbking100 Solana address: {}", solana_address);
+
+    bridge_test_cluster.start_bridge_cluster(false, false, true, vec![solana_address]).await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee"),
+    );
+
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_action = agg
+        .request_committee_signatures(add_refund_action)
+        .await
+        .expect("Failed to request committee signatures for RefundAdminAction");
+
+    let tx = build_refund_admin_operate_transaction(
+        sender,
+        &bridge_test_cluster
+            .wallet()
+            .get_one_gas_object_owned_by_address(sender)
+            .await
+            .unwrap()
+            .unwrap(),
+        certified_action,
+        bridge_arg,
+        1000,
+    )
+    .unwrap();
+
+    let response = bridge_test_cluster.sign_and_execute_transaction(&tx).await;
+    let effects = response.effects.unwrap();
+    assert_eq!(effects.status(), &SuiExecutionStatus::Success);
+    info!("✅ Part 1 completed: Successfully added refund admin: {}", sender);
+
+    // ========== Part 2: 从 Solana 跨入 USDC 到 Sui ==========
+    info!("Part 2: Bridge from Solana to Sui...");
+    let timer = std::time::Instant::now();
+
+    let sol_env = bridge_test_cluster.solana_env();
+    let solana_signer = sol_env.get_signer().await.expect("Failed to get solana signer");
+    let rpc_url = sol_env.rpc_url.clone();
+    let ws_url = sol_env.ws_url.clone();
+    let usdc_mint = sol_env.usdc();
+
+    let sui_address = bridge_test_cluster.sui_user_address();
+    let solana_chain_id = bridge_test_cluster.solana_chain_id();
+
+    // token_id = 3 是 USDC (在 start_solana_env 中已注册)
+    let token_id: u64 = 3;
+    let amount: u64 = 1_000_000; // 1 USDC (6 decimals)
+
+    let source_token_account = get_associated_token_address(&solana_signer.pubkey(), &usdc_mint);
+
+    info!(
+        "Initiating Solana to Sui bridge transfer: amount={}, token_id={}, sui_address={:?}",
+        amount, token_id, sui_address
+    );
+
+    // 构建并发送 cross_token_to_bridge 交易
+    let client = Client::new_with_options(
+        Cluster::Custom(rpc_url.clone(), ws_url.clone()),
+        solana_signer.clone(),
+        CommitmentConfig::confirmed(),
+    );
+
+    let program = client.program(benfen_bridge::ID).expect("Failed to get program");
+    let init_pdas = crate::query_solana_account::get_init_account(program.id(), bridge_test_cluster.sui_chain_id() as u8);
+
+    let (token_vault, _) = Pubkey::find_program_address(&[b"vault", &token_id.to_be_bytes()], &benfen_bridge::ID);
+    let (token_config, _) = Pubkey::find_program_address(&[b"token_config", &token_id.to_be_bytes()], &benfen_bridge::ID);
+    let (message_config, _) = Pubkey::find_program_address(
+        &[
+            b"message_config",
+            &[BridgeActionType::TokenTransfer as u8],
+            init_pdas.message_verifier.as_ref(),
+        ],
+        &benfen_bridge::ID,
+    );
+
+    let cross_ix = program
+        .request()
+        .accounts(accounts::CrossTokenToBridge {
+            payer: solana_signer.pubkey(),
+            token_account: source_token_account,
+            token_vault,
+            message_config,
+            token_config,
+            chain_limit: init_pdas.bridge_limiter,
+            bridge_config: init_pdas.bridge_config,
+            bridge: init_pdas.benfen_bridge,
+            verifier: init_pdas.message_verifier,
+            token_mint: usdc_mint,
+            token_program: spl_token::ID,
+            system_program: system_program::ID,
+        })
+        .args(args::CrossTokenToBridge {
+            amount,
+            benfen_address: sui_address.to_vec(),
+        })
+        .instructions()
+        .expect("Failed to build cross_token_to_bridge instructions")
+        .remove(0);
+
+    let signature = program
+        .request()
+        .instruction(cross_ix)
+        .signer(solana_signer.clone())
+        .send()
+        .await
+        .expect("Failed to send cross_token_to_bridge transaction");
+
+    info!(
+        "[Timer] Solana cross_token_to_bridge TX sent in {:?}, signature: {}",
+        timer.elapsed(),
+        signature
+    );
+
+    // 等待 Bridge 处理并在 Sui 上 claim token
+    let nonce = 0u64;
+    wait_for_transfer_action_status(
+        bridge_test_cluster.bridge_client(),
+        solana_chain_id,
+        nonce,
+        BridgeActionStatus::Claimed,
+    )
+    .await
+    .expect("Failed to wait for Solana to Sui bridge transfer to be claimed");
+
+    info!(
+        "[Timer] Solana to Sui bridge transfer claimed in {:?}",
+        timer.elapsed()
+    );
+
+    // 验证跨入事件
+    let events = bridge_test_cluster
+        .new_bridge_events(
+            HashSet::from_iter([
+                TokenTransferApproved.get().unwrap().clone(),
+                TokenTransferClaimed.get().unwrap().clone(),
+            ]),
+            true,
+        )
+        .await;
+
+    assert!(events.len() >= 2, "Expected at least 2 events (approved + claimed), got {}", events.len());
+
+    info!(
+        "✅ Part 2 completed: Solana to Sui bridge transfer completed successfully in {:?}",
+        timer.elapsed()
+    );
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]

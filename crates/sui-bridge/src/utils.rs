@@ -387,6 +387,7 @@ pub fn generate_bridge_node_config_and_write_to_file(
                 testnet_url: "https://your_tron_testnet_rpc_url".to_string(),
             },
         }),
+        aml_block_list: vec![],
     };
     if run_client {
         config.sui.bridge_client_key_path = Some(PathBuf::from("/path/to/your/bridge_client_key"));

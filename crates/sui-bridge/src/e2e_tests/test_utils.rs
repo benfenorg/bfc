@@ -315,6 +315,7 @@ impl BridgeTestClusterBuilder {
                 self.enable_fast_path_latest,
                 self.enable_fast_path_safe,
                 self.enable_fast_path_finalized,
+                vec![],
             )
             .await;
             bridge_node_handles = Some(handles);
@@ -600,6 +601,7 @@ impl BridgeTestCluster {
         enable_fast_path_latest: bool,
         enable_fast_path_safe: bool,
         enable_fast_path_finalized: bool,
+        aml_block_list: Vec<String>,
     ) {
         assert!(self.bridge_node_handles.is_none());
         let approved_governace_actions = self
@@ -614,6 +616,7 @@ impl BridgeTestCluster {
             enable_fast_path_latest,
             enable_fast_path_safe,
             enable_fast_path_finalized,
+            aml_block_list,
         )
         .await;
         self.bridge_node_handles = Some(handles);
@@ -1689,6 +1692,7 @@ pub(crate) async fn start_bridge_cluster(
     enable_fast_path_latest: bool,
     enable_fast_path_safe: bool,
     enable_fast_path_finalized: bool,
+    aml_block_list: Vec<String>,
 ) -> (Vec<JoinHandle<()>>, Option<(SuiAddress, SuiKeyPair)>) {
     let bridge_authority_keys = test_cluster
         .bridge_authority_keys
@@ -1785,6 +1789,7 @@ pub(crate) async fn start_bridge_cluster(
                     testnet_url: "http://127.0.0.1:18190".to_string(),
                 },
             }),
+            aml_block_list: aml_block_list.clone(),
         };
         let prometheus_registry = Registry::new();
         if i == 0 {

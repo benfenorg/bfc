@@ -450,6 +450,7 @@ async fn start_client_components(
         client_config.key.copy(),
         metrics.clone(),
         client_config.aml_key.clone(),
+        client_config.aml_block_list.clone(),
     )
         .await;
 
@@ -838,6 +839,7 @@ mod tests {
             },
             user_limit_db_url: None,
             external_rpc: None,
+            aml_block_list: vec![],
         };
         // Spawn bridge node in memory
         let _handle = run_bridge_node(
@@ -934,6 +936,7 @@ mod tests {
             },
             user_limit_db_url: None,
             external_rpc: None,
+            aml_block_list: vec![],
         };
 
         let prometheus_registry = Registry::new();
@@ -1059,6 +1062,7 @@ mod tests {
             },
             user_limit_db_url: None,
             external_rpc: None,
+            aml_block_list: vec![],
         };
         let prometheus_registry = Registry::new();
         let metrics = Arc::new(BridgeMetrics::new(&prometheus_registry));

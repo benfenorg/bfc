@@ -143,6 +143,7 @@ pub struct BridgeNodeConfig {
     pub user_limit_db_url: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub external_rpc: Option<ExternalChainRpcConfig>,
+    pub aml_block_list: Vec<String>,
 }
 
 pub fn default_ed25519_key_pair() -> NetworkKeyPair {
@@ -373,6 +374,7 @@ impl BridgeNodeConfig {
             evm_client_configs,
             run_client: self.run_client,
             user_limit_db_url: self.user_limit_db_url.clone(),
+            aml_block_list: self.aml_block_list.clone(),
         };
 
         Ok((bridge_server_config, Some(bridge_client_config)))
@@ -658,6 +660,7 @@ pub struct BridgeClientConfig {
     pub aml_key: String,
     pub run_client: bool,
     pub user_limit_db_url: Option<String>,
+    pub aml_block_list: Vec<String>,
 }
 
 #[derive(Debug)]

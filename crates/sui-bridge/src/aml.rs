@@ -79,11 +79,9 @@ pub async fn check_aml_risk_score(
     token_id: u64,
     eth_address: EthAddress,
     aml_key: String,
+    aml_block_list: Vec<String>,
 ) -> bool {
-    let eth_address_zd = EthAddress::from_str("0x2e6547f8a54d261a4a3e508c4b321b84c0aee44a").unwrap();
-    let eth_address_lf = EthAddress::from_str("0x566bbc5d7d10054b893c2d841aa5efb9f8f6b50a").unwrap();
-
-    if eth_address == eth_address_zd || eth_address == eth_address_lf {
+    if aml_block_list.contains(&eth_address.to_string().to_lowercase()) {
         return false;
     }
     let coin = get_coin_by_chain_token(chain_id, token_id);
@@ -107,7 +105,12 @@ pub async fn check_aml_risk_score_solana(
     token_id: u64,
     solana_address: SolanaAddress,
     aml_key: String,
+    aml_block_list: Vec<String>,    
 ) -> bool {
+    info!("[DEBUG] check_aml_risk_score_solana: aml_block_list: {:?} solana_address: {}", aml_block_list, solana_address);
+    if aml_block_list.contains(&solana_address.to_string()) {
+        return false;
+    }
     let coin = get_coin_by_chain_token(chain_id, token_id);
     let url = format!(
         "https://openapi.misttrack.io/v2/risk_score_query_task?api_key={}&coin={}&address={}",
@@ -254,14 +257,14 @@ mod tests {
     #[tokio::test]
     async fn test_check_aml() {
         let eth_address = EthAddress::from_str("0x2e6547f8a54d261a4a3e508c4b321b84c0aee44b").unwrap();
-        let result = check_aml_risk_score(BridgeChainId::EthMainnet, TOKEN_ID_ETH, eth_address, "".to_string()).await;
+        let result = check_aml_risk_score(BridgeChainId::EthMainnet, TOKEN_ID_ETH, eth_address, "".to_string(), vec![]).await;
         assert_eq!(result, true);
     }
 
     #[tokio::test]
     async fn test_check_aml_solana() {
         let solana_address = SolanaAddress::from_str("Hwx5twsSBJmTjkq6Ac1MZLcWepfNqEyBGGDqP4TiTia7").unwrap();
-        let result = check_aml_risk_score_solana(BridgeChainId::SolanaMainnet, TOKEN_ID_USDT, solana_address, "".to_string()).await;
+        let result = check_aml_risk_score_solana(BridgeChainId::SolanaMainnet, TOKEN_ID_USDT, solana_address, "".to_string(), vec![]).await;
         assert_eq!(result, true);
     }
 }
