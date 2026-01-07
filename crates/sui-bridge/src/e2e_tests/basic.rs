@@ -12,8 +12,8 @@ use crate::e2e_tests::test_utils::{
 };
 use crate::eth_transaction_builder::build_eth_transaction;
 use crate::events::{
-    SuiBridgeEvent, SuiToEthTokenBridgeV2,TokenSendBackEvent, TokenTransferApproved,
-    TokenTransferClaimed,
+    SuiBridgeEvent, SuiToEthTokenBridgeV2, TokenSendBackEvent, TokenSendBackForSolanaV2,
+    TokenTransferApproved, TokenTransferClaimed,
 };
 use crate::e2e_tests::{auth, stable};
 use crate::events::SuiToSolanaTokenBridgeV2;
@@ -23,6 +23,7 @@ use sui_json_rpc_api::WriteApiClient;
 use sui_json_rpc_types::SuiTransactionBlockResponseOptions;
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
+use sui_types::base_types::SuiAddress;
 use sui_types::transaction::{ObjectArg, TransactionData};
 use sui_types::BRIDGE_PACKAGE_ID;
 use sui_types::{BFC_SYSTEM_STATE_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION};
@@ -42,6 +43,7 @@ use crate::sui_transaction_builder::{
 
 use crate::crypto::BridgeAuthorityPublicKeyBytes;
 use sui_types::crypto::ToFromBytes;
+use fastcrypto::traits::KeyPair;
 
 
 use crate::solana_transaction_builder::build_solana_transaction;
@@ -3349,6 +3351,9 @@ async fn test_add_refund_admin_and_bridge_from_solana() {
         timer.elapsed()
     );
 
+    // 提前计算 minter_address（bridge node 0 的地址）
+    // 因为 bridge node 使用 bridge_authority_key 作为 client key
+    let minter_address = SuiAddress::from(bridge_test_cluster.bridge_authority_key(0).public());
     let sender = bridge_test_cluster.sui_user_address();
     let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
 
@@ -3356,11 +3361,13 @@ async fn test_add_refund_admin_and_bridge_from_solana() {
     info!("Part 1: Adding refund admin...");
 
     // op_type: 0 = add, 1 = remove
+    // Move 中 ctx.sender().to_ascii_string() 返回不带 0x 前缀的 hex，需要去掉前缀
+    let minter_address_hex = minter_address.to_string().trim_start_matches("0x").to_string();
     let add_refund_action = BridgeAction::RefundAdminAction(RefundAdminAction {
         nonce: 0,
         chain_id: BridgeChainId::SuiCustom,
         op_type: 0,
-        sui_address: sender.to_string(),
+        sui_address: minter_address_hex,
     });
 
     bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
@@ -3411,7 +3418,7 @@ async fn test_add_refund_admin_and_bridge_from_solana() {
     let response = bridge_test_cluster.sign_and_execute_transaction(&tx).await;
     let effects = response.effects.unwrap();
     assert_eq!(effects.status(), &SuiExecutionStatus::Success);
-    info!("✅ Part 1 completed: Successfully added refund admin: {}", sender);
+    info!("✅ Part 1 completed: Successfully added refund admin: {}", minter_address);
 
     // ========== Part 2: 从 Solana 跨入 USDC 到 Sui ==========
     info!("Part 2: Bridge from Solana to Sui...");
@@ -3496,37 +3503,27 @@ async fn test_add_refund_admin_and_bridge_from_solana() {
         signature
     );
 
-    // 等待 Bridge 处理并在 Sui 上 claim token
-    let nonce = 0u64;
-    wait_for_transfer_action_status(
-        bridge_test_cluster.bridge_client(),
-        solana_chain_id,
-        nonce,
-        BridgeActionStatus::Claimed,
-    )
-    .await
-    .expect("Failed to wait for Solana to Sui bridge transfer to be claimed");
+    // 等待 Bridge 处理退款（send_back_token_v2）
+    // 等待 30S
+    tokio::time::sleep(std::time::Duration::from_secs(30)).await;
+    // 退款流程：AML 检查触发 send_back_token_v2，发出 TokenSendBackEventForSolanaV2 事件
+    info!("Waiting for refund (send_back_token_v2) to be processed...");
 
-    info!(
-        "[Timer] Solana to Sui bridge transfer claimed in {:?}",
-        timer.elapsed()
-    );
-
-    // 验证跨入事件
+    // 验证退款事件
     let events = bridge_test_cluster
         .new_bridge_events(
             HashSet::from_iter([
+                TokenSendBackForSolanaV2.get().unwrap().clone(),
                 TokenTransferApproved.get().unwrap().clone(),
-                TokenTransferClaimed.get().unwrap().clone(),
             ]),
             true,
         )
         .await;
-
-    assert!(events.len() >= 2, "Expected at least 2 events (approved + claimed), got {}", events.len());
+    info!("bbking100 events: {:?}", events);
+    assert!(events.len() >= 2, "Expected at least 2 events (TokenSendBackEventForSolanaV2 + TokenTransferApproved), got {}", events.len());
 
     info!(
-        "✅ Part 2 completed: Solana to Sui bridge transfer completed successfully in {:?}",
+        "✅ Part 2 completed: Refund (send_back_token_v2) processed successfully in {:?}",
         timer.elapsed()
     );
 }

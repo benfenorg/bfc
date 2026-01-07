@@ -385,8 +385,8 @@ where
                             .data
                             .iter()
                             .any(|e| {
-                                e.type_.name.as_str() == "TokenSendBackEvent" || e.type_.name.as_str() == "TokenSendBackEventV2"}),
-                        "Expected TokenSendBackEvent or TokenSendBackEventV2 event but got: {:?}",
+                                e.type_.name.as_str() == "TokenSendBackEvent" || e.type_.name.as_str() == "TokenSendBackEventV2" || e.type_.name.as_str() == "TokenSendBackEventForSolanaV2"}),
+                        "Expected TokenSendBackEvent or TokenSendBackEventV2 or TokenSendBackForSolanaV2 event but got: {:?}",
                         events,
                 );
                 info!(?tx_digest, "send back transaction executed successfully");
