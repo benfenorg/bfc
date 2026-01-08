@@ -35,7 +35,8 @@ use sui_bridge::types::{
     SingleTransferLimitUpdateAction,UpdateBridgeFeeOnCrossOutAction,
     UpdateBridgeFeeOnCrossInAction, WithdrawBridgeFeeAction,
     AddLpTokenIdAction, UpdateInvestAddressAction,
-    AddTokenOnSolanaAction,
+    AddTokenOnSolanaAction,ExtendProgramOnSolanaAction,
+    UpgradeProgramOnSolanaAction,
 };
 use sui_bridge::utils::{get_eth_signer_client, EthSigner, SolanaSigner};
 use sui_config::Config;
@@ -396,6 +397,27 @@ pub enum GovernanceClientCommands {
         #[clap(name = "invest-address", long)]
         invest_address: EthAddress,
     },
+    #[clap(name = "extend-program-on-solana")]
+    ExtendProgramOnSolana{
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "program-id", long)]
+        program_id: Pubkey,
+        #[clap(name = "size", long)]
+        size: u32,
+    },
+
+    #[clap(name = "upgrade-program-on-solana")]
+    UpgradeProgramOnSolana{
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "proxy", long)]
+        proxy: Pubkey,
+        #[clap(name = "implementation", long)]
+        implementation: Pubkey,
+        #[clap(name = "version", long)]
+        version: u8,
+    }
 }
 
 pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> BridgeAction {
@@ -662,6 +684,25 @@ pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> B
             benfen_decimal: *benfen_decimal,
             token_price: *token_price,
         }),
+
+        GovernanceClientCommands::ExtendProgramOnSolana { nonce, program_id, size } => {
+            BridgeAction::ExtendProgramOnSolanaAction(ExtendProgramOnSolanaAction {
+                nonce: *nonce,
+                chain_id,
+                program_id: *program_id,
+                size: *size,
+            })
+        }
+
+        GovernanceClientCommands::UpgradeProgramOnSolana { nonce, proxy, implementation, version } => {
+            BridgeAction::UpgradeProgramOnSolanaAction(UpgradeProgramOnSolanaAction {
+                nonce: *nonce,
+                chain_id,
+                proxy: *proxy,
+                implementation: *implementation,
+                version: *version,
+            })
+        }
         GovernanceClientCommands::AddTokensOnEvm {
             nonce,
             token_ids,
@@ -805,6 +846,8 @@ pub fn select_contract_address(
         GovernanceClientCommands::UpdateFastPathLimit { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::AddLpTokenId { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::UpdateInvestAddress { .. } => config.eth_bridge_proxy_address,
+        GovernanceClientCommands::ExtendProgramOnSolana { .. } => unreachable!(),
+        GovernanceClientCommands::UpgradeProgramOnSolana { .. } => unreachable!(),
     }
 }
 
