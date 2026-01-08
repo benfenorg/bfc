@@ -16,6 +16,8 @@ use crate::types::{AddTokensOnSuiAction, AddTokenOnSolanaAction,BridgeAction};
 use anyhow::anyhow;
 use ethers::core::k256::ecdsa::SigningKey;
 use ethers::middleware::SignerMiddleware;
+use ethers::prelude::*;
+use ethers::signers::{LocalWallet, Signer as ETHSigner};
 use ethers::providers::{Http, Provider};
 use ethers::signers::Wallet;
 use ethers::types::Address as EthAddress;
@@ -401,8 +403,10 @@ pub async fn get_eth_signer_client(url: &str, private_key_hex: &str) -> anyhow::
     let provider = Provider::<Http>::try_from(url)
         .unwrap()
         .interval(std::time::Duration::from_millis(2000));
+    let chain_id = provider.get_chainid().await?;
     let wallet = Wallet::from_str(private_key_hex)
-        .unwrap();
+        .unwrap()
+        .with_chain_id(chain_id.as_u64());
     Ok(SignerMiddleware::new(provider, wallet))
 }
 
