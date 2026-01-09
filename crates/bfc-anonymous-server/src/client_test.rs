@@ -276,11 +276,14 @@ impl AnonymousClient {
                 response: Some(response),
                 error: None,
             },
-            Err(e) => TestResult {
-                method: "bfcx_getAnonymousRestoreValueArray".to_string(),
-                success: false,
-                response: None,
-                error: Some(e.to_string()),
+            Err(e) => {
+                println!("error occurred: {}", e);
+                TestResult {
+                    method: "bfcx_getAnonymousRestoreValueArray".to_string(),
+                    success: false,
+                    response: None,
+                    error: Some(e.to_string()),
+                }
             },
         }
     }
@@ -436,11 +439,14 @@ impl AnonymousClient {
                 response: Some(response),
                 error: None,
             },
-            Err(e) => TestResult {
-                method: "bfcx_getAnonymousEncodeDataArrayForZKloginAddress".to_string(),
-                success: false,
-                response: None,
-                error: Some(e.to_string()),
+            Err(e) => {
+                println!("error occurred: {}", e);
+                TestResult {
+                    method: "bfcx_getAnonymousEncodeDataArrayForZKloginAddress".to_string(),
+                    success: false,
+                    response: None,
+                    error: Some(e.to_string()),
+                }
             },
         }
     }
@@ -475,15 +481,10 @@ impl AnonymousClient {
     }
 
     pub async fn test_get_anonymous_data_version(&self,
-                                                 value1: Vec<u8>,
-                                                 value2: Vec<u8>,
                                                  object_id: String) -> TestResult {
         let user_address = AccountAddress::from_hex_literal("0x1").unwrap();
         let params = json!({
-            "owner": user_address,
             "object_id": object_id,
-            "value1": value1,
-            "value2": value2,
         });
 
         match self
@@ -1171,17 +1172,9 @@ mod tests {
         // v2 split 1: "8423594fbec37400d0c6030098003710e46033a30024702400009bfa4f000c00"
         // v2 split 2: "d08d375f9bec0c09985123c5e47733340054007f001700f50066001300fd00d7"
 
-        let object_id1 = "BFC47c715b758d549e531baf6ef516b1fa716f766e312a209123bdc9acd7cb5810374dc";
+        let object_id1 = "BFC061a7074c39a39e80e5bf654b75ecfedac90ed0291e5bbc9a7be57ca4409efd1b9a7";
         let result = client
             .test_get_anonymous_data_version(
-                Vec::from(split_result_0["result"]["result1"]
-                    .as_str()
-                    .unwrap()
-                    .to_owned()),
-                Vec::from(split_result_0["result"]["result1"]
-                    .as_str()
-                    .unwrap()
-                    .to_owned()),
                 object_id1.to_string(),
             )
             .await
@@ -1193,8 +1186,6 @@ mod tests {
 
         let result = client
             .test_get_anonymous_data_version(
-                Vec::from("8423594fbec37400d0c6030098003710e46033a30024702400009bfa4f000c00"),
-                Vec::from("d08d375f9bec0c09985123c5e47733340054007f001700f50066001300fd00d7"),
                 object_id1.to_string(),
             )
             .await
@@ -1204,8 +1195,6 @@ mod tests {
 
         let result = client
             .test_get_anonymous_data_version(
-                Vec::from("273722273623d0c93698010c9b33e400c936"),
-                Vec::from("d003376d9b6d0c7c987c2392e492336d0079"),
                 object_id1.to_string(),
             )
             .await
