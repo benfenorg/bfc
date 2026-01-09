@@ -369,8 +369,17 @@ pub fn mul_two_shared_secrets_v2(
         )));
     }
 
-    // Step 5: Generate Beaver triple
-    let beaver_triple = generate_beaver_triple(mask_secret)?;
+    // Step 5: Generate Beaver triple using the same x-coordinates as input shares
+    // This ensures compatibility for homomorphic operations
+    use crate::beaver::BeaverTriple;
+    use rand_chacha::ChaCha20Rng;
+    use rand_core::{RngCore, SeedableRng};
+    
+    let x_coords = vec![x_share_1.0, x_share_2.0];
+    let mut rng = ChaCha20Rng::seed_from_u64(mask_secret);
+    let a = rng.next_u64();
+    let b = rng.next_u64();
+    let beaver_triple = BeaverTriple::new_with_coordinates(a, b, &x_coords, 2, &mut rng)?;
 
     // Step 7: Compute masked differences d = x - a, e = y - b for both parties
     let d_share_1 = mul_step1_compute_masked_diff(&x_share_1, &beaver_triple.a_shares[0]);
@@ -2330,5 +2339,315 @@ mod tests {
             0xFEDCBA0987654321u64,
         );
         assert!(result.is_err());
+    }
+
+    // ==================== mul_two_shared_secrets_v2 Tests ====================
+
+    #[test]
+    fn test_mul_two_shared_secrets_v2_basic() {
+        let x = 20u64;
+        let y = 10u64;
+
+        // Split both values using same coord_seed (ensures same x-coordinates)
+        let (hex_x1, hex_x2, coord_seed_x) =
+            split_to_two_value_v2(x, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex_y1, hex_y2, coord_seed_y) =
+            split_to_two_value_v2(y, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+
+        // Perform multiplication
+        let (result_bytes1, result_bytes2) = mul_two_shared_secrets_v2(
+            hex_x1,
+            hex_x2,
+            hex_y1,
+            hex_y2,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed_x,
+            coord_seed_y,
+        )
+        .unwrap();
+
+        // Recover and verify result
+        let result = recover_value_v2(
+            hex::encode(result_bytes1),
+            hex::encode(result_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
+        assert_eq!(result, x * y);
+    }
+
+    #[test]
+    fn test_mul_two_shared_secrets_v2_by_zero() {
+        let x = 100u64;
+        let y = 0u64;
+
+        let (hex_x1, hex_x2, coord_seed_x) =
+            split_to_two_value_v2(x, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex_y1, hex_y2, coord_seed_y) =
+            split_to_two_value_v2(y, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+
+        let (result_bytes1, result_bytes2) = mul_two_shared_secrets_v2(
+            hex_x1,
+            hex_x2,
+            hex_y1,
+            hex_y2,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed_x,
+            coord_seed_y,
+        )
+        .unwrap();
+
+        let result = recover_value_v2(
+            hex::encode(result_bytes1),
+            hex::encode(result_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
+        assert_eq!(result, 0);
+    }
+
+    #[test]
+    fn test_mul_two_shared_secrets_v2_by_one() {
+        let x = 42u64;
+        let y = 1u64;
+
+        let (hex_x1, hex_x2, coord_seed_x) =
+            split_to_two_value_v2(x, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex_y1, hex_y2, coord_seed_y) =
+            split_to_two_value_v2(y, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+
+        let (result_bytes1, result_bytes2) = mul_two_shared_secrets_v2(
+            hex_x1,
+            hex_x2,
+            hex_y1,
+            hex_y2,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed_x,
+            coord_seed_y,
+        )
+        .unwrap();
+
+        let result = recover_value_v2(
+            hex::encode(result_bytes1),
+            hex::encode(result_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
+        assert_eq!(result, x);
+    }
+
+    #[test]
+    fn test_mul_two_shared_secrets_v2_large_values() {
+        let x = 1000000u64;
+        let y = 2000000u64;
+
+        let (hex_x1, hex_x2, coord_seed_x) =
+            split_to_two_value_v2(x, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex_y1, hex_y2, coord_seed_y) =
+            split_to_two_value_v2(y, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+
+        let (result_bytes1, result_bytes2) = mul_two_shared_secrets_v2(
+            hex_x1,
+            hex_x2,
+            hex_y1,
+            hex_y2,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed_x,
+            coord_seed_y,
+        )
+        .unwrap();
+
+        let result = recover_value_v2(
+            hex::encode(result_bytes1),
+            hex::encode(result_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
+        assert_eq!(result, x * y);
+    }
+
+    #[test]
+    fn test_mul_two_shared_secrets_v2_deterministic() {
+        let x = 5u64;
+        let y = 7u64;
+
+        let (hex_x1, hex_x2, coord_seed_x) =
+            split_to_two_value_v2(x, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex_y1, hex_y2, coord_seed_y) =
+            split_to_two_value_v2(y, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+
+        // Call multiple times with same parameters
+        let (result1_bytes1, result1_bytes2) = mul_two_shared_secrets_v2(
+            hex_x1.clone(),
+            hex_x2.clone(),
+            hex_y1.clone(),
+            hex_y2.clone(),
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed_x,
+            coord_seed_y,
+        )
+        .unwrap();
+
+        let (result2_bytes1, result2_bytes2) = mul_two_shared_secrets_v2(
+            hex_x1.clone(),
+            hex_x2.clone(),
+            hex_y1.clone(),
+            hex_y2.clone(),
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed_x,
+            coord_seed_y,
+        )
+        .unwrap();
+
+        // Results should be identical (deterministic)
+        assert_eq!(result1_bytes1, result2_bytes1);
+        assert_eq!(result1_bytes2, result2_bytes2);
+
+        // Both should recover to same value
+        let result1 = recover_value_v2(
+            hex::encode(result1_bytes1),
+            hex::encode(result1_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
+        let result2 = recover_value_v2(
+            hex::encode(result2_bytes1),
+            hex::encode(result2_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
+        assert_eq!(result1, result2);
+        assert_eq!(result1, x * y);
+    }
+
+    #[test]
+    fn test_mul_two_shared_secrets_v2_multiple_cases() {
+        let test_cases = vec![
+            (0u64, 0u64),
+            (0u64, 1u64),
+            (1u64, 0u64),
+            (1u64, 1u64),
+            (2u64, 3u64),
+            (5u64, 7u64),
+            (10u64, 20u64),
+            (20u64, 10u64),
+            (100u64, 200u64),
+            (1000u64, 2000u64),
+            (42u64, 42u64),
+            (0xFFFFFFFFu64, 1u64),
+        ];
+
+        for (x, y) in test_cases {
+            let (hex_x1, hex_x2, coord_seed_x) =
+                split_to_two_value_v2(x, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            let (hex_y1, hex_y2, coord_seed_y) =
+                split_to_two_value_v2(y, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+
+            let (result_bytes1, result_bytes2) = mul_two_shared_secrets_v2(
+                hex_x1,
+                hex_x2,
+                hex_y1,
+                hex_y2,
+                TEST_MASK_SECRET,
+                TEST_USER_ID,
+                coord_seed_x,
+                coord_seed_y,
+            )
+            .unwrap();
+
+            let result = recover_value_v2(
+                hex::encode(result_bytes1),
+                hex::encode(result_bytes2),
+                TEST_MASK_SECRET,
+            )
+            .unwrap();
+            assert_eq!(result, x * y, "Failed for x={}, y={}", x, y);
+        }
+    }
+
+    #[test]
+    fn test_mul_two_shared_secrets_v2_different_coord_seeds_fails() {
+        let x = 5u64;
+        let y = 7u64;
+        let coord_seed1 = TEST_COORD_SEED;
+        let coord_seed2 = 0xABCDEF1234567890u64;
+
+        // Split with different coord_seeds (will produce different x-coordinates)
+        let (hex_x1, hex_x2, _) =
+            split_to_two_value_v2(x, TEST_USER_ID, TEST_MASK_SECRET, coord_seed1);
+        let (hex_y1, hex_y2, _) =
+            split_to_two_value_v2(y, TEST_USER_ID, TEST_MASK_SECRET, coord_seed2);
+
+        // Should fail because x-coordinates don't match
+        let result = mul_two_shared_secrets_v2(
+            hex_x1,
+            hex_x2,
+            hex_y1,
+            hex_y2,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed1,
+            coord_seed2,
+        );
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_mul_two_shared_secrets_v2_commutative() {
+        let x = 5u64;
+        let y = 7u64;
+
+        let (hex_x1, hex_x2, coord_seed_x) =
+            split_to_two_value_v2(x, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex_y1, hex_y2, coord_seed_y) =
+            split_to_two_value_v2(y, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+
+        // x * y
+        let (result1_bytes1, result1_bytes2) = mul_two_shared_secrets_v2(
+            hex_x1.clone(),
+            hex_x2.clone(),
+            hex_y1.clone(),
+            hex_y2.clone(),
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed_x,
+            coord_seed_y,
+        )
+        .unwrap();
+
+        // y * x
+        let (result2_bytes1, result2_bytes2) = mul_two_shared_secrets_v2(
+            hex_y1,
+            hex_y2,
+            hex_x1,
+            hex_x2,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed_y,
+            coord_seed_x,
+        )
+        .unwrap();
+
+        // Results should recover to same value (commutative property)
+        let result1 = recover_value_v2(
+            hex::encode(result1_bytes1),
+            hex::encode(result1_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
+        let result2 = recover_value_v2(
+            hex::encode(result2_bytes1),
+            hex::encode(result2_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
+        assert_eq!(result1, result2);
+        assert_eq!(result1, x * y);
     }
 }
