@@ -88,7 +88,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousAdd", params, 1, "rpc_internal")
+            .send_rpc_request("bfcx_getAnonymousAdd", params, 1, "rpc_internal_v2")
             .await
         {
             Ok(response) => TestResult {
@@ -124,7 +124,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousMinus", params, 2, "rpc_internal")
+            .send_rpc_request("bfcx_getAnonymousMinus", params, 2, "rpc_internal_v2")
             .await
         {
             Ok(response) => TestResult {
@@ -160,7 +160,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousMultiply", params, 3, "rpc_internal")
+            .send_rpc_request("bfcx_getAnonymousMultiply", params, 3, "rpc_internal_v2")
             .await
         {
             Ok(response) => TestResult {
@@ -188,7 +188,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousCompare", params, 4, "rpc_internal")
+            .send_rpc_request("bfcx_getAnonymousCompare", params, 4, "rpc_internal_v2")
             .await
         {
             Ok(response) => TestResult {
@@ -218,7 +218,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousCompareValue1AndValue2", params, 4, "rpc_internal")
+            .send_rpc_request("bfcx_getAnonymousCompareValue1AndValue2", params, 4, "rpc_internal_v2")
             .await
         {
             Ok(response) => TestResult {
