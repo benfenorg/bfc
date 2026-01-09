@@ -1068,31 +1068,26 @@ async fn handle_anonymous_restore_history_value_array(request: JsonRpcRequest) -
                     );
                 return create_error_response(request.id, -32602, "Invalid authentication".to_string(), None)
             }
-            info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
-            let mut public_key_from_send = anonymous_restore_value_array.owner;
-            if true {
-                public_key_from_send = AccountAddress::from(public_key_bytes_to_sui_address(anonymous_restore_value_array.publickey.clone()).unwrap());
+            let args_result = Args::try_parse();
+            let mut config_path : Option<String> = None;
+            if args_result.is_ok() {
+                config_path = Some(args_result.unwrap().config);
             }
+            let mask_secret_and_coord_seed = match get_mask_secret_and_coord_seed_from_config(config_path) {
+                Ok(config) => config,
+                Err(e) => {
+                    return create_error_response(request.id, -32602, "get_mask_secret_and_coord_seed_from_config failed".to_string(), None)
+                }
+            };
+
+            info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
+            let mut public_key_from_send = AccountAddress::from(public_key_bytes_to_sui_address(anonymous_restore_value_array.publickey.clone()).unwrap());
             let restore_params = handle_transaction(&anonymous_restore_value_array.anonymous_restore_array, public_key_from_send.to_hex_with_hex_head()).await;
             let mut restore_result_array = Vec::new();
             match get_object_owner_address_from_indexer(&restore_params).await {
                 Ok(restore_values) => {
                     for restore_value in &restore_values {
                         if restore_value.flag {
-                            let args_result = Args::try_parse();
-                            let mut config_path : Option<String> = None;
-                            if args_result.is_ok() {
-                                config_path = Some(args_result.unwrap().config);
-                            }
-                            let mask_secret_and_coord_seed = match get_mask_secret_and_coord_seed_from_config(config_path) {
-                                Ok(config) => config,
-                                Err(e) => {
-                                    info!("get_mask_secret_and_coord_seed_from_config failed, caused by: {}", e);
-                                    restore_result_array.push(0);
-                                    continue;
-                                }
-                            };
-
                             let data1 = restore_value.value1.clone();
                             let data2 = restore_value.value2.clone();
                             info!("data1 len: {}, data2 len: {}", data1.len(), data2.len());
