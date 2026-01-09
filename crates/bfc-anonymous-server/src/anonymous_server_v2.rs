@@ -4,9 +4,9 @@ use log::{info, warn};
 use move_core_types::account_address::AccountAddress;
 use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 use crate::create_error_response;
-use crate::server_utils::{GetAnonymousObjectVersionParams, AnonymousAddParams, AnonymousCompareParams, AnonymousCompareValue1AndValue2Params, AnonymousEncodeValueArrayForZkloginAddressParams, AnonymousEncodeValueArrayParams, AnonymousEncodeValueInternalParams, AnonymousMinusParams, AnonymousMultiplyParams, AnonymousRestoreArrayParams, AnonymousRestoreArrayParamsZKLoginParams, Args, JsonRpcError, JsonRpcRequest, JsonRpcResponse};
+use crate::server_utils::{GetAnonymousObjectVersionParams, AnonymousAddParams, AnonymousCompareParams, AnonymousCompareValue1AndValue2Params, AnonymousEncodeValueArrayForZkloginAddressParams, AnonymousEncodeValueArrayParams, AnonymousEncodeValueInternalParams, AnonymousMinusParams, AnonymousMultiplyParams, AnonymousRestoreArrayParams, AnonymousRestoreArrayParamsZKLoginParams, Args, JsonRpcError, JsonRpcRequest, JsonRpcResponse, AnonymousRestoreHistoryArrayParamsZKLoginParams, AnonymousRestoreHistoryArrayParams, AnonymousRestoreHistoryElementParams, AnonymousRequestElementParams};
 use crate::signature::verify_signature;
-use crate::utils::{convert_value_array_to_string, create_sign_message, get_object_owner_address, get_object_value1_and_value2, public_key_bytes_to_sui_address, verify_zklogin_signature};
+use crate::utils::{bfc_to_0x, convert_value_array_to_string, create_deep_compress_message, create_sign_message, get_object_owner_address, get_object_owner_address_from_indexer, get_object_value1_and_value2, get_transaction_by_digest, public_key_bytes_to_sui_address, verify_zklogin_signature};
 use anyhow::anyhow;
 use warp::Rejection;
 use mpc_transmission_v2::{is_v1_transmission_shares_format, mul_two_shared_secrets_v2, process_shares_data_convert, recover_value_from_shares_v2};
@@ -14,8 +14,9 @@ use mpc_transmission::get_mask_secret_and_coord_seed_from_config;
 use mpc_transmission::get_user_address_salt;
 use mpc_transmission_v2::two_party_share::{add_two_shared_secrets_v2, sub_two_shared_secrets_v2, split_to_two_value_v2};
 use mpc_transmission::get_zklogin_rpc_address_from_config;
+use base64::Engine;
 //use sui_types::balance;
-
+use fastcrypto::hash::{Sha256, HashFunction};
 impl warp::reject::Reject for RpcError {}
 
 pub async fn handle_rpc_request_internal_v2(request: JsonRpcRequest) -> Result<impl warp::Reply, Rejection> {
@@ -371,7 +372,9 @@ pub async fn handle_rpc_request_for_client(request: JsonRpcRequest) -> Result<im
         "bfcx_getAnonymousEncodeDataArrayForClient" => handle_anonymous_encode_data_array_for_client(request).await,
         "bfcx_getAnonymousEncodeDataArrayForZKloginAddress" => handle_anonymous_encode_data_array_for_zklogin_address(request).await,
         "bfcx_getAnonymousRestoreValueArray" => handle_anonymous_restore_value_array(request).await,
+        "bfcx_getAnonymousRestoreHistoryValueArray" => handle_anonymous_restore_history_value_array(request).await,
         "bfcx_getAnonymousRestoreValueArrayForZKloginAddress" => handle_anonymous_restore_value_array_for_zklogin_address(request).await,
+        "bfcx_getAnonymousRestoreHistoryValueArrayForZKloginAddress" => handle_anonymous_restore_history_value_array_for_zklogin_address(request).await,
         "bfcx_ping" => handle_ping(request).await,
         "bfcx_getAnonymouseObjectVersion" => handle_get_anonymouse_object_version(request).await,
         _ => JsonRpcResponse {
@@ -671,6 +674,7 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
                 Ok(restore_value_params) => {
                     let signature = restore_value_params.signature;
                     let signature_bytes = signature.bytes.clone();
+                    let author = signature.author.clone();
                     let args_result = Args::try_parse();
                     let mut config_path: Option<String> = None;
                     if args_result.is_ok() {
@@ -719,11 +723,10 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
 
                         match get_object_owner_address(anonymous_restore_value.objectid.to_string(), anonymous_restore_value1.clone(), anonymous_restore_value2.clone()).await {
                             Ok(owner_address_value) => {
-                                let owner_address_from_send = restore_value_params.owner;
+                                let owner_address_from_send = bfc_to_0x(author.clone());
                                 let evm_addr_from_system =
                                     convert_to_evm_address(owner_address_value);
-                                pass_authentication = evm_addr_from_system
-                                    == owner_address_from_send.to_hex_with_hex_head();
+                                pass_authentication = evm_addr_from_system == owner_address_from_send;
                             }
                             Err(error) => {
                                 info!("failed get owner address: {}", error);
@@ -753,7 +756,135 @@ async fn handle_anonymous_restore_value_array_for_zklogin_address(request: JsonR
                         }
                     }
 
-                    if !signature_bytes.eq(&Base64::encode(object_ids)) {
+                    let decoded_bytes = base64::engine::general_purpose::STANDARD.decode(&Base64::encode(object_ids)).expect("Invalid Base64");
+                    let mut hasher = Sha256::new();
+                    hasher.update(&decoded_bytes);
+                    let hash = hasher.finalize();
+                    let base64_hash = base64::engine::general_purpose::STANDARD.encode(hash);
+                    if !signature_bytes.eq(&base64_hash) {
+                        warn!(
+                        "authentication failed for bfcx_getAnonymousRestoreArrayParamsZKLoginParams"
+                        );
+                        return create_error_response(request.id, -32602, "authentication failed".to_string(), None);
+                    }
+
+                    JsonRpcResponse {
+                        jsonrpc: "2.0".to_string(),
+                        id: request.id,
+                        result: Some(serde_json::json!({
+                        "result1": restore_result_array,
+                        "result2": 0,
+                        "operation": "restore_value_array_for_zklogin",
+                        "timestamp": chrono::Utc::now().timestamp()
+                    })),
+                        error: None,
+                    }
+                }
+
+                Err(e) => {
+                    warn!(
+                        "Invalid parameters for bfcx_getAnonymousRestoreArrayParamsZKLoginAddress: {}",
+                        e
+                    );
+                    create_error_response(request.id, -32602, "Invalid params".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+                }
+            }
+        }
+        None => {
+            create_error_response(request.id, -32602, "Missing params".to_string(), None)
+        }
+    }
+}
+
+#[warn(unused_assignments)]
+async fn handle_anonymous_restore_history_value_array_for_zklogin_address(request: JsonRpcRequest) -> JsonRpcResponse {
+    match request.params {
+        Some(params) => {
+            match serde_json::from_value::<AnonymousRestoreHistoryArrayParamsZKLoginParams>(params) {
+                Ok(restore_value_params) => {
+                    let signature = restore_value_params.signature;
+                    let author = signature.author.clone();
+                    let signature_bytes = signature.bytes.clone();
+                    let args_result = Args::try_parse();
+                    let mut config_path: Option<String> = None;
+                    if args_result.is_ok() {
+                        config_path = Some(args_result.unwrap().config);
+                    }
+
+                    let zklogin_rpc_address = match get_zklogin_rpc_address_from_config(config_path.clone()) {
+                        Ok(address) => address,
+                        Err(e) => {
+                            warn!("Failed to get zklogin rpc address from config: {}", e);
+                            return create_error_response(request.id, -32603, "Internal error: Failed to load configuration".to_string(), Some(serde_json::json!({"error": e.to_string()})))
+                        }
+                    };
+
+                    let pass_verify_signature = verify_zklogin_signature(
+                        signature,
+                        zklogin_rpc_address
+                    ).await.is_ok();
+                    info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
+
+                    if pass_verify_signature == false {
+                        return create_error_response(request.id,
+                                                     -32603,
+                                                     "Verify signature or get owner address failed".to_string(),
+                                                     Some(serde_json::json!({"error": "verify signature or get owner address failed"})));
+                    }
+
+                    let mask_secret_and_coord_seed = match get_mask_secret_and_coord_seed_from_config(config_path) {
+                        Ok(config) => config,
+                        Err(e) => {
+                            warn!("Failed to get mask secret from config: {}", e);
+                            return create_error_response(request.id,
+                                                         -32603,
+                                                         "Internal error: Failed to load configuration".to_string(),
+                                                         Some(serde_json::json!({"error": e.to_string()})));
+                        }
+                    };
+                    let mut object_ids =  String::new();
+                    for anonymous_restore_value in &restore_value_params.anonymous_restore_array {
+                        object_ids = format!("{}{}{}{}", object_ids, anonymous_restore_value.objectid, anonymous_restore_value.transaction, anonymous_restore_value.owner_flag);
+                    }
+                    let restore_params = handle_transaction(&restore_value_params.anonymous_restore_array, bfc_to_0x(author)).await;
+                    let mut restore_result_array = Vec::new();
+                    match get_object_owner_address_from_indexer(&restore_params).await {
+                        Ok(restore_values) => {
+                            for restore_value in restore_values {
+                                if restore_value.flag {
+                                    let anonymous_restore_value1 = restore_value.value1;
+                                    let anonymous_restore_value2 = restore_value.value2;
+                                    info!("data1 len: {}, data2 len: {}", anonymous_restore_value1.len(), anonymous_restore_value2.len());
+                                    let data_str1 = String::from_utf8(anonymous_restore_value1).unwrap_or_default();
+                                    let data_str2 = String::from_utf8(anonymous_restore_value2).unwrap_or_default();
+                                    info!("=== data_str1: {}, data_str2: {} ===", data_str1, data_str2);
+                                    match recover_value_from_shares_v2(data_str1, data_str2, mask_secret_and_coord_seed.mask_secret) {
+                                        Ok(value) => {
+                                            restore_result_array.push(value);
+                                        },
+                                        Err(e) => {
+                                            restore_result_array.push(0);
+                                            warn!("process recover_value error, caused by: {}",e);
+                                        }
+                                    }
+                                } else {
+                                    restore_result_array.push(0);
+                                }
+                            }
+                        }
+                        Err(error) => {
+                            info!("failed get data from indexer: {}", error);
+                            for _anonymous_restore_value in &restore_value_params.anonymous_restore_array {
+                                restore_result_array.push(0);
+                            }
+                        }
+                    }
+                    let decoded_bytes = base64::engine::general_purpose::STANDARD.decode(&Base64::encode(object_ids)).expect("Invalid Base64");
+                    let mut hasher = Sha256::new();
+                    hasher.update(&decoded_bytes);
+                    let hash = hasher.finalize();
+                    let base64_hash = base64::engine::general_purpose::STANDARD.encode(hash);
+                    if !signature_bytes.eq(&base64_hash) {
                         warn!(
                         "authentication failed for bfcx_getAnonymousRestoreArrayParamsZKLoginParams"
                         );
@@ -807,7 +938,7 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
                 object_ids = format!("{}{}", object_ids, anonymous_restore_value.objectid);
             }
 
-            let message = create_sign_message(object_ids.clone());
+            let message = create_deep_compress_message(object_ids.to_string());
 
             let mut pass_authentication = verify_signature(
                 &anonymous_restore_value_array.publickey,
@@ -905,6 +1036,134 @@ async fn handle_anonymous_restore_value_array(request: JsonRpcRequest) -> JsonRp
             create_error_response(request.id, -32602, "Missing params".to_string(), None)
         }
     }
+}
+
+#[warn(unused_assignments)]
+async fn handle_anonymous_restore_history_value_array(request: JsonRpcRequest) -> JsonRpcResponse {
+    match request.params {
+        Some(params) => {
+            let response  = serde_json::from_value(params);
+            if response.is_err() {
+                warn!(
+                        "Invalid parameters for bfcx_getAnonymousRestoreValueArray: {:?}",
+                        response.err()
+                    );
+                return create_error_response(request.id, -32602, "Invalid params".to_string(), None)
+            }
+
+            let anonymous_restore_value_array: AnonymousRestoreHistoryArrayParams = response.unwrap();
+            let mut object_ids = String::new();
+            for anonymous_restore_value in &anonymous_restore_value_array.anonymous_restore_array {
+                object_ids = format!("{}{}{}{}", object_ids, anonymous_restore_value.objectid, anonymous_restore_value.transaction, anonymous_restore_value.owner_flag);
+            }
+            let message = create_deep_compress_message(object_ids.to_string());
+            let pass_authentication = verify_signature(
+                &anonymous_restore_value_array.publickey,
+                &*anonymous_restore_value_array.signature,
+                message.as_slice(),
+            ).is_ok();
+            if pass_authentication == false {
+                warn!(
+                        "Invalid authentication for bfcx_getAnonymousRestoreValueArray",
+                    );
+                return create_error_response(request.id, -32602, "Invalid authentication".to_string(), None)
+            }
+            info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
+            let mut public_key_from_send = anonymous_restore_value_array.owner;
+            if true {
+                public_key_from_send = AccountAddress::from(public_key_bytes_to_sui_address(anonymous_restore_value_array.publickey.clone()).unwrap());
+            }
+            let restore_params = handle_transaction(&anonymous_restore_value_array.anonymous_restore_array, public_key_from_send.to_hex_with_hex_head()).await;
+            let mut restore_result_array = Vec::new();
+            match get_object_owner_address_from_indexer(&restore_params).await {
+                Ok(restore_values) => {
+                    for restore_value in &restore_values {
+                        if restore_value.flag {
+                            let args_result = Args::try_parse();
+                            let mut config_path : Option<String> = None;
+                            if args_result.is_ok() {
+                                config_path = Some(args_result.unwrap().config);
+                            }
+                            let mask_secret_and_coord_seed = match get_mask_secret_and_coord_seed_from_config(config_path) {
+                                Ok(config) => config,
+                                Err(e) => {
+                                    info!("get_mask_secret_and_coord_seed_from_config failed, caused by: {}", e);
+                                    restore_result_array.push(0);
+                                    continue;
+                                }
+                            };
+
+                            let data1 = restore_value.value1.clone();
+                            let data2 = restore_value.value2.clone();
+                            info!("data1 len: {}, data2 len: {}", data1.len(), data2.len());
+                            let data_str1 = String::from_utf8(data1).unwrap_or_default();
+                            let data_str2 = String::from_utf8(data2).unwrap_or_default();
+                            info!("=== data_str1: {}, data_str2: {} ===", data_str1, data_str2);
+                            match recover_value_from_shares_v2(data_str1, data_str2, mask_secret_and_coord_seed.mask_secret) {
+                                Ok(value) => {
+                                    restore_result_array.push(value);
+                                },
+                                Err(e) => {
+                                    restore_result_array.push(0);
+                                    warn!("process recover_value error, caused by: {}",e);
+                                }
+                            }
+                        } else {
+                            restore_result_array.push(0);
+                        }
+                    }
+                }
+                Err(error) => {
+                    info!("failed get data from indexer: {}", error);
+                    for _anonymous_restore_value in &anonymous_restore_value_array.anonymous_restore_array {
+                        restore_result_array.push(0);
+                    }
+                }
+            }
+            JsonRpcResponse {
+                jsonrpc: "2.0".to_string(),
+                id: request.id,
+                result: Some(serde_json::json!({
+                                "result1": restore_result_array,
+                                "result2": 0,
+                                "operation": "anonymous_restore_value_array",
+                                "timestamp": chrono::Utc::now().timestamp()
+                            })),
+                error: None,
+            }
+        }
+        None => {
+            create_error_response(request.id, -32602, "Missing params".to_string(), None)
+        }
+    }
+}
+
+async fn handle_transaction(anonymous_restore_array: &Vec<AnonymousRestoreHistoryElementParams>, owner: String) -> Vec<AnonymousRequestElementParams> {
+    let mut restore_params = Vec::new();
+    for restore in anonymous_restore_array {
+        let mut owner = owner.clone();
+        if !restore.owner_flag {
+            match get_transaction_by_digest(restore.transaction.clone()).await {
+                Ok(tx) => {
+                    if bfc_to_0x(tx.transaction.data.sender) == owner {
+                        for created in tx.effects.created {
+                            if bfc_to_0x(created.reference.object_id) == restore.objectid {
+                                owner = bfc_to_0x(created.owner.AddressOwner);
+                            }
+                        }
+                    }
+                }
+                Err(_) => {}
+            }
+        }
+        restore_params.push(AnonymousRequestElementParams {
+            value1: restore.value1.clone(),
+            value2: restore.value2.clone(),
+            objectid: restore.objectid.clone(),
+            owner,
+        });
+    }
+    restore_params
 }
 
 

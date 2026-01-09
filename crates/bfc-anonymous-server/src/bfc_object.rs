@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tracing::info;
+use crate::server_utils::AnonymousRestoreElementRep;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -8,6 +9,15 @@ struct RpcResponse {
     jsonrpc: String,
     id: u64,
     result: Option<SuiObjectResponse>,
+    error: Option<RpcError>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct RpcIndexerResponse {
+    jsonrpc: String,
+    id: u64,
+    result: Option<Vec<AnonymousRestoreElementRep>>,
     error: Option<RpcError>,
 }
 
@@ -125,6 +135,8 @@ pub fn parse_response_and_check_balance(response: &str, value1: Vec<u8>, value2:
                 info!("Content: {:#?}", obj.content);
                 obj.owner.address_owner
             } else {
+                info!("diff value1 {:?} {:?}", value1, obj.content.fields.balance.fields.value1);
+                info!("diff value2 {:?} {:?}", value2, obj.content.fields.balance.fields.value2);
                 None
             }
         }
@@ -192,5 +204,16 @@ pub fn parse_response_and_return_balance(response: &str) -> (Option<Vec<u8>>,Opt
             info!("Unexpected response format");
             return (None,None);
         }
+    }
+}
+
+pub fn parse_indexer_response(response: &str) -> Option<Vec<AnonymousRestoreElementRep>> {
+    let rpc_response: RpcIndexerResponse = match serde_json::from_str(response) {
+        Ok(parsed) => parsed,
+        Err(_) =>  return None,
+    };
+    match rpc_response.error {
+        Some(_) => None,
+        _ => rpc_response.result
     }
 }

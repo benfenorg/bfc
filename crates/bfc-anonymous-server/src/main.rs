@@ -7,6 +7,7 @@ mod signature;
 mod anonymous_server_v1;
 mod server_utils;
 mod anonymous_server_v2;
+mod bfc_transaction;
 
 use std::net::SocketAddr;
 use crate::bfc_object::parse_response_and_check_balance;

@@ -153,6 +153,40 @@ pub struct AnonymousRestoreElementParams {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+pub struct AnonymousRestoreHistoryElementParams {
+    pub value1: Vec<u8>,
+    pub value2: Vec<u8>,
+    pub objectid: String,
+    pub transaction: String,
+    // `false` indicates that the query is for an object ID that does not belong to the query entity,
+    // and the query is used to verify whether the transaction is a sender.
+    pub owner_flag: bool,
+}
+#[derive(Debug, Deserialize, Serialize)]
+pub struct AnonymousRequestElementParams {
+    pub value1: Vec<u8>,
+    pub value2: Vec<u8>,
+    pub objectid: String,
+    pub owner: String,
+}
+#[derive(Debug, Deserialize, Serialize)]
+pub struct AnonymousRestoreElementRep {
+    pub value1: Vec<u8>,
+    pub value2: Vec<u8>,
+    pub objectid: String,
+    pub flag: bool,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct AnonymousRestoreHistoryArrayParams {
+    pub anonymous_restore_array: Vec<AnonymousRestoreHistoryElementParams>,
+    pub signature: Vec<u8>,
+    pub publickey: Vec<u8>,
+    pub owner: AccountAddress,
+}
+
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct AnonymousRestoreArrayParams {
     pub anonymous_restore_array: Vec<AnonymousRestoreElementParams>,
     pub signature: Vec<u8>,
@@ -175,6 +209,13 @@ pub struct AnonymousRestoreArrayParamsZKLoginParams {
     pub signature: ZkVerifyRequest,
     pub object_ids: String,
     pub owner: AccountAddress
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct AnonymousRestoreHistoryArrayParamsZKLoginParams {
+    pub anonymous_restore_array: Vec<AnonymousRestoreHistoryElementParams>,
+    pub signature: ZkVerifyRequest,
+    pub owner: AccountAddress,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

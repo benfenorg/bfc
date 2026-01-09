@@ -1854,6 +1854,7 @@ name = "bfc-anonymous-server"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "base64 0.22.1",
  "chrono",
  "clap",
  "dirs 4.0.0",
@@ -14966,6 +14967,7 @@ dependencies = [
  "diesel-derive-enum",
  "diesel_migrations",
  "downcast",
+ "ed25519-dalek",
  "fastcrypto",
  "futures",
  "itertools 0.13.0",
@@ -14977,6 +14979,7 @@ dependencies = [
  "mysten-metrics",
  "ntest",
  "prometheus",
+ "rand 0.8.5",
  "rayon",
  "regex",
  "reqwest 0.12.9",

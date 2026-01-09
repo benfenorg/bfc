@@ -5,7 +5,7 @@ use crate::{errors::IndexerError, indexer_reader::IndexerReader};
 use jsonrpsee::{core::RpcResult, RpcModule};
 use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_api::{validate_limit, ExtendedApiServer, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS};
-use sui_json_rpc_types::{AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage, IndexedStake, MoveCallMetrics, NetworkMetrics, NetworkOverview, NFTStakingOverview, Page, QueryObjectsPage, StakeMetrics, StakeRewardHistory, SuiDaoProposal, SuiMiningNFT, SuiMiningNFTLiquidity, SuiMiningNFTList, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit, SuiOwnedTicketList};
+use sui_json_rpc_types::{AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage, IndexedStake, MoveCallMetrics, NetworkMetrics, NetworkOverview, NFTStakingOverview, Page, QueryObjectsPage, StakeMetrics, StakeRewardHistory, SuiDaoProposal, SuiMiningNFT, SuiMiningNFTLiquidity, SuiMiningNFTList, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit, SuiOwnedTicketList, AnonymousRestoreElementParams, AnonymousCoinParams, AnonymousRestoreElementRep, AnonymousCoinElementRep};
 use sui_open_rpc::Module;
 use sui_types::base_types::{SequenceNumber, SuiAddress};
 use sui_types::sui_serde::BigInt;
@@ -149,6 +149,18 @@ impl ExtendedApiServer for ExtendedApi {
     }
 
     async fn init_nft(&self, _reward_per_power: u64) -> RpcResult<String> {
+        todo!()
+    }
+
+    async fn init_anonymous_coin(&self) -> RpcResult<u64> {
+        todo!()
+    }
+
+    async fn check_anonymous_coin_history(&self, _anonymous_restore_array: Vec<AnonymousRestoreElementParams>) -> RpcResult<Vec<AnonymousRestoreElementRep>> {
+        todo!()
+    }
+
+    async fn multi_get_anonymous_coin_value(&self, _anonymous_coin_array: Vec<AnonymousCoinParams>, ) -> RpcResult<Vec<AnonymousCoinElementRep>> {
         todo!()
     }
 }

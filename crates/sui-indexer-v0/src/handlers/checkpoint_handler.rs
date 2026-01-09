@@ -66,6 +66,7 @@ use crate::{models::packages::Package, utils::validator_stake::extract_stable_st
 use crate::handlers::pending_reward_handler::PendingReward;
 use crate::models::pending_reward::StakePendingItem;
 use crate::models::stake_reward::{StakeRewardDetail};
+use crate::models::anonymous_coin::AnonymousCoin;
 
 const MAX_PARALLEL_DOWNLOADS: usize = 180;
 const DOWNLOAD_RETRY_INTERVAL_IN_SECS: u64 = 10;
@@ -658,6 +659,7 @@ where
                     }
                 });
 
+                let _ = self.persist_anonymous_coin(&object_changes).await;
                 let checkpoint_tx_db_guard =
                     self.metrics.checkpoint_db_commit_latency.start_timer();
                 let mut checkpoint_tx_commit_res = self
@@ -1164,6 +1166,42 @@ where
             transactions,
             changed_objects,
         })
+    }
+
+    async fn persist_anonymous_coin(
+        &self,
+        object_changes: &Vec<TransactionObjectChanges>,
+    ) -> Result<u64, IndexerError> {
+        for object_change in object_changes.clone() {
+            for changed_object in object_change.changed_objects.clone() {
+                match changed_object.object_status {
+                    ObjectStatus::Created | ObjectStatus::Mutated => {
+                        if changed_object.object_type.contains("0x2::anonymous_coin::Anonymous_Coin") {
+                            info!("persist_anonymous_coin begin {:?}", changed_object.object_status);
+                            let converted = match sui_types::anoymous_coin::AnonymousCoin::from_bcs_bytes(&changed_object.bcs[0].1) {
+                                Ok(c) => {
+                                    let hex1: String = c.balance.value1.iter().map(|b| format!("{:02x}", b)).collect();
+                                    let hex2: String = c.balance.value2.iter().map(|b| format!("{:02x}", b)).collect();
+                                    format!("{}{}", hex1, hex2)
+                                }
+                                Err(_) => {
+                                    String::new()
+                                }
+                            };
+                            let coin = AnonymousCoin {
+                                id: None,
+                                owner: changed_object.owner_address.unwrap(),
+                                object_id: changed_object.object_id,
+                                bcs_str: converted,
+                            };
+                            let _ = self.state.persist_anonymous_coin(&coin).await;
+                        }
+                    },
+                    _ => {}
+                }
+            }
+        }
+        Ok(0)
     }
 
     async fn index_checkpoint_and_epoch(

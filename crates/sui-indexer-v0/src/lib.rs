@@ -53,6 +53,8 @@ pub mod test_utils;
 pub mod types;
 pub mod utils;
 
+pub mod signature;
+
 pub type PgConnectionPool = diesel::r2d2::Pool<ConnectionManager<PgConnection>>;
 pub type PgPoolConnection = diesel::r2d2::PooledConnection<ConnectionManager<PgConnection>>;
 

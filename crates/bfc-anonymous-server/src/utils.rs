@@ -9,7 +9,9 @@ use mpc_transmission::get_sui_config_directory;
 use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
 use sui_types::base_types::SuiAddress;
 use fastcrypto::hash::{HashFunction, Sha256};
-use crate::bfc_object::parse_response_and_return_balance;
+use crate::bfc_object::{parse_indexer_response, parse_response_and_return_balance};
+use crate::bfc_transaction::{parse_transaction_response, SuiTransactionResponse};
+use crate::server_utils::{AnonymousRequestElementParams, AnonymousRestoreElementRep};
 
 const PERSONAL_MESSAGE_PREFIX: &[u8; 3] = &[3, 0, 0];
 #[derive(Debug, Deserialize, Serialize)]
@@ -113,7 +115,74 @@ pub async fn verify_zklogin_signature(
         }
     }
 }
+pub async fn get_object_owner_address_from_indexer(
+    anonymous_array: &Vec<AnonymousRequestElementParams>,
+) -> Result<Vec<AnonymousRestoreElementRep>, Box<dyn std::error::Error>> {
+    let path = get_sui_config_directory().join("bfc_anonymous_config.yaml");
+    let config = AnonymousPrivateKeyConfig::from_yaml_file(&path)
+        .unwrap_or(AnonymousPrivateKeyConfig::default());
+    let fullnode_rpc = config
+        .fullnode_rpc_path
+        .unwrap_or("https://devrpc4.openblock.vip".to_string());
+    let client = reqwest::Client::new();
+    let response = client
+        .post(fullnode_rpc)
+        .json(&json!({
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "bfcx_checkAnonymousCoinHistory",
+            "params": [
+                anonymous_array
+            ]
+        }))
+        .send()
+        .await?;
+    let result = response.text().await?;
+    let response = parse_indexer_response(&result.clone());
+    match response {
+        Some(val) => return Ok(val),
+        None => return Err(anyhow!("indexer select not exit").into()),
+    }
+}
 
+pub async fn get_transaction_by_digest(
+    digest: String,
+) -> Result<SuiTransactionResponse, Box<dyn std::error::Error>> {
+    let path = get_sui_config_directory().join("bfc_anonymous_config.yaml");
+    let config = AnonymousPrivateKeyConfig::from_yaml_file(&path)
+        .unwrap_or(AnonymousPrivateKeyConfig::default());
+    let fullnode_rpc = config
+        .fullnode_rpc_path
+        .unwrap_or("https://devrpc4.openblock.vip".to_string());
+    let client = reqwest::Client::new();
+    let response = client
+        .post(fullnode_rpc)
+        .json(&json!({
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "bfc_getTransactionBlock",
+            "params": [
+                digest,
+                    {
+                        "showInput": true,
+                        "showEffects": true,
+                        "showEvents": true,
+                        "showBalanceChanges": true,
+                        "showObjectChanges": true
+                    }
+            ]
+        }))
+        .send()
+        .await?;
+    let result = response.text().await?;
+    let response = parse_transaction_response(&result.clone());
+    match response {
+        Some(val) => return Ok(val),
+        None => return Err(anyhow!("transaction select not exit").into()),
+    }
+}
+
+// check object balance and return owner address
 pub async fn get_object_owner_address(
     object_id: String, value1: Vec<u8>, value2: Vec<u8>
 ) -> Result<String, Box<dyn std::error::Error>> {
@@ -122,7 +191,7 @@ pub async fn get_object_owner_address(
         .unwrap_or(AnonymousPrivateKeyConfig::default());
     let fullnode_rpc = config
         .fullnode_rpc_path
-        .unwrap_or("https://devrpc4.openblock.vip".to_string());
+        .unwrap_or("https://testrpc.benfen.org".to_string());
 
     let client = reqwest::Client::new();
     let response = client
@@ -133,21 +202,20 @@ pub async fn get_object_owner_address(
             "method": "bfc_getObject",
             "params": [
                 object_id,
-                    {
-                        "showType": true,
-                        "showOwner": true,
-                        "showContent": true,
-                        "showDisplay": true,
-                        "showBcs": false,
-                        "showStorageRebate": false
-                    }
+                {
+                    "showType": true,
+                    "showOwner": true,
+                    "showContent": true,
+                    "showDisplay": true,
+                    "showBcs": false,
+                    "showStorageRebate": false
+                }
             ]
         }))
         .send()
         .await?;
 
     let result = response.text().await?;
-
     let object_id = parse_response_and_check_balance(&result.clone(), value1, value2);
     match object_id {
         Some(val) => return Ok(val),
@@ -211,6 +279,14 @@ pub async fn get_object_value1_and_value2(
     match value_array.0.clone() {
         Some(_val) => return Ok((value_array.0.unwrap(), value_array.1.unwrap())),
         None => return Err(anyhow!("object owner not exit").into()),
+    }
+}
+
+pub fn bfc_to_0x(str: String) -> String {
+    if str.starts_with("BFC") && str.len() >= 7 {
+        format!("0x{}", &str[3..str.len() - 4])
+    } else {
+        str
     }
 }
 

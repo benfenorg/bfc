@@ -73,9 +73,7 @@ use crate::models::mining_nft::{
 use crate::models::network_metrics::{DBMoveCallMetrics, DBNetworkMetrics};
 use crate::models::network_overview::DBNetworkOverview;
 use crate::models::network_segment_metrics::NetworkSegmentMetrics;
-use crate::models::objects::{
-    compose_object_bulk_insert_update_query, group_and_sort_objects, DeletedObject, Object,
-};
+use crate::models::objects::{compose_object_bulk_insert_update_query, group_and_sort_objects, DeletedObject, NamedBcsBytes, Object};
 use crate::models::packages::Package;
 use crate::models::prices::{self, PriceHistory};
 use crate::models::system_state::DBValidatorSummary;
@@ -93,6 +91,7 @@ use crate::{benfen, PgConnectionPool};
 use crate::handlers::pending_reward_handler::MiningConfig;
 use crate::models::pending_reward::StakePendingItem;
 use crate::models::stake_reward::{StakeRewardDetail, StakeRewardSummary};
+use crate::models::anonymous_coin::AnonymousCoin;
 
 const MAX_EVENT_PAGE_SIZE: usize = 1000;
 const PG_COMMIT_CHUNK_SIZE: usize = 1000;
@@ -744,6 +743,97 @@ impl PgIndexerStore {
             .into_iter()
             .map(|object| object.try_into_object_read(&self.module_cache))
             .collect()
+    }
+
+    fn get_object_object_type(
+        &self,
+        object_type: String,
+    ) -> Result<Vec<Object>, IndexerError> {
+        read_only_blocking!(&self.blocking_cp, |conn| {
+            objects::dsl::objects
+                .select((
+                    objects::epoch,
+                    objects::checkpoint,
+                    objects::object_id,
+                    objects::version,
+                    objects::object_digest,
+                    objects::owner_type,
+                    objects::owner_address,
+                    objects::initial_shared_version,
+                    objects::previous_transaction,
+                    objects::object_type,
+                    objects::object_status,
+                    objects::has_public_transfer,
+                    objects::storage_rebate,
+                    objects::bcs,
+                ))
+                .filter(objects::dsl::object_type.like(object_type))
+                .order(objects::checkpoint.desc())
+                .load::<Object>(conn)
+        }).context(&format!("Failed reading get_object_object_type"))
+    }
+
+    fn get_objects_history_object_id(
+        &self,
+        object_id: String,
+    ) -> Result<Vec<Object>, IndexerError> {
+        read_only_blocking!(&self.blocking_cp, |conn| {
+            objects_history::dsl::objects_history
+                .select((
+                    objects_history::epoch,
+                    objects_history::checkpoint,
+                    objects_history::object_id,
+                    objects_history::version,
+                    objects_history::object_digest,
+                    objects_history::owner_type,
+                    objects_history::owner_address,
+                    objects_history::initial_shared_version,
+                    objects_history::previous_transaction,
+                    objects_history::object_type,
+                    objects_history::object_status,
+                    objects_history::has_public_transfer,
+                    objects_history::storage_rebate,
+                    objects_history::bcs,
+                ))
+                .filter(objects_history::object_id.eq(object_id.to_string()))
+                .order(objects_history::checkpoint.desc())
+                .load::<Object>(conn)
+        }).context(&format!("Failed reading get_objects_history_object_id"))
+    }
+
+    fn get_objects_history(
+        &self,
+        object_id: String,
+        version: i64,
+    ) -> Result<Vec<NamedBcsBytes>, IndexerError> {
+        let history = read_only_blocking!(&self.blocking_cp, |conn| {
+            objects_history::dsl::objects_history
+                .select((
+                    objects_history::epoch,
+                    objects_history::checkpoint,
+                    objects_history::object_id,
+                    objects_history::version,
+                    objects_history::object_digest,
+                    objects_history::owner_type,
+                    objects_history::owner_address,
+                    objects_history::initial_shared_version,
+                    objects_history::previous_transaction,
+                    objects_history::object_type,
+                    objects_history::object_status,
+                    objects_history::has_public_transfer,
+                    objects_history::storage_rebate,
+                    objects_history::bcs,
+                ))
+                .filter(objects_history::object_id.eq(object_id.to_string()))
+                .filter(objects_history::version.eq(version))
+                .order(objects_history::checkpoint.desc())
+                .first::<Object>(conn)
+                .optional()
+        })?;
+        match history {
+            Some(o) => Ok(o.bcs),
+            _ => Err(IndexerError::PostgresReadError("null".to_string()))
+        }
     }
 
     // NOTE(gegaowp): now only supports query by address owner
@@ -3301,6 +3391,34 @@ impl IndexerStore for PgIndexerStore {
         .await
     }
 
+    async fn get_object_object_type(
+        &self,
+        object_type: String,
+    ) -> Result<Vec<Object>, IndexerError> {
+        self.spawn_blocking(move |this| {
+            this.get_object_object_type(object_type)
+        }).await
+    }
+
+    async fn get_objects_history_object_id(
+        &self,
+        object_id: String,
+    ) -> Result<Vec<Object>, IndexerError> {
+        self.spawn_blocking(move |this| {
+            this.get_objects_history_object_id(object_id)
+        }).await
+    }
+
+    async fn get_objects_history(
+        &self,
+        object_id: String,
+        version: i64,
+    ) -> Result<Vec<NamedBcsBytes>, IndexerError> {
+        self.spawn_blocking(move |this| {
+            this.get_objects_history(object_id, version)
+        }).await
+    }
+
     async fn query_latest_objects(
         &self,
         filter: SuiObjectDataFilter,
@@ -3744,6 +3862,17 @@ impl IndexerStore for PgIndexerStore {
             )
         })
         .await
+    }
+
+    async fn persist_anonymous_coin(&self, coin: &AnonymousCoin) -> Result<(), IndexerError> {
+        let coin = coin.to_owned();
+        self.spawn_blocking(move |this| this.persist_anonymous_coin(&coin))
+            .await
+    }
+
+    async fn get_anonymous_coin(&self, owner: String, object_id: String, bcs_str: String) -> Result<Option<AnonymousCoin>, IndexerError> {
+        self.spawn_blocking(move |this| this.get_anonymous_coin(owner, object_id, bcs_str))
+            .await
     }
 
     async fn persist_events(&self, events: &[Event]) -> Result<(), IndexerError> {
