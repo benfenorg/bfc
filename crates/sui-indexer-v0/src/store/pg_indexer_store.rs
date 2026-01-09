@@ -73,13 +73,13 @@ use crate::models::mining_nft::{
 use crate::models::network_metrics::{DBMoveCallMetrics, DBNetworkMetrics};
 use crate::models::network_overview::DBNetworkOverview;
 use crate::models::network_segment_metrics::NetworkSegmentMetrics;
-use crate::models::objects::{compose_object_bulk_insert_update_query, group_and_sort_objects, DeletedObject, NamedBcsBytes, Object};
+use crate::models::objects::{compose_object_bulk_insert_update_query, group_and_sort_objects, DeletedObject, Object, NamedBcsBytes};
 use crate::models::packages::Package;
 use crate::models::prices::{self, PriceHistory};
 use crate::models::system_state::DBValidatorSummary;
 use crate::models::transaction_index::{ChangedObject, InputObject, MoveCall, Recipient};
 use crate::models::transactions::Transaction;
-use crate::schema::{active_addresses, address_stakes, address_stats, addresses, changed_objects, checkpoint_metrics, checkpoints, dao_proposals, dao_votes, epoch_stake_coins, epoch_stakes, epochs, events, input_objects, mining_nft_history_profits, mining_nft_liquidities, mining_nft_staking, mining_nfts, mining_nfts_view, mint_long_coin, move_calls, network_segment_metrics, objects, objects_history, packages, price_history, recipients, stake_pending_item, stake_reward_detail, stake_reward_summary, system_states, transactions, validators};
+use crate::schema::{active_addresses, address_stakes, address_stats, addresses, changed_objects, checkpoint_metrics, checkpoints, dao_proposals, dao_votes, epoch_stake_coins, epoch_stakes, epochs, events, input_objects, mining_nft_history_profits, mining_nft_liquidities, mining_nft_staking, mining_nfts, mining_nfts_view, mint_long_coin, move_calls, network_segment_metrics, objects, objects_history, packages, price_history, recipients, stake_pending_item, stake_reward_detail, stake_reward_summary, system_states, transactions, validators, anonymous_coin};
 use crate::store::diesel_marco::{read_only_blocking, transactional_blocking};
 use crate::store::module_resolver::IndexerModuleResolver;
 use crate::store::query::DBFilter;
@@ -89,9 +89,9 @@ use crate::utils::validator_stake::get_avg_exchange_rate;
 use crate::utils::{get_balance_changes_from_effect, get_object_changes};
 use crate::{benfen, PgConnectionPool};
 use crate::handlers::pending_reward_handler::MiningConfig;
+use crate::models::anonymous_coin::AnonymousCoin;
 use crate::models::pending_reward::StakePendingItem;
 use crate::models::stake_reward::{StakeRewardDetail, StakeRewardSummary};
-use crate::models::anonymous_coin::AnonymousCoin;
 
 const MAX_EVENT_PAGE_SIZE: usize = 1000;
 const PG_COMMIT_CHUNK_SIZE: usize = 1000;
@@ -2372,6 +2372,30 @@ impl PgIndexerStore {
         Ok(())
     }
 
+    fn persist_anonymous_coin(&self, coin: &AnonymousCoin) -> Result<(), IndexerError> {
+        transactional_blocking!(&self.blocking_cp, |conn| {
+            diesel::insert_into(anonymous_coin::table)
+                .values(coin)
+                .on_conflict_do_nothing()
+                .execute(conn)
+                .map_err(IndexerError::from)
+                .context("Failed writing AnonymousCoin to PostgresDB")?;
+            Ok::<(), IndexerError>(())
+        })?;
+        Ok(())
+    }
+
+    fn get_anonymous_coin(&self, owner: String, object_id: String, bcs_str: String) -> Result<Option<AnonymousCoin>, IndexerError> {
+        read_only_blocking!(&self.blocking_cp, |conn| {
+            anonymous_coin::dsl::anonymous_coin
+                .filter(anonymous_coin::owner.eq(owner))
+                .filter(anonymous_coin::object_id.eq(object_id))
+                .filter(anonymous_coin::bcs_str.eq(bcs_str))
+                .first::<AnonymousCoin>(conn)
+                .optional()
+        }).context("Failed to read multi_get_anonymous_coin")
+    }
+
     fn persist_addresses(
         &self,
         addresses: &[Address],
@@ -3057,7 +3081,7 @@ impl PgIndexerStore {
                 daily_active_addresses,
             })
         })
-        .context("Failed reading latest object checkpoint sequence number from PostgresDB")
+        .context("calculate_address_stats Failed reading latest data from PostgresDB")
     }
 
     fn persist_address_stats(&self, addr_stats: &AddressStats) -> Result<(), IndexerError> {
@@ -3864,6 +3888,12 @@ impl IndexerStore for PgIndexerStore {
         .await
     }
 
+    async fn persist_events(&self, events: &[Event]) -> Result<(), IndexerError> {
+        let events = events.to_owned();
+        self.spawn_blocking(move |this| this.persist_events(&events))
+            .await
+    }
+
     async fn persist_anonymous_coin(&self, coin: &AnonymousCoin) -> Result<(), IndexerError> {
         let coin = coin.to_owned();
         self.spawn_blocking(move |this| this.persist_anonymous_coin(&coin))
@@ -3872,12 +3902,6 @@ impl IndexerStore for PgIndexerStore {
 
     async fn get_anonymous_coin(&self, owner: String, object_id: String, bcs_str: String) -> Result<Option<AnonymousCoin>, IndexerError> {
         self.spawn_blocking(move |this| this.get_anonymous_coin(owner, object_id, bcs_str))
-            .await
-    }
-
-    async fn persist_events(&self, events: &[Event]) -> Result<(), IndexerError> {
-        let events = events.to_owned();
-        self.spawn_blocking(move |this| this.persist_events(&events))
             .await
     }
 
