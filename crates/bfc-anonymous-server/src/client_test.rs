@@ -954,6 +954,84 @@ mod tests {
 
     }
 
+    #[tokio::test]
+    async fn test_client_with_multiply() -> anyhow::Result<()>{
+        let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
+
+        info!("the address is {:?}", addr);
+        let server = AnonymousServer::new(None);
+        let _server_handle = tokio::spawn(async move {
+            if let Err(e) = server.start(addr).await {
+                eprintln!("Server error: {:?}", e);
+            }
+        });
+
+        let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
+        let ping_result = client.test_ping().await.response.unwrap();
+        info!("Ping Result: {:?}", ping_result);
+
+        // test split first
+        let split_result_0 = client.test_split(20, 1).await.response.unwrap();
+        info!("Split 20 Result: {:?}", split_result_0);
+        let split_result_1 = client.test_split(10, 1).await.response.unwrap();
+        info!("Split 10 Result: {:?}", split_result_1);
+
+        let split_result_0_repeat = client.test_split(20, 1).await.response.unwrap();
+        info!("Split 20 Result repeat: {:?}", split_result_0);
+        let split_result_1_repeat = client.test_split(10, 1).await.response.unwrap();
+        info!("Split 10 Result repeat: {:?}", split_result_1);
+
+        assert_eq!(split_result_0["result"]["result1"], split_result_0_repeat["result"]["result1"]);
+        assert_eq!(split_result_0["result"]["result2"], split_result_0_repeat["result"]["result2"]);
+
+        assert_eq!(split_result_1["result"]["result1"], split_result_1_repeat["result"]["result1"]);
+        assert_eq!(split_result_1["result"]["result2"], split_result_1_repeat["result"]["result2"]);
+        //test 20 * 10
+        let multiply_result_response = client
+            .test_multiply(
+                split_result_0["result"]["result1"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+                split_result_0["result"]["result2"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+                split_result_1["result"]["result1"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+                split_result_1["result"]["result2"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+            )
+            .await;
+        assert!(multiply_result_response.success, "test_multiply failed: {:?}", multiply_result_response.error);
+        let multiply_result = multiply_result_response.response.expect("test_multiply returned None response");
+        info!("Multiply Result: {:?}", multiply_result);
+
+        let multiply_result = client
+            .test_compare(
+                multiply_result["result"]["result1"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+                multiply_result["result"]["result2"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+                200,
+            )
+            .await;
+
+        let test_multiply_result = multiply_result.response.expect("test_add returned None response");
+        info!("Add Result: {:?}", test_multiply_result);
+        assert_eq!(test_multiply_result["result"]["result1"], "0");
+
+        Ok(())
+    }
+
     #[ignore]
     #[tokio::test]
     async fn test_client_with_server() -> anyhow::Result<()> {
