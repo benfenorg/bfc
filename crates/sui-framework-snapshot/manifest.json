@@ -1860,7 +1860,7 @@
     ]
   },
   "85": {
-    "git_revision": "6f3fe58919e7-dirty",
+    "git_revision": "8876ce8a2e06-dirty",
     "packages": [
       {
         "name": "MoveStdlib",

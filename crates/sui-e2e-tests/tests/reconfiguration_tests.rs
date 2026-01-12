@@ -8,7 +8,7 @@ mod publish_coin;
 use futures::future::join_all;
 use move_core_types::ident_str;
 use rand::rngs::OsRng;
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::BTreeSet;
 use std::path::PathBuf;
 use fastcrypto::encoding::Base64;
 use std::str::FromStr;
@@ -24,9 +24,9 @@ use sui_json_rpc_types::{CheckpointPage, ObjectChange, SuiMoveStruct, SuiMoveVal
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
-use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder, GenesisConfig};
+use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
 
-use sui_test_transaction_builder::{make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, make_transfer_sui_transaction_with_gas_coins};
+use sui_test_transaction_builder::{make_stable_staking_transaction, make_transfer_sui_transaction_with_gas_coins};
 use sui_types::base_types::{ObjectID,SuiAddress};
 use move_core_types::parser::parse_struct_tag;
 use sui_types::sui_serde::BigInt;
