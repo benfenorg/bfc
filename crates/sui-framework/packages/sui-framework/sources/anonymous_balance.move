@@ -25,8 +25,6 @@ const ENotEnough: u64 = 2;
 
 const DEFAULT_COMPARE_RESULT_LESS_THAN: u8 = 2;
 
-//const ANONYMOUS_DATA_VERSION_V1 : u8 = 0;
-const ANONYMOUS_DATA_VERSION_V2 : u8 = 2;
 
 /// A Supply of T. Used for minting and burning.
 /// Wrapped into a `TreasuryCap` in the `Coin` module.
@@ -52,7 +50,7 @@ public struct Anonymous_Balance<phantom T> has store {
 public fun create_by_value<T>(value: u64, owner: address): Anonymous_Balance<T> {
     let mut encode_data = b"";
     let balance_type = BALANCE_TYPE_SHARING;
-    let version = ANONYMOUS_DATA_VERSION_V2;
+    let  version = 0;
 
     let (value1, value2)   = hfe_ops_encode_data(value, owner);
     vector::append(&mut encode_data, value1);
@@ -72,7 +70,7 @@ public fun create_by_value<T>(value: u64, owner: address): Anonymous_Balance<T> 
 public fun create_by_value1_and_value2<T>(value1: vector<u8>, value2: vector<u8>): Anonymous_Balance<T> {
     let mut encode_data = b"";
     let balance_type = BALANCE_TYPE_SHARING;
-    let  version = ANONYMOUS_DATA_VERSION_V2;
+    let  version = 0;
 
 
     vector::append(&mut encode_data, value1);
@@ -151,7 +149,6 @@ fun update_encode_data<T>(self: &mut Anonymous_Balance<T>) {
     vector::append(&mut encode_data, b",");
     vector::append(&mut encode_data, self.value2);
     self.encode_data = encode_data;
-    self.version = ANONYMOUS_DATA_VERSION_V2;
 }
 
 /// Join two balances together.

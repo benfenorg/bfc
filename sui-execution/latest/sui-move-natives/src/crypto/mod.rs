@@ -15,5 +15,9 @@ pub mod poseidon;
 pub mod vdf;
 pub mod zklogin;
 
+pub mod hfe_ops_v1;
+
+pub mod hfe_ops_v2;
+
 pub mod hfe_ops;
 

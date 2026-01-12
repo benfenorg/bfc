@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tracing::info;
+use crate::server_utils::AnonymousRestoreElementRep;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -8,6 +9,15 @@ struct RpcResponse {
     jsonrpc: String,
     id: u64,
     result: Option<SuiObjectResponse>,
+    error: Option<RpcError>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct RpcIndexerResponse {
+    jsonrpc: String,
+    id: u64,
+    result: Option<Vec<AnonymousRestoreElementRep>>,
     error: Option<RpcError>,
 }
 
@@ -52,8 +62,36 @@ struct Content {
     #[serde(rename = "type")]
     content_type: String,
     has_public_transfer: bool,
-    fields: Value, // Dynamic content fields
+    fields: Fields, // Dynamic content fields
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Fields {
+    pub balance: Balance,
+    pub id: ObjectId,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Balance {
+    #[serde(rename = "type")]
+    pub balance_type: String,
+    pub fields: BalanceFields,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct BalanceFields {
+    pub balance_type: i64,
+    pub encode_data: Vec<u8>,
+    pub value1: Vec<u8>,
+    pub value2: Vec<u8>,
+    pub version: i64,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ObjectId {
+    pub id: String,
+}
+
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ObjectError {
@@ -68,7 +106,7 @@ struct RpcError {
     data: Option<Value>,
 }
 
-pub fn parse_response(response: &str) -> Option<String> {
+pub fn parse_response_and_check_balance(response: &str, value1: Vec<u8>, value2: Vec<u8>) -> Option<String> {
     let rpc_response: RpcResponse = match serde_json::from_str(response) {
         Ok(parsed) => parsed,
         Err(_) =>  return None,
@@ -89,12 +127,18 @@ pub fn parse_response(response: &str) -> Option<String> {
                 error: None,
             }),
         ) => {
-            info!("Object ID: {}", obj.object_id);
-            info!("Version: {}", obj.version);
-            info!("Type: {}", obj.object_type);
-            info!("Owner: {:#?}", obj.owner);
-            info!("Content: {:#?}", obj.content);
-            return obj.owner.address_owner;
+            if value1 == obj.content.fields.balance.fields.value1 && value2 == obj.content.fields.balance.fields.value2 {
+                info!("Object ID: {}", obj.object_id);
+                info!("Version: {}", obj.version);
+                info!("Type: {}", obj.object_type);
+                info!("Owner: {:#?}", obj.owner);
+                info!("Content: {:#?}", obj.content);
+                obj.owner.address_owner
+            } else {
+                info!("diff value1 {:?} {:?}", value1, obj.content.fields.balance.fields.value1);
+                info!("diff value2 {:?} {:?}", value2, obj.content.fields.balance.fields.value2);
+                None
+            }
         }
 
         // Object-specific error (e.g., not found)
@@ -114,5 +158,62 @@ pub fn parse_response(response: &str) -> Option<String> {
             info!("Unexpected response format");
             return None;
         }
+    }
+}
+
+
+
+pub fn parse_response_and_return_balance(response: &str) -> (Option<Vec<u8>>,Option<Vec<u8>>) {
+    let rpc_response: RpcResponse = match serde_json::from_str(response) {
+        Ok(parsed) => parsed,
+        Err(_) =>  return (None,None)
+    };
+
+    match (rpc_response.error, rpc_response.result) {
+        // Top-level RPC error (e.g., invalid request)
+        (Some(err), _) => {
+            info!("RPC Error ({}): {}", err.code, err.message);
+            return (None,None);
+        }
+
+        // Successful response with object data
+        (
+            None,
+            Some(SuiObjectResponse {
+                     data: Some(obj),
+                     error: None,
+                 }),
+        ) => {
+            return (Some(obj.content.fields.balance.fields.value1), Some(obj.content.fields.balance.fields.value2))
+        }
+
+        // Object-specific error (e.g., not found)
+        (
+            None,
+            Some(SuiObjectResponse {
+                     data: None,
+                     error: Some(obj_err),
+                 }),
+        ) => {
+            info!("Object Error ({}): {}", obj_err.code, obj_err.message);
+            return (None,None);
+        }
+
+        // Invalid response cases
+        _ => {
+            info!("Unexpected response format");
+            return (None,None);
+        }
+    }
+}
+
+pub fn parse_indexer_response(response: &str) -> Option<Vec<AnonymousRestoreElementRep>> {
+    let rpc_response: RpcIndexerResponse = match serde_json::from_str(response) {
+        Ok(parsed) => parsed,
+        Err(_) =>  return None,
+    };
+    match rpc_response.error {
+        Some(_) => None,
+        _ => rpc_response.result
     }
 }

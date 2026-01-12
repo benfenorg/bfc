@@ -11,6 +11,7 @@ workspace = true
 
 [dependencies]
 antithesis_sdk.workspace = true
+dirs.workspace = true
 anyhow = { workspace = true, features = ["backtrace"] }
 arc-swap.workspace = true
 async-trait.workspace = true

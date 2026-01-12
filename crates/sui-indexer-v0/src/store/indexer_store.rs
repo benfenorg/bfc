@@ -28,7 +28,7 @@ use crate::models::epoch::DBEpochInfo;
 use crate::models::epoch_stake;
 use crate::models::events::Event;
 use crate::models::mining_nft::{MiningNFT, MiningNFTHistoryProfit, MiningNFTLiquiditiy, MintLongCoin};
-use crate::models::objects::{DeletedObject, Object, ObjectStatus};
+use crate::models::objects::{DeletedObject, Object, ObjectStatus, NamedBcsBytes};
 use crate::models::packages::Package;
 use crate::models::pending_reward::StakePendingItem;
 use crate::models::prices::PriceHistory;
@@ -36,6 +36,7 @@ use crate::models::stake_reward::{StakeRewardDetail, StakeRewardSummary};
 use crate::models::system_state::{DBSystemStateSummary, DBValidatorSummary};
 use crate::models::transaction_index::{ChangedObject, InputObject, MoveCall, Recipient};
 use crate::models::transactions::Transaction;
+use crate::models::anonymous_coin::AnonymousCoin;
 use crate::types::CheckpointTransactionBlockResponse;
 use crate::utils::stable_pool::StablePoolSummary;
 use crate::utils::validator_stake::ValidatorStake;
@@ -85,6 +86,22 @@ pub trait IndexerStore {
         cursor: Option<ObjectID>,
         limit: usize,
     ) -> Result<Vec<ObjectRead>, IndexerError>;
+
+    async fn get_object_object_type(
+        &self,
+        object_type: String,
+    ) -> Result<Vec<Object>, IndexerError>;
+
+    async fn get_objects_history_object_id(
+        &self,
+        object_id: String,
+    ) -> Result<Vec<Object>, IndexerError>;
+
+    async fn get_objects_history(
+        &self,
+        object_id: String,
+        version: i64,
+    ) -> Result<Vec<NamedBcsBytes>, IndexerError>;
 
     async fn query_latest_objects(
         &self,
@@ -262,6 +279,9 @@ pub trait IndexerStore {
         object_deletion_latency: Histogram,
     ) -> Result<(), IndexerError>;
     async fn persist_events(&self, events: &[Event]) -> Result<(), IndexerError>;
+    async fn persist_anonymous_coin(&self, coin: &AnonymousCoin) -> Result<(), IndexerError>;
+    async fn get_anonymous_coin(&self, owner: String, object_id: String, bcs_str: String) -> Result<Option<AnonymousCoin>, IndexerError>;
+
     async fn persist_addresses(
         &self,
         addresses: &[Address],

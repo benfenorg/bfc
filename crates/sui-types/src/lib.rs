@@ -108,6 +108,7 @@ pub mod bfc_system_state;
 pub mod utils;
 pub mod stable_coin;
 pub mod vault;
+pub mod anoymous_coin;
 
 macro_rules! built_in_ids {
     ($($addr:ident / $id:ident = $init:expr);* $(;)?) => {

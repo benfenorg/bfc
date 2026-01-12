@@ -413,6 +413,7 @@ entry fun create_action(action_type: u8,
                         action_key: string::String,
                         vault: &mut AnonymousVault,
                         clock: &Clock, ctx: &mut TxContext) {
+    assert!(vector_contains(&vault.admins, &tx_context::sender(ctx)), ENOT_ADMIN);
     let action = VaultAction {
         id: object::new(ctx),
         action_type: action_type,

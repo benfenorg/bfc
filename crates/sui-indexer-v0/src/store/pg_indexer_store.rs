@@ -73,15 +73,13 @@ use crate::models::mining_nft::{
 use crate::models::network_metrics::{DBMoveCallMetrics, DBNetworkMetrics};
 use crate::models::network_overview::DBNetworkOverview;
 use crate::models::network_segment_metrics::NetworkSegmentMetrics;
-use crate::models::objects::{
-    compose_object_bulk_insert_update_query, group_and_sort_objects, DeletedObject, Object,
-};
+use crate::models::objects::{compose_object_bulk_insert_update_query, group_and_sort_objects, DeletedObject, Object, NamedBcsBytes};
 use crate::models::packages::Package;
 use crate::models::prices::{self, PriceHistory};
 use crate::models::system_state::DBValidatorSummary;
 use crate::models::transaction_index::{ChangedObject, InputObject, MoveCall, Recipient};
 use crate::models::transactions::Transaction;
-use crate::schema::{active_addresses, address_stakes, address_stats, addresses, changed_objects, checkpoint_metrics, checkpoints, dao_proposals, dao_votes, epoch_stake_coins, epoch_stakes, epochs, events, input_objects, mining_nft_history_profits, mining_nft_liquidities, mining_nft_staking, mining_nfts, mining_nfts_view, mint_long_coin, move_calls, network_segment_metrics, objects, objects_history, packages, price_history, recipients, stake_pending_item, stake_reward_detail, stake_reward_summary, system_states, transactions, validators};
+use crate::schema::{active_addresses, address_stakes, address_stats, addresses, changed_objects, checkpoint_metrics, checkpoints, dao_proposals, dao_votes, epoch_stake_coins, epoch_stakes, epochs, events, input_objects, mining_nft_history_profits, mining_nft_liquidities, mining_nft_staking, mining_nfts, mining_nfts_view, mint_long_coin, move_calls, network_segment_metrics, objects, objects_history, packages, price_history, recipients, stake_pending_item, stake_reward_detail, stake_reward_summary, system_states, transactions, validators, anonymous_coin};
 use crate::store::diesel_marco::{read_only_blocking, transactional_blocking};
 use crate::store::module_resolver::IndexerModuleResolver;
 use crate::store::query::DBFilter;
@@ -91,6 +89,7 @@ use crate::utils::validator_stake::get_avg_exchange_rate;
 use crate::utils::{get_balance_changes_from_effect, get_object_changes};
 use crate::{benfen, PgConnectionPool};
 use crate::handlers::pending_reward_handler::MiningConfig;
+use crate::models::anonymous_coin::AnonymousCoin;
 use crate::models::pending_reward::StakePendingItem;
 use crate::models::stake_reward::{StakeRewardDetail, StakeRewardSummary};
 
@@ -744,6 +743,97 @@ impl PgIndexerStore {
             .into_iter()
             .map(|object| object.try_into_object_read(&self.module_cache))
             .collect()
+    }
+
+    fn get_object_object_type(
+        &self,
+        object_type: String,
+    ) -> Result<Vec<Object>, IndexerError> {
+        read_only_blocking!(&self.blocking_cp, |conn| {
+            objects::dsl::objects
+                .select((
+                    objects::epoch,
+                    objects::checkpoint,
+                    objects::object_id,
+                    objects::version,
+                    objects::object_digest,
+                    objects::owner_type,
+                    objects::owner_address,
+                    objects::initial_shared_version,
+                    objects::previous_transaction,
+                    objects::object_type,
+                    objects::object_status,
+                    objects::has_public_transfer,
+                    objects::storage_rebate,
+                    objects::bcs,
+                ))
+                .filter(objects::dsl::object_type.like(object_type))
+                .order(objects::checkpoint.desc())
+                .load::<Object>(conn)
+        }).context(&format!("Failed reading get_object_object_type"))
+    }
+
+    fn get_objects_history_object_id(
+        &self,
+        object_id: String,
+    ) -> Result<Vec<Object>, IndexerError> {
+        read_only_blocking!(&self.blocking_cp, |conn| {
+            objects_history::dsl::objects_history
+                .select((
+                    objects_history::epoch,
+                    objects_history::checkpoint,
+                    objects_history::object_id,
+                    objects_history::version,
+                    objects_history::object_digest,
+                    objects_history::owner_type,
+                    objects_history::owner_address,
+                    objects_history::initial_shared_version,
+                    objects_history::previous_transaction,
+                    objects_history::object_type,
+                    objects_history::object_status,
+                    objects_history::has_public_transfer,
+                    objects_history::storage_rebate,
+                    objects_history::bcs,
+                ))
+                .filter(objects_history::object_id.eq(object_id.to_string()))
+                .order(objects_history::checkpoint.desc())
+                .load::<Object>(conn)
+        }).context(&format!("Failed reading get_objects_history_object_id"))
+    }
+
+    fn get_objects_history(
+        &self,
+        object_id: String,
+        version: i64,
+    ) -> Result<Vec<NamedBcsBytes>, IndexerError> {
+        let history = read_only_blocking!(&self.blocking_cp, |conn| {
+            objects_history::dsl::objects_history
+                .select((
+                    objects_history::epoch,
+                    objects_history::checkpoint,
+                    objects_history::object_id,
+                    objects_history::version,
+                    objects_history::object_digest,
+                    objects_history::owner_type,
+                    objects_history::owner_address,
+                    objects_history::initial_shared_version,
+                    objects_history::previous_transaction,
+                    objects_history::object_type,
+                    objects_history::object_status,
+                    objects_history::has_public_transfer,
+                    objects_history::storage_rebate,
+                    objects_history::bcs,
+                ))
+                .filter(objects_history::object_id.eq(object_id.to_string()))
+                .filter(objects_history::version.eq(version))
+                .order(objects_history::checkpoint.desc())
+                .first::<Object>(conn)
+                .optional()
+        })?;
+        match history {
+            Some(o) => Ok(o.bcs),
+            _ => Err(IndexerError::PostgresReadError("null".to_string()))
+        }
     }
 
     // NOTE(gegaowp): now only supports query by address owner
@@ -2282,6 +2372,30 @@ impl PgIndexerStore {
         Ok(())
     }
 
+    fn persist_anonymous_coin(&self, coin: &AnonymousCoin) -> Result<(), IndexerError> {
+        transactional_blocking!(&self.blocking_cp, |conn| {
+            diesel::insert_into(anonymous_coin::table)
+                .values(coin)
+                .on_conflict_do_nothing()
+                .execute(conn)
+                .map_err(IndexerError::from)
+                .context("Failed writing AnonymousCoin to PostgresDB")?;
+            Ok::<(), IndexerError>(())
+        })?;
+        Ok(())
+    }
+
+    fn get_anonymous_coin(&self, owner: String, object_id: String, bcs_str: String) -> Result<Option<AnonymousCoin>, IndexerError> {
+        read_only_blocking!(&self.blocking_cp, |conn| {
+            anonymous_coin::dsl::anonymous_coin
+                .filter(anonymous_coin::owner.eq(owner))
+                .filter(anonymous_coin::object_id.eq(object_id))
+                .filter(anonymous_coin::bcs_str.eq(bcs_str))
+                .first::<AnonymousCoin>(conn)
+                .optional()
+        }).context("Failed to read multi_get_anonymous_coin")
+    }
+
     fn persist_addresses(
         &self,
         addresses: &[Address],
@@ -2967,7 +3081,7 @@ impl PgIndexerStore {
                 daily_active_addresses,
             })
         })
-        .context("Failed reading latest object checkpoint sequence number from PostgresDB")
+        .context("calculate_address_stats Failed reading latest data from PostgresDB")
     }
 
     fn persist_address_stats(&self, addr_stats: &AddressStats) -> Result<(), IndexerError> {
@@ -3299,6 +3413,34 @@ impl IndexerStore for PgIndexerStore {
             this.query_objects_history(filter, at_checkpoint, cursor, limit)
         })
         .await
+    }
+
+    async fn get_object_object_type(
+        &self,
+        object_type: String,
+    ) -> Result<Vec<Object>, IndexerError> {
+        self.spawn_blocking(move |this| {
+            this.get_object_object_type(object_type)
+        }).await
+    }
+
+    async fn get_objects_history_object_id(
+        &self,
+        object_id: String,
+    ) -> Result<Vec<Object>, IndexerError> {
+        self.spawn_blocking(move |this| {
+            this.get_objects_history_object_id(object_id)
+        }).await
+    }
+
+    async fn get_objects_history(
+        &self,
+        object_id: String,
+        version: i64,
+    ) -> Result<Vec<NamedBcsBytes>, IndexerError> {
+        self.spawn_blocking(move |this| {
+            this.get_objects_history(object_id, version)
+        }).await
     }
 
     async fn query_latest_objects(
@@ -3749,6 +3891,17 @@ impl IndexerStore for PgIndexerStore {
     async fn persist_events(&self, events: &[Event]) -> Result<(), IndexerError> {
         let events = events.to_owned();
         self.spawn_blocking(move |this| this.persist_events(&events))
+            .await
+    }
+
+    async fn persist_anonymous_coin(&self, coin: &AnonymousCoin) -> Result<(), IndexerError> {
+        let coin = coin.to_owned();
+        self.spawn_blocking(move |this| this.persist_anonymous_coin(&coin))
+            .await
+    }
+
+    async fn get_anonymous_coin(&self, owner: String, object_id: String, bcs_str: String) -> Result<Option<AnonymousCoin>, IndexerError> {
+        self.spawn_blocking(move |this| this.get_anonymous_coin(owner, object_id, bcs_str))
             .await
     }
 

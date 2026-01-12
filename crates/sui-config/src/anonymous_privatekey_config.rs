@@ -31,12 +31,25 @@ pub struct AnonymousPrivateKeyConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[arg(long)]
     pub zklogin_verify_rpc_path: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[arg(long)]
+    pub anonymous_data_v2_open_epoch: Option<u64>,
 }
 
+pub const DEFAULT_ANONYMOUS_DATA_V2_OPEN_EPOCH :u64 = 0;
 
 impl AnonymousPrivateKeyConfig {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn set_anonymous_data_v2_open_epoch(&mut self, anonymous_data_v2_open_epoch: u64) {
+        self.anonymous_data_v2_open_epoch = Some(anonymous_data_v2_open_epoch);
+    }
+
+    pub fn get_anonymous_data_v2_open_epoch(&self) -> u64 {
+        self.anonymous_data_v2_open_epoch.unwrap_or(DEFAULT_ANONYMOUS_DATA_V2_OPEN_EPOCH)
     }
 
     pub fn get_private_key(&self) -> Option<String> {
@@ -119,7 +132,11 @@ impl AnonymousPrivateKeyConfig {
             .get("zklogin-verify-rpc-path")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string());
-            
+
+        let anonymous_data_v2_open_epoch = yaml_value
+            .get("anonymous-data-v2-open-epoch")
+            .and_then(|s| s.as_u64());
+
         Ok(AnonymousPrivateKeyConfig { 
             anonymous_privatekey: private_key,
             anonymous_coordseed: coord_seed,
@@ -127,6 +144,7 @@ impl AnonymousPrivateKeyConfig {
             enable_anonymous_rpc,
             fullnode_rpc_path,
             zklogin_verify_rpc_path,
+            anonymous_data_v2_open_epoch,
         })
     }
 

@@ -1,8 +1,10 @@
 ---
 anonymous-privatekey: "0x1111ffff0000"
+anonymous-coordseed: 116540450355
 anonymous-rpc:
   - "http://127.0.0.1:9010"
   - "http://127.0.0.1:9010"
 enable-anonymous-rpc: false
 fullnode-rpc-path: "https://rpc-mainnet.benfen.org"
 zklogin-verify-rpc-path: "https://zksimplerpc.benfen.org/verify_zk_login_sig"
+anonymous-data-v2-open-epoch: 0

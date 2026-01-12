@@ -37,6 +37,8 @@ tokio = { workspace = true, features = ["full"] }
 tokio-util = { workspace = true, features = ["rt"] }
 tokio-stream.workspace = true
 url.workspace = true
+ed25519-dalek = { version = "2.1.1", features = ["rand_core", "std"] }
+rand = "0.8.5"
 
 fastcrypto = { workspace = true, features = ["copy_key"] }
 mysten-metrics.workspace = true

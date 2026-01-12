@@ -4,13 +4,7 @@
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::proc_macros::rpc;
 
-use sui_json_rpc_types::{
-    AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage,
-    IndexedStake, MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview,
-    QueryObjectsPage, StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiMiningNFTLiquidity,
-    SuiObjectResponseQuery, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview,
-    SuiOwnedMiningNFTProfit, SuiOwnedTicketList, SuiMiningNFTList, StakeRewardHistory
-};
+use sui_json_rpc_types::{AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage, IndexedStake, MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, QueryObjectsPage, StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiMiningNFTLiquidity, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit, SuiOwnedTicketList, SuiMiningNFTList, StakeRewardHistory, AnonymousCoinElementRep, AnonymousCoinParams, AnonymousRestoreElementRep, AnonymousRestoreElementParams};
 use sui_open_rpc_macros::open_rpc;
 use sui_types::{
     base_types::{SequenceNumber, SuiAddress},
@@ -163,4 +157,21 @@ pub trait ExtendedApi {
 
     #[method(name = "initNft")]
     async fn init_nft(&self, reward_per_power: u64) -> RpcResult<String>;
+
+    #[method(name = "initAnonymousCoin")]
+    async fn init_anonymous_coin(
+        &self,
+    ) -> RpcResult<u64>;
+
+    #[method(name = "checkAnonymousCoinHistory")]
+    async fn check_anonymous_coin_history(
+        &self,
+        anonymous_restore_array: Vec<AnonymousRestoreElementParams>,
+    ) -> RpcResult<Vec<AnonymousRestoreElementRep>>;
+
+    #[method(name = "multiGetAnonymousCoinValue")]
+    async fn multi_get_anonymous_coin_value(
+        &self,
+        anonymous_coin_array: Vec<AnonymousCoinParams>,
+    ) -> RpcResult<Vec<AnonymousCoinElementRep>>;
 }

@@ -28,6 +28,15 @@ pub struct Supply {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, JsonSchema, Eq, PartialEq)]
+pub struct AnonymousBalance {
+    balance_type: u32,
+    pub value1: Vec<u8>,
+    pub value2: Vec<u8>,
+    encode_data: Vec<u8>,
+    version: u8,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, JsonSchema, Eq, PartialEq)]
 pub struct Balance {
     value: u64,
 }

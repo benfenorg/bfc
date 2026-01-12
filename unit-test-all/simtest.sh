@@ -17,7 +17,7 @@ cargo simtest sim_test_onsite_reconfig_observer_basic
 
 
 # UNIVERSE_SIZE=10 cargo nextest run --profile ci
-
+UPDATE_BASELINE=1 cargo simtest --profile ci  --retries 1
 
 #ensure testing log
 cargo simtest sim_subscribe_checkpoint --nocapture

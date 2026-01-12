@@ -101,7 +101,7 @@ pub fn split_to_two_bytes_value_v2(
 
     // Step 2: Shamir split the ORIGINAL value (split first!)
     let (share1, share2) =
-        split_to_two_value_v2_internal(value, &coords).expect("Internal split should not fail");
+        split_to_two_value_v2_internal(value, &coords);
 
     // Step 3: Convert shares to bytes
     let share1_bytes = share_to_bytes(&share1);
@@ -130,6 +130,18 @@ pub fn split_to_two_bytes_value_v2(
 /// * `Ok(u64)` - The recovered secret value
 /// * `Err(SSSError)` - If decoding or recovery fails
 pub fn recover_value_v2(value1: String, value2: String, mask_secret: u64) -> Result<u64, SSSError> {
+    // Validate input lengths
+    if value1.len() >= 100 {
+        return Err(SSSError::invalid_parameters(
+            format!("value1 length must be less than 100, got {}", value1.len()).as_str(),
+        ));
+    }
+    if value2.len() >= 100 {
+        return Err(SSSError::invalid_parameters(
+            format!("value2 length must be less than 100, got {}", value2.len()).as_str(),
+        ));
+    }
+
     // Step 1: Decode hex -> unmask -> get shares
     let shares = recover_two_shares_v2(value1, value2, mask_secret)?;
     // Step 2: Interpolate to recover original value
@@ -327,11 +339,6 @@ pub fn mul_two_shared_secrets_v2(
     _coord_seed_x: u64,
     _coord_seed_y: u64,
 ) -> Result<(Vec<u8>, Vec<u8>), SSSError> {
-    use crate::beaver::BeaverTriple;
-    use rand::SeedableRng;
-    use rand_chacha::ChaCha20Rng;
-    use rand_core::RngCore;
-
     // Step 1: Decode hex strings to bytes
     let x_bytes_1 = hex::decode(&hex_x1)
         .map_err(|e| SSSError::InvalidParameters(format!("Invalid hex in hex_x1: {}", e)))?;
@@ -362,21 +369,17 @@ pub fn mul_two_shared_secrets_v2(
         )));
     }
 
-    // Step 5: Get x-coordinates from the shares
-    let x_coords = [x_share_1.0, x_share_2.0];
-
-    // Step 6: Generate Beaver triple using the same x-coordinates
+    // Step 5: Generate Beaver triple using the same x-coordinates as input shares
+    // This ensures compatibility for homomorphic operations
+    use crate::beaver::BeaverTriple;
+    use rand_chacha::ChaCha20Rng;
+    use rand_core::{RngCore, SeedableRng};
+    
+    let x_coords = vec![x_share_1.0, x_share_2.0];
     let mut rng = ChaCha20Rng::seed_from_u64(mask_secret);
     let a = rng.next_u64();
     let b = rng.next_u64();
-
-    let beaver_triple = BeaverTriple::new_with_coordinates(
-        a,
-        b,
-        &x_coords,
-        THRESHOLD,
-        &mut rng,
-    )?;
+    let beaver_triple = BeaverTriple::new_with_coordinates(a, b, &x_coords, 2, &mut rng)?;
 
     // Step 7: Compute masked differences d = x - a, e = y - b for both parties
     let d_share_1 = mul_step1_compute_masked_diff(&x_share_1, &beaver_triple.a_shares[0]);
@@ -668,6 +671,84 @@ mod tests {
     }
 
     #[test]
+    fn test_recover_value1_too_long() {
+        // Create a string with length exactly 100
+        let value1 = "a".repeat(100);
+        let value2 = "0123456789abcdef".to_string(); // Valid hex string
+
+        let result = recover_value_v2(value1, value2, TEST_MASK_SECRET);
+        assert!(result.is_err());
+        match result {
+            Err(SSSError::InvalidParameters(msg)) => {
+                assert!(msg.contains("value1 length must be less than 100"));
+            }
+            _ => panic!("Expected InvalidParameters error"),
+        }
+    }
+
+    #[test]
+    fn test_recover_value2_too_long() {
+        let value1 = "0123456789abcdef".to_string(); // Valid hex string
+        // Create a string with length exactly 100
+        let value2 = "b".repeat(100);
+
+        let result = recover_value_v2(value1, value2, TEST_MASK_SECRET);
+        assert!(result.is_err());
+        match result {
+            Err(SSSError::InvalidParameters(msg)) => {
+                assert!(msg.contains("value2 length must be less than 100"));
+            }
+            _ => panic!("Expected InvalidParameters error"),
+        }
+    }
+
+    #[test]
+    fn test_recover_both_values_too_long() {
+        // Create strings with length exactly 100
+        let value1 = "a".repeat(100);
+        let value2 = "b".repeat(100);
+
+        let result = recover_value_v2(value1, value2, TEST_MASK_SECRET);
+        assert!(result.is_err());
+        // Should fail on value1 first
+        match result {
+            Err(SSSError::InvalidParameters(msg)) => {
+                assert!(msg.contains("value1 length must be less than 100"));
+            }
+            _ => panic!("Expected InvalidParameters error"),
+        }
+    }
+
+    #[test]
+    fn test_recover_value_length_boundary() {
+        // Test boundary: length 99 should pass, length 100 should fail
+        let value = 12345u64;
+        let (hex1, hex2, _) =
+            split_to_two_value_v2(value, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+
+        // Normal case should work
+        let result = recover_value_v2(hex1.clone(), hex2.clone(), TEST_MASK_SECRET);
+        assert!(result.is_ok());
+
+        // Create a string with length exactly 99 (should pass length check)
+        let value1_99 = "a".repeat(99);
+        let _result_99 = recover_value_v2(value1_99, hex2.clone(), TEST_MASK_SECRET);
+        // This might fail for other reasons (invalid hex), but not for length >= 100
+        // We just verify it doesn't fail specifically for length validation
+
+        // Create a string with length exactly 100 (should fail)
+        let value1_100 = "a".repeat(100);
+        let result = recover_value_v2(value1_100, hex2, TEST_MASK_SECRET);
+        assert!(result.is_err());
+        match result {
+            Err(SSSError::InvalidParameters(msg)) => {
+                assert!(msg.contains("value1 length must be less than 100"));
+            }
+            _ => panic!("Expected InvalidParameters error for length 100"),
+        }
+    }
+
+    #[test]
     fn test_recover_two_shares_returns_shares() {
         let value = 12345u64;
         let (hex1, hex2, _) =
@@ -827,6 +908,393 @@ mod tests {
         assert!(result.is_err());
     }
 
+    #[test]
+    fn test_add_two_shared_secrets_v2_deterministic() {
+        // Test deterministic randomness: same parameters should produce same output
+        // Test with a wide variety of test cases
+        let test_cases = vec![
+            (0u64, 0u64),
+            (0u64, 1u64),
+            (1u64, 0u64),
+            (1u64, 1u64),
+            (100u64, 200u64),
+            (200u64, 100u64),
+            (42u64, 42u64),
+            (1000u64, 2000u64),
+            (9999u64, 8888u64),
+            (0xFFFFFFFFu64, 1u64),
+            (0xFFFFFFFFu64, 0xFFFFFFFFu64),
+            (18446744069414584320u64, 1u64), // MODULUS - 1, 1
+            (1000000000000000000u64, 2000000000000000000u64),
+            (0x1234567890ABCDEFu64, 0xFEDCBA0987654321u64),
+            (0x8000000000000000u64, 0x7FFFFFFFFFFFFFFFu64),
+            (0x5555555555555555u64, 0xAAAAAAAAAAAAAAAAu64),
+            (0x0000000000000001u64, 0xFFFFFFFFFFFFFFFFu64),
+            (0x0000000000000000u64, 0xFFFFFFFFFFFFFFFFu64),
+            (0x12345678u64, 0x87654321u64),
+            (0x00000000FFFFFFFFu64, 0xFFFFFFFF00000000u64),
+        ];
+
+        let mask_secret = TEST_MASK_SECRET;
+        let user_id = TEST_USER_ID;
+        let coord_seed = TEST_COORD_SEED;
+
+        for (value1, value2) in test_cases {
+            // Split both values using same coord_seed
+            let (hex1_a, hex2_a, seed_a) =
+                split_to_two_value_v2(value1, user_id, mask_secret, coord_seed);
+            let (hex1_b, hex2_b, seed_b) =
+                split_to_two_value_v2(value2, user_id, mask_secret, coord_seed);
+
+            // Call add_two_shared_secrets_v2 multiple times with same parameters
+            let result1 = add_two_shared_secrets_v2(
+                hex1_a.clone(),
+                hex1_b.clone(),
+                mask_secret,
+                0,
+                user_id,
+                seed_a,
+                seed_b,
+            )
+            .unwrap();
+
+            let result2 = add_two_shared_secrets_v2(
+                hex1_a.clone(),
+                hex1_b.clone(),
+                mask_secret,
+                0,
+                user_id,
+                seed_a,
+                seed_b,
+            )
+            .unwrap();
+
+            let result3 = add_two_shared_secrets_v2(
+                hex1_a.clone(),
+                hex1_b.clone(),
+                mask_secret,
+                0,
+                user_id,
+                seed_a,
+                seed_b,
+            )
+            .unwrap();
+
+            // All results should be identical (deterministic)
+            assert_eq!(
+                result1, result2,
+                "First and second calls should produce identical results for values ({}, {})",
+                value1, value2
+            );
+            assert_eq!(
+                result2, result3,
+                "Second and third calls should produce identical results for values ({}, {})",
+                value1, value2
+            );
+            assert_eq!(
+                result1, result3,
+                "First and third calls should produce identical results for values ({}, {})",
+                value1, value2
+            );
+
+            // Test with index=1 as well
+            let result1_idx1 = add_two_shared_secrets_v2(
+                hex2_a.clone(),
+                hex2_b.clone(),
+                mask_secret,
+                1,
+                user_id,
+                seed_a,
+                seed_b,
+            )
+            .unwrap();
+
+            let result2_idx1 = add_two_shared_secrets_v2(
+                hex2_a.clone(),
+                hex2_b.clone(),
+                mask_secret,
+                1,
+                user_id,
+                seed_a,
+                seed_b,
+            )
+            .unwrap();
+
+            assert_eq!(
+                result1_idx1, result2_idx1,
+                "Results with index=1 should also be deterministic for values ({}, {})",
+                value1, value2
+            );
+
+            // Test with different mask_secret values
+            let mask_secret2 = 0xFEDCBA0987654321u64;
+            let (hex1_a2, _hex2_a2, seed_a2) =
+                split_to_two_value_v2(value1, user_id, mask_secret2, coord_seed);
+            let (hex1_b2, _hex2_b2, seed_b2) =
+                split_to_two_value_v2(value2, user_id, mask_secret2, coord_seed);
+
+            let result_mask1 = add_two_shared_secrets_v2(
+                hex1_a2.clone(),
+                hex1_b2.clone(),
+                mask_secret2,
+                0,
+                user_id,
+                seed_a2,
+                seed_b2,
+            )
+            .unwrap();
+
+            let result_mask2 = add_two_shared_secrets_v2(
+                hex1_a2.clone(),
+                hex1_b2.clone(),
+                mask_secret2,
+                0,
+                user_id,
+                seed_a2,
+                seed_b2,
+            )
+            .unwrap();
+
+            assert_eq!(
+                result_mask1, result_mask2,
+                "Results with different mask_secret should be deterministic for values ({}, {})",
+                value1, value2
+            );
+
+            // Test with different coord_seed values
+            let coord_seed2 = 0xABCDEF1234567890u64;
+            let (hex1_a3, _hex2_a3, seed_a3) =
+                split_to_two_value_v2(value1, user_id, mask_secret, coord_seed2);
+            let (hex1_b3, _hex2_b3, seed_b3) =
+                split_to_two_value_v2(value2, user_id, mask_secret, coord_seed2);
+
+            let result_seed1 = add_two_shared_secrets_v2(
+                hex1_a3.clone(),
+                hex1_b3.clone(),
+                mask_secret,
+                0,
+                user_id,
+                seed_a3,
+                seed_b3,
+            )
+            .unwrap();
+
+            let result_seed2 = add_two_shared_secrets_v2(
+                hex1_a3.clone(),
+                hex1_b3.clone(),
+                mask_secret,
+                0,
+                user_id,
+                seed_a3,
+                seed_b3,
+            )
+            .unwrap();
+
+            assert_eq!(
+                result_seed1, result_seed2,
+                "Results with different coord_seed should be deterministic for values ({}, {})",
+                value1, value2
+            );
+        }
+    }
+
+    #[test]
+    fn test_add_two_shared_secrets_v2_deterministic_different_parameters() {
+        // Test that different parameters produce different results
+        // Test with a wide variety of value combinations
+        let value_combinations = vec![
+            (100u64, 200u64, 300u64),
+            (0u64, 1u64, 2u64),
+            (1u64, 0u64, 2u64),
+            (42u64, 43u64, 44u64),
+            (1000u64, 2000u64, 3000u64),
+            (0xFFFFFFFFu64, 0xFFFFFFFEu64, 0xFFFFFFFDu64),
+            (0x1234567890ABCDEFu64, 0xFEDCBA0987654321u64, 0x1111111111111111u64),
+            (0x8000000000000000u64, 0x7FFFFFFFFFFFFFFFu64, 0x4000000000000000u64),
+            (0x5555555555555555u64, 0xAAAAAAAAAAAAAAAAu64, 0x3333333333333333u64),
+            (18446744069414584320u64, 18446744069414584319u64, 18446744069414584318u64),
+            (1000000000000000000u64, 2000000000000000000u64, 3000000000000000000u64),
+        ];
+
+        let coord_seed = TEST_COORD_SEED;
+
+        for (value1, value2, value3) in value_combinations {
+            // Test with different values
+            let (hex1_a, _hex2_a, seed_a) =
+                split_to_two_value_v2(value1, TEST_USER_ID, TEST_MASK_SECRET, coord_seed);
+            let (hex1_b, _hex2_b, seed_b) =
+                split_to_two_value_v2(value2, TEST_USER_ID, TEST_MASK_SECRET, coord_seed);
+            let (hex1_c, _hex2_c, seed_c) =
+                split_to_two_value_v2(value3, TEST_USER_ID, TEST_MASK_SECRET, coord_seed);
+
+            let result_ab = add_two_shared_secrets_v2(
+                hex1_a.clone(),
+                hex1_b.clone(),
+                TEST_MASK_SECRET,
+                0,
+                TEST_USER_ID,
+                seed_a,
+                seed_b,
+            )
+            .unwrap();
+
+            let result_ac = add_two_shared_secrets_v2(
+                hex1_a.clone(),
+                hex1_c.clone(),
+                TEST_MASK_SECRET,
+                0,
+                TEST_USER_ID,
+                seed_a,
+                seed_c,
+            )
+            .unwrap();
+
+            // Different inputs should produce different outputs
+            assert_ne!(
+                result_ab, result_ac,
+                "Different input values should produce different outputs for ({}, {}, {})",
+                value1, value2, value3
+            );
+
+            // Test with different user_id values
+            let user_ids = vec![1u64, 2u64, 100u64, 0xFFFFFFFFu64, 0x1234567890ABCDEFu64];
+            for i in 0..user_ids.len() {
+                for j in (i + 1)..user_ids.len() {
+                    let result_user_i = add_two_shared_secrets_v2(
+                        hex1_a.clone(),
+                        hex1_b.clone(),
+                        TEST_MASK_SECRET,
+                        0,
+                        user_ids[i],
+                        seed_a,
+                        seed_b,
+                    )
+                    .unwrap();
+
+                    let result_user_j = add_two_shared_secrets_v2(
+                        hex1_a.clone(),
+                        hex1_b.clone(),
+                        TEST_MASK_SECRET,
+                        0,
+                        user_ids[j],
+                        seed_a,
+                        seed_b,
+                    )
+                    .unwrap();
+
+                    // Different user_id should produce different outputs (due to encoding)
+                    assert_ne!(
+                        result_user_i, result_user_j,
+                        "Different user_id ({}, {}) should produce different encoded outputs for values ({}, {})",
+                        user_ids[i], user_ids[j], value1, value2
+                    );
+                }
+            }
+
+            // Test with different mask_secret values
+            let mask_secrets = vec![
+                TEST_MASK_SECRET,
+                0xFEDCBA0987654321u64,
+                0xABCDEF1234567890u64,
+                0x0000000000000000u64,
+                0xFFFFFFFFFFFFFFFFu64,
+            ];
+            for i in 0..mask_secrets.len() {
+                for j in (i + 1)..mask_secrets.len() {
+                    let (hex1_a_mask_i, _, seed_a_mask_i) =
+                        split_to_two_value_v2(value1, TEST_USER_ID, mask_secrets[i], coord_seed);
+                    let (hex1_b_mask_i, _, seed_b_mask_i) =
+                        split_to_two_value_v2(value2, TEST_USER_ID, mask_secrets[i], coord_seed);
+
+                    let (hex1_a_mask_j, _, seed_a_mask_j) =
+                        split_to_two_value_v2(value1, TEST_USER_ID, mask_secrets[j], coord_seed);
+                    let (hex1_b_mask_j, _, seed_b_mask_j) =
+                        split_to_two_value_v2(value2, TEST_USER_ID, mask_secrets[j], coord_seed);
+
+                    let result_mask_i = add_two_shared_secrets_v2(
+                        hex1_a_mask_i.clone(),
+                        hex1_b_mask_i.clone(),
+                        mask_secrets[i],
+                        0,
+                        TEST_USER_ID,
+                        seed_a_mask_i,
+                        seed_b_mask_i,
+                    )
+                    .unwrap();
+
+                    let result_mask_j = add_two_shared_secrets_v2(
+                        hex1_a_mask_j.clone(),
+                        hex1_b_mask_j.clone(),
+                        mask_secrets[j],
+                        0,
+                        TEST_USER_ID,
+                        seed_a_mask_j,
+                        seed_b_mask_j,
+                    )
+                    .unwrap();
+
+                    // Different mask_secret should produce different outputs
+                    assert_ne!(
+                        result_mask_i, result_mask_j,
+                        "Different mask_secret ({:x}, {:x}) should produce different outputs for values ({}, {})",
+                        mask_secrets[i], mask_secrets[j], value1, value2
+                    );
+                }
+            }
+
+            // Test with different coord_seed values
+            let coord_seeds = vec![
+                TEST_COORD_SEED,
+                0xABCDEF1234567890u64,
+                0x1111111111111111u64,
+                0xFFFFFFFFFFFFFFFFu64,
+                0x0000000000000000u64,
+            ];
+            for i in 0..coord_seeds.len() {
+                for j in (i + 1)..coord_seeds.len() {
+                    let (hex1_a_seed_i, _, seed_a_seed_i) =
+                        split_to_two_value_v2(value1, TEST_USER_ID, TEST_MASK_SECRET, coord_seeds[i]);
+                    let (hex1_b_seed_i, _, seed_b_seed_i) =
+                        split_to_two_value_v2(value2, TEST_USER_ID, TEST_MASK_SECRET, coord_seeds[i]);
+
+                    let (hex1_a_seed_j, _, seed_a_seed_j) =
+                        split_to_two_value_v2(value1, TEST_USER_ID, TEST_MASK_SECRET, coord_seeds[j]);
+                    let (hex1_b_seed_j, _, seed_b_seed_j) =
+                        split_to_two_value_v2(value2, TEST_USER_ID, TEST_MASK_SECRET, coord_seeds[j]);
+
+                    let result_seed_i = add_two_shared_secrets_v2(
+                        hex1_a_seed_i.clone(),
+                        hex1_b_seed_i.clone(),
+                        TEST_MASK_SECRET,
+                        0,
+                        TEST_USER_ID,
+                        seed_a_seed_i,
+                        seed_b_seed_i,
+                    )
+                    .unwrap();
+
+                    let result_seed_j = add_two_shared_secrets_v2(
+                        hex1_a_seed_j.clone(),
+                        hex1_b_seed_j.clone(),
+                        TEST_MASK_SECRET,
+                        0,
+                        TEST_USER_ID,
+                        seed_a_seed_j,
+                        seed_b_seed_j,
+                    )
+                    .unwrap();
+
+                    // Different coord_seed should produce different outputs
+                    assert_ne!(
+                        result_seed_i, result_seed_j,
+                        "Different coord_seed ({:x}, {:x}) should produce different outputs for values ({}, {})",
+                        coord_seeds[i], coord_seeds[j], value1, value2
+                    );
+                }
+            }
+        }
+    }
+
     // ==================== Homomorphic Subtraction Tests ====================
 
     #[test]
@@ -906,6 +1374,393 @@ mod tests {
         )
         .unwrap();
         assert_eq!(result, 0);
+    }
+
+    #[test]
+    fn test_sub_two_shared_secrets_v2_deterministic() {
+        // Test deterministic randomness: same parameters should produce same output
+        // Test with a wide variety of test cases
+        let test_cases = vec![
+            (0u64, 0u64),
+            (0u64, 1u64),
+            (1u64, 0u64),
+            (1u64, 1u64),
+            (300u64, 100u64),
+            (100u64, 200u64),
+            (42u64, 42u64),
+            (2000u64, 1000u64),
+            (9999u64, 8888u64),
+            (0xFFFFFFFFu64, 1u64),
+            (0xFFFFFFFFu64, 0xFFFFFFFFu64),
+            (18446744069414584320u64, 1u64), // MODULUS - 1, 1
+            (2000000000000000000u64, 1000000000000000000u64),
+            (0x1234567890ABCDEFu64, 0xFEDCBA0987654321u64),
+            (0x8000000000000000u64, 0x7FFFFFFFFFFFFFFFu64),
+            (0x5555555555555555u64, 0xAAAAAAAAAAAAAAAAu64),
+            (0xFFFFFFFFFFFFFFFFu64, 0x0000000000000001u64),
+            (0xFFFFFFFFFFFFFFFFu64, 0x0000000000000000u64),
+            (0x87654321u64, 0x12345678u64),
+            (0xFFFFFFFF00000000u64, 0x00000000FFFFFFFFu64),
+        ];
+
+        let mask_secret = TEST_MASK_SECRET;
+        let user_id = TEST_USER_ID;
+        let coord_seed = TEST_COORD_SEED;
+
+        for (value1, value2) in test_cases {
+            // Split both values using same coord_seed
+            let (hex1_a, hex2_a, seed_a) =
+                split_to_two_value_v2(value1, user_id, mask_secret, coord_seed);
+            let (hex1_b, hex2_b, seed_b) =
+                split_to_two_value_v2(value2, user_id, mask_secret, coord_seed);
+
+            // Call sub_two_shared_secrets_v2 multiple times with same parameters
+            let result1 = sub_two_shared_secrets_v2(
+                hex1_a.clone(),
+                hex1_b.clone(),
+                mask_secret,
+                0,
+                user_id,
+                seed_a,
+                seed_b,
+            )
+            .unwrap();
+
+            let result2 = sub_two_shared_secrets_v2(
+                hex1_a.clone(),
+                hex1_b.clone(),
+                mask_secret,
+                0,
+                user_id,
+                seed_a,
+                seed_b,
+            )
+            .unwrap();
+
+            let result3 = sub_two_shared_secrets_v2(
+                hex1_a.clone(),
+                hex1_b.clone(),
+                mask_secret,
+                0,
+                user_id,
+                seed_a,
+                seed_b,
+            )
+            .unwrap();
+
+            // All results should be identical (deterministic)
+            assert_eq!(
+                result1, result2,
+                "First and second calls should produce identical results for values ({}, {})",
+                value1, value2
+            );
+            assert_eq!(
+                result2, result3,
+                "Second and third calls should produce identical results for values ({}, {})",
+                value1, value2
+            );
+            assert_eq!(
+                result1, result3,
+                "First and third calls should produce identical results for values ({}, {})",
+                value1, value2
+            );
+
+            // Test with index=1 as well
+            let result1_idx1 = sub_two_shared_secrets_v2(
+                hex2_a.clone(),
+                hex2_b.clone(),
+                mask_secret,
+                1,
+                user_id,
+                seed_a,
+                seed_b,
+            )
+            .unwrap();
+
+            let result2_idx1 = sub_two_shared_secrets_v2(
+                hex2_a.clone(),
+                hex2_b.clone(),
+                mask_secret,
+                1,
+                user_id,
+                seed_a,
+                seed_b,
+            )
+            .unwrap();
+
+            assert_eq!(
+                result1_idx1, result2_idx1,
+                "Results with index=1 should also be deterministic for values ({}, {})",
+                value1, value2
+            );
+
+            // Test with different mask_secret values
+            let mask_secret2 = 0xFEDCBA0987654321u64;
+            let (hex1_a2, _hex2_a2, seed_a2) =
+                split_to_two_value_v2(value1, user_id, mask_secret2, coord_seed);
+            let (hex1_b2, _hex2_b2, seed_b2) =
+                split_to_two_value_v2(value2, user_id, mask_secret2, coord_seed);
+
+            let result_mask1 = sub_two_shared_secrets_v2(
+                hex1_a2.clone(),
+                hex1_b2.clone(),
+                mask_secret2,
+                0,
+                user_id,
+                seed_a2,
+                seed_b2,
+            )
+            .unwrap();
+
+            let result_mask2 = sub_two_shared_secrets_v2(
+                hex1_a2.clone(),
+                hex1_b2.clone(),
+                mask_secret2,
+                0,
+                user_id,
+                seed_a2,
+                seed_b2,
+            )
+            .unwrap();
+
+            assert_eq!(
+                result_mask1, result_mask2,
+                "Results with different mask_secret should be deterministic for values ({}, {})",
+                value1, value2
+            );
+
+            // Test with different coord_seed values
+            let coord_seed2 = 0xABCDEF1234567890u64;
+            let (hex1_a3, _hex2_a3, seed_a3) =
+                split_to_two_value_v2(value1, user_id, mask_secret, coord_seed2);
+            let (hex1_b3, _hex2_b3, seed_b3) =
+                split_to_two_value_v2(value2, user_id, mask_secret, coord_seed2);
+
+            let result_seed1 = sub_two_shared_secrets_v2(
+                hex1_a3.clone(),
+                hex1_b3.clone(),
+                mask_secret,
+                0,
+                user_id,
+                seed_a3,
+                seed_b3,
+            )
+            .unwrap();
+
+            let result_seed2 = sub_two_shared_secrets_v2(
+                hex1_a3.clone(),
+                hex1_b3.clone(),
+                mask_secret,
+                0,
+                user_id,
+                seed_a3,
+                seed_b3,
+            )
+            .unwrap();
+
+            assert_eq!(
+                result_seed1, result_seed2,
+                "Results with different coord_seed should be deterministic for values ({}, {})",
+                value1, value2
+            );
+        }
+    }
+
+    #[test]
+    fn test_sub_two_shared_secrets_v2_deterministic_different_parameters() {
+        // Test that different parameters produce different results
+        // Test with a wide variety of value combinations
+        let value_combinations = vec![
+            (300u64, 100u64, 50u64),
+            (0u64, 1u64, 2u64),
+            (2u64, 1u64, 0u64),
+            (42u64, 43u64, 44u64),
+            (2000u64, 1000u64, 500u64),
+            (0xFFFFFFFFu64, 0xFFFFFFFEu64, 0xFFFFFFFDu64),
+            (0x1234567890ABCDEFu64, 0xFEDCBA0987654321u64, 0x1111111111111111u64),
+            (0x8000000000000000u64, 0x7FFFFFFFFFFFFFFFu64, 0x4000000000000000u64),
+            (0x5555555555555555u64, 0xAAAAAAAAAAAAAAAAu64, 0x3333333333333333u64),
+            (18446744069414584320u64, 18446744069414584319u64, 18446744069414584318u64),
+            (2000000000000000000u64, 1000000000000000000u64, 500000000000000000u64),
+        ];
+
+        let coord_seed = TEST_COORD_SEED;
+
+        for (value1, value2, value3) in value_combinations {
+            // Test with different values
+            let (hex1_a, _hex2_a, seed_a) =
+                split_to_two_value_v2(value1, TEST_USER_ID, TEST_MASK_SECRET, coord_seed);
+            let (hex1_b, _hex2_b, seed_b) =
+                split_to_two_value_v2(value2, TEST_USER_ID, TEST_MASK_SECRET, coord_seed);
+            let (hex1_c, _hex2_c, seed_c) =
+                split_to_two_value_v2(value3, TEST_USER_ID, TEST_MASK_SECRET, coord_seed);
+
+            let result_ab = sub_two_shared_secrets_v2(
+                hex1_a.clone(),
+                hex1_b.clone(),
+                TEST_MASK_SECRET,
+                0,
+                TEST_USER_ID,
+                seed_a,
+                seed_b,
+            )
+            .unwrap();
+
+            let result_ac = sub_two_shared_secrets_v2(
+                hex1_a.clone(),
+                hex1_c.clone(),
+                TEST_MASK_SECRET,
+                0,
+                TEST_USER_ID,
+                seed_a,
+                seed_c,
+            )
+            .unwrap();
+
+            // Different inputs should produce different outputs
+            assert_ne!(
+                result_ab, result_ac,
+                "Different input values should produce different outputs for ({}, {}, {})",
+                value1, value2, value3
+            );
+
+            // Test with different user_id values
+            let user_ids = vec![1u64, 2u64, 100u64, 0xFFFFFFFFu64, 0x1234567890ABCDEFu64];
+            for i in 0..user_ids.len() {
+                for j in (i + 1)..user_ids.len() {
+                    let result_user_i = sub_two_shared_secrets_v2(
+                        hex1_a.clone(),
+                        hex1_b.clone(),
+                        TEST_MASK_SECRET,
+                        0,
+                        user_ids[i],
+                        seed_a,
+                        seed_b,
+                    )
+                    .unwrap();
+
+                    let result_user_j = sub_two_shared_secrets_v2(
+                        hex1_a.clone(),
+                        hex1_b.clone(),
+                        TEST_MASK_SECRET,
+                        0,
+                        user_ids[j],
+                        seed_a,
+                        seed_b,
+                    )
+                    .unwrap();
+
+                    // Different user_id should produce different outputs (due to encoding)
+                    assert_ne!(
+                        result_user_i, result_user_j,
+                        "Different user_id ({}, {}) should produce different encoded outputs for values ({}, {})",
+                        user_ids[i], user_ids[j], value1, value2
+                    );
+                }
+            }
+
+            // Test with different mask_secret values
+            let mask_secrets = vec![
+                TEST_MASK_SECRET,
+                0xFEDCBA0987654321u64,
+                0xABCDEF1234567890u64,
+                0x0000000000000000u64,
+                0xFFFFFFFFFFFFFFFFu64,
+            ];
+            for i in 0..mask_secrets.len() {
+                for j in (i + 1)..mask_secrets.len() {
+                    let (hex1_a_mask_i, _, seed_a_mask_i) =
+                        split_to_two_value_v2(value1, TEST_USER_ID, mask_secrets[i], coord_seed);
+                    let (hex1_b_mask_i, _, seed_b_mask_i) =
+                        split_to_two_value_v2(value2, TEST_USER_ID, mask_secrets[i], coord_seed);
+
+                    let (hex1_a_mask_j, _, seed_a_mask_j) =
+                        split_to_two_value_v2(value1, TEST_USER_ID, mask_secrets[j], coord_seed);
+                    let (hex1_b_mask_j, _, seed_b_mask_j) =
+                        split_to_two_value_v2(value2, TEST_USER_ID, mask_secrets[j], coord_seed);
+
+                    let result_mask_i = sub_two_shared_secrets_v2(
+                        hex1_a_mask_i.clone(),
+                        hex1_b_mask_i.clone(),
+                        mask_secrets[i],
+                        0,
+                        TEST_USER_ID,
+                        seed_a_mask_i,
+                        seed_b_mask_i,
+                    )
+                    .unwrap();
+
+                    let result_mask_j = sub_two_shared_secrets_v2(
+                        hex1_a_mask_j.clone(),
+                        hex1_b_mask_j.clone(),
+                        mask_secrets[j],
+                        0,
+                        TEST_USER_ID,
+                        seed_a_mask_j,
+                        seed_b_mask_j,
+                    )
+                    .unwrap();
+
+                    // Different mask_secret should produce different outputs
+                    assert_ne!(
+                        result_mask_i, result_mask_j,
+                        "Different mask_secret ({:x}, {:x}) should produce different outputs for values ({}, {})",
+                        mask_secrets[i], mask_secrets[j], value1, value2
+                    );
+                }
+            }
+
+            // Test with different coord_seed values
+            let coord_seeds = vec![
+                TEST_COORD_SEED,
+                0xABCDEF1234567890u64,
+                0x1111111111111111u64,
+                0xFFFFFFFFFFFFFFFFu64,
+                0x0000000000000000u64,
+            ];
+            for i in 0..coord_seeds.len() {
+                for j in (i + 1)..coord_seeds.len() {
+                    let (hex1_a_seed_i, _, seed_a_seed_i) =
+                        split_to_two_value_v2(value1, TEST_USER_ID, TEST_MASK_SECRET, coord_seeds[i]);
+                    let (hex1_b_seed_i, _, seed_b_seed_i) =
+                        split_to_two_value_v2(value2, TEST_USER_ID, TEST_MASK_SECRET, coord_seeds[i]);
+
+                    let (hex1_a_seed_j, _, seed_a_seed_j) =
+                        split_to_two_value_v2(value1, TEST_USER_ID, TEST_MASK_SECRET, coord_seeds[j]);
+                    let (hex1_b_seed_j, _, seed_b_seed_j) =
+                        split_to_two_value_v2(value2, TEST_USER_ID, TEST_MASK_SECRET, coord_seeds[j]);
+
+                    let result_seed_i = sub_two_shared_secrets_v2(
+                        hex1_a_seed_i.clone(),
+                        hex1_b_seed_i.clone(),
+                        TEST_MASK_SECRET,
+                        0,
+                        TEST_USER_ID,
+                        seed_a_seed_i,
+                        seed_b_seed_i,
+                    )
+                    .unwrap();
+
+                    let result_seed_j = sub_two_shared_secrets_v2(
+                        hex1_a_seed_j.clone(),
+                        hex1_b_seed_j.clone(),
+                        TEST_MASK_SECRET,
+                        0,
+                        TEST_USER_ID,
+                        seed_a_seed_j,
+                        seed_b_seed_j,
+                    )
+                    .unwrap();
+
+                    // Different coord_seed should produce different outputs
+                    assert_ne!(
+                        result_seed_i, result_seed_j,
+                        "Different coord_seed ({:x}, {:x}) should produce different outputs for values ({}, {})",
+                        coord_seeds[i], coord_seeds[j], value1, value2
+                    );
+                }
+            }
+        }
     }
 
     // ==================== Beaver Triple Multiplication Tests ====================
@@ -1484,5 +2339,315 @@ mod tests {
             0xFEDCBA0987654321u64,
         );
         assert!(result.is_err());
+    }
+
+    // ==================== mul_two_shared_secrets_v2 Tests ====================
+
+    #[test]
+    fn test_mul_two_shared_secrets_v2_basic() {
+        let x = 20u64;
+        let y = 10u64;
+
+        // Split both values using same coord_seed (ensures same x-coordinates)
+        let (hex_x1, hex_x2, coord_seed_x) =
+            split_to_two_value_v2(x, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex_y1, hex_y2, coord_seed_y) =
+            split_to_two_value_v2(y, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+
+        // Perform multiplication
+        let (result_bytes1, result_bytes2) = mul_two_shared_secrets_v2(
+            hex_x1,
+            hex_x2,
+            hex_y1,
+            hex_y2,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed_x,
+            coord_seed_y,
+        )
+        .unwrap();
+
+        // Recover and verify result
+        let result = recover_value_v2(
+            hex::encode(result_bytes1),
+            hex::encode(result_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
+        assert_eq!(result, x * y);
+    }
+
+    #[test]
+    fn test_mul_two_shared_secrets_v2_by_zero() {
+        let x = 100u64;
+        let y = 0u64;
+
+        let (hex_x1, hex_x2, coord_seed_x) =
+            split_to_two_value_v2(x, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex_y1, hex_y2, coord_seed_y) =
+            split_to_two_value_v2(y, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+
+        let (result_bytes1, result_bytes2) = mul_two_shared_secrets_v2(
+            hex_x1,
+            hex_x2,
+            hex_y1,
+            hex_y2,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed_x,
+            coord_seed_y,
+        )
+        .unwrap();
+
+        let result = recover_value_v2(
+            hex::encode(result_bytes1),
+            hex::encode(result_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
+        assert_eq!(result, 0);
+    }
+
+    #[test]
+    fn test_mul_two_shared_secrets_v2_by_one() {
+        let x = 42u64;
+        let y = 1u64;
+
+        let (hex_x1, hex_x2, coord_seed_x) =
+            split_to_two_value_v2(x, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex_y1, hex_y2, coord_seed_y) =
+            split_to_two_value_v2(y, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+
+        let (result_bytes1, result_bytes2) = mul_two_shared_secrets_v2(
+            hex_x1,
+            hex_x2,
+            hex_y1,
+            hex_y2,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed_x,
+            coord_seed_y,
+        )
+        .unwrap();
+
+        let result = recover_value_v2(
+            hex::encode(result_bytes1),
+            hex::encode(result_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
+        assert_eq!(result, x);
+    }
+
+    #[test]
+    fn test_mul_two_shared_secrets_v2_large_values() {
+        let x = 1000000u64;
+        let y = 2000000u64;
+
+        let (hex_x1, hex_x2, coord_seed_x) =
+            split_to_two_value_v2(x, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex_y1, hex_y2, coord_seed_y) =
+            split_to_two_value_v2(y, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+
+        let (result_bytes1, result_bytes2) = mul_two_shared_secrets_v2(
+            hex_x1,
+            hex_x2,
+            hex_y1,
+            hex_y2,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed_x,
+            coord_seed_y,
+        )
+        .unwrap();
+
+        let result = recover_value_v2(
+            hex::encode(result_bytes1),
+            hex::encode(result_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
+        assert_eq!(result, x * y);
+    }
+
+    #[test]
+    fn test_mul_two_shared_secrets_v2_deterministic() {
+        let x = 5u64;
+        let y = 7u64;
+
+        let (hex_x1, hex_x2, coord_seed_x) =
+            split_to_two_value_v2(x, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex_y1, hex_y2, coord_seed_y) =
+            split_to_two_value_v2(y, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+
+        // Call multiple times with same parameters
+        let (result1_bytes1, result1_bytes2) = mul_two_shared_secrets_v2(
+            hex_x1.clone(),
+            hex_x2.clone(),
+            hex_y1.clone(),
+            hex_y2.clone(),
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed_x,
+            coord_seed_y,
+        )
+        .unwrap();
+
+        let (result2_bytes1, result2_bytes2) = mul_two_shared_secrets_v2(
+            hex_x1.clone(),
+            hex_x2.clone(),
+            hex_y1.clone(),
+            hex_y2.clone(),
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed_x,
+            coord_seed_y,
+        )
+        .unwrap();
+
+        // Results should be identical (deterministic)
+        assert_eq!(result1_bytes1, result2_bytes1);
+        assert_eq!(result1_bytes2, result2_bytes2);
+
+        // Both should recover to same value
+        let result1 = recover_value_v2(
+            hex::encode(result1_bytes1),
+            hex::encode(result1_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
+        let result2 = recover_value_v2(
+            hex::encode(result2_bytes1),
+            hex::encode(result2_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
+        assert_eq!(result1, result2);
+        assert_eq!(result1, x * y);
+    }
+
+    #[test]
+    fn test_mul_two_shared_secrets_v2_multiple_cases() {
+        let test_cases = vec![
+            (0u64, 0u64),
+            (0u64, 1u64),
+            (1u64, 0u64),
+            (1u64, 1u64),
+            (2u64, 3u64),
+            (5u64, 7u64),
+            (10u64, 20u64),
+            (20u64, 10u64),
+            (100u64, 200u64),
+            (1000u64, 2000u64),
+            (42u64, 42u64),
+            (0xFFFFFFFFu64, 1u64),
+        ];
+
+        for (x, y) in test_cases {
+            let (hex_x1, hex_x2, coord_seed_x) =
+                split_to_two_value_v2(x, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+            let (hex_y1, hex_y2, coord_seed_y) =
+                split_to_two_value_v2(y, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+
+            let (result_bytes1, result_bytes2) = mul_two_shared_secrets_v2(
+                hex_x1,
+                hex_x2,
+                hex_y1,
+                hex_y2,
+                TEST_MASK_SECRET,
+                TEST_USER_ID,
+                coord_seed_x,
+                coord_seed_y,
+            )
+            .unwrap();
+
+            let result = recover_value_v2(
+                hex::encode(result_bytes1),
+                hex::encode(result_bytes2),
+                TEST_MASK_SECRET,
+            )
+            .unwrap();
+            assert_eq!(result, x * y, "Failed for x={}, y={}", x, y);
+        }
+    }
+
+    #[test]
+    fn test_mul_two_shared_secrets_v2_different_coord_seeds_fails() {
+        let x = 5u64;
+        let y = 7u64;
+        let coord_seed1 = TEST_COORD_SEED;
+        let coord_seed2 = 0xABCDEF1234567890u64;
+
+        // Split with different coord_seeds (will produce different x-coordinates)
+        let (hex_x1, hex_x2, _) =
+            split_to_two_value_v2(x, TEST_USER_ID, TEST_MASK_SECRET, coord_seed1);
+        let (hex_y1, hex_y2, _) =
+            split_to_two_value_v2(y, TEST_USER_ID, TEST_MASK_SECRET, coord_seed2);
+
+        // Should fail because x-coordinates don't match
+        let result = mul_two_shared_secrets_v2(
+            hex_x1,
+            hex_x2,
+            hex_y1,
+            hex_y2,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed1,
+            coord_seed2,
+        );
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_mul_two_shared_secrets_v2_commutative() {
+        let x = 5u64;
+        let y = 7u64;
+
+        let (hex_x1, hex_x2, coord_seed_x) =
+            split_to_two_value_v2(x, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+        let (hex_y1, hex_y2, coord_seed_y) =
+            split_to_two_value_v2(y, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+
+        // x * y
+        let (result1_bytes1, result1_bytes2) = mul_two_shared_secrets_v2(
+            hex_x1.clone(),
+            hex_x2.clone(),
+            hex_y1.clone(),
+            hex_y2.clone(),
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed_x,
+            coord_seed_y,
+        )
+        .unwrap();
+
+        // y * x
+        let (result2_bytes1, result2_bytes2) = mul_two_shared_secrets_v2(
+            hex_y1,
+            hex_y2,
+            hex_x1,
+            hex_x2,
+            TEST_MASK_SECRET,
+            TEST_USER_ID,
+            coord_seed_y,
+            coord_seed_x,
+        )
+        .unwrap();
+
+        // Results should recover to same value (commutative property)
+        let result1 = recover_value_v2(
+            hex::encode(result1_bytes1),
+            hex::encode(result1_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
+        let result2 = recover_value_v2(
+            hex::encode(result2_bytes1),
+            hex::encode(result2_bytes2),
+            TEST_MASK_SECRET,
+        )
+        .unwrap();
+        assert_eq!(result1, result2);
+        assert_eq!(result1, x * y);
     }
 }

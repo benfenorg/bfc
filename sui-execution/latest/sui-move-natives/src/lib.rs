@@ -76,6 +76,8 @@ use sui_protocol_config::ProtocolConfig;
 use sui_types::{MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use transfer::TransferReceiveObjectInternalCostParams;
 use crate::crypto::hfe_ops;
+use crate::crypto::hfe_ops_v1::AnonymousComputeCostParams;
+
 mod address;
 mod config;
 mod crypto;
@@ -210,14 +212,23 @@ pub struct NativesCostTable {
     pub anonymous_compute_cost_params: AnonymousComputeCostParams,
 
     pub enable_anonymous_rpc: Option<bool>,
+
+    pub enable_anonymous_version_v2: bool,
 }
 
 impl NativeExtensionMarker<'_> for NativesCostTable {}
 
 impl NativesCostTable {
-    pub fn from_protocol_config(protocol_config: &ProtocolConfig) -> NativesCostTable {
+    pub fn from_protocol_config(protocol_config: &ProtocolConfig, epoch_number: u64) -> NativesCostTable {
+
         let path = get_sui_config_directory().join("bfc_anonymous_config.yaml");
         let config = AnonymousPrivateKeyConfig::from_yaml_file(&path).unwrap_or(AnonymousPrivateKeyConfig::default());
+
+        let enable_anonymous_version_v2 = if config.get_anonymous_data_v2_open_epoch() > epoch_number {
+            false
+        } else {
+            true
+        };
 
         Self {
             address_from_bytes_cost_params: AddressFromBytesCostParams {
@@ -779,7 +790,7 @@ impl NativesCostTable {
                     .anonymous_compute_cost_base()
                     .into(),
             },
-
+            enable_anonymous_version_v2,
             enable_anonymous_rpc: config.enable_anonymous_rpc,
 
             nitro_attestation_cost_params: NitroAttestationCostParams {

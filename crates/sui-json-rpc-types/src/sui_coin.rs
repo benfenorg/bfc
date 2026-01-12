@@ -106,3 +106,42 @@ impl TryFrom<Object> for SuiCoinMetadata {
         })
     }
 }
+
+#[serde_as]
+#[derive(Eq, PartialEq, Clone, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema)]
+pub struct AnonymousRestoreElementParams {
+    pub value1: Vec<u8>,
+    pub value2: Vec<u8>,
+    pub objectid: String,
+    pub owner: String,
+}
+
+
+#[serde_as]
+#[derive(Eq, PartialEq, Clone, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema)]
+pub struct AnonymousCoinParams {
+    pub object_id: String,
+    pub version: i64,
+}
+
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct AnonymousRestoreElementRep {
+    pub value1: Vec<u8>,
+    pub value2: Vec<u8>,
+    pub objectid: String,
+    pub flag: bool,
+}
+
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct AnonymousCoinElementRep {
+    pub object_id: String,
+    pub version: i64,
+    pub value1: Vec<u8>,
+    pub value2: Vec<u8>,
+}

@@ -88,7 +88,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousAdd", params, 1, "rpc_internal")
+            .send_rpc_request("bfcx_getAnonymousAdd", params, 1, "rpc_internal_v2")
             .await
         {
             Ok(response) => TestResult {
@@ -124,7 +124,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousMinus", params, 2, "rpc_internal")
+            .send_rpc_request("bfcx_getAnonymousMinus", params, 2, "rpc_internal_v2")
             .await
         {
             Ok(response) => TestResult {
@@ -160,7 +160,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousMultiply", params, 3, "rpc_internal")
+            .send_rpc_request("bfcx_getAnonymousMultiply", params, 3, "rpc_internal_v2")
             .await
         {
             Ok(response) => TestResult {
@@ -188,7 +188,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousCompare", params, 4, "rpc_internal")
+            .send_rpc_request("bfcx_getAnonymousCompare", params, 4, "rpc_internal_v2")
             .await
         {
             Ok(response) => TestResult {
@@ -218,7 +218,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousCompareValue1AndValue2", params, 4, "rpc_internal")
+            .send_rpc_request("bfcx_getAnonymousCompareValue1AndValue2", params, 4, "rpc_internal_v2")
             .await
         {
             Ok(response) => TestResult {
@@ -276,11 +276,14 @@ impl AnonymousClient {
                 response: Some(response),
                 error: None,
             },
-            Err(e) => TestResult {
-                method: "bfcx_getAnonymousRestoreValueArray".to_string(),
-                success: false,
-                response: None,
-                error: Some(e.to_string()),
+            Err(e) => {
+                println!("error occurred: {}", e);
+                TestResult {
+                    method: "bfcx_getAnonymousRestoreValueArray".to_string(),
+                    success: false,
+                    response: None,
+                    error: Some(e.to_string()),
+                }
             },
         }
     }
@@ -436,11 +439,14 @@ impl AnonymousClient {
                 response: Some(response),
                 error: None,
             },
-            Err(e) => TestResult {
-                method: "bfcx_getAnonymousEncodeDataArrayForZKloginAddress".to_string(),
-                success: false,
-                response: None,
-                error: Some(e.to_string()),
+            Err(e) => {
+                println!("error occurred: {}", e);
+                TestResult {
+                    method: "bfcx_getAnonymousEncodeDataArrayForZKloginAddress".to_string(),
+                    success: false,
+                    response: None,
+                    error: Some(e.to_string()),
+                }
             },
         }
     }
@@ -456,7 +462,7 @@ impl AnonymousClient {
         });
 
         match self
-            .send_rpc_request("bfcx_getAnonymousEncodeData", params, 4, "rpc_internal")
+            .send_rpc_request("bfcx_getAnonymousEncodeData", params, 4, "rpc_internal_v1")
             .await
         {
             Ok(response) => TestResult {
@@ -467,6 +473,32 @@ impl AnonymousClient {
             },
             Err(e) => TestResult {
                 method: "bfcx_getAnonymousEncodeData".to_string(),
+                success: false,
+                response: None,
+                error: Some(e.to_string()),
+            },
+        }
+    }
+
+    pub async fn test_get_anonymous_data_version(&self,
+                                                 object_id: String) -> TestResult {
+        let user_address = AccountAddress::from_hex_literal("0x1").unwrap();
+        let params = json!({
+            "object_id": object_id,
+        });
+
+        match self
+            .send_rpc_request("bfcx_getAnonymouseObjectVersion", params, 4, "rpc")
+            .await
+        {
+            Ok(response) => TestResult {
+                method: "bfcx_getAnonymouseObjectVersion".to_string(),
+                success: true,
+                response: Some(response),
+                error: None,
+            },
+            Err(e) => TestResult {
+                method: "bfcx_getAnonymouseObjectVersion".to_string(),
                 success: false,
                 response: None,
                 error: Some(e.to_string()),
@@ -490,6 +522,40 @@ impl AnonymousClient {
             },
         }
     }
+    pub async fn test_v1_working_status(&self) -> TestResult {
+        match self.send_rpc_request("bfcx_getV1Working", json!({}), 5, "rpc_internal_v1").await {
+            Ok(response) => TestResult {
+                method: "bfcx_getV1Working".to_string(),
+                success: true,
+                response: Some(response),
+                error: None,
+            },
+            Err(e) => TestResult {
+                method: "bfcx_getV1Working".to_string(),
+                success: false,
+                response: None,
+                error: Some(e.to_string()),
+            },
+        }
+    }
+
+    pub async fn test_v2_working_status(&self) -> TestResult {
+        match self.send_rpc_request("bfcx_getV2Working", json!({}), 5, "rpc_internal_v2").await {
+            Ok(response) => TestResult {
+                method: "bfcx_getV2Working".to_string(),
+                success: true,
+                response: Some(response),
+                error: None,
+            },
+            Err(e) => TestResult {
+                method: "bfcx_getV2Working".to_string(),
+                success: false,
+                response: None,
+                error: Some(e.to_string()),
+            },
+        }
+    }
+
 
     async fn test_encode_data_array_with_signature_for_zklogin(&self, value : Vec<String>) -> TestResult {
         let signature = "BQNNMTUyNzczMDQzNTY4ODY3ODExMDI3MTIzMTM5NDU3ODYwMzAzNjI1MjEyODU4Mzg5OTQxNzE4Nzc3MjA3MzY3NjgwNzQ2NTI5MzA0MjFNMjEyNzU0MDk1NDEzMTA2OTYxNDQyNDA5NDQ0NzU3ODM3NTUxNjA2NTM3NTEwMTg1Nzc1MzI1MjM4NDA4Njk0Mjg0MTM4ODcxOTU5MTEBMQMCTTEyNDI1NDAxOTAyMjI3NzYwODczMjY4NTgzNTczNjQ3ODY0NzQzNDM2NzQ4MTY3MDA3NDk1NDA3NTU5MjI3Nzc2NjE1MzM1MzI1MjMzTDUyMjM4NTQyMDY0NjU2OTgwNTI5MjgxMjM5OTg4MjQ0ODcxMDgwNTE3MTUyNzA0MDM4NjEzNTY2MDEwNjUxMDk3MTQ5NzM3NTQ3MDECTDcyMDgxNTMzNTk4MzQ5NzYyMjg3MzI2MzA0ODM5NjM2NzEyNjM2OTIxNzI0NzQ0NTg0NDMyMDEzMDAxMDczOTg1OTk0MjkxNDg5ODlNMTMwNTI3MDQ4MDQ3NDgxNDU1ODkwMDI1OTU5NTcwODU1MzMwMzE1NTc0MTcxMTUzMDgwODMzNzExMTA2OTcyNzIwMDY2MjkxOTQxNTkCATEBMANNMTk2NDA3MjU4NjI4ODY0OTkzMTE1NDIyMzQ3MDI0MTU1MDc2MDc1MjQ0NTMzNDE4NTYxODkwODA1MzQ1MzQ5NjM4Mjk3OTU0MjkxNDNMNDU3OTI3MTAyMTg5NzQwMjcyMDE0MTgxMjI4MTA0OTE3Mjk2MjAyNTQyNzkyNjU3MTcwNjA2ODcyMTk4Mzc5NzE3MzU4NTQxMDIyNAExMXlKcGMzTWlPaUpvZEhSd2N6b3ZMMkZqWTI5MWJuUnpMbWR2YjJkc1pTNWpiMjBpTEMBZmV5SmhiR2NpT2lKU1V6STFOaUlzSW10cFpDSTZJalJtWldJME5HWXdaamRoTjJVeU4yTTNZelF3TXpNM09XRm1aakl3WVdZMVl6aGpaalV5WkdNaUxDSjBlWEFpT2lKS1YxUWlmUU0xNjI3MTI3MjgzMDEwNzY1NDQ3MzQ2MTc0OTc3ODYzNDYyMzA4NDUwMzczNDAzNzgyMzU3NTE2MDAwOTM4NTI1NjU0Mjc2Mzc2OTc4N4kBAAAAAAAAYQD6rQDMXyHOgTZriGFhoo2kZTJm3wMdOhhJ6grSEJEEUnkKOWJjJ/32jOQZn30zLYsDk9t7qQRkIaXFpLNeVrUK1AOWWqwvXa6U4LDD6ZhU979QOp2XBQDyAA/aUkas+oQ=".to_string();
@@ -610,6 +676,7 @@ mod tests {
     use std::net::SocketAddr;
     use move_core_types::account_address::AccountAddress;
     use tracing::info;
+    use tracing_subscriber::fmt;
     use crate::client_test::hex_to_bytes;
 
     #[tokio::test]
@@ -738,6 +805,29 @@ mod tests {
         assert_eq!(client.base_url, "http://localhost:9010");
     }
 
+
+    #[tokio::test]
+    async fn test_client_v1_v2_path(){
+        let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
+
+        info!("the address is {:?}", addr);
+        let server = AnonymousServer::new(None);
+        let _server_handle = tokio::spawn(async move {
+            if let Err(e) = server.start(addr).await {
+                eprintln!("Server error: {:?}", e);
+            }
+        });
+
+        let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
+        let ping_result = client.test_ping().await.response.unwrap();
+        info!("Ping Result: {:?}", ping_result);
+        let result =  client.test_v1_working_status().await.response.unwrap();
+        println!("V1 Working Status: {:?}", result);
+        let result =  client.test_v2_working_status().await.response.unwrap();
+        println!("V2 Working Status: {:?}", result);
+
+    }
+
     #[ignore]
     #[tokio::test]
     async fn test_client_restore_value_array(){
@@ -862,6 +952,84 @@ mod tests {
         let split_result_0 = client.test_encode_data_array_with_signature_for_zklogin(vec![String::from("1000000000")]).await.response.unwrap();
         info!("Split 20 Result: {:?}", split_result_0);
 
+    }
+
+    #[tokio::test]
+    async fn test_client_with_multiply() -> anyhow::Result<()>{
+        let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
+
+        info!("the address is {:?}", addr);
+        let server = AnonymousServer::new(None);
+        let _server_handle = tokio::spawn(async move {
+            if let Err(e) = server.start(addr).await {
+                eprintln!("Server error: {:?}", e);
+            }
+        });
+
+        let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
+        let ping_result = client.test_ping().await.response.unwrap();
+        info!("Ping Result: {:?}", ping_result);
+
+        // test split first
+        let split_result_0 = client.test_split(20, 1).await.response.unwrap();
+        info!("Split 20 Result: {:?}", split_result_0);
+        let split_result_1 = client.test_split(10, 1).await.response.unwrap();
+        info!("Split 10 Result: {:?}", split_result_1);
+
+        let split_result_0_repeat = client.test_split(20, 1).await.response.unwrap();
+        info!("Split 20 Result repeat: {:?}", split_result_0);
+        let split_result_1_repeat = client.test_split(10, 1).await.response.unwrap();
+        info!("Split 10 Result repeat: {:?}", split_result_1);
+
+        assert_eq!(split_result_0["result"]["result1"], split_result_0_repeat["result"]["result1"]);
+        assert_eq!(split_result_0["result"]["result2"], split_result_0_repeat["result"]["result2"]);
+
+        assert_eq!(split_result_1["result"]["result1"], split_result_1_repeat["result"]["result1"]);
+        assert_eq!(split_result_1["result"]["result2"], split_result_1_repeat["result"]["result2"]);
+        //test 20 * 10
+        let multiply_result_response = client
+            .test_multiply(
+                split_result_0["result"]["result1"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+                split_result_0["result"]["result2"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+                split_result_1["result"]["result1"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+                split_result_1["result"]["result2"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+            )
+            .await;
+        assert!(multiply_result_response.success, "test_multiply failed: {:?}", multiply_result_response.error);
+        let multiply_result = multiply_result_response.response.expect("test_multiply returned None response");
+        info!("Multiply Result: {:?}", multiply_result);
+
+        let multiply_result = client
+            .test_compare(
+                multiply_result["result"]["result1"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+                multiply_result["result"]["result2"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+                200,
+            )
+            .await;
+
+        let test_multiply_result = multiply_result.response.expect("test_add returned None response");
+        info!("Add Result: {:?}", test_multiply_result);
+        assert_eq!(test_multiply_result["result"]["result1"], "0");
+
+        Ok(())
     }
 
     #[ignore]
@@ -1053,6 +1221,66 @@ mod tests {
         Ok(())
     }
 
+
+    #[tokio::test]
+    async fn test_get_anonymous_data_version(){
+        let subscriber = fmt::Subscriber::new();
+        tracing::subscriber::set_global_default(subscriber)
+             .expect("Failed to set tracing subscriber");
+        let addr: SocketAddr = format!("{}:{}", "127.0.0.1", "9010").parse().unwrap();
+
+        info!("the address is {:?}", addr);
+        let server = AnonymousServer::new(None);
+        let _server_handle = tokio::spawn(async move {
+            if let Err(e) = server.start(addr).await {
+                eprintln!("Server error: {:?}", e);
+            }
+        });
+
+        let client = crate::client_test::AnonymousClient::new("http://localhost:9010");
+        let ping_result = client.test_ping().await.response.unwrap();
+        info!("Ping Result: {:?}", ping_result);
+
+        // test split first
+        let split_result_0 = client.test_split(20, 1).await.response.unwrap();
+        info!("Split 20 Result: {:?}", split_result_0);
+        let split_result_1 = client.test_split(10, 1).await.response.unwrap();
+        info!("Split 10 Result: {:?}", split_result_1);
+
+        // v2 split 1: "8423594fbec37400d0c6030098003710e46033a30024702400009bfa4f000c00"
+        // v2 split 2: "d08d375f9bec0c09985123c5e47733340054007f001700f50066001300fd00d7"
+
+        let object_id1 = "BFC061a7074c39a39e80e5bf654b75ecfedac90ed0291e5bbc9a7be57ca4409efd1b9a7";
+        let result = client
+            .test_get_anonymous_data_version(
+                object_id1.to_string(),
+            )
+            .await
+            .response
+            .unwrap();
+        info!("Get Anonymous Data Version Result: {:?}", result);
+
+
+
+        let result = client
+            .test_get_anonymous_data_version(
+                object_id1.to_string(),
+            )
+            .await
+            .response
+            .unwrap();
+        info!("Get Anonymous Data Version Result: {:?}", result);
+
+        let result = client
+            .test_get_anonymous_data_version(
+                object_id1.to_string(),
+            )
+            .await
+            .response
+            .unwrap();
+        info!("Get Anonymous Data Version Result: {:?}", result);
+
+    }
     #[tokio::test]
     async fn test_write_unsigned_leb128(){
         // test zero
