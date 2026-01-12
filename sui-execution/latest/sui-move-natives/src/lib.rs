@@ -50,7 +50,6 @@ use better_any::{Tid, TidAble};
 use crypto::nitro_attestation::{self, NitroAttestationCostParams};
 use crypto::vdf::{self, VDFCostParams};
 use std::path::PathBuf;
-use crate::hfe_ops::AnonymousComputeCostParams;
 use move_binary_format::errors::{PartialVMError, PartialVMResult};
 use move_core_types::{
     annotated_value as A,

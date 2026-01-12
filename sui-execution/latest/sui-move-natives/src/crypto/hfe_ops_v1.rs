@@ -60,7 +60,7 @@ pub fn hfe_ops_add_v1(
 
     let anonymous_compute_cost = &context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .anonymous_compute_cost_params
         .clone();
     // Charge the base cost for this oper
@@ -71,15 +71,15 @@ pub fn hfe_ops_add_v1(
 
     let anonymous_privatekey = context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .anonymous_privatekey
         .clone().unwrap_or_default();
     let enable_anonymous_rpc = &context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .enable_anonymous_rpc
         .clone();
-    let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
+    let anonymous_rpc = context.extensions().get::<NativesCostTable>()?.anonymous_rpc.clone();
 
     info!("anonymous_rpc{:?}", anonymous_rpc.clone());
     info!("enable-anonymous-rpc{:?}", enable_anonymous_rpc.clone());
@@ -166,7 +166,7 @@ pub fn hfe_ops_minus_v1(
 
     let anonymous_compute_cost_params = &context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .anonymous_compute_cost_params
         .clone();
     // Charge the base cost for this oper
@@ -175,15 +175,15 @@ pub fn hfe_ops_minus_v1(
         anonymous_compute_cost_params.anonymous_compute_cost_base
     );
 
-    let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
+    let anonymous_rpc = context.extensions().get::<NativesCostTable>()?.anonymous_rpc.clone();
     let anonymous_privatekey = context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .anonymous_privatekey
         .clone().unwrap_or_default();
     let enable_anonymous_rpc = &context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .enable_anonymous_rpc
         .clone();
     let cost = context.gas_used();
@@ -276,7 +276,7 @@ pub fn hfe_ops_multiplied_v1(
 
     let anonymous_compute_cost_params = &context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .anonymous_compute_cost_params
         .clone();
     // Charge the base cost for this oper
@@ -288,15 +288,15 @@ pub fn hfe_ops_multiplied_v1(
     let cost = context.gas_used();
     let anonymous_privatekey = context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .anonymous_privatekey
         .clone().unwrap_or_default();
     let enable_anonymous_rpc = &context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .enable_anonymous_rpc
         .clone();
-    let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
+    let anonymous_rpc = context.extensions().get::<NativesCostTable>()?.anonymous_rpc.clone();
 
     let owner = pop_arg!(args, AccountAddress);
 
@@ -380,7 +380,7 @@ pub fn hfe_ops_encode_data_v1(context: &mut NativeContext,
 
     let anonymous_compute_cost_params = &context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .anonymous_compute_cost_params
         .clone();
 
@@ -399,15 +399,15 @@ pub fn hfe_ops_encode_data_v1(context: &mut NativeContext,
 
     let anonymous_privatekey = context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .anonymous_privatekey
         .clone().unwrap_or_default();
     let enable_anonymous_rpc = &context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .enable_anonymous_rpc
         .clone();
-    let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
+    let anonymous_rpc = context.extensions().get::<NativesCostTable>()?.anonymous_rpc.clone();
 
     if *enable_anonymous_rpc == Some(true) {
         match anonymous_rpc {
@@ -450,7 +450,7 @@ pub fn hfe_ops_compare_value1_and_value2_v1(
 ) -> PartialVMResult<NativeResult>{
     let anonymous_compute_cost_params = &context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .anonymous_compute_cost_params
         .clone();
     // Charge the base cost for this oper
@@ -464,15 +464,15 @@ pub fn hfe_ops_compare_value1_and_value2_v1(
 
     let anonymous_privatekey = context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .anonymous_privatekey
         .clone().unwrap_or_default();
     let enable_anonymous_rpc = &context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .enable_anonymous_rpc
         .clone();
-    let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
+    let anonymous_rpc = context.extensions().get::<NativesCostTable>()?.anonymous_rpc.clone();
 
 
     let owner = pop_arg!(args, AccountAddress);
@@ -558,7 +558,7 @@ pub fn hfe_ops_compare_value_v1(
 ) -> PartialVMResult<NativeResult>{
     let anonymous_compute_cost_params = &context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .anonymous_compute_cost_params
         .clone();
     // Charge the base cost for this oper
@@ -572,16 +572,16 @@ pub fn hfe_ops_compare_value_v1(
 
     let anonymous_privatekey = context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .anonymous_privatekey
         .clone().unwrap_or_default();
     let enable_anonymous_rpc = &context
         .extensions()
-        .get::<NativesCostTable>()
+        .get::<NativesCostTable>()?
         .enable_anonymous_rpc
         .clone();
 
-    let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
+    let anonymous_rpc = context.extensions().get::<NativesCostTable>()?.anonymous_rpc.clone();
 
     let owner = pop_arg!(args, AccountAddress);
 
