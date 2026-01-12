@@ -222,7 +222,7 @@ pub struct USDCDeploymentResult {
     pub token_account: Pubkey,
 }
 
-pub async fn deploy_usdc_in_anchor_client(
+pub(crate) async fn deploy_usdc_in_anchor_client(
     client: &Arc<Client<Arc<Keypair>>>,
     program_id: Pubkey,
     payer: &Arc<Keypair>,

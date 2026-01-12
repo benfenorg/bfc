@@ -9,6 +9,7 @@ use crate::sui_transaction_builder::build_sui_transaction;
 use crate::types::{BridgeAction, EmergencyAction};
 use crate::types::{BridgeActionStatus, EmergencyActionType};
 use ethers::types::Address as EthAddress;
+use solana_sdk::signer::Signer;
 use std::sync::Arc;
 use sui_json_rpc_types::SuiExecutionStatus;
 use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
@@ -16,6 +17,7 @@ use crate::e2e_tests::test_utils::solana_cross_token_to_bridge;
 use solana_sdk::pubkey::Pubkey;
 use sui_types::bridge::{BridgeChainId, TOKEN_ID_ETH};
 use tracing::info;
+use spl_associated_token_account::get_associated_token_address;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 16)]
 async fn test_sui_bridge_paused() {
@@ -154,12 +156,15 @@ async  fn test_solana_bridge_call() {
 
     // The following part is hard, because I can't easily create a token.
     // I will use placeholders. The user will see the test fails and can provide more info.
-    let token_mint = Pubkey::new_unique();
-    let source_token_account = Pubkey::new_unique();
+    // let token_mint = Pubkey::new_unique();
+    //let source_token_account = Pubkey::new_unique();
+    let token_mint = sol_env.usdc();
+    let source_token_account_owner = solana_signer.pubkey();
+    let source_token_account = get_associated_token_address(&source_token_account_owner, &token_mint);;
     let amount = 100;
     let benfen_address = vec![1; 32];
     let target_chain_id = bridge_test_cluster.sui_chain_id();
-    let token_id = 1u64;
+    let token_id = 3u64;
 
     solana_cross_token_to_bridge(
         &rpc_url,

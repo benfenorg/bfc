@@ -1006,11 +1006,21 @@ pub(crate) async fn solana_cross_token_to_bridge(
     let program = client.program(benfen_bridge::ID)?;
     let init_pdas = crate::query_solana_account::get_init_account(program.id(), target_chain_id as u8);
 
-    let (token_vault, _) = Pubkey::find_program_address(&[b"vault", &token_id.to_le_bytes()], &benfen_bridge::ID);
-    let (token_config, _) = Pubkey::find_program_address(&[b"token_config", &token_id.to_le_bytes()], &benfen_bridge::ID);
-    
-    // TODO: This is a placeholder. We need to figure out how to create/get it.
-    let message_config = Pubkey::new_unique();
+    let token_id_bytes = token_id.to_be_bytes();
+    let (token_vault, _) =
+        Pubkey::find_program_address(&[b"vault", token_id_bytes.as_ref()], &benfen_bridge::ID);
+    let (token_config, _) = Pubkey::find_program_address(
+        &[b"token_config", token_id_bytes.as_ref()],
+        &benfen_bridge::ID,
+    );
+    let (message_config, _) = Pubkey::find_program_address(
+        &[
+            b"message_config",
+            &[crate::types::BridgeActionType::TokenTransfer as u8],
+            init_pdas.message_verifier.as_ref(),
+        ],
+        &benfen_bridge::ID,
+    );
 
     let ix = program
         .request()
@@ -1025,7 +1035,7 @@ pub(crate) async fn solana_cross_token_to_bridge(
             bridge: init_pdas.benfen_bridge,
             verifier: init_pdas.message_verifier,
             token_mint,
-            token_program: anchor_lang::prelude::Pubkey::new_from_array(spl_token::ID.to_bytes()),
+            token_program: spl_token::ID,
             system_program: system_program::ID,
         })
         .args(args::CrossTokenToBridge {
