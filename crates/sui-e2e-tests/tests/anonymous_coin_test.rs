@@ -2,6 +2,7 @@ use jsonrpsee::http_client::HttpClient;
 use sui_json_rpc_api::{IndexerApiClient, TransactionBuilderClient, WriteApiClient};
 use sui_json_rpc_types::{SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
 use sui_macros::sim_test;
+use std::str::FromStr;
 use sui_sdk::json::{SuiJsonValue};
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::{parse_sui_struct_tag};
