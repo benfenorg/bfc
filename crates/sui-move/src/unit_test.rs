@@ -131,7 +131,7 @@ fn new_testing_object_and_natives_cost_runtime(ext: &mut NativeContextExtensions
         metrics,
         0, // epoch id
     ));
-    ext.add(NativesCostTable::from_protocol_config(&protocol_config));
+    ext.add(NativesCostTable::from_protocol_config(&protocol_config, 0));
     let tx_context = TxContext::new_from_components(
         &SuiAddress::ZERO,
         &TransactionDigest::default(),

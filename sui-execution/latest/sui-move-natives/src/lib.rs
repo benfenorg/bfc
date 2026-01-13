@@ -810,10 +810,16 @@ impl NativesCostTable {
         }
     }
 
-    pub fn from_protocol_config(protocol_config: &ProtocolConfig) -> NativesCostTable {
+    pub fn from_protocol_config(protocol_config: &ProtocolConfig, epoch_number: u64) -> NativesCostTable {
 
         let path = get_sui_config_directory().join("bfc_anonymous_config.yaml");
         let config = AnonymousPrivateKeyConfig::from_yaml_file(&path).unwrap_or(AnonymousPrivateKeyConfig::default());
+
+        let enable_anonymous_version_v2 = if config.get_anonymous_data_v2_open_epoch() > epoch_number {
+            false
+        } else {
+            true
+        };
 
 
         Self {
@@ -1376,7 +1382,7 @@ impl NativesCostTable {
                     .anonymous_compute_cost_base()
                     .into(),
             },
-            enable_anonymous_version_v2: false,
+            enable_anonymous_version_v2,
             enable_anonymous_rpc: config.enable_anonymous_rpc,
 
             nitro_attestation_cost_params: NitroAttestationCostParams {
