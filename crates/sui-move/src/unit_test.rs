@@ -145,9 +145,6 @@ fn new_testing_object_and_natives_cost_runtime(ext: &mut NativeContextExtensions
     ext.add(TransactionContext::new_for_testing(Rc::new(RefCell::new(
         tx_context,
     ))));
-    ext.add(NativesCostTable::from_protocol_config(
-        &ProtocolConfig::get_for_max_version_UNSAFE()
-    ));
 
     ext.add(store);
 }

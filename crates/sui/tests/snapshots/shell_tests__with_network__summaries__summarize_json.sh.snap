@@ -176,5 +176,5 @@ vector.json
 }Active environment switched to [localnet]
 
 ----- stderr -----
-[warning] Client/Server api version mismatch, client api version : 1.50.1, server api version : 1.24.2
-[warning] Client/Server api version mismatch, client api version : 1.50.1, server api version : 1.24.2
+[warning] Client/Server api version mismatch, client api version : 1.50.1, server api version : 1.24.3
+[warning] Client/Server api version mismatch, client api version : 1.50.1, server api version : 1.24.3

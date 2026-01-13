@@ -19,5 +19,5 @@ expression: "results.join(\"\\n\")"
    ·                        │ 
    ·                        │ Caused by:
    ·                        │     0: Fetching 'BfcSystem'
-   ·                        │     1: Failed to reset to latest Git state 'a5188e45d62d' for package 'BfcSystem', to skip set --skip-fetch-latest-git-deps | Exit status: exit status: 128.
+   ·                        │     1: Failed to reset to latest Git state '6f3fe58919e7-dirty' for package 'BfcSystem', to skip set --skip-fetch-latest-git-deps | Exit status: exit status: 128.
    ╰────

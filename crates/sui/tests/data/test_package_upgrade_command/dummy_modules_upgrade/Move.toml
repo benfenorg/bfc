@@ -1,5 +1,5 @@
 [package]
-published-at = "0x924b73489c1d453276df0acdb312543b2ae332c00aecaeaa13cfd3ff06135210"
+published-at = "0x41c2b84a0ace0fb6e3958a8c107d08173286ff9a7aa77d2d18591e9965cf29ba"
 version = "0.0.1"
 edition = "2024.beta"
 name = "Examples"
