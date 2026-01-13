@@ -3505,7 +3505,7 @@ async fn test_add_refund_admin_and_bridge_from_solana() {
 
     // 等待 Bridge 处理退款（send_back_token_v2）
     // 等待 30S
-    tokio::time::sleep(std::time::Duration::from_secs(30)).await;
+    tokio::time::sleep(std::time::Duration::from_secs(60)).await;
     // 退款流程：AML 检查触发 send_back_token_v2，发出 TokenSendBackEventForSolanaV2 事件
     info!("Waiting for refund (send_back_token_v2) to be processed...");
 

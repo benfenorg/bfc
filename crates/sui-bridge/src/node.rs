@@ -614,6 +614,7 @@ mod tests {
     use crate::config::BridgeNodeConfig;
     use crate::config::EthConfig;
     use crate::config::SuiConfig;
+    use crate::config::{ChainRpcUrls, ExternalChainRpcConfig};
     use crate::e2e_tests::auth;
     use crate::e2e_tests::test_utils::BridgeTestCluster;
     use crate::e2e_tests::test_utils::BridgeTestClusterBuilder;
@@ -844,7 +845,16 @@ mod tests {
                 query_interval_secs: None,
             },
             user_limit_db_url: None,
-            external_rpc: None,
+            external_rpc: Some(ExternalChainRpcConfig {
+                solana: ChainRpcUrls {
+                    mainnet_url: "http://127.0.0.1:8899".to_string(),
+                    testnet_url: "http://127.0.0.1:8899".to_string(),
+                },
+                tron: ChainRpcUrls {
+                    mainnet_url: "http://127.0.0.1:18190".to_string(),
+                    testnet_url: "http://127.0.0.1:18190".to_string(),
+                },
+            }),
             aml_block_list: vec![],
         };
         // Spawn bridge node in memory
@@ -1168,6 +1178,7 @@ solana:
     bridge-chain-id: 10
     contracts-start-slot-fallback: 12345
     contracts-start-slot-override: 54321
+aml-block-list: []
 "#,
             authority_key_path.to_str().unwrap(),
             db_path.to_str().unwrap()
