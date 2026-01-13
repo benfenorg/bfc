@@ -131,7 +131,7 @@ fn new_testing_object_and_natives_cost_runtime(ext: &mut NativeContextExtensions
         metrics,
         0, // epoch id
     ));
-    ext.add(NativesCostTable::from_protocol_config(&protocol_config, 0));
+    ext.add(NativesCostTable::from_protocol_config(&protocol_config));
     let tx_context = TxContext::new_from_components(
         &SuiAddress::ZERO,
         &TransactionDigest::default(),
@@ -146,7 +146,7 @@ fn new_testing_object_and_natives_cost_runtime(ext: &mut NativeContextExtensions
         tx_context,
     ))));
     ext.add(NativesCostTable::from_protocol_config(
-        &ProtocolConfig::get_for_max_version_UNSAFE(), 0
+        &ProtocolConfig::get_for_max_version_UNSAFE()
     ));
 
     ext.add(store);
