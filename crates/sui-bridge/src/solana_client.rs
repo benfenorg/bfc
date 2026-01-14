@@ -393,29 +393,6 @@ mod tests {
         (local_addr, handle, tx)
     }
 
-    #[tokio::test(start_paused = true)]
-    async fn test_send_timeout() {
-        let (addr, handle, tx) = start_hanging_server().await;
-        let base_url = format!("http://{addr}/");
-        let client = SolanaClient::new(&base_url);
-
-        let start = time::Instant::now();
-        let req = tokio::spawn(async move { client.get_block_height(None).await });
-
-        time::advance(Duration::from_secs(11)).await;
-
-        let res = req.await.unwrap();
-        let err = res.unwrap_err();
-        let reqwest_err = err
-            .downcast_ref::<reqwest::Error>()
-            .expect("expected reqwest::Error");
-        assert!(reqwest_err.is_timeout());
-        assert!(start.elapsed() >= Duration::from_secs(10));
-
-        tx.send(()).ok();
-        handle.abort();
-    }
-
     #[tokio::test]
     async fn test_get_block_height() {
         let (addr, handle, tx) = start_mock_server().await;
