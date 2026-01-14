@@ -23,20 +23,20 @@ use tracing::{debug, info, warn};
 /// static map of method names to the index of their cursor parameter
 static METHOD_CURSOR_POSITIONS: phf::Map<&'static str, usize> = phf_map! {
     // based on function headers in crates/sui-json-rpc-api/src/indexer.rs
-    "suix_getOwnedObjects" => 2,
-    "suix_queryTransactionBlocks" => 1,
+    "bfcx_getOwnedObjects" => 2,
+    "bfcx_queryTransactionBlocks" => 1,
     // based on function headers in crates/sui-json-rpc-api/src/coin.rs
-    "suix_getCoins" => 2,
-    "suix_getAllCoins" => 1,
+    "bfcx_getCoins" => 2,
+    "bfcx_getAllCoins" => 1,
 };
 
 static METHOD_LENGTHS: phf::Map<&'static str, usize> = phf_map! {
     // based on function headers in crates/sui-json-rpc-api/src/indexer.rs
-    "suix_getOwnedObjects" => 4,
-    "suix_queryTransactionBlocks" => 4,
+    "bfcx_getOwnedObjects" => 4,
+    "bfcx_queryTransactionBlocks" => 4,
     // based on function headers in crates/sui-json-rpc-api/src/coin.rs
-    "suix_getCoins" => 4,
-    "suix_getAllCoins" => 3,
+    "bfcx_getCoins" => 4,
+    "bfcx_getAllCoins" => 3,
 };
 
 /// Statistics for a single JSON RPC method
@@ -197,7 +197,7 @@ pub async fn run_queries(
         // TODO: remove this hack when the SDK has removed all MatchAny & MatchAll related implementation.
         // Skip suix_getOwnedObjects requests with MatchAny & MatchAll filters b/c it's not supported.
         .filter(|r| {
-            !(r.method == "suix_getOwnedObjects"
+            !(r.method == "bfcx_getOwnedObjects"
                 && r.body_json
                     .get("params")
                     .and_then(|p| p.as_array())

@@ -429,7 +429,7 @@ async fn owned_objects(
     let query = json!({
         "jsonrpc": "2.0",
         "id": 1,
-        "method": "suix_getOwnedObjects",
+        "method": "bfcx_getOwnedObjects",
         "params": [
             owner.to_string(),
             {
