@@ -304,7 +304,7 @@ impl TypeLimitCluster {
         let query = json!({
             "jsonrpc": "2.0",
             "id": 1,
-            "method": "sui_getObject",
+            "method": "bfc_getObject",
             "params": [
                 id.to_string(),
                 {
