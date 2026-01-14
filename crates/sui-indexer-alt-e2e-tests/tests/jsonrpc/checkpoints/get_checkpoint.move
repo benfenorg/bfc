@@ -35,30 +35,30 @@
 
 //# run-jsonrpc
 {
-  "method": "sui_getCheckpoint",
+  "method": "bfc_getCheckpoint",
   "params": ["0"]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getCheckpoint",
+  "method": "bfc_getCheckpoint",
   "params": ["1"]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getCheckpoint",
+  "method": "bfc_getCheckpoint",
   "params": ["2"]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getCheckpoint",
+  "method": "bfc_getCheckpoint",
   "params": ["3"]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getCheckpoint",
+  "method": "bfc_getCheckpoint",
   "params": ["4"]
 }

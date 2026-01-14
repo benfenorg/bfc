@@ -64,7 +64,7 @@ Checkpoint created: 1
 
 task 9, lines 37-52:
 //# run-jsonrpc
-Error: Unknown variable: obj_3_0
+Error: Unknown variable: obj_4_0
 Allowed variable mappings are {
     "A": "@A",
     "A_opt": "@A",
@@ -74,13 +74,13 @@ Allowed variable mappings are {
     "bfc_system_opt": "0xc8",
     "bridge": "0xb",
     "bridge_opt": "0xb",
-    "digest_1": "4wJ5NGznCK5PvKNLeagXpr7NeULihWpqDHZbPxPbUyf1",
-    "digest_2": "5r5mvkPfGX8hdatojxidTCPNqoDfESQDVm62jbeK2yza",
-    "digest_3": "BdWcWT8orhwv5v9bW9XRvkEtqJ1SDvEnbE6SmXtb8gvH",
-    "digest_4": "FyB496LamJM95LYTCJ3urZ4vFo1T3N3p6JmbDbQ4dhfV",
-    "digest_5": "52FRLYw7eUAmcKKGAJacinBGUdE6PPLTHJd9a7CAPtE",
-    "digest_6": "5aAxtrV69utwhVx6K16E14YYdiohh4mMAAfQwhAwF8wa",
-    "digest_7": "B3CrX8X9hwJwVnWw2bTJgXyhu1DCgWw3so7hM4oxKvFa",
+    "digest_1": "6MfLqDPTGgbeYoA6nEZdcsqcLFnQsjkDa2HFPasSFxyq",
+    "digest_2": "BqjEBKEcf2zTdatCepvV4WE9nP1yXbzTbKMJMhsFu6gj",
+    "digest_3": "DT2orBf4EoQUZUGTAHaBxbjL254bC2mLE1R2i2sVrCMn",
+    "digest_4": "4vmc1mWShvY8Z2nrJQRNKB3vVifdnCe7cL6oqWFAfuz8",
+    "digest_5": "4eDwiWbkSMfNtDXq2DvDaD7eR2JmoDufxK4tAevxFiNh",
+    "digest_6": "2XM4QtBr2d5vyFTS59D5xCxnEqAh9kKWiaYcVoANwqUP",
+    "digest_7": "5J38u2atuees9a2JTkVXsNwnwCgwWk9peaBznMqXmPq3",
     "highest_checkpoint": "1",
     "obj_0_0": "object(0,0)",
     "obj_0_0_opt": "object(0,0)",
@@ -110,7 +110,7 @@ Allowed variable mappings are {
 
 task 10, lines 54-75:
 //# run-jsonrpc
-Error: Unknown variable: obj_3_0
+Error: Unknown variable: obj_4_0
 Allowed variable mappings are {
     "A": "@A",
     "A_opt": "@A",
@@ -120,13 +120,13 @@ Allowed variable mappings are {
     "bfc_system_opt": "0xc8",
     "bridge": "0xb",
     "bridge_opt": "0xb",
-    "digest_1": "4wJ5NGznCK5PvKNLeagXpr7NeULihWpqDHZbPxPbUyf1",
-    "digest_2": "5r5mvkPfGX8hdatojxidTCPNqoDfESQDVm62jbeK2yza",
-    "digest_3": "BdWcWT8orhwv5v9bW9XRvkEtqJ1SDvEnbE6SmXtb8gvH",
-    "digest_4": "FyB496LamJM95LYTCJ3urZ4vFo1T3N3p6JmbDbQ4dhfV",
-    "digest_5": "52FRLYw7eUAmcKKGAJacinBGUdE6PPLTHJd9a7CAPtE",
-    "digest_6": "5aAxtrV69utwhVx6K16E14YYdiohh4mMAAfQwhAwF8wa",
-    "digest_7": "B3CrX8X9hwJwVnWw2bTJgXyhu1DCgWw3so7hM4oxKvFa",
+    "digest_1": "6MfLqDPTGgbeYoA6nEZdcsqcLFnQsjkDa2HFPasSFxyq",
+    "digest_2": "BqjEBKEcf2zTdatCepvV4WE9nP1yXbzTbKMJMhsFu6gj",
+    "digest_3": "DT2orBf4EoQUZUGTAHaBxbjL254bC2mLE1R2i2sVrCMn",
+    "digest_4": "4vmc1mWShvY8Z2nrJQRNKB3vVifdnCe7cL6oqWFAfuz8",
+    "digest_5": "4eDwiWbkSMfNtDXq2DvDaD7eR2JmoDufxK4tAevxFiNh",
+    "digest_6": "2XM4QtBr2d5vyFTS59D5xCxnEqAh9kKWiaYcVoANwqUP",
+    "digest_7": "5J38u2atuees9a2JTkVXsNwnwCgwWk9peaBznMqXmPq3",
     "highest_checkpoint": "1",
     "obj_0_0": "object(0,0)",
     "obj_0_0_opt": "object(0,0)",

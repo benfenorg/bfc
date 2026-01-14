@@ -36,7 +36,7 @@
 
 //# run-jsonrpc
 {
-  "method": "sui_tryMultiGetPastObjects",
+  "method": "bfc_tryMultiGetPastObjects",
   "params": [
     [
       { "objectId": "@{obj_1_0}", "version": "2" },
@@ -53,7 +53,7 @@
 
 //# run-jsonrpc
 {
-  "method": "sui_tryMultiGetPastObjects",
+  "method": "bfc_tryMultiGetPastObjects",
   "params": [
     [
       { "objectId": "@{obj_1_0}", "version": "2" },

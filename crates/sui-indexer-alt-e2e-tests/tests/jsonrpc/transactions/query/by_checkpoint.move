@@ -45,31 +45,31 @@
 
 //# run-jsonrpc
 {
-  "method": "sui_getCheckpoint",
+  "method": "bfc_getCheckpoint",
   "params": ["0"]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getCheckpoint",
+  "method": "bfc_getCheckpoint",
   "params": ["1"]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getCheckpoint",
+  "method": "bfc_getCheckpoint",
   "params": ["2"]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getCheckpoint",
+  "method": "bfc_getCheckpoint",
   "params": ["3"]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "1" } }
   ]
@@ -77,7 +77,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "2" } }
   ]
@@ -85,7 +85,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "3" } }
   ]
@@ -93,7 +93,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "1" } },
     null, null, true
@@ -102,7 +102,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "2" } },
     null, null, true
@@ -111,7 +111,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "3" } },
     null, null, true
@@ -120,7 +120,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "1" } },
     null, 2
@@ -129,7 +129,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "2" } },
     null, 2
@@ -138,7 +138,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "3" } },
     null, 2
@@ -147,7 +147,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "1" } },
     null, 2, true
@@ -156,7 +156,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "2" } },
     null, 2, true
@@ -165,7 +165,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "3" } },
     null, 2, true
@@ -174,7 +174,7 @@
 
 //# run-jsonrpc --cursors 3
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "3" } },
     "@{cursor_0}", 2
@@ -183,7 +183,7 @@
 
 //# run-jsonrpc --cursors 3
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "3" } },
     "@{cursor_0}", 2, true
@@ -192,7 +192,7 @@
 
 //# run-jsonrpc --cursors 0
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "3" } },
     "@{cursor_0}", 2
@@ -201,7 +201,7 @@
 
 //# run-jsonrpc --cursors 6
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "3" } },
     "@{cursor_0}", 2
@@ -210,7 +210,7 @@
 
 //# run-jsonrpc --cursors 0
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "3" } },
     "@{cursor_0}", 2, true
@@ -219,7 +219,7 @@
 
 //# run-jsonrpc --cursors 6
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "Checkpoint": "3" } },
     "@{cursor_0}", 2, true

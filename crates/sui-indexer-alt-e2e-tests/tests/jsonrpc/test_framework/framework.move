@@ -19,17 +19,17 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getReferenceGasPrice"
+  "method": "bfcx_getReferenceGasPrice"
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_getReferenceGasPrice",
+  "method": "bfcx_getReferenceGasPrice",
   "params": [],
 }
 
 //# run-jsonrpc --show-headers
 {
-  "method": "suix_getReferenceGasPrice",
+  "method": "bfcx_getReferenceGasPrice",
   "params": []
 }

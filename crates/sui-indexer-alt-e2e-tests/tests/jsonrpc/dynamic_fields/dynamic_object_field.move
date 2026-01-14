@@ -42,13 +42,13 @@ module P::M {
 
 //# run-jsonrpc
 {
-  "method": "suix_getDynamicFieldObject",
+  "method": "bfcx_getDynamicFieldObject",
   "params": ["@{obj_2_0}", { "type": "u64", "value": "44" }]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_getDynamicFieldObject",
+  "method": "bfcx_getDynamicFieldObject",
   "params": [
     "@{obj_2_0}",
     { "type": "@{P}::M::Name", "value": { "x": "42", "y": 43 } }

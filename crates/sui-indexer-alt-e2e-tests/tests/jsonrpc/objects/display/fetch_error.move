@@ -26,12 +26,12 @@ module test::mod {
 
 //# run-jsonrpc
 {
-  "method": "sui_getObject",
+  "method": "bfc_getObject",
   "params": ["@{obj_1_0}", { "showDisplay": true }]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getObject",
+  "method": "bfc_getObject",
   "params": ["@{obj_2_0}", { "showDisplay": true }]
 }

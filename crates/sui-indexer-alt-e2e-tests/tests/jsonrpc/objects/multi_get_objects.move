@@ -24,7 +24,7 @@
 
 //# run-jsonrpc
 {
-  "method": "sui_multiGetObjects",
+  "method": "bfc_multiGetObjects",
   "params": [
     [
       "@{obj_2_0}",
@@ -46,7 +46,7 @@
 
 //# run-jsonrpc
 {
-  "method": "sui_multiGetObjects",
+  "method": "bfc_multiGetObjects",
   "params": [
     [
       "@{obj_2_0}",
@@ -67,7 +67,7 @@
 
 //# run-jsonrpc
 {
-  "method": "sui_multiGetObjects",
+  "method": "bfc_multiGetObjects",
   "params": [
     [
       "@{obj_2_0}",
@@ -88,7 +88,7 @@
 
 //# run-jsonrpc
 {
-  "method": "sui_multiGetObjects",
+  "method": "bfc_multiGetObjects",
   "params": [
     [
       "@{obj_2_0}",

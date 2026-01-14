@@ -16,7 +16,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getDynamicFieldObject",
+  "method": "bfcx_getDynamicFieldObject",
   "params": ["@{obj_1_0}", { "type": "u64", "value": "42" }]
 }
 
@@ -27,7 +27,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getDynamicFieldObject",
+  "method": "bfcx_getDynamicFieldObject",
   "params": ["@{obj_1_0}", { "type": "u64", "value": "42" }]
 }
 
@@ -38,7 +38,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getDynamicFieldObject",
+  "method": "bfcx_getDynamicFieldObject",
   "params": ["@{obj_1_0}", { "type": "u64", "value": "42" }]
 }
 
@@ -50,7 +50,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getDynamicFieldObject",
+  "method": "bfcx_getDynamicFieldObject",
   "params": ["@{obj_10_0}", { "type": "u64", "value": "43" }]
 }
 
@@ -62,7 +62,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getDynamicFieldObject",
+  "method": "bfcx_getDynamicFieldObject",
   "params": ["@{obj_10_0}", { "type": "u64", "value": "43" }]
 }
 
@@ -74,6 +74,6 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getDynamicFieldObject",
+  "method": "bfcx_getDynamicFieldObject",
   "params": ["@{obj_10_0}", { "type": "u64", "value": "43" }]
 }

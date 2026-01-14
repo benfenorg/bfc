@@ -13,54 +13,54 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_resolveNameServiceAddress",
+  "method": "bfcx_resolveNameServiceAddress",
   "params": ["foo"]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_resolveNameServiceAddress",
+  "method": "bfcx_resolveNameServiceAddress",
   "params": ["toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.toolong.sui"]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_resolveNameServiceAddress",
+  "method": "bfcx_resolveNameServiceAddress",
   "params": ["foo*bar.sui"]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_resolveNameServiceAddress",
+  "method": "bfcx_resolveNameServiceAddress",
   "params": ["foo..sui"]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_resolveNameServiceAddress",
+  "method": "bfcx_resolveNameServiceAddress",
   "params": ["toolongtoolongtoolongtoolongtoolongtoolongtoolongtoolongtoolongtoolong.sui"]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_resolveNameServiceAddress",
+  "method": "bfcx_resolveNameServiceAddress",
   "params": ["-foo.sui"]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_resolveNameServiceAddress",
+  "method": "bfcx_resolveNameServiceAddress",
   "params": ["foo-.sui"]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_resolveNameServiceAddress",
+  "method": "bfcx_resolveNameServiceAddress",
   "params": ["foo_bar.sui"]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_resolveNameServiceAddress",
+  "method": "bfcx_resolveNameServiceAddress",
   "params": ["🫠.sui"]
 }

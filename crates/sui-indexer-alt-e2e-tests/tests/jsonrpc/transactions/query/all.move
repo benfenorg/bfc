@@ -37,13 +37,13 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [{}]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     {},
     null,
@@ -53,7 +53,7 @@
 
 //# run-jsonrpc --cursors 2
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     {},
     "@{cursor_0}",
@@ -63,7 +63,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     {},
     null,
@@ -74,7 +74,7 @@
 
 //# run-jsonrpc --cursors 3
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     {},
     "@{cursor_0}",
@@ -85,7 +85,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     {},
     "i_am_not_a_cursor"
@@ -94,7 +94,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     {},
     null,
@@ -104,7 +104,7 @@
 
 //# run-jsonrpc --cursors 1
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     {
       "options": {

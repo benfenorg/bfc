@@ -87,7 +87,7 @@ module P::M {
 
 //# run-jsonrpc
 {
-  "method": "sui_multiGetObjects",
+  "method": "bfc_multiGetObjects",
   "params": [
     [
       "@{obj_3_0}",
@@ -107,25 +107,25 @@ module P::M {
 
 //# run-jsonrpc
 {
-  "method": "suix_getDynamicFields",
+  "method": "bfcx_getDynamicFields",
   "params": ["@{obj_2_0}"]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_getDynamicFields",
+  "method": "bfcx_getDynamicFields",
   "params": ["@{obj_2_0}", null, 2]
 }
 
 //# run-jsonrpc --cursors bcs(@{obj_10_0},4)
 {
-  "method": "suix_getDynamicFields",
+  "method": "bfcx_getDynamicFields",
   "params": ["@{obj_2_0}", "@{cursor_0}", 2]
 }
 
 //# run-jsonrpc --cursors bcs(@{obj_10_0},4)
 {
-  "method": "suix_getDynamicFields",
+  "method": "bfcx_getDynamicFields",
   "params": ["@{obj_2_0}", "@{cursor_0}"]
 }
 
@@ -136,7 +136,7 @@ module P::M {
 
 //# run-jsonrpc
 {
-  "method": "suix_getDynamicFields",
+  "method": "bfcx_getDynamicFields",
   "params": ["@{obj_2_0}"]
 }
 
@@ -147,7 +147,7 @@ module P::M {
 
 //# run-jsonrpc
 {
-  "method": "suix_getDynamicFields",
+  "method": "bfcx_getDynamicFields",
   "params": ["@{obj_2_0}"]
 }
 
@@ -158,13 +158,13 @@ module P::M {
 
 //# run-jsonrpc
 {
-  "method": "suix_getDynamicFields",
+  "method": "bfcx_getDynamicFields",
   "params": ["@{obj_2_0}"]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_multiGetObjects",
+  "method": "bfc_multiGetObjects",
   "params": [
     [
       "@{obj_12_0}",

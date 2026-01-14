@@ -24,7 +24,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getCoins",
+  "method": "bfcx_getCoins",
   "params": ["@{A}"]
 }
 
@@ -35,6 +35,6 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getCoins",
+  "method": "bfcx_getCoins",
   "params": ["@{A}"]
 }

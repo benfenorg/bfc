@@ -10,7 +10,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getOwnedObjects",
+  "method": "bfcx_getOwnedObjects",
   "params": [
     "@{A}",
     {
@@ -27,7 +27,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getOwnedObjects",
+  "method": "bfcx_getOwnedObjects",
   "params": [
     "@{A}",
     {
@@ -46,7 +46,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getOwnedObjects",
+  "method": "bfcx_getOwnedObjects",
   "params": [
     "@{A}",
     {
@@ -70,7 +70,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getOwnedObjects",
+  "method": "bfcx_getOwnedObjects",
   "params": [
     "@{A}",
     {

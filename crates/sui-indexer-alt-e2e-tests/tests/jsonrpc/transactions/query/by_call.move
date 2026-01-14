@@ -71,7 +71,7 @@ module P1::M {
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     {
       "filter": {
@@ -88,7 +88,7 @@ module P1::M {
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     {
       "filter": {
@@ -106,7 +106,7 @@ module P1::M {
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     {
       "filter": {
@@ -125,7 +125,7 @@ module P1::M {
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     {
       "filter": {
@@ -143,7 +143,7 @@ module P1::M {
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     {
       "filter": {

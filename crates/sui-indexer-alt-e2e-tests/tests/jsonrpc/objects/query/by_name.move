@@ -57,7 +57,7 @@ module P::N {
 
 //# run-jsonrpc
 {
-  "method": "suix_getOwnedObjects",
+  "method": "bfcx_getOwnedObjects",
   "params": [
     "@{A}",
     {
@@ -69,7 +69,7 @@ module P::N {
 
 //# run-jsonrpc
 {
-  "method": "suix_getOwnedObjects",
+  "method": "bfcx_getOwnedObjects",
   "params": [
     "@{A}",
     {
@@ -81,7 +81,7 @@ module P::N {
 
 //# run-jsonrpc
 {
-  "method": "suix_getOwnedObjects",
+  "method": "bfcx_getOwnedObjects",
   "params": [
     "@{A}",
     {
@@ -95,7 +95,7 @@ module P::N {
 
 //# run-jsonrpc --cursors bcs(@{obj_5_0},2)
 {
-  "method": "suix_getOwnedObjects",
+  "method": "bfcx_getOwnedObjects",
   "params": [
     "@{A}",
     {

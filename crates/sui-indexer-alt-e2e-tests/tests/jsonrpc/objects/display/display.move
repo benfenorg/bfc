@@ -83,31 +83,31 @@ module test::mod {
 
 //# run-jsonrpc
 {
-  "method": "sui_getObject",
+  "method": "bfc_getObject",
   "params": ["@{obj_1_0}", { "showType": true }]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getObject",
+  "method": "bfc_getObject",
   "params": ["@{obj_1_1}", { "showType": true }]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getObject",
+  "method": "bfc_getObject",
   "params": ["@{obj_1_2}", { "showType": true }]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getObject",
+  "method": "bfc_getObject",
   "params": ["@{obj_2_0}", { "showDisplay": true }]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getObject",
+  "method": "bfc_getObject",
   "params": ["@{obj_3_0}", { "showDisplay": true }]
 }
 
@@ -119,12 +119,12 @@ module test::mod {
 
 //# run-jsonrpc
 {
-  "method": "sui_getObject",
+  "method": "bfc_getObject",
   "params": ["@{obj_2_0}", { "showDisplay": true }]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getObject",
+  "method": "bfc_getObject",
   "params": ["@{obj_3_0}", { "showDisplay": true }]
 }

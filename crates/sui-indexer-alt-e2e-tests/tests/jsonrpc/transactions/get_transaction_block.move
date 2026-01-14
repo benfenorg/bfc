@@ -63,19 +63,19 @@ module test::counter {
 
 //# run-jsonrpc
 {
-  "method": "sui_getTransactionBlock",
+  "method": "bfc_getTransactionBlock",
   "params": ["@{digest_2}", {}]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getTransactionBlock",
+  "method": "bfc_getTransactionBlock",
   "params": ["11111111111111111111111111111111", {}]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getTransactionBlock",
+  "method": "bfc_getTransactionBlock",
   "params": [
     "@{digest_2}",
     {
@@ -87,7 +87,7 @@ module test::counter {
 
 //# run-jsonrpc
 {
-  "method": "sui_getTransactionBlock",
+  "method": "bfc_getTransactionBlock",
   "params": [
     "@{digest_2}",
     {
@@ -99,7 +99,7 @@ module test::counter {
 
 //# run-jsonrpc
 {
-  "method": "sui_getTransactionBlock",
+  "method": "bfc_getTransactionBlock",
   "params": [
     "@{digest_2}",
     {
@@ -110,7 +110,7 @@ module test::counter {
 
 //# run-jsonrpc
 {
-  "method": "sui_getTransactionBlock",
+  "method": "bfc_getTransactionBlock",
   "params": [
     "@{digest_2}",
     {
@@ -121,7 +121,7 @@ module test::counter {
 
 //# run-jsonrpc
 {
-  "method": "sui_getTransactionBlock",
+  "method": "bfc_getTransactionBlock",
   "params": [
     "@{digest_3}",
     {
@@ -132,7 +132,7 @@ module test::counter {
 
 //# run-jsonrpc
 {
-  "method": "sui_getTransactionBlock",
+  "method": "bfc_getTransactionBlock",
   "params": [
     "@{digest_3}"
   ]
@@ -148,7 +148,7 @@ module test::counter {
 
 //# run-jsonrpc
 {
-  "method": "sui_getTransactionBlock",
+  "method": "bfc_getTransactionBlock",
   "params": [
     "@{digest_13}"
   ]

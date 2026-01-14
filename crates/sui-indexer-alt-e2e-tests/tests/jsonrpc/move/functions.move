@@ -31,13 +31,13 @@ module P::M {
 
 //# run-jsonrpc
 {
-  "method": "sui_getNormalizedMoveFunction",
+  "method": "bfc_getNormalizedMoveFunction",
   "params": ["@{P}", "M", "foo"]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getNormalizedMoveFunction",
+  "method": "bfc_getNormalizedMoveFunction",
   "params": ["@{P}", "M", "bar"]
 }
 
@@ -66,48 +66,48 @@ module P::M {
 
 //# run-jsonrpc
 {
-  "method": "sui_getNormalizedMoveFunction",
+  "method": "bfc_getNormalizedMoveFunction",
   "params": ["@{P}", "M", "foo"]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getNormalizedMoveFunction",
+  "method": "bfc_getNormalizedMoveFunction",
   "params": ["@{P}", "M", "bar"]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getNormalizedMoveFunction",
+  "method": "bfc_getNormalizedMoveFunction",
   "params": ["@{P}", "M", "baz"]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getNormalizedMoveFunction",
+  "method": "bfc_getNormalizedMoveFunction",
   "params": ["@{P}", "not a module", "foo"]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getNormalizedMoveFunction",
+  "method": "bfc_getNormalizedMoveFunction",
   "params": ["0x0", "M", "foo"]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getNormalizedMoveFunction",
+  "method": "bfc_getNormalizedMoveFunction",
   "params": ["@{obj_0_0}", "M", "foo"]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getNormalizedMoveFunction",
+  "method": "bfc_getNormalizedMoveFunction",
   "params": ["@{P}", "N", "foo"]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getNormalizedMoveFunction",
+  "method": "bfc_getNormalizedMoveFunction",
   "params": ["@{P}", "M", "qux"]
 }

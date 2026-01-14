@@ -26,31 +26,31 @@
 
 //# run-jsonrpc
 {
-  "method": "sui_tryGetPastObject",
+  "method": "bfc_tryGetPastObject",
   "params": ["@{obj_1_0}", 1]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_tryGetPastObject",
+  "method": "bfc_tryGetPastObject",
   "params": ["@{obj_1_0}", 2]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_tryGetPastObject",
+  "method": "bfc_tryGetPastObject",
   "params": ["@{obj_1_0}", 3]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_tryGetPastObject",
+  "method": "bfc_tryGetPastObject",
   "params": ["@{obj_1_0}", 4]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_tryGetPastObject",
+  "method": "bfc_tryGetPastObject",
   "params": [
     "@{obj_1_0}",
     1,
@@ -65,7 +65,7 @@
 
 //# run-jsonrpc
 {
-  "method": "sui_tryGetPastObject",
+  "method": "bfc_tryGetPastObject",
   "params": [
     "@{obj_1_0}",
     2,
@@ -80,7 +80,7 @@
 
 //# run-jsonrpc
 {
-  "method": "sui_tryGetPastObject",
+  "method": "bfc_tryGetPastObject",
   "params": [
     "@{obj_1_0}",
     4,

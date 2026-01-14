@@ -5,6 +5,6 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getReferenceGasPrice",
+  "method": "bfcx_getReferenceGasPrice",
   "params": []
 }

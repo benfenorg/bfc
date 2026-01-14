@@ -14,7 +14,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getDynamicFieldObject",
+  "method": "bfcx_getDynamicFieldObject",
   "params": [
     "0x0000000000000000000000000000000000000000000000000000000000000000",
     { "type": "u64", "value": "42" }
@@ -23,7 +23,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getDynamicFieldObject",
+  "method": "bfcx_getDynamicFieldObject",
   "params": [
     "@{obj_1_0}",
     { "type": "u64", "value": "42" }

@@ -5,7 +5,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getLatestSuiSystemState",
+  "method": "bfcx_getLatestSuiSystemState",
   "params": []
 }
 
@@ -17,7 +17,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getLatestSuiSystemState",
+  "method": "bfcx_getLatestSuiSystemState",
   "params": []
 }
 
@@ -27,7 +27,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getLatestSuiSystemState",
+  "method": "bfcx_getLatestSuiSystemState",
   "params": []
 }
 
@@ -38,7 +38,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getLatestSuiSystemState",
+  "method": "bfcx_getLatestSuiSystemState",
   "params": []
 }
 
@@ -46,6 +46,6 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_getLatestSuiSystemState",
+  "method": "bfcx_getLatestSuiSystemState",
   "params": []
 }

@@ -77,25 +77,25 @@ module Test::real {
 
 //# run-jsonrpc
 {
-  "method": "suix_getCoinMetadata",
+  "method": "bfcx_getCoinMetadata",
   "params": ["@{Test}::real::REAL"]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_getCoinMetadata",
+  "method": "bfcx_getCoinMetadata",
   "params": ["@{Test}::fake::FAKE"]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_getCoinMetadata",
+  "method": "bfcx_getCoinMetadata",
   "params": ["@{Test}::fake::NonExistent"]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_getCoinMetadata",
+  "method": "bfcx_getCoinMetadata",
   "params": ["invalid_coin_type"]
 }
 
@@ -106,7 +106,7 @@ module Test::real {
 
 //# run-jsonrpc
 {
-  "method": "suix_getCoinMetadata",
+  "method": "bfcx_getCoinMetadata",
   "params": ["@{Test}::real::REAL"]
 }
 
@@ -116,7 +116,7 @@ module Test::real {
 
 //# run-jsonrpc
 {
-  "method": "suix_getCoinMetadata",
+  "method": "bfcx_getCoinMetadata",
   "params": ["@{Test}::real::REAL"]
 }
 
@@ -127,6 +127,6 @@ module Test::real {
 
 //# run-jsonrpc
 {
-  "method": "suix_getCoinMetadata",
+  "method": "bfcx_getCoinMetadata",
   "params": ["@{Test}::real::REAL"]
 }

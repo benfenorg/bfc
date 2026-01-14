@@ -33,12 +33,12 @@ module P0::M {
 
 //# run-jsonrpc
 {
-  "method": "sui_getTransactionBlock",
+  "method": "bfc_getTransactionBlock",
   "params": ["@{digest_2}", { "showObjectChanges": true }]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_getTransactionBlock",
+  "method": "bfc_getTransactionBlock",
   "params": ["@{digest_3}", { "showObjectChanges": true }]
 }

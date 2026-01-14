@@ -36,30 +36,30 @@
 
 //# run-jsonrpc
 {
-  "method": "sui_tryGetPastObject",
+  "method": "bfc_tryGetPastObject",
   "params": ["@{obj_1_0}", 2, { "showOwner": true }]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_tryGetPastObject",
+  "method": "bfc_tryGetPastObject",
   "params": ["@{obj_2_0}", 3, { "showOwner": true }]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_tryGetPastObject",
+  "method": "bfc_tryGetPastObject",
   "params": ["@{obj_3_0}", 4, { "showOwner": true }]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_tryGetPastObject",
+  "method": "bfc_tryGetPastObject",
   "params": ["@{obj_4_0}", 5, { "showOwner": true }]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_tryGetPastObject",
+  "method": "bfc_tryGetPastObject",
   "params": ["@{obj_6_0}", 7, { "showOwner": true }]
 }

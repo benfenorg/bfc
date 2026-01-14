@@ -44,13 +44,13 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [{}]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "FromOrToAddress": { "addr": "@{A}" } } }
   ]
@@ -58,7 +58,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "ToAddress": "@{A}" } }
   ]
@@ -66,7 +66,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "FromOrToAddress": { "addr": "@{B}" } } }
   ]
@@ -74,7 +74,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "ToAddress": "@{B}"  } }
   ]
@@ -82,7 +82,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "FromOrToAddress": { "addr": "@{C}" } } }
   ]
@@ -90,7 +90,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "ToAddress": "@{C}" } }
   ]
@@ -98,7 +98,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "FromAddress": "@{A}" } }
   ]
@@ -106,7 +106,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "FromAddress": "@{B}" } }
   ]
@@ -114,7 +114,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "FromAddress": "@{C}" } }
   ]
@@ -122,7 +122,7 @@
 
 //# run-jsonrpc
 {
-  "method": "suix_queryTransactionBlocks",
+  "method": "bfcx_queryTransactionBlocks",
   "params": [
     { "filter": { "FromAndToAddress": { "from": "@{A}", "to": "@{B}" } } }
   ]

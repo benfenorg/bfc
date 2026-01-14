@@ -40,7 +40,7 @@ module Test::fake {
 
 //# run-jsonrpc
 {
-  "method": "suix_getCoins",
+  "method": "bfcx_getCoins",
   "params": ["@{A}", "@{Test}::fake::FAKE"]
 }
 
@@ -50,18 +50,18 @@ module Test::fake {
 
 //# run-jsonrpc
 {
-  "method": "suix_getCoins",
+  "method": "bfcx_getCoins",
   "params": ["@{A}", "0x2::sui::SUI"]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_getCoins",
+  "method": "bfcx_getCoins",
   "params": ["@{A}", "@{Test}::fake::FAKE", null, 2]
 }
 
 //# run-jsonrpc
 {
-  "method": "suix_getCoins",
+  "method": "bfcx_getCoins",
   "params": ["@{B}", "@{Test}::fake::FAKE", null, 1]
 }

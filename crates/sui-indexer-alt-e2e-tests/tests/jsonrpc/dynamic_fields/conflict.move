@@ -49,6 +49,6 @@ module P::M {
 
 //# run-jsonrpc
 {
-  "method": "suix_getDynamicFieldObject",
+  "method": "bfcx_getDynamicFieldObject",
   "params": ["@{obj_2_0}", { "type": "u64", "value": "42" }]
 }

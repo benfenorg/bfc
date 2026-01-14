@@ -30,18 +30,18 @@ module test::mod {
 
 //# run-jsonrpc
 {
-  "method": "sui_tryGetPastObject",
+  "method": "bfc_tryGetPastObject",
   "params": ["@{obj_1_0}", 1, { "showContent": true, "showBcs": true }]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_tryGetPastObject",
+  "method": "bfc_tryGetPastObject",
   "params": ["@{obj_2_0}", 2, { "showContent": true, "showBcs": true }]
 }
 
 //# run-jsonrpc
 {
-  "method": "sui_tryGetPastObject",
+  "method": "bfc_tryGetPastObject",
   "params": ["@{obj_3_0}", 3, { "showContent": true, "showBcs": true }]
 }
