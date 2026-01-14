@@ -78,6 +78,82 @@ pub struct TransferUpgradeAuthorityAccounts {
     pub bpf_loader_upgradeable: Pubkey,
 }
 
+#[derive(Debug, Clone)]
+pub struct EmergencyOpAccounts {
+    pub bridge_config: Pubkey,
+    pub bridge_committee: Pubkey,
+    pub message_verifier: Pubkey,
+    pub message_config: Pubkey,
+    pub benfen_bridge: Pubkey,
+}
+
+#[derive(Debug, Clone)]
+pub struct UpgradeProgramAccounts {
+    pub upgrade_authority: Pubkey,
+    //pub buffer: Pubkey,
+    pub program: Pubkey,
+    pub bridge_config: Pubkey,
+    pub message_verifier: Pubkey,
+    pub message_config: Pubkey,
+    pub program_data: Pubkey,
+    pub bridge_committee: Pubkey,
+    pub bpf_loader_upgradeable: Pubkey,
+    pub system_program: Pubkey,
+    pub clock: Pubkey,
+    pub rent: Pubkey, 
+}
+
+pub(crate) fn get_upgrade_program_account(
+    program_id: Pubkey,
+) -> UpgradeProgramAccounts{
+    let bpf_loader_upgradeable = Pubkey::try_from("BPFLoaderUpgradeab1e11111111111111111111111").unwrap();
+    let bridge_config_pda = Pubkey::find_program_address(&[BRIDGE_CONFIG_SEED], &program_id).0;
+    let committee_pda = Pubkey::find_program_address(
+        &[BRIDGE_COMMITTEE_SEED, bridge_config_pda.as_ref()],
+        &program_id,
+    )
+    .0;
+
+    let message_verifier_pda = Pubkey::find_program_address(
+        &[MESSAGE_VERIFIER_SEED, committee_pda.as_ref()],
+        &program_id,
+    )
+    .0;
+
+    let message_config_pda = Pubkey::find_program_address(
+        &[
+            MESSAGE_CONFIG_SEED,
+            &[BridgeActionType::UpgradeProgramOnSolana as u8],
+            message_verifier_pda.as_ref(),
+        ],
+        &program_id,
+    )
+    .0;
+
+    let upgrade_authority_pda = Pubkey::find_program_address(
+        &[UPGRADE_AUTHORITY_SEED, committee_pda.as_ref()],
+        &program_id,
+    )
+    .0;
+    let program_data_pda = Pubkey::find_program_address(&[program_id.as_ref()], &bpf_loader_upgradeable).0;
+
+    UpgradeProgramAccounts {
+        upgrade_authority: upgrade_authority_pda,
+        //buffer: buffer_pda,
+        program: program_id,
+        bridge_config: bridge_config_pda,
+        message_verifier: message_verifier_pda,
+        message_config: message_config_pda,
+        program_data: program_data_pda,
+        bridge_committee: committee_pda,
+        bpf_loader_upgradeable,
+        system_program: Pubkey::try_from("Sysvar1111111111111111111111111111111111111").unwrap(),
+        clock: Pubkey::try_from("SysvarC1ock11111111111111111111111111111111").unwrap(),
+        rent: Pubkey::try_from("SysvarRent111111111111111111111111111111111").unwrap(),
+    }
+}
+
+
 pub(crate) fn get_extend_program_account(
     program_id: Pubkey,
 ) -> ExtendProgramAccounts {
@@ -133,14 +209,6 @@ pub struct UpdateCommitteeBlocklistAccounts {
     pub message_config: Pubkey,
 }
 
-#[derive(Debug, Clone)]
-pub struct EmergencyOpAccounts {
-    pub bridge_config: Pubkey,
-    pub bridge_committee: Pubkey,
-    pub message_verifier: Pubkey,
-    pub message_config: Pubkey,
-    pub benfen_bridge: Pubkey,
-}
 
 pub(crate) fn get_emergency_op_account(
     program_id: Pubkey,
