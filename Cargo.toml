@@ -525,8 +525,8 @@ moka = { version = "0.12", default-features = false, features = [
     "atomic64",
 ] }
 more-asserts = "0.3.1"
-msim = { git = "https://github.com/lifeimm100/mysten-sim.git", rev = "2f46c6a93ba2cc71bee5d6acdc554501b68e39ea", package = "msim" }
-msim-macros = { git = "https://github.com/lifeimm100/mysten-sim.git", rev = "2f46c6a93ba2cc71bee5d6acdc554501b68e39ea", package = "msim-macros" }
+msim = { git = "https://github.com/lifeimm100/mysten-sim.git", rev = "b8fe6d34050303ce5c01ced27f21e1ee217c4774", package = "msim" }
+msim-macros = { git = "https://github.com/lifeimm100/mysten-sim.git", rev = "b8fe6d34050303ce5c01ced27f21e1ee217c4774", package = "msim-macros" }
 multiaddr = "0.17.0"
 nexlint = { git = "https://github.com/nextest-rs/nexlint.git", rev = "7ce56bd591242a57660ed05f14ca2483c37d895b" }
 nexlint-lints = { git = "https://github.com/nextest-rs/nexlint.git", rev = "7ce56bd591242a57660ed05f14ca2483c37d895b" }
