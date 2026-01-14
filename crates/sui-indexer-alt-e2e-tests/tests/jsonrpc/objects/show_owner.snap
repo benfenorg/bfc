@@ -1,3 +1,6 @@
+---
+source: external-crates/move/crates/move-transactional-test-runner/src/framework.rs
+---
 processed 13 tasks
 
 init:
@@ -60,9 +63,9 @@ Response: {
   "result": {
     "status": "VersionFound",
     "details": {
-      "objectId": "BFC470ac24acfbe98ef27faca3c2538f69bafde1ee9bba2eee2572e8210dedfff92de22",
+      "objectId": "BFCff8a472fa6b3f3ccbd4665f10ad544355d96a260e868944dfaa63021869bec02397d",
       "version": "2",
-      "digest": "4x1YM8MCKhqtv7Z12iqJwZzW683AfoXHRSDUsoDgiNtY",
+      "digest": "ARUqzVwn6XPjuPgpXkZbi6fUVhSVWXPLe5APT5mUg4Cb",
       "owner": {
         "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
       }
@@ -78,9 +81,9 @@ Response: {
   "result": {
     "status": "VersionFound",
     "details": {
-      "objectId": "BFC6e8eacdb4044117b661537d7a61890b2d636aeed23b0754444f56dc8df7703b4df1f",
+      "objectId": "BFCbc76047e1504a06246dba68246b59dd311b2440f984f50a8bab3a5c5386f436dc6ad",
       "version": "3",
-      "digest": "CiTdjFqkRTF7Sa6rb2vcn5zvG5FcJmTjc9Ak1VdkwxTH",
+      "digest": "bfoTNXnSQ3KCDmnWVxwZWKytVBssWM2Xw3pXZberzMN",
       "owner": {
         "AddressOwner": "BFCa7b032703878aa74c3126935789fd1d4d7e111d5911b09247d6963061c312b5a5cf9"
       }
@@ -100,12 +103,13 @@ Allowed variable mappings are {
     "bfc_system_opt": "0xc8",
     "bridge": "0xb",
     "bridge_opt": "0xb",
-    "digest_1": "5ZcCpEVmx67K5EtqR5o41RyBAbiAMRrSdj7mKG55qpxx",
-    "digest_2": "JE14fgTtPhWWQ7EXwg5G2DeNYTvchVY9hwrnEmRKkvu5",
-    "digest_3": "CqGqGRkdsAwHv5aMpVQX6v7jAqk2egynMZi1jof4SQqx",
-    "digest_4": "8MkxTqFh6Pqvywkb7r6AzzDL9oNtb7noWeuWJVJDR7F8",
-    "digest_5": "4u7jSmHBp9tcHJYtpvx5UfkwHHTNgHdJDCuYzaNBWoj8",
-    "digest_6": "5QKJro7eSRWAgTtNqzsA1pWXBKt61nu2RLj5iv3q2VWW",
+    "digest_1": "4wJ5NGznCK5PvKNLeagXpr7NeULihWpqDHZbPxPbUyf1",
+    "digest_2": "5r5mvkPfGX8hdatojxidTCPNqoDfESQDVm62jbeK2yza",
+    "digest_3": "BdWcWT8orhwv5v9bW9XRvkEtqJ1SDvEnbE6SmXtb8gvH",
+    "digest_4": "FyB496LamJM95LYTCJ3urZ4vFo1T3N3p6JmbDbQ4dhfV",
+    "digest_5": "52FRLYw7eUAmcKKGAJacinBGUdE6PPLTHJd9a7CAPtE",
+    "digest_6": "5aAxtrV69utwhVx6K16E14YYdiohh4mMAAfQwhAwF8wa",
+    "highest_checkpoint": "1",
     "obj_0_0": "object(0,0)",
     "obj_0_0_opt": "object(0,0)",
     "obj_0_1": "object(0,1)",
@@ -144,12 +148,13 @@ Allowed variable mappings are {
     "bfc_system_opt": "0xc8",
     "bridge": "0xb",
     "bridge_opt": "0xb",
-    "digest_1": "5ZcCpEVmx67K5EtqR5o41RyBAbiAMRrSdj7mKG55qpxx",
-    "digest_2": "JE14fgTtPhWWQ7EXwg5G2DeNYTvchVY9hwrnEmRKkvu5",
-    "digest_3": "CqGqGRkdsAwHv5aMpVQX6v7jAqk2egynMZi1jof4SQqx",
-    "digest_4": "8MkxTqFh6Pqvywkb7r6AzzDL9oNtb7noWeuWJVJDR7F8",
-    "digest_5": "4u7jSmHBp9tcHJYtpvx5UfkwHHTNgHdJDCuYzaNBWoj8",
-    "digest_6": "5QKJro7eSRWAgTtNqzsA1pWXBKt61nu2RLj5iv3q2VWW",
+    "digest_1": "4wJ5NGznCK5PvKNLeagXpr7NeULihWpqDHZbPxPbUyf1",
+    "digest_2": "5r5mvkPfGX8hdatojxidTCPNqoDfESQDVm62jbeK2yza",
+    "digest_3": "BdWcWT8orhwv5v9bW9XRvkEtqJ1SDvEnbE6SmXtb8gvH",
+    "digest_4": "FyB496LamJM95LYTCJ3urZ4vFo1T3N3p6JmbDbQ4dhfV",
+    "digest_5": "52FRLYw7eUAmcKKGAJacinBGUdE6PPLTHJd9a7CAPtE",
+    "digest_6": "5aAxtrV69utwhVx6K16E14YYdiohh4mMAAfQwhAwF8wa",
+    "highest_checkpoint": "1",
     "obj_0_0": "object(0,0)",
     "obj_0_0_opt": "object(0,0)",
     "obj_0_1": "object(0,1)",
@@ -184,11 +189,11 @@ Response: {
   "result": {
     "status": "VersionFound",
     "details": {
-      "objectId": "BFC4a658cf1a5de7c01e2766f53d9bedf390946bfaf736b7b1ae63d1386f945d8a2a80e",
+      "objectId": "BFC9be577a8f99f72a2c94863de1ddc5c2c6c75f357b58645a5dfd153518258c4ade3fe",
       "version": "7",
-      "digest": "6f4tzVqPhEGXQP7HkvduHo7UXeRTqZjWpyrUd9HckDz6",
+      "digest": "5xSdt5Txqz5v4ywWHw1kjxzureLG1cVyfbaveCXDyEG1",
       "owner": {
-        "ObjectOwner": "BFC47544f3b03f2408d73ce7a45c80e5faf77d478e972126fca14f63749fd908555699b"
+        "ObjectOwner": "BFC4f6028414f2a5010f66dc184fa173343500f447aa7dcc86c3bce994d843b1f13fea9"
       }
     }
   }

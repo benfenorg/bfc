@@ -1,3 +1,6 @@
+---
+source: external-crates/move/crates/move-transactional-test-runner/src/framework.rs
+---
 processed 8 tasks
 
 init:
@@ -41,7 +44,7 @@ Response: {
   "jsonrpc": "2.0",
   "id": 0,
   "result": {
-    "digest": "F5Aq444oRZyJT1pZUDeHHwmc6DoysVF1s4CaGU1ewz64",
+    "digest": "AvWXAcaaxC6UiGJmSJdUAeAqy4XL3qWbhWC7wfuVFVhD",
     "objectChanges": [
       {
         "type": "mutated",
@@ -49,11 +52,11 @@ Response: {
         "owner": {
           "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
         },
-        "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
-        "objectId": "BFC1368f3ce1a354a08e6a92821900897ceb1ad5c9ba4ddcde7c0f0f88a2e9bfbfd4278",
+        "objectType": "0x15b18fd8fcc63cffda85bed577ddc242c9b6e05c12786bc57b0d03958fe99393::M::O",
+        "objectId": "BFC38cfe3d40df0a1654f72923b0732d4f4d9596389493a9681c198976499e002056c1d",
         "version": "3",
         "previousVersion": "2",
-        "digest": "68GmXjyFMvt87BPDHq1bVhiYy423ZYh228rvF5b324BB"
+        "digest": "HCxDqXxK9jCmv5AjvwMY1QeF6rxMzpRjusWiq3TGRY3n"
       },
       {
         "type": "mutated",
@@ -61,13 +64,15 @@ Response: {
         "owner": {
           "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
         },
-        "objectType": "0x3fba40ab02dda46657a0167b97fa574242e2deba678191c60bad58a865f4580e::M::O",
-        "objectId": "BFCf50aad4d51eeb9edab0f435ac890e29863f65e7daac7a12ee4599c0b7af064c7d819",
+        "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
+        "objectId": "BFCb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c8503d3",
         "version": "3",
         "previousVersion": "2",
-        "digest": "8LWg63h8w1wh7WkCYZBm8mFwwdPDGTDRPApGec8FQWMQ"
+        "digest": "7VrcxPeFNCii4dsFfnbmnec2uJsQ6PHrhoJh8qsiBnaH"
       }
-    ]
+    ],
+    "timestampMs": "0",
+    "checkpoint": "1"
   }
 }
 
@@ -77,7 +82,7 @@ Response: {
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "digest": "HTkKNftc7EZzo73wKBPV9uNQrRFDhGq21xavooBiSErp",
+    "digest": "2kHKieSVuLvfVrWiNt51oeVqm2k8S4ocuYxahsJjj5Go",
     "objectChanges": [
       {
         "type": "mutated",
@@ -85,11 +90,11 @@ Response: {
         "owner": {
           "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
         },
-        "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
-        "objectId": "BFC1368f3ce1a354a08e6a92821900897ceb1ad5c9ba4ddcde7c0f0f88a2e9bfbfd4278",
+        "objectType": "0x15b18fd8fcc63cffda85bed577ddc242c9b6e05c12786bc57b0d03958fe99393::M::O",
+        "objectId": "BFC38cfe3d40df0a1654f72923b0732d4f4d9596389493a9681c198976499e002056c1d",
         "version": "4",
         "previousVersion": "3",
-        "digest": "85gys8jcMs54tC2DZwRq3UvUff9ZzvZKsJtaF65HbKD8"
+        "digest": "8DY8Qb1MygzZvoyGS1VbhnnwWURg72ybA6pF14bi6P5R"
       },
       {
         "type": "mutated",
@@ -97,12 +102,14 @@ Response: {
         "owner": {
           "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
         },
-        "objectType": "0x3fba40ab02dda46657a0167b97fa574242e2deba678191c60bad58a865f4580e::M::O",
-        "objectId": "BFCf50aad4d51eeb9edab0f435ac890e29863f65e7daac7a12ee4599c0b7af064c7d819",
+        "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
+        "objectId": "BFCb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c8503d3",
         "version": "4",
         "previousVersion": "3",
-        "digest": "AQnsxeiCH88qJ4Ji4xWgVTMyhL5zqVL4wpNJRcJwJ3uQ"
+        "digest": "3bJntkR9QDWwm5Qx8ruS3rL7sBaDAShsAoF7c3TnhZA1"
       }
-    ]
+    ],
+    "timestampMs": "0",
+    "checkpoint": "1"
   }
 }

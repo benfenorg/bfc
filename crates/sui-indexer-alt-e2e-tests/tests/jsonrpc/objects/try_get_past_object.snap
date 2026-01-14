@@ -1,3 +1,6 @@
+---
+source: external-crates/move/crates/move-transactional-test-runner/src/framework.rs
+---
 processed 12 tasks
 
 init:
@@ -37,7 +40,7 @@ Response: {
   "result": {
     "status": "VersionNotFound",
     "details": [
-      "BFC470ac24acfbe98ef27faca3c2538f69bafde1ee9bba2eee2572e8210dedfff92de22",
+      "BFCff8a472fa6b3f3ccbd4665f10ad544355d96a260e868944dfaa63021869bec02397d",
       1
     ]
   }
@@ -51,9 +54,9 @@ Response: {
   "result": {
     "status": "VersionFound",
     "details": {
-      "objectId": "BFC470ac24acfbe98ef27faca3c2538f69bafde1ee9bba2eee2572e8210dedfff92de22",
+      "objectId": "BFCff8a472fa6b3f3ccbd4665f10ad544355d96a260e868944dfaa63021869bec02397d",
       "version": "2",
-      "digest": "4x1YM8MCKhqtv7Z12iqJwZzW683AfoXHRSDUsoDgiNtY"
+      "digest": "ARUqzVwn6XPjuPgpXkZbi6fUVhSVWXPLe5APT5mUg4Cb"
     }
   }
 }
@@ -66,9 +69,9 @@ Response: {
   "result": {
     "status": "VersionFound",
     "details": {
-      "objectId": "BFC470ac24acfbe98ef27faca3c2538f69bafde1ee9bba2eee2572e8210dedfff92de22",
+      "objectId": "BFCff8a472fa6b3f3ccbd4665f10ad544355d96a260e868944dfaa63021869bec02397d",
       "version": "3",
-      "digest": "Grdhjdn89t32TwPS7ptQtsCixDvgcV9Y1WinRGqh9wSE"
+      "digest": "CfNgtKKHfTKH41FWibrHvQeaBtYLZjaf6UQUBMWaEjh8"
     }
   }
 }
@@ -79,12 +82,11 @@ Response: {
   "jsonrpc": "2.0",
   "id": 3,
   "result": {
-    "status": "ObjectDeleted",
-    "details": {
-      "objectId": "BFC470ac24acfbe98ef27faca3c2538f69bafde1ee9bba2eee2572e8210dedfff92de22",
-      "version": 4,
-      "digest": "7gyGAp71YXQRoxmFBaHxofQXAipvgHyBKPyxmdSJxyvz"
-    }
+    "status": "VersionNotFound",
+    "details": [
+      "BFCff8a472fa6b3f3ccbd4665f10ad544355d96a260e868944dfaa63021869bec02397d",
+      4
+    ]
   }
 }
 
@@ -96,7 +98,7 @@ Response: {
   "result": {
     "status": "VersionNotFound",
     "details": [
-      "BFC470ac24acfbe98ef27faca3c2538f69bafde1ee9bba2eee2572e8210dedfff92de22",
+      "BFCff8a472fa6b3f3ccbd4665f10ad544355d96a260e868944dfaa63021869bec02397d",
       1
     ]
   }
@@ -110,14 +112,14 @@ Response: {
   "result": {
     "status": "VersionFound",
     "details": {
-      "objectId": "BFC470ac24acfbe98ef27faca3c2538f69bafde1ee9bba2eee2572e8210dedfff92de22",
+      "objectId": "BFCff8a472fa6b3f3ccbd4665f10ad544355d96a260e868944dfaa63021869bec02397d",
       "version": "2",
-      "digest": "4x1YM8MCKhqtv7Z12iqJwZzW683AfoXHRSDUsoDgiNtY",
+      "digest": "ARUqzVwn6XPjuPgpXkZbi6fUVhSVWXPLe5APT5mUg4Cb",
       "type": "0x2::coin::Coin<0x2::bfc::BFC>",
       "owner": {
         "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
       },
-      "previousTransaction": "5ZcCpEVmx67K5EtqR5o41RyBAbiAMRrSdj7mKG55qpxx",
+      "previousTransaction": "4wJ5NGznCK5PvKNLeagXpr7NeULihWpqDHZbPxPbUyf1",
       "storageRebate": "1307200"
     }
   }
@@ -129,11 +131,10 @@ Response: {
   "jsonrpc": "2.0",
   "id": 6,
   "result": {
-    "status": "ObjectDeleted",
-    "details": {
-      "objectId": "BFC470ac24acfbe98ef27faca3c2538f69bafde1ee9bba2eee2572e8210dedfff92de22",
-      "version": 4,
-      "digest": "7gyGAp71YXQRoxmFBaHxofQXAipvgHyBKPyxmdSJxyvz"
-    }
+    "status": "VersionNotFound",
+    "details": [
+      "BFCff8a472fa6b3f3ccbd4665f10ad544355d96a260e868944dfaa63021869bec02397d",
+      4
+    ]
   }
 }

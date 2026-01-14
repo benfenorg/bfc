@@ -286,7 +286,7 @@ async fn query_transactions(
     let query = json!({
         "jsonrpc": "2.0",
         "id": 1,
-        "method": "bfcx_queryTransactionBlocks",
+        "method": "suix_queryTransactionBlocks",
         "params": [
             {
                 "filter": {
