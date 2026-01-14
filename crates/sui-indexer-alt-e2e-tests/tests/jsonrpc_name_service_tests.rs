@@ -518,7 +518,7 @@ impl SuiNSCluster {
         let query = json!({
             "jsonrpc": "2.0",
             "id": 1,
-            "method": "suix_resolveNameServiceAddress",
+            "method": "bfcx_resolveNameServiceAddress",
             "params": [name],
         });
 
@@ -543,7 +543,7 @@ impl SuiNSCluster {
         let query = json!({
             "jsonrpc": "2.0",
             "id": 1,
-            "method": "suix_resolveNameServiceNames",
+            "method": "bfcx_resolveNameServiceNames",
             "params": [addr],
         });
 
