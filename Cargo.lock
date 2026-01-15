@@ -19489,7 +19489,7 @@ dependencies = [
  "diesel-derive-enum",
  "diesel_migrations",
  "downcast",
- "ed25519-dalek",
+ "ed25519-dalek 2.2.0",
  "fastcrypto",
  "futures",
  "itertools 0.13.0",
