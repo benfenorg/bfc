@@ -837,8 +837,8 @@ mod tests {
             metrics: None,
             watchdog_config: None,
             solana: crate::config::SolanaConfig {
-                getblock_base_url: "https://go.getblock.io/<ACCESS-TOKEN>/".to_string(),
-                bridge_proxy_address: "11111111111111111111111111111111".to_string(),
+                getblock_base_url: bridge_test_cluster.solana_rpc_url(),
+                bridge_proxy_address: bridge_test_cluster.sol_environment.contract().to_string(),
                 bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
                 contracts_start_slot_fallback: Some(0),
                 contracts_start_slot_override: None,
