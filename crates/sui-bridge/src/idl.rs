@@ -6,7 +6,8 @@ use crate::types::{
     LimitUpdateAction,
     ExtendProgramOnSolanaAction,
     BlocklistCommitteeAction,
-    EmergencyAction
+    EmergencyAction,
+    UpgradeProgramOnSolanaAction,
 };
 use crate::encoding::{
     ADD_TOKENS_ON_SOLANA_MESSAGE_VERSION, 
@@ -16,8 +17,9 @@ use crate::encoding::{
     EXTEND_PROGRAM_MESSAGE_VERSION,
     EMERGENCY_BUTTON_MESSAGE_VERSION,
     COMMITTEE_BLOCKLIST_MESSAGE_VERSION,
+    UPGRADE_PROGRAM_MESSAGE_VERSION,
     BridgeMessageEncoding
-};
+};  
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SolanaMessage {
     pub message_type: u8,
@@ -110,6 +112,19 @@ impl From<LimitUpdateAction> for SolanaMessage {
         SolanaMessage {
             message_type: BridgeActionType::LimitUpdate as u8,
             version: LIMIT_UPDATE_MESSAGE_VERSION,
+            nonce: action.nonce,
+            chain_id: action.chain_id as u8,
+            payload: action.as_payload_bytes().clone(),
+        }
+    }
+}
+
+
+impl From<UpgradeProgramOnSolanaAction> for SolanaMessage {
+    fn from(action: UpgradeProgramOnSolanaAction) -> Self {
+        SolanaMessage {
+            message_type: BridgeActionType::UpgradeProgramOnSolana as u8,
+            version: UPGRADE_PROGRAM_MESSAGE_VERSION,
             nonce: action.nonce,
             chain_id: action.chain_id as u8,
             payload: action.as_payload_bytes().clone(),

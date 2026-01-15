@@ -6,7 +6,8 @@ use crate::types::{BridgeAction, VerifiedCertifiedBridgeAction};
 use crate::types::{
     AddTokenOnSolanaAction,AssetPriceUpdateAction,
     SingleTransferLimitUpdateAction,LimitUpdateAction,
-    ExtendProgramOnSolanaAction,
+    ExtendProgramOnSolanaAction,    
+    UpgradeProgramOnSolanaAction,
     BlocklistCommitteeAction,
     EmergencyAction,
 };
@@ -20,11 +21,14 @@ use crate::query_solana_account::{
     get_update_token_price_account,
     get_extend_program_account,
     get_emergency_op_account,
+    get_upgrade_program_account,
 };
 use solana_sdk::{
     signature::Keypair,
     signer::Signer, 
     system_program,
+    clock,
+    rent,
     pubkey::Pubkey,
     instruction::Instruction,
 };
@@ -151,8 +155,16 @@ pub async fn build_solana_transaction(
             .await
         }
 
-        BridgeAction::UpgradeProgramOnSolanaAction(_) => {
-            unreachable!();
+        BridgeAction::UpgradeProgramOnSolanaAction(action) => {
+            build_upgrade_program_on_solana_transaction(
+                program,
+                solana_chain_id,
+                benfen_chain_id,
+                signer,
+                action.clone(),
+                sigs,
+            )
+            .await
         }
         BridgeAction::EvmContractUpgradeAction(_) => {
             // It does not need a Sui tranaction to execute EVM contract upgrade
@@ -484,17 +496,6 @@ pub async  fn build_extend_program_on_solana_transaction(
 
     let chain_id = action.chain_id as u8;
 
-    //    payer: provider.wallet.publicKey,
-    //     bridgeConfig: bridgeConfigPDA,
-    //     committee: committeePDA,
-    //     verifier: messageVerifierPDA,
-    //     messageConfig: messageConfigPDA,
-    //     upgradeAuthority: upgradeAuthorityPDA,
-    //     program: program.programId,
-    //     programData: programDataAddress,
-    //     systemProgram: anchor.web3.SystemProgram.programId,
-    //     bpfLoader: new anchor.web3.PublicKey("BPFLoaderUpgradeab1e11111111
-
     let ix = program
         .request()
         .accounts(accounts::ExtendProgram {
@@ -520,6 +521,59 @@ pub async  fn build_extend_program_on_solana_transaction(
         .instructions()?
         .remove(0);
     Ok(ix)
+}
+
+pub async  fn build_upgrade_program_on_solana_transaction(
+    program: Arc<Program<Arc<Keypair>>>,
+    solana_chain_id: BridgeChainId,
+    benfen_chain_id: BridgeChainId,
+    signer: &SolanaSigner,
+    action: UpgradeProgramOnSolanaAction,
+    sigs:  &BridgeCommitteeValiditySignInfo,
+)-> BridgeResult<Instruction>{
+    let program_id = program.id();
+    let message: SolanaMessage =action.clone().into();
+    let payload = message.payload.clone();
+    let buffer = action.implementation.clone();
+
+    let signatures = sigs
+        .signatures
+        .values()
+        .map(|sig| sig.as_ref().to_vec())
+        .collect::<Vec<Vec<u8>>>();
+
+    let upgrade_program_accounts = get_upgrade_program_account(program_id);
+
+
+     let ix=program.request()
+        .accounts(accounts::UpgradeProgram {
+            payer: signer.pubkey(),
+            spill: signer.pubkey(),
+            upgrade_authority: upgrade_program_accounts.upgrade_authority,
+            buffer,
+            program: upgrade_program_accounts.program,
+            bridge_config: upgrade_program_accounts.bridge_config,
+            verifier: upgrade_program_accounts.message_verifier,
+            message_config: upgrade_program_accounts.message_config,
+            program_data: upgrade_program_accounts.program_data,
+            committee: upgrade_program_accounts.bridge_committee,
+            bpf_loader: upgrade_program_accounts.bpf_loader_upgradeable,
+            system_program: system_program::ID,
+            clock: upgrade_program_accounts.clock,
+            rent: upgrade_program_accounts.rent,
+
+        })
+        .args(args::UpgradeProgram {
+            message_type: message.message_type,
+            version: message.version,
+            nonce: action.nonce,
+            chain_id: action.chain_id as u8,
+            payload,
+            signatures,
+        })
+        .instructions()?
+        .remove(0);
+     Ok(ix)
 }
 
 
