@@ -944,15 +944,24 @@ mod tests {
             metrics: None,
             watchdog_config: None,
             solana: crate::config::SolanaConfig {
-                getblock_base_url: "https://go.getblock.io/<ACCESS-TOKEN>/".to_string(),
-                bridge_proxy_address: "11111111111111111111111111111111".to_string(),
+                getblock_base_url: bridge_test_cluster.solana_rpc_url(),
+                bridge_proxy_address: bridge_test_cluster.sol_environment.contract().to_string(),
                 bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
                 contracts_start_slot_fallback: Some(0),
                 contracts_start_slot_override: None,
                 query_interval_secs: None,
             },
             user_limit_db_url: None,
-            external_rpc: None,
+            external_rpc: Some(ExternalChainRpcConfig {
+                solana: ChainRpcUrls {
+                    mainnet_url: "http://127.0.0.1:8899".to_string(),
+                    testnet_url: "http://127.0.0.1:8899".to_string(),
+                },
+                tron: ChainRpcUrls {
+                    mainnet_url: "http://127.0.0.1:18190".to_string(),
+                    testnet_url: "http://127.0.0.1:18190".to_string(),
+                },
+            }),
             aml_block_list: vec![],
         };
 
@@ -1071,15 +1080,24 @@ mod tests {
             metrics: None,
             watchdog_config: None,
             solana: crate::config::SolanaConfig {
-                getblock_base_url: "https://go.getblock.io/<ACCESS-TOKEN>/".to_string(),
-                bridge_proxy_address: "11111111111111111111111111111111".to_string(),
+                getblock_base_url: bridge_test_cluster.solana_rpc_url(),
+                bridge_proxy_address: bridge_test_cluster.sol_environment.contract().to_string(),
                 bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
                 contracts_start_slot_fallback: Some(0),
-                contracts_start_slot_override: Some(0),
+                contracts_start_slot_override: None,
                 query_interval_secs: None,
             },
             user_limit_db_url: None,
-            external_rpc: None,
+            external_rpc: Some(ExternalChainRpcConfig {
+                solana: ChainRpcUrls {
+                    mainnet_url: "http://127.0.0.1:8899".to_string(),
+                    testnet_url: "http://127.0.0.1:8899".to_string(),
+                },
+                tron: ChainRpcUrls {
+                    mainnet_url: "http://127.0.0.1:18190".to_string(),
+                    testnet_url: "http://127.0.0.1:18190".to_string(),
+                },
+            }),
             aml_block_list: vec![],
         };
         let prometheus_registry = Registry::new();
