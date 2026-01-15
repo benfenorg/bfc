@@ -30,7 +30,9 @@ sui-types.workspace = true
 sui-config.workspace = true
 dirs.workspace = true
 log = "0.4.22"
+base64 = "0.22.1"
 mpc-transmission.workspace = true
+mpc-transmission-v2.workspace = true
 [dev-dependencies]
 tokio-test = "0.4"
 rand = "0.8.5"

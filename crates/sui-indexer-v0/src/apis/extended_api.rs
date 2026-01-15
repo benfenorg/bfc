@@ -5,6 +5,7 @@ use async_trait::async_trait;
 use chrono::Utc;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::RpcModule;
+use tracing::info;
 
 use jsonrpsee::http_client::HttpClient;
 use jsonrpsee::types::{ErrorCode, ErrorObject};
@@ -13,24 +14,20 @@ use sui_json_rpc_api::{
 };
 use sui_json_rpc::error::SuiRpcInputError;
 use sui_json_rpc::SuiRpcModule;
-use sui_json_rpc_types::{
-    AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage,
-    IndexedStake, MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, Page,
-    QueryObjectsPage, StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiMiningNFTLiquidity,
-    SuiObjectDataFilter, SuiObjectResponse, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter,
-    SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit, SuiOwnedTicketList, SuiOwnedTicket, SuiMiningNFTList, StakeRewardHistory
-};
+use sui_json_rpc_types::{AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage, IndexedStake, MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, Page, QueryObjectsPage, StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiMiningNFTLiquidity, SuiObjectDataFilter, SuiObjectResponse, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit, SuiOwnedTicketList, SuiOwnedTicket, SuiMiningNFTList, StakeRewardHistory, AnonymousRestoreElementParams, AnonymousRestoreElementRep};
 use sui_open_rpc::Module;
 use sui_types::base_types::{ObjectID, SequenceNumber, SuiAddress};
 use sui_types::base_types_bfc::bfc_address_util::{objects_id_to_bfc_address};
 use sui_types::parse_sui_struct_tag;
 use sui_types::sui_serde::BigInt;
+use sui_json_rpc_types::{AnonymousCoinParams, AnonymousCoinElementRep};
 
 use crate::errors::IndexerError;
 use crate::models::address_stake::native_coin;
 use crate::store::IndexerStore;
 use crate::{benfen, IndexerConfig};
 use crate::handlers::pending_reward_handler::{MiningConfig, PendingReward};
+use crate::models::anonymous_coin::AnonymousCoin;
 
 pub(crate) struct ExtendedApi<S> {
     state: S,
@@ -584,6 +581,98 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
 
         Ok(String::from(""))
     }
+    async fn init_anonymous_coin(&self) -> RpcResult<u64> {
+        info!("init_anonymous_coin begin");
+        let objects = self.state.get_object_object_type("0x2::anonymous_coin::Anonymous_Coin%".to_string()).await.unwrap();
+        for object in objects {
+            let hex1: String = object.bcs[0].1[37..73].iter().map(|b| format!("{:02x}", b)).collect();
+            let hex2: String = object.bcs[0].1[74..110].iter().map(|b| format!("{:02x}", b)).collect();
+            let coin = AnonymousCoin {
+                id: None,
+                owner: object.owner_address.unwrap().to_string(),
+                object_id: object.object_id.to_string(),
+                bcs_str: format!("{}{}", hex1, hex2)
+            };
+            info!("coin {:?}", coin);
+            let _ = self.state.persist_anonymous_coin(&coin).await;
+            let o_history_list = self.state.get_objects_history_object_id(object.object_id).await.unwrap();
+            for o_history in o_history_list {
+                let hex1: String = o_history.bcs[0].1[37..73].iter().map(|b| format!("{:02x}", b)).collect();
+                let hex2: String = o_history.bcs[0].1[74..110].iter().map(|b| format!("{:02x}", b)).collect();
+                let coin = AnonymousCoin {
+                    id: None,
+                    owner: o_history.owner_address.unwrap().to_string(),
+                    object_id: o_history.object_id.to_string(),
+                    bcs_str: format!("{}{}", hex1, hex2)
+                };
+                info!("coin {:?}", coin);
+                let _ = self.state.persist_anonymous_coin(&coin).await;
+            }
+        }
+        Ok(0)
+    }
+
+    async fn check_anonymous_coin_history(
+        &self,
+        anonymous_restore_array: Vec<AnonymousRestoreElementParams>,
+    ) -> RpcResult<Vec<AnonymousRestoreElementRep>> {
+        let mut result: Vec<AnonymousRestoreElementRep> = Vec::new();
+        for anonymous_restore in anonymous_restore_array {
+            let mut flag = false;
+            let combined: Vec<u8> = anonymous_restore.value1.clone().into_iter().chain(anonymous_restore.value2.clone().into_iter()).collect();
+            match self.state.get_anonymous_coin(anonymous_restore.owner.clone(), anonymous_restore.objectid.clone(), combined.iter().map(|b| format!("{:02x}", b)).collect()).await {
+                Ok(Some(_)) => {
+                    flag = true;
+                },
+                _ => {}
+            }
+            result.push(AnonymousRestoreElementRep {
+                value1: anonymous_restore.value1,
+                value2: anonymous_restore.value2,
+                objectid: anonymous_restore.objectid,
+                flag,
+            });
+        }
+        Ok(result)
+    }
+
+    async fn multi_get_anonymous_coin_value(&self, anonymous_coin_array: Vec<AnonymousCoinParams>, ) -> RpcResult<Vec<AnonymousCoinElementRep>> {
+        let mut result: Vec<AnonymousCoinElementRep> = Vec::new();
+        for anonymous_coin in anonymous_coin_array {
+            match self.state.get_objects_history(anonymous_coin.object_id.clone(), anonymous_coin.version).await {
+                Ok(bcs) => {
+                    match sui_types::anoymous_coin::AnonymousCoin::from_bcs_bytes(&bcs[0].1) {
+                        Ok(c) => {
+                            result.push(AnonymousCoinElementRep {
+                                object_id: anonymous_coin.object_id.to_string(),
+                                version: anonymous_coin.version,
+                                value1: c.balance.value1,
+                                value2: c.balance.value2,
+                            });
+                        }
+                        Err(_) => {
+                            result.push(AnonymousCoinElementRep {
+                                object_id: anonymous_coin.object_id.to_string(),
+                                version: anonymous_coin.version,
+                                value1: vec![0u8],
+                                value2: vec![0u8],
+                            });
+                        }
+                    };
+                },
+                Err(_) => {
+                    result.push(AnonymousCoinElementRep {
+                        object_id: anonymous_coin.object_id.to_string(),
+                        version: anonymous_coin.version,
+                        value1: vec![0u8],
+                        value2: vec![0u8],
+                    });
+                }
+            }
+        }
+        Ok(result)
+    }
+
 }
 
 impl<S> SuiRpcModule for ExtendedApi<S>

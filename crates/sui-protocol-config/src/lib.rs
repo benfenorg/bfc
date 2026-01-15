@@ -18,7 +18,7 @@ use tracing::{info, warn};
 
 /// The minimum and maximum protocol versions supported by this build.
 const MIN_PROTOCOL_VERSION: u64 = 1;
-const MAX_PROTOCOL_VERSION: u64 = 77;
+const MAX_PROTOCOL_VERSION: u64 = 78;
 
 // Record history of protocol version allocations here:
 //
@@ -3286,6 +3286,11 @@ impl ProtocolConfig {
                 77 => {
                     cfg.max_age_of_jwk_in_epochs = Some(365)
                 }
+                78 => {
+                }
+
+
+
 
                 // Use this template when making changes:
                 //

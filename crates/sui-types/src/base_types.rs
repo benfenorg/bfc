@@ -333,6 +333,9 @@ impl MoveObjectType {
         }
     }
 
+    pub fn is_anonymous_coin(&self) -> bool {
+        self.to_string().contains("anonymous_coin")
+    }
     pub fn is_stable_gas_coin(&self) -> bool {
         match &self.0 {
             MoveObjectType_::GasCoin(tag) | MoveObjectType_::Coin(tag) => STABLE::is_gas_type(tag),

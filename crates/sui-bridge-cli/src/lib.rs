@@ -1318,7 +1318,7 @@ async fn claim_on_eth(
     }
     Ok(())
 }
-
+#[allow(dead_code)]
 async fn claim_defi_on_eth(
     seq_num: u64,
     config: &LoadedBridgeCliConfig,

@@ -29,8 +29,39 @@ use sui_types::storage::WriteKind;
 use crate::errors::IndexerError;
 use crate::types::CheckpointTransactionBlockResponse;
 use crate::PgPoolConnection;
+use fastcrypto::hash::HashFunction;
 
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
+
+const PERSONAL_MESSAGE_PREFIX: &[u8; 3] = &[3, 0, 0];
+
+pub fn create_sign_message(message: String) -> Vec<u8> {
+    let mut intent_data = Vec::new();
+    intent_data.extend_from_slice(PERSONAL_MESSAGE_PREFIX);
+    let len = message.len() as u64;
+    let mut buffer = [0u8; 10];
+    let length = write_unsigned_leb128(&mut buffer, len);
+    intent_data.extend_from_slice(&buffer[..length]);
+    intent_data.extend_from_slice(message.as_bytes());
+    let digest = fastcrypto::hash::Blake2b256::digest(intent_data);
+    return digest.to_vec();
+}
+
+pub fn write_unsigned_leb128(out: &mut [u8], mut value: u64) -> usize {
+    let mut i = 0;
+    loop {
+        if value < 0x80 {
+            out[i] = value as u8;
+            i += 1;
+            break;
+        } else {
+            out[i] = ((value & 0x7F) | 0x80) as u8;
+            value >>= 7;
+            i += 1;
+        }
+    }
+    i
+}
 
 pub fn object_deal_list(options: Option<SuiObjectResponseQuery>, r: RpcResult<ObjectsPage>) -> RpcResult<ObjectsPage> {
     if r.is_ok() {

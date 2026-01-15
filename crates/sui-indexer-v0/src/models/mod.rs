@@ -23,3 +23,4 @@ pub mod transaction_index;
 pub mod transactions;
 pub mod stake_reward;
 pub mod pending_reward;
+pub mod anonymous_coin;

@@ -17,6 +17,15 @@ pub mod sql_types {
 }
 
 diesel::table! {
+    anonymous_coin (id) {
+        id -> Int8,
+        owner -> Varchar,
+        object_id -> Varchar,
+        bcs_str -> Varchar,
+    }
+}
+
+diesel::table! {
     active_addresses (account_address) {
         account_address -> Varchar,
         first_appearance_tx -> Varchar,
@@ -603,4 +612,5 @@ diesel::allow_tables_to_appear_in_same_query!(
     transactions,
     validators,
     network_segment_metrics,
+    anonymous_coin,
 );

@@ -25,6 +25,7 @@ const ENotEnough: u64 = 2;
 
 const DEFAULT_COMPARE_RESULT_LESS_THAN: u8 = 2;
 
+
 /// A Supply of T. Used for minting and burning.
 /// Wrapped into a `TreasuryCap` in the `Coin` module.
 public struct Supply<phantom T> has store, drop {
@@ -49,7 +50,7 @@ public struct Anonymous_Balance<phantom T> has store {
 public fun create_by_value<T>(value: u64, owner: address): Anonymous_Balance<T> {
     let mut encode_data = b"";
     let balance_type = BALANCE_TYPE_SHARING;
-    let version = 0;
+    let  version = 0;
 
     let (value1, value2)   = hfe_ops_encode_data(value, owner);
     vector::append(&mut encode_data, value1);
@@ -164,6 +165,7 @@ public fun join<T>(self: &mut Anonymous_Balance<T>, balance: Anonymous_Balance<T
         value1, value2, owner);
     self.value1 = val0;
     self.value2 = val1;
+
 
     self.update_encode_data();
     (self.value1, self.value2)
