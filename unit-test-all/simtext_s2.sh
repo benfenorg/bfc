@@ -7,3 +7,6 @@ MSIM_DISABLE_WATCHDOG=1 cargo simtest test_validator_tx_finalizer_basic_flow
 MSIM_DISABLE_WATCHDOG=1 cargo simtest sim_test_process_certificate_fault_fail
 MSIM_DISABLE_WATCHDOG=1 cargo simtest sim_test_process_transaction_fault_fail
 MSIM_DISABLE_WATCHDOG=1 cargo simtest sim_test_process_transaction_fault_success
+//need to run this test with not_msim flag
+RUSTFLAGS="--cfg not_msim" cargo simtest sim_test_validator_tx_finalizer_basic_flow
+
