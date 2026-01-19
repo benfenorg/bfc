@@ -343,7 +343,7 @@ pub enum GovernanceClientCommands {
         #[clap(name = "token-id", long)]
         token_id: u64,
         #[clap(name = "token-mint-address", long)]
-        token_mint_address: Pubkey,
+        token_mint_address: String,
         #[clap(name = "token-price", long)]
         token_price: u64,
 
@@ -402,7 +402,7 @@ pub enum GovernanceClientCommands {
         #[clap(name = "nonce", long)]
         nonce: u64,
         #[clap(name = "program-id", long)]
-        program_id: Pubkey,
+        program_id: String,
         #[clap(name = "size", long)]
         size: u32,
     },
@@ -412,9 +412,9 @@ pub enum GovernanceClientCommands {
         #[clap(name = "nonce", long)]
         nonce: u64,
         #[clap(name = "proxy", long)]
-        proxy: Pubkey,
+        proxy: String,
         #[clap(name = "implementation", long)]
-        implementation: Pubkey,
+        implementation: String,
         #[clap(name = "version", long)]
         version: u8,
     }
@@ -680,7 +680,7 @@ pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> B
             native: true,
             chain_id,
             token_id: *token_id,
-            token_address: *token_mint_address,
+            token_address: Pubkey::from_str(token_mint_address).expect("Invalid token address"),
             benfen_decimal: *benfen_decimal,
             token_price: *token_price,
         }),
@@ -689,7 +689,7 @@ pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> B
             BridgeAction::ExtendProgramOnSolanaAction(ExtendProgramOnSolanaAction {
                 nonce: *nonce,
                 chain_id,
-                program_id: *program_id,
+                program_id: Pubkey::from_str(program_id).expect("Invalid program id"),
                 size: *size,
             })
         }
@@ -698,8 +698,8 @@ pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> B
             BridgeAction::UpgradeProgramOnSolanaAction(UpgradeProgramOnSolanaAction {
                 nonce: *nonce,
                 chain_id,
-                proxy: *proxy,
-                implementation: *implementation,
+                proxy: Pubkey::from_str(proxy).expect("Invalid proxy address"),
+                implementation: Pubkey::from_str(implementation).expect("Invalid implementation address"),
                 version: *version,
             })
         }
