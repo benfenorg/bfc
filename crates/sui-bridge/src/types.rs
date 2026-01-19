@@ -24,6 +24,7 @@ use num_enum::TryFromPrimitive;
 use rand::seq::SliceRandom;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
+use serde_with::{serde_as, DisplayFromStr};
 use shared_crypto::intent::IntentScope;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Debug;
@@ -654,34 +655,37 @@ pub struct AddTokensOnSuiAction {
     pub token_prices: Vec<u64>,
 }
 
+#[serde_as]
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct AddTokenOnSolanaAction{
     pub nonce: u64,
     pub chain_id: BridgeChainId,
     pub native: bool,
     pub token_id: u64,
-    #[serde(deserialize_with = "deserialize_pubkey_from_str")]
+    #[serde_as(as = "DisplayFromStr")]
     pub token_address: Pubkey,
     pub benfen_decimal: u8,
     pub token_price: u64,
 }
 
+#[serde_as]
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct ExtendProgramOnSolanaAction {
     pub nonce: u64,
     pub chain_id: BridgeChainId,
-    #[serde(deserialize_with = "deserialize_pubkey_from_str")]
+    #[serde_as(as = "DisplayFromStr")]
     pub program_id: Pubkey,
     pub size: u32,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[serde_as]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]    
 pub struct UpgradeProgramOnSolanaAction {
     pub nonce: u64,
     pub chain_id: BridgeChainId,
-    #[serde(deserialize_with = "deserialize_pubkey_from_str")]
+    #[serde_as(as = "DisplayFromStr")]
     pub proxy: Pubkey,
-    #[serde(deserialize_with = "deserialize_pubkey_from_str")]
+    #[serde_as(as = "DisplayFromStr")]
     pub implementation: Pubkey,
     pub version: u8,
 }
