@@ -58,6 +58,7 @@ use solana_sdk::{
     system_instruction,
     transaction::Transaction,
 };
+use serde::{Deserialize,Deserializer};
 
 use spl_token::{
     instruction as token_instruction,
@@ -214,6 +215,14 @@ pub fn examine_key(path: &PathBuf, is_validator_key: bool) -> Result<(), anyhow:
     println!("Corresponding Sui address: {:?}", sui_address);
     println!("Corresponding PublicKey: {:?}", Hex::encode(pubkey));
     Ok(())
+}
+
+pub fn deserialize_pubkey_from_str<'de, D>(deserializer: D) -> Result<Pubkey, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+    Pubkey::from_str(&s).map_err(serde::de::Error::custom)
 }
 
 

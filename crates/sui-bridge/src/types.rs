@@ -57,6 +57,7 @@ use sui_types::digests::{Digest, TransactionDigest};
 use sui_types::message_envelope::{Envelope, Message, VerifiedEnvelope};
 use sui_types::TypeTag;
 use solana_sdk::pubkey::Pubkey;
+use crate::utils::deserialize_pubkey_from_str;
 
 pub const BRIDGE_AUTHORITY_TOTAL_VOTING_POWER: u64 = 10000;
 
@@ -659,6 +660,7 @@ pub struct AddTokenOnSolanaAction{
     pub chain_id: BridgeChainId,
     pub native: bool,
     pub token_id: u64,
+    #[serde(deserialize_with = "deserialize_pubkey_from_str")]
     pub token_address: Pubkey,
     pub benfen_decimal: u8,
     pub token_price: u64,
@@ -668,6 +670,7 @@ pub struct AddTokenOnSolanaAction{
 pub struct ExtendProgramOnSolanaAction {
     pub nonce: u64,
     pub chain_id: BridgeChainId,
+    #[serde(deserialize_with = "deserialize_pubkey_from_str")]
     pub program_id: Pubkey,
     pub size: u32,
 }
@@ -676,7 +679,9 @@ pub struct ExtendProgramOnSolanaAction {
 pub struct UpgradeProgramOnSolanaAction {
     pub nonce: u64,
     pub chain_id: BridgeChainId,
+    #[serde(deserialize_with = "deserialize_pubkey_from_str")]
     pub proxy: Pubkey,
+    #[serde(deserialize_with = "deserialize_pubkey_from_str")]
     pub implementation: Pubkey,
     pub version: u8,
 }
