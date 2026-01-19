@@ -862,9 +862,9 @@ pub struct BridgeCliConfig {
     /// Proxy address for SuiBridge deployed on Eth
     pub eth_bridge_proxy_address: EthAddress,
 
-    pub solana_rpc_url: String,
+    pub solana_rpc_url: Option<String>,
 
-    pub solana_bridge_program_id: Pubkey,
+    pub solana_bridge_program_id: Option<String>,
 
     /// Path of the file where private key is stored. The content could be any of the following:
     /// - Base64 encoded `flag || privkey` for ECDSA key
@@ -886,9 +886,9 @@ pub struct LoadedBridgeCliConfig {
     /// Rpc url for Eth fullnode, used for query stuff.
     pub eth_rpc_url: String,
 
-    pub solana_rpc_url: String,
+    pub solana_rpc_url: Option<String>,
 
-    pub solana_bridge_program_id: Pubkey,
+    pub solana_bridge_program_id: Option<Pubkey>,
 
     /// Proxy address for SuiBridge deployed on Eth
     pub eth_bridge_proxy_address: EthAddress,
@@ -969,11 +969,23 @@ impl LoadedBridgeCliConfig {
         println!("Using Solana address: {:?}", solana_signer.pubkey());
         println!("Using Eth chain: {:?}", eth_chain_id);
 
+        let solana_rpc_url = if let Some(solana_rpc_url) = &cli_config.solana_rpc_url {
+            Some(solana_rpc_url.clone())
+        } else {
+            None
+        };
+
+        let solana_bridge_program_id = if let Some(solana_bridge_program_id) = &cli_config.solana_bridge_program_id {
+            Some(Pubkey::from_str(solana_bridge_program_id)?)
+        } else {
+            None
+        };
+
         Ok(Self {
             sui_rpc_url: cli_config.sui_rpc_url,
             eth_rpc_url: cli_config.eth_rpc_url,
-            solana_rpc_url: cli_config.solana_rpc_url,
-            solana_bridge_program_id: cli_config.solana_bridge_program_id,
+            solana_rpc_url,
+            solana_bridge_program_id,
             eth_bridge_proxy_address: cli_config.eth_bridge_proxy_address,
             eth_bridge_committee_proxy_address,
             eth_bridge_limiter_proxy_address,
