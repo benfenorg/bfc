@@ -49,7 +49,7 @@ feature_flags:
   per_object_congestion_control_mode: TotalGasBudgetWithCap
   consensus_choice: Mysticeti
   consensus_network: Tonic
-  zklogin_max_epoch_upper_bound_delta: 365
+  zklogin_max_epoch_upper_bound_delta: 30
   mysticeti_leader_scoring_and_schedule: true
   reshare_at_same_initial_version: true
   resolve_abort_locations_to_package_id: true
@@ -65,13 +65,17 @@ feature_flags:
   consensus_round_prober: true
   validate_identifier_inputs: true
   relocate_event_module: true
+  uncompressed_g1_group_elements: true
   disallow_new_modules_in_deps_only_packages: true
   consensus_smart_ancestor_selection: true
   consensus_round_prober_probe_accepted_rounds: true
   native_charging_v2: true
   convert_type_argument_error: true
   variant_nodes: true
+  consensus_zstd_compression: true
   anonymous_coin_open: true
+  minimize_child_object_mutations: true
+  move_native_context: true
 max_tx_size_bytes: 131072
 max_input_objects: 2048
 max_size_written_objects: 5000000
@@ -150,7 +154,7 @@ obj_access_cost_mutate_per_byte: 40
 obj_access_cost_delete_per_byte: 40
 obj_access_cost_verify_per_byte: 200
 max_type_to_layout_nodes: 512
-gas_model_version: 9
+gas_model_version: 10
 obj_data_cost_refundable: 100
 obj_metadata_cost_non_refundable: 50
 storage_rebate_rate: 9900
@@ -196,6 +200,15 @@ transfer_freeze_object_cost_base: 52
 transfer_share_object_cost_base: 52
 transfer_receive_object_cost_base: 52
 tx_context_derive_id_cost_base: 52
+tx_context_fresh_id_cost_base: 52
+tx_context_sender_cost_base: 30
+tx_context_epoch_cost_base: 30
+tx_context_epoch_timestamp_ms_cost_base: 30
+tx_context_sponsor_cost_base: 30
+tx_context_gas_price_cost_base: 30
+tx_context_gas_budget_cost_base: 30
+tx_context_ids_created_cost_base: 30
+tx_context_replace_cost_base: 30
 types_is_one_time_witness_cost_base: 52
 types_is_one_time_witness_type_tag_cost_per_byte: 2
 types_is_one_time_witness_type_cost_per_byte: 2
@@ -294,6 +307,10 @@ hmac_hmac_sha3_256_input_cost_per_byte: 2
 hmac_hmac_sha3_256_input_cost_per_block: 2
 check_zklogin_id_cost_base: 200
 check_zklogin_issuer_cost_base: 200
+nitro_attestation_parse_base_cost: 2650
+nitro_attestation_parse_cost_per_byte: 50
+nitro_attestation_verify_base_cost: 2481600
+nitro_attestation_verify_cost_per_cert: 2618450
 bcs_per_byte_serialized_cost: 2
 bcs_legacy_min_output_size_cost: 1
 bcs_failure_cost: 52

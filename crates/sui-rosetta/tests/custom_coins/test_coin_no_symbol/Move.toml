@@ -3,7 +3,7 @@ name = "test_coin"
 edition = "2024.beta" # edition = "legacy" to use legacy (pre-2024) Move
 
 [dependencies]
-Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/testnet" }
+Sui = { git = "https://github.com/benfenorg/bfc.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "ed0d820da5e8f19e7309544fbc0394d60b3911cd" }
 
 [addresses]
 test_coin = "0x0"
