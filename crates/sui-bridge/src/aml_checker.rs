@@ -259,37 +259,6 @@ where
             // If the transaction did not go through, retry up to a certain times.
             Err(_err) => {
                 info!("Sui transaction failed at signing err:{:?}",_err);
-                //todo fix errors
-                // error!(
-                //     ?action_key,
-                //     ?tx_digest,
-                //     "Sui transaction failed at signing: {err:?}"
-                // );
-                // metrics.err_sui_transaction_submission.inc();
-                // let metrics_clone = metrics.clone();
-                // // Do this in a separate task so we won't deadlock here
-                // let sender_clone = execution_queue_sender.clone();
-                // spawn_logged_monitored_task!(async move {
-                //     // If it fails for too many times, log and ask for manual intervention.
-                //     if attempt_times >= MAX_EXECUTION_ATTEMPTS {
-                //         metrics_clone
-                //             .err_sui_transaction_submission_too_many_failures
-                //             .inc();
-                //         error!("Manual intervention is required. Failed to collect execute transaction for bridge action after {MAX_EXECUTION_ATTEMPTS} attempts: {:?}", err);
-                //         return;
-                //     }
-                //     delay(attempt_times).await;
-                //     sender_clone
-                //         .send(CertifiedBridgeActionExecutionWrapper(
-                //             certificate,
-                //             attempt_times + 1,
-                //         ))
-                //         .await
-                //         .unwrap_or_else(|e| {
-                //             panic!("Sending to execution queue should not fail: {:?}", e);
-                //         });
-                //     info!("Re-enqueued certificate for execution");
-                // }.instrument(tracing::debug_span!("reenqueue_execution_task", action_key=?action_key)));
             }
         }
 

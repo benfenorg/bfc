@@ -960,6 +960,8 @@ pub fn build_token_send_back_transaction(
         _ => unreachable!(),
     };
     info!("send back transaction: source_chain: {:?}, sender: {:?}, token_type: {:?}, amount: {:?}, tx_hash: {:?}, event_idx: {:?}", source_chain, sender, token_type, amount, tx_hash, event_idx);
+    // Unwrap: these should not fail
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
     let source_chain = builder.pure(source_chain as u8).unwrap();
     let source_address = builder.pure(sender.clone()).map_err(|e| {
         BridgeError::BridgeSerializationError(format!(
@@ -972,8 +974,7 @@ pub fn build_token_send_back_transaction(
     let tx_hash = builder.pure(tx_hash.clone()).unwrap();
     let event_idx = builder.pure(event_idx).unwrap();
 
-    // Unwrap: these should not fail
-    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+    
     
     builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
