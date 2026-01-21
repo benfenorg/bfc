@@ -175,7 +175,7 @@ pub fn cross_out_with_signature(
     //触发event
     emit!(
         TokensClaimed{
-            nonce: process_transfer.nonce(),
+            nonce: nonce,
             source_chain_id: chain_limit.get_chain_id(),
             target_chain_id: bridge_config.chain_id,
             token_id: token_config.token_id,
