@@ -264,7 +264,7 @@ mod tests {
     #[tokio::test]
     async fn test_check_aml_solana() {
         let solana_address = SolanaAddress::from_str("Hwx5twsSBJmTjkq6Ac1MZLcWepfNqEyBGGDqP4TiTia7").unwrap();
-        let result = check_aml_risk_score_solana(BridgeChainId::SolanaMainnet, TOKEN_ID_USDT, solana_address, "".to_string(), vec![]).await;
-        assert_eq!(result, true);
+        let result = check_aml_risk_score_solana(BridgeChainId::SolanaMainnet, TOKEN_ID_USDT, solana_address, "".to_string(), vec!["Hwx5twsSBJmTjkq6Ac1MZLcWepfNqEyBGGDqP4TiTia7".to_string()]).await;
+        assert_eq!(result, false);
     }
 }

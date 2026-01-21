@@ -3720,6 +3720,14 @@ async fn test_add_refund_admin_and_bridge_from_solana() {
     info!("✅ Test completed: Refund admin added, bridge from Solana triggered refund, and refund claimed on Solana!");
 }
 
+#[tokio::test]
+async fn test_bridge_address_to_pubkey() {
+    use fastcrypto::encoding::{Encoding, Hex};
+    let pubkey = Pubkey::from_str("GUFVktRxvzKofrHb8htuAKB5gWj3sdbXchznjro9aVU7").unwrap();
+    let bytes: [u8; 32] = pubkey.to_bytes();
+    println!("Pubkey bytes (hex): 0x{}", Hex::encode(&bytes));
+}
+
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_bridge_busd_to_solana() {
     telemetry_subscribers::init_for_testing();
