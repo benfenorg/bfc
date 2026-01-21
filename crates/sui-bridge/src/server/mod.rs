@@ -134,7 +134,7 @@ pub const ADD_LP_TOKEN_ID_PATH: &str =
 
 pub const EXTEND_PROGRAM_PATH: &str = "/sign/extend_program_on_solana/:chain_id/:nonce/:program/:size";
 
-pub const UPGRADE_PROGRAM_PATH: &str = "/sign/upgrade_program_on_solana/:chain_id/:nonce/:program/:implementation";
+pub const UPGRADE_PROGRAM_PATH: &str = "/sign/upgrade_program_on_solana/:chain_id/:nonce/:program/:implementation/:version";
 
 // BridgeNode's public metadata that is accessible via the `/ping` endpoint.
 // Be careful with what to put here, as it is public.

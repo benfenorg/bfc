@@ -85,6 +85,7 @@ use crate::types::{
     ExtendProgramOnSolanaAction,
     BlocklistCommitteeAction,
     EmergencyAction,
+    UpgradeProgramOnSolanaAction,
 };
 use crate::utils::publish_and_register_coins_return_add_coins_on_sui_action;
 use crate::BRIDGE_ENABLE_PROTOCOL_VERSION;
@@ -1812,6 +1813,60 @@ async fn test_puase_bridge_on_solana(){
     let status=committee_accounts.members[0].is_blocklisted;
     assert_eq!(status==1,true);
  }
+
+  #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+   async  fn test_upgrade_program(){
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_solana_env(true)
+        .with_solana_chain_id(BridgeChainId::SolanaTestnet)
+        .with_bridge_cluster(false)
+        .with_num_validators(3) 
+        .build()
+        .await;
+    let env=bridge_test_cluster
+        .solana_env();
+    let solana_signer = env.get_signer().await.expect("Failed to get solana signer");
+
+    let client=env.client.clone();
+
+    let action=BridgeAction::UpgradeProgramOnSolanaAction(UpgradeProgramOnSolanaAction{
+          nonce: 0,
+          chain_id: BridgeChainId::SolanaTestnet,    
+          proxy: benfen_bridge::ID,
+          implementation: benfen_bridge::ID,
+          version:2
+    });
+
+     bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![action.clone(), action.clone()],
+        vec![action.clone()],
+        vec![action.clone()],
+    ]);
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee"),
+    );
+
+
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_solana_action = agg
+        .request_committee_signatures(action.clone())
+        .await
+        .expect("Failed to request committee signatures for upgrade program action");
+
+
+   }
+
 
 
 
