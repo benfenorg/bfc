@@ -447,42 +447,43 @@ where
 
             // Convert events to BridgeActions
             let mut actions = vec![];
-            for (event_idx, parsed_event) in wrapper.parsed_events.iter().enumerate() {
+            for parsed_event in wrapper.parsed_events.iter() {
                 let tx_signature = &parsed_event.tx_signature;
-
-                match parsed_event.event.try_into_bridge_action(tx_signature.clone(), event_idx as u16) {
-                    Ok(Some(action)) => {
-                        info!(
-                            tx_signature = %tx_signature,
-                            event_idx = event_idx,
-                            action_type = ?action.action_type(),
-                            chain_id = ?action.chain_id(),
-                            seq_num = action.seq_number(),
-                            "Converted Solana event to BridgeAction"
-                        );
-                        metrics.last_observed_actions_seq_num.with_label_values(&[
-                            action.chain_id().to_string().as_str(),
-                            action.action_type().to_string().as_str(),
-                        ]);
-                        actions.push(action);
-                    }
-                    Ok(None) => {
-                        // Event type doesn't need to be converted to BridgeAction
-                        info!(
-                            tx_signature = %tx_signature,
-                            event_idx = event_idx,
-                            event_name = ?parsed_event.event.event_name(),
-                            "Skipping Solana event (not a bridge action)"
-                        );
-                    }
-                    Err(e) => {
-                        error!(
-                            tx_signature = %tx_signature,
-                            event_idx = event_idx,
-                            "Error converting Solana event to BridgeAction: {:?}",
-                            e
-                        );
-                        metrics.solana_watcher_unrecognized_events.inc();
+                for (event_idx, event) in parsed_event.events.iter().enumerate() {
+                    match event.try_into_bridge_action(tx_signature.clone(), event_idx as u16) {
+                        Ok(Some(action)) => {
+                            info!(
+                                tx_signature = %tx_signature,
+                                event_idx = event_idx,
+                                action_type = ?action.action_type(),
+                                chain_id = ?action.chain_id(),
+                                seq_num = action.seq_number(),
+                                "Converted Solana event to BridgeAction"
+                            );
+                            metrics.last_observed_actions_seq_num.with_label_values(&[
+                                action.chain_id().to_string().as_str(),
+                                action.action_type().to_string().as_str(),
+                            ]);
+                            actions.push(action);
+                        }
+                        Ok(None) => {
+                            // Event type doesn't need to be converted to BridgeAction
+                            info!(
+                                tx_signature = %tx_signature,
+                                event_idx = event_idx,
+                                event_name = ?event.event_name(),
+                                "Skipping Solana event (not a bridge action)"
+                            );
+                        }
+                        Err(e) => {
+                            error!(
+                                tx_signature = %tx_signature,
+                                event_idx = event_idx,
+                                "Error converting Solana event to BridgeAction: {:?}",
+                                e
+                            );
+                            metrics.solana_watcher_unrecognized_events.inc();
+                        }
                     }
                 }
             }
@@ -1242,7 +1243,7 @@ mod tests {
         };
         SolanaParsedEvent {
             tx_signature: tx_signature.to_string(),
-            event: SolanaBridgeEvent::TokensDeposited(tokens_deposited),
+            events: vec![SolanaBridgeEvent::TokensDeposited(tokens_deposited)],
         }
     }
 

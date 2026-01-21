@@ -419,19 +419,19 @@ impl SolanaSyncer {
                     "[SolanaSyncer] Parsed bridge events from Solana transaction"
                 );
                 // Attach transaction signature to each event
-                for event in events {
+                for event in &events {
                     info!(
                         signature = %sig.signature,
                         slot = sig.slot,
                         event = ?event,
                         "[SolanaSyncer] Parsed Solana bridge event"
                     );
-
-                    parsed_events.push(SolanaParsedEvent {
-                        tx_signature: sig.signature.clone(),
-                        event,
-                    });
                 }
+
+                parsed_events.push(SolanaParsedEvent {
+                    tx_signature: sig.signature.clone(),
+                    events,
+                });
             } else {
                 info!(
                     signature = %sig.signature,
@@ -451,7 +451,7 @@ pub struct SolanaParsedEvent {
     /// The transaction signature this event belongs to
     pub tx_signature: String,
     /// The parsed bridge event
-    pub event: SolanaBridgeEvent,
+    pub events: Vec<SolanaBridgeEvent>,
 }
 
 /// Wrapper for Solana events to be sent through the channel
