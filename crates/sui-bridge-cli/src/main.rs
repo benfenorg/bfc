@@ -172,16 +172,18 @@ async fn main() -> anyhow::Result<()> {
             if chain_id.is_solana_chain() {
                 let solana_chain_id = BridgeChainId::try_from(chain_id).unwrap();     
                 let solana_signer=config.solana_signer();
+                let solana_rpc_url = config.solana_rpc_url.as_ref().expect("Solana RPC URL is missing").to_string();
                 let solana_client = Arc::new(Client::new_with_options(
                     Cluster::Custom(
-                        config.solana_rpc_url.to_string(), 
-                        config.solana_rpc_url.to_string()
+                        solana_rpc_url.clone(), 
+                        solana_rpc_url
                     ),
                     solana_signer.clone(),
                     CommitmentConfig::confirmed(),
                 ));
 
-                let program=Arc::new(solana_client.clone().program(config.solana_bridge_program_id).expect("Failed to get solana bridge program"));
+                let program_id = config.solana_bridge_program_id.expect("Solana bridge program ID is missing");
+                let program=Arc::new(solana_client.clone().program(program_id).expect("Failed to get solana bridge program"));
 
                 // let solana_client=config.;
                 let solana_action = make_action(chain_id, &cmd);

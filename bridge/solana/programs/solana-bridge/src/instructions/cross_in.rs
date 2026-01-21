@@ -100,6 +100,12 @@ pub fn cross_in<'info>(
     let chain_limit=ctx.accounts.chain_limit.load()?;
     let token_account = ctx.accounts.token_account.deref_mut();
     let message =ctx.accounts.message_config.deref_mut();
+    
+    if message.verifier == Pubkey::default() {
+        message.verifier = ctx.accounts.verifier.key();
+        message.message_type = TOKEN_TRANSFER;
+        message.nonce = 0;
+    }
 
     let source_chain_id=bridge_conifg_loader.chain_id;
     let dst_chain_id = chain_limit.get_chain_id();
