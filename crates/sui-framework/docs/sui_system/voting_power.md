@@ -448,10 +448,17 @@ Update validators with the decided voting power.
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="../sui_system/voting_power.md#sui_system_voting_power_update_voting_power">update_voting_power</a>(validators: &<b>mut</b> vector&lt;Validator&gt;, info_list: vector&lt;<a href="../sui_system/voting_power.md#sui_system_voting_power_VotingPowerInfoV2">VotingPowerInfoV2</a>&gt;) {
-    info_list.destroy!(|<a href="../sui_system/voting_power.md#sui_system_voting_power_VotingPowerInfoV2">VotingPowerInfoV2</a> { validator_index, <a href="../sui_system/voting_power.md#sui_system_voting_power">voting_power</a>, .. }| {
-        validators[validator_index].<a href="../sui_system/voting_power.md#sui_system_voting_power_set_voting_power">set_voting_power</a>(<a href="../sui_system/voting_power.md#sui_system_voting_power">voting_power</a>);
-    });
+<pre><code><b>fun</b> <a href="../sui_system/voting_power.md#sui_system_voting_power_update_voting_power">update_voting_power</a>(validators: &<b>mut</b> vector&lt;Validator&gt;, <b>mut</b> info_list: vector&lt;<a href="../sui_system/voting_power.md#sui_system_voting_power_VotingPowerInfoV2">VotingPowerInfoV2</a>&gt;) {
+    <b>while</b> (!vector::is_empty(&info_list)) {
+        <b>let</b> <a href="../sui_system/voting_power.md#sui_system_voting_power_VotingPowerInfoV2">VotingPowerInfoV2</a> {
+            validator_index,
+            <a href="../sui_system/voting_power.md#sui_system_voting_power">voting_power</a>,
+            stake: _,
+        } = info_list.pop_back();
+        <b>let</b> v = vector::borrow_mut(validators, validator_index);
+        <a href="../sui_system/validator.md#sui_system_validator_set_voting_power">validator::set_voting_power</a>(v, <a href="../sui_system/voting_power.md#sui_system_voting_power">voting_power</a>);
+    };
+    vector::destroy_empty(info_list);
 }
 </code></pre>
 

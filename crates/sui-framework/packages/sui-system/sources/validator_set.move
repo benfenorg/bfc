@@ -6,8 +6,6 @@ module sui_system::validator_set{
     use sui::bag::{Self, Bag};
     use sui::balance::Balance;
     use std::ascii;
-    use std::ascii::string;
-    use std::debug;
     use sui::event;
     use std::type_name;
 

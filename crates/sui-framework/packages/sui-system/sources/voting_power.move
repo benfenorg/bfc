@@ -3,8 +3,6 @@
 
 module sui_system::voting_power {
     use std::ascii;
-    use std::ascii::string;
-    use std::debug;
     use sui_system::validator::Validator;
     use sui::vec_map::VecMap;
     use sui_system::validator;
@@ -59,13 +57,7 @@ const EInvalidVotingPower: u64 = 4;
         let (mut info_list, remaining_power) = init_voting_power_info(validators, threshold, stable_rate);
 
         adjust_voting_power(&mut info_list, threshold, remaining_power);
-        debug::print(&string(b"wangfa voting_power"));
-        debug::print(validators);
         update_voting_power(validators, info_list);
-
-        debug::print(&string(b"liqiong voting_power"));
-        debug::print(validators);
-
         check_invariants(validators, stable_rate);
     }
 

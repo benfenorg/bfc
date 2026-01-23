@@ -2340,8 +2340,6 @@ gas coins.
     &<b>mut</b> storage_fund_reward,
     &<b>mut</b> self.validator_report_records,
     reward_slashing_rate,
-    self.parameters.validator_low_stake_threshold,
-    self.parameters.validator_very_low_stake_threshold,
     self.parameters.validator_low_stake_grace_period,
     stable_rate,
     ctx,
