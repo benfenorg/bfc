@@ -53,6 +53,7 @@ pub struct TokensDeposited {
     pub sender_pubkey: [u8; 32],
     pub recipient_length: u32,
     pub recipient_bytes: Vec<u8>,
+    pub target_token_id: u64,
 }
 
 impl TokensDeposited {
@@ -115,6 +116,12 @@ impl TokensDeposited {
         let mut recipient_bytes = vec![0u8; recipient_length as usize];
         cursor.read_exact(&mut recipient_bytes)
             .map_err(|e| format!("read recipient bytes: {}", e))?;
+
+        // 读取 target_token_id (u64, little-endian)
+        let mut target_token_id_bytes = [0u8; 8];
+        cursor.read_exact(&mut target_token_id_bytes)
+            .map_err(|e| format!("read target token id: {}", e))?;
+        let target_token_id = u64::from_le_bytes(target_token_id_bytes);
         
         // 检查是否还有剩余数据
         if cursor.position() != cursor.get_ref().len() as u64 {
@@ -134,6 +141,7 @@ impl TokensDeposited {
             sender_pubkey,
             recipient_length,
             recipient_bytes,
+            target_token_id,
         })
     }
     
