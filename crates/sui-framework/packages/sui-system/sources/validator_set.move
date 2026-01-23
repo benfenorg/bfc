@@ -6,6 +6,8 @@ module sui_system::validator_set{
     use sui::bag::{Self, Bag};
     use sui::balance::Balance;
     use std::ascii;
+    use std::ascii::string;
+    use std::debug;
     use sui::event;
     use std::type_name;
 
@@ -543,8 +545,6 @@ public(package) fun advance_epoch(
     validator_report_records: &mut VecMap<address, VecSet<address>>,
     reward_slashing_rate: u64,
     low_stake_threshold: u64,
-    very_low_stake_threshold: u64,
-    low_stake_grace_period: u64,
     stable_rate: VecMap<ascii::String, u64>,
     ctx: &mut TxContext,
 ) {
@@ -619,24 +619,19 @@ public(package) fun advance_epoch(
         emit_validator_epoch_events(new_epoch, &self.active_validators, &adjusted_staking_reward_amounts,
         &adjusted_storage_fund_reward_amounts, validator_report_records, &slashed_validators, stable_rate);
 
-        // Note that all their staged next epoch metadata will be effectuated below.
-        process_pending_validators(self, new_epoch);
-
         process_pending_removals(self, validator_report_records, ctx);
 
         // kick low stake validators out.
-        update_and_process_low_stake_departures(
+        let new_total_stake = update_validator_positions_and_calculate_total_stake(
             self,
             low_stake_threshold,
-            very_low_stake_threshold,
-            low_stake_grace_period,
             validator_report_records,
             stable_rate,
             ctx
         );
 
         // TODO check calculate_total_stakes and update_validator_positions_and_calculate_total_stake difference
-        self.total_stake = calculate_total_stakes(&self.active_validators, stable_rate);
+        self.total_stake = new_total_stake;
 
         voting_power::set_voting_power(&mut self.active_validators, stable_rate);
 
@@ -645,31 +640,64 @@ public(package) fun advance_epoch(
         effectuate_staged_metadata(self);
     }
 
-    fun update_and_process_low_stake_departures(
+
+
+    /// This function does the following:
+    /// - removes validators from `at_risk` group if their voting power is above the LOW threshold
+    /// - increments the number of epochs a validator has been below the LOW threshold but above the
+    ///     VERY LOW threshold
+    /// - removes validators from the active set if they have been below the LOW threshold for more than
+    ///     `low_stake_grace_period` epochs
+    /// - removes validators from the active set immediately if they are below the VERY LOW threshold
+    /// - activates pending validators if they have sufficient voting power
+    fun update_validator_positions_and_calculate_total_stake(
         self: &mut ValidatorSet,
-        low_stake_threshold: u64,
-        very_low_stake_threshold: u64,
         low_stake_grace_period: u64,
         validator_report_records: &mut VecMap<address, VecSet<address>>,
         stable_rate: VecMap<ascii::String, u64>,
-        ctx: &mut TxContext
-    ) {
+        ctx: &mut TxContext,
+    ): u64 {
+        // take all pending validators out of the tablevec and put them in a local vector
+        let pending_active_validators = vector::tabulate!(
+        self.pending_active_validators.length(),
+        |_| self.pending_active_validators.pop_back(),
+        );
+
+        // Note: we count the total stake of pending validators as well!
+        let pending_total_stake = calculate_total_stakes(&pending_active_validators, stable_rate);
+        let initial_total_stake = calculate_total_stakes(&self.active_validators, stable_rate) + pending_total_stake;
+        let (
+        min_joining_voting_power_threshold,
+        low_voting_power_threshold,
+        very_low_voting_power_threshold,
+        ) = self.get_voting_power_thresholds(ctx);
         // Iterate through all the active validators, record their low stake status, and kick them out if the condition is met.
+        let mut total_removed_stake = 0; // amount of stake to remove due to departed_validators
         let mut i = self.active_validators.length();
         while (i > 0) {
         i = i - 1;
         let validator_ref = &self.active_validators[i];
         let validator_address = validator_ref.sui_address();
-        let stake = validator::total_stake_with_all_stable(validator_ref, stable_rate);
-        if (stake >= low_stake_threshold) {
+        let validator_stake = validator_ref.total_stake_with_all_stable(stable_rate);
+
+        // calculate the voting power for this validator in the next epoch if no validators are removed
+        // if one of more low stake validators are removed, it's possible this validator will have higher voting power--that's ok.
+        let voting_power = voting_power::derive_raw_voting_power(
+        validator_stake,
+        initial_total_stake,
+        );
+
+        // SIP-39: a validator can remain indefinitely with a voting power ≥ LOW_VOTING_POWER_THRESHOLD
+        if (voting_power >= low_voting_power_threshold) {
         // The validator is safe. We remove their entry from the at_risk map if there exists one.
         if (self.at_risk_validators.contains(&validator_address)) {
         self.at_risk_validators.remove(&validator_address);
         }
-        } else if (stake >= very_low_stake_threshold) {
+        // SIP-39: as soon as the validator’s voting power falls to VERY_LOW_VOTING_POWER_THRESHOLD,
+        //      they are on probation and must acquire sufficient stake to recover to voting power
+        } else if (voting_power >= very_low_voting_power_threshold) {
         // The stake is a bit below the threshold so we increment the entry of the validator in the map.
-        let new_low_stake_period =
-        if (self.at_risk_validators.contains(&validator_address)) {
+        let new_low_stake_period = if (self.at_risk_validators.contains(&validator_address)) {
         let num_epochs = &mut self.at_risk_validators[&validator_address];
         *num_epochs = *num_epochs + 1;
         *num_epochs
@@ -681,33 +709,63 @@ public(package) fun advance_epoch(
         // If the grace period has passed, the validator has to leave us.
         if (new_low_stake_period > low_stake_grace_period) {
         let validator = self.active_validators.remove(i);
-        process_validator_departure(self, validator, validator_report_records, false /* the validator is kicked out involuntarily */, ctx);
+        let removed_stake = self.process_validator_departure(
+        validator,
+        validator_report_records,
+        false, // the validator is kicked out involuntarily
+        ctx,
+        );
+        total_removed_stake = total_removed_stake + removed_stake;
         }
+        // SIP-39: at the end of an epoch when new voting powers are computed based on stake changes,
+        //      any validator with VOTING_POWER < VERY_LOW_VOTING_POWER_THRESHOLD will be removed
         } else {
         // The validator's stake is lower than the very low threshold so we kick them out immediately.
         let validator = self.active_validators.remove(i);
-        process_validator_departure(self, validator, validator_report_records, false /* the validator is kicked out involuntarily */, ctx);
+        let removed_stake = self.process_validator_departure(
+        validator,
+        validator_report_records,
+        false, // the validator is kicked out involuntarily
+        ctx,
+        );
+        total_removed_stake = total_removed_stake + removed_stake;
         }
-        }
-    }
+        };
+        // check that pending validators still have sufficient stake to be added. this was checked at
+        // the time of request_add_validator, but stake may have been withdrawn, or stakes of other
+        // validators may have increased significantly
+        pending_active_validators.do!(|mut validator| {
+        let validator_stake = validator.total_stake();
+        let voting_power = voting_power::derive_raw_voting_power(
+        validator_stake,
+        initial_total_stake,
+        );
+        if (voting_power >= min_joining_voting_power_threshold) {
+        validator.activate(ctx.epoch());
+        validator.activate_stable(ctx.epoch());
 
-    /// Process the pending new validators. They are activated and inserted into `validators`.
-    fun process_pending_validators(
-        self: &mut ValidatorSet, new_epoch: u64,
-    ) {
-        while (!self.pending_active_validators.is_empty()) {
-            let mut validator = self.pending_active_validators.pop_back();
-            validator::activate(&mut validator, new_epoch);
-            validator::activate_stable(&mut validator, new_epoch);
-            event::emit(
-            ValidatorJoinEvent {
-            epoch: new_epoch,
-            validator_address: validator.sui_address(),
-            staking_pool_id: staking_pool_id(&validator),
-            }
-            );
-            vector::push_back(&mut self.active_validators, validator);
+        event::emit(ValidatorJoinEvent {
+        epoch: ctx.epoch(),
+        validator_address: validator.sui_address(),
+        staking_pool_id: validator.staking_pool_id(),
+        });
+        self.active_validators.push_back(validator);
+        } else {
+        // return validator object to the candidate pool. want to do this directly instead of
+        // calling request_add_validator_candidate because staking_pool_mappings already has an
+        // entry for this validator, and the duplicate checks are redundant
+        self
+        .validator_candidates
+        .add(
+        validator.sui_address(),
+        validator.wrap_v1(ctx),
+        );
+        total_removed_stake = total_removed_stake + validator_stake;
         }
+        });
+
+        // new total stake is the initial total minus the amount removed via validators we kicked out
+        initial_total_stake - total_removed_stake
     }
 
 /// Effectuate pending next epoch metadata if they are staged.
@@ -1089,14 +1147,14 @@ fun process_pending_removals(
 ) {
     sort_removal_list(&mut self.pending_removals);
     self.pending_removals.length().do!(|_| {
-        let index = self.pending_removals.pop_back();
-        let validator = self.active_validators.remove(index);
-        self.process_validator_departure(
-            validator,
-            validator_report_records,
-            true, // the validator removes itself voluntarily
-            ctx,
-        );
+    let index = self.pending_removals.pop_back();
+    let validator = self.active_validators.remove(index);
+    self.process_validator_departure(
+    validator,
+    validator_report_records,
+    true, // the validator removes itself voluntarily
+    ctx,
+    );
     });
 }
 

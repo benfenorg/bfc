@@ -335,7 +335,9 @@ module sui_system::validator_tests {
         bag::new(ctx),
         );
 
-        abort
+        validator::validate_metadata(&metadata);
+        test_utils::destroy(metadata);
+        scenario_val.end();
     }
 
     #[test, expected_failure(abort_code = sui_system::validator::EMetadataInvalidNetAddr)]

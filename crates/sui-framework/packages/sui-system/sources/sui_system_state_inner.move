@@ -943,8 +943,6 @@ module sui_system::sui_system_state_inner;
         &mut storage_fund_reward,
         &mut self.validator_report_records,
         reward_slashing_rate,
-        self.parameters.validator_low_stake_threshold,
-        self.parameters.validator_very_low_stake_threshold,
         self.parameters.validator_low_stake_grace_period,
         stable_rate,
         ctx,

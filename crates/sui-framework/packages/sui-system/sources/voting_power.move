@@ -3,6 +3,8 @@
 
 module sui_system::voting_power {
     use std::ascii;
+    use std::ascii::string;
+    use std::debug;
     use sui_system::validator::Validator;
     use sui::vec_map::VecMap;
     use sui_system::validator;
@@ -57,7 +59,13 @@ const EInvalidVotingPower: u64 = 4;
         let (mut info_list, remaining_power) = init_voting_power_info(validators, threshold, stable_rate);
 
         adjust_voting_power(&mut info_list, threshold, remaining_power);
+        debug::print(&string(b"wangfa voting_power"));
+        debug::print(validators);
         update_voting_power(validators, info_list);
+
+        debug::print(&string(b"liqiong voting_power"));
+        debug::print(validators);
+
         check_invariants(validators, stable_rate);
     }
 
@@ -142,10 +150,17 @@ fun adjust_voting_power(
 }
 
 /// Update validators with the decided voting power.
-fun update_voting_power(validators: &mut vector<Validator>, info_list: vector<VotingPowerInfoV2>) {
-    info_list.destroy!(|VotingPowerInfoV2 { validator_index, voting_power, .. }| {
-        validators[validator_index].set_voting_power(voting_power);
-    });
+fun update_voting_power(validators: &mut vector<Validator>, mut info_list: vector<VotingPowerInfoV2>) {
+    while (!vector::is_empty(&info_list)) {
+        let VotingPowerInfoV2 {
+            validator_index,
+            voting_power,
+            stake: _,
+        } = info_list.pop_back();
+        let v = vector::borrow_mut(validators, validator_index);
+        validator::set_voting_power(v, voting_power);
+    };
+    vector::destroy_empty(info_list);
 }
 
     /// Check a few invariants that must hold after setting the voting power.

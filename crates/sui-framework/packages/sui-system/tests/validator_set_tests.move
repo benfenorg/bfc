@@ -30,6 +30,8 @@ module sui_system::validator_set_tests {
     use sui::test_utils::{Self, assert_eq};
     use sui::vec_map;
     use sui_system::stable_pool::StakedStable;
+    use std::debug;
+    use std::ascii::string;
 
     const MIST_PER_SUI: u64 = 1_000_000_000; // used internally for stakes.
 
@@ -643,6 +645,9 @@ module sui_system::validator_set_tests {
         let init_validators = get_10_validators(scenario.ctx());
         let new_v = create_validator_with_initial_stake(@0xB, 12, 0, false, scenario.ctx());
         let mut validator_set = validator_set::new(init_validators, scenario.ctx());
+        debug::print(&string(b"wubin here voting_power"));
+        debug::print(&validator_set);
+
         advance_epoch_with_dummy_rewards(&mut validator_set, scenario);
         skip_to_min_stake_v2_final_thresholds(scenario);
         scenario.next_tx(@0xB);
@@ -816,18 +821,6 @@ module sui_system::validator_set_tests {
         test_utils::destroy(stake);
         });
 
-        // Withdraw the stake from @0x4.
-        test_scenario::next_tx(scenario, @0x42);
-        {
-        let stake = test_scenario::take_from_sender<StakedBfc>(scenario);
-        let ctx = test_scenario::ctx(scenario);
-        let withdrawn_balance = validator_set::request_withdraw_stake(
-        &mut validator_set,
-        stake,
-        ctx,
-        );
-        transfer::public_transfer(coin::from_balance(withdrawn_balance, ctx), @0x42);
-        };
         // advance epoch, new guy should no longer be added
         advance_epoch_with_dummy_rewards(&mut validator_set, scenario);
         assert!(!validator_set.is_active_validator(@0xB));
@@ -837,117 +830,8 @@ module sui_system::validator_set_tests {
         let effects = scenario.next_tx(@0xB);
         assert_eq(effects.num_user_events(), num_validators); // epoch changes hould not emit ValidatorJoinEvent or ValidatorLeaveEvent
 
-        // Now @0x4 gets kicked out after 3 grace days are used at the 4th epoch change.
-        advance_epoch_with_low_stake_params(
-        &mut validator_set, 500, 200, 3, scenario
-        );
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x3, @0x4]);
-        advance_epoch_with_low_stake_params(
-        &mut validator_set, 500, 200, 3, scenario
-        );
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x3, @0x4]);
-        advance_epoch_with_low_stake_params(
-        &mut validator_set, 500, 200, 3, scenario
-        );
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x3, @0x4]);
-        advance_epoch_with_low_stake_params(
-        &mut validator_set, 500, 200, 3, scenario
-        );
-        // @0x4 was kicked out.
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x3]);
         test_utils::destroy(validator_set);
-        test_scenario::end(scenario_val);
-    }
-
-    #[test]
-    fun test_low_stake_departure_stable() {
-        let mut scenario_val = test_scenario::begin(@0x0);
-        let scenario = &mut scenario_val;
-        let ctx = test_scenario::ctx(scenario);
-        // Create 4 validators.
-        let v1 = create_validator(@0x1, 1, 1, true, ctx); // 100 SUI of stake
-        let v2 = create_validator(@0x2, 4, 1, true, ctx); // 400 SUI of stake
-        let v3 = create_validator(@0x3, 10, 1, true, ctx); // 1000 SUI of stake
-        let v4 = create_validator(@0x4, 4, 1, true, ctx); // 400 SUI of stake
-
-        let mut validator_set = validator_set::new(vector[v1, v2, v3, v4], ctx);
-        test_scenario::end(scenario_val);
-
-        let mut scenario_val = test_scenario::begin(@0x1);
-        let scenario = &mut scenario_val;
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x1, @0x2, @0x3, @0x4]);
-
-        advance_epoch_with_low_stake_params(
-        &mut validator_set, 500, 200, 3, scenario
-        );
-
-        // v1 is kicked out because their stake 100 is less than the very low stake threshold
-        // which is 200.
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x2, @0x3, @0x4]);
-
-        advance_epoch_with_low_stake_params(
-        &mut validator_set, 500, 200, 3, scenario
-        );
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x2, @0x3, @0x4]);
-
-        advance_epoch_with_low_stake_params(
-        &mut validator_set, 500, 200, 3, scenario
-        );
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x2, @0x3, @0x4]);
-
-        // Add some stake to @0x4 to get her out of the danger zone.
-        test_scenario::next_tx(scenario, @0x42);
-        {
-        let ctx = test_scenario::ctx(scenario);
-        let stake = validator_set::request_add_stable_stake<BUSD>(
-        &mut validator_set,
-        @0x4,
-        balance::create_for_testing<BUSD>(500 * MIST_PER_SUI),
-        ctx,
-        );
-        transfer::public_transfer(stake, @0x42);
-        };
-
-        // So only @0x2 will be kicked out.
-        advance_epoch_with_low_stake_params(
-        &mut validator_set, 500, 200, 3, scenario
-        );
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x3, @0x4]);
-
-        // Withdraw the stake from @0x4.
-        test_scenario::next_tx(scenario, @0x42);
-        {
-        let stake = test_scenario::take_from_sender<StakedStable<BUSD>>(scenario);
-        let ctx = test_scenario::ctx(scenario);
-        let (withdrawn_balance_busd, withdrawn_balance_bfc) = validator_set::request_withdraw_stable_stake<BUSD>(
-        &mut validator_set,
-        stake,
-        ctx,
-        );
-        transfer::public_transfer(coin::from_balance<BUSD>(withdrawn_balance_busd, ctx), @0x42);
-        transfer::public_transfer(coin::from_balance(withdrawn_balance_bfc, ctx), @0x42);
-        };
-
-        // Now @0x4 gets kicked out after 3 grace days are used at the 4th epoch change.
-        advance_epoch_with_low_stake_params(
-        &mut validator_set, 500, 200, 3, scenario
-        );
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x3, @0x4]);
-        advance_epoch_with_low_stake_params(
-        &mut validator_set, 500, 200, 3, scenario
-        );
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x3, @0x4]);
-        advance_epoch_with_low_stake_params(
-        &mut validator_set, 500, 200, 3, scenario
-        );
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x3, @0x4]);
-        advance_epoch_with_low_stake_params(
-        &mut validator_set, 500, 200, 3, scenario
-        );
-        // @0x4 was kicked out.
-        assert_eq(active_validator_addresses(&validator_set), vector[@0x3]);
-        test_utils::destroy(validator_set);
-        test_scenario::end(scenario_val);
+        scenario_val.end();
     }
 
     fun create_validator(
@@ -1022,54 +906,7 @@ module sui_system::validator_set_tests {
     }
 
     fun advance_epoch_with_dummy_rewards(validator_set: &mut ValidatorSet, scenario: &mut Scenario) {
-        test_scenario::next_epoch(scenario, @0x0);
-        let mut dummy_computation_reward = balance::zero();
-        let mut dummy_storage_fund_reward = balance::zero();
-
-        let rate_map = rate_vec_map();
-        validator_set::advance_epoch(
-        validator_set,
-        &mut dummy_computation_reward,
-        &mut dummy_storage_fund_reward,
-        &mut vec_map::empty(),
-        0, // reward_slashing_rate
-        0, // low_stake_threshold
-        0, // very_low_stake_threshold
-        0, // low_stake_grace_period
-        rate_map, //INIT_STABLE_EXCHANGE_RATE
-        test_scenario::ctx(scenario)
-        );
-
-        balance::destroy_zero(dummy_computation_reward);
-        balance::destroy_zero(dummy_storage_fund_reward);
-    }
-
-    fun advance_epoch_with_low_stake_params(
-        validator_set: &mut ValidatorSet,
-        low_stake_threshold: u64,
-        very_low_stake_threshold: u64,
-        low_stake_grace_period: u64,
-        scenario: &mut Scenario
-    ) {
-        test_scenario::next_epoch(scenario, @0x0);
-        let mut dummy_computation_reward = balance::zero();
-        let mut dummy_storage_fund_reward = balance::zero();
-        let rate_map = rate_vec_map();
-        validator_set::advance_epoch(
-        validator_set,
-        &mut dummy_computation_reward,
-        &mut dummy_storage_fund_reward,
-        &mut vec_map::empty(),
-        0, // reward_slashing_rate
-        low_stake_threshold * MIST_PER_SUI,
-        very_low_stake_threshold * MIST_PER_SUI,
-        low_stake_grace_period,
-        rate_map,
-        test_scenario::ctx(scenario)
-        );
-
-        balance::destroy_zero(dummy_computation_reward);
-        balance::destroy_zero(dummy_storage_fund_reward);
+        advance_epoch_with_low_stake_grace_period(validator_set, 0, scenario);
     }
 
     fun advance_epoch_with_low_stake_grace_period(
@@ -1080,16 +917,15 @@ module sui_system::validator_set_tests {
         scenario.next_epoch(@0x0);
         let mut dummy_computation_reward = balance::zero();
         let mut dummy_storage_fund_reward = balance::zero();
+        let rate_map = rate_vec_map();
 
         validator_set.advance_epoch(
         &mut dummy_computation_reward,
         &mut dummy_storage_fund_reward,
         &mut vec_map::empty(),
-        0,
-        0,
         0, // reward_slashing_rate
         low_stake_grace_period,
-        vec_map::empty(),
+        rate_map,
         scenario.ctx(),
         );
 

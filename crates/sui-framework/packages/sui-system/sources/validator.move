@@ -38,6 +38,7 @@ module sui_system::validator {
     use sui::vec_map::VecMap;
     use sui_system::stable_pool;
     use sui_system::stable_pool::{StablePool, StakedStable, PoolStableTokenExchangeRate};
+    public use fun sui_system::validator_wrapper::create_v1 as Validator.wrap_v1;
 
     const MAX_U64: u128 = 18446744073709551615;
 
