@@ -139,6 +139,18 @@ module bridge::bridge {
         amount_before_fee: u64,
         amount_after_fee: u64
     }
+
+    public struct TokenDepositedEventV3 has copy, drop {
+        seq_num: u64,
+        source_chain: u8,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        origin_token_type: u64,
+        amount_before_fee: u64,
+        amount_after_fee: u64
+    }
     
     public struct TokenDepositedEventForSolanaV2 has copy, drop {
         seq_num: u64,
@@ -147,6 +159,18 @@ module bridge::bridge {
         target_chain: u8,
         target_address: vector<u8>,
         token_type: u64,
+        amount_before_fee: u64,
+        amount_after_fee: u64,
+    }
+
+    public struct TokenDepositedEventForSolanaV3 has copy, drop {
+        seq_num: u64,
+        source_chain: u8,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        origin_token_type: u64,
         amount_before_fee: u64,
         amount_after_fee: u64,
     }
@@ -783,26 +807,28 @@ module bridge::bridge {
         // emit event
         if (is_solana_chain(target_chain)) {
             emit(
-                TokenDepositedEventForSolanaV2 {
+                TokenDepositedEventForSolanaV3 {
                     seq_num: bridge_seq_num,
                     source_chain: inner.chain_id,
                     sender_address: address::to_bytes(ctx.sender()),
                     target_chain,
                     target_address,
                     token_type: token_id,
+                    origin_token_type: token_id,
                     amount_before_fee: token_amount,
                     amount_after_fee,
                 },
             );
         } else {
             emit(
-                TokenDepositedEventV2 {
+                TokenDepositedEventV3 {
                     seq_num: bridge_seq_num,
                     source_chain: inner.chain_id,
                     sender_address: address::to_bytes(ctx.sender()),
                     target_chain,
                     target_address,
                     token_type: token_id,
+                    origin_token_type: token_id,
                     amount_before_fee: token_amount,
                     amount_after_fee,
                 },
@@ -998,26 +1024,28 @@ module bridge::bridge {
         // emit event
         if (is_solana_chain(target_chain)) {
             emit(
-                TokenDepositedEventForSolanaV2 {
+                TokenDepositedEventForSolanaV3 {
                     seq_num: bridge_seq_num,
                     source_chain: inner.chain_id,
                     sender_address: address::to_bytes(ctx.sender()),
                     target_chain,
                     target_address,
                     token_type: token_id,
+                    origin_token_type: 5, // BUSD
                     amount_before_fee: token_amount,
                     amount_after_fee,
                 },
             );
         } else {    
             emit(
-                TokenDepositedEventV2 {
+                TokenDepositedEventV3 {
                     seq_num: bridge_seq_num,
                     source_chain: inner.chain_id,
                     sender_address: address::to_bytes(ctx.sender()),
                     target_chain,
                     target_address,
                     token_type: token_id,
+                    origin_token_type: 5, // BUSD
                     amount_before_fee: token_amount,
                     amount_after_fee,
                 },
