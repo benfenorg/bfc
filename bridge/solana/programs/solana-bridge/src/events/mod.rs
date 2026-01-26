@@ -25,6 +25,7 @@ pub struct TokensDeposited {
     pub source_chain_id: u8,
     pub target_chain_id: u8,
     pub token_id: u64,
+    pub target_token_id: u64,
     pub amount: u64,
     pub sender_address: Pubkey,
     pub recipient_address: Vec<u8>,

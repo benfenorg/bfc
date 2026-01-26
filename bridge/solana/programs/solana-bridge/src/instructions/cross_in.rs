@@ -90,6 +90,7 @@ pub fn cross_in<'info>(
     ctx: Context<'_, '_, '_, 'info, CrossIn<'info>>,
     amount: u64,
     benfen_address: Vec<u8>,
+    target_token_id: u64,
 ) -> Result<()> {
     //先检查bridge 是否暂停，
     ctx.accounts.bridge.require_not_paused()?;
@@ -151,6 +152,7 @@ pub fn cross_in<'info>(
         source_chain_id,
         target_chain_id: dst_chain_id,
         token_id: token_config.token_id(),
+        target_token_id,
         amount: adjusted_amount,
         sender_address: ctx.accounts.payer.key(),
         recipient_address: benfen_address,
