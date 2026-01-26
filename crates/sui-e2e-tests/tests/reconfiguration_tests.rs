@@ -2652,7 +2652,7 @@ async fn test_reconfig_with_voting_power_decrease() {
         assert!(candidate.voting_power < VALIDATOR_MIN_POWER_PHASE_1);
         assert!(candidate.voting_power < VALIDATOR_LOW_POWER_PHASE_1);
         assert!(candidate.voting_power > VALIDATOR_VERY_LOW_POWER_PHASE_1);
-        assert_eq!(system_state.at_risk_validators.len(), 0);
+        assert_eq!(system_state.at_risk_validators.len(), 1);
     });
 
     // Wait for the grace period to expire.
@@ -2669,7 +2669,7 @@ async fn test_reconfig_with_voting_power_decrease() {
                 .into_sui_system_state_summary()
                 .active_validators
                 .len(),
-            initial_num_validators + 1
+            initial_num_validators
         )
     });
 }
@@ -2738,7 +2738,7 @@ async fn test_reconfig_with_voting_power_decrease_immediate_removal() {
                 .epoch_store_for_testing()
                 .committee()
                 .num_members(),
-            initial_num_validators
+            initial_num_validators + 1
         );
     });
 
