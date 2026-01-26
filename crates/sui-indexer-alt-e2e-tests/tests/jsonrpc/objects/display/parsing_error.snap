@@ -8,7 +8,7 @@ A: object(0,0)
 
 task 1, lines 14-45:
 //# publish --sender A
-events: Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("DisplayCreated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [92, 60, 103, 116, 5, 180, 167, 76, 25, 37, 32, 127, 90, 237, 176, 179, 166, 218, 19, 16, 155, 197, 74, 57, 105, 124, 255, 193, 242, 83, 122, 25] }, Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("VersionUpdated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [92, 60, 103, 116, 5, 180, 167, 76, 25, 37, 32, 127, 90, 237, 176, 179, 166, 218, 19, 16, 155, 197, 74, 57, 105, 124, 255, 193, 242, 83, 122, 25, 1, 0, 1, 3, 98, 97, 114, 4, 123, 98, 97, 114] }
+events: Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("DisplayCreated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [224, 102, 78, 51, 112, 180, 114, 22, 60, 95, 47, 235, 250, 28, 5, 185, 123, 101, 238, 100, 72, 93, 214, 3, 103, 62, 49, 12, 164, 106, 11, 4] }, Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("VersionUpdated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [224, 102, 78, 51, 112, 180, 114, 22, 60, 95, 47, 235, 250, 28, 5, 185, 123, 101, 238, 100, 72, 93, 214, 3, 103, 62, 49, 12, 164, 106, 11, 4, 1, 0, 1, 3, 98, 97, 114, 4, 123, 98, 97, 114] }
 created: object(1,0), object(1,1), object(1,2)
 mutated: object(0,0)
 gas summary: computation_cost: 1000000, storage_cost: 12122000,  storage_rebate: 0, non_refundable_storage_fee: 0
@@ -32,9 +32,9 @@ Response: {
   "id": 0,
   "result": {
     "data": {
-      "objectId": "BFC6d3a7c67418ea7039c9691e6cde12aed852aa84e32226ec0af96af964fa57689370b",
+      "objectId": "BFCa3c9056dafc4152c5c31d0db25f97ca34c37e09e4e2736bf351851091b6227243697",
       "version": "3",
-      "digest": "FLhL4nNFggBodh7jxR9pexUUy5zy9ST4euz1fbfqfbGJ",
+      "digest": "GoQXEb8XGNnrNgxqq4AeVkexpSj7wwwyKo4DB8XntWGC",
       "display": {
         "data": null,
         "error": {
@@ -44,12 +44,12 @@ Response: {
       },
       "content": {
         "dataType": "moveObject",
-        "type": "0x5727839972f610f1f103804ee3db8d59c0293896e32e2e9dc9f54dc8094893ed::mod::Foo",
+        "type": "0xb79a26789b9ad9acee5f457e4de2626e1fdb726b85b47cc761932c542d0dc805::mod::Foo",
         "hasPublicTransfer": true,
         "fields": {
           "bar": "42",
           "id": {
-            "id": "BFC6d3a7c67418ea7039c9691e6cde12aed852aa84e32226ec0af96af964fa57689370b"
+            "id": "BFCa3c9056dafc4152c5c31d0db25f97ca34c37e09e4e2736bf351851091b6227243697"
           }
         }
       }

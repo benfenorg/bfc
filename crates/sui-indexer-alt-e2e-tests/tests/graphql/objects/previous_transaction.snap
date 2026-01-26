@@ -24,11 +24,11 @@ Response: {
   "data": {
     "object": {
       "previousTransaction": {
-        "digest": "GL6oSxvuoGHvL37zhrsp7M96qiHA7RoaKUW14EVqvsok"
+        "digest": "7fPD56W9SPSs4BVapRtnXr8knobCVF2WUvcRmfZKQbeM"
       }
     },
     "transaction": {
-      "digest": "GL6oSxvuoGHvL37zhrsp7M96qiHA7RoaKUW14EVqvsok"
+      "digest": "7fPD56W9SPSs4BVapRtnXr8knobCVF2WUvcRmfZKQbeM"
     }
   }
 }

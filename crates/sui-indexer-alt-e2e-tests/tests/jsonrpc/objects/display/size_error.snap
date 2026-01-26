@@ -8,7 +8,7 @@ A: object(0,0)
 
 task 1, lines 13-62:
 //# publish --sender A
-events: Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("DisplayCreated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [242, 0, 169, 226, 21, 230, 183, 192, 12, 218, 60, 222, 215, 85, 87, 54, 63, 210, 185, 3, 210, 124, 111, 78, 97, 172, 51, 187, 235, 74, 66, 58] }, Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("VersionUpdated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [242, 0, 169, 226, 21, 230, 183, 192, 12, 218, 60, 222, 215, 85, 87, 54, 63, 210, 185, 3, 210, 124, 111, 78, 97, 172, 51, 187, 235, 74, 66, 58, 1, 0, 1, 1, 99, 72, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125] }
+events: Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("DisplayCreated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [121, 23, 33, 210, 102, 133, 242, 96, 197, 227, 26, 138, 176, 176, 30, 114, 85, 15, 43, 74, 90, 73, 115, 191, 71, 13, 243, 255, 80, 193, 74, 100] }, Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("VersionUpdated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [121, 23, 33, 210, 102, 133, 242, 96, 197, 227, 26, 138, 176, 176, 30, 114, 85, 15, 43, 74, 90, 73, 115, 191, 71, 13, 243, 255, 80, 193, 74, 100, 1, 0, 1, 1, 99, 72, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125, 123, 99, 125] }
 created: object(1,0), object(1,1), object(1,2)
 mutated: object(0,0)
 gas summary: computation_cost: 1000000, storage_cost: 18338800,  storage_rebate: 0, non_refundable_storage_fee: 0
@@ -32,9 +32,9 @@ Response: {
   "id": 0,
   "result": {
     "data": {
-      "objectId": "BFC0250f90a19420f49dc234b56099db5168207174c39e382324864d0846be8c2951cbd",
+      "objectId": "BFCa0708013c5aa512ab9f485de5aa806b0bb8cad326fae52c297f5fed5951ee91cc9c9",
       "version": "3",
-      "digest": "4NZ2hvV9iKehKuGfgfQiBdg6SBf7h7RWUSxqEJWok6MU",
+      "digest": "2jfHo89qneNjtCj8NnfWniUijuSaRCroNXNnZWURFezW",
       "display": {
         "data": null,
         "error": {
