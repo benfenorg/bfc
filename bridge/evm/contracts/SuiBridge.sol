@@ -360,7 +360,8 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         uint64 tokenID,
         uint256 amount,
         bytes memory recipientAddress,
-        uint8 destinationChainID
+        uint8 destinationChainID,
+        uint64 targetTokenID
     ) external whenNotPaused nonReentrant onlySupportedChain(destinationChainID) {
         require(
             recipientAddress.length == SUI_ADDRESS_LENGTH,
@@ -404,6 +405,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             nonces[BridgeUtils.TOKEN_TRANSFER],
             destinationChainID,
             tokenID,
+            targetTokenID,
             suiAdjustedAmount,
             msg.sender,
             recipientAddress
@@ -452,6 +454,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 nonces[BridgeUtils.TOKEN_TRANSFER],
                 destinationChainID,
                 BridgeUtils.BNB,
+                BridgeUtils.BNB,
                 suiAdjustedAmount,
                 msg.sender,
                 recipientAddress
@@ -470,10 +473,11 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 nonces[BridgeUtils.TOKEN_TRANSFER],
                 destinationChainID,
                 BridgeUtils.POL,
+                BridgeUtils.POL,
                 suiAdjustedAmount,
                 msg.sender,
                 recipientAddress
-            );
+             );
 
         }else if (chainid == 45 || chainid == 46 || chainid == 47){
               //AVAX
@@ -488,6 +492,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 config.chainID(),
                 nonces[BridgeUtils.TOKEN_TRANSFER],
                 destinationChainID,
+                BridgeUtils.AVAX,
                 BridgeUtils.AVAX,
                 suiAdjustedAmount,
                 msg.sender,
@@ -507,6 +512,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 config.chainID(),
                 nonces[BridgeUtils.TOKEN_TRANSFER],
                 destinationChainID,
+                BridgeUtils.ETH,
                 BridgeUtils.ETH,
                 suiAdjustedAmount,
                 msg.sender,

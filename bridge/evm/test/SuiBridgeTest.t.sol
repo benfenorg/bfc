@@ -499,7 +499,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
     function testBridgeERC20UnsupportedToken() public {
         vm.expectRevert(bytes("SuiBridge: Unsupported token"));
         bridge.bridgeERC20(
-            255, 1 ether, hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4", 0
+            255, 1 ether, hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4", 0, 255
         );
     }
 
@@ -509,7 +509,8 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             BridgeUtils.ETH,
             type(uint256).max,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
-            0
+            0,
+            BridgeUtils.ETH
         );
     }
 
@@ -519,7 +520,8 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             BridgeUtils.ETH,
             1 ether,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3",
-            0
+            0,
+            BridgeUtils.ETH
         );
     }
 
@@ -544,6 +546,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             0, // nonce
             0, // destination chain id
             BridgeUtils.ETH,
+            BridgeUtils.ETH,
             1_00_000_000, // 1 ether
             deployer,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4"
@@ -553,7 +556,8 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             BridgeUtils.ETH,
             1 ether,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
-            0
+            0,
+            BridgeUtils.ETH
         );
         assertEq(IERC20(wETH).balanceOf(address(vault)), 1 ether);
         assertEq(IERC20(wETH).balanceOf(deployer), balance - 1 ether);
@@ -566,6 +570,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             1, // nonce
             0, // destination chain id
             BridgeUtils.ETH,
+            BridgeUtils.ETH,
             2.00000001 ether,
             deployer,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4"
@@ -575,7 +580,8 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             BridgeUtils.ETH,
             2_000_000_011_000_000_888,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
-            0
+            0,
+            BridgeUtils.ETH
         );
         assertEq(IERC20(wETH).balanceOf(address(vault)), 3_000_000_011_000_000_888);
         assertEq(IERC20(wETH).balanceOf(deployer), balance - 3_000_000_011_000_000_888);
@@ -600,6 +606,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             0, // nonce
             0, // destination chain id
             BridgeUtils.USDC,
+            BridgeUtils.USDC,
             1_000_000, // 1 ether
             USDCWhale,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4"
@@ -608,7 +615,8 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             BridgeUtils.USDC,
             usdcAmount,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
-            0
+            0,
+            BridgeUtils.USDC
         );
 
         assertEq(IERC20(USDC).balanceOf(USDCWhale), balance - usdcAmount);
@@ -631,7 +639,8 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             BridgeUtils.USDC,
             usdcAmount,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
-            0
+            0,
+            BridgeUtils.USDC
         );
     }
 
@@ -656,6 +665,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             0, // nonce
             0, // destination chain id
             BridgeUtils.USDT,
+            BridgeUtils.USDT,
             1_000_000, // 1 ether
             USDTWhale,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4"
@@ -664,7 +674,8 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             BridgeUtils.USDT,
             usdtAmount,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
-            0
+            0,
+            BridgeUtils.USDT
         );
 
         assertEq(IERC20(USDT).balanceOf(USDTWhale), balance - usdtAmount);
@@ -689,6 +700,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             0, // nonce
             0, // destination chain id
             BridgeUtils.BTC,
+            BridgeUtils.BTC,
             1_000_000, // 1 ether
             wBTCWhale,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4"
@@ -697,7 +709,8 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             BridgeUtils.BTC,
             wbtcAmount,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
-            0
+            0,
+            BridgeUtils.BTC
         );
 
         assertEq(IERC20(wBTC).balanceOf(wBTCWhale), balance - wbtcAmount);
@@ -715,6 +728,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             chainID,
             0, // nonce
             0, // destination chain id
+            BridgeUtils.ETH,
             BridgeUtils.ETH,
             1_000_000_00, // 1 ether
             deployer,
@@ -749,7 +763,8 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             BridgeUtils.ETH,
             1,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
-            0
+            0,
+            BridgeUtils.ETH
         );
     }
 
@@ -766,7 +781,8 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             BridgeUtils.USDC,
             0,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
-            0
+            0,
+            BridgeUtils.USDC
         );
     }
 
