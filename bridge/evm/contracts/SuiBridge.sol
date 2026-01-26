@@ -360,7 +360,8 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         uint64 tokenID,
         uint256 amount,
         bytes memory recipientAddress,
-        uint8 destinationChainID
+        uint8 destinationChainID,
+        bool isBusd
     ) external whenNotPaused nonReentrant onlySupportedChain(destinationChainID) {
         require(
             recipientAddress.length == SUI_ADDRESS_LENGTH,
@@ -406,7 +407,8 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             tokenID,
             suiAdjustedAmount,
             msg.sender,
-            recipientAddress
+            recipientAddress,
+            isBusd
         );
 
         // increment token transfer nonce
@@ -454,7 +456,8 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 BridgeUtils.BNB,
                 suiAdjustedAmount,
                 msg.sender,
-                recipientAddress
+                recipientAddress,
+                false
             );
         }else if (chainid == 39 || chainid == 40 || chainid == 41){
             //POL
@@ -472,8 +475,9 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 BridgeUtils.POL,
                 suiAdjustedAmount,
                 msg.sender,
-                recipientAddress
-            );
+                recipientAddress,
+                false
+             );
 
         }else if (chainid == 45 || chainid == 46 || chainid == 47){
               //AVAX
@@ -491,7 +495,8 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 BridgeUtils.AVAX,
                 suiAdjustedAmount,
                 msg.sender,
-                recipientAddress
+                recipientAddress,
+                false
             );
 
         }
@@ -510,7 +515,8 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 BridgeUtils.ETH,
                 suiAdjustedAmount,
                 msg.sender,
-                recipientAddress
+                recipientAddress,
+                false
             );
         }
         // increment token transfer nonce
