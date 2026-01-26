@@ -1041,6 +1041,7 @@ pub(crate) async fn solana_cross_token_to_bridge(
         .args(args::CrossTokenToBridge {
             amount,
             benfen_address,
+            target_token_id: token_id,
         })
         .instructions()?
         .remove(0);
@@ -2990,6 +2991,7 @@ pub async fn initiate_bridge_erc20_to_sui(
         amount,
         sui_recipient_address.to_vec().into(),
         sui_chain_id as u8,
+        token_id,
     );
     let tx_receipt = send_eth_tx_and_get_tx_receipt(deposit_call).await;
     let eth_bridge_event = tx_receipt

@@ -1859,7 +1859,8 @@ mod tests {
             sui_adjusted_amount,
             tx_hash: vec![],
             event_idx: 0,
-            fast_path_selector: FastPathSelector::Finalized
+            fast_path_selector: FastPathSelector::Finalized,
+            target_token_id: token_id,
         };
         let encoded_bytes = BridgeAction::EthToSuiBridgeAction(EthToSuiBridgeAction {
             eth_tx_hash,
