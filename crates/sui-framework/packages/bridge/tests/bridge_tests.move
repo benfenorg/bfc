@@ -2671,7 +2671,7 @@ fun test_external_busd_withdraw_external_busd_coin(token_id_expect: u64, target_
         &mut bfc_system_state,
         ctx,
     );
-    let withdraw = sui::event::events_by_type<bridge::bridge::ExternalWithdrawEventV2>();
+    let withdraw = sui::event::events_by_type<bridge::bridge::ExternalWithdrawEventV3>();
     assert!(withdraw.length() == 1);
     sui::test_scenario::return_shared(bfc_system_state);
     sui::test_scenario::return_to_sender(&scenario, cap);
