@@ -39,9 +39,9 @@
                 "internalType": "uint8"
             },
             {
-                    "name": "isBusd",
-                    "type": "bool",
-                    "internalType": "bool"
+                "name": "targetTokenID",
+                "type": "uint64",
+                "internalType": "uint64"
             }
         ],
         "outputs": [
@@ -664,6 +664,12 @@
                 "internalType": "uint64"
             },
             {
+                    "name": "targetTokenID",
+                    "type": "uint64",
+                    "indexed": false,
+                    "internalType": "uint64"
+            },
+            {
                 "name": "suiAdjustedAmount",
                 "type": "uint64",
                 "indexed": false,
@@ -680,12 +686,6 @@
                 "type": "bytes",
                 "indexed": false,
                 "internalType": "bytes"
-            },
-            {
-                    "name": "isBusd",
-                    "type": "bool",
-                    "indexed": false,
-                    "internalType": "bool"
             }
         ],
         "anonymous": false

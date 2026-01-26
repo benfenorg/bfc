@@ -17,10 +17,10 @@ interface ISuiBridge {
         uint64 indexed nonce,
         uint8 indexed destinationChainID,
         uint64 tokenID,
+        uint64 targetTokenID,
         uint64 suiAdjustedAmount,
         address senderAddress,
-        bytes recipientAddress,
-        bool isBusd
+        bytes recipientAddress
     );
 
     /// @notice Emitted when bridged tokens are transferred to the recipient address.

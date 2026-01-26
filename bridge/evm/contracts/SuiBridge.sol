@@ -361,7 +361,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         uint256 amount,
         bytes memory recipientAddress,
         uint8 destinationChainID,
-        bool isBusd
+        uint64 targetTokenID
     ) external whenNotPaused nonReentrant onlySupportedChain(destinationChainID) {
         require(
             recipientAddress.length == SUI_ADDRESS_LENGTH,
@@ -405,10 +405,10 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             nonces[BridgeUtils.TOKEN_TRANSFER],
             destinationChainID,
             tokenID,
+            targetTokenID,
             suiAdjustedAmount,
             msg.sender,
-            recipientAddress,
-            isBusd
+            recipientAddress
         );
 
         // increment token transfer nonce
@@ -454,10 +454,10 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 nonces[BridgeUtils.TOKEN_TRANSFER],
                 destinationChainID,
                 BridgeUtils.BNB,
+                BridgeUtils.BNB,
                 suiAdjustedAmount,
                 msg.sender,
-                recipientAddress,
-                false
+                recipientAddress
             );
         }else if (chainid == 39 || chainid == 40 || chainid == 41){
             //POL
@@ -473,10 +473,10 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 nonces[BridgeUtils.TOKEN_TRANSFER],
                 destinationChainID,
                 BridgeUtils.POL,
+                BridgeUtils.POL,
                 suiAdjustedAmount,
                 msg.sender,
-                recipientAddress,
-                false
+                recipientAddress
              );
 
         }else if (chainid == 45 || chainid == 46 || chainid == 47){
@@ -493,10 +493,10 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 nonces[BridgeUtils.TOKEN_TRANSFER],
                 destinationChainID,
                 BridgeUtils.AVAX,
+                BridgeUtils.AVAX,
                 suiAdjustedAmount,
                 msg.sender,
-                recipientAddress,
-                false
+                recipientAddress
             );
 
         }
@@ -513,10 +513,10 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 nonces[BridgeUtils.TOKEN_TRANSFER],
                 destinationChainID,
                 BridgeUtils.ETH,
+                BridgeUtils.ETH,
                 suiAdjustedAmount,
                 msg.sender,
-                recipientAddress,
-                false
+                recipientAddress
             );
         }
         // increment token transfer nonce
