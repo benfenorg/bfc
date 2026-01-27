@@ -3323,6 +3323,7 @@ async fn test_bridge_from_solana_to_sui() {
         .args(args::CrossTokenToBridge {
             amount,
             benfen_address: sui_address.to_vec(),
+            target_token_id:token_id
         })
         .instructions()
         .expect("Failed to build cross_token_to_bridge instructions")
@@ -3539,6 +3540,7 @@ async fn test_add_refund_admin_and_bridge_from_solana() {
         .args(args::CrossTokenToBridge {
             amount,
             benfen_address: sui_address.to_vec(),
+            target_token_id:token_id
         })
         .instructions()
         .expect("Failed to build cross_token_to_bridge instructions")
@@ -4136,6 +4138,8 @@ async fn test_bridge_solana_roundtrip() {
         .args(args::CrossTokenToBridge {
             amount,
             benfen_address: sui_address.to_vec(),
+            target_token_id:token_id
+
         })
         .instructions()
         .expect("Failed to build cross_token_to_bridge instructions")

@@ -1240,6 +1240,7 @@ mod tests {
             sender_pubkey: [0u8; 32], // Random sender
             recipient_length: 32,
             recipient_bytes: SuiAddress::random_for_testing_only().to_vec(),
+            target_token_id: 1,
         };
         SolanaParsedEvent {
             tx_signature: tx_signature.to_string(),

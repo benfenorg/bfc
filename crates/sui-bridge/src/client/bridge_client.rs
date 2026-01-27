@@ -727,7 +727,8 @@ mod tests {
                 sui_adjusted_amount: 1,
                 tx_hash: vec![],
                 event_idx: 0,
-                fast_path_selector: FastPathSelector::Finalized
+                fast_path_selector: FastPathSelector::Finalized,
+                target_token_id: 5,
             },
         });
 

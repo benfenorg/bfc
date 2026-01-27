@@ -757,6 +757,7 @@ mod tests {
                         )
                         .unwrap(),
                     ),
+                    target_token_id: 5,
                 }
             ))
         );
@@ -776,6 +777,7 @@ mod tests {
                 recipient_address: ethers::types::Bytes::from(
                     SuiAddress::random_for_testing_only().to_vec(),
                 ),
+                target_token_id: 2,
             },
         ));
         assert!(e
@@ -794,6 +796,7 @@ mod tests {
                 recipient_address: ethers::types::Bytes::from(
                     SuiAddress::random_for_testing_only().to_vec(),
                 ),
+                target_token_id: 2,
             },
         ));
         match e.try_into_bridge_action(TxHash::random(), 0).unwrap_err() {
