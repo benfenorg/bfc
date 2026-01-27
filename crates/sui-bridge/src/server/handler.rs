@@ -112,7 +112,7 @@ struct SendBackActionVerifier<C, P> {
     eth_client: Arc<EthClient<P>>,
     evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<P>>>,
     fast_path_config: FastPathConfig,
-    external_rpc: Option<Arc<ExternalChainRpcConfig>>,
+    solana_base_url: Option<String>,// for decentralization request
 }
 
 struct ExternalCoinVerifier<C> {
@@ -428,19 +428,9 @@ where
             let tx_hash_bytes = send_back_action.sui_bridge_event.tx_hash.to_vec();
             let event_idx = send_back_action.sui_bridge_event.event_idx;
 
-            let external_rpc = self.external_rpc.as_ref().ok_or_else(|| {
-                BridgeError::Generic("External RPC config not found (solana)".to_string())
+            let base_url = self.solana_base_url.as_ref().ok_or_else(|| {
+                BridgeError::Generic("Solana base URL not found".to_string())
             })?;
-            let base_url = match send_back_action.sui_bridge_event.solana_chain_id {
-                BridgeChainId::SolanaMainnet => external_rpc.solana.mainnet_url.as_str(),
-                BridgeChainId::SolanaTestnet => external_rpc.solana.testnet_url.as_str(),
-                other => {
-                    return Err(BridgeError::Generic(format!(
-                        "Unsupported Solana chain id in send-back action: {:?}",
-                        other
-                    )))
-                }
-            };
             let solana_client = SolanaClient::new(base_url);
 
             // tx_hash 字段在 Solana send-back 事件里承载原始 Solana tx signature（bytes）。
@@ -700,6 +690,7 @@ impl BridgeRequestHandler {
         metrics: Arc<BridgeMetrics>,
         fast_path_config: FastPathConfig,
         external_rpc: Option<crate::config::ExternalChainRpcConfig>,
+        solana_base_url: Option<String>,// for decentralization request
     ) -> Self {
         let external_rpc = external_rpc.map(Arc::new);
         info!("bbking100 external_rpc: {:?}", external_rpc);
@@ -782,8 +773,8 @@ impl BridgeRequestHandler {
         )
             .spawn(eth_rx);
 
-        if let Some(external_rpc) = external_rpc.clone() {
-            let solana_client = Arc::new(SolanaClient::new(&external_rpc.solana.mainnet_url));
+        if let Some(solana_base_url) = solana_base_url.clone() {
+            let solana_client = Arc::new(SolanaClient::new(&solana_base_url));
             SignerWithCache::new(
                 signer.clone(),
                 SolanaActionVerifier { solana_client },
@@ -797,11 +788,12 @@ impl BridgeRequestHandler {
                 let mut solana_rx = solana_rx;
                 while let Some((_, resp)) = solana_rx.recv().await {
                     let _ = resp.send(Err(BridgeError::Generic(
-                        "External RPC config not found (solana)".to_string(),
+                        "Solana RPC config not found".to_string(),
                     )));
                 }
             });
         }
+
         SignerWithCache::new(
             signer.clone(),
             GovernanceVerifier::new(approved_governance_actions).unwrap(),
@@ -816,7 +808,7 @@ impl BridgeRequestHandler {
                 eth_client: eth_client.clone(),
                 evm_clients: evm_clients.clone(),
                 fast_path_config: fast_path_config.clone(),
-                external_rpc: external_rpc.clone(),
+                solana_base_url: solana_base_url.clone(),
             },
             metrics.clone(),
         )
