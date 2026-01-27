@@ -88,7 +88,7 @@ async fn sim_checkpoint_split_brain_test() {
 }
 
 #[sim_test]
-async fn test_checkpoint_timestamps_non_decreasing() {
+async fn sim_test_checkpoint_timestamps_non_decreasing() {
     let epoch_duration_ms = 10_000; // 10 seconds
     let num_epochs_to_run = 3;
 

@@ -2517,7 +2517,7 @@ async fn test_protocol_upgrade_to_sip_39_enabled_version() {
 }
 
 #[sim_test]
-async fn test_reconfig_with_voting_power_decrease() {
+async fn sim_test_reconfig_with_voting_power_decrease() {
     // This test exercise the full flow of a validator joining the network, catch up and then leave.
     // Validator starts with .12% of the total voting power and then decreases to below the threshold.
     let initial_num_validators = 10;
@@ -2675,7 +2675,7 @@ async fn test_reconfig_with_voting_power_decrease() {
 }
 
 #[sim_test]
-async fn test_reconfig_with_voting_power_decrease_immediate_removal() {
+async fn sim_test_reconfig_with_voting_power_decrease_immediate_removal() {
     // This test exercise the full flow of a validator joining the network, catch up and then leave.
     // Validator starts with .12% of the total voting power and then decreases to below the threshold.
     let initial_num_validators = 10;
