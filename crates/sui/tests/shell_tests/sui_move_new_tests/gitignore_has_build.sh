@@ -9,5 +9,5 @@ echo "ignore2" >> example/.gitignore
 bfc move new example
 cat example/.gitignore
 echo
-echo ==== files in example/ ====
+echo "==== files in example ==== "
 ls -A example

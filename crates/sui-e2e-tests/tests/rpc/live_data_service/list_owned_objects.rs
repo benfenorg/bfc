@@ -16,7 +16,7 @@ use sui_types::Identifier;
 use test_cluster::TestClusterBuilder;
 
 #[sim_test]
-async fn test_indexing_with_tto() {
+async fn sim_test_indexing_with_tto() {
     let cluster = TestClusterBuilder::new().build().await;
 
     let mut channel = tonic::transport::Channel::from_shared(cluster.rpc_url().to_owned())
@@ -499,7 +499,7 @@ async fn test_filter_by_type() {
 }
 
 #[sim_test]
-async fn test_reverse_sorted_coins_by_balance() {
+async fn sim_test_reverse_sorted_coins_by_balance() {
     let cluster = TestClusterBuilder::new().build().await;
 
     let mut channel = tonic::transport::Channel::from_shared(cluster.rpc_url().to_owned())

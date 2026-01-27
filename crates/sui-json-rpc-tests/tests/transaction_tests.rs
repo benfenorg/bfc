@@ -440,7 +440,7 @@ async fn sim_test_get_transaction_block_with_stable_gascoin() -> Result<(), anyh
 }
 
 #[sim_test]
-async fn test_query_transaction_blocks() -> Result<(), anyhow::Error> {
+async fn sim_test_query_transaction_blocks() -> Result<(), anyhow::Error> {
     let mut cluster = TestClusterBuilder::new().build().await;
     let context = &cluster.wallet;
     let client = context.get_client().await.unwrap();
