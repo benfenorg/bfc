@@ -384,9 +384,7 @@ fn build_external_token_bridge_approve_and_claim_transaction(
     })?;
 
     match token_type {
-        sui_types::bridge::TOKEN_ID_BUSD
-        | sui_types::bridge::TOKEN_ID_USDC
-        | sui_types::bridge::TOKEN_ID_USDT => {
+        sui_types::bridge::TOKEN_ID_BUSD => {
             let admin_cap = builder.obj(admin_cap_arg.unwrap()).unwrap();
             let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
 
