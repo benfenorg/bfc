@@ -296,8 +296,7 @@ impl TryFrom<&TokensDepositedFilter> for EthToSuiTokenBridgeV1 {
             tx_hash: vec![],
             event_idx: 0,
             fast_path_selector: FastPathSelector::Finalized,
-            //todo: @lifei, add target_token_id
-            target_token_id: 0,
+            target_token_id: event.target_token_id,
         })
     }
 }

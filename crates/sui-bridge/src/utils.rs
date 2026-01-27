@@ -49,6 +49,7 @@ use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary;
 use sui_types::transaction::{ObjectArg, TransactionData};
 use sui_types::BRIDGE_PACKAGE_ID;
+use tracing::info;
 
 use solana_client::rpc_client::RpcClient;
 use anchor_client::Client;
@@ -519,7 +520,7 @@ pub async fn publish_and_register_coins_return_add_coins_on_sui_action(
         }
         let (tc, type_, uc, metadata) =
             (tc.unwrap(), type_.unwrap(), uc.unwrap(), metadata.unwrap());
-
+        info!("bbking121 tc: {:?} type_: {:?} uc: {:?} metadata: {:?}", tc, type_, uc, metadata);
         // register with the bridge
         let mut builder = ProgrammableTransactionBuilder::new();
         let bridge_arg = builder.obj(bridge_arg).unwrap();

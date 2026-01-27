@@ -2532,12 +2532,13 @@ async fn test_bridge_usdt_to_sui() {
         .await
         .unwrap()
         .data;
-    let busd_coin = all_coins
+    info!("bbking100 all_coins: {:?}", all_coins);
+    let usdt_coin = all_coins
         .iter()
-        .find(|c| c.coin_type.contains("BUSD"))
-        .expect("Recipient should have received BUSD coin now")
+        .find(|c| c.coin_type.contains("USDT"))
+        .expect("Recipient should have received USDT coin now")
         .clone();
-    assert_eq!(busd_coin.balance, 100_000_000_000);
+    assert_eq!(usdt_coin.balance, 100_000_000_000);
     info!(
         "[Timer] Eth to Sui bridge USDT transfer finished in {:?}",
         timer.elapsed()
@@ -2552,7 +2553,7 @@ async fn test_bridge_usdt_to_sui() {
     let _sui_to_eth_bridge_action = initiate_bridge_sui_to_eth(
         &bridge_test_cluster,
         eth_address_1,
-        busd_coin.object_ref(),
+        usdt_coin.object_ref(),
         nonce,
         100_000_000_000,
         TOKEN_ID_USDT,

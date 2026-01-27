@@ -2481,7 +2481,8 @@ pub async fn initiate_bridge_sui_to_eth(
         .await
         .unwrap();
     let sui_address = bridge_test_cluster.sui_user_address();
-    let resp = if expect_token_id == TOKEN_ID_ETH {
+    info!("bbking120 token: {:?}", token);
+    let resp = if expect_token_id == TOKEN_ID_ETH || expect_token_id == TOKEN_ID_USDT {
         match deposit_eth_to_sui_package(
             sui_client,
             sui_address,
@@ -2806,7 +2807,7 @@ async fn deposit_eth_to_sui_package(
         BRIDGE_PACKAGE_ID,
         BRIDGE_MODULE_NAME.to_owned(),
         ident_str!("send_token").to_owned(),
-        vec![sui_token_type_tags.get(&TOKEN_ID_ETH).unwrap().clone()],
+        vec![sui_token_type_tags.get(&expect_token_id).unwrap().clone()],
         vec![arg_bridge, arg_target_chain, arg_target_address, arg_token],
     );
 
