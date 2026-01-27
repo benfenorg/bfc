@@ -12,7 +12,7 @@ use crate::e2e_tests::test_utils::{
 };
 use crate::eth_transaction_builder::build_eth_transaction;
 use crate::events::{
-    SuiBridgeEvent, SuiToEthTokenBridgeV2, TokenSendBackEvent, TokenSendBackForSolanaV2,
+    SuiBridgeEvent, SuiToEthTokenBridgeV2, SuiToEthTokenBridgeV3, TokenSendBackEvent, TokenSendBackForSolanaV2,
     TokenTransferApproved, TokenTransferClaimed,
 };
 use crate::e2e_tests::{auth, stable};
@@ -233,7 +233,7 @@ async fn test_bridge_from_eth_to_sui_to_eth() {
     let events = bridge_test_cluster
         .new_bridge_events(
             HashSet::from_iter([
-                SuiToEthTokenBridgeV2.get().unwrap().clone(),
+                SuiToEthTokenBridgeV3.get().unwrap().clone(),
                 TokenTransferApproved.get().unwrap().clone(),
                 TokenTransferClaimed.get().unwrap().clone(),
             ]),
@@ -2559,10 +2559,12 @@ async fn test_bridge_usdt_to_sui() {
     )
     .await
     .unwrap();
+    // Wait for bridge cluster to process the event and generate approval transaction
+    tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
     let events = bridge_test_cluster
         .new_bridge_events(
             HashSet::from_iter([
-                SuiToEthTokenBridgeV2.get().unwrap().clone(),
+                SuiToEthTokenBridgeV3.get().unwrap().clone(),
                 TokenTransferApproved.get().unwrap().clone(),
                 TokenTransferClaimed.get().unwrap().clone(),
             ]),
@@ -2863,7 +2865,7 @@ async fn test_bridge_usdt_to_sui_from_bsc() {
     let events = bridge_test_cluster
         .new_bridge_events(
             HashSet::from_iter([
-                SuiToEthTokenBridgeV2.get().unwrap().clone(),
+                SuiToEthTokenBridgeV3.get().unwrap().clone(),
                 TokenTransferApproved.get().unwrap().clone(),
                 TokenTransferClaimed.get().unwrap().clone(),
             ]),
