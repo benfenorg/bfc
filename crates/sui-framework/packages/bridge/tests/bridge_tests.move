@@ -51,6 +51,7 @@ use bridge::message::{Self, to_parsed_token_transfer_message_v2};
 use bridge::message_types;
 use bridge::test_token::{TEST_TOKEN, create_bridge_token as create_test_token};
 use bridge::usdc::USDC;
+use bridge::usdt::USDT;
 use std::type_name;
 use sui::address;
 use sui::balance;
@@ -577,6 +578,74 @@ fun test_btc_bridge_deposit_with_insufficient_multi_signature() {
 
     env.destroy_env();
 }
+
+#[test]
+fun test_usdt_bridge_pre_deposit_and_deposit() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+
+    let sender1 = @0xA;
+    let sender2 = @0xB;
+    let sender3 = @0xC;
+    let (witness, private_key, source_address, tx_hash, target_address, amount) = mock_bitcoin_message();
+    let type_name = type_name::get<USDT>();
+    let coin_type = type_name.into_string();
+    
+    // Use ETH Sepolia for USDT
+    let source_chain = chain_ids::eth_sepolia();
+    
+    let bitcoin_message = message::create_bitcoin_message(
+        source_chain,
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+        *type_name.into_string().as_bytes()
+    );
+    let msg = hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
+    let signatures = ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
+    
+    env.add_external_coin_witness(coin_type, witness);
+    env.add_external_coin_admin(coin_type, sender1.to_ascii_string());
+    env.add_external_coin_admin(coin_type, sender2.to_ascii_string());
+    env.add_external_coin_admin(coin_type, sender3.to_ascii_string());
+
+
+    env.pre_deposit_external_coin_for_testing<USDT>(
+        sender1,
+        source_chain,
+        source_address,
+        target_address,
+        1*100_000_000,
+        tx_hash.to_ascii_string(),
+        signatures,
+    );
+
+    env.pre_deposit_external_coin_for_testing<USDT>(
+        sender2,
+        source_chain,
+        source_address,
+        target_address,
+        1*100_000_000,
+        tx_hash.to_ascii_string(),
+        signatures,
+    );
+
+    // Using deposit_and_withdraw_external_coin to verify the full flow including deposit_external_coin
+    env.deposit_and_withdraw_external_coin<USDT>(
+        sender1,
+        source_chain,
+        chain_ids::sui_testnet(),
+        source_address,
+        target_address,
+        1*100_000_000,
+        signatures,
+        tx_hash.to_ascii_string(),
+    );
+
+    env.destroy_env();
+}
+
 
 #[test]
 fun test_verify_bitcoin_signatures() {
