@@ -161,6 +161,7 @@ pub async fn run_bridge_node(
             metrics.clone(),
             fast_path_config,
             server_config.external_rpc,
+            Some(config.solana.getblock_base_url),
         ),
         metrics,
         Arc::new(metadata),
