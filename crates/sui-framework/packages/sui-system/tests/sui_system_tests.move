@@ -7,19 +7,10 @@
 
 #[test_only]
 module sui_system::sui_system_tests;
-use sui::test_scenario::Self;
 use std::unit_test::assert_eq;
-use sui_system::governance_test_utils::{add_validator_full_flow, advance_epoch, remove_validator};
-
-use sui_system::sui_system::{Self, SuiSystemState};
 use sui_system::validator_cap::UnverifiedValidatorOperationCap;
 use sui_system::test_runner;
 use sui_system::validator_builder;
-use sui::table;
-use bfc_system::bars::BARS;
-use bfc_system::bbrl::BBRL;
-use bfc_system::bjpy::BJPY;
-use bfc_system::busd::BUSD;
 
 const MIST_PER_SUI: u64 = 1_000_000_000;
 

@@ -105,8 +105,6 @@ public fun build(builder: TestRunnerBuilder): TestRunner {
     );
     let genesis_validator_addresses = validators.map_ref!(|v| v.sui_address());
     let bfc_system_address = create_bfc_system_state(scenario.ctx(), BFC_AMOUNT);
-
-    let bfc_system_address = create_bfc_system_state(scenario.ctx(), BFC_AMOUNT);
     // create sui system state
     sui_system::create(
         object::new(scenario.ctx()), // it doesn't matter what ID sui system state has in tests

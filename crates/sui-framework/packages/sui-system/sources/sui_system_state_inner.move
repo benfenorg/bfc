@@ -1274,10 +1274,11 @@ public(package) fun request_add_validator_candidate_for_testing(
 }
 
 #[test_only]
+#[allow(unused_variable)]
 public(package) fun request_add_validator_for_testing(
     self: &mut SuiSystemStateInnerV2,
     min_joining_stake_for_testing: u64,
-    ctx: &mut TxContext,
+    ctx: &TxContext,
 ) {
     assert!(
         self.validators.next_epoch_validator_count() < self.parameters.max_validator_count,

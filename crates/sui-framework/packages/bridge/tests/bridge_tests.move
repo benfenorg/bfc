@@ -1042,8 +1042,6 @@ fun test_execute_send_back_token_invalid_tx_hash() {
     env.destroy_env();
 }
 
-#[test]
-#[expected_failure(abort_code = bridge::bridge::ETokenValueIsZero)]
 #[test, expected_failure(abort_code = bridge::bridge::ETokenValueIsZero)]
 fun test_execute_send_token_zero_value() {
     let mut env = create_env(chain_ids::sui_testnet());

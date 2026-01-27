@@ -8,7 +8,6 @@ module sui_system::voting_power_tests {
     use sui_system::voting_power;
     use sui::test_scenario;
     use sui::test_utils;
-    use sui_system::validator_builder;
     use sui_system::validator::{Self, Validator, rate_vec_map};
 
     const TOTAL_VOTING_POWER: u64 = 10_000;

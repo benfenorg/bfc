@@ -384,15 +384,6 @@ fun test_chains_ok() {
     assert_valid_chain_id(AptosMainnet);
     assert_valid_chain_id(AptosTestnet);
 }
-#[test]
-fun test_chains_ok() {
-    assert_valid_chain_id(SUI_MAINNET);
-    assert_valid_chain_id(SUI_TESTNET);
-    assert_valid_chain_id(SUI_CUSTOM);
-    assert_valid_chain_id(ETH_MAINNET);
-    assert_valid_chain_id(ETH_SEPOLIA);
-    assert_valid_chain_id(ETH_CUSTOM);
-}
 
 #[test, expected_failure(abort_code = EInvalidBridgeRoute)]
 fun test_chains_error() {
@@ -650,15 +641,4 @@ fun test_routes_err_base_2() {
 #[expected_failure(abort_code = EInvalidBridgeRoute)]
 fun test_routes_err_base_3() {
     get_route(BaseMainnet, SUI_CUSTOM);
-}
-
-#[test]
-#[expected_failure(abort_code = EInvalidBridgeRoute)]
-fun test_routes_err_base_4() {
-    get_route(BaseMainnet, SUI_TESTNET);
-}
-
-#[test, expected_failure(abort_code = EInvalidBridgeRoute)]
-fun test_routes_err_eth_4() {
-    get_route(ETH_MAINNET, SUI_TESTNET);
 }

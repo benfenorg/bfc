@@ -1336,7 +1336,7 @@ fun assert_exchange_rate_eq(
 }
 
 fun assert_exchange_stable_rate_eq(
-    rates: &Table<u64, PoolStableTokenExchangeRate>, epoch: u64, sui_amount: u64, pool_token_amount: u64
+    rates: &Table<u64, PoolStableTokenExchangeRate>, epoch: u64, _sui_amount: u64, pool_token_amount: u64
 ) {
     let rate = table::borrow(rates, epoch);
     assert_eq!(stable_pool::pool_token_amount(rate), pool_token_amount * MIST_PER_SUI);

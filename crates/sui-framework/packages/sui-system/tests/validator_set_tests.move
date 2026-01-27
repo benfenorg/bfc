@@ -5,9 +5,8 @@
 module sui_system::validator_set_tests {
     use sui::balance;
     use sui::coin;
-    use sui_system::staking_pool::StakedBfc;
     use sui_system::validator::{Self, Validator, staking_pool_id, rate_vec_map};
-    use sui_system::validator_set::{Self, ValidatorSet, active_validator_addresses};
+    use sui_system::validator_set::{Self, ValidatorSet};
     use sui::test_scenario::{Self, Scenario};
     use sui::address;
     use bfc_system::bars::BARS;
@@ -29,7 +28,6 @@ module sui_system::validator_set_tests {
     use bfc_system::mgg::MGG;
     use sui::test_utils::{Self, assert_eq};
     use sui::vec_map;
-    use sui_system::stable_pool::StakedStable;
     use std::debug;
     use std::ascii::string;
 
@@ -515,7 +513,7 @@ module sui_system::validator_set_tests {
         scenario.next_tx(@0x2);
         let num_validators = validator_set.active_validators().length();
 
-        let pool_id_2 = staking_pool_id(&validator2);
+        let _pool_id_2 = staking_pool_id(&validator2);
         // Try to add a validator with the min voting power. it should work
         validator_set.request_add_validator_candidate(validator2, scenario.ctx());
         assert!(validator_set.is_validator_candidate(@0x2));

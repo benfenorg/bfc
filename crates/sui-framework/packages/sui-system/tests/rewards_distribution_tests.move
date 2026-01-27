@@ -3,25 +3,18 @@
 
 #[test_only]
 module sui_system::rewards_distribution_tests;
-    use std::type_name;
     use sui::test_scenario::{Self, Scenario};
-    use sui_system::sui_system::{Self, SuiSystemState, get_stable_rate};
+    use sui_system::sui_system::{Self, SuiSystemState};
     use sui_system::validator_cap::UnverifiedValidatorOperationCap;
     use sui_system::governance_test_utils::{
-        advance_epoch,
         advance_epoch_with_reward_amounts,
         advance_epoch_with_reward_amounts_and_slashing_rates,
         assert_validator_total_stake_amounts,
         assert_validator_self_stake_amounts,
         create_validator_for_testing,
         create_sui_system_state_for_testing,
-        total_sui_balance, assert_validator_total_stake_with_stable_amounts, stake_with_stable, unstake_stable,
-        total_busd_balance, advance_epoch_with_reward_amounts_with_stable_rate,
-        assert_validator_non_self_stake_amounts_stable, assert_validator_self_stake_amounts_stable
     };
     use sui::address;
-    use sui::vec_map;
-    use bfc_system::busd::BUSD;
     use sui_system::governance_test_utils;
     use sui_system::test_runner;
     use sui_system::validator_builder;
@@ -682,11 +675,6 @@ fun entire_rewards_slashing() {
         // test_scenario::end(scenario_val);
     }
 
-    fun cal(reward : u64, a: u64, b: u64) : u64 {
-        ((reward as u128) * (a as u128) / ((a as u128) + (b as u128)) as u64)
-    }
-
-
 #[test]
 fun rewards_slashing_with_storage_fund() {
     let mut runner = test_runner::new()
@@ -869,14 +857,14 @@ fun set_up_sui_system_state_with_big_amounts() {
         vector[VALIDATOR_ADDR_1, VALIDATOR_ADDR_2, VALIDATOR_ADDR_3, VALIDATOR_ADDR_4]
     }
 
-    fun set_commission_rate_and_advance_epoch(addr: address, commission_rate: u64, scenario: &mut Scenario) {
-        scenario.next_tx(addr);
-        let mut system_state = scenario.take_shared<SuiSystemState>();
-        let ctx = scenario.ctx();
-        system_state.request_set_commission_rate(commission_rate, ctx);
-        test_scenario::return_shared(system_state);
-        advance_epoch(scenario);
-    }
+    // fun set_commission_rate_and_advance_epoch(addr: address, commission_rate: u64, scenario: &mut Scenario) {
+    //     scenario.next_tx(addr);
+    //     let mut system_state = scenario.take_shared<SuiSystemState>();
+    //     let ctx = scenario.ctx();
+    //     system_state.request_set_commission_rate(commission_rate, ctx);
+    //     test_scenario::return_shared(system_state);
+    //     advance_epoch(scenario);
+    // }
 
     #[test]
     fun test_everyone_slashed_stable() {

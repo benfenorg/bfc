@@ -69,7 +69,7 @@ module bridge::limiter_tests {
         };
         let record = limiter.transfer_records().get(&route);
         let mut expected_value = 24000 * 5 * usd_value_multiplier();
-        assert_eq!(record.total_amount(), expected_value);
+        assert_eq(record.total_amount(), expected_value);
 
         // transfer 1000 * i ETH every hour for 24 hours, the 24 hours
         // totol should be 300 * 1000 * 5
@@ -91,12 +91,12 @@ module bridge::limiter_tests {
             let record = limiter.transfer_records().get(&route);
 
             expected_value = expected_value + 1000 * 5 * i * usd_value_multiplier();
-            assert_eq!(record.total_amount(), expected_value);
+            assert_eq(record.total_amount(), expected_value);
             i = i + 1;
         };
 
         let record = limiter.transfer_records().get(&route);
-        assert_eq!(record.total_amount(), 300 * 1000 * 5 * usd_value_multiplier());
+        assert_eq(record.total_amount(), 300 * 1000 * 5 * usd_value_multiplier());
 
         destroy(limiter);
         destroy(treasury);
@@ -251,7 +251,7 @@ module bridge::limiter_tests {
         );
 
         let record = limiter.transfer_records().get(&route);
-        assert_eq!(record.total_amount(), 90000 * 10 * usd_value_multiplier());
+        assert_eq(record.total_amount(), 90000 * 10 * usd_value_multiplier());
 
         clock.increment_for_testing(60 * 60 * 1000);
         assert!(
@@ -264,7 +264,7 @@ module bridge::limiter_tests {
             0,
         );
         let record = limiter.transfer_records().get(&route);
-        assert_eq!(record.total_amount(), 100000 * 10 * usd_value_multiplier());
+        assert_eq(record.total_amount(), 100000 * 10 * usd_value_multiplier());
 
         // Tx should fail with a tiny amount because the limit is hit
         assert!(
@@ -293,7 +293,7 @@ module bridge::limiter_tests {
             0,
         );
         let record = limiter.transfer_records().get(&route);
-        assert_eq!(record.total_amount(), 100000 * 10 * usd_value_multiplier());
+        assert_eq(record.total_amount(), 100000 * 10 * usd_value_multiplier());
 
         // But now limit is hit again
         assert!(
@@ -301,7 +301,7 @@ module bridge::limiter_tests {
             0,
         );
         let record = limiter.transfer_records().get(&route);
-        assert_eq!(record.total_amount(), 100000 * 10 * usd_value_multiplier());
+        assert_eq(record.total_amount(), 100000 * 10 * usd_value_multiplier());
 
         destroy(limiter);
         destroy(treasury);
@@ -370,8 +370,8 @@ module bridge::limiter_tests {
             0,
         );
         let record = limiter.transfer_records().get(&route);
-        assert_eq!(record.hour_head(), 10023);
-        assert_eq!(record.hour_tail(), 10000);
+        assert_eq(record.hour_head(), 10023);
+        assert_eq(record.hour_tail(), 10000);
         assert!(
             record.per_hour_amounts() ==
             &vector[
@@ -380,7 +380,7 @@ module bridge::limiter_tests {
             ],
             0,
         );
-        assert_eq!(record.total_amount(), 15 * eth_price);
+        assert_eq(record.total_amount(), 15 * eth_price);
 
         // hour 0 (10023): $37.5 + $10 = $47.5
         // 10 uddc = $10
@@ -393,8 +393,8 @@ module bridge::limiter_tests {
             0,
         );
         let record = limiter.transfer_records().get(&route);
-        assert_eq!(record.hour_head(), 10023);
-        assert_eq!(record.hour_tail(), 10000);
+        assert_eq(record.hour_head(), 10023);
+        assert_eq(record.hour_tail(), 10000);
         let expected_notion_amount_10023 = 15 * eth_price + 10 * usd_value_multiplier();
         assert!(
             record.per_hour_amounts() ==
@@ -405,7 +405,7 @@ module bridge::limiter_tests {
             ],
             0,
         );
-        assert_eq!(record.total_amount(), expected_notion_amount_10023);
+        assert_eq(record.total_amount(), expected_notion_amount_10023);
 
         // hour 1 (10024): $20
         clock.increment_for_testing(60 * 60 * 1000);
