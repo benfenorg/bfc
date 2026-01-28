@@ -368,14 +368,19 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             "SuiBridge: Invalid recipient address length"
         );
 
+        IBridgeConfig config = committee.config();
+
+        uint8 decimal = config.tokenSuiDecimalOf(tokenID);
         if (tokenID == 3 || tokenID==4) {
+
             // USDT/USDC only support cross to SUI
             require(targetTokenID == tokenID || targetTokenID == 5, "SuiBridge: Invalid target token ID");
+            if (targetTokenID == tokenID) {
+                decimal = config.tokenOriginalDecimalOf(tokenID);
+            }
         }else{
             require(tokenID==targetTokenID, "SuiBridge: Invalid target token ID");
         }
-
-        IBridgeConfig config = committee.config();
 
         require(config.isTokenSupported(tokenID), "SuiBridge: Unsupported token");
 
@@ -403,7 +408,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         // Adjust the amount
         uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
             IERC20Metadata(tokenAddress).decimals(),
-            config.tokenSuiDecimalOf(tokenID),
+            decimal,
             amountTransfered
         );
 

@@ -129,6 +129,7 @@ library BridgeUtils {
     uint64 public constant ETH = 2;
     uint64 public constant USDC = 3;
     uint64 public constant USDT = 4;
+    uint64 public constant BUSD = 5;
     uint64 public constant BNB = 6;
     uint64 public constant OP  =7;
     uint64 public constant ARB  =8;
