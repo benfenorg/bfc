@@ -600,7 +600,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         uint256 balance = IERC20(USDC).balanceOf(USDCWhale);
 
         // assert emitted event
-        vm.expectEmit(true, true, true, false);
+        vm.expectEmit(true, true, true, true);
         emit TokensDeposited(
             chainID,
             0, // nonce
@@ -617,6 +617,79 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
             0,
             BridgeUtils.USDC
+        );
+
+        assertEq(IERC20(USDC).balanceOf(USDCWhale), balance - usdcAmount);
+        assertEq(IERC20(USDC).balanceOf(address(vault)), usdcAmount);
+    }
+
+
+    function testBridgeUSDCWithExpectUnexpect() public {
+
+         changePrank(USDCWhale);
+
+        uint256 usdcAmount = 1000000;
+
+        // approve
+        IERC20(USDC).approve(address(bridge), usdcAmount);
+
+        assertEq(IERC20(USDC).balanceOf(address(vault)), 0);
+        uint256 balance = IERC20(USDC).balanceOf(USDCWhale);
+
+        // assert emitted event
+        //vm.expectEmit(true, true, true, false);
+        vm.expectRevert();
+        emit TokensDeposited(
+            chainID,
+            0, // nonce
+            0, // destination chain id
+            BridgeUtils.USDC,
+            BridgeUtils.USDT,
+            1_000_000, // 1 ether
+            USDCWhale,
+            hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4"
+        );
+        bridge.bridgeERC20(
+            BridgeUtils.USDC,
+            usdcAmount,
+            hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
+            0,
+            BridgeUtils.USDT
+        );
+    }
+
+
+
+
+    function testBridgeUSDCWithExpectBusd() public {
+        changePrank(USDCWhale);
+
+        uint256 usdcAmount = 1000000;
+
+        // approve
+        IERC20(USDC).approve(address(bridge), usdcAmount);
+
+        assertEq(IERC20(USDC).balanceOf(address(vault)), 0);
+        uint256 balance = IERC20(USDC).balanceOf(USDCWhale);
+
+        // assert emitted event
+        vm.expectEmit(true, true, true, false);
+        emit TokensDeposited(
+            chainID,
+            0, // nonce
+            0, // destination chain id
+            BridgeUtils.USDC,
+            BridgeUtils.BUSD,
+            1_000_000, // 1 ether
+            USDCWhale,
+            hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4"
+        );
+        bridge.bridgeERC20(
+            BridgeUtils.USDC,
+            usdcAmount,
+            hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
+            0,
+            BridgeUtils.BUSD
         );
 
         assertEq(IERC20(USDC).balanceOf(USDCWhale), balance - usdcAmount);
@@ -717,7 +790,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         assertEq(IERC20(wBTC).balanceOf(address(vault)), wbtcAmount);
     }
 
-    function testBridgeEth() public {
+    function testBridgeEthEvent() public {
         changePrank(deployer);
         assertEq(IERC20(wETH).balanceOf(address(vault)), 0);
         uint256 balance = deployer.balance;
