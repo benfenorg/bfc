@@ -764,12 +764,11 @@ module bridge::bridge {
 
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::token());
         let token_id = inner.treasury.token_id<T>();
-        let token_amount = token.balance().value();
+        let token_amount=token.balance().value();
         assert!(token_amount > 0, ETokenValueIsZero);
         assert!(token_id != 5, EUseSendBusd);
 
         assert!(tokenlist::is_supported_from_benfen(parent_id, target_chain as u64, token_id),EInvalidChainIDAndTokenIDExpect);
-
         let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,token_amount);
         assert!(token_amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);

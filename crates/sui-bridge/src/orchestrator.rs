@@ -337,6 +337,7 @@ where
                                 action_inner.eth_bridge_event.token_id,
                                 action_inner.eth_bridge_event.sui_adjusted_amount,
                                 config,
+                                action_inner.eth_bridge_event.target_token_id,
                             );
 
                             if fast_path_selector == log_wrapper.fast_path_selector {

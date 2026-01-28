@@ -11,7 +11,7 @@ module bridged_usdt::usdt {
 
     struct USDT has drop {}
 
-    const DECIMAL: u8 = 9;
+    const DECIMAL: u8 = 6;
 
     fun init(otw: USDT, ctx: &mut TxContext) {
         let (treasury_cap, metadata) = coin::create_currency(

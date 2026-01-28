@@ -11,7 +11,9 @@ title: Module `bridge::bridge`
 -  [Struct `DefiHolderInfo`](#bridge_bridge_DefiHolderInfo)
 -  [Struct `TokenDepositedEvent`](#bridge_bridge_TokenDepositedEvent)
 -  [Struct `TokenDepositedEventV2`](#bridge_bridge_TokenDepositedEventV2)
+-  [Struct `TokenDepositedEventV3`](#bridge_bridge_TokenDepositedEventV3)
 -  [Struct `TokenDepositedEventForSolanaV2`](#bridge_bridge_TokenDepositedEventForSolanaV2)
+-  [Struct `TokenDepositedEventForSolanaV3`](#bridge_bridge_TokenDepositedEventForSolanaV3)
 -  [Struct `DefiTransferOutEvent`](#bridge_bridge_DefiTransferOutEvent)
 -  [Struct `DefiTokensStakedEvent`](#bridge_bridge_DefiTokensStakedEvent)
 -  [Struct `DefiTokensUnstakeEvent`](#bridge_bridge_DefiTokensUnstakeEvent)
@@ -576,6 +578,72 @@ title: Module `bridge::bridge`
 
 </details>
 
+<a name="bridge_bridge_TokenDepositedEventV3"></a>
+
+## Struct `TokenDepositedEventV3`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/bridge.md#bridge_bridge_TokenDepositedEventV3">TokenDepositedEventV3</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>seq_num: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>source_chain: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>sender_address: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>target_chain: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>target_address: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>token_type: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>origin_token_type: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>amount_before_fee: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>amount_after_fee: u64</code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
 <a name="bridge_bridge_TokenDepositedEventForSolanaV2"></a>
 
 ## Struct `TokenDepositedEventForSolanaV2`
@@ -619,6 +687,72 @@ title: Module `bridge::bridge`
 </dd>
 <dt>
 <code>token_type: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>amount_before_fee: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>amount_after_fee: u64</code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
+<a name="bridge_bridge_TokenDepositedEventForSolanaV3"></a>
+
+## Struct `TokenDepositedEventForSolanaV3`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/bridge.md#bridge_bridge_TokenDepositedEventForSolanaV3">TokenDepositedEventForSolanaV3</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>seq_num: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>source_chain: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>sender_address: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>target_chain: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>target_address: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>token_type: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>origin_token_type: u64</code>
 </dt>
 <dd>
 </dd>
@@ -3039,7 +3173,7 @@ title: Module `bridge::bridge`
     };
     <b>let</b> bridge_seq_num = inner.<a href="../bridge/bridge.md#bridge_bridge_get_current_seq_num_and_increment">get_current_seq_num_and_increment</a>(<a href="../bridge/message_types.md#bridge_message_types_token">message_types::token</a>());
     <b>let</b> token_id = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.token_id&lt;T&gt;();
-    <b>let</b> token_amount = token.balance().value();
+    <b>let</b> token_amount=token.balance().value();
     <b>assert</b>!(token_amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
     <b>assert</b>!(token_id != 5, <a href="../bridge/bridge.md#bridge_bridge_EUseSendBusd">EUseSendBusd</a>);
     <b>assert</b>!(<a href="../bridge/tokenlist.md#bridge_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(parent_id, target_chain <b>as</b> u64, token_id),<a href="../bridge/bridge.md#bridge_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
@@ -3077,26 +3211,28 @@ title: Module `bridge::bridge`
     // emit event
     <b>if</b> (<a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(target_chain)) {
         emit(
-            <a href="../bridge/bridge.md#bridge_bridge_TokenDepositedEventForSolanaV2">TokenDepositedEventForSolanaV2</a> {
+            <a href="../bridge/bridge.md#bridge_bridge_TokenDepositedEventForSolanaV3">TokenDepositedEventForSolanaV3</a> {
                 seq_num: bridge_seq_num,
                 source_chain: inner.chain_id,
                 sender_address: address::to_bytes(ctx.sender()),
                 target_chain,
                 target_address,
                 token_type: token_id,
+                origin_token_type: token_id,
                 amount_before_fee: token_amount,
                 amount_after_fee,
             },
         );
     } <b>else</b> {
         emit(
-            <a href="../bridge/bridge.md#bridge_bridge_TokenDepositedEventV2">TokenDepositedEventV2</a> {
+            <a href="../bridge/bridge.md#bridge_bridge_TokenDepositedEventV3">TokenDepositedEventV3</a> {
                 seq_num: bridge_seq_num,
                 source_chain: inner.chain_id,
                 sender_address: address::to_bytes(ctx.sender()),
                 target_chain,
                 target_address,
                 token_type: token_id,
+                origin_token_type: token_id,
                 amount_before_fee: token_amount,
                 amount_after_fee,
             },
@@ -3336,26 +3472,28 @@ title: Module `bridge::bridge`
     // emit event
     <b>if</b> (<a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(target_chain)) {
         emit(
-            <a href="../bridge/bridge.md#bridge_bridge_TokenDepositedEventForSolanaV2">TokenDepositedEventForSolanaV2</a> {
+            <a href="../bridge/bridge.md#bridge_bridge_TokenDepositedEventForSolanaV3">TokenDepositedEventForSolanaV3</a> {
                 seq_num: bridge_seq_num,
                 source_chain: inner.chain_id,
                 sender_address: address::to_bytes(ctx.sender()),
                 target_chain,
                 target_address,
                 token_type: token_id,
+                origin_token_type: 5, // BUSD
                 amount_before_fee: token_amount,
                 amount_after_fee,
             },
         );
     } <b>else</b> {
         emit(
-            <a href="../bridge/bridge.md#bridge_bridge_TokenDepositedEventV2">TokenDepositedEventV2</a> {
+            <a href="../bridge/bridge.md#bridge_bridge_TokenDepositedEventV3">TokenDepositedEventV3</a> {
                 seq_num: bridge_seq_num,
                 source_chain: inner.chain_id,
                 sender_address: address::to_bytes(ctx.sender()),
                 target_chain,
                 target_address,
                 token_type: token_id,
+                origin_token_type: 5, // BUSD
                 amount_before_fee: token_amount,
                 amount_after_fee,
             },
