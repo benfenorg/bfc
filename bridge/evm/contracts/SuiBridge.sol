@@ -368,6 +368,13 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             "SuiBridge: Invalid recipient address length"
         );
 
+        if (tokenID == 3 || tokenID==4) {
+            // USDT/USDC only support cross to SUI
+            require(targetTokenID == tokenID || targetTokenID == 5, "SuiBridge: Invalid target token ID");
+        }else{
+            require(tokenID==targetTokenID, "SuiBridge: Invalid target token ID");
+        }
+
         IBridgeConfig config = committee.config();
 
         require(config.isTokenSupported(tokenID), "SuiBridge: Unsupported token");
