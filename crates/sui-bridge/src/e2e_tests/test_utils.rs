@@ -2483,7 +2483,7 @@ pub async fn initiate_bridge_sui_to_eth(
         .unwrap();
     let sui_address = bridge_test_cluster.sui_user_address();
     info!("bbking120 token: {:?}", token);
-    let resp = if expect_token_id == TOKEN_ID_ETH || expect_token_id == TOKEN_ID_USDT {
+    let resp = if original_token_id != TOKEN_ID_BUSD {
         match deposit_eth_to_sui_package(
             sui_client,
             sui_address,
@@ -2955,6 +2955,7 @@ pub async fn initiate_bridge_erc20_to_sui(
     token_address: EthAddress,
     token_id: u64,
     nonce: u64,
+    target_token_id: u64,
 ) -> Result<(), anyhow::Error> {
     let (eth_signer, eth_address) = bridge_test_cluster
         .get_eth_signer_and_address()
@@ -2993,7 +2994,7 @@ pub async fn initiate_bridge_erc20_to_sui(
         amount,
         sui_recipient_address.to_vec().into(),
         sui_chain_id as u8,
-        token_id,
+        target_token_id,
     );
     let tx_receipt = send_eth_tx_and_get_tx_receipt(deposit_call).await;
     let eth_bridge_event = tx_receipt

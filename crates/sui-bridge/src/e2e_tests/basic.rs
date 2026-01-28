@@ -2469,13 +2469,14 @@ async fn test_add_new_coins_on_sui_and_eth() {
         new_token_erc_address,
         token_id,
         0,
+        token_id,
     )
     .await
     .unwrap();
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
-async fn test_bridge_usdt_to_sui() {
+async fn test_bridge_usdt_to_sui_recieve_busd() {
     telemetry_subscribers::init_for_testing();
     let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
         .with_eth_env(true)
@@ -2511,6 +2512,7 @@ async fn test_bridge_usdt_to_sui() {
         new_token_erc_address,
         TOKEN_ID_USDT,
         0,
+        TOKEN_ID_BUSD,
     )
     .await
     .unwrap();
@@ -2536,12 +2538,12 @@ async fn test_bridge_usdt_to_sui() {
     info!("bbking100 all_coins: {:?}", all_coins);
     let usdt_coin = all_coins
         .iter()
-        .find(|c| c.coin_type.contains("USDT"))
-        .expect("Recipient should have received USDT coin now")
+        .find(|c| c.coin_type.contains("BUSD"))
+        .expect("Recipient should have received BUSD coin now")
         .clone();
     assert_eq!(usdt_coin.balance, 100_000_000_000);
     info!(
-        "[Timer] Eth to Sui bridge USDT transfer finished in {:?}",
+        "[Timer] Eth to Sui bridge BUSD transfer finished in {:?}",
         timer.elapsed()
     );
 
@@ -2619,6 +2621,7 @@ async fn test_bridge_usdt_to_sui_recieve_usdt() {
         new_token_erc_address,
         TOKEN_ID_USDT,
         0,
+        TOKEN_ID_USDT,
     )
     .await
     .unwrap();
@@ -2730,6 +2733,7 @@ async fn test_bridge_usdt_to_sui_fast_path() {
         new_token_erc_address,
         TOKEN_ID_USDT,
         0,
+        TOKEN_ID_BUSD,
     )
     .await
     .unwrap();
@@ -2804,6 +2808,7 @@ async fn test_bridge_usdt_to_sui_fast_path_limit() {
         new_token_erc_address,
         TOKEN_ID_USDT,
         0,
+        TOKEN_ID_BUSD,
     )
     .await
     .unwrap();
@@ -2842,6 +2847,7 @@ async fn test_bridge_usdt_to_sui_fast_path_limit() {
         new_token_erc_address,
         TOKEN_ID_USDT,
         1,
+        TOKEN_ID_BUSD,
     )
     .await
     .unwrap();
@@ -2868,6 +2874,7 @@ async fn test_bridge_usdt_to_sui_fast_path_limit() {
         new_token_erc_address,
         TOKEN_ID_USDT,
         2,
+        TOKEN_ID_BUSD,
     )
     .await
     .unwrap_err();
@@ -2924,6 +2931,7 @@ async fn test_bridge_usdt_to_sui_from_bsc() {
         new_token_erc_address,
         TOKEN_ID_USDT,
         0,
+        TOKEN_ID_BUSD,
     )
     .await
     .unwrap();
@@ -3029,6 +3037,7 @@ async fn test_eth_to_sui_limit() {
         new_token_erc_address,
         TOKEN_ID_USDT,
         0,
+        TOKEN_ID_BUSD,
     )
     .await
     .unwrap();
@@ -3111,6 +3120,7 @@ async fn test_eth_to_sui_limit_with_new_token() {
         new_token_erc_address,
         TOKEN_ID_USDT,
         0,
+        TOKEN_ID_BUSD,
     )
     .await
     .unwrap();
