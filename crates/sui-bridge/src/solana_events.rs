@@ -49,11 +49,11 @@ pub struct TokensDeposited {
     pub source_chain_id: u8,
     pub target_chain_id: u8,
     pub token_id: u64,
+    pub target_token_id: u64,
     pub amount: u64,
     pub sender_pubkey: [u8; 32],
     pub recipient_length: u32,
     pub recipient_bytes: Vec<u8>,
-    pub target_token_id: u64,
 }
 
 impl TokensDeposited {
@@ -61,69 +61,69 @@ impl TokensDeposited {
     pub fn parse_from_bytes(data: &[u8]) -> Result<Self, String> {
         let mut cursor = Cursor::new(data);
         
-        // 读取 8-byte Anchor event discriminator
+        // 1. 读取 8-byte Anchor event discriminator
         let mut discriminator = [0u8; 8];
         cursor.read_exact(&mut discriminator)
             .map_err(|e| format!("read discriminator: {}", e))?;
         
-        // 读取 nonce (u64, little-endian)
+        // 2. 读取 nonce (u64, little-endian)
         let mut nonce_bytes = [0u8; 8];
         cursor.read_exact(&mut nonce_bytes)
             .map_err(|e| format!("read nonce: {}", e))?;
         let nonce = u64::from_le_bytes(nonce_bytes);
         
-        // 读取 source_chain_id (u8)
+        // 3. 读取 source_chain_id (u8)
         let mut source_chain_id_bytes = [0u8; 1];
         cursor.read_exact(&mut source_chain_id_bytes)
             .map_err(|e| format!("read source_chain_id: {}", e))?;
         let source_chain_id = source_chain_id_bytes[0];
         
-        // 读取 target_chain_id (u8)
+        // 4. 读取 target_chain_id (u8)
         let mut target_chain_id_bytes = [0u8; 1];
         cursor.read_exact(&mut target_chain_id_bytes)
             .map_err(|e| format!("read target_chain_id: {}", e))?;
         let target_chain_id = target_chain_id_bytes[0];
         
-        // 读取 token_id (u64, little-endian)
+        // 5. 读取 token_id (u64, little-endian)
         let mut token_id_bytes = [0u8; 8];
         cursor.read_exact(&mut token_id_bytes)
             .map_err(|e| format!("read token_id: {}", e))?;
         let token_id = u64::from_le_bytes(token_id_bytes);
         
-        // 读取 amount (u64, little-endian)
+        // 6. 读取 target_token_id (u64, little-endian)
+        let mut target_token_id_bytes = [0u8; 8];
+        cursor.read_exact(&mut target_token_id_bytes)
+            .map_err(|e| format!("read target_token_id: {}", e))?;
+        let target_token_id = u64::from_le_bytes(target_token_id_bytes);
+        
+        // 7. 读取 amount (u64, little-endian)
         let mut amount_bytes = [0u8; 8];
         cursor.read_exact(&mut amount_bytes)
             .map_err(|e| format!("read amount: {}", e))?;
         let amount = u64::from_le_bytes(amount_bytes);
         
-        // 读取 sender_pubkey (32 bytes)
+        // 8. 读取 sender_pubkey (32 bytes)
         let mut sender_pubkey = [0u8; 32];
         cursor.read_exact(&mut sender_pubkey)
             .map_err(|e| format!("read sender pubkey: {}", e))?;
         
-        // 读取 recipient_length (u32, little-endian)
+        // 9. 读取 recipient_length (u32, little-endian)
         let mut recipient_length_bytes = [0u8; 4];
         cursor.read_exact(&mut recipient_length_bytes)
             .map_err(|e| format!("read recipient length: {}", e))?;
         let recipient_length = u32::from_le_bytes(recipient_length_bytes);
         
-        // 检查长度是否合理
+        // 10. 检查长度是否合理
         if recipient_length > 10_000_000 {
             return Err(format!("recipient length too large: {}", recipient_length));
         }
         
-        // 读取 recipient_bytes
+        // 11. 读取 recipient_bytes
         let mut recipient_bytes = vec![0u8; recipient_length as usize];
         cursor.read_exact(&mut recipient_bytes)
             .map_err(|e| format!("read recipient bytes: {}", e))?;
-
-        // 读取 target_token_id (u64, little-endian)
-        let mut target_token_id_bytes = [0u8; 8];
-        cursor.read_exact(&mut target_token_id_bytes)
-            .map_err(|e| format!("read target token id: {}", e))?;
-        let target_token_id = u64::from_le_bytes(target_token_id_bytes);
         
-        // 检查是否还有剩余数据
+        // 12. 检查是否还有剩余数据
         if cursor.position() != cursor.get_ref().len() as u64 {
             return Err(format!(
                 "unexpected trailing bytes: {}",
@@ -225,6 +225,8 @@ impl SolanaBridgeEvent {
                         });
                     }
                 }
+            }else{
+                tracing::error!("bbking100 no event data found in log: {:?}", log_msg);
             }
         }
 
@@ -401,10 +403,11 @@ mod tests {
     /// Program FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm success
     #[test]
     fn test_parse_real_solana_log_data() {
-        let base64_str = "xNnHWCN1PGABAAAAAAAAAD0CAwAAAAAAAABAQg8AAAAAAOXaYE6RS0pYLywuTnxDVWpNC5vNpLb2ZR5oXqMkmrq8IAAAAK6o6kznyCufMoNfXO4QV6GdxnPPcbMT248r8B8cx6ke";
+        let base64_str = "xNnHWCN1PGAAAAAAAAAAADMCAwAAAAAAAAAFAAAAAAAAAADKmjsAAAAA5dpgTpFLSlgvLC5OfENVak0Lm82ktvZlHmheoySaurwgAAAAJhMF2J4WoQJug2RewHES2jXkc1RvThNnjDhMhz/Z4DE=";
         let log_msg = format!("Program data: {}", base64_str);
 
         let events = SolanaBridgeEvent::test_try_from_logs(&log_msg);
+        tracing::info!("bbking100 events: {:?}", events);
         assert_eq!(events.len(), 1, "Should parse exactly one event");
 
         match &events[0] {
@@ -417,11 +420,11 @@ mod tests {
                 );
 
                 // Verify parsed fields
-                assert_eq!(tokens_deposited.nonce, 1);
-                assert_eq!(tokens_deposited.source_chain_id, 61); // 0x3D
+                assert_eq!(tokens_deposited.nonce, 0);
+                assert_eq!(tokens_deposited.source_chain_id, 51); // 0x3D
                 assert_eq!(tokens_deposited.target_chain_id, 2);
                 assert_eq!(tokens_deposited.token_id, 3);
-                assert_eq!(tokens_deposited.amount, 1000000);
+                assert_eq!(tokens_deposited.amount, 1000000000);
                 assert_eq!(tokens_deposited.recipient_length, 32);
                 assert_eq!(tokens_deposited.recipient_bytes.len(), 32);
 
@@ -434,7 +437,7 @@ mod tests {
                 // Verify recipient address (hex)
                 assert_eq!(
                     tokens_deposited.recipient_hex(),
-                    "aea8ea4ce7c82b9f32835f5cee1057a19dc673cf71b313db8f2bf01f1cc7a91e"
+                    "261305d89e16a1026e83645ec07112da35e473546f4e13678c384c873fd9e031"
                 );
 
                 println!("== Real Solana Log Parsed Successfully ==");
