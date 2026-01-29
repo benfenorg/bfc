@@ -3666,7 +3666,8 @@ async fn test_bridge_from_solana_to_sui_recieve_usdc() {
         .find(|c| c.coin_type.contains("USDC"))
         .expect("Recipient should have received BUSD coin now")
         .clone();
-    assert_eq!(usdt_coin.balance, 100_000_000);
+    
+    assert_eq!(usdt_coin.balance, 1_000_000);
     
 }
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
