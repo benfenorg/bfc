@@ -29,7 +29,7 @@ module bridge::bridge_env {
         TokenTransferClaimed,
         TokenTransferLimitExceed,
         // ExternalDepositedEvent,
-        ExternalWithdrawEventV2,
+        ExternalWithdrawEventV3,
         ExternalBridgeRecord,
         ExternalDepositedApprovedEvent,
     };
@@ -1192,11 +1192,12 @@ module bridge::bridge_env {
 
         let fee=get_cross_out_fee_amount<T>(&bridge,source_chain as u64,amount);
         assert!(amount>fee,1);
-        let withdraw = event::events_by_type<ExternalWithdrawEventV2>();
+        let withdraw = event::events_by_type<ExternalWithdrawEventV3>();
         assert!(withdraw.length() == 1);
         {
             debug::print(&withdraw);
             let (
+                _event_origin_token_type,
                 event_token_type,
                 event_source_chain,
                 event_target_chain,
@@ -1204,7 +1205,7 @@ module bridge::bridge_env {
                 event_target_address,
                 event_amount_before_fee,
                 event_amount_after_fee,
-            ) = withdraw[0].unwrap_external_withdrawn_v2_event();
+            ) = withdraw[0].unwrap_external_withdrawn_v3_event();
             assert!(event_token_type == token_type);
             assert!(event_source_chain == env.chain_id );
             assert!(event_target_chain == source_chain);
@@ -1637,10 +1638,11 @@ module bridge::bridge_env {
         let fee=get_cross_out_fee_amount<T>(&bridge,source_chain as u64,amount);
         assert!(amount>fee,1);
 
-        let withdraw = event::events_by_type<ExternalWithdrawEventV2>();
+        let withdraw = event::events_by_type<ExternalWithdrawEventV3>();
         assert!(withdraw.length() == 1);
         debug::print(&withdraw);
         let (
+            _event_origin_token_type,
             event_token_type,
             event_source_chain,
             event_target_chain,
@@ -1648,7 +1650,7 @@ module bridge::bridge_env {
             event_target_address,
             event_amount_before_fee,
             event_amount_after_fee,
-        ) = withdraw[0].unwrap_external_withdrawn_v2_event();
+        ) = withdraw[0].unwrap_external_withdrawn_v3_event();
         assert!(event_token_type == token_type);
         assert!(event_source_chain == target_chain );
         assert!(event_target_chain == source_chain);

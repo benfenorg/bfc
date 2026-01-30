@@ -402,6 +402,17 @@ module bridge::bridge {
         amount_after_fee: u64
     }
 
+    public struct ExternalWithdrawEventV3 has copy, drop {
+        origin_token_type: u64,
+        token_type: u64,
+        source_chain: u8,
+        target_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount_before_fee: u64,
+        amount_after_fee: u64
+    }
+
     public struct ExternalBridgeMessageKey has copy, drop, store {
         source_chain: u8,
         source_address: vector<u8>,
@@ -2070,7 +2081,8 @@ module bridge::bridge {
 
         // emit event
        emit(
-            ExternalWithdrawEventV2 {
+            ExternalWithdrawEventV3 {
+                origin_token_type: 5, // BUSD
                 token_type: token_id_expect,
                 source_chain: inner.chain_id,
                 target_chain,
@@ -2111,7 +2123,8 @@ module bridge::bridge {
 
         // emit event
         emit(
-            ExternalWithdrawEventV2 {
+            ExternalWithdrawEventV3 {
+                origin_token_type: token_id,
                 token_type: token_id,
                 source_chain: inner.chain_id,
                 target_chain,
@@ -3616,6 +3629,20 @@ module bridge::bridge {
     #[test_only]
     public fun unwrap_external_withdrawn_v2_event(event: ExternalWithdrawEventV2): (u64, u8,u8,vector<u8>,vector<u8>, u64,u64){
         (
+            event.token_type,
+            event.source_chain,
+            event.target_chain,
+            event.source_address,
+            event.target_address,
+            event.amount_before_fee,
+            event.amount_after_fee,
+        )
+    }
+
+    #[test_only]
+    public fun unwrap_external_withdrawn_v3_event(event: ExternalWithdrawEventV3): (u64, u64, u8,u8,vector<u8>,vector<u8>, u64,u64){
+        (
+            event.origin_token_type,
             event.token_type,
             event.source_chain,
             event.target_chain,

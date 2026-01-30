@@ -10,3 +10,5 @@ pub mod auth;
 pub mod stable;
 #[cfg(test)]
 pub mod defi;
+#[cfg(test)]
+mod external_coin_test;
