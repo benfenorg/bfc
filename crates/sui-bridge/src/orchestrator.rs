@@ -337,6 +337,7 @@ where
                                 action_inner.eth_bridge_event.token_id,
                                 action_inner.eth_bridge_event.sui_adjusted_amount,
                                 config,
+                                action_inner.eth_bridge_event.target_token_id,
                             );
 
                             if fast_path_selector == log_wrapper.fast_path_selector {
@@ -1240,6 +1241,7 @@ mod tests {
             sender_pubkey: [0u8; 32], // Random sender
             recipient_length: 32,
             recipient_bytes: SuiAddress::random_for_testing_only().to_vec(),
+            target_token_id: 1,
         };
         SolanaParsedEvent {
             tx_signature: tx_signature.to_string(),

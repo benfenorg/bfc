@@ -37,6 +37,11 @@
                 "name": "destinationChainID",
                 "type": "uint8",
                 "internalType": "uint8"
+            },
+            {
+                "name": "targetTokenID",
+                "type": "uint64",
+                "internalType": "uint64"
             }
         ],
         "outputs": [
@@ -657,6 +662,12 @@
                 "type": "uint64",
                 "indexed": false,
                 "internalType": "uint64"
+            },
+            {
+                    "name": "targetTokenID",
+                    "type": "uint64",
+                    "indexed": false,
+                    "internalType": "uint64"
             },
             {
                 "name": "suiAdjustedAmount",

@@ -73,8 +73,9 @@ pub mod benfen_bridge {
         ctx: Context<'a, 'b, 'c, 'info, CrossIn<'info>>,
         amount: u64,
         benfen_address: Vec<u8>,
+        target_token_id: u64,
     ) -> Result<()> {
-        instructions::cross_in(ctx, amount, benfen_address)
+        instructions::cross_in(ctx, amount, benfen_address, target_token_id)
     }
 
     pub fn extend_program(

@@ -231,6 +231,7 @@ pub struct EthToSuiTokenBridgeV1 {
     pub tx_hash: Vec<u8>,
     pub event_idx: u16,
     pub fast_path_selector: FastPathSelector,
+    pub target_token_id: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
@@ -295,6 +296,7 @@ impl TryFrom<&TokensDepositedFilter> for EthToSuiTokenBridgeV1 {
             tx_hash: vec![],
             event_idx: 0,
             fast_path_selector: FastPathSelector::Finalized,
+            target_token_id: event.target_token_id,
         })
     }
 }
@@ -352,7 +354,7 @@ impl TryFrom<&EthToSuiTokenBridgeV1> for EthToSuiTokenBridgeV1 {
     fn try_from(msg: &EthToSuiTokenBridgeV1) -> BridgeResult<Self> {
         //only eth chain need to adjust
         let need_adjust = (msg.token_id == TOKEN_ID_USDC || msg.token_id == TOKEN_ID_USDT)
-            && msg.eth_chain_id.is_eth_chain();
+            && msg.eth_chain_id.is_eth_chain() && msg.target_token_id == TOKEN_ID_BUSD;
         Ok(Self {
             nonce: msg.nonce,
             sui_chain_id: msg.sui_chain_id,
@@ -360,7 +362,7 @@ impl TryFrom<&EthToSuiTokenBridgeV1> for EthToSuiTokenBridgeV1 {
             sui_address: msg.sui_address,
             eth_address: msg.eth_address,
             token_id: if msg.token_id == TOKEN_ID_USDC || msg.token_id == TOKEN_ID_USDT {
-                TOKEN_ID_BUSD
+                msg.target_token_id 
             } else {
                 msg.token_id
             },
@@ -374,6 +376,7 @@ impl TryFrom<&EthToSuiTokenBridgeV1> for EthToSuiTokenBridgeV1 {
             tx_hash: msg.tx_hash.clone(),
             event_idx: msg.event_idx,
             fast_path_selector: msg.fast_path_selector,
+            target_token_id: msg.target_token_id,
         })
     }
 }
@@ -753,6 +756,7 @@ mod tests {
                         )
                         .unwrap(),
                     ),
+                    target_token_id: 5,
                 }
             ))
         );
@@ -772,6 +776,7 @@ mod tests {
                 recipient_address: ethers::types::Bytes::from(
                     SuiAddress::random_for_testing_only().to_vec(),
                 ),
+                target_token_id: 2,
             },
         ));
         assert!(e
@@ -790,6 +795,7 @@ mod tests {
                 recipient_address: ethers::types::Bytes::from(
                     SuiAddress::random_for_testing_only().to_vec(),
                 ),
+                target_token_id: 2,
             },
         ));
         match e.try_into_bridge_action(TxHash::random(), 0).unwrap_err() {

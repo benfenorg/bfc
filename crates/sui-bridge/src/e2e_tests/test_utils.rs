@@ -18,7 +18,7 @@ use crate::sui_transaction_builder::{
     build_add_center_tokenlist_transaction, build_add_tokenlist_transaction,
     build_add_tokens_on_sui_transaction,
 };
-use crate::types::CertifiedBridgeAction;
+use crate::types::{CertifiedBridgeAction, SuiToSolanaBridgeAction};
 use crate::types::VerifiedCertifiedBridgeAction;
 use crate::types::{BridgeAction, BridgeActionStatus, SuiToEthBridgeAction};
 use crate::types::{BridgeCommitteeValiditySignInfo, SuiToEthDefiBridgeAction};
@@ -1041,6 +1041,7 @@ pub(crate) async fn solana_cross_token_to_bridge(
         .args(args::CrossTokenToBridge {
             amount,
             benfen_address,
+            target_token_id: token_id,
         })
         .instructions()?
         .remove(0);
@@ -2468,6 +2469,7 @@ pub async fn initiate_bridge_sui_to_eth(
     nonce: u64,
     sui_amount: u64,
     expect_token_id: u64,
+    original_token_id: u64,
 ) -> Result<SuiToEthBridgeAction, anyhow::Error> {
     let bridge_object_arg = bridge_test_cluster
         .bridge_client()
@@ -2480,7 +2482,8 @@ pub async fn initiate_bridge_sui_to_eth(
         .await
         .unwrap();
     let sui_address = bridge_test_cluster.sui_user_address();
-    let resp = if expect_token_id == TOKEN_ID_ETH {
+    info!("bbking120 token: {:?}", token);
+    let resp = if original_token_id != TOKEN_ID_BUSD {
         match deposit_eth_to_sui_package(
             sui_client,
             sui_address,
@@ -2592,7 +2595,7 @@ pub async fn initiate_bridge_sui_to_eth(
         );
     } else {
         assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_USDT);
-        if bridge_event.sui_bridge_event.eth_chain_id.is_eth_chain() {
+        if bridge_event.sui_bridge_event.eth_chain_id.is_eth_chain() && original_token_id == TOKEN_ID_BUSD {
             assert_eq!(
                 bridge_event.sui_bridge_event.amount_sui_adjusted,
                 sui_amount / 1000 - fee / 1000
@@ -2615,6 +2618,165 @@ pub async fn initiate_bridge_sui_to_eth(
     .await
     .unwrap();
     info!("Sui to Eth bridge transfer approved.");
+
+    Ok(bridge_event)
+}
+
+pub async fn initiate_bridge_sui_to_solana(
+    bridge_test_cluster: &BridgeTestCluster,
+    solana_address: Vec<u8>,
+    token: ObjectRef,
+    nonce: u64,
+    sui_amount: u64,
+    expect_token_id: u64,
+    original_token_id: u64,
+) -> Result<SuiToSolanaBridgeAction, anyhow::Error> {
+    let bridge_object_arg = bridge_test_cluster
+        .bridge_client()
+        .get_mutable_bridge_object_arg_must_succeed()
+        .await;
+    let sui_client = bridge_test_cluster.sui_client();
+    let token_types = bridge_test_cluster
+        .bridge_client()
+        .get_token_id_map()
+        .await
+        .unwrap();
+    let sui_address = bridge_test_cluster.sui_user_address();
+    info!("bbking120 token: {:?}", token);
+    let resp = if original_token_id != TOKEN_ID_BUSD {
+        match deposit_solana_to_sui_package(
+            sui_client,
+            sui_address,
+            bridge_test_cluster.wallet(),
+            bridge_test_cluster.solana_chain_id(),
+            solana_address.clone(),
+            token,
+            bridge_object_arg,
+            &token_types,
+            expect_token_id,
+        )
+        .await
+        {
+            Ok(resp) => {
+                tracing::info!("Sui TX response: {:?}", resp);
+                if !resp.status_ok().unwrap() {
+                    return Err(anyhow!("Sui TX error"));
+                } else {
+                    resp
+                }
+            }
+            Err(e) => return Err(e),
+        }
+    } else {
+        match deposit_busd_to_sui_package_for_solana(
+            sui_client,
+            sui_address,
+            bridge_test_cluster.wallet(),
+            bridge_test_cluster.solana_chain_id(),
+            solana_address.clone(),
+            token,
+            bridge_object_arg,
+            &token_types,
+            expect_token_id,
+        )
+        .await
+        {
+            Ok(resp) => {
+                if !resp.status_ok().unwrap() {
+                    return Err(anyhow!("Sui TX error"));
+                } else {
+                    resp
+                }
+            }
+            Err(e) => return Err(e),
+        }
+    };
+    let treasury_summary = bridge_test_cluster
+        .bridge_client()
+        .get_treasury_summary()
+        .await
+        .unwrap();
+
+    let token_type = expect_token_id;
+    let mut token_type_map = HashMap::new();
+    for (id, type_) in treasury_summary.id_token_type_map.iter() {
+        println!("id: {}, type_: {}", id, type_);
+        token_type_map.insert(*id, TypeTag::from_str(&format!("0x{}", type_)).unwrap());
+    }
+
+    let fee = bridge_test_cluster
+        .bridge_client()
+        .sui_client()
+        .get_cross_out_fee_amount(
+            bridge_object_arg,
+            bridge_test_cluster.solana_chain_id() as u64,
+            sui_amount,
+            token_type,
+            token_type_map,
+        )
+        .await
+        .unwrap();
+
+    let sui_events = resp.events.unwrap().data;
+    let bridge_event = sui_events
+        .iter()
+        .filter_map(|e| {
+            let sui_bridge_event = SuiBridgeEvent::try_from_sui_event(e).unwrap()?;
+            info!("sui_bridge_event: {:?}", sui_bridge_event);
+            sui_bridge_event.try_into_bridge_action(e.id.tx_digest, e.id.event_seq as u16)
+        })
+        .find_map(|e| {
+            if let BridgeAction::SuiToSolanaBridgeAction(a) = e {
+                Some(a)
+            } else {
+                None
+            }
+        })
+        .unwrap();
+    info!("Deposited Solana to move package");
+    assert_eq!(bridge_event.sui_bridge_event.nonce, nonce);
+    assert_eq!(
+        bridge_event.sui_bridge_event.sui_chain_id,
+        bridge_test_cluster.sui_chain_id()
+    );
+    assert_eq!(
+        bridge_event.sui_bridge_event.solana_chain_id,
+        bridge_test_cluster.solana_chain_id()
+    );
+    assert_eq!(bridge_event.sui_bridge_event.sui_address, sui_address);
+    assert_eq!(bridge_event.sui_bridge_event.solana_address, Pubkey::new_from_array(solana_address.clone().try_into().unwrap()));
+
+    if expect_token_id == TOKEN_ID_ETH {
+        assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_ETH);
+        assert_eq!(
+            bridge_event.sui_bridge_event.amount_sui_adjusted,
+            sui_amount - fee
+        );
+    } else {
+        assert_eq!(bridge_event.sui_bridge_event.token_id, original_token_id);
+        if bridge_event.sui_bridge_event.solana_chain_id.is_solana_chain() && original_token_id == TOKEN_ID_BUSD {
+            assert_eq!(
+                bridge_event.sui_bridge_event.amount_sui_adjusted,
+                sui_amount / 1000 - fee / 1000
+            );
+        } else {
+            assert_eq!(
+                bridge_event.sui_bridge_event.amount_sui_adjusted,
+                sui_amount - fee
+            );
+        }
+    };
+
+    // Wait for the bridge action to be approved
+    wait_for_transfer_action_status(
+        bridge_test_cluster.bridge_client(),
+        bridge_test_cluster.sui_chain_id(),
+        nonce,
+        BridgeActionStatus::Approved,
+    )
+    .await
+    .unwrap();
+    info!("Sui to Solana bridge transfer approved.");
 
     Ok(bridge_event)
 }
@@ -2805,7 +2967,53 @@ async fn deposit_eth_to_sui_package(
         BRIDGE_PACKAGE_ID,
         BRIDGE_MODULE_NAME.to_owned(),
         ident_str!("send_token").to_owned(),
-        vec![sui_token_type_tags.get(&TOKEN_ID_ETH).unwrap().clone()],
+        vec![sui_token_type_tags.get(&expect_token_id).unwrap().clone()],
+        vec![arg_bridge, arg_target_chain, arg_target_address, arg_token],
+    );
+
+    let pt = builder.finish();
+    let gas_object_ref = wallet_context
+        .get_one_gas_object_owned_by_address(sui_address)
+        .await
+        .unwrap()
+        .unwrap();
+    let tx_data = TransactionData::new_programmable(
+        sui_address,
+        vec![gas_object_ref],
+        pt,
+        500_000_000,
+        sui_client
+            .governance_api()
+            .get_reference_gas_price()
+            .await
+            .unwrap(),
+    );
+    let tx = wallet_context.sign_transaction(&tx_data);
+    wallet_context.execute_transaction_may_fail(tx).await
+}
+
+async fn deposit_solana_to_sui_package(
+    sui_client: &SuiClient,
+    sui_address: SuiAddress,
+    wallet_context: &WalletContext,
+    target_chain: BridgeChainId,
+    target_address: Vec<u8>,
+    token: ObjectRef,
+    bridge_object_arg: ObjectArg,
+    sui_token_type_tags: &HashMap<u64, TypeTag>,
+    expect_token_id: u64,
+) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
+    let mut builder = ProgrammableTransactionBuilder::new();
+    let arg_target_chain = builder.pure(target_chain as u8).unwrap();
+    let arg_target_address = builder.pure(target_address).unwrap();
+    let arg_token = builder.obj(ObjectArg::ImmOrOwnedObject(token)).unwrap();
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+    let _arg_expect_token_id = builder.pure(expect_token_id).unwrap();
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        BRIDGE_MODULE_NAME.to_owned(),
+        ident_str!("send_token").to_owned(),
+        vec![sui_token_type_tags.get(&expect_token_id).unwrap().clone()],
         vec![arg_bridge, arg_target_chain, arg_target_address, arg_token],
     );
 
@@ -2946,12 +3154,68 @@ async fn deposit_busd_to_sui_package(
     wallet_context.execute_transaction_may_fail(tx).await
 }
 
+async fn deposit_busd_to_sui_package_for_solana(
+    sui_client: &SuiClient,
+    sui_address: SuiAddress,
+    wallet_context: &WalletContext,
+    target_chain: BridgeChainId,
+    target_address: Vec<u8>,
+    token: ObjectRef,
+    bridge_object_arg: ObjectArg,
+    _sui_token_type_tags: &HashMap<u64, TypeTag>,
+    expect_token_id: u64,
+) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
+    let mut builder = ProgrammableTransactionBuilder::new();
+    let arg_target_chain = builder.pure(target_chain as u8).unwrap();
+    let arg_target_address = builder.pure(target_address).unwrap();
+    let arg_token = builder.obj(ObjectArg::ImmOrOwnedObject(token)).unwrap();
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+    let arg_expect_token_id = builder.pure(expect_token_id).unwrap();
+    let busd_type_tag = TypeTag::from_str("0xc8::busd::BUSD").unwrap();
+    let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        BRIDGE_MODULE_NAME.to_owned(),
+        ident_str!("send_busd").to_owned(),
+        vec![busd_type_tag],
+        vec![
+            arg_bridge,
+            system_obj,
+            arg_target_chain,
+            arg_target_address,
+            arg_token,
+            arg_expect_token_id,
+        ],
+    );
+
+    let pt = builder.finish();
+    let gas_object_ref = wallet_context
+        .get_one_gas_object_owned_by_address(sui_address)
+        .await
+        .unwrap()
+        .unwrap();
+    let tx_data = TransactionData::new_programmable(
+        sui_address,
+        vec![gas_object_ref],
+        pt,
+        500_000_000,
+        sui_client
+            .governance_api()
+            .get_reference_gas_price()
+            .await
+            .unwrap(),
+    );
+    let tx = wallet_context.sign_transaction(&tx_data);
+    wallet_context.execute_transaction_may_fail(tx).await
+}
+
 pub async fn initiate_bridge_erc20_to_sui(
     bridge_test_cluster: &BridgeTestCluster,
     amount_u64: u64,
     token_address: EthAddress,
     token_id: u64,
     nonce: u64,
+    target_token_id: u64,
 ) -> Result<(), anyhow::Error> {
     let (eth_signer, eth_address) = bridge_test_cluster
         .get_eth_signer_and_address()
@@ -2990,6 +3254,7 @@ pub async fn initiate_bridge_erc20_to_sui(
         amount,
         sui_recipient_address.to_vec().into(),
         sui_chain_id as u8,
+        target_token_id,
     );
     let tx_receipt = send_eth_tx_and_get_tx_receipt(deposit_call).await;
     let eth_bridge_event = tx_receipt

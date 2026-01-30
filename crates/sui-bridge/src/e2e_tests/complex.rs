@@ -131,6 +131,7 @@ async fn test_sui_bridge_paused() {
         0,
         10,
         TOKEN_ID_ETH,
+        TOKEN_ID_ETH,
     )
     .await;
     assert!(sui_to_eth_bridge_action.is_err())

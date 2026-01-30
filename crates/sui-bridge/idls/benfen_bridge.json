@@ -319,6 +319,10 @@
         {
           "name": "benfen_address",
           "type": "bytes"
+        },
+        {
+          "name": "target_token_id",
+          "type": "u64"
         }
       ]
     },
@@ -2307,6 +2311,10 @@
           },
           {
             "name": "token_id",
+            "type": "u64"
+          },
+          {
+            "name": "target_token_id",
             "type": "u64"
           },
           {

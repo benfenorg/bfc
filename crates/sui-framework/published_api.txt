@@ -7261,7 +7261,13 @@ TokenDepositedEvent
 TokenDepositedEventV2
 	public struct
 	0xb::bridge
+TokenDepositedEventV3
+	public struct
+	0xb::bridge
 TokenDepositedEventForSolanaV2
+	public struct
+	0xb::bridge
+TokenDepositedEventForSolanaV3
 	public struct
 	0xb::bridge
 DefiTransferOutEvent

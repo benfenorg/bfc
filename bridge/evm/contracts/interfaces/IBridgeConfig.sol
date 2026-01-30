@@ -11,6 +11,7 @@ interface IBridgeConfig {
         address tokenAddress;
         uint8 suiDecimal;
         bool native;
+        uint8 originalDecimal;
     }
 
     /* ========== VIEW FUNCTIONS ========== */
@@ -24,6 +25,12 @@ interface IBridgeConfig {
     /// @param tokenID The ID of the token.
     /// @return amount of sui decimal places of the provided token.
     function tokenSuiDecimalOf(uint64 tokenID) external view returns (uint8);
+
+
+    /// @notice Returns the original decimal places of the token with the given ID.
+    /// @param tokenID The ID of the token.
+    /// @return amount of original decimal places of the provided token.
+    function tokenOriginalDecimalOf(uint64 tokenID) external view returns (uint8);
 
     /// @notice Returns the price of the token with the given ID.
     /// @param tokenID The ID of the token.
