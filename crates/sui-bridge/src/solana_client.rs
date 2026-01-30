@@ -782,7 +782,7 @@ mod tests {
                                     "Program FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm invoke [1]",
                                     "Program log: Instruction: MockCross",
                                     "Program log: emit TokensDeposited",
-                                    "Program data: xNnHWCN1PGABAAAAAAAAADMBAwAAAAAAAABAQg8AAAAAAOXaYE6RS0pYLywuTnxDVWpNC5vNpLb2ZR5oXqMkmrq8IAAAAK6o6kznyCufMoNfXO4QV6GdxnPPcbMT248r8B8cx6ke",
+                                    "Program data: xNnHWCN1PGAAAAAAAAAAADMCAwAAAAAAAAAFAAAAAAAAAADKmjsAAAAA5dpgTpFLSlgvLC5OfENVak0Lm82ktvZlHmheoySaurwgAAAAJhMF2J4WoQJug2RewHES2jXkc1RvThNnjDhMhz/Z4DE=",
                                     "Program FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm consumed 1333 of 200000 compute units",
                                     "Program FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm success"
                                 ]
@@ -901,18 +901,12 @@ mod tests {
         handle.abort();
     }
 
-    /// Test parsing real Solana log data provided by user
+    /// Test parsing real Solana log data (TokensDeposited with current layout including target_token_id)
     #[test]
     fn test_parse_real_solana_log() {
-        // Real log data from user:
-        // Program FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm invoke [1]
-        // Program log: Instruction: MockCross
-        // In Program log: emit TokensDeposited
-        // Program data: xNnHWCN1PGABAAAAAAAAAD0CAwAAAAAAAABAQg8AAAAAAOXaYE6RS0pYLywuTnxDVWpNC5vNpLb2ZR5oXqMkmrq8IAAAAK6o6kznyCufMoNfXO4QV6GdxnPPcbMT248r8B8cx6ke
-        // Program FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm consumed 1333 of 200000 compute units
-        // Program FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm success
-
-        let base64_data = "xNnHWCN1PGABAAAAAAAAAD0CAwAAAAAAAABAQg8AAAAAAOXaYE6RS0pYLywuTnxDVWpNC5vNpLb2ZR5oXqMkmrq8IAAAAK6o6kznyCufMoNfXO4QV6GdxnPPcbMT248r8B8cx6ke";
+        // Program data: TokensDeposited event (discriminator + nonce, source_chain_id, target_chain_id,
+        // token_id, target_token_id, amount, sender_pubkey, recipient_length, recipient_bytes)
+        let base64_data = "xNnHWCN1PGAAAAAAAAAAADMCAwAAAAAAAAAFAAAAAAAAAADKmjsAAAAA5dpgTpFLSlgvLC5OfENVak0Lm82ktvZlHmheoySaurwgAAAAJhMF2J4WoQJug2RewHES2jXkc1RvThNnjDhMhz/Z4DE=";
         let log_msg = format!("Program data: {}", base64_data);
 
         let events = SolanaBridgeEvent::test_try_from_logs(&log_msg);
@@ -927,14 +921,23 @@ mod tests {
                     "Discriminator should match TokensDeposited"
                 );
 
-                // Verify parsed fields
-                assert_eq!(tokens_deposited.nonce, 1, "nonce should be 1");
-                assert_eq!(tokens_deposited.source_chain_id, 61, "source_chain_id should be 61 (0x3D)");
+                // Verify parsed fields (match test_parse_real_solana_log_data in solana_events.rs)
+                assert_eq!(tokens_deposited.nonce, 0, "nonce should be 0");
+                assert_eq!(tokens_deposited.source_chain_id, 51, "source_chain_id should be 51");
                 assert_eq!(tokens_deposited.target_chain_id, 2, "target_chain_id should be 2");
                 assert_eq!(tokens_deposited.token_id, 3, "token_id should be 3");
-                assert_eq!(tokens_deposited.amount, 1000000, "amount should be 1000000");
-                
-                // Print actual values for verification
+                assert_eq!(tokens_deposited.amount, 1000000000, "amount should be 1000000000");
+                assert_eq!(tokens_deposited.recipient_length, 32, "recipient_length should be 32");
+                assert_eq!(tokens_deposited.recipient_bytes.len(), 32, "recipient_bytes should be 32 bytes");
+                assert_eq!(
+                    tokens_deposited.sender_base58(),
+                    "GUFVktRxvzKofrHb8htuAKB5gWj3sdbXchznjro9aVU7"
+                );
+                assert_eq!(
+                    tokens_deposited.recipient_hex(),
+                    "261305d89e16a1026e83645ec07112da35e473546f4e13678c384c873fd9e031"
+                );
+
                 println!("== Parsed TokensDeposited ==");
                 println!("nonce: {}", tokens_deposited.nonce);
                 println!("source_chain_id: {}", tokens_deposited.source_chain_id);
@@ -944,10 +947,6 @@ mod tests {
                 println!("sender_address(base58): {}", tokens_deposited.sender_base58());
                 println!("recipient_length: {}", tokens_deposited.recipient_length);
                 println!("recipient_address(hex): {}", tokens_deposited.recipient_hex());
-
-                // Verify recipient length
-                assert_eq!(tokens_deposited.recipient_length, 32, "recipient_length should be 32");
-                assert_eq!(tokens_deposited.recipient_bytes.len(), 32, "recipient_bytes should be 32 bytes");
             }
             SolanaBridgeEvent::RawEvent { discriminator, .. } => {
                 panic!("Expected TokensDeposited event, got RawEvent with discriminator: {:?}", discriminator);
