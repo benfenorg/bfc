@@ -3594,23 +3594,23 @@ impl ProtocolConfig {
                     cfg.tx_context_replace_cost_base = Some(30);
                     cfg.gas_model_version = Some(10);
 
-                    if chain != Chain::Mainnet {
-                        cfg.feature_flags.record_additional_state_digest_in_prologue = true;
-                        cfg.consensus_commit_rate_estimation_window_size = Some(10);
-
-                        // Enable execution time estimate mode for congestion control on testnet.
-                        cfg.feature_flags.per_object_congestion_control_mode =
-                            PerObjectCongestionControlMode::ExecutionTimeEstimate(
-                                ExecutionTimeEstimateParams {
-                                    target_utilization: 30,
-                                    allowed_txn_cost_overage_burst_limit_us: 100_000, // 100 ms
-                                    randomness_scalar: 20,
-                                    max_estimate_us: 1_500_000, // 1.5s
-                                    stored_observations_num_included_checkpoints: 10,
-                                    stored_observations_limit: u64::MAX,
-                                },
-                            );
-                    }
+                    // if chain != Chain::Mainnet {
+                    //     cfg.feature_flags.record_additional_state_digest_in_prologue = true;
+                    //     cfg.consensus_commit_rate_estimation_window_size = Some(10);
+                    //
+                    //     // Enable execution time estimate mode for congestion control on testnet.
+                    //     cfg.feature_flags.per_object_congestion_control_mode =
+                    //         PerObjectCongestionControlMode::ExecutionTimeEstimate(
+                    //             ExecutionTimeEstimateParams {
+                    //                 target_utilization: 30,
+                    //                 allowed_txn_cost_overage_burst_limit_us: 100_000, // 100 ms
+                    //                 randomness_scalar: 20,
+                    //                 max_estimate_us: 1_500_000, // 1.5s
+                    //                 stored_observations_num_included_checkpoints: 10,
+                    //                 stored_observations_limit: u64::MAX,
+                    //             },
+                    //         );
+                    // }
                 }
                 79 => {
                     if chain != Chain::Mainnet {
