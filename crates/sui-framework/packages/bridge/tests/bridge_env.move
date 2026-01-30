@@ -96,6 +96,8 @@ module bridge::bridge_env {
     };
     use sui::hex;
     use bridge::limiter_fast_path;
+    use bridge::bridge::TokenDepositedEventV3;
+    use bridge::bridge::TokenDepositedEventForSolanaV3;
 
     //
     // Token IDs
@@ -1723,7 +1725,7 @@ module bridge::bridge_env {
             total_supply_before - coin_value == get_total_supply<T>(&bridge),
         );
         if (target_chain_id == chain_ids::solana_testnet() || target_chain_id == chain_ids::solana_mainnet()) {
-            let deposited_events = event::events_by_type<TokenDepositedEventForSolanaV2>();
+            let deposited_events = event::events_by_type<TokenDepositedEventForSolanaV3>();
             assert!(deposited_events.length() == 1);
             let (
                 event_seq_num,
@@ -1732,13 +1734,15 @@ module bridge::bridge_env {
                 _event_target_chain,
                 _event_target_address,
                 _event_token_type,
+                _event_origin_token_type,
                 event_amount_before_fee,
-                _event_amount_after_fee
-            ) = deposited_events[0].unwrap_deposited_event_for_solana_v2();
+                event_amount_after_fee
+            ) = deposited_events[0].unwrap_deposited_event_for_solana_v3();
             assert!(event_seq_num == seq_num);
             assert!(event_amount_before_fee == coin_value);
+            assert!(event_amount_after_fee == coin_value);
         } else {
-            let deposited_events = event::events_by_type<TokenDepositedEventV2>();
+            let deposited_events = event::events_by_type<TokenDepositedEventV3>();
             assert!(deposited_events.length() == 1);
             let (
                 event_seq_num,
@@ -1747,11 +1751,13 @@ module bridge::bridge_env {
                 _event_target_chain,
                 _event_target_address,
                 _event_token_type,
+                _event_origin_token_type,
                 event_amount_before_fee,
-                _event_amount_after_fee
-            ) = deposited_events[0].unwrap_deposited_event_v2();
+                event_amount_after_fee
+            ) = deposited_events[0].unwrap_deposited_event_v3();
             assert!(event_seq_num == seq_num);
             assert!(event_amount_before_fee == coin_value);
+            assert!(event_amount_after_fee == coin_value);
         };
         assert_key(chain_id, &bridge);
 

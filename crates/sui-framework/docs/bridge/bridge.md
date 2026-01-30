@@ -35,6 +35,7 @@ title: Module `bridge::bridge`
 -  [Struct `ExternalDepositedEventV2`](#bridge_bridge_ExternalDepositedEventV2)
 -  [Struct `ExternalWithdrawEvent`](#bridge_bridge_ExternalWithdrawEvent)
 -  [Struct `ExternalWithdrawEventV2`](#bridge_bridge_ExternalWithdrawEventV2)
+-  [Struct `ExternalWithdrawEventV3`](#bridge_bridge_ExternalWithdrawEventV3)
 -  [Struct `ExternalBridgeMessageKey`](#bridge_bridge_ExternalBridgeMessageKey)
 -  [Struct `ExternalBridgeRecord`](#bridge_bridge_ExternalBridgeRecord)
 -  [Constants](#@Constants_0)
@@ -1807,6 +1808,67 @@ title: Module `bridge::bridge`
 
 
 <dl>
+<dt>
+<code>token_type: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>source_chain: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>target_chain: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>source_address: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>target_address: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>amount_before_fee: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>amount_after_fee: u64</code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
+<a name="bridge_bridge_ExternalWithdrawEventV3"></a>
+
+## Struct `ExternalWithdrawEventV3`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/bridge.md#bridge_bridge_ExternalWithdrawEventV3">ExternalWithdrawEventV3</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>origin_token_type: u64</code>
+</dt>
+<dd>
+</dd>
 <dt>
 <code>token_type: u64</code>
 </dt>
@@ -4941,7 +5003,8 @@ title: Module `bridge::bridge`
     bfc_system_state.burn_stable(token, ctx);
     // emit event
    emit(
-        <a href="../bridge/bridge.md#bridge_bridge_ExternalWithdrawEventV2">ExternalWithdrawEventV2</a> {
+        <a href="../bridge/bridge.md#bridge_bridge_ExternalWithdrawEventV3">ExternalWithdrawEventV3</a> {
+            origin_token_type: 5, // BUSD
             token_type: token_id_expect,
             source_chain: inner.chain_id,
             target_chain,
@@ -4999,7 +5062,8 @@ title: Module `bridge::bridge`
     inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.burn(token);
     // emit event
     emit(
-        <a href="../bridge/bridge.md#bridge_bridge_ExternalWithdrawEventV2">ExternalWithdrawEventV2</a> {
+        <a href="../bridge/bridge.md#bridge_bridge_ExternalWithdrawEventV3">ExternalWithdrawEventV3</a> {
+            origin_token_type: token_id,
             token_type: token_id,
             source_chain: inner.chain_id,
             target_chain,
