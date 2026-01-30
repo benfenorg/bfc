@@ -366,9 +366,11 @@ pub fn get_test_log_and_action(
     let sui_address: SuiAddress = SuiAddress::random_for_testing_only();
     let target_address = Hex::decode(&sui_address.to_string()).unwrap();
     // Note: must use `encode` rather than `encode_packged`
+    // ABI order: tokenID, targetTokenID, suiAdjustedAmount, senderAddress, recipientAddress
     let encoded = ethers::abi::encode(&[
         // u8/u64 is encoded as u256 in abi standard
         ethers::abi::Token::Uint(ethers::types::U256::from(token_id)),
+        ethers::abi::Token::Uint(ethers::types::U256::from(token_id)), // targetTokenID
         ethers::abi::Token::Uint(ethers::types::U256::from(sui_adjusted_amount)),
         ethers::abi::Token::Address(source_address),
         ethers::abi::Token::Bytes(target_address.clone()),
@@ -379,13 +381,14 @@ pub fn get_test_log_and_action(
             long_signature(
                 "TokensDeposited",
                 &[
-                    ParamType::Uint(8),
-                    ParamType::Uint(64),
-                    ParamType::Uint(8),
-                    ParamType::Uint(64),
-                    ParamType::Uint(64),
-                    ParamType::Address,
-                    ParamType::Bytes,
+                    ParamType::Uint(8),   // sourceChainID (indexed)
+                    ParamType::Uint(64), // nonce (indexed)
+                    ParamType::Uint(8),   // destinationChainID (indexed)
+                    ParamType::Uint(64), // tokenID
+                    ParamType::Uint(64), // targetTokenID
+                    ParamType::Uint(64), // suiAdjustedAmount
+                    ParamType::Address,  // senderAddress
+                    ParamType::Bytes,    // recipientAddress
                 ],
             ),
             hex!("0000000000000000000000000000000000000000000000000000000000000001").into(), // chain id: sui testnet

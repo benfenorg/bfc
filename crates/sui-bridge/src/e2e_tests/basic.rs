@@ -4237,18 +4237,18 @@ async fn test_bridge_busd_to_solana() {
         }
     }
     
-    // Step 9: Verify the TokenDepositedEventForSolanaV2 event was emitted
+    // Step 9: Verify the TokenDepositedEventForSolanaV3 event was emitted
     let events = tx_response.events.as_ref().unwrap();
     let solana_bridge_events: Vec<_> = events.data.iter()
-        .filter(|e| e.type_.name.as_str() == "TokenDepositedEventForSolanaV2")
+        .filter(|e| e.type_.name.as_str() == "TokenDepositedEventForSolanaV3")
         .collect();
     
     assert!(
         !solana_bridge_events.is_empty(),
-        "Should have emitted TokenDepositedEventForSolanaV2 event"
+        "Should have emitted TokenDepositedEventForSolanaV3 event"
     );
     
-    info!("✅ TokenDepositedEventForSolanaV2 event emitted: {:?}", solana_bridge_events);
+    info!("✅ TokenDepositedEventForSolanaV3 event emitted: {:?}", solana_bridge_events);
     
     // Step 10: Wait for bridge committee to automatically sign and execute approve_token_transfer_v2
     // The bridge monitors TokenDepositedEventForSolanaV2 events and automatically:
@@ -4264,7 +4264,7 @@ async fn test_bridge_busd_to_solana() {
     let approval_events = bridge_test_cluster
         .new_bridge_events(
             HashSet::from_iter([
-                SuiToSolanaTokenBridgeV2.get().unwrap().clone(),
+                SuiToSolanaTokenBridgeV3.get().unwrap().clone(),
                 TokenTransferApproved.get().unwrap().clone(),
             ]),
             true, // Assert success - the approval should succeed
@@ -4275,13 +4275,13 @@ async fn test_bridge_busd_to_solana() {
     
     // Verify we got both the deposit event and the approval event
     let has_deposit_event = approval_events.iter()
-        .any(|e| e.type_.name.as_str() == "TokenDepositedEventForSolanaV2");
+        .any(|e| e.type_.name.as_str() == "TokenDepositedEventForSolanaV3");
     let has_approval_event = approval_events.iter()
         .any(|e| e.type_.name.as_str() == "TokenTransferApproved");
     
     assert!(
         has_deposit_event && has_approval_event,
-        "Should have received both TokenDepositedEventForSolanaV2 and TokenTransferApproved events. Got: {:?}",
+        "Should have received both TokenDepositedEventForSolanaV3 and TokenTransferApproved events. Got: {:?}",
         approval_events.iter().map(|e| e.type_.name.as_str()).collect::<Vec<_>>()
     );
     
