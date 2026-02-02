@@ -355,11 +355,10 @@ impl SolanaBridgeEvent {
 mod tests {
     use super::*;
 
-    // xNnHWCN1PGABAAAAAAAAAD0CBAAAAAAAAAAAypo7AAAAAOXaYE6RS0pYLywuTnxDVWpNC5vNpLb2ZR5oXqMkmrq8IAAAAK6o6kznyCufMoNfXO4QV6GdxnPPcbMT248r8B8cx6ke
     #[test]
     fn test_try_from_logs_with_sample() {
         // The base64 sample string from the instructions
-        let base64_str = "xNnHWCN1PGABAAAAAAAAAD0CBAAAAAAAAAAAypo7AAAAAOXaYE6RS0pYLywuTnxDVWpNC5vNpLb2ZR5oXqMkmrq8IAAAAK6o6kznyCufMoNfXO4QV6GdxnPPcbMT248r8B8cx6ke";
+        let base64_str = "xNnHWCN1PGAAAAAAAAAAADMCAwAAAAAAAAAFAAAAAAAAAADKmjsAAAAA5dpgTpFLSlgvLC5OfENVak0Lm82ktvZlHmheoySaurwgAAAAJhMF2J4WoQJug2RewHES2jXkc1RvThNnjDhMhz/Z4DE=";
         let log_msg = format!("Program data: {}", base64_str);
 
         let event_result = SolanaBridgeEvent::test_try_from_logs(&log_msg.as_str());

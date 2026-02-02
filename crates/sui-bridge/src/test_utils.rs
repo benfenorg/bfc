@@ -462,6 +462,7 @@ pub async fn bridge_token(
         .find_map(|e| match e {
             SuiBridgeEvent::SuiToEthTokenBridgeV1(event) => Some(event.clone()),
             SuiBridgeEvent::SuiToEthTokenBridgeV2(event) => Some(event.clone()),
+            SuiBridgeEvent::SuiToEthTokenBridgeV3(event) => Some(event.clone()),
             _ => None,
         })
         .unwrap()
