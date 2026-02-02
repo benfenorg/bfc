@@ -143,8 +143,9 @@ module bridge::limiter_fast_path {
         let limit_config_key = LimitConfigKey { chain_id, token_id };
         if (!self.limit_configs.contains(limit_config_key)) {
             self.limit_configs.add(limit_config_key, amount);
+        }else{
+            *self.limit_configs.borrow_mut(limit_config_key) = amount;
         };
-        *self.limit_configs.borrow_mut(limit_config_key) = amount;
     }
 
 
