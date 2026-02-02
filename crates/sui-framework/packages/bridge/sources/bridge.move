@@ -2075,6 +2075,9 @@ module bridge::bridge {
         bridge_fee::deposit_fee(parent_id, fee_coin);
         let amount_after_fee=amount-fee;
 
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        assert!(amount_after_fee <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
+
         bfc_system_state.burn_stable(token, ctx);
 
         // emit event

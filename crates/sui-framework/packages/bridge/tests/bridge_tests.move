@@ -2718,12 +2718,15 @@ fun test_defi_stake_success_different_users_protocols() {
 }
 
 fun test_external_busd_withdraw_external_busd_coin(token_id_expect: u64, target_chain: u8, source_chain: u8) {
+    let amount = 9*1_000_000_000u64;
+    test_external_busd_withdraw_external_busd_coin_with_amount(token_id_expect, target_chain, source_chain, amount);
+}
+
+fun test_external_busd_withdraw_external_busd_coin_with_amount(token_id_expect: u64, target_chain: u8, source_chain: u8, amount: u64) {
     let source_address = vector[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
     let mut env = create_env(source_chain);
     env.create_bridge_default();
-
-    let amount = 100*1_000_000_000u64;
 
     let mut bridge = env.bridge(@0x0);
     let ctx = env.ctx();
@@ -2748,6 +2751,14 @@ fun test_external_busd_withdraw_external_busd_coin(token_id_expect: u64, target_
 
     bridge.return_bridge();
     env.destroy_env();
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::ETransferLimit)]
+fun test_external_busd_withdraw_external_busd_coin_exceed_limit_test() {
+    // 100B > 10B limit
+    let amount = 100*1_000_000_000u64;
+    test_external_busd_withdraw_external_busd_coin_with_amount(4u64, chain_ids::solana_testnet(), chain_ids::sui_custom(), amount)
 }
 
 // Test complete defi stake flow: defi_stake -> approve_defi_transfer_out -> approve_defi_transfer_in -> defi_stake_success
