@@ -1847,35 +1847,6 @@ module bridge::bridge {
             abort EDuplicatedMessage
         };
 
-        // // v1
-        // let token = inner.treasury.mint<T>(amount, ctx);
-        // transfer::public_transfer(token, address::from_bytes(target_address));
-
-        // inner.external_bridge_records.push_back(
-        //     key,
-        //     ExternalBridgeRecord {
-        //         source_chain,
-        //         target_chain: inner.chain_id,
-        //         source_address,
-        //         target_address,
-        //         amount,
-        //         verified_signatures: option::none(),
-        //         claimed: true,
-        //     },
-        // );
-
-        // emit(
-        //     ExternalDepositedEvent {
-        //         tx_hash,
-        //         coin_type,
-        //         source_chain,
-        //         target_chain: inner.chain_id,
-        //         source_address,
-        //         target_address,
-        //         amount,
-        //     },
-        // )
-
         // v2
         let seq_num = inner.get_current_seq_num_and_increment(message_types::token());
         let token_id = inner.treasury.token_id<T>();

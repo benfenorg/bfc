@@ -52,7 +52,6 @@ module bridge::defi_protocols {
         protocol_token_id: u64,
         /// chain id
         chain_id: u8,
-        /// fee type, 0: fixed, 1: percentage
         fee_type: u8,
         /// fee rate,decimal precision is 1e9
         fee_rate: u64,
