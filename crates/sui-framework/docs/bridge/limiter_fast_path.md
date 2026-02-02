@@ -591,8 +591,9 @@ title: Module `bridge::limiter_fast_path`
     <b>let</b> limit_config_key = <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_LimitConfigKey">LimitConfigKey</a> { chain_id, token_id };
     <b>if</b> (!self.limit_configs.contains(limit_config_key)) {
         self.limit_configs.add(limit_config_key, amount);
+    }<b>else</b>{
+        *self.limit_configs.<a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_borrow_mut">borrow_mut</a>(limit_config_key) = amount;
     };
-    *self.limit_configs.<a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_borrow_mut">borrow_mut</a>(limit_config_key) = amount;
 }
 </code></pre>
 
