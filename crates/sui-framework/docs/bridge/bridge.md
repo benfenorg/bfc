@@ -4709,32 +4709,6 @@ title: Module `bridge::bridge`
     <b>if</b> (inner.external_bridge_records.contains(key)) {
         <b>abort</b> <a href="../bridge/bridge.md#bridge_bridge_EDuplicatedMessage">EDuplicatedMessage</a>
     };
-    // // v1
-    // <b>let</b> token = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.mint&lt;T&gt;(amount, ctx);
-    // transfer::public_transfer(token, address::from_bytes(target_address));
-    // inner.external_bridge_records.push_back(
-    //     key,
-    //     <a href="../bridge/bridge.md#bridge_bridge_ExternalBridgeRecord">ExternalBridgeRecord</a> {
-    //         source_chain,
-    //         target_chain: inner.chain_id,
-    //         source_address,
-    //         target_address,
-    //         amount,
-    //         verified_signatures: option::none(),
-    //         claimed: <b>true</b>,
-    //     },
-    // );
-    // emit(
-    //     <a href="../bridge/bridge.md#bridge_bridge_ExternalDepositedEvent">ExternalDepositedEvent</a> {
-    //         tx_hash,
-    //         coin_type,
-    //         source_chain,
-    //         target_chain: inner.chain_id,
-    //         source_address,
-    //         target_address,
-    //         amount,
-    //     },
-    // )
     // v2
     <b>let</b> seq_num = inner.<a href="../bridge/bridge.md#bridge_bridge_get_current_seq_num_and_increment">get_current_seq_num_and_increment</a>(<a href="../bridge/message_types.md#bridge_message_types_token">message_types::token</a>());
     <b>let</b> token_id = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.token_id&lt;T&gt;();
