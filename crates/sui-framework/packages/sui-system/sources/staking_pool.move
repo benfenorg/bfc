@@ -350,6 +350,10 @@ public(package) fun process_pending_stakes_and_withdraws(pool: &mut StakingPool,
     let new_epoch = ctx.epoch() + 1;
     pool.process_pending_stake_withdraw();
     pool.process_pending_stake();
+
+    if (pool.exchange_rates.contains(new_epoch)) {
+        return
+    };
     pool
         .exchange_rates
         .add(
@@ -414,8 +418,11 @@ fun withdraw_rewards(
 
 /// Called by `validator` module to activate a staking pool.
 public(package) fun activate_staking_pool(pool: &mut StakingPool, activation_epoch: u64) {
+
+    if  (!pool.exchange_rates.contains(activation_epoch)) {
+        pool.exchange_rates.add(activation_epoch, initial_exchange_rate());
+    };
     // Add the initial exchange rate to the table.
-    pool.exchange_rates.add(activation_epoch, initial_exchange_rate());
     // Check that the pool is preactive and not inactive.
     assert!(pool.is_preactive(), EPoolAlreadyActive);
     assert!(!pool.is_inactive(), EActivationOfInactivePool);

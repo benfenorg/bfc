@@ -199,6 +199,9 @@ module sui_system::stable_pool {
         let new_epoch = tx_context::epoch(ctx) + 1;
         process_pending_stake_withdraw(pool);
         process_pending_stake(pool);
+        if (table::contains(&pool.exchange_rates, new_epoch)) {
+            return
+        };
         table::add(
             &mut pool.exchange_rates,
             new_epoch,
@@ -265,11 +268,14 @@ module sui_system::stable_pool {
     /// Called by validator module to activate a stable pool.
     public(package) fun activate_stable_pool<STABLE>(pool: &mut StablePool<STABLE>, activation_epoch: u64) {
         // Add the initial exchange rate to the table.
-        table::add(
-            &mut pool.exchange_rates,
-            activation_epoch,
-            initial_exchange_rate()
-        );
+        if (!table::contains(&pool.exchange_rates, activation_epoch)) {
+            table::add(
+                &mut pool.exchange_rates,
+                activation_epoch,
+                initial_exchange_rate()
+            );
+
+        };
         // Check that the pool is preactive and not inactive.
         assert!(is_preactive(pool), EPoolAlreadyActive);
         assert!(!is_inactive(pool), EActivationOfInactivePool);

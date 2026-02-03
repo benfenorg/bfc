@@ -670,6 +670,9 @@ Called at epoch advancement times to add rewards (in SUI) to the stable pool.
     <b>let</b> new_epoch = tx_context::epoch(ctx) + 1;
     <a href="../sui_system/stable_pool.md#sui_system_stable_pool_process_pending_stake_withdraw">process_pending_stake_withdraw</a>(pool);
     <a href="../sui_system/stable_pool.md#sui_system_stable_pool_process_pending_stake">process_pending_stake</a>(pool);
+    <b>if</b> (table::contains(&pool.<a href="../sui_system/stable_pool.md#sui_system_stable_pool_exchange_rates">exchange_rates</a>, new_epoch)) {
+        <b>return</b>
+    };
     table::add(
         &<b>mut</b> pool.<a href="../sui_system/stable_pool.md#sui_system_stable_pool_exchange_rates">exchange_rates</a>,
         new_epoch,
@@ -813,11 +816,13 @@ Called by validator module to activate a stable pool.
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_activate_stable_pool">activate_stable_pool</a>&lt;STABLE&gt;(pool: &<b>mut</b> <a href="../sui_system/stable_pool.md#sui_system_stable_pool_StablePool">StablePool</a>&lt;STABLE&gt;, activation_epoch: u64) {
     // Add the initial exchange rate to the table.
-    table::add(
-        &<b>mut</b> pool.<a href="../sui_system/stable_pool.md#sui_system_stable_pool_exchange_rates">exchange_rates</a>,
-        activation_epoch,
-        <a href="../sui_system/stable_pool.md#sui_system_stable_pool_initial_exchange_rate">initial_exchange_rate</a>()
-    );
+    <b>if</b> (!table::contains(&pool.<a href="../sui_system/stable_pool.md#sui_system_stable_pool_exchange_rates">exchange_rates</a>, activation_epoch)) {
+        table::add(
+            &<b>mut</b> pool.<a href="../sui_system/stable_pool.md#sui_system_stable_pool_exchange_rates">exchange_rates</a>,
+            activation_epoch,
+            <a href="../sui_system/stable_pool.md#sui_system_stable_pool_initial_exchange_rate">initial_exchange_rate</a>()
+        );
+    };
     // Check that the pool is preactive and not inactive.
     <b>assert</b>!(<a href="../sui_system/stable_pool.md#sui_system_stable_pool_is_preactive">is_preactive</a>(pool), <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EPoolAlreadyActive">EPoolAlreadyActive</a>);
     <b>assert</b>!(!<a href="../sui_system/stable_pool.md#sui_system_stable_pool_is_inactive">is_inactive</a>(pool), <a href="../sui_system/stable_pool.md#sui_system_stable_pool_EActivationOfInactivePool">EActivationOfInactivePool</a>);

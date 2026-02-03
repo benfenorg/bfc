@@ -966,6 +966,9 @@ Called at epoch advancement times to add rewards (in SUI) to the staking pool.
     <b>let</b> new_epoch = ctx.epoch() + 1;
     pool.<a href="../sui_system/staking_pool.md#sui_system_staking_pool_process_pending_stake_withdraw">process_pending_stake_withdraw</a>();
     pool.<a href="../sui_system/staking_pool.md#sui_system_staking_pool_process_pending_stake">process_pending_stake</a>();
+    <b>if</b> (pool.<a href="../sui_system/staking_pool.md#sui_system_staking_pool_exchange_rates">exchange_rates</a>.contains(new_epoch)) {
+        <b>return</b>
+    };
     pool
         .<a href="../sui_system/staking_pool.md#sui_system_staking_pool_exchange_rates">exchange_rates</a>
         .add(
@@ -1106,8 +1109,10 @@ Called by <code><a href="../sui_system/validator.md#sui_system_validator">valida
 
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="../sui_system/staking_pool.md#sui_system_staking_pool_activate_staking_pool">activate_staking_pool</a>(pool: &<b>mut</b> <a href="../sui_system/staking_pool.md#sui_system_staking_pool_StakingPool">StakingPool</a>, <a href="../sui_system/staking_pool.md#sui_system_staking_pool_activation_epoch">activation_epoch</a>: u64) {
+    <b>if</b>  (!pool.<a href="../sui_system/staking_pool.md#sui_system_staking_pool_exchange_rates">exchange_rates</a>.contains(<a href="../sui_system/staking_pool.md#sui_system_staking_pool_activation_epoch">activation_epoch</a>)) {
+        pool.<a href="../sui_system/staking_pool.md#sui_system_staking_pool_exchange_rates">exchange_rates</a>.add(<a href="../sui_system/staking_pool.md#sui_system_staking_pool_activation_epoch">activation_epoch</a>, <a href="../sui_system/staking_pool.md#sui_system_staking_pool_initial_exchange_rate">initial_exchange_rate</a>());
+    };
     // Add the initial exchange rate to the table.
-    pool.<a href="../sui_system/staking_pool.md#sui_system_staking_pool_exchange_rates">exchange_rates</a>.add(<a href="../sui_system/staking_pool.md#sui_system_staking_pool_activation_epoch">activation_epoch</a>, <a href="../sui_system/staking_pool.md#sui_system_staking_pool_initial_exchange_rate">initial_exchange_rate</a>());
     // Check that the pool is preactive and not inactive.
     <b>assert</b>!(pool.<a href="../sui_system/staking_pool.md#sui_system_staking_pool_is_preactive">is_preactive</a>(), <a href="../sui_system/staking_pool.md#sui_system_staking_pool_EPoolAlreadyActive">EPoolAlreadyActive</a>);
     <b>assert</b>!(!pool.<a href="../sui_system/staking_pool.md#sui_system_staking_pool_is_inactive">is_inactive</a>(), <a href="../sui_system/staking_pool.md#sui_system_staking_pool_EActivationOfInactivePool">EActivationOfInactivePool</a>);

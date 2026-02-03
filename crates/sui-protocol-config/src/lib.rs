@@ -3578,6 +3578,9 @@ impl ProtocolConfig {
                 }
 
                 78 => {
+
+                }
+                79 => {
                     if chain != Chain::Mainnet {
                         cfg.consensus_gc_depth = Some(60);
                         cfg.feature_flags.consensus_linearize_subdag_v2 = true;
@@ -3611,8 +3614,6 @@ impl ProtocolConfig {
                     //             },
                     //         );
                     // }
-                }
-                79 => {
                     if chain != Chain::Mainnet {
                         cfg.feature_flags.consensus_median_based_commit_timestamp = true;
 
