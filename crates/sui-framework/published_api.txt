@@ -7636,6 +7636,12 @@ is_solana_chain
 get_expected_address_length
 	fun
 	0xb::bridge
+get_token_amount_for_target_chain
+	fun
+	0xb::bridge
+get_fee_busd_for_target_chain
+	fun
+	0xb::bridge
 to_bytes
 	public fun
 	0x1::bcs

@@ -137,6 +137,8 @@ title: Module `bridge::bridge`
 -  [Function `get_parsed_defi_transfer_message`](#bridge_bridge_get_parsed_defi_transfer_message)
 -  [Function `is_solana_chain`](#bridge_bridge_is_solana_chain)
 -  [Function `get_expected_address_length`](#bridge_bridge_get_expected_address_length)
+-  [Function `get_token_amount_for_target_chain`](#bridge_bridge_get_token_amount_for_target_chain)
+-  [Function `get_fee_busd_for_target_chain`](#bridge_bridge_get_fee_busd_for_target_chain)
 
 
 <pre><code><b>use</b> <a href="../bfc_system/auth_utils.md#bfc_system_auth_utils">bfc_system::auth_utils</a>;
@@ -3490,26 +3492,14 @@ title: Module `bridge::bridge`
     // <b>assert</b>!(token_id_origin == 5, <a href="../bridge/bridge.md#bridge_bridge_EOnlySupportBusd">EOnlySupportBusd</a>);
     <b>let</b> token_id = token_id_expect;
     //token amount is usdc or usdt amount
-    <b>let</b> token_amount=<b>if</b> (target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() || target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() || target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_custom">chain_ids::eth_custom</a>()) {
-        token.balance().value()/1000u64
-    } <b>else</b> <b>if</b> (<a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(target_chain)) {
-        token.balance().value()/1000u64
-    } <b>else</b>{
-        token.balance().value()
-    };
+    <b>let</b> token_amount = <a href="../bridge/bridge.md#bridge_bridge_get_token_amount_for_target_chain">get_token_amount_for_target_chain</a>(target_chain, token.balance().value());
     <b>assert</b>!(token_amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
     //fee is usdc or usdt amount
     <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(bridge_id,target_chain <b>as</b> u64,token_id,token_amount);
     <b>assert</b>!(token_amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
     <b>let</b> amount_after_fee=token_amount-fee;
     //fee coin is busd,so we need convert fee to busd
-    <b>let</b> fee_busd= <b>if</b> (target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() || target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() || target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_custom">chain_ids::eth_custom</a>()) {
-        fee*1000u64
-    } <b>else</b> <b>if</b> (<a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(target_chain)) {
-        fee*1000u64
-    } <b>else</b> {
-        fee
-    };
+    <b>let</b> fee_busd = <a href="../bridge/bridge.md#bridge_bridge_get_fee_busd_for_target_chain">get_fee_busd_for_target_chain</a>(target_chain, fee);
     <b>let</b> fee_coin=token.split&lt;T&gt;(fee_busd, ctx);
     <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(bridge_id, fee_coin);
     // <a href="../bridge/bridge.md#bridge_bridge_create">create</a> <a href="../bridge/bridge.md#bridge_bridge">bridge</a> <a href="../bridge/message.md#bridge_message">message</a>
@@ -7008,6 +6998,70 @@ title: Module `bridge::bridge`
 
 <pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_expected_address_length">get_expected_address_length</a>(chain_id: u8): u64 {
     <b>if</b> (<a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(chain_id)) <a href="../bridge/bridge.md#bridge_bridge_SOLANA_ADDRESS_LENGTH">SOLANA_ADDRESS_LENGTH</a> <b>else</b> <a href="../bridge/bridge.md#bridge_bridge_EVM_ADDRESS_LENGTH">EVM_ADDRESS_LENGTH</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_token_amount_for_target_chain"></a>
+
+## Function `get_token_amount_for_target_chain`
+
+For ETH/Solana chains, token balance is in 6 decimals (e.g. USDC), we use value/1000 as bridge amount.
+For other chains, use balance value as-is.
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_token_amount_for_target_chain">get_token_amount_for_target_chain</a>(target_chain: u8, balance_value: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_token_amount_for_target_chain">get_token_amount_for_target_chain</a>(target_chain: u8, balance_value: u64): u64 {
+    <b>if</b> (target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() || target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() || target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_custom">chain_ids::eth_custom</a>()) {
+        balance_value / 1000u64
+    } <b>else</b> <b>if</b> (<a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(target_chain)) {
+        balance_value / 1000u64
+    } <b>else</b> {
+        balance_value
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_fee_busd_for_target_chain"></a>
+
+## Function `get_fee_busd_for_target_chain`
+
+For ETH/Solana chains, fee is in bridge amount (6 decimals), convert to BUSD by fee*1000.
+For other chains, fee is already in BUSD units.
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_fee_busd_for_target_chain">get_fee_busd_for_target_chain</a>(target_chain: u8, fee: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_fee_busd_for_target_chain">get_fee_busd_for_target_chain</a>(target_chain: u8, fee: u64): u64 {
+    <b>if</b> (target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() || target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() || target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_custom">chain_ids::eth_custom</a>()) {
+        fee * 1000u64
+    } <b>else</b> <b>if</b> (<a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(target_chain)) {
+        fee * 1000u64
+    } <b>else</b> {
+        fee
+    }
 }
 </code></pre>
 
