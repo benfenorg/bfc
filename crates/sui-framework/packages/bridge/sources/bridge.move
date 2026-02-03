@@ -989,7 +989,9 @@ module bridge::bridge {
         //token amount is usdc or usdt amount
         let token_amount=if (target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom()) {
             token.balance().value()/1000u64
-        }else{
+        } else if (is_solana_chain(target_chain)) {
+            token.balance().value()/1000u64
+        } else{
             token.balance().value()
         };
         assert!(token_amount > 0, ETokenValueIsZero);
@@ -1000,7 +1002,9 @@ module bridge::bridge {
         //fee coin is busd,so we need convert fee to busd
         let fee_busd= if (target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom()) {
             fee*1000u64
-        }else{
+        } else if (is_solana_chain(target_chain)) {
+            fee*1000u64
+        } else {
             fee
         };
         let fee_coin=token.split<T>(fee_busd, ctx);
