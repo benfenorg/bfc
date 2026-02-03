@@ -3492,7 +3492,9 @@ title: Module `bridge::bridge`
     //token amount is usdc or usdt amount
     <b>let</b> token_amount=<b>if</b> (target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() || target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() || target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_custom">chain_ids::eth_custom</a>()) {
         token.balance().value()/1000u64
-    }<b>else</b>{
+    } <b>else</b> <b>if</b> (<a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(target_chain)) {
+        token.balance().value()/1000u64
+    } <b>else</b>{
         token.balance().value()
     };
     <b>assert</b>!(token_amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
@@ -3503,7 +3505,9 @@ title: Module `bridge::bridge`
     //fee coin is busd,so we need convert fee to busd
     <b>let</b> fee_busd= <b>if</b> (target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() || target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() || target_chain==<a href="../bridge/chain_ids.md#bridge_chain_ids_eth_custom">chain_ids::eth_custom</a>()) {
         fee*1000u64
-    }<b>else</b>{
+    } <b>else</b> <b>if</b> (<a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(target_chain)) {
+        fee*1000u64
+    } <b>else</b> {
         fee
     };
     <b>let</b> fee_coin=token.split&lt;T&gt;(fee_busd, ctx);
