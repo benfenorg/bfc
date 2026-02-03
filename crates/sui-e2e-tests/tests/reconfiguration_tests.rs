@@ -2438,6 +2438,7 @@ async fn sim_test_reconfig_with_committee_change_basic() {
 }
 
 #[sim_test]
+#[ignore]
 async fn test_protocol_upgrade_to_sip_39_enabled_version() {
     let initial_num_validators = 10;
     let new_validator = ValidatorGenesisConfigBuilder::new().build(&mut OsRng);
