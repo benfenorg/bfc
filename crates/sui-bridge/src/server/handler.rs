@@ -246,6 +246,8 @@ where
             let tx_hash = &external_action.sui_bridge_event.tx_hash;
             let amount = external_action.sui_bridge_event.amount;
             let chain_id = external_action.sui_bridge_event.source_chain;
+            let token_id = external_action.sui_bridge_event.token_id;
+            
 
             // check target address in whitelist
             let summary = self.sui_client.get_bridge_summary().await;
@@ -270,7 +272,11 @@ where
                 BridgeChainId::TronMainnet | BridgeChainId::TronTestnet => {
                     // check tron txn: only support TRC20
                     // readme: amount is benfen amount, not tron amount, so we need to convert it
-                    let tron_amount = amount / 1_000;
+                    let tron_amount=if token_id==3 || token_id==4 {
+                        amount 
+                    }else {
+                        amount/1000
+                    };
                     let external_rpc = self.external_rpc.as_ref().ok_or_else(|| {
                         BridgeError::Generic("External RPC config not found".to_string())
                     })?;
@@ -283,7 +289,12 @@ where
                     // check solana txn: only support USDC/USDT
 
                     // readme: amount is benfen amount, not solana amount, so we need to convert it
-                    let sol_amount = amount / 1_000;
+                    let sol_amount=if token_id==3 || token_id==4 {
+                        amount 
+                    }else {
+                        amount / 1_000
+                    };
+
                     let external_rpc = self.external_rpc.as_ref().ok_or_else(|| {
                         BridgeError::Generic("External RPC config not found".to_string())
                     })?;
