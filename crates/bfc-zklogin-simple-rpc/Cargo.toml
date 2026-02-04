@@ -54,6 +54,7 @@ tower-http.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
 im.workspace = true
+dashmap.workspace = true
 
 # Used for dummy data
 bcs.workspace = true

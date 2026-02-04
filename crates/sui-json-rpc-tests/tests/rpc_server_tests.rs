@@ -1036,7 +1036,7 @@ async fn test_zklogin_verify() -> Result<(), anyhow::Error> {
     let eph_sig = Signature::new_secure(&msg, kp);
     let generic_sig = GenericSignature::ZkLoginAuthenticator(ZkLoginAuthenticator::new(
         inputs.clone(),
-        2,
+        10,
         eph_sig.clone(),
     ));
 

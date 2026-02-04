@@ -7,6 +7,7 @@ use tracing::info;
 use crate::zk_verification::{verify_zk_login_sig, ZkVerifyRequest, ZkVerifyResponse, ResultCode};
 
 pub mod zk_verification;
+pub mod client_cache;
 
 
 pub async fn hello() -> &'static str {

@@ -1,5 +1,6 @@
 use std::str::FromStr;
 use std::sync::Arc;
+use std::sync::OnceLock;
 use sui_types::signature_verification::VerifiedDigestCache;
 use anyhow::anyhow;
 use axum::Json;
@@ -23,11 +24,12 @@ use serde_json::{json, Value};
 use tracing::info;
 use tracing::warn;
 use std::env;
+use std::time::Duration;
 use move_core_types::language_storage::TypeTag;
-use sui_sdk::SuiClientBuilder;
 use sui_types::authenticator_state::{ActiveJwk, AuthenticatorStateInner};
 use sui_types::dynamic_field::{derive_dynamic_field_id, Field};
 use sui_types::SUI_AUTHENTICATOR_STATE_OBJECT_ID;
+use crate::client_cache::get_sui_client;
 
 /// A response struct for the zk verification.
 #[derive(Deserialize, Serialize, Debug)]
@@ -77,6 +79,21 @@ impl ResultCode {
     }
 }
 
+static HTTP_CLIENT: OnceLock<Client> = OnceLock::new();
+
+fn get_http_client() -> &'static Client {
+    HTTP_CLIENT.get_or_init(|| {
+        Client::builder()
+            .connect_timeout(Duration::from_secs(5))
+            .timeout(Duration::from_secs(10))
+            .pool_idle_timeout(Duration::from_secs(90))
+            .pool_max_idle_per_host(10)
+            .build()
+            .expect("Failed to build HTTP client")
+    })
+}
+
+
 pub async fn verify_zk_login_sig(
     sig: String, bytes: String, intent_scope: u8, cur_epoch: Option<u64>, cur_rpc_url: Option<String>, author: String, env: String
 ) -> Result<SuiResult, anyhow::Error> {
@@ -94,7 +111,6 @@ pub async fn verify_zk_login_sig(
     let zk = ZkLoginAuthenticator::from_bytes(sig_decode_bytes)?;
     info!("author: {}, this sig's maxEpoch={}", author, zk.get_max_epoch());
 
-    let client = Client::new();
     let provider = OIDCProvider::from_iss(zk.get_iss())
         .map_err(|_| anyhow!("Invalid iss"))?;
     // Set to true if you want to skip fetching JWKS for testing purposes
@@ -106,7 +122,7 @@ pub async fn verify_zk_login_sig(
         (true, _) => ImHashMap::new(),
         (false, false) => fetch_jwks_on_chain(cur_rpc_url.clone().unwrap()).await?,
         (false, true) => {
-            let jwks = fetch_jwks(&provider, &client).await
+            let jwks = fetch_jwks(&provider, get_http_client()).await
                 .map_err(|e| anyhow!("fetch iss jwk error {:?}", e))?;
             jwks.into_iter().collect()
         }
@@ -128,7 +144,7 @@ pub async fn verify_zk_login_sig(
     };
 
     let verify_params =
-        VerifyParams::new(parsed, vec![], zklogin_env, true, true, Some(365));
+        VerifyParams::new(parsed, vec![], zklogin_env, true, true, true, Some(365));
 
     let (_serialized, res) = match IntentScope::try_from(intent_scope)
         .map_err(|_| anyhow!("Invalid scope"))? {
@@ -204,7 +220,7 @@ pub async fn fetch_jwks_on_chain(rpc_url: String) -> Result<ImHashMap<JwkId, JWK
 }
 
 pub async fn get_authenticator_state_inner(rpc_url: String) -> Result<AuthenticatorStateInner, anyhow::Error> {
-    let sui_client = SuiClientBuilder::default().build(rpc_url).await.map_err(|e| anyhow!("build sui client error {:?}", e))?;
+    let sui_client = get_sui_client(&rpc_url).await?;
     let read_api = sui_client.read_api();
     let obj_id = derive_dynamic_field_id(SUI_AUTHENTICATOR_STATE_OBJECT_ID, &TypeTag::U64, &bcs::to_bytes(&1u64).unwrap())
         .map_err(|e| anyhow!("cannot derive dynamic field id: {:?}", e))?;
@@ -216,7 +232,7 @@ pub async fn get_authenticator_state_inner(rpc_url: String) -> Result<Authentica
 }
 
 pub async fn post_with_body(url: &str, body_data: String) ->  Result<Value, anyhow::Error>  {
-    let client = Client::new();
+    let client = get_http_client();
 
     let mut headers = HeaderMap::new();
     headers.insert("Content-Type", HeaderValue::from_static("application/json"));
