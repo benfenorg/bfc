@@ -25,6 +25,9 @@ module bridge::limiter {
 
     const EXTERNAL_LIMITS_KEY: vector<u8> = b"bridge_external_limits";
 
+    public struct ExternalTransferRecordsKey has copy, drop, store {}
+    public struct ExternalTransfer24hLimitsKey has copy, drop, store {}
+
     //////////////////////////////////////////////////////
     // Types
     //
@@ -393,6 +396,62 @@ module bridge::limiter {
         );
     }
 
+    public(package) fun initial_external_24h_limits(
+        parent_id: &mut UID,
+    ) {
+        update_external_24h_limit(
+            parent_id,
+            &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::btc_mainnet()),
+            // 10 BTC, assuming 1 BTC = 80,000 USD
+            800_000 * USD_VALUE_MULTIPLIER,
+        );
+        update_external_24h_limit(
+            parent_id,
+            &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::solana_mainnet()),
+            // 100_0000 USD
+            100_0000 * USD_VALUE_MULTIPLIER,
+        );
+        update_external_24h_limit(
+            parent_id,
+            &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::tron_mainnet()),
+            // 100_0000 USD
+            100_0000 * USD_VALUE_MULTIPLIER,
+        );
+
+        // testnet
+        update_external_24h_limit(
+            parent_id,
+            &chain_ids::get_route(chain_ids::sui_testnet(), chain_ids::btc_testnet()),
+            1000 * USD_VALUE_MULTIPLIER,
+        );
+        update_external_24h_limit(
+            parent_id,
+            &chain_ids::get_route(chain_ids::sui_testnet(), chain_ids::solana_testnet()),
+            1000 * USD_VALUE_MULTIPLIER,
+        );
+        update_external_24h_limit(
+            parent_id,
+            &chain_ids::get_route(chain_ids::sui_testnet(), chain_ids::tron_testnet()),
+            1000 * USD_VALUE_MULTIPLIER,
+        );
+        // custom
+        update_external_24h_limit(
+            parent_id,
+            &chain_ids::get_route(chain_ids::sui_custom(), chain_ids::btc_testnet()),
+            1000 * USD_VALUE_MULTIPLIER,
+        );
+        update_external_24h_limit(
+            parent_id,
+            &chain_ids::get_route(chain_ids::sui_custom(), chain_ids::solana_testnet()),
+            1000 * USD_VALUE_MULTIPLIER,
+        );
+        update_external_24h_limit(
+            parent_id,
+            &chain_ids::get_route(chain_ids::sui_custom(), chain_ids::tron_testnet()),
+            1000 * USD_VALUE_MULTIPLIER,
+        );
+    }
+
     public(package) fun get_external_limiter(
         parent_id: &UID
     ): &ExternalLimiter {
@@ -428,6 +487,120 @@ module bridge::limiter {
         let limit = external_limiter.transfer_out_limits.try_get(route);
         assert!(limit.is_some(), EExternalLimitNotFoundForRoute);
         limit.destroy_some()
+    }
+
+    public(package) fun update_external_24h_limit(
+        parent_id: &mut UID,
+        route: &BridgeRoute,
+        limit: u64,
+    ) {
+        let limiter = dynamic_field::borrow_mut<vector<u8>, ExternalLimiter>(parent_id, EXTERNAL_LIMITS_KEY);
+        if (!limiter.external.contains(ExternalTransfer24hLimitsKey {})) {
+             limiter.external.add(ExternalTransfer24hLimitsKey {}, vec_map::empty<BridgeRoute, u64>());
+        };
+        let limits = limiter.external.borrow_mut<ExternalTransfer24hLimitsKey, VecMap<BridgeRoute, u64>>(ExternalTransfer24hLimitsKey {});
+        if (limits.contains(route)) {
+            *limits.get_mut(route) = limit;
+        } else {
+            limits.insert(*route, limit);
+        }
+    }
+
+    public(package) fun check_and_record_external_24h_transfer(
+        parent_id: &mut UID,
+        clock: &Clock,
+        route: BridgeRoute,
+        amount: u64
+    ): bool {
+        let limiter = dynamic_field::borrow_mut<vector<u8>, ExternalLimiter>(parent_id, EXTERNAL_LIMITS_KEY);
+        
+        // 1. Check if 24h limit exists for this route
+        if (!limiter.external.contains(ExternalTransfer24hLimitsKey {})) {
+            return true
+        };
+        let limits = limiter.external.borrow<ExternalTransfer24hLimitsKey, VecMap<BridgeRoute, u64>>(ExternalTransfer24hLimitsKey {});
+        if (!limits.contains(&route)) {
+            return true
+        };
+        let limit = *limits.get(&route);
+
+        // 2. Get/Init records
+        if (!limiter.external.contains(ExternalTransferRecordsKey {})) {
+            limiter.external.add(ExternalTransferRecordsKey {}, vec_map::empty<BridgeRoute, TransferRecord>());
+        };
+        let records = limiter.external.borrow_mut<ExternalTransferRecordsKey, VecMap<BridgeRoute, TransferRecord>>(ExternalTransferRecordsKey {});
+        
+        if (!records.contains(&route)) {
+            records.insert(route, TransferRecord {
+                hour_head: 0,
+                hour_tail: 0,
+                per_hour_amounts: vector[],
+                total_amount: 0
+            });
+        };
+        let record = records.get_mut(&route);
+
+        // 3. Adjust window
+        let current_hour = current_hour_since_epoch(clock);
+        record.adjust_transfer_records(current_hour);
+
+        // 4. Check limit
+        if (record.total_amount + amount > limit) {
+            return false
+        };
+
+        // 5. Update record
+        let new_amount = record.per_hour_amounts.pop_back() + amount;
+        record.per_hour_amounts.push_back(new_amount);
+        record.total_amount = record.total_amount + amount;
+        
+        true
+    }
+
+    public fun get_external_available_transfer_amount<T>(
+        parent_id: &UID,
+        treasury: &BridgeTreasury,
+        route: BridgeRoute
+    ): u128 {
+        let limiter = dynamic_field::borrow<vector<u8>, ExternalLimiter>(parent_id, EXTERNAL_LIMITS_KEY);
+        
+        // 1. Check if 24h limit exists for this route
+        if (!limiter.external.contains(ExternalTransfer24hLimitsKey {})) {
+            abort EExternalLimitNotFoundForRoute
+        };
+        let limits = limiter.external.borrow<ExternalTransfer24hLimitsKey, VecMap<BridgeRoute, u64>>(ExternalTransfer24hLimitsKey {});
+        if (!limits.contains(&route)) {
+            abort EExternalLimitNotFoundForRoute
+        };
+        let limit = *limits.get(&route);
+
+        // 2. Get records
+        let total_used = if (limiter.external.contains(ExternalTransferRecordsKey {})) {
+            let records = limiter.external.borrow<ExternalTransferRecordsKey, VecMap<BridgeRoute, TransferRecord>>(ExternalTransferRecordsKey {});
+            if (records.contains(&route)) {
+                records.get(&route).total_amount
+            } else {
+                0
+            }
+        } else {
+            0
+        };
+        
+        if (total_used >= limit) {
+            return 0
+        };
+        
+        let remaining_usd_limit = limit - total_used;
+
+        // 3. Convert USD limit to Token Amount
+        let price = (treasury.notional_value<T>() as u128);
+        if (price == 0) {
+            return 0
+        };
+        
+        let remaining_adjusted = (remaining_usd_limit as u128) * (USD_VALUE_MULTIPLIER as u128);
+        let available = remaining_adjusted / price;
+        return available
     }
 
 

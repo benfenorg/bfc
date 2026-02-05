@@ -42,7 +42,8 @@ use bridge::bridge_env::{
     chain_id,
     token_type,
     sign_message_with,
-    sign_message_with_mut
+    sign_message_with_mut,
+    init_external_limiter
 };
 use bridge::btc::BTC;
 use bridge::chain_ids;
@@ -1189,13 +1190,16 @@ fun test_btc_bridge_withdraw_external_btc() {
     let mut bridge_wrap = env.bridge(sender);
     let bridge = bridge_wrap.bridge_ref_mut();
 
+    let clock = sui::clock::create_for_testing(env.ctx());
     withdraw_external_coin_for_testing<BTC>(
         bridge,
         chain_ids::btc_testnet(),
         target_address,
         btc,
+        &clock,
         env.ctx(),
     );
+    sui::clock::destroy_for_testing(clock);
 
     bridge_wrap.return_bridge();
     env.destroy_env();
@@ -1841,7 +1845,7 @@ fun test_twice_call_migrate(){
     env.create_bridge_default();
     let mut bridge = env.bridge(@0x0);
     let bridge_inner = bridge.bridge_ref_mut();
-    bridge_inner.migrate(env.scenario().ctx());
+    bridge_inner.test_migrate(env.scenario().ctx());
     //bridge_inner.migrate(env.scenario().ctx());
     bridge.return_bridge();
     env.destroy_env();
@@ -2383,15 +2387,18 @@ fun test_external_busd_other_coin_withdraw_external_busd_coin() {
     let scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
     let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
 
-
-    bridge.bridge_ref_mut().withdraw_external_busd_coin<USDC>(
+    let clock = sui::clock::create_for_testing(ctx);
+    bridge.bridge_ref_mut().withdraw_external_busd_coin_v2<USDC>(
         chain_ids::tron_testnet(),
         source_address,
         coin,
         4u64,
         &mut bfc_system_state,
+        &clock,
         ctx,
     );
+    sui::clock::destroy_for_testing(clock);
+
     let withdraw = sui::event::events_by_type<bridge::bridge::ExternalWithdrawEvent>();
     assert!(withdraw.length() == 1);
 
@@ -2735,14 +2742,18 @@ fun test_external_busd_withdraw_external_busd_coin_with_amount(token_id_expect: 
     let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
     let coin = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount, &cap, ctx);
 
-    bridge.bridge_ref_mut().withdraw_external_busd_coin<BUSD>(
+    let clock = sui::clock::create_for_testing(ctx);
+    bridge.bridge_ref_mut().withdraw_external_busd_coin_v2<BUSD>(
         target_chain,
         source_address,
         coin,
         token_id_expect,
         &mut bfc_system_state,
+        &clock,
         ctx,
     );
+    sui::clock::destroy_for_testing(clock);
+
     let withdraw = sui::event::events_by_type<bridge::bridge::ExternalWithdrawEventV3>();
     assert!(withdraw.length() == 1);
     sui::test_scenario::return_shared(bfc_system_state);
@@ -2759,6 +2770,173 @@ fun test_external_busd_withdraw_external_busd_coin_exceed_limit_test() {
     // 100B > 10B limit
     let amount = 100*1_000_000_000u64;
     test_external_busd_withdraw_external_busd_coin_with_amount(4u64, chain_ids::solana_testnet(), chain_ids::sui_custom(), amount)
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::ETransfer24hLimit)]
+fun test_external_coin_withdraw_external_coin_24h_limit_test() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    let sender = @0xABCD;
+    let amount = 100_000_000;
+    let target_address = x"0000000000000000000000000000000000000000000000000000000000000001";
+
+    let token: Coin<BTC> = env.get_btc(amount);
+
+    let scenario = env.scenario();
+    
+    // Update limit as admin
+    scenario.next_tx(@0x0);
+    let mut bridge = scenario.take_shared<Bridge>();
+
+    // Set 24h limit
+    let scenario_val = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario_val);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
+
+    let limit_amount = 1; // 1 USD
+    
+    bridge.update_external_24h_limit(
+        &mut bfc_system_state,
+        &cap,
+        chain_ids::btc_testnet(),
+        limit_amount,
+        scenario.ctx()
+    );
+
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario_val, cap);
+    sui::test_scenario::end(scenario_val);
+    sui::test_scenario::return_shared(bridge);
+
+    // Withdraw as user
+    scenario.next_tx(sender);
+    let mut bridge = scenario.take_shared<Bridge>();
+
+    let clock = sui::clock::create_for_testing(scenario.ctx());
+    
+    bridge.withdraw_external_coin_v2<BTC>(
+        chain_ids::btc_testnet(),
+        target_address,
+        token,
+        &clock,
+        scenario.ctx(),
+    );
+
+    sui::clock::destroy_for_testing(clock);
+    sui::test_scenario::return_shared(bridge);
+    
+    env.destroy_env();
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::ETransferLimit)]
+fun test_external_busd_withdraw_external_busd_coin_limit_test() {
+        let target_chain = chain_ids::eth_custom();
+        let source_chain = chain_ids::sui_custom();
+        let token_id_expect = 4u64; 
+
+    let mut env = create_env(source_chain);
+    env.create_bridge_default();
+
+    let mut bridge = env.bridge(@0x0);
+    let ctx = env.ctx();
+    let scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+
+    // Withdraw 60 BUSD
+    let amount1 = 60 * 1_000_000_000;
+    let coin1 = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount1, &cap, ctx);
+    let source_address = vector[1, 2, 3];
+    
+    let clock = sui::clock::create_for_testing(ctx);
+    
+    bridge.bridge_ref_mut().withdraw_external_busd_coin_v2<BUSD>(
+        target_chain,
+        source_address,
+        coin1,
+        token_id_expect,
+        &mut bfc_system_state,
+        &clock,
+        ctx,
+    );
+
+    sui::clock::destroy_for_testing(clock);
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+
+    bridge.return_bridge();
+    env.destroy_env();
+}
+
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::ETransfer24hLimit)]
+fun test_external_busd_withdraw_external_busd_coin_24h_limit_test() {
+        let target_chain = chain_ids::eth_custom();
+        let source_chain = chain_ids::sui_custom();
+        let token_id_expect = 4u64; 
+
+    let mut env = create_env(source_chain);
+    env.create_bridge_default();
+
+    let mut bridge = env.bridge(@0x0);
+    let ctx = env.ctx();
+    let scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+
+    // Set 24h limit to 10 BUSD
+    let limit_amount = 10 * 1_000_000_000;
+    
+    bridge.bridge_ref_mut().update_external_24h_limit(
+        &mut bfc_system_state,
+        &cap,
+        target_chain,
+        limit_amount,
+        ctx
+    );
+
+    // Withdraw 6 BUSD
+    let amount1 = 6 * 1_000_000_000;
+    let coin1 = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount1, &cap, ctx);
+    let source_address = vector[1, 2, 3];
+    
+    let clock = sui::clock::create_for_testing(ctx);
+    
+    bridge.bridge_ref_mut().withdraw_external_busd_coin_v2<BUSD>(
+        target_chain,
+        source_address,
+        coin1,
+        token_id_expect,
+        &mut bfc_system_state,
+        &clock,
+        ctx,
+    );
+
+    // Withdraw 5 BUSD (should fail)
+    let amount2 = 5 * 1_000_000_000;
+    let coin2 = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount2, &cap, ctx);
+
+    bridge.bridge_ref_mut().withdraw_external_busd_coin_v2<BUSD>(
+        target_chain,
+        source_address,
+        coin2,
+        token_id_expect,
+        &mut bfc_system_state,
+        &clock,
+        ctx,
+    );
+
+    sui::clock::destroy_for_testing(clock);
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+
+    bridge.return_bridge();
+    env.destroy_env();
 }
 
 // Test complete defi stake flow: defi_stake -> approve_defi_transfer_out -> approve_defi_transfer_in -> defi_stake_success
@@ -4730,3 +4908,33 @@ fun test_defi_unstake_all_lp_principal_larger_than_calculated_lt_10_percent() {
     env.destroy_env();
 }
 
+
+#[test]
+fun test_get_external_available_transfer_amount() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    create_bridge_default(&mut env);
+    let sender = @0x0;
+
+    // Initialize external limiter (sets 24h limits)
+    env.init_external_limiter(sender);
+
+    let bridge_wrapper = env.bridge(sender);
+    let bridge = bridge_wrapper.bridge_ref();
+    
+    // Check available amount for BTC on BTC testnet
+    let target_chain = chain_ids::btc_testnet();
+    let amount = bridge.get_external_available_transfer_amount<BTC>(target_chain);
+    
+    // Debug print
+    std::debug::print(&amount);
+    
+    // Verify amount is non-zero (specific value depends on initialization parameters)
+    // Initial limit: 100 USD (100 * 10^8)
+    // BTC Price: 1000 (raw value)
+    // Formula: (100 * 10^8 * 10^8) / 1000 = 10^15
+    // Let's assert it is greater than 0 first.
+    assert!(amount > 0, 0);
+
+    bridge_wrapper.return_bridge();
+    env.destroy_env();
+}

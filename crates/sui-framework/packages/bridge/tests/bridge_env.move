@@ -18,8 +18,6 @@ module bridge::bridge_env {
         get_cross_in_fee_amount,
         Bridge,
         EmergencyOpEvent,
-        TokenDepositedEventV2,
-        TokenDepositedEventForSolanaV2,
         ExternalDepositedEventV2,
         TokenSendBackEventV2,
         TokenSendBackEventForSolanaV2,
@@ -39,7 +37,7 @@ module bridge::bridge_env {
     use bridge::chain_ids;
     use bridge::committee::BlocklistValidatorEvent;
     use bridge::eth::{Self, ETH};
-    use bridge::limiter::UpdateRouteLimitEvent;
+    use bridge::limiter::{Self, UpdateRouteLimitEvent};
     use bridge::message::{
         Self,
         BridgeMessage,
@@ -248,6 +246,10 @@ module bridge::bridge_env {
         &mut wrapper.bridge
     }
 
+    public fun clock(env: &BridgeEnv): &Clock {
+        &env.clock
+    }
+
     public fun return_bridge(bridge: BridgeWrapper) {
         let BridgeWrapper { bridge } = bridge;
         test_scenario::return_shared(bridge);
@@ -382,7 +384,16 @@ module bridge::bridge_env {
         let ctx = env.scenario.ctx();
         bridge.init_token_list(ctx);
         //add center token list
-        bridge.migrate(ctx);
+        bridge.test_migrate(ctx);
+        test_scenario::return_shared(bridge);
+    }
+
+    public fun init_external_limiter(env: &mut BridgeEnv, sender: address) {
+        let scenario = &mut env.scenario;
+        scenario.next_tx(sender);
+        let mut bridge = scenario.take_shared<Bridge>();
+        let uid = bridge.test_load_mut_uid();
+        limiter::initial_external_24h_limits(uid);
         test_scenario::return_shared(bridge);
     }
 
@@ -1184,13 +1195,16 @@ module bridge::bridge_env {
 
         // withdraw coin
         env.scenario.next_tx(address::from_bytes(target_address));
+        let clock = sui::clock::create_for_testing(env.scenario.ctx());
         withdraw_external_coin_for_testing<T>(
             &mut bridge,
             source_chain,
             source_address,
             token,
+            &clock,
             env.scenario.ctx(),
         );
+        sui::clock::destroy_for_testing(clock);
 
         let fee=get_cross_out_fee_amount<T>(&bridge,source_chain as u64,amount);
         assert!(amount>fee,1);
@@ -1517,12 +1531,14 @@ module bridge::bridge_env {
         target_chain: u8,
         target_address: vector<u8>,
         token: Coin<T>,
+        clock: &Clock,
         ctx: &mut TxContext
      ) {
-        bridge.withdraw_external_coin<T>(
+        bridge.withdraw_external_coin_v2<T>(
             target_chain,
             target_address,
             token,
+            clock,
             ctx,
         );
      }
@@ -1629,13 +1645,16 @@ module bridge::bridge_env {
         );
 
         // withdraw coin
+        let clock = sui::clock::create_for_testing(scenario.ctx());
         withdraw_external_coin_for_testing<T>(
             &mut bridge,
             source_chain,
             source_address,
             token,
+            &clock,
             scenario.ctx(),
         );
+        sui::clock::destroy_for_testing(clock);
 
         let fee=get_cross_out_fee_amount<T>(&bridge,source_chain as u64,amount);
         assert!(amount>fee,1);
