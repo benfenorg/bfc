@@ -3566,7 +3566,7 @@ impl ProtocolConfig {
                         cfg.feature_flags.record_additional_state_digest_in_prologue = true;
                         cfg.consensus_commit_rate_estimation_window_size = Some(10);
                     }
-                    cfg.feature_flags.minimize_child_object_mutations = true;
+                    cfg.feature_flags.minimize_child_object_mutations = fa;
 
                     if chain != Chain::Mainnet {
                         cfg.feature_flags.accept_passkey_in_multisig = true;
