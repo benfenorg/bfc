@@ -10,8 +10,7 @@
 //! - TOTAL_SHARES = 2 (exactly two shares generated)
 //!
 //! # Core Functions (same names as mpc-transmission)
-//! - `split_to_two_
-//! value`: Split a secret into two hex-encoded shares
+//! - `split_to_two_value`: Split a secret into two hex-encoded shares
 //! - `recover_value`: Recover secret from two hex-encoded shares
 //! - `recover_two_shares`: Recover Share objects from hex strings
 //! - `add_two_shared_secrets_v2`: Add two secrets using shares
@@ -22,7 +21,6 @@ use crate::error::SSSError;
 use crate::field::gf64_sss::FieldElement;
 use crate::field::FieldElement as FieldElementTrait;
 use crate::types::Share;
-
 // Re-export helper functions for internal use
 pub use crate::two_party_helper::{
     bytes_to_share,
@@ -67,7 +65,8 @@ pub fn split_to_two_value_v2(
     mask_secret: u64,
     coord_seed: u64,
 ) -> (String, String, u64) {
-    let (encoded_share1, encoded_share2, coord_seed) = split_to_two_bytes_value_v2(value, user_id, mask_secret, coord_seed);
+    let (encoded_share1, encoded_share2, coord_seed) =
+        split_to_two_bytes_value_v2(value, user_id, mask_secret, coord_seed);
     (
         hex::encode(encoded_share1),
         hex::encode(encoded_share2),
@@ -100,8 +99,7 @@ pub fn split_to_two_bytes_value_v2(
     let coords = get_two_party_coordinates(coord_seed);
 
     // Step 2: Shamir split the ORIGINAL value (split first!)
-    let (share1, share2) =
-        split_to_two_value_v2_internal(value, &coords);
+    let (share1, share2) = split_to_two_value_v2_internal(value, &coords);
 
     // Step 3: Convert shares to bytes
     let share1_bytes = share_to_bytes(&share1);
@@ -112,11 +110,7 @@ pub fn split_to_two_bytes_value_v2(
     let encoded_share2 = encode_share_data_with_user_id(share2_bytes, mask_secret, user_id, 1);
 
     // Step 5: Return as hex strings
-    (
-        encoded_share1,
-        encoded_share2,
-        coord_seed,
-    )
+    (encoded_share1, encoded_share2, coord_seed)
 }
 
 /// Recover secret value from two hex-encoded shares
@@ -374,12 +368,15 @@ pub fn mul_two_shared_secrets_v2(
     use crate::beaver::BeaverTriple;
     use rand_chacha::ChaCha20Rng;
     use rand_core::{RngCore, SeedableRng};
-    
+
     let x_coords = vec![x_share_1.0, x_share_2.0];
     let mut rng = ChaCha20Rng::seed_from_u64(mask_secret);
     let a = rng.next_u64();
     let b = rng.next_u64();
     let beaver_triple = BeaverTriple::new_with_coordinates(a, b, &x_coords, 2, &mut rng)?;
+
+    // Step 6: Step 6 is local computation of masked differences (d and e shares)
+    // and Step 7 involves distributing these shares to other parties.
 
     // Step 7: Compute masked differences d = x - a, e = y - b for both parties
     let d_share_1 = mul_step1_compute_masked_diff(&x_share_1, &beaver_triple.a_shares[0]);
@@ -572,8 +569,6 @@ pub fn mul_step2_and_3_combined(
     ))
 }
 
-
-
 // ============================================================================
 // Tests
 // ============================================================================
@@ -586,6 +581,284 @@ mod tests {
     const TEST_MASK_SECRET: u64 = 0x1234567890ABCDEFu64;
     const TEST_USER_ID: u64 = 1u64;
     const TEST_COORD_SEED: u64 = 116540450355;
+
+    /// Step 1: Generate Beaver Triple
+    /// Returns the triple (a, b, c) where c = a * b
+    /// This simulates the offline phase (Trusted Dealer or MPC offline protocol)
+    fn step1_generate_beaver_triple(
+        mask_secret: u64,
+        coord_seed: u64,
+        user_id: u64,
+    ) -> (Vec<String>, Vec<String>, Vec<String>) {
+        let triple = generate_beaver_triple(mask_secret, coord_seed)
+            .expect("Failed to generate beaver triple");
+
+        // Aligned with split_to_two_bytes_value_v2: Encrypt each share with user_id and mask
+        let encrypt = |shares: &[(FieldElement, FieldElement)]| -> Vec<String> {
+            shares
+                .iter()
+                .enumerate()
+                .map(|(i, s)| {
+                    let bytes = crate::two_party_helper::share_to_bytes(s);
+                    let encrypted =
+                        encode_share_data_with_user_id(bytes, mask_secret, user_id, i as u8);
+                    hex::encode(encrypted)
+                })
+                .collect()
+        };
+
+        (
+            encrypt(&triple.a_shares),
+            encrypt(&triple.b_shares),
+            encrypt(&triple.c_shares),
+        )
+    }
+
+    /// Step 2: Simulate Player 1 Data Split
+    /// Player 1 splits their secret 'x' into shares
+    /// CRITICAL: Must use the same x-coordinates as the Beaver Triple for compatibility
+    fn step2_split_data_player1(
+        value_x: u64,
+        user_id: u64,
+        mask_secret: u64,
+        coord_seed: u64,
+    ) -> (String, String) {
+        // 1. CALL PUBLIC API: split_to_two_value_v2 (Returns Hex)
+        let (hex1, hex2, _) = split_to_two_value_v2(value_x, user_id, mask_secret, coord_seed);
+        (hex1, hex2)
+    }
+
+    /// Step 3: Simulate Player 2 Data Split
+    /// Player 2 splits their secret 'y' into shares
+    /// CRITICAL: Must use the same x-coordinates as the Beaver Triple for compatibility
+    fn step3_split_data_player2(
+        value_y: u64,
+        user_id: u64,
+        mask_secret: u64,
+        coord_seed: u64,
+    ) -> (String, String) {
+        // 1. CALL PUBLIC API: split_to_two_value_v2 (Returns Hex)
+        let (hex1, hex2, _) = split_to_two_value_v2(value_y, user_id, mask_secret, coord_seed);
+        (hex1, hex2)
+    }
+
+    /// Step 4: MPC Node 1 Preparation (Compute Masked Differences)
+    fn step4_mpc_node1_prepare(
+        hex_x_1: String,
+        hex_y_1: String,
+        hex_beaver_a_1: String,
+        hex_beaver_b_1: String,
+        mask_secret: u64,
+        coord_seed: u64,
+    ) -> (Share, Share) {
+        let d_share = mul_step1_compute_masked_diff_from_hex(
+            hex_x_1,
+            hex_beaver_a_1,
+            mask_secret,
+            0,
+            coord_seed,
+            coord_seed,
+        )
+        .expect("Node 1 compute D failed");
+
+        let e_share = mul_step1_compute_masked_diff_from_hex(
+            hex_y_1,
+            hex_beaver_b_1,
+            mask_secret,
+            0,
+            coord_seed,
+            coord_seed,
+        )
+        .expect("Node 1 compute E failed");
+
+        (d_share, e_share)
+    }
+
+    /// Step 5: MPC Node 2 Preparation (Compute Masked Differences)
+    fn step5_mpc_node2_prepare(
+        hex_x_2: String,
+        hex_y_2: String,
+        hex_beaver_a_2: String,
+        hex_beaver_b_2: String,
+        mask_secret: u64,
+        coord_seed: u64,
+    ) -> (Share, Share) {
+        let d_share = mul_step1_compute_masked_diff_from_hex(
+            hex_x_2,
+            hex_beaver_a_2,
+            mask_secret,
+            1,
+            coord_seed,
+            coord_seed,
+        )
+        .expect("Node 2 compute D failed");
+
+        let e_share = mul_step1_compute_masked_diff_from_hex(
+            hex_y_2,
+            hex_beaver_b_2,
+            mask_secret,
+            1,
+            coord_seed,
+            coord_seed,
+        )
+        .expect("Node 2 compute E failed");
+
+        (d_share, e_share)
+    }
+
+    /// Step 6: MPC Node 1 Final Calculation
+    fn step6_mpc_node1_final(
+        d_shares: &[Share],
+        e_shares: &[Share],
+        hex_beaver_a_1: String,
+        hex_beaver_b_1: String,
+        hex_beaver_c_1: String,
+        mask_secret: u64,
+    ) -> Vec<u8> {
+        let a_1 = bytes_to_share(
+            &decode_share_data_with_user_id(hex::decode(hex_beaver_a_1).unwrap(), mask_secret, 0)
+                .unwrap(),
+        )
+        .unwrap();
+        let b_1 = bytes_to_share(
+            &decode_share_data_with_user_id(hex::decode(hex_beaver_b_1).unwrap(), mask_secret, 0)
+                .unwrap(),
+        )
+        .unwrap();
+        let c_1 = bytes_to_share(
+            &decode_share_data_with_user_id(hex::decode(hex_beaver_c_1).unwrap(), mask_secret, 0)
+                .unwrap(),
+        )
+        .unwrap();
+
+        mul_step2_and_3_combined(d_shares, e_shares, &a_1, &b_1, &c_1)
+            .expect("Node 1 failed to compute result")
+    }
+
+    /// Step 7: MPC Node 2 Final Calculation
+    fn step7_mpc_node2_final(
+        d_shares: &[Share],
+        e_shares: &[Share],
+        hex_beaver_a_2: String,
+        hex_beaver_b_2: String,
+        hex_beaver_c_2: String,
+        mask_secret: u64,
+    ) -> Vec<u8> {
+        let a_2 = bytes_to_share(
+            &decode_share_data_with_user_id(hex::decode(hex_beaver_a_2).unwrap(), mask_secret, 1)
+                .unwrap(),
+        )
+        .unwrap();
+        let b_2 = bytes_to_share(
+            &decode_share_data_with_user_id(hex::decode(hex_beaver_b_2).unwrap(), mask_secret, 1)
+                .unwrap(),
+        )
+        .unwrap();
+        let c_2 = bytes_to_share(
+            &decode_share_data_with_user_id(hex::decode(hex_beaver_c_2).unwrap(), mask_secret, 1)
+                .unwrap(),
+        )
+        .unwrap();
+
+        mul_step2_and_3_combined(d_shares, e_shares, &a_2, &b_2, &c_2)
+            .expect("Node 2 failed to compute result")
+    }
+
+    /// Step 8: Verify Result
+    fn step8_verify_result(result_bytes_1: Vec<u8>, result_bytes_2: Vec<u8>, expected_value: u64) {
+        let share1 = bytes_to_share(&result_bytes_1).expect("Invalid share 1 bytes");
+        let share2 = bytes_to_share(&result_bytes_2).expect("Invalid share 2 bytes");
+
+        let recovered =
+            recover_from_shares_internal(&[share1, share2]).expect("Failed to recover result");
+
+        assert_eq!(
+            recovered, expected_value,
+            "MPC Multiplication failed! Got {}, expected {}",
+            recovered, expected_value
+        );
+    }
+
+    #[test]
+    fn test_detailed_mpc_simulation() {
+        let mask_secret = 0x1234567890ABCDEF;
+        let coord_seed = 0x1122334455667788;
+        let test_cases = vec![
+            (50u64, 10u64),
+            (0u64, 100u64),
+            (1u64, 42u64),
+            (1234u64, 5678u64),
+            (1000000u64, 2000000u64),
+            (0xFFFFFFFFu64, 2u64),
+        ];
+
+        println!("--- Starting MPC Beaver Triple Simulation (Multiple Cases) ---");
+
+        for (x_value, y_value) in test_cases {
+            let expected = x_value.wrapping_mul(y_value);
+            println!("Testing: {} * {} = {}", x_value, y_value, expected);
+
+            // 1. Generate Triple
+            let (a_hex, b_hex, c_hex) =
+                step1_generate_beaver_triple(mask_secret, coord_seed, TEST_USER_ID);
+
+            // 2. Player 1 Splits Data
+            let (x_hex_n1, x_hex_n2) =
+                step2_split_data_player1(x_value, TEST_USER_ID, mask_secret, coord_seed);
+
+            // 3. Player 2 Splits Data
+            let (y_hex_n1, y_hex_n2) =
+                step3_split_data_player2(y_value, TEST_USER_ID, mask_secret, coord_seed);
+
+            // 4. Node 1 Preparation
+            let (d_share_n1, e_share_n1) = step4_mpc_node1_prepare(
+                x_hex_n1,
+                y_hex_n1,
+                a_hex[0].clone(),
+                b_hex[0].clone(),
+                mask_secret,
+                coord_seed,
+            );
+
+            // 5. Node 2 Preparation
+            let (d_share_n2, e_share_n2) = step5_mpc_node2_prepare(
+                x_hex_n2,
+                y_hex_n2,
+                a_hex[1].clone(),
+                b_hex[1].clone(),
+                mask_secret,
+                coord_seed,
+            );
+
+            let all_d_shares = vec![d_share_n1, d_share_n2];
+            let all_e_shares = vec![e_share_n1, e_share_n2];
+
+            // 6. Node 1 Final Calculation
+            let res_share_n1 = step6_mpc_node1_final(
+                &all_d_shares,
+                &all_e_shares,
+                a_hex[0].clone(),
+                b_hex[0].clone(),
+                c_hex[0].clone(),
+                mask_secret,
+            );
+
+            // 7. Node 2 Final Calculation
+            let res_share_n2 = step7_mpc_node2_final(
+                &all_d_shares,
+                &all_e_shares,
+                a_hex[1].clone(),
+                b_hex[1].clone(),
+                c_hex[1].clone(),
+                mask_secret,
+            );
+
+            // 8. Result Verification
+            step8_verify_result(res_share_n1, res_share_n2, expected);
+            println!("Verification for {} * {} Successful!", x_value, y_value);
+        }
+        println!("All simulation cases passed!");
+    }
 
     // ==================== Split and Recover Tests ====================
 
@@ -689,7 +962,7 @@ mod tests {
     #[test]
     fn test_recover_value2_too_long() {
         let value1 = "0123456789abcdef".to_string(); // Valid hex string
-        // Create a string with length exactly 100
+                                                     // Create a string with length exactly 100
         let value2 = "b".repeat(100);
 
         let result = recover_value_v2(value1, value2, TEST_MASK_SECRET);
@@ -1109,11 +1382,31 @@ mod tests {
             (42u64, 43u64, 44u64),
             (1000u64, 2000u64, 3000u64),
             (0xFFFFFFFFu64, 0xFFFFFFFEu64, 0xFFFFFFFDu64),
-            (0x1234567890ABCDEFu64, 0xFEDCBA0987654321u64, 0x1111111111111111u64),
-            (0x8000000000000000u64, 0x7FFFFFFFFFFFFFFFu64, 0x4000000000000000u64),
-            (0x5555555555555555u64, 0xAAAAAAAAAAAAAAAAu64, 0x3333333333333333u64),
-            (18446744069414584320u64, 18446744069414584319u64, 18446744069414584318u64),
-            (1000000000000000000u64, 2000000000000000000u64, 3000000000000000000u64),
+            (
+                0x1234567890ABCDEFu64,
+                0xFEDCBA0987654321u64,
+                0x1111111111111111u64,
+            ),
+            (
+                0x8000000000000000u64,
+                0x7FFFFFFFFFFFFFFFu64,
+                0x4000000000000000u64,
+            ),
+            (
+                0x5555555555555555u64,
+                0xAAAAAAAAAAAAAAAAu64,
+                0x3333333333333333u64,
+            ),
+            (
+                18446744069414584320u64,
+                18446744069414584319u64,
+                18446744069414584318u64,
+            ),
+            (
+                1000000000000000000u64,
+                2000000000000000000u64,
+                3000000000000000000u64,
+            ),
         ];
 
         let coord_seed = TEST_COORD_SEED;
@@ -1252,15 +1545,31 @@ mod tests {
             ];
             for i in 0..coord_seeds.len() {
                 for j in (i + 1)..coord_seeds.len() {
-                    let (hex1_a_seed_i, _, seed_a_seed_i) =
-                        split_to_two_value_v2(value1, TEST_USER_ID, TEST_MASK_SECRET, coord_seeds[i]);
-                    let (hex1_b_seed_i, _, seed_b_seed_i) =
-                        split_to_two_value_v2(value2, TEST_USER_ID, TEST_MASK_SECRET, coord_seeds[i]);
+                    let (hex1_a_seed_i, _, seed_a_seed_i) = split_to_two_value_v2(
+                        value1,
+                        TEST_USER_ID,
+                        TEST_MASK_SECRET,
+                        coord_seeds[i],
+                    );
+                    let (hex1_b_seed_i, _, seed_b_seed_i) = split_to_two_value_v2(
+                        value2,
+                        TEST_USER_ID,
+                        TEST_MASK_SECRET,
+                        coord_seeds[i],
+                    );
 
-                    let (hex1_a_seed_j, _, seed_a_seed_j) =
-                        split_to_two_value_v2(value1, TEST_USER_ID, TEST_MASK_SECRET, coord_seeds[j]);
-                    let (hex1_b_seed_j, _, seed_b_seed_j) =
-                        split_to_two_value_v2(value2, TEST_USER_ID, TEST_MASK_SECRET, coord_seeds[j]);
+                    let (hex1_a_seed_j, _, seed_a_seed_j) = split_to_two_value_v2(
+                        value1,
+                        TEST_USER_ID,
+                        TEST_MASK_SECRET,
+                        coord_seeds[j],
+                    );
+                    let (hex1_b_seed_j, _, seed_b_seed_j) = split_to_two_value_v2(
+                        value2,
+                        TEST_USER_ID,
+                        TEST_MASK_SECRET,
+                        coord_seeds[j],
+                    );
 
                     let result_seed_i = add_two_shared_secrets_v2(
                         hex1_a_seed_i.clone(),
@@ -1577,11 +1886,31 @@ mod tests {
             (42u64, 43u64, 44u64),
             (2000u64, 1000u64, 500u64),
             (0xFFFFFFFFu64, 0xFFFFFFFEu64, 0xFFFFFFFDu64),
-            (0x1234567890ABCDEFu64, 0xFEDCBA0987654321u64, 0x1111111111111111u64),
-            (0x8000000000000000u64, 0x7FFFFFFFFFFFFFFFu64, 0x4000000000000000u64),
-            (0x5555555555555555u64, 0xAAAAAAAAAAAAAAAAu64, 0x3333333333333333u64),
-            (18446744069414584320u64, 18446744069414584319u64, 18446744069414584318u64),
-            (2000000000000000000u64, 1000000000000000000u64, 500000000000000000u64),
+            (
+                0x1234567890ABCDEFu64,
+                0xFEDCBA0987654321u64,
+                0x1111111111111111u64,
+            ),
+            (
+                0x8000000000000000u64,
+                0x7FFFFFFFFFFFFFFFu64,
+                0x4000000000000000u64,
+            ),
+            (
+                0x5555555555555555u64,
+                0xAAAAAAAAAAAAAAAAu64,
+                0x3333333333333333u64,
+            ),
+            (
+                18446744069414584320u64,
+                18446744069414584319u64,
+                18446744069414584318u64,
+            ),
+            (
+                2000000000000000000u64,
+                1000000000000000000u64,
+                500000000000000000u64,
+            ),
         ];
 
         let coord_seed = TEST_COORD_SEED;
@@ -1720,15 +2049,31 @@ mod tests {
             ];
             for i in 0..coord_seeds.len() {
                 for j in (i + 1)..coord_seeds.len() {
-                    let (hex1_a_seed_i, _, seed_a_seed_i) =
-                        split_to_two_value_v2(value1, TEST_USER_ID, TEST_MASK_SECRET, coord_seeds[i]);
-                    let (hex1_b_seed_i, _, seed_b_seed_i) =
-                        split_to_two_value_v2(value2, TEST_USER_ID, TEST_MASK_SECRET, coord_seeds[i]);
+                    let (hex1_a_seed_i, _, seed_a_seed_i) = split_to_two_value_v2(
+                        value1,
+                        TEST_USER_ID,
+                        TEST_MASK_SECRET,
+                        coord_seeds[i],
+                    );
+                    let (hex1_b_seed_i, _, seed_b_seed_i) = split_to_two_value_v2(
+                        value2,
+                        TEST_USER_ID,
+                        TEST_MASK_SECRET,
+                        coord_seeds[i],
+                    );
 
-                    let (hex1_a_seed_j, _, seed_a_seed_j) =
-                        split_to_two_value_v2(value1, TEST_USER_ID, TEST_MASK_SECRET, coord_seeds[j]);
-                    let (hex1_b_seed_j, _, seed_b_seed_j) =
-                        split_to_two_value_v2(value2, TEST_USER_ID, TEST_MASK_SECRET, coord_seeds[j]);
+                    let (hex1_a_seed_j, _, seed_a_seed_j) = split_to_two_value_v2(
+                        value1,
+                        TEST_USER_ID,
+                        TEST_MASK_SECRET,
+                        coord_seeds[j],
+                    );
+                    let (hex1_b_seed_j, _, seed_b_seed_j) = split_to_two_value_v2(
+                        value2,
+                        TEST_USER_ID,
+                        TEST_MASK_SECRET,
+                        coord_seeds[j],
+                    );
 
                     let result_seed_i = sub_two_shared_secrets_v2(
                         hex1_a_seed_i.clone(),
@@ -1771,7 +2116,7 @@ mod tests {
         let y = 7u64;
 
         // Generate Beaver triple
-        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple(TEST_MASK_SECRET, TEST_COORD_SEED).unwrap();
 
         // Create proper shares for x and y using Beaver triple's x-coordinates
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
@@ -1825,7 +2170,7 @@ mod tests {
         let x = 5u64;
         let y = 7u64;
 
-        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple(TEST_MASK_SECRET, TEST_COORD_SEED).unwrap();
 
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
         let y_field: FieldElement = FieldElementTrait::from_u64(y);
@@ -1872,7 +2217,7 @@ mod tests {
         let x = 100u64;
         let y = 0u64;
 
-        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple(TEST_MASK_SECRET, TEST_COORD_SEED).unwrap();
 
         // Create shares using Beaver triple coordinates
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
@@ -1922,7 +2267,7 @@ mod tests {
         let x = 42u64;
         let y = 1u64;
 
-        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple(TEST_MASK_SECRET, TEST_COORD_SEED).unwrap();
 
         // Create shares using Beaver triple coordinates
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
@@ -2188,7 +2533,7 @@ mod tests {
         let x = 1000000u64;
         let y = 2000000u64;
 
-        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple(TEST_MASK_SECRET, TEST_COORD_SEED).unwrap();
 
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
         let y_field: FieldElement = FieldElementTrait::from_u64(y);
@@ -2234,7 +2579,7 @@ mod tests {
     #[test]
     fn test_mul_step1_from_hex() {
         let x = 7u64;
-        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple(TEST_MASK_SECRET, TEST_COORD_SEED).unwrap();
 
         // Create x shares using Beaver triple coordinates
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
@@ -2307,7 +2652,7 @@ mod tests {
     #[test]
     fn test_mul_step1_from_hex_different_coord_seeds_fails() {
         let x = 7u64;
-        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple(TEST_MASK_SECRET, TEST_COORD_SEED).unwrap();
 
         let x_field: FieldElement = FieldElementTrait::from_u64(x);
         let poly_x = Polynomial::new_with_fixed_seed(THRESHOLD - 1, x_field);
@@ -2650,4 +2995,47 @@ mod tests {
         assert_eq!(result1, result2);
         assert_eq!(result1, x * y);
     }
+
+    // #[test]
+    // fn test_beaver_triple_mul_inlined_simulation() {
+    //     // Simulation of the 8-step protocol for multiplication
+    //     let x_val = 10u64;
+    //     let y_val = 20u64;
+    //
+    //     // Step 1: Generate Beaver triple (a, b, c) such that c = a * b
+    //     let triple = generate_beaver_triple(TEST_MASK_SECRET, TEST_COORD_SEED).unwrap();
+    //
+    //     // Step 2: Create shares [x] and [y]
+    //     let (hex_x1, hex_x2, _) = split_to_two_value_v2(x_val, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+    //     let (hex_y1, hex_y2, _) = split_to_two_value_v2(y_val, TEST_USER_ID, TEST_MASK_SECRET, TEST_COORD_SEED);
+    //
+    //     let x_shares = recover_two_shares_v2(hex_x1, hex_x2, TEST_MASK_SECRET).unwrap();
+    //     let y_shares = recover_two_shares_v2(hex_y1, hex_y2, TEST_MASK_SECRET).unwrap();
+    //
+    //     // Step 3: Compute masked differences locally: [d] = [x] - [a], [e] = [y] - [b]
+    //     let d_share_0 = mul_step1_compute_masked_diff(&x_shares[0], &triple.a_shares[0]);
+    //     let d_share_1 = mul_step1_compute_masked_diff(&x_shares[1], &triple.a_shares[1]);
+    //     let e_share_0 = mul_step1_compute_masked_diff(&y_shares[0], &triple.b_shares[0]);
+    //     let e_share_1 = mul_step1_compute_masked_diff(&y_shares[1], &triple.b_shares[1]);
+    //
+    //     // Step 4: Broadcast/Exchange [d]_i and [e]_i (Simulated by having both here)
+    //
+    //     // Step 5: Reconstruct d = x - a and e = y - b
+    //     let (d_open, e_open) = mul_step2_reconstruct_masked_values(
+    //         &[d_share_0, d_share_1],
+    //         &[e_share_0, e_share_1]
+    //     ).unwrap();
+    //
+    //     // Step 6: Compute final shares of [xy]: [z]_i = [c]_i + e*[a]_i + d*[b]_i + d*e
+    //     let z_bytes_0 = mul_step3_compute_result(&triple.a_shares[0], &triple.b_shares[0], &triple.c_shares[0], d_open, e_open);
+    //     let z_bytes_1 = mul_step3_compute_result(&triple.a_shares[1], &triple.b_shares[1], &triple.c_shares[1], d_open, e_open);
+    //
+    //     // Step 7: Recover result
+    //     let z_share_0 = bytes_to_share(&z_bytes_0).unwrap();
+    //     let z_share_1 = bytes_to_share(&z_bytes_1).unwrap();
+    //     let final_result = recover_from_shares_internal(&[z_share_0, z_share_1]).unwrap();
+    //
+    //     // Step 8: Verify result
+    //     assert_eq!(final_result, x_val * y_val);
+    // }
 }

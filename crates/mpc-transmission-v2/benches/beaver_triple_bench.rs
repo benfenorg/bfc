@@ -6,11 +6,11 @@
 //! - Cache efficiency: BeaverTripleCache hit rate and retrieval speed
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use mpc_framework_core::beaver::{BeaverMultiplication, BeaverTriple, BeaverTripleDistributor};
-use mpc_framework_core::beaver_cache::BeaverTripleCache;
-use mpc_framework_core::field::gf64_sss::FieldElement;
-use mpc_framework_core::field::FieldElement as FieldElementTrait;
-use mpc_framework_core::poly::Polynomial;
+use mpc_transmission_v2::beaver::{BeaverMultiplication, BeaverTriple, BeaverTripleDistributor};
+use mpc_transmission_v2::beaver_cache::BeaverTripleCache;
+use mpc_transmission_v2::field::gf64_sss::FieldElement;
+use mpc_transmission_v2::field::FieldElement as FieldElementTrait;
+use mpc_transmission_v2::poly::Polynomial;
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
