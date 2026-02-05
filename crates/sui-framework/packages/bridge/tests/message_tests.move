@@ -425,16 +425,16 @@ module bridge::message_tests {
         // Test 2
         let validator_eth_addresses = vector[validator_eth_addr_1, validator_eth_addr_2];
         let blocklist_message = create_blocklist_message(
-        chain_ids::sui_custom(), // source chain
-        68, // seq_num
-        1, // unblocklist
-        validator_eth_addresses,
+            chain_ids::sui_custom(), // source chain
+            68, // seq_num
+            1, // unblocklist
+            validator_eth_addresses,
         );
         // Test message serialization
         let message = serialize_message(blocklist_message);
 
         let expected_msg = hex::decode(
-        b"0101000000000000004402010268b43fd906c0b8f024a18c56e06744f7c6157c65acaef39832cb995c4e049437a3e2ec6a7bad1ab5",
+            b"0101000000000000004402010268b43fd906c0b8f024a18c56e06744f7c6157c65acaef39832cb995c4e049437a3e2ec6a7bad1ab5",
         );
 
         assert_eq(expected_msg, message);

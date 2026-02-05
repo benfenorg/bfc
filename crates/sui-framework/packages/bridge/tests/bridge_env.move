@@ -26,7 +26,6 @@ module bridge::bridge_env {
         TokenTransferApproved,
         TokenTransferClaimed,
         TokenTransferLimitExceed,
-        // ExternalDepositedEvent,
         ExternalWithdrawEventV2,
         ExternalBridgeRecord,
         ExternalDepositedApprovedEvent,
@@ -54,16 +53,12 @@ module bridge::bridge_env {
         create_set_cross_in_bridge_fee,
         create_set_cross_out_bridge_fee,
         create_withdraw_fee_cap,
+        create_fast_path_limit_message_v2,
         emergency_op_pause,
         emergency_op_unpause
     };
     use bridge::message_types;
     use bridge::test_token::{Self, TEST_TOKEN};
-    use bridge::treasury::{
-        TokenRegistrationEvent,
-        NewTokenEvent,
-        UpdateTokenPriceEvent
-    };
     use bridge::bridge_fee::{Self,WithdrawBridgeFeeCap};
     use bridge::treasury::{TokenRegistrationEvent, NewTokenEvent, UpdateTokenPriceEvent};
     use bridge::usdc::{Self, USDC};
@@ -88,11 +83,8 @@ module bridge::bridge_env {
         create_sui_system_state_for_testing,
         create_validator_for_testing
     };
-    use sui_system::sui_system::{
-        validator_voting_powers_for_testing,
-        SuiSystemState
-    };
     use sui::hex;
+    use bridge::limiter_fast_path;
     use sui_system::sui_system::{validator_voting_powers_for_testing, SuiSystemState};
 
     //
@@ -721,6 +713,33 @@ module bridge::bridge_env {
             assert!(bridge_fee::get_withdraw_cap_coin_type(&cap)==coin_type,1);
             assert!(bridge_fee::get_withdraw_cap_amount(&cap)==amount,1);
             env.scenario.return_to_sender(cap);
+        };
+        test_scenario::return_shared(bridge);
+    }
+
+    public fun fast_path_limit_update(
+        env: &mut BridgeEnv,
+        amount: u64
+    ){
+        let scenario = &mut env.scenario;
+        scenario.next_tx(@0x0);
+        let mut bridge =  env.scenario.take_shared<Bridge>();
+        // bridge.migrate(env.scenario.ctx());
+        let update_message = create_fast_path_limit_message_v2(
+            bridge.get_seq_num_for(message_types::fast_path_limit_update()),
+            chain_ids::sui_testnet(),
+            5,
+            amount,
+            chain_ids::arb_custom(),
+        );
+        let signatures = env.sign_message(update_message);
+        bridge.execute_system_message(update_message, signatures);
+
+        env.scenario.next_tx(@0x0);
+        {
+            let uid = bridge.test_load_mut_uid();
+            let fast_path_limit_amount = limiter_fast_path::get_limit_config_info(uid,chain_ids::arb_custom(),5);
+            assert!(fast_path_limit_amount == amount, 0);
         };
         test_scenario::return_shared(bridge);
     }
@@ -1647,8 +1666,6 @@ module bridge::bridge_env {
             total_supply_before - coin_value == get_total_supply<T>(&bridge),
         );
         let deposited_events = event::events_by_type<TokenDepositedEventV2>();
-        assert!(total_supply_before - coin_value == get_total_supply<T>(&bridge));
-        let deposited_events = event::events_by_type<TokenDepositedEvent>();
         assert!(deposited_events.length() == 1);
         let (
             event_seq_num,
