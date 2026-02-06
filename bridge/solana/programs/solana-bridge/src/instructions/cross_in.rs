@@ -102,7 +102,7 @@ pub fn cross_in<'info>(
     let token_account = ctx.accounts.token_account.deref_mut();
     let message =ctx.accounts.message_config.deref_mut();
     
-    if message.verifier == Pubkey::default() {
+   if message.verifier == Pubkey::default() {
         message.verifier = ctx.accounts.verifier.key();
         message.message_type = TOKEN_TRANSFER;
         message.nonce = 0;
@@ -121,11 +121,28 @@ pub fn cross_in<'info>(
    let token_mint = ctx.accounts.token_mint.key();
    
    require!(token_account.mint == token_mint, BridgeError::InvalidTokenId);
-   //require!(token_config.token_id() == token_id, BridgeError::UnsupportedTokenId);
 
+   let mut benfen_decimal = token_config.benfen_decimal();
+
+    if token_config.token_id() == 3 || token_config.token_id() == 4 {
+        if token_config.token_id() == target_token_id {
+            if token_config.original_decimal() == 0 {
+                benfen_decimal = 6;
+            } else {
+                benfen_decimal = token_config.original_decimal();
+            }
+        } else {
+            require!(target_token_id == 5, BridgeTokenError::InvalidTokenDecimal);
+        }
+    } else {
+        require!(
+            target_token_id == token_config.token_id(),
+            BridgeTokenError::InvalidTokenDecimal
+        );
+    }
    
-    let single_transfer_limit = chain_limit.get_single_transfer_limit();
-    let usd_amount = chain_limit.calculate_amount_in_usd(amount, token_config.price(), token_config.decimal())?;
+    let single_transfer_limit = chain_limit.get_single_transfer_limit(token_config.price(), token_config.decimal())?;
+    let usd_amount = chain_limit.calculate_amount_in_usd(amount, token_config.price(),  token_config.decimal())?;
     require!(usd_amount < single_transfer_limit, BridgeError::SingleTransferAmountExceedsLimit);
  
 
@@ -143,7 +160,7 @@ pub fn cross_in<'info>(
         amount
     )?;
 
-    let adjusted_amount = convert_slp_to_benfen_decimal(  ctx.accounts.token_mint.decimals, token_config.benfen_decimal, amount)?;
+    let adjusted_amount = convert_slp_to_benfen_decimal(  ctx.accounts.token_mint.decimals, benfen_decimal, amount)?;
   
     msg!("emit TokensDeposited");
     //触发 event

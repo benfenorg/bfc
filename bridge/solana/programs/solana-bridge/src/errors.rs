@@ -35,6 +35,12 @@ pub enum  BridgeTokenError {
     InvalidTokenOwner,
     #[msg("Invalid token price")]
     InvalidTokenPrice,
+
+    #[msg("Invalid token original decimal")]
+    InvalidTokenOriginalDecimal,
+
+    #[msg("Invalid token decimal")]
+    InvalidTokenDecimal,
 }
 
 #[error_code]

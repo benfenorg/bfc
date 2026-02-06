@@ -10,7 +10,7 @@ pub struct MessageVerifier {
     pub bump: [u8;1],
 
     pub message_number: u64,    //有多少message 创建
-     pub committee: Pubkey,
+    pub committee: Pubkey,
 }
 
 

@@ -1289,6 +1289,13 @@ impl BridgeMessageEncoding for AddTokensOnEvmAction {
             bytes.push(*token_sui_decimal);
         }
 
+        // Add token Original decimals
+        // Unwrap: bcs serialization should not fail
+        bytes.push(u8::try_from(self.token_original_decimals.len()).unwrap());
+        for token_original_decimal in &self.token_original_decimals {
+            bytes.push(*token_original_decimal);
+        }
+
         // Add token prices
         // Unwrap: bcs serialization should not fail
         bytes.push(u8::try_from(self.token_prices.len()).unwrap());
@@ -1323,6 +1330,7 @@ impl BridgeMessageEncoding for AddTokenOnSolanaAction {
         bytes.extend_from_slice(&self.token_id.to_be_bytes());
         bytes.extend_from_slice(&self.token_address.to_bytes());
         bytes.push(self.benfen_decimal);
+        bytes.push(self.original_decimal);
         bytes.extend_from_slice(&self.token_price.to_be_bytes());
         bytes
     }
@@ -1927,6 +1935,7 @@ mod tests {
                 EthAddress::from_str("0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72").unwrap(),
             ],
             token_sui_decimals: vec![5, 6, 7],
+            token_original_decimals: vec![5, 6, 7],
             token_prices: vec![1_000_000_000, 2_000_000_000, 3_000_000_000],
         });
         let encoded_bytes = action.to_bytes();

@@ -151,9 +151,14 @@ pub fn cross_out_with_signature(
         ctx.accounts.token_account.owner==token_transfer_payload.recipient_address,
         BridgeError::InvalidRecipientAddress
     );
+    
+    let mut bdecimal = token_config.benfen_decimal;
+    if token_transfer_payload.token_id==3 || token_transfer_payload.token_id==4 {
+       bdecimal=token_config.original_decimal;
+    };
 
     let slp_token_adjusted_amount=message::convert_benfen_to_slp_decimal(
-        token_config.benfen_decimal, 
+       bdecimal, 
         token_mint.decimals,
         token_transfer_payload.amount,
     )?;

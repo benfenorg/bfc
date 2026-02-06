@@ -780,7 +780,7 @@ library BridgeUtils {
         return (protocolType, tokenID, lpTokenId);
 }
 
-    /// @notice Decodes an add token payload from bytes to a token ID, a token address, and a token price.
+    // @notice Decodes an add token payload from bytes to a token ID, a token address, and a token price.
     /// @dev The function will revert if the payload length is invalid.
     ///     Add token payload is 5 + 2n + 20n + 8n bytes (assuming all arrays are of length n).
     ///     byte 0           : is native
@@ -797,6 +797,7 @@ library BridgeUtils {
     /// @return tokenIDs the token ID to be added.
     /// @return tokenAddresses the address of the token to be added.
     /// @return suiDecimals the Sui decimal places of the tokens to be added.
+    /// @return originalDecimals the original decimal places of the tokens to be added.
     /// @return tokenPrices the price of the tokens to be added.
     function decodeAddTokensPayload(bytes memory _payload)
         internal
@@ -806,6 +807,7 @@ library BridgeUtils {
             uint64[] memory tokenIDs,
             address[] memory tokenAddresses,
             uint8[] memory suiDecimals,
+            uint8[] memory originalDecimals,
             uint64[] memory tokenPrices
         )
     {
@@ -844,6 +846,12 @@ library BridgeUtils {
         suiDecimals = new uint8[](decimalCount);
         for (uint8 i; i < decimalCount; i++) {
             suiDecimals[i] = uint8(_payload[offset++]);
+        }
+
+        uint8 originalDecimalCount = uint8(_payload[offset++]);
+        originalDecimals = new uint8[](originalDecimalCount);
+        for (uint8 i; i < originalDecimalCount; i++) {
+            originalDecimals[i] = uint8(_payload[offset++]);
         }
 
         uint8 priceCount = uint8(_payload[offset++]);
