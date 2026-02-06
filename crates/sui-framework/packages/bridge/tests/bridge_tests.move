@@ -4938,3 +4938,264 @@ fun test_get_external_available_transfer_amount() {
     bridge_wrapper.return_bridge();
     env.destroy_env();
 }
+
+#[test]
+fun test_withdraw_external_busd_coin_v2_24h_limit_test() {
+    let target_chain = chain_ids::eth_custom();
+    let source_chain = chain_ids::sui_custom();
+    let token_id_expect = 4u64; // USDC
+
+    let mut env = create_env(source_chain);
+    env.create_bridge_default();
+
+    // Setup static limit to avoid ETransferLimit (code 55)
+    // Removed bridge_env::update_bridge_limit as it checks wrong chain ID
+
+
+    // 1. Setup Limit
+    let scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+    let mut bridge = env.bridge(@0x0);
+    
+    // Set 24h limit to 100 BUSD (100 * 10^9)
+    let limit_amount = 100 * 1_000_000_000;
+    
+    // Set static limit (out limit)
+    bridge.bridge_ref_mut().update_external_out_limit(
+        &mut bfc_system_state,
+        &cap,
+        target_chain,
+        100_000_000_000_000_000,
+        env.ctx()
+    );
+
+    bridge.bridge_ref_mut().update_external_24h_limit(
+        &mut bfc_system_state,
+        &cap,
+        target_chain,
+        limit_amount,
+        env.ctx()
+    );
+
+    // 2. Withdraw 60 BUSD (Should succeed)
+    // 60 BUSD < 100 BUSD
+    let amount1 = 60 * 1_000_000_000;
+    let coin1 = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount1, &cap, env.ctx());
+    // Use 20 bytes address for ETH
+    let target_address = x"0000000000000000000000000000000000000001"; 
+    
+    let mut clock = sui::clock::create_for_testing(env.ctx());
+    
+    bridge.bridge_ref_mut().withdraw_external_busd_coin_v2<BUSD>(
+        target_chain,
+        target_address,
+        coin1,
+        token_id_expect,
+        &mut bfc_system_state,
+        &clock,
+        env.ctx(),
+    );
+
+    // 3. Check available amount
+    // Used: 60. Remaining Limit: 40.
+    // Available: 40 BUSD.
+    // Use BUSDFAKER because it's registered in treasury (bridge::busd::BUSD)
+    // whereas BUSD (bfc_system::busd::BUSD) is not.
+    let available = bridge.bridge_ref().get_external_available_transfer_amount<BUSDFAKER>(target_chain);
+    
+    // BUSD price is 1 (from add_default_tokens). M is 10^8.
+    // available = remaining * 10^8 / 1.
+    // Fee is 0.05% of 60 BUSD = 0.03 BUSD = 30,000,000 units
+    let fee = 30_000_000;
+    let remaining = 40 * 1_000_000_000 + fee;
+    let expected_available = (remaining as u128) * 100_000_000;
+    assert_eq!(available, expected_available);
+
+    // 4. Verify limit effectiveness (Simulated)
+    // Try to withdraw 50 BUSD (would fail)
+    // 50 > 40.
+    let amount2_val = 50 * 1_000_000_000;
+    // The check inside withdraw is: amount_after_fee <= limit (static) AND check_and_record (24h)
+    // Here we focus on 24h limit.
+    // If we were to call withdraw, it would fail.
+    // We verify that available amount is insufficient.
+    // available is scaled. So we compare scaled amount.
+    // needed scaled = amount2_val * 10^8
+    assert!(available < (amount2_val as u128) * 100_000_000, 0);
+    
+    // 5. Advance clock by 24h + 1s
+    sui::clock::increment_for_testing(&mut clock, 24 * 3600 * 1000 + 1000);
+    
+    // 6. Check available amount again
+    // Note: get_external_available_transfer_amount does not take Clock, so it returns the stale state (based on old records)
+    // until a transaction triggers an update.
+    // So we expect it to STILL be the old remaining (40), not full (100).
+    // Or we just skip this check and verify after withdrawal.
+    // let available_after = bridge.bridge_ref().get_external_available_transfer_amount<BUSDFAKER>(target_chain);
+    // let full_limit = 100 * 1_000_000_000;
+    // let expected_full = (full_limit as u128) * 100_000_000;
+    // assert_eq!(available_after, expected_full);
+
+    // 7. Withdraw 50 BUSD (Should succeed)
+    // This will trigger adjust_transfer_records inside, resetting the window.
+    let coin2 = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount2_val, &cap, env.ctx());
+    bridge.bridge_ref_mut().withdraw_external_busd_coin_v2<BUSD>(
+        target_chain,
+        target_address,
+        coin2,
+        token_id_expect,
+        &mut bfc_system_state,
+        &clock,
+        env.ctx(),
+    );
+    
+    // 8. Verify available amount AFTER withdrawal
+    // Previous usage (60) is expired. New usage is (50 - fee).
+    // Fee = 0.05% of 50 = 0.025.
+    // Used = 49.975.
+    // Limit = 100.
+    // Remaining = 50.025.
+    let available_final = bridge.bridge_ref().get_external_available_transfer_amount<BUSDFAKER>(target_chain);
+    let fee2 = 50 * 1_000_000_000 * 5 / 10000; // 25_000_000
+    let used_2 = 50 * 1_000_000_000 - fee2;
+    let limit_val = 100 * 1_000_000_000;
+    let remaining_2 = limit_val - used_2;
+    let expected_final = (remaining_2 as u128) * 100_000_000;
+    assert_eq!(available_final, expected_final);
+
+    sui::clock::destroy_for_testing(clock);
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+
+    bridge.return_bridge();
+    env.destroy_env();
+}
+
+
+#[test]
+fun test_withdraw_external_coin_v2_24h_limit_btc_test() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    let sender = @0xABCD;
+    let target_address = x"0000000000000000000000000000000000000000000000000000000000000001";
+    let target_chain = chain_ids::btc_testnet();
+
+    // 1. Setup Limits
+    {
+        let mut bridge_wrapper = env.bridge(@0x0);
+        
+        let scenario_val = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+        let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario_val);
+        let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
+
+        // Set static limit high (so we only test 24h limit)
+        let static_limit = 1_000_000 * 100_000_000;
+        bridge_wrapper.bridge_ref_mut().update_external_out_limit(
+            &bfc_system_state,
+            &cap,
+            target_chain,
+            static_limit,
+            env.ctx()
+        );
+
+        // Set 24h limit to 2000 USD
+        // BTC Price is 1000 (from add_default_tokens).
+        // So limit allows 2 BTC.
+        let limit_24h = 2_000;
+        bridge_wrapper.bridge_ref_mut().update_external_24h_limit(
+            &bfc_system_state,
+            &cap,
+            target_chain,
+            limit_24h,
+            env.ctx()
+        );
+        
+        bridge_wrapper.return_bridge();
+        sui::test_scenario::return_shared(bfc_system_state);
+        sui::test_scenario::return_to_sender(&scenario_val, cap);
+        sui::test_scenario::end(scenario_val);
+    };
+
+    let mut clock = sui::clock::create_for_testing(env.ctx());
+    clock.set_for_testing(1_000_000_000);
+
+    // 2. Withdraw 1.5 BTC (Should succeed)
+    // 1.5 BTC = 150_000_000 units.
+    // Price $1000 -> Value $1500.
+    // Fee is fixed 43202.
+    {
+        let amount1_transfer = 150_000_000;
+        let fee_btc = 43202;
+        let amount1_total = amount1_transfer + fee_btc;
+        let token1 = bridge::bridge_env::get_btc(&mut env, amount1_total);
+        
+        let mut bridge_wrapper = env.bridge(sender);
+        bridge_wrapper.bridge_ref_mut().withdraw_external_coin_v2<BTC>(
+            target_chain,
+            target_address,
+            token1,
+            &clock,
+            env.ctx(),
+        );
+        bridge_wrapper.return_bridge();
+    };
+
+    // 3. Verify Available Amount
+    // Limit: 2000 USD.
+    // Used: 1500 USD.
+    // Remaining: 500 USD.
+    // In BTC units (Price 1000): 0.5 BTC = 50_000_000 units.
+    {
+        let bridge_wrapper = env.bridge(sender);
+        let available = bridge_wrapper.bridge_ref().get_external_available_transfer_amount<BTC>(target_chain);
+        let expected_available = 50_000_000u128;
+        assert_eq!(available, expected_available);
+        
+        // 4. Verify limit effectiveness
+        // Try to withdraw 1 BTC (Should fail)
+        // 1 BTC = 100,000,000 units = 1000 USD.
+        // 1000 > 500.
+        let amount2_transfer = 100_000_000;
+        assert!(available < (amount2_transfer as u128), 0);
+        bridge_wrapper.return_bridge();
+    };
+
+    // 5. Advance clock by 24h + 1s
+    sui::clock::increment_for_testing(&mut clock, 24 * 3600 * 1000 + 1000);
+        
+    // 6. Withdraw 1 BTC (Should succeed)
+    {
+        let amount2_transfer = 100_000_000;
+        let fee_btc = 43202;
+        let amount2_total = amount2_transfer + fee_btc;
+        let token2 = bridge::bridge_env::get_btc(&mut env, amount2_total);
+        
+        let mut bridge_wrapper = env.bridge(sender);
+        bridge_wrapper.bridge_ref_mut().withdraw_external_coin_v2<BTC>(
+            target_chain,
+            target_address,
+            token2,
+            &clock,
+            env.ctx(),
+        );
+        bridge_wrapper.return_bridge();
+    };
+        
+    // 7. Verify Final Available
+    // Window reset.
+    // New Usage: 1000 USD.
+    // Limit: 2000 USD.
+    // Remaining: 1000 USD -> 1 BTC -> 100,000,000 units.
+    {
+        let bridge_wrapper = env.bridge(sender);
+        let available = bridge_wrapper.bridge_ref().get_external_available_transfer_amount<BTC>(target_chain);
+        let expected_available = 100_000_000u128;
+        assert_eq!(available, expected_available);
+        bridge_wrapper.return_bridge();
+    };
+
+    sui::clock::destroy_for_testing(clock);
+    env.destroy_env();
+}

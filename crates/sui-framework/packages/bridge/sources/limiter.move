@@ -422,7 +422,8 @@ module bridge::limiter {
         update_external_24h_limit(
             parent_id,
             &chain_ids::get_route(chain_ids::sui_testnet(), chain_ids::btc_testnet()),
-            1000 * USD_VALUE_MULTIPLIER,
+            // 0.005 BTC, assuming 1 BTC = 100,000 USD
+            500 * USD_VALUE_MULTIPLIER,
         );
         update_external_24h_limit(
             parent_id,
@@ -438,7 +439,8 @@ module bridge::limiter {
         update_external_24h_limit(
             parent_id,
             &chain_ids::get_route(chain_ids::sui_custom(), chain_ids::btc_testnet()),
-            1000 * USD_VALUE_MULTIPLIER,
+            // 0.005 BTC, assuming 1 BTC = 100,000 USD
+            500 * USD_VALUE_MULTIPLIER,
         );
         update_external_24h_limit(
             parent_id,
