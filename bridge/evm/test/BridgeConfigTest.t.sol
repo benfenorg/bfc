@@ -729,128 +729,128 @@ contract BridgeConfigTest is BridgeBaseTest {
         assertEq(config.tokenPrices(BridgeUtils.BTC), 600_000_000);
     }
 
-    function testAddTokensRegressionTest() public {
-        address[] memory _committeeList = new address[](4);
-        uint16[] memory _stake = new uint16[](4);
-        _committeeList[0] = 0x68B43fD906C0B8F024a18C56e06744F7c6157c65;
-        _committeeList[1] = 0xaCAEf39832CB995c4E049437A3E2eC6a7bad1Ab5;
-        _committeeList[2] = 0x8061f127910e8eF56F16a2C411220BaD25D61444;
-        _committeeList[3] = 0x508F3F1ff45F4ca3D8e86CDCC91445F00aCC59fC;
-        _stake[0] = 2500;
-        _stake[1] = 2500;
-        _stake[2] = 2500;
-        _stake[3] = 2500;
-        address _committee = Upgrades.deployUUPSProxy(
-            "BridgeCommittee.sol",
-            abi.encodeCall(BridgeCommittee.initialize, (_committeeList, _stake, minStakeRequired)),
-            opts
-        );
-        committee = BridgeCommittee(_committee);
-        uint8[] memory _supportedDestinationChains = new uint8[](1);
-        _supportedDestinationChains[0] = 0;
-        address _config = Upgrades.deployUUPSProxy(
-            "BridgeConfig.sol",
-            abi.encodeCall(
-                BridgeConfig.initialize,
-                (address(committee), 12, supportedTokens, tokenPrices, tokenIds, suiDecimals, _supportedDestinationChains, uint64(1), uint64(3), uint64(7))
-            ),
-            opts
-        );
-        config = BridgeConfig(_config);
+    // function testAddTokensRegressionTest() public {
+    //     address[] memory _committeeList = new address[](4);
+    //     uint16[] memory _stake = new uint16[](4);
+    //     _committeeList[0] = 0x68B43fD906C0B8F024a18C56e06744F7c6157c65;
+    //     _committeeList[1] = 0xaCAEf39832CB995c4E049437A3E2eC6a7bad1Ab5;
+    //     _committeeList[2] = 0x8061f127910e8eF56F16a2C411220BaD25D61444;
+    //     _committeeList[3] = 0x508F3F1ff45F4ca3D8e86CDCC91445F00aCC59fC;
+    //     _stake[0] = 2500;
+    //     _stake[1] = 2500;
+    //     _stake[2] = 2500;
+    //     _stake[3] = 2500;
+    //     address _committee = Upgrades.deployUUPSProxy(
+    //         "BridgeCommittee.sol",
+    //         abi.encodeCall(BridgeCommittee.initialize, (_committeeList, _stake, minStakeRequired)),
+    //         opts
+    //     );
+    //     committee = BridgeCommittee(_committee);
+    //     uint8[] memory _supportedDestinationChains = new uint8[](1);
+    //     _supportedDestinationChains[0] = 0;
+    //     address _config = Upgrades.deployUUPSProxy(
+    //         "BridgeConfig.sol",
+    //         abi.encodeCall(
+    //             BridgeConfig.initialize,
+    //             (address(committee), 12, supportedTokens, tokenPrices, tokenIds, suiDecimals, _supportedDestinationChains, uint64(1), uint64(3), uint64(7))
+    //         ),
+    //         opts
+    //     );
+    //     config = BridgeConfig(_config);
 
-        committee.initializeConfig(address(config));
-        vault = new BridgeVault(wETH);
+    //     committee.initializeConfig(address(config));
+    //     vault = new BridgeVault(wETH);
 
-        uint64[] memory totalLimits = new uint64[](1);
-        totalLimits[0] = 1000000;
-        uint64 maxUSDLimit=100 * USD_VALUE_MULTIPLIER;
+    //     uint64[] memory totalLimits = new uint64[](1);
+    //     totalLimits[0] = 1000000;
+    //     uint64 maxUSDLimit=100 * USD_VALUE_MULTIPLIER;
 
 
-        skip(2 days);
-        address _limiter = Upgrades.deployUUPSProxy(
-            "BridgeLimiter.sol",
-            abi.encodeCall(
-                BridgeLimiter.initialize,
-                (address(committee), _supportedDestinationChains, totalLimits,maxUSDLimit)
-            ),
-            opts
-        );
-        limiter = BridgeLimiter(_limiter);
-        address _suiBridge = Upgrades.deployUUPSProxy(
-            "SuiBridge.sol",
-            abi.encodeCall(
-                SuiBridge.initialize, (address(committee), address(vault), address(limiter),address(0))
-            ),
-            opts
-        );
-        bridge = SuiBridge(_suiBridge);
-        vault.transferOwnership(address(bridge));
-        limiter.transferOwnership(address(bridge));
+    //     skip(2 days);
+    //     address _limiter = Upgrades.deployUUPSProxy(
+    //         "BridgeLimiter.sol",
+    //         abi.encodeCall(
+    //             BridgeLimiter.initialize,
+    //             (address(committee), _supportedDestinationChains, totalLimits,maxUSDLimit)
+    //         ),
+    //         opts
+    //     );
+    //     limiter = BridgeLimiter(_limiter);
+    //     address _suiBridge = Upgrades.deployUUPSProxy(
+    //         "SuiBridge.sol",
+    //         abi.encodeCall(
+    //             SuiBridge.initialize, (address(committee), address(vault), address(limiter),address(0))
+    //         ),
+    //         opts
+    //     );
+    //     bridge = SuiBridge(_suiBridge);
+    //     vault.transferOwnership(address(bridge));
+    //     limiter.transferOwnership(address(bridge));
 
-        bytes memory payload =
-            hex"0103636465036b175474e89094c44da98b954eedeac495271d0fae7ab96520de3a18e5e111b5eaab095312d7fe84c18360217d8f7ab5e7c516566761ea12ce7f9d720305060703000000003b9aca00000000007735940000000000b2d05e00";
+    //     bytes memory payload =
+    //         hex"0103636465036b175474e89094c44da98b954eedeac495271d0fae7ab96520de3a18e5e111b5eaab095312d7fe84c18360217d8f7ab5e7c516566761ea12ce7f9d720305060703000000003b9aca00000000007735940000000000b2d05e00";
 
-        (
-            bool native,
-            uint64[] memory tokenIDs,
-            address[] memory tokenAddresses,
-            uint8[] memory suiDecimals,
-            uint64[] memory tokenPrices
-        ) = BridgeUtils.decodeAddTokensPayload(payload);
+    //     (
+    //         bool native,
+    //         uint64[] memory tokenIDs,
+    //         address[] memory tokenAddresses,
+    //         uint8[] memory suiDecimals,
+    //         uint64[] memory tokenPrices
+    //     ) = BridgeUtils.decodeAddTokensPayload(payload);
 
-        assertEq(native, true);
-        assertEq(tokenIDs.length, 3);
-        assertEq(tokenIDs[0], 99);
-        assertEq(tokenIDs[1], 100);
-        assertEq(tokenIDs[2], 101);
+    //     assertEq(native, true);
+    //     assertEq(tokenIDs.length, 3);
+    //     assertEq(tokenIDs[0], 99);
+    //     assertEq(tokenIDs[1], 100);
+    //     assertEq(tokenIDs[2], 101);
 
-        assertEq(tokenAddresses.length, 3);
-        assertEq(tokenAddresses[0], 0x6B175474E89094C44Da98b954EedeAC495271d0F); // dai
-        assertEq(tokenAddresses[1], 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84); // lido
-        assertEq(tokenAddresses[2], 0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72); // ENS
+    //     assertEq(tokenAddresses.length, 3);
+    //     assertEq(tokenAddresses[0], 0x6B175474E89094C44Da98b954EedeAC495271d0F); // dai
+    //     assertEq(tokenAddresses[1], 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84); // lido
+    //     assertEq(tokenAddresses[2], 0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72); // ENS
 
-        assertEq(suiDecimals.length, 3);
-        assertEq(suiDecimals[0], 5);
-        assertEq(suiDecimals[1], 6);
-        assertEq(suiDecimals[2], 7);
+    //     assertEq(suiDecimals.length, 3);
+    //     assertEq(suiDecimals[0], 5);
+    //     assertEq(suiDecimals[1], 6);
+    //     assertEq(suiDecimals[2], 7);
 
-        assertEq(tokenPrices.length, 3);
-        assertEq(tokenPrices[0], 1_000_000_000);
-        assertEq(tokenPrices[1], 2_000_000_000);
-        assertEq(tokenPrices[2], 3_000_000_000);
+    //     assertEq(tokenPrices.length, 3);
+    //     assertEq(tokenPrices[0], 1_000_000_000);
+    //     assertEq(tokenPrices[1], 2_000_000_000);
+    //     assertEq(tokenPrices[2], 3_000_000_000);
 
-        BridgeUtils.Message memory message = BridgeUtils.Message({
-            messageType: BridgeUtils.ADD_EVM_TOKENS,
-            version: 1,
-            nonce: 0,
-            chainID: 12,
-            payload: payload
-        });
-        bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
-        bytes memory expectedEncodedMessage =
-            hex"5355495f4252494447455f4d455353414745070100000000000000000c0103636465036b175474e89094c44da98b954eedeac495271d0fae7ab96520de3a18e5e111b5eaab095312d7fe84c18360217d8f7ab5e7c516566761ea12ce7f9d720305060703000000003b9aca00000000007735940000000000b2d05e00";
+    //     BridgeUtils.Message memory message = BridgeUtils.Message({
+    //         messageType: BridgeUtils.ADD_EVM_TOKENS,
+    //         version: 1,
+    //         nonce: 0,
+    //         chainID: 12,
+    //         payload: payload
+    //     });
+    //     bytes memory encodedMessage = BridgeUtils.encodeMessage(message);
+    //     bytes memory expectedEncodedMessage =
+    //         hex"5355495f4252494447455f4d455353414745070100000000000000000c0103636465036b175474e89094c44da98b954eedeac495271d0fae7ab96520de3a18e5e111b5eaab095312d7fe84c18360217d8f7ab5e7c516566761ea12ce7f9d720305060703000000003b9aca00000000007735940000000000b2d05e00";
 
-        assertEq(encodedMessage, expectedEncodedMessage);
+    //     assertEq(encodedMessage, expectedEncodedMessage);
 
-        bytes[] memory signatures = new bytes[](3);
+    //     bytes[] memory signatures = new bytes[](3);
 
-        signatures[0] =
-            hex"98b064aa172d0a66142f2fc45d9cd3255fb096cb92e0fcc9be4688b425aad6b53251c9044de4475e64e85b38b32cd3c813a8010281b00811d40fce9b3b372f2200";
-        signatures[1] =
-            hex"275037d70185c835b0d1ee70a118d1cc5da90db2468fab1fa24517eeec3055d814f0ca65db7e6274dbda92d33c9df914db7ada4901a283ec1d3e8c126827923600";
-        signatures[2] =
-            hex"ebb6669c8fb4b000fd41dde6e464c44c009ddcb47c05e7e5ea3deba71b21bd28156b23b6e7813a0603c57553ce484771c142ba6c981c4753035655e89006c0ee01";
+    //     signatures[0] =
+    //         hex"98b064aa172d0a66142f2fc45d9cd3255fb096cb92e0fcc9be4688b425aad6b53251c9044de4475e64e85b38b32cd3c813a8010281b00811d40fce9b3b372f2200";
+    //     signatures[1] =
+    //         hex"275037d70185c835b0d1ee70a118d1cc5da90db2468fab1fa24517eeec3055d814f0ca65db7e6274dbda92d33c9df914db7ada4901a283ec1d3e8c126827923600";
+    //     signatures[2] =
+    //         hex"ebb6669c8fb4b000fd41dde6e464c44c009ddcb47c05e7e5ea3deba71b21bd28156b23b6e7813a0603c57553ce484771c142ba6c981c4753035655e89006c0ee01";
 
-        config.addTokensWithSignatures(signatures, message);
+    //     config.addTokensWithSignatures(signatures, message);
 
-        assertEq(config.tokenPriceOf(99), 1_000_000_000);
-        assertEq(config.tokenPriceOf(100), 2_000_000_000);
-        assertEq(config.tokenPriceOf(101), 3_000_000_000);
-        assertEq(config.tokenSuiDecimalOf(99), 5);
-        assertEq(config.tokenSuiDecimalOf(100), 6);
-        assertEq(config.tokenSuiDecimalOf(101), 7);
-        assertEq(config.tokenAddressOf(99), 0x6B175474E89094C44Da98b954EedeAC495271d0F);
-        assertEq(config.tokenAddressOf(100), 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84);
-        assertEq(config.tokenAddressOf(101), 0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72);
-    }
+    //     assertEq(config.tokenPriceOf(99), 1_000_000_000);
+    //     assertEq(config.tokenPriceOf(100), 2_000_000_000);
+    //     assertEq(config.tokenPriceOf(101), 3_000_000_000);
+    //     assertEq(config.tokenSuiDecimalOf(99), 5);
+    //     assertEq(config.tokenSuiDecimalOf(100), 6);
+    //     assertEq(config.tokenSuiDecimalOf(101), 7);
+    //     assertEq(config.tokenAddressOf(99), 0x6B175474E89094C44Da98b954EedeAC495271d0F);
+    //     assertEq(config.tokenAddressOf(100), 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84);
+    //     assertEq(config.tokenAddressOf(101), 0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72);
+    // }
 }

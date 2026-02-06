@@ -693,6 +693,7 @@ mod tests {
                 EthAddress::repeat_byte(3),
             ],
             token_sui_decimals: vec![5, 6, 7],
+            token_original_decimals: vec![5, 6, 7],
             token_prices: vec![1_000_000_000, 2_000_000_000, 3_000_000_000],
         };
         let message: eth_bridge_config::Message = action.into();

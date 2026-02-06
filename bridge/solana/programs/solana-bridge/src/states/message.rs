@@ -38,6 +38,7 @@ pub struct AddTokenPayload {
     pub token_id: u64,
     pub token_address: Pubkey,
     pub benfen_decimal: u8,
+    pub original_decimal: u8,
     pub token_price: u64,
 }
 
@@ -497,6 +498,11 @@ pub fn decode_add_token_payload(payload: &[u8]) -> Result<AddTokenPayload> {
     require!(offset < payload.len(), MessageError::InvalidPayloadLength);
     let sui_decimal = payload[offset];
     offset += 1;
+
+    // Read original decimal (1 byte)
+    require!(offset < payload.len(), MessageError::InvalidPayloadLength);
+    let original_decimal = payload[offset];
+    offset += 1;
     
     // Read token price (8 bytes)
     require!(offset + 8 <= payload.len(), MessageError::InvalidPayloadLength);
@@ -510,6 +516,7 @@ pub fn decode_add_token_payload(payload: &[u8]) -> Result<AddTokenPayload> {
         token_id,
         token_address,
         benfen_decimal: sui_decimal,
+        original_decimal,
         token_price,
     })
 }

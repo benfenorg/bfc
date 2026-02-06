@@ -349,6 +349,8 @@ pub enum GovernanceClientCommands {
 
         #[clap(name = "benfen-decimal", long)]
         benfen_decimal: u8,
+        #[clap(name = "original-decimal", long)]
+        original_decimal: u8,
     },
     #[clap(name = "add-tokens-on-evm")]
     AddTokensOnEvm {
@@ -362,6 +364,8 @@ pub enum GovernanceClientCommands {
         token_prices: Vec<u64>,
         #[clap(name = "token-sui-decimals", use_value_delimiter = true, long)]
         token_sui_decimals: Vec<u8>,
+        #[clap(name = "token-original-decimals", use_value_delimiter = true, long)]
+        token_original_decimals: Vec<u8>,
     },
     #[clap(name = "add-lp-token-id")]
     AddLpTokenId {
@@ -675,6 +679,7 @@ pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> B
             token_mint_address,
             token_price,
             benfen_decimal,
+            original_decimal,
         } => BridgeAction::AddTokenOnSolanaAction(AddTokenOnSolanaAction {
             nonce: *nonce,
             native: true,
@@ -682,6 +687,7 @@ pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> B
             token_id: *token_id,
             token_address: Pubkey::from_str(token_mint_address).expect("Invalid token address"),
             benfen_decimal: *benfen_decimal,
+            original_decimal: *original_decimal,
             token_price: *token_price,
         }),
 
@@ -709,6 +715,7 @@ pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> B
             token_addresses,
             token_prices,
             token_sui_decimals,
+            token_original_decimals,
         } => {
             assert_eq!(token_ids.len(), token_addresses.len());
             assert_eq!(token_ids.len(), token_prices.len());
@@ -721,6 +728,7 @@ pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> B
                 token_addresses: token_addresses.clone(),
                 token_prices: token_prices.clone(),
                 token_sui_decimals: token_sui_decimals.clone(),
+                token_original_decimals: token_original_decimals.clone(),
             })
         }
         GovernanceClientCommands::AddLpTokenId {

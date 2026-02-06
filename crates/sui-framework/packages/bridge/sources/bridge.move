@@ -307,6 +307,7 @@ module bridge::bridge {
     const EFastPathLimitError: u64 = 51;
     const EOnlySupportTokenTransferIn: u64 = 52;
     const ETransferLimit: u64 = 55;
+    const ETransfer24hLimit: u64 = 56;
 
     const EMustBeDefiMessage: u64 = 57;
     const EOnlySupportDefiTransferOut: u64 = 58;
@@ -510,6 +511,15 @@ module bridge::bridge {
         ctx: &mut TxContext
     ){
         ensure_defi_holders_initialized(&mut bridge.id, ctx);
+        limiter::initial_external_24h_limits(&mut bridge.id);
+    }
+
+    #[test_only]
+    public fun test_migrate(
+        bridge: &mut Bridge,
+        ctx: &mut TxContext
+    ){
+        ensure_defi_holders_initialized(&mut bridge.id, ctx);
         defi_protocols::registry(&mut bridge.id, ctx);
         defi_protocols::initial_defi_protocol(&mut bridge.id);
     }
@@ -538,6 +548,24 @@ module bridge::bridge {
         assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
         let route = chain_ids::get_route(inner.chain_id, target_chain);
         limiter::update_external_out_limit(
+            parent_id,
+            &route,
+            limit
+        );
+    }
+
+    public fun update_external_24h_limit(
+        bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
+        cap: &BfcSystemModifyCap,
+        target_chain: u8,
+        limit: u64,
+        ctx: &mut TxContext,
+    ) {
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        limiter::update_external_24h_limit(
             parent_id,
             &route,
             limit
@@ -866,7 +894,7 @@ module bridge::bridge {
             assert!(token_amount >= 1000, EDefiStakeAmountNotEnough);
         };
         
-        // 检查质押金额是否超过协议限制
+        // Check if the stake amount exceeds the protocol limit
         let protocol_info = defi_protocols::get_protocol_info(bridge_id, protocol_type, protocol_version, protocol_token_id, target_chain);
         assert!(token_amount <= defi_protocols::limit_stake_amount(&protocol_info), ETransferLimit);
 
@@ -1722,6 +1750,15 @@ module bridge::bridge {
         inner.limiter.get_available_claim_amount<T>(&inner.treasury, route)
     }
 
+    public fun get_external_available_transfer_amount<T>(
+          bridge: &Bridge,
+          target_chain: u8,
+    ): u128 {
+        let inner = load_inner(bridge);
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        limiter::get_external_available_transfer_amount<T>(&bridge.id, &inner.treasury, route)
+    }
+
     public fun pre_deposit_external_coin<T>(
         bridge: &mut Bridge,
         source_chain: u8,
@@ -2041,6 +2078,56 @@ module bridge::bridge {
         )
     }
 
+    public fun withdraw_external_busd_coin_v2<T>(
+        bridge: &mut Bridge,
+        target_chain: u8,
+        target_address: vector<u8>,
+        mut token: Coin<T>,
+        token_id_expect: u64,
+        bfc_system_state: &mut BfcSystemState,
+        clock: &Clock,
+        ctx: &mut TxContext
+    ) {
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
+
+        assert!(tokenlist::is_supported_from_benfen(
+            parent_id, target_chain as u64, token_id_expect),EInvalidChainIDAndTokenIDExpect);
+        assert!(token_id_expect == TOKEN_ID_USDC || token_id_expect == TOKEN_ID_USDT, EInvalidTokenIdExpect);
+        assert!(type_name::get<T>() == type_name::get<BUSD>(), EOnlySupportBusd);
+        assert!(!inner.paused, EBridgeUnavailable);
+        assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
+
+        let amount = token.balance().value();
+        assert!(amount > 0, ETokenValueIsZero);
+        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id_expect,amount);
+        assert!(amount>fee,EInputAmountLteBridgeFee);
+        let fee_coin=token.split<T>(fee, ctx);
+        bridge_fee::deposit_fee(parent_id, fee_coin);
+        let amount_after_fee=amount-fee;
+
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        assert!(amount_after_fee <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
+
+        // 24h limiter check
+        assert!(limiter::check_and_record_external_24h_transfer(parent_id, clock, route, amount_after_fee), ETransfer24hLimit);
+
+        bfc_system_state.burn_stable(token, ctx);
+
+        // emit event
+       emit(
+            ExternalWithdrawEventV3 {
+                origin_token_type: 5, // BUSD
+                token_type: token_id_expect,
+                source_chain: inner.chain_id,
+                target_chain,
+                source_address: address::to_bytes(ctx.sender()),
+                target_address,
+                amount_before_fee: amount,
+                amount_after_fee,
+            },
+        );
+    }
+
     public fun withdraw_external_busd_coin<T>(
         bridge: &mut Bridge,
         target_chain: u8,
@@ -2067,6 +2154,9 @@ module bridge::bridge {
         bridge_fee::deposit_fee(parent_id, fee_coin);
         let amount_after_fee=amount-fee;
 
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        assert!(amount_after_fee <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
+
         bfc_system_state.burn_stable(token, ctx);
 
         // emit event
@@ -2074,6 +2164,52 @@ module bridge::bridge {
             ExternalWithdrawEventV3 {
                 origin_token_type: 5, // BUSD
                 token_type: token_id_expect,
+                source_chain: inner.chain_id,
+                target_chain,
+                source_address: address::to_bytes(ctx.sender()),
+                target_address,
+                amount_before_fee: amount,
+                amount_after_fee,
+            },
+        );
+    }
+
+    public fun withdraw_external_coin_v2<T>(
+        bridge: &mut Bridge,
+        target_chain: u8,
+        target_address: vector<u8>,
+        mut token: Coin<T>,
+        clock: &Clock,
+        ctx: &mut TxContext
+    ) {
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
+        let token_id=treasury::token_id<T>(&inner.treasury);
+        assert!(tokenlist::is_supported_from_benfen(
+            parent_id, target_chain as u64, token_id),EInvalidChainIDAndTokenIDExpect);
+
+        assert!(!inner.paused, EBridgeUnavailable);
+        assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
+
+        let amount = token.balance().value();
+        assert!(amount > 0, ETokenValueIsZero);
+        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,amount);
+        assert!(amount>fee,EInputAmountLteBridgeFee);
+        let fee_coin=token.split<T>(fee, ctx);
+        bridge_fee::deposit_fee(parent_id, fee_coin);
+        let amount_after_fee=amount-fee;
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        let amount_in_usd = inner.treasury.calculate_amount_in_usd<T>(amount_after_fee);
+        assert!(amount_in_usd <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
+        // 24h limiter check
+        assert!(limiter::check_and_record_external_24h_transfer(parent_id, clock, route, amount_in_usd), ETransfer24hLimit);
+
+        inner.treasury.burn(token);
+
+        // emit event
+        emit(
+            ExternalWithdrawEventV3 {
+                origin_token_type: token_id,
+                token_type: token_id,
                 source_chain: inner.chain_id,
                 target_chain,
                 source_address: address::to_bytes(ctx.sender()),

@@ -430,6 +430,7 @@ impl BridgeTestClusterBuilder {
         let token_id=3;
         let token_address=sol_environment.usdc();
         let benfen_decimal = 9;
+        let original_decimal = 6;
         let token_price = 10000;
         let nonce = 0;
 
@@ -440,6 +441,7 @@ impl BridgeTestClusterBuilder {
             token_id,
             token_address,
             benfen_decimal,
+            original_decimal,
             token_price,
             nonce,
         )
@@ -946,6 +948,7 @@ pub async fn sign_and_add_coin_on_solana(
     token_id: u64,
     token_address: Pubkey,
     benfen_decimal: u8,
+    original_decimal: u8,
     token_price: u64,
     nonce: u64,
 ) -> anyhow::Result<()> {
@@ -953,6 +956,7 @@ pub async fn sign_and_add_coin_on_solana(
         token_id,
         token_address,
         benfen_decimal,
+        original_decimal,
         token_price,
         nonce,
     );

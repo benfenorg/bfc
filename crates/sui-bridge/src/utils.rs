@@ -424,6 +424,7 @@ pub  fn new_add_coin_on_solana_action(
     token_id: u64,
     token_address: Pubkey,
     benfen_decimal: u8,
+    original_decimal: u8,
     token_price: u64,
     nonce: u64,
 ) -> BridgeAction {
@@ -434,6 +435,7 @@ pub  fn new_add_coin_on_solana_action(
         token_id,
         token_address,
         benfen_decimal,
+        original_decimal,
         token_price,
     })
 }

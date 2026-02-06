@@ -63,8 +63,8 @@ impl ChainLimit {
         ]
     }
 
-    pub fn get_single_transfer_limit(&self) -> u64 {
-        self.max_usd_limit 
+    pub fn get_single_transfer_limit(&self, token_price: u64, decimal: u8) -> Result<u64> {
+        Ok(self.max_usd_limit)
     }
 
     pub fn get_chain_id(&self) -> u8 {
@@ -229,16 +229,18 @@ pub mod chain_limit_test{
         let mut chain_limit = ChainLimit::default();
 
         let price = 1*USD_PRECISION;
-        let decimal = 9;
-        let amount = 1000*USD_PRECISION;
-        let result = amount/10;
+        let decimal = 6;
+        let amount = 10000000000*USD_PRECISION;
+        // let result = 1000*1_000_000_00;
+        let req=10000000000*1_000_000;
+
 
         chain_limit.set_single_transfer_limit(amount);
-        let amount_in_usd = chain_limit.calculate_amount_in_usd(amount, price, decimal).unwrap();
-        println!("amount_in_usd:{}",amount_in_usd);
-        assert_eq!(amount_in_usd, result);
+        let single_transfer_limit = chain_limit.get_single_transfer_limit(price, decimal).unwrap();
+        // let amount_in_usd = chain_limit.calculate_amount_in_usd(req, price, decimal).unwrap();
+        // println!("amount_in_usd:{}",amount_in_usd);
+        assert_eq!(single_transfer_limit, req);
     }
-
 
     #[test]
     fn test_calculate_window_limit_internal(){

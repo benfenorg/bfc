@@ -366,6 +366,13 @@ impl BridgeClient {
                     .map(|id| id.to_string())
                     .collect::<Vec<_>>()
                     .join(",");
+                
+                let token_original_decimals = a
+                    .token_original_decimals
+                    .iter()
+                    .map(|id| id.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",");
                 let token_prices = a
                     .token_prices
                     .iter()
@@ -373,7 +380,7 @@ impl BridgeClient {
                     .collect::<Vec<_>>()
                     .join(",");
                 format!(
-                    "sign/add_tokens_on_evm/{chain_id}/{nonce}/{native}/{token_ids}/{token_addresses}/{token_sui_decimals}/{token_prices}"
+                    "sign/add_tokens_on_evm/{chain_id}/{nonce}/{native}/{token_ids}/{token_addresses}/{token_sui_decimals}/{token_original_decimals}/{token_prices}"
                 )
             }
             BridgeAction::AddTokenOnSolanaAction(a) => {
@@ -383,9 +390,10 @@ impl BridgeClient {
                 let token_id = a.token_id.to_string();
                 let token_address = a.token_address.to_string();
                 let benfen_decimal = a.benfen_decimal.to_string();
+                let original_decimal = a.original_decimal.to_string();
                 let token_price = a.token_price.to_string();
                 format!(
-                    "sign/add_token_on_solana/{chain_id}/{nonce}/{native}/{token_id}/{token_address}/{benfen_decimal}/{token_price}"
+                    "sign/add_token_on_solana/{chain_id}/{nonce}/{native}/{token_id}/{token_address}/{benfen_decimal}/{original_decimal}/{token_price}"
                 )
             }
             BridgeAction::UpgradeProgramOnSolanaAction(a) =>{
@@ -879,6 +887,7 @@ mod tests {
                 EthAddress::repeat_byte(3),
             ],
             token_sui_decimals: vec![5, 6, 7],
+            token_original_decimals: vec![5, 6, 7],
             token_prices: vec![1_000_000_000, 2_000_000_000, 3_000_000_000],
         });
         assert_eq!(
