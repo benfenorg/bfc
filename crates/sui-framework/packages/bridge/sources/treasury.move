@@ -90,29 +90,29 @@ module bridge::treasury {
     }
 
     public struct RemoveExternalCoinAdminEvent has copy, drop {
-    coin_type_name: String,
-    address: String,
+        coin_type_name: String,
+        address: String,
     }
 
     public struct AddExternalCoinWitnessEvent has copy, drop {
-    coin_type_name: String,
-    address: vector<u8>,
+        coin_type_name: String,
+        address: vector<u8>,
     }
 
     public struct RemoveExternalCoinWitnessEvent has copy, drop {
-    coin_type_name: String,
-    address: vector<u8>,
+        coin_type_name: String,
+        address: vector<u8>,
     }
 
     public struct AddExternalCoinTargetEvent has copy, drop {
-    coin_type_name: String,
-    address: String,
-}
+        coin_type_name: String,
+        address: String,
+    }
 
     public struct RemoveExternalCoinTargetEvent has copy, drop {
-    coin_type_name: String,
-    address: String,
-}
+        coin_type_name: String,
+        address: String,
+    }
 
     public fun token_id<T>(self: &BridgeTreasury): u64 {
         let metadata = self.get_token_metadata<T>();

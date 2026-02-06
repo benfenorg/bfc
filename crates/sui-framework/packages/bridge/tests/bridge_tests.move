@@ -2661,7 +2661,7 @@ fun test_defi_unstake() {
     assert!(holder_amount == adjusted_amount, 0);
     assert!(lp_token_amount == lp_token_amount, 0);
     //unstake start
-    scenario.next_tx(@0xABCD);
+    scenario.next_tx(@0x0);
     let ctx = env.ctx();
 
     bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount, principal_amount, ctx);
@@ -2843,7 +2843,7 @@ fun test_defi_unstake_and_approve_defi_transfer_out(){
     assert!(holder_amount == adjusted_amount, 0);
     assert!(lp_token_amount == lp_token_amount, 0);
     //unstake start
-    scenario.next_tx(@0xABCD);
+    scenario.next_tx(@0x0);
     let ctx = env.ctx();
     
     bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount,holder_amount, ctx);
@@ -2972,7 +2972,7 @@ fun test_defi_unstake_limit_error(){
     assert!(holder_amount == adjusted_amount, 0);
     assert!(lp_token_amount == lp_token_amount, 0);
     //unstake start
-    scenario.next_tx(@0xABCD);
+    scenario.next_tx(@0x0);
     let ctx = env.ctx();
     
     bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount,holder_amount, ctx);
@@ -3134,7 +3134,7 @@ fun test_defi_unstake_and_approve_defi_transfer_in(){
     assert!(holder_amount == adjusted_amount, 0);
     assert!(lp_token_amount == lp_token_amount, 0);
     //unstake start
-    scenario.next_tx(@0xABCD);
+    scenario.next_tx(@0x0);
     let ctx = env.ctx();
     
     bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount,holder_amount, ctx);
@@ -3720,7 +3720,7 @@ fun test_defi_unstake_exact_all_lp_tokens() {
     assert!(holder_lp_amount == lp_token_amount, 0);
 
     // Unstake exactly all LP tokens
-    scenario.next_tx(@0xABCD);
+    scenario.next_tx(@0x0);
     let ctx = env.ctx();
 
     bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount,principal_amount, ctx);
@@ -3835,7 +3835,7 @@ fun test_defi_multiple_stakes_partial_unstake() {
     assert!(total_principal_amount == principal_amount_1 + principal_amount_2, 0);
 
     // Partial unstake (only unstake amount from first stake)
-    scenario.next_tx(@0xABCD);
+    scenario.next_tx(@0x0);
     let ctx = env.ctx();
 
     bridge.defi_unstake_v2(source_chain, protocol_type, protocol_version, protocol_token_id, lp_token_amount_1,principal_amount_1, ctx);
@@ -3929,7 +3929,7 @@ fun test_defi_unstake_principal_smaller_than_calculated() {
     );
 
     // Partial unstake with principal smaller than calculated
-    scenario.next_tx(@0xABCD);
+    scenario.next_tx(@0x0);
     let ctx = env.ctx();
 
     // Unstake half of LP tokens, but provide principal amount smaller than calculated
@@ -4015,7 +4015,7 @@ fun test_defi_unstake_principal_larger_within_10_percent() {
     );
 
     // Partial unstake with principal larger than calculated but within 10%
-    scenario.next_tx(@0xABCD);
+    scenario.next_tx(@0x0);
     let ctx = env.ctx();
 
     // Unstake half of LP tokens
@@ -4099,7 +4099,7 @@ fun test_defi_unstake_principal_larger_exceeds_10_percent() {
     );
 
     // Partial unstake with principal larger than calculated and exceeds 10%
-    scenario.next_tx(@0xABCD);
+    scenario.next_tx(@0x0);
     let ctx = env.ctx();
 
     // Unstake half of LP tokens
@@ -4185,7 +4185,7 @@ fun test_defi_unstake_all_lp_principal_larger_than_calculated_within_10_percent(
     );
 
     // Unstake all LP tokens with correct LP amount but principal larger than calculated
-    scenario.next_tx(@0xABCD);
+    scenario.next_tx(@0x0);
     let ctx = env.ctx();
 
     // Provide principal 20% larger than calculated (exceeds 10% threshold)
@@ -4285,7 +4285,7 @@ fun test_defi_unstake_all_lp_principal_larger_than_calculated_gt_10_percent() {
     );
 
     // Unstake all LP tokens with correct LP amount but principal larger than calculated
-    scenario.next_tx(@0xABCD);
+    scenario.next_tx(@0x0);
     let ctx = env.ctx();
 
     // Provide principal 20% larger than calculated (exceeds 10% threshold)
@@ -4385,7 +4385,7 @@ fun test_defi_unstake_all_lp_principal_larger_than_calculated_lt_10_percent() {
     );
 
     // Unstake all LP tokens with correct LP amount but principal larger than calculated
-    scenario.next_tx(@0xABCD);
+    scenario.next_tx(@0x0);
     let ctx = env.ctx();
 
     // Provide principal 20% larger than calculated (exceeds 10% threshold)
