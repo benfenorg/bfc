@@ -6,10 +6,10 @@
 //! - End-to-end: encryption-aware homomorphic operations
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use mpc_framework_core::encryption::{EncryptedHomomorphicOperations, XorEncryptionManager};
-use mpc_framework_core::field::gf64_sss::FieldElement;
-use mpc_framework_core::field::FieldElement as FieldElementTrait;
-use mpc_framework_core::poly::Polynomial;
+use mpc_transmission_v2::encryption::{EncryptedHomomorphicOperations, XorEncryptionManager};
+use mpc_transmission_v2::field::gf64_sss::FieldElement;
+use mpc_transmission_v2::field::FieldElement as FieldElementTrait;
+use mpc_transmission_v2::poly::Polynomial;
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use rand_core::RngCore;
@@ -440,7 +440,7 @@ fn bench_end_to_end_encrypted(c: &mut Criterion) {
             .expect("addition should succeed");
 
             // Recover result
-            mpc_framework_core::SecretSharing::recover(&result[0..threshold])
+            mpc_transmission_v2::SecretSharing::recover(&result[0..threshold])
                 .expect("recovery should succeed")
         })
     });
