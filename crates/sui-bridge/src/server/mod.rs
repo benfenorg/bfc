@@ -117,10 +117,10 @@ pub const WITHDRAW_BRIDGE_FEE: &str =
 pub const ADD_TOKENS_ON_SUI_PATH: &str =
     "/sign/add_tokens_on_sui/:chain_id/:nonce/:native/:token_ids/:token_type_names/:token_prices";
 pub const ADD_TOKENS_ON_EVM_PATH: &str =
-    "/sign/add_tokens_on_evm/:chain_id/:nonce/:native/:token_ids/:token_addresses/:token_sui_decimals/:token_prices";
+    "/sign/add_tokens_on_evm/:chain_id/:nonce/:native/:token_ids/:token_addresses/:token_sui_decimals/:token_original_decimals/:token_prices";
 
 pub const ADD_TOKEN_ON_SOLANA_PATH: &str =
-    "/sign/add_token_on_solana/:chain_id/:nonce/:native/:token_id/:token_address/:benfen_decimal/:token_price";
+    "/sign/add_token_on_solana/:chain_id/:nonce/:native/:token_id/:token_address/:benfen_decimal/:original_decimal/:token_price";
 
 pub const UPDATE_REFUND_ADMIN_PATH: &str =
     "/sign/update_refund_admin/:chain_id/:nonce/:op_type/:sui_address";
@@ -1300,14 +1300,15 @@ async fn handle_extend_program_size(
     };
     with_metrics!(metrics.clone(), "handle_extend_program_size", future).await
 }
-#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, native=native, token_id=token_id, token_address=token_address, benfen_decimal=benfen_decimal, token_price=token_price))]
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, native=native, token_id=token_id, token_address=token_address, benfen_decimal=benfen_decimal, original_decimal=original_decimal, token_price=token_price))]
 async fn handle_add_token_on_solana(
-    Path((chain_id, nonce, native, token_id, token_address, benfen_decimal, token_price)): Path<(
+    Path((chain_id, nonce, native, token_id, token_address, benfen_decimal, original_decimal, token_price)): Path<(
         u8,
         u64,
         u8,
         u64,
         String,
+        u8,
         u8,
         u64,
     )>,
@@ -1346,6 +1347,7 @@ async fn handle_add_token_on_solana(
             token_id,
             token_address,
             benfen_decimal,
+            original_decimal,
             token_price,
         });
 
@@ -1355,12 +1357,13 @@ async fn handle_add_token_on_solana(
     with_metrics!(metrics.clone(), "handle_add_token_on_solana", future).await
 }
 
-#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, native=native, token_ids=token_ids, token_addresses=token_addresses, token_sui_decimals=token_sui_decimals, token_prices=token_prices))]
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, native=native, token_ids=token_ids, token_addresses=token_addresses, token_sui_decimals=token_sui_decimals, token_original_decimals=token_original_decimals, token_prices=token_prices))]
 async fn handle_add_tokens_on_evm(
-    Path((chain_id, nonce, native, token_ids, token_addresses, token_sui_decimals, token_prices)): Path<(
+    Path((chain_id, nonce, native, token_ids, token_addresses, token_sui_decimals, token_original_decimals, token_prices)): Path<(
         u8,
         u64,
         u8,
+        String,
         String,
         String,
         String,
@@ -1422,6 +1425,17 @@ async fn handle_add_tokens_on_evm(
                 })
             })
             .collect::<Result<Vec<_>, _>>()?;
+        let token_original_decimals = token_original_decimals
+            .split(',')
+            .map(|s| {
+                s.parse::<u8>().map_err(|err| {
+                    BridgeError::InvalidBridgeClientRequest(format!(
+                        "Invalid token original decimals: {:?}",
+                        err
+                    ))
+                })
+            })
+            .collect::<Result<Vec<_>, _>>()?;
         let token_prices = token_prices
             .split(',')
             .map(|s| {
@@ -1433,6 +1447,7 @@ async fn handle_add_tokens_on_evm(
                 })
             })
             .collect::<Result<Vec<_>, _>>()?;
+        
         let action = BridgeAction::AddTokensOnEvmAction(AddTokensOnEvmAction {
             chain_id,
             nonce,
@@ -1440,6 +1455,7 @@ async fn handle_add_tokens_on_evm(
             token_ids,
             token_addresses,
             token_sui_decimals,
+            token_original_decimals,
             token_prices,
         });
         let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
@@ -1684,6 +1700,7 @@ mod tests {
                 EthAddress::repeat_byte(3),
             ],
             token_sui_decimals: vec![5, 6, 7],
+            token_original_decimals: vec![5, 6, 7],
             token_prices: vec![1_000_000_000, 2_000_000_000, 3_000_000_000],
         });
         client.request_sign_bridge_action(action).await.unwrap();

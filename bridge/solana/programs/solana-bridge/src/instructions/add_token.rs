@@ -125,6 +125,7 @@ pub fn add_token_with_signatures(
         &ctx.accounts.token_mint,
         payload.token_id,
         payload.benfen_decimal,
+        payload.original_decimal,
         payload.token_price,
         nonce,
     )?;
@@ -141,6 +142,7 @@ fn add_token_internal(
     token_mint: &InterfaceAccount<Mint>,
     token_id: u64,
     benfen_decimal: u8,
+    original_decimal: u8,
     price: u64,
     nonce: u64,
 )-> Result<()>{
@@ -148,10 +150,14 @@ fn add_token_internal(
     
     // 验证benfen_decimal不能为0
     require!(benfen_decimal > 0, BridgeTokenError::InvalidTokenBenfenDecimal);
+
+    // 验证original_decimal不能为0
+    require!(original_decimal > 0, BridgeTokenError::InvalidTokenOriginalDecimal);
     
 
     // token_config
-    token_config.initialize(bridge_config.key(),chain_limit.key(),token_mint.key(),token_id, price, token_mint.decimals,benfen_decimal, 0)?;
+    token_config.initialize(bridge_config.key(),chain_limit.key(),token_mint.key(),token_id, price, token_mint.decimals,benfen_decimal, original_decimal,0)?;
+
     
     // 增加代币计数
     bridge_config.increment_token_count();

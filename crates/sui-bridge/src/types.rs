@@ -668,6 +668,7 @@ pub struct AddTokenOnSolanaAction{
     #[serde_as(as = "DisplayFromStr")]
     pub token_address: Pubkey,
     pub benfen_decimal: u8,
+    pub original_decimal: u8,
     pub token_price: u64,
 }
 
@@ -702,6 +703,7 @@ pub struct AddTokensOnEvmAction {
     pub token_ids: Vec<u64>,
     pub token_addresses: Vec<EthAddress>,
     pub token_sui_decimals: Vec<u8>,
+    pub token_original_decimals: Vec<u8>,
     pub token_prices: Vec<u64>,
 }
 

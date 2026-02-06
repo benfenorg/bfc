@@ -185,15 +185,16 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
             uint64[] memory tokenIDs,
             address[] memory tokenAddresses,
             uint8[] memory suiDecimals,
+            uint8[] memory originalDecimals,
             uint64[] memory _tokenPrices
         ) = BridgeUtils.decodeAddTokensPayload(message.payload);
 
         // update the token
         for (uint8 i; i < tokenIDs.length; i++) {
-            _addToken(tokenIDs[i], tokenAddresses[i], suiDecimals[i], _tokenPrices[i], native);
+            _addToken(tokenIDs[i], tokenAddresses[i], suiDecimals[i], originalDecimals[i],_tokenPrices[i], native);
         }
 
-        emit TokensAddedV2(message.nonce, tokenIDs, tokenAddresses, suiDecimals, _tokenPrices);
+        emit TokensAddedV3(message.nonce, tokenIDs, tokenAddresses, suiDecimals, originalDecimals, _tokenPrices);
     }
 
     /* ========== PRIVATE FUNCTIONS ========== */
@@ -218,6 +219,7 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         uint64 tokenID,
         address tokenAddress,
         uint8 suiDecimal,
+        uint8 originalDecimal,
         uint64 tokenPrice,
         bool native
     ) private {
@@ -226,7 +228,7 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         require(tokenPrice > 0, "BridgeConfig: Invalid token price");
         
         //todo 这里先默认原始decimal是6 后续再改
-        supportedTokens[tokenID] = Token(tokenAddress, suiDecimal, native,6);
+        supportedTokens[tokenID] = Token(tokenAddress, suiDecimal, native, originalDecimal);
         tokenPrices[tokenID] = tokenPrice;
     }
 

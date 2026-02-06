@@ -2239,6 +2239,7 @@ async fn test_add_new_coin_on_solana() {
     let token_id=4;
     let token_address = usdc_deployment_result.mint;   
     let benfen_decimal = 9;
+    let token_original_decimal = 10;
     let token_price = 10000;
     let nonce = 1;
 
@@ -2251,6 +2252,7 @@ async fn test_add_new_coin_on_solana() {
                 token_id,
                 token_address,
                 benfen_decimal,
+                original_decimal:token_original_decimal,
                 token_price,
             }
     );
@@ -2313,7 +2315,10 @@ async fn test_add_new_coin_on_solana() {
         .await.expect("Failed to get token config account");
 
     let actual_token_id: u64 = new_token_account.token_id;
+    let actual_original_decimal: u8 = new_token_account.original_decimal;
     assert_eq!(actual_token_id, token_id);
+    assert_eq!(actual_original_decimal, token_original_decimal);
+
 
 }
 
@@ -2334,6 +2339,7 @@ async fn test_add_new_coins_on_sui_and_eth() {
     // Register tokens on Sui
     let token_id = 7;
     let token_sui_decimal = 9; // this needs to match ka.move
+    let orginal_decimal=6;
     let token_price = 10000;
     let sender = bridge_test_cluster.sui_user_address();
     info!("Published new token");
@@ -2354,6 +2360,7 @@ async fn test_add_new_coins_on_sui_and_eth() {
         token_ids: vec![token_id],
         token_addresses: vec![new_token_erc_address],
         token_sui_decimals: vec![token_sui_decimal],
+        token_original_decimals: vec![orginal_decimal],
         token_prices: vec![token_price],
     });
 

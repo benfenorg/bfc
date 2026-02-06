@@ -17,7 +17,8 @@ pub struct TokenConfigAccount {
     pub decimal: u8, //solana decimal
     pub benfen_decimal: u8, // benfen decimal
     pub is_native: u8, //0: false, 1: true
-    pub padding: [u8; 24], // upgrade padding
+    pub original_decimal: u8, // original decimal in benfen
+    pub padding: [u8; 23], // upgrade padding
 }
  
 
@@ -33,6 +34,7 @@ impl TokenConfigAccount {
         price: u64,
         decimal: u8,
         benfen_decimal: u8,
+        original_decimal: u8,
         is_native: u8,
     ) -> Result<()> {
         require!(config != Pubkey::default(), BridgeConfigError::InvalidConfigPubkey);
@@ -49,6 +51,7 @@ impl TokenConfigAccount {
         self.price = price;
         self.decimal = decimal;
         self.benfen_decimal = benfen_decimal;
+        self.original_decimal = original_decimal;
         self.is_native = is_native;
         Ok(())
     }
@@ -74,6 +77,16 @@ impl TokenConfigAccount {
     pub fn update_is_native(&mut self, is_native: u8) {
        // require!(self.is_native != is_native, BridgeError::SameTokenNative);
         self.is_native = is_native;
+    }
+
+    pub fn update_original_decimal(&mut self, original_decimal: u8) -> Result<()> {
+        require!(original_decimal > 0, BridgeTokenError::InvalidTokenOriginalDecimal);
+        self.original_decimal = original_decimal;
+        Ok(())
+    }
+    
+    pub fn original_decimal(&self) -> u8 {
+        self.original_decimal
     }
 
     pub fn token_id(&self) -> u64 {
@@ -138,6 +151,7 @@ pub mod token_config_test{
             1,
             1,
             1,
+            1,
         ).unwrap();
         assert_eq!(token_config.price(), 1);
         token_config.update_price(100).unwrap();
@@ -151,6 +165,7 @@ pub mod token_config_test{
             Pubkey::new_unique(),
             Pubkey::new_unique(),
             Pubkey::new_unique(),
+            1,
             1,
             1,
             1,
@@ -175,6 +190,7 @@ pub mod token_config_test{
             1,
             1,
             1,
+            1,
         ).unwrap();
         assert_eq!(token_config.mint(), mint);
         let twice_mint=Pubkey::new_unique();
@@ -190,6 +206,7 @@ pub mod token_config_test{
             Pubkey::new_unique(),
             Pubkey::new_unique(),
             mint,
+            1,
             1,
             1,
             1,

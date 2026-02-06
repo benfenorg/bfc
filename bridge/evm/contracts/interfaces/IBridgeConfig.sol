@@ -69,6 +69,24 @@ interface IBridgeConfig {
         uint64[] tokenPrices
     );
 
+
+/// @notice Event for the addition of a new token.
+    /// @param nonce The governance action nonce.
+    /// @param tokenIDs The IDs of the tokens added.
+    /// @param tokenAddresses The addresses of the tokens added.
+    /// @param suiDecimals The added token's decimal places on Sui.
+    /// @param originalDecimals The added token's original decimal places.
+    /// @param tokenPrices The prices of the tokens added in USD.
+    event TokensAddedV3(
+        uint64 nonce,
+        uint64[] tokenIDs,
+        address[] tokenAddresses,
+        uint8[] suiDecimals,
+        uint8[] originalDecimals,
+        uint64[] tokenPrices
+    );
+
+
     /// @dev (deprecated in favor of TokensAddedV2)
     event TokenAdded(uint64 tokenID, address tokenAddress, uint8 suiDecimal, uint64 tokenPrice);
 

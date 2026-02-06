@@ -7,7 +7,7 @@ pub mod util;
 use instructions::*;
 
 #[cfg(feature = "devnet")]
-declare_id!("EL9SLms1hciY2K9875soSC41Gnf6PuZBL1kztFVWKazU");
+declare_id!("BZyn9uqtYXsWYa6ksAZ27Jeh7zVVG7bbULAgFGXqzfjN");
 #[cfg(feature = "mainnet")]
 declare_id!("BenfeniwCqsDhGKB4snUSiz34DPMvGaz1hP2y4UMMWMo");
 #[cfg(all(not(feature = "devnet"), not(feature = "mainnet")))]
