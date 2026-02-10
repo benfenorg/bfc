@@ -740,7 +740,6 @@ mod tests {
 
         // prepare node config (server only)
         let tmp_dir = tempdir().unwrap().keep();
-        let tmp_dir = tempdir().unwrap().into_path();
         let db_path = tmp_dir.join("client_db");
         let authority_key_path = "test_starting_bridge_node_bridge_authority_key";
         let server_listen_port = get_available_port("127.0.0.1");
