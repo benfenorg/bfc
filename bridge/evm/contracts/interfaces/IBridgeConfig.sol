@@ -11,6 +11,7 @@ interface IBridgeConfig {
         address tokenAddress;
         uint8 suiDecimal;
         bool native;
+        uint8 originalDecimal;
     }
 
     /* ========== VIEW FUNCTIONS ========== */
@@ -24,6 +25,12 @@ interface IBridgeConfig {
     /// @param tokenID The ID of the token.
     /// @return amount of sui decimal places of the provided token.
     function tokenSuiDecimalOf(uint64 tokenID) external view returns (uint8);
+
+
+    /// @notice Returns the original decimal places of the token with the given ID.
+    /// @param tokenID The ID of the token.
+    /// @return amount of original decimal places of the provided token.
+    function tokenOriginalDecimalOf(uint64 tokenID) external view returns (uint8);
 
     /// @notice Returns the price of the token with the given ID.
     /// @param tokenID The ID of the token.
@@ -61,6 +68,24 @@ interface IBridgeConfig {
         uint8[] suiDecimals,
         uint64[] tokenPrices
     );
+
+
+/// @notice Event for the addition of a new token.
+    /// @param nonce The governance action nonce.
+    /// @param tokenIDs The IDs of the tokens added.
+    /// @param tokenAddresses The addresses of the tokens added.
+    /// @param suiDecimals The added token's decimal places on Sui.
+    /// @param originalDecimals The added token's original decimal places.
+    /// @param tokenPrices The prices of the tokens added in USD.
+    event TokensAddedV3(
+        uint64 nonce,
+        uint64[] tokenIDs,
+        address[] tokenAddresses,
+        uint8[] suiDecimals,
+        uint8[] originalDecimals,
+        uint64[] tokenPrices
+    );
+
 
     /// @dev (deprecated in favor of TokensAddedV2)
     event TokenAdded(uint64 tokenID, address tokenAddress, uint8 suiDecimal, uint64 tokenPrice);

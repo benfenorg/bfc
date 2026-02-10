@@ -8,7 +8,8 @@ use crate::fast_path::FastPathSelector;
 use crate::server::mock_handler::run_mock_server;
 use crate::sui_transaction_builder::build_sui_transaction;
 use crate::types::{
-    BridgeCommittee, BridgeCommitteeValiditySignInfo, CertifiedBridgeAction, ExternalDepositStartBridgeAction, VerifiedCertifiedBridgeAction
+    BridgeCommittee, BridgeCommitteeValiditySignInfo, CertifiedBridgeAction, ExternalDepositStartBridgeAction, VerifiedCertifiedBridgeAction,
+    SolanaToSuiBridgeAction, SolanaToSuiTokenBridgeV1,
 };
 use crate::{
     crypto::{BridgeAuthorityKeyPair, BridgeAuthorityPublicKey, BridgeAuthoritySignInfo},
@@ -46,6 +47,7 @@ use sui_types::object::Owner;
 use sui_types::transaction::{CallArg, ObjectArg};
 use sui_types::{base_types::SuiAddress, crypto::get_key_pair, digests::TransactionDigest};
 use sui_types::{BRIDGE_PACKAGE_ID, SUI_BRIDGE_OBJECT_ID};
+use solana_sdk::pubkey::Pubkey;
 use tokio::task::JoinHandle;
 
 pub const DUMMY_MUTALBE_BRIDGE_OBJECT_ARG: ObjectArg = ObjectArg::SharedObject {
@@ -140,10 +142,38 @@ pub fn get_test_eth_to_sui_bridge_action(
             nonce: nonce.unwrap_or_default(),
             sui_chain_id: BridgeChainId::SuiCustom,
             token_id: token_id.unwrap_or(TOKEN_ID_ETH),
+            target_token_id: token_id.unwrap_or(TOKEN_ID_ETH),
             sui_adjusted_amount: amount.unwrap_or(100_000),
             sui_address: sui_address.unwrap_or_else(SuiAddress::random_for_testing_only),
             eth_address: EthAddress::random(),
             tx_hash: tx_hash.as_bytes().to_vec(),
+            event_idx: 0,
+            fast_path_selector: FastPathSelector::Finalized,
+        },
+    })
+}
+
+pub fn get_test_solana_to_sui_bridge_action(
+    nonce: Option<u64>,
+    amount: Option<u64>,
+    sui_address: Option<SuiAddress>,
+    token_id: Option<u64>,
+    tx_signature: Option<String>,
+) -> BridgeAction {
+    let signature = tx_signature.unwrap_or_else(|| format!("test_sig_{}", rand::random::<u64>()));
+    BridgeAction::SolanaToSuiBridgeAction(SolanaToSuiBridgeAction {
+        solana_tx_signature: signature.clone(),
+        solana_event_index: 0,
+        solana_bridge_event: SolanaToSuiTokenBridgeV1 {
+            nonce: nonce.unwrap_or_default(),
+            sui_chain_id: BridgeChainId::SuiCustom,
+            solana_chain_id: BridgeChainId::SolanaTestnet,
+            sui_address: sui_address.unwrap_or_else(SuiAddress::random_for_testing_only),
+            solana_address: Pubkey::new_unique(),
+            token_id: token_id.unwrap_or(TOKEN_ID_ETH),
+            target_token_id: token_id.unwrap_or(TOKEN_ID_ETH),
+            sui_adjusted_amount: amount.unwrap_or(100_000),
+            tx_signature: signature.as_bytes().to_vec(),
             event_idx: 0,
             fast_path_selector: FastPathSelector::Finalized,
         },
@@ -336,9 +366,11 @@ pub fn get_test_log_and_action(
     let sui_address: SuiAddress = SuiAddress::random_for_testing_only();
     let target_address = Hex::decode(&sui_address.to_string()).unwrap();
     // Note: must use `encode` rather than `encode_packged`
+    // ABI order: tokenID, targetTokenID, suiAdjustedAmount, senderAddress, recipientAddress
     let encoded = ethers::abi::encode(&[
         // u8/u64 is encoded as u256 in abi standard
         ethers::abi::Token::Uint(ethers::types::U256::from(token_id)),
+        ethers::abi::Token::Uint(ethers::types::U256::from(token_id)), // targetTokenID
         ethers::abi::Token::Uint(ethers::types::U256::from(sui_adjusted_amount)),
         ethers::abi::Token::Address(source_address),
         ethers::abi::Token::Bytes(target_address.clone()),
@@ -349,13 +381,14 @@ pub fn get_test_log_and_action(
             long_signature(
                 "TokensDeposited",
                 &[
-                    ParamType::Uint(8),
-                    ParamType::Uint(64),
-                    ParamType::Uint(8),
-                    ParamType::Uint(64),
-                    ParamType::Uint(64),
-                    ParamType::Address,
-                    ParamType::Bytes,
+                    ParamType::Uint(8),   // sourceChainID (indexed)
+                    ParamType::Uint(64), // nonce (indexed)
+                    ParamType::Uint(8),   // destinationChainID (indexed)
+                    ParamType::Uint(64), // tokenID
+                    ParamType::Uint(64), // targetTokenID
+                    ParamType::Uint(64), // suiAdjustedAmount
+                    ParamType::Address,  // senderAddress
+                    ParamType::Bytes,    // recipientAddress
                 ],
             ),
             hex!("0000000000000000000000000000000000000000000000000000000000000001").into(), // chain id: sui testnet
@@ -380,6 +413,7 @@ pub fn get_test_log_and_action(
             nonce: u64::from_be_bytes(log.topics[2].as_ref()[24..32].try_into().unwrap()),
             sui_chain_id: BridgeChainId::try_from(topic_3[topic_3.len() - 1]).unwrap(),
             token_id,
+            target_token_id: token_id,
             sui_adjusted_amount,
             sui_address,
             eth_address: source_address,
@@ -428,6 +462,7 @@ pub async fn bridge_token(
         .find_map(|e| match e {
             SuiBridgeEvent::SuiToEthTokenBridgeV1(event) => Some(event.clone()),
             SuiBridgeEvent::SuiToEthTokenBridgeV2(event) => Some(event.clone()),
+            SuiBridgeEvent::SuiToEthTokenBridgeV3(event) => Some(event.clone()),
             _ => None,
         })
         .unwrap()

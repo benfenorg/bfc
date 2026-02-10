@@ -173,6 +173,13 @@ module bridge::tokenlist {
         add_token_to_benfen(parent_id, chain_ids::avax_mainnet() as u64, TOKEN_ID_ETH, ctx);
         add_token_to_benfen(parent_id, chain_ids::avax_testnet() as u64, TOKEN_ID_ETH, ctx);
         add_token_to_benfen(parent_id, chain_ids::avax_custom() as u64, TOKEN_ID_ETH, ctx);
+        //solana cross in benfen
+        //usdc
+        add_token_to_benfen(parent_id, chain_ids::solana_mainnet() as u64,TOKEN_ID_USDC, ctx);
+        add_token_to_benfen(parent_id, chain_ids::solana_testnet() as u64,TOKEN_ID_USDC, ctx);
+        //usdt
+        add_token_to_benfen(parent_id, chain_ids::solana_mainnet() as u64,TOKEN_ID_USDT, ctx);
+        add_token_to_benfen(parent_id, chain_ids::solana_testnet() as u64,TOKEN_ID_USDT, ctx);
 
         //cross out  bitcoin
         //bitcoin
@@ -284,6 +291,13 @@ module bridge::tokenlist {
         add_token_from_benfen(parent_id, chain_ids::avax_mainnet() as u64, TOKEN_ID_ETH, ctx);
         add_token_from_benfen(parent_id, chain_ids::avax_testnet() as u64, TOKEN_ID_ETH, ctx);
         add_token_from_benfen(parent_id, chain_ids::avax_custom() as u64, TOKEN_ID_ETH, ctx);
+        //cross out solana
+        //usdc
+        add_token_from_benfen(parent_id, chain_ids::solana_mainnet() as u64,TOKEN_ID_USDC, ctx);
+        add_token_from_benfen(parent_id, chain_ids::solana_testnet() as u64,TOKEN_ID_USDC, ctx);
+        //usdt
+        add_token_from_benfen(parent_id, chain_ids::solana_mainnet() as u64,TOKEN_ID_USDT, ctx);
+        add_token_from_benfen(parent_id, chain_ids::solana_testnet() as u64,TOKEN_ID_USDT, ctx);
     }
 
     public(package) fun add_center_token_list(parent_id: &mut UID,ctx: &mut TxContext){

@@ -95,6 +95,16 @@ impl BridgeRequestHandlerTrait for BridgeRequestMockHandler {
         unimplemented!()
     }
 
+    async fn handle_solana_tx_signature(
+        &self,
+        _chain_id: u8,
+        _tx_signature: String,
+        _event_idx: u16,
+        _fast_path_selector: u8,
+    ) -> Result<Json<SignedBridgeAction>, BridgeError> {
+        unimplemented!()
+    }
+
     async fn handle_sui_tx_digest(
         &self,
         tx_digest_base58: String,

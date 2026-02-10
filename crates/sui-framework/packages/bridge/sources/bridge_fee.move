@@ -425,7 +425,7 @@ module bridge::bridge_fee{
 
     fun calculate_fee(amount: u64,fee_rate: u64) : u64 {
         assert!(fee_rate < FEE_RATE_PRECISION, EBridgeFeeSettingWrong);
-        (amount * fee_rate) / FEE_RATE_PRECISION
+        (((amount as u128)*( fee_rate as u128)) /(FEE_RATE_PRECISION as u128)) as u64
     }
 
 }

@@ -15,6 +15,8 @@ use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::{BridgeAction, BridgeActionType, EthToSuiBridgeAction, SignedBridgeAction};
 use crate::tron_query::check_tron_txn;
 use crate::solana_query::check_solana_txn;
+use crate::solana_client::SolanaClient;
+use crate::config::ExternalChainRpcConfig;
 use async_trait::async_trait;
 use axum::Json;
 use ethers::providers::JsonRpcClient;
@@ -42,6 +44,17 @@ pub trait BridgeRequestHandlerTrait {
         &self,
         chain_id: u8,
         tx_hash_hex: String,
+        event_idx: u16,
+        fast_path_selector: u8,
+    ) -> Result<Json<SignedBridgeAction>, BridgeError>;
+
+    /// Handles a request to sign a BridgeAction that bridges assets
+    /// from Solana to Sui. The inputs are a transaction signature on Solana
+    /// that emitted the bridge event and the Event index in that transaction
+    async fn handle_solana_tx_signature(
+        &self,
+        chain_id: u8,
+        tx_signature: String,
         event_idx: u16,
         fast_path_selector: u8,
     ) -> Result<Json<SignedBridgeAction>, BridgeError>;
@@ -90,15 +103,21 @@ struct EthActionVerifier<P> {
     fast_path_config: FastPathConfig,
 }
 
+struct SolanaActionVerifier {
+    solana_client: Arc<SolanaClient>,
+}
+
 struct SendBackActionVerifier<C, P> {
     sui_client: Arc<SuiClient<C>>,
     eth_client: Arc<EthClient<P>>,
     evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<P>>>,
     fast_path_config: FastPathConfig,
+    solana_base_url: Option<String>,// for decentralization request
 }
 
 struct ExternalCoinVerifier<C> {
     sui_client: Arc<SuiClient<C>>,
+    external_rpc: Option<Arc<ExternalChainRpcConfig>>,
 }
 
 #[async_trait::async_trait]
@@ -227,6 +246,8 @@ where
             let tx_hash = &external_action.sui_bridge_event.tx_hash;
             let amount = external_action.sui_bridge_event.amount;
             let chain_id = external_action.sui_bridge_event.source_chain;
+            let token_id = external_action.sui_bridge_event.token_id;
+            
 
             // check target address in whitelist
             let summary = self.sui_client.get_bridge_summary().await;
@@ -251,8 +272,15 @@ where
                 BridgeChainId::TronMainnet | BridgeChainId::TronTestnet => {
                     // check tron txn: only support TRC20
                     // readme: amount is benfen amount, not tron amount, so we need to convert it
-                    let tron_amount = amount / 1_000;
-                    let ok = check_tron_txn(chain_id, tx_hash, whitelist, tron_amount, false).await;
+                    let tron_amount=if token_id==3 || token_id==4 {
+                        amount 
+                    }else {
+                        amount/1000
+                    };
+                    let external_rpc = self.external_rpc.as_ref().ok_or_else(|| {
+                        BridgeError::Generic("External RPC config not found".to_string())
+                    })?;
+                    let ok = check_tron_txn(chain_id, tx_hash, whitelist, tron_amount, false, &external_rpc.tron).await;
                     if ok {
                         return Ok(action_rs);
                     }
@@ -261,8 +289,16 @@ where
                     // check solana txn: only support USDC/USDT
 
                     // readme: amount is benfen amount, not solana amount, so we need to convert it
-                    let sol_amount = amount / 1_000;
-                    let ok = check_solana_txn(chain_id, tx_hash, whitelist, sol_amount, false).await;
+                    let sol_amount=if token_id==3 || token_id==4 {
+                        amount 
+                    }else {
+                        amount / 1_000
+                    };
+
+                    let external_rpc = self.external_rpc.as_ref().ok_or_else(|| {
+                        BridgeError::Generic("External RPC config not found".to_string())
+                    })?;
+                    let ok = check_solana_txn(chain_id, tx_hash, whitelist, sol_amount, false, &external_rpc.solana).await;
                     if ok {
                         return Ok(action_rs);
                     }
@@ -399,8 +435,85 @@ where
             }
             return Ok(action_rs);
         }
-        //todo: mofei fix the error
-        Err(BridgeError::ActionIsNotGovernanceAction(action_rs))
+        if let BridgeAction::SolanaSendBackBridgeAction(ref send_back_action) = action_rs {
+            let tx_hash_bytes = send_back_action.sui_bridge_event.tx_hash.to_vec();
+            let event_idx = send_back_action.sui_bridge_event.event_idx;
+
+            let base_url = self.solana_base_url.as_ref().ok_or_else(|| {
+                BridgeError::Generic("Solana base URL not found".to_string())
+            })?;
+            let solana_client = SolanaClient::new(base_url);
+
+            // tx_hash 字段在 Solana send-back 事件里承载原始 Solana tx signature（bytes）。
+            // 优先按 UTF-8 解析（兼容直接存字符串），失败则 fallback 到 base58。
+            let mut tx_signature = std::str::from_utf8(&tx_hash_bytes)
+                .map(|s| s.trim().to_string())
+                .unwrap_or_else(|_| bs58::encode(&tx_hash_bytes).into_string());
+            if tx_signature.is_empty() {
+                tx_signature = bs58::encode(&tx_hash_bytes).into_string();
+            }
+
+            let action = solana_client
+                .get_bridge_action_maybe(&tx_signature, event_idx)
+                .await
+                .tap_ok(|action| info!("Solana action found: {:?}", action))?;
+
+            if action.action_type() != BridgeActionType::TokenTransfer {
+                return Err(BridgeError::Generic(format!(
+                    "Expected SolanaToSuiBridgeAction, got {:?}",
+                    action.action_type()
+                )));
+            }
+            if let BridgeAction::SolanaToSuiBridgeAction(ref solana_to_sui_action) = action {
+                if solana_to_sui_action.solana_bridge_event.sui_adjusted_amount
+                    != send_back_action.sui_bridge_event.amount_sui_adjusted
+                {
+                    return Err(BridgeError::Generic(format!(
+                        "Amount mismatch: expected {}, got {}",
+                        send_back_action.sui_bridge_event.amount_sui_adjusted,
+                        solana_to_sui_action.solana_bridge_event.sui_adjusted_amount
+                    )));
+                }
+                if solana_to_sui_action.solana_bridge_event.token_id
+                    != send_back_action.sui_bridge_event.token_id
+                {
+                    return Err(BridgeError::Generic(format!(
+                        "Token ID mismatch: expected {}, got {}",
+                        send_back_action.sui_bridge_event.token_id,
+                        solana_to_sui_action.solana_bridge_event.token_id
+                    )));
+                }
+                if solana_to_sui_action.solana_bridge_event.solana_chain_id
+                    != send_back_action.sui_bridge_event.solana_chain_id
+                {
+                    return Err(BridgeError::Generic(format!(
+                        "Solana chain ID mismatch: expected {:?}, got {:?}",
+                        send_back_action.sui_bridge_event.solana_chain_id,
+                        solana_to_sui_action.solana_bridge_event.solana_chain_id
+                    )));
+                }
+                if solana_to_sui_action.solana_bridge_event.solana_address
+                    != send_back_action.sui_bridge_event.solana_address
+                {
+                    return Err(BridgeError::Generic(format!(
+                        "Target address mismatch: expected {}, got {}",
+                        send_back_action.sui_bridge_event.solana_address,
+                        solana_to_sui_action.solana_bridge_event.solana_address
+                    )));
+                }
+            } else {
+                return Err(BridgeError::Generic(format!(
+                    "Expected SolanaToSuiBridgeAction, got {:?}",
+                    action.action_type()
+                )));
+            }
+
+            return Ok(action_rs);
+        }
+        Err(BridgeError::Generic(format!(
+            "Expected EthSendBackBridgeAction or SolanaSendBackBridgeAction, got {:?}",
+            action_rs.action_type()
+        )))
     }
 }
 
@@ -443,6 +556,7 @@ where
                     .recv()
                     .await
                     .unwrap_or_else(|| panic!("Server signer's channel is closed"));
+                info!("bbking100 recv message from channel");
                 let result = self.sign(key).await;
                 // The receiver may be dropped before the sender (client connection was dropped for example),
                 // we ignore the error in that case.
@@ -482,20 +596,32 @@ where
         match verifier.verify(key.clone()).await {
             Ok(bridge_action) => {
                 let bridge_action = if bridge_action.is_stable_coin() {
-                    let action_inner = match bridge_action {
+                    match bridge_action {
                         BridgeAction::EthToSuiBridgeAction(action_inner) => {
-                            action_inner
+                            let action = EthToSuiBridgeAction {
+                                eth_tx_hash: action_inner.eth_tx_hash,
+                                eth_event_index: action_inner.eth_event_index,
+                                eth_bridge_event: EthToSuiTokenBridgeV1::try_from(
+                                    &action_inner.eth_bridge_event,
+                                )
+                                .unwrap(),
+                            };
+                            BridgeAction::EthToSuiBridgeAction(action)
+                        }
+                        BridgeAction::SolanaToSuiBridgeAction(action_inner) => {
+                            BridgeAction::SolanaToSuiBridgeAction(crate::types::SolanaToSuiBridgeAction {
+                                solana_tx_signature: action_inner.solana_tx_signature,
+                                solana_event_index: action_inner.solana_event_index,
+                                solana_bridge_event: crate::types::SolanaToSuiTokenBridgeV1::try_from(
+                                    &action_inner.solana_bridge_event,
+                                )
+                                .unwrap(),
+                            })
                         }
                         _ => {
                             return Err(BridgeError::Generic("Not a stable coin".to_string()));
                         }
-                    };
-                    let action = EthToSuiBridgeAction {
-                        eth_tx_hash: action_inner.eth_tx_hash,
-                        eth_event_index: action_inner.eth_event_index,
-                        eth_bridge_event: EthToSuiTokenBridgeV1::try_from(&action_inner.eth_bridge_event).unwrap(),
-                    };
-                    BridgeAction::EthToSuiBridgeAction(action)
+                    }
                 } else {
                     bridge_action
                 };
@@ -552,6 +678,10 @@ pub struct BridgeRequestHandler {
         (u8, TxHash, u16, u8),
         oneshot::Sender<BridgeResult<SignedBridgeAction>>,
     )>,
+    solana_signer_tx: mysten_metrics::metered_channel::Sender<(
+        (u8, String, u16, u8),
+        oneshot::Sender<BridgeResult<SignedBridgeAction>>,
+    )>,
     governance_signer_tx: mysten_metrics::metered_channel::Sender<(
         BridgeAction,
         oneshot::Sender<BridgeResult<SignedBridgeAction>>,
@@ -570,7 +700,11 @@ impl BridgeRequestHandler {
         approved_governance_actions: Vec<BridgeAction>,
         metrics: Arc<BridgeMetrics>,
         fast_path_config: FastPathConfig,
+        external_rpc: Option<crate::config::ExternalChainRpcConfig>,
+        solana_base_url: Option<String>,// for decentralization request
     ) -> Self {
+        let external_rpc = external_rpc.map(Arc::new);
+        info!("bbking100 external_rpc: {:?}", external_rpc);
         let (sui_signer_tx, sui_rx) = mysten_metrics::metered_channel::channel(
             1000,
             &mysten_metrics::get_metrics()
@@ -592,6 +726,16 @@ impl BridgeRequestHandler {
                 .unwrap()
                 .channel_inflight
                 .with_label_values(&["server_eth_action_signing_queue"]),
+        );
+        let (solana_signer_tx, solana_rx) = mysten_metrics::metered_channel::channel::<(
+            (u8, String, u16, u8),
+            oneshot::Sender<BridgeResult<SignedBridgeAction>>,
+        )>(
+            1000,
+            &mysten_metrics::get_metrics()
+                .unwrap()
+                .channel_inflight
+                .with_label_values(&["server_solana_action_signing_queue"]),
         );
         let (external_coin_signer_tx, external_coin_rx) = mysten_metrics::metered_channel::channel(
             1000,
@@ -623,6 +767,7 @@ impl BridgeRequestHandler {
             signer.clone(),
             ExternalCoinVerifier {
                 sui_client: sui_client.clone(),
+                external_rpc: external_rpc.clone(),
             },
             metrics.clone(),
         )
@@ -638,6 +783,28 @@ impl BridgeRequestHandler {
             metrics.clone(),
         )
             .spawn(eth_rx);
+
+        if let Some(solana_base_url) = solana_base_url.clone() {
+            let solana_client = Arc::new(SolanaClient::new(&solana_base_url));
+            SignerWithCache::new(
+                signer.clone(),
+                SolanaActionVerifier { solana_client },
+                metrics.clone(),
+            )
+            .spawn(solana_rx);
+        } else {
+            // If Solana RPC config is missing, we still keep the channel, but requests will error.
+            // This avoids panics in environments that do not enable Solana.
+            tokio::spawn(async move {
+                let mut solana_rx = solana_rx;
+                while let Some((_, resp)) = solana_rx.recv().await {
+                    let _ = resp.send(Err(BridgeError::Generic(
+                        "Solana RPC config not found".to_string(),
+                    )));
+                }
+            });
+        }
+
         SignerWithCache::new(
             signer.clone(),
             GovernanceVerifier::new(approved_governance_actions).unwrap(),
@@ -652,6 +819,7 @@ impl BridgeRequestHandler {
                 eth_client: eth_client.clone(),
                 evm_clients: evm_clients.clone(),
                 fast_path_config: fast_path_config.clone(),
+                solana_base_url: solana_base_url.clone(),
             },
             metrics.clone(),
         )
@@ -662,8 +830,42 @@ impl BridgeRequestHandler {
             external_coin_signer_tx,
             send_back_signer_tx,
             eth_signer_tx,
+            solana_signer_tx,
             governance_signer_tx,
         }
+    }
+}
+
+#[async_trait::async_trait]
+impl ActionVerifier<(u8, String, u16, u8)> for SolanaActionVerifier {
+    fn name(&self) -> &'static str {
+        "SolanaActionVerifier"
+    }
+
+    async fn verify(&self, key: (u8, String, u16, u8)) -> BridgeResult<BridgeAction> {
+        let (chain_id, tx_signature, event_idx, fast_path_selector) = key;
+        info!("bbking100 verify solana action, chain_id: {:?}, tx_signature: {:?}, event_idx: {:?}, fast_path_selector: {:?}", chain_id, tx_signature, event_idx, fast_path_selector);
+        let bridge_chain_id = BridgeChainId::try_from(chain_id)?;
+        if !bridge_chain_id.is_solana_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Invalid chain id for SolanaActionVerifier: {:?}",
+                bridge_chain_id
+            )));
+        }
+
+        let mut action = self
+            .solana_client
+            .get_bridge_action_maybe(&tx_signature, event_idx)
+            .await
+            .tap_ok(|action| info!("Solana action found: {:?}", action))?;
+
+        if let BridgeAction::SolanaToSuiBridgeAction(ref mut inner) = action {
+            inner.solana_bridge_event.set_fast_path_selector(
+                FastPathSelector::try_from_primitive(fast_path_selector).unwrap(),
+            );
+        }
+
+        Ok(action)
     }
 }
 
@@ -683,6 +885,25 @@ impl BridgeRequestHandlerTrait for BridgeRequestHandler {
             .send(((chain_id, tx_hash, event_idx, fast_path_selector), tx))
             .await
             .unwrap_or_else(|_| panic!("Server eth signing channel is closed"));
+        let signed_action = rx
+            .await
+            .unwrap_or_else(|_| panic!("Server signing task's oneshot channel is dropped"))?;
+        Ok(Json(signed_action))
+    }
+
+    async fn handle_solana_tx_signature(
+        &self,
+        chain_id: u8,
+        tx_signature: String,
+        event_idx: u16,
+        fast_path_selector: u8,
+    ) -> Result<Json<SignedBridgeAction>, BridgeError> {
+        info!("bbking100 handle_solana_tx_signature: {:?}", tx_signature);
+        let (tx, rx) = oneshot::channel();
+        self.solana_signer_tx
+            .send(((chain_id, tx_signature, event_idx, fast_path_selector), tx))
+            .await
+            .unwrap_or_else(|_| panic!("Server solana signing channel is closed"));
         let signed_action = rx
             .await
             .unwrap_or_else(|_| panic!("Server signing task's oneshot channel is dropped"))?;
@@ -1065,6 +1286,7 @@ mod tests {
         let sui_client_mock = SuiMockClient::default();
         let external_verifier = ExternalCoinVerifier {
             sui_client: Arc::new(SuiClient::new_for_testing(sui_client_mock.clone())),
+            external_rpc: None,
         };
         let metrics: Arc<BridgeMetrics> = Arc::new(BridgeMetrics::new_for_testing());
         let mut external_signer_with_cache =

@@ -28,6 +28,10 @@ pub struct BridgeOrchestratorTables {
     pub(crate) sui_syncer_cursors: DBMap<Identifier, EventID>,
     /// contract address to the last processed block
     pub(crate) eth_syncer_cursors: DBMap<EthSyncerCursorsKey, u64>,
+    /// Solana contract address to the last processed signature
+    pub(crate) solana_signature_cursors: DBMap<String, String>,
+    /// Solana contract address to the last processed slot (for resilience if signature is pruned)
+    pub(crate) solana_slot_cursors: DBMap<String, u64>,
     /// pending actions that are waiting for aml check
     pub(crate) pending_aml_checked_actions: DBMap<BridgeActionDigest, BridgeAction>,
 }
@@ -237,6 +241,156 @@ impl BridgeOrchestratorTables {
                 BridgeError::StorageError(format!("Couldn't get sui_syncer_cursors: {:?}", e))
             })
     }
+
+    pub(crate) fn update_solana_signature_cursor(
+        &self,
+        key: String,
+        sig: String,
+    ) -> BridgeResult<()> {
+        let mut batch = self.solana_signature_cursors.batch();
+        batch
+            .insert_batch(&self.solana_signature_cursors, [(key, sig)])
+            .map_err(|e| {
+                BridgeError::StorageError(format!(
+                    "Coudln't insert into solana_signature_cursors: {:?}",
+                    e
+                ))
+            })?;
+        batch
+            .write()
+            .map_err(|e| BridgeError::StorageError(format!("Couldn't write batch: {:?}", e)))
+    }
+
+    pub fn get_solana_signature_cursors(
+        &self,
+        keys: &[String],
+    ) -> BridgeResult<Vec<Option<String>>> {
+        self.solana_signature_cursors.multi_get(keys).map_err(|e| {
+            BridgeError::StorageError(format!("Couldn't get solana_signature_cursors: {:?}", e))
+        })
+    }
+
+    pub(crate) fn update_solana_slot_cursor(
+        &self,
+        key: String,
+        slot: u64,
+    ) -> BridgeResult<()> {
+        let mut batch = self.solana_slot_cursors.batch();
+        batch
+            .insert_batch(&self.solana_slot_cursors, [(key, slot)])
+            .map_err(|e| {
+                BridgeError::StorageError(format!(
+                    "Couldn't insert into solana_slot_cursors: {:?}",
+                    e
+                ))
+            })?;
+        batch
+            .write()
+            .map_err(|e| BridgeError::StorageError(format!("Couldn't write batch: {:?}", e)))
+    }
+
+    pub fn get_solana_slot_cursors(
+        &self,
+        keys: &[String],
+    ) -> BridgeResult<Vec<Option<u64>>> {
+        self.solana_slot_cursors.multi_get(keys).map_err(|e| {
+            BridgeError::StorageError(format!("Couldn't get solana_slot_cursors: {:?}", e))
+        })
+    }
+
+    /// Atomically insert pending AML actions and update Solana cursors.
+    /// This ensures that either all operations succeed or none do,
+    /// preventing inconsistent state during crash recovery.
+    pub(crate) fn insert_pending_aml_actions_and_update_solana_cursors(
+        &self,
+        actions: &[BridgeAction],
+        address: String,
+        signature: Option<String>,
+        slot: Option<u64>,
+    ) -> BridgeResult<()> {
+        let mut batch = self.pending_aml_checked_actions.batch();
+
+        // Insert pending AML actions
+        if !actions.is_empty() {
+            batch
+                .insert_batch(
+                    &self.pending_aml_checked_actions,
+                    actions.iter().map(|a| (a.digest(), a)),
+                )
+                .map_err(|e| {
+                    BridgeError::StorageError(format!(
+                        "Couldn't insert into pending_aml_checked_actions: {:?}",
+                        e
+                    ))
+                })?;
+        }
+
+        // Update signature cursor
+        if let Some(sig) = signature {
+            batch
+                .insert_batch(&self.solana_signature_cursors, [(address.clone(), sig)])
+                .map_err(|e| {
+                    BridgeError::StorageError(format!(
+                        "Couldn't insert into solana_signature_cursors: {:?}",
+                        e
+                    ))
+                })?;
+        }
+
+        // Update slot cursor
+        if let Some(s) = slot {
+            batch
+                .insert_batch(&self.solana_slot_cursors, [(address, s)])
+                .map_err(|e| {
+                    BridgeError::StorageError(format!(
+                        "Couldn't insert into solana_slot_cursors: {:?}",
+                        e
+                    ))
+                })?;
+        }
+
+        batch
+            .write()
+            .map_err(|e| BridgeError::StorageError(format!("Couldn't write batch: {:?}", e)))
+    }
+
+    /// Atomically update Solana cursors only (for empty event batches).
+    pub(crate) fn update_solana_cursors(
+        &self,
+        address: String,
+        signature: Option<String>,
+        slot: Option<u64>,
+    ) -> BridgeResult<()> {
+        let mut batch = self.solana_signature_cursors.batch();
+
+        // Update signature cursor
+        if let Some(sig) = signature {
+            batch
+                .insert_batch(&self.solana_signature_cursors, [(address.clone(), sig)])
+                .map_err(|e| {
+                    BridgeError::StorageError(format!(
+                        "Couldn't insert into solana_signature_cursors: {:?}",
+                        e
+                    ))
+                })?;
+        }
+
+        // Update slot cursor
+        if let Some(s) = slot {
+            batch
+                .insert_batch(&self.solana_slot_cursors, [(address, s)])
+                .map_err(|e| {
+                    BridgeError::StorageError(format!(
+                        "Couldn't insert into solana_slot_cursors: {:?}",
+                        e
+                    ))
+                })?;
+        }
+
+        batch
+            .write()
+            .map_err(|e| BridgeError::StorageError(format!("Couldn't write batch: {:?}", e)))
+    }
 }
 
 #[cfg(test)]
@@ -350,6 +504,154 @@ mod tests {
         assert_eq!(
             store.get_sui_event_cursors(&[sui_module.clone()]).unwrap()[0].unwrap(),
             sui_cursor
+        );
+    }
+
+    #[tokio::test]
+    async fn test_solana_atomic_operations() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let store = BridgeOrchestratorTables::new(temp_dir.path());
+
+        let action1 = get_test_sui_to_eth_bridge_action(
+            None,
+            Some(0),
+            Some(99),
+            Some(10000),
+            None,
+            None,
+            None,
+        );
+
+        let action2 = get_test_sui_to_eth_bridge_action(
+            None,
+            Some(2),
+            Some(100),
+            Some(10000),
+            None,
+            None,
+            None,
+        );
+
+        let address = "SolanaAddress123".to_string();
+        let signature = "sig_abc123".to_string();
+        let slot = 12345u64;
+
+        // Test atomic insert with actions and cursors
+        store
+            .insert_pending_aml_actions_and_update_solana_cursors(
+                &[action1.clone(), action2.clone()],
+                address.clone(),
+                Some(signature.clone()),
+                Some(slot),
+            )
+            .unwrap();
+
+        // Verify actions were inserted
+        let pending_actions = store.get_all_pending_actions_4_aml();
+        assert_eq!(pending_actions.len(), 2);
+        assert!(pending_actions.contains_key(&action1.digest()));
+        assert!(pending_actions.contains_key(&action2.digest()));
+
+        // Verify cursors were updated
+        assert_eq!(
+            store.get_solana_signature_cursors(&[address.clone()]).unwrap()[0],
+            Some(signature.clone())
+        );
+        assert_eq!(
+            store.get_solana_slot_cursors(&[address.clone()]).unwrap()[0],
+            Some(slot)
+        );
+
+        // Test update_solana_cursors (without actions)
+        let new_signature = "sig_def456".to_string();
+        let new_slot = 12346u64;
+        store
+            .update_solana_cursors(
+                address.clone(),
+                Some(new_signature.clone()),
+                Some(new_slot),
+            )
+            .unwrap();
+
+        // Verify cursors were updated
+        assert_eq!(
+            store.get_solana_signature_cursors(&[address.clone()]).unwrap()[0],
+            Some(new_signature)
+        );
+        assert_eq!(
+            store.get_solana_slot_cursors(&[address.clone()]).unwrap()[0],
+            Some(new_slot)
+        );
+
+        // Test with empty actions (should still update cursors)
+        let final_signature = "sig_ghi789".to_string();
+        let final_slot = 12347u64;
+        store
+            .insert_pending_aml_actions_and_update_solana_cursors(
+                &[],
+                address.clone(),
+                Some(final_signature.clone()),
+                Some(final_slot),
+            )
+            .unwrap();
+
+        // Verify cursors were updated even with empty actions
+        assert_eq!(
+            store.get_solana_signature_cursors(&[address.clone()]).unwrap()[0],
+            Some(final_signature)
+        );
+        assert_eq!(
+            store.get_solana_slot_cursors(&[address.clone()]).unwrap()[0],
+            Some(final_slot)
+        );
+
+        // Verify actions count unchanged
+        let pending_actions = store.get_all_pending_actions_4_aml();
+        assert_eq!(pending_actions.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_solana_cursors_partial_update() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let store = BridgeOrchestratorTables::new(temp_dir.path());
+
+        let address = "SolanaAddress456".to_string();
+
+        // Test with only signature (no slot)
+        store
+            .update_solana_cursors(
+                address.clone(),
+                Some("sig_only".to_string()),
+                None,
+            )
+            .unwrap();
+
+        assert_eq!(
+            store.get_solana_signature_cursors(&[address.clone()]).unwrap()[0],
+            Some("sig_only".to_string())
+        );
+        assert_eq!(
+            store.get_solana_slot_cursors(&[address.clone()]).unwrap()[0],
+            None
+        );
+
+        // Test with only slot (no signature)
+        let address2 = "SolanaAddress789".to_string();
+        store
+            .update_solana_cursors(
+                address2.clone(),
+                None,
+                Some(99999),
+            )
+            .unwrap();
+
+        assert_eq!(
+            store.get_solana_signature_cursors(&[address2.clone()]).unwrap()[0],
+            None
+        );
+        assert_eq!(
+            store.get_solana_slot_cursors(&[address2.clone()]).unwrap()[0],
+            Some(99999)
         );
     }
 }

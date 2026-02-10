@@ -18,15 +18,17 @@ module bridge::bridge_env {
         get_cross_in_fee_amount,
         Bridge,
         EmergencyOpEvent,
-        TokenDepositedEventV2,
         ExternalDepositedEventV2,
         TokenSendBackEventV2,
+        TokenSendBackEventForSolanaV2,
         TokenTransferAlreadyApproved,
         TokenTransferAlreadyClaimed,
         TokenTransferApproved,
         TokenTransferClaimed,
         TokenTransferLimitExceed,
         ExternalWithdrawEventV2,
+        // ExternalDepositedEvent,
+        ExternalWithdrawEventV3,
         ExternalBridgeRecord,
         ExternalDepositedApprovedEvent,
     };
@@ -36,7 +38,7 @@ module bridge::bridge_env {
     use bridge::chain_ids;
     use bridge::committee::BlocklistValidatorEvent;
     use bridge::eth::{Self, ETH};
-    use bridge::limiter::UpdateRouteLimitEvent;
+    use bridge::limiter::{Self, UpdateRouteLimitEvent};
     use bridge::message::{
         Self,
         BridgeMessage,
@@ -86,6 +88,8 @@ module bridge::bridge_env {
     use sui::hex;
     use bridge::limiter_fast_path;
     use sui_system::sui_system::{validator_voting_powers_for_testing, SuiSystemState};
+    use bridge::bridge::TokenDepositedEventV3;
+    use bridge::bridge::TokenDepositedEventForSolanaV3;
 
     //
     // Token IDs
@@ -236,6 +240,10 @@ module bridge::bridge_env {
         &mut wrapper.bridge
     }
 
+    public fun clock(env: &BridgeEnv): &Clock {
+        &env.clock
+    }
+
     public fun return_bridge(bridge: BridgeWrapper) {
         let BridgeWrapper { bridge } = bridge;
         test_scenario::return_shared(bridge);
@@ -365,7 +373,16 @@ module bridge::bridge_env {
         let ctx = env.scenario.ctx();
         bridge.init_token_list(ctx);
         //add center token list
-        bridge.migrate(ctx);
+        bridge.test_migrate(ctx);
+        test_scenario::return_shared(bridge);
+    }
+
+    public fun init_external_limiter(env: &mut BridgeEnv, sender: address) {
+        let scenario = &mut env.scenario;
+        scenario.next_tx(sender);
+        let mut bridge = scenario.take_shared<Bridge>();
+        let uid = bridge.test_load_mut_uid();
+        limiter::initial_external_24h_limits(uid);
         test_scenario::return_shared(bridge);
     }
 
@@ -1138,21 +1155,25 @@ module bridge::bridge_env {
 
         // withdraw coin
         env.scenario.next_tx(address::from_bytes(target_address));
+        let clock = sui::clock::create_for_testing(env.scenario.ctx());
         withdraw_external_coin_for_testing<T>(
             &mut bridge,
             source_chain,
             source_address,
             token,
+            &clock,
             env.scenario.ctx(),
         );
+        sui::clock::destroy_for_testing(clock);
 
         let fee=get_cross_out_fee_amount<T>(&bridge,source_chain as u64,amount);
         assert!(amount>fee,1);
-        let withdraw = event::events_by_type<ExternalWithdrawEventV2>();
+        let withdraw = event::events_by_type<ExternalWithdrawEventV3>();
         assert!(withdraw.length() == 1);
         {
             debug::print(&withdraw);
             let (
+                _event_origin_token_type,
                 event_token_type,
                 event_source_chain,
                 event_target_chain,
@@ -1160,7 +1181,7 @@ module bridge::bridge_env {
                 event_target_address,
                 event_amount_before_fee,
                 event_amount_after_fee,
-            ) = withdraw[0].unwrap_external_withdrawn_v2_event();
+            ) = withdraw[0].unwrap_external_withdrawn_v3_event();
             assert!(event_token_type == token_type);
             assert!(event_source_chain == env.chain_id );
             assert!(event_target_chain == source_chain);
@@ -1459,12 +1480,14 @@ module bridge::bridge_env {
         target_chain: u8,
         target_address: vector<u8>,
         token: Coin<T>,
+        clock: &Clock,
         ctx: &mut TxContext
      ) {
-        bridge.withdraw_external_coin<T>(
+        bridge.withdraw_external_coin_v2<T>(
             target_chain,
             target_address,
             token,
+            clock,
             ctx,
         );
      }
@@ -1571,21 +1594,25 @@ module bridge::bridge_env {
         );
 
         // withdraw coin
+        let clock = sui::clock::create_for_testing(scenario.ctx());
         withdraw_external_coin_for_testing<T>(
             &mut bridge,
             source_chain,
             source_address,
             token,
+            &clock,
             scenario.ctx(),
         );
+        sui::clock::destroy_for_testing(clock);
 
         let fee=get_cross_out_fee_amount<T>(&bridge,source_chain as u64,amount);
         assert!(amount>fee,1);
 
-        let withdraw = event::events_by_type<ExternalWithdrawEventV2>();
+        let withdraw = event::events_by_type<ExternalWithdrawEventV3>();
         assert!(withdraw.length() == 1);
         debug::print(&withdraw);
         let (
+            _event_origin_token_type,
             event_token_type,
             event_source_chain,
             event_target_chain,
@@ -1593,7 +1620,7 @@ module bridge::bridge_env {
             event_target_address,
             event_amount_before_fee,
             event_amount_after_fee,
-        ) = withdraw[0].unwrap_external_withdrawn_v2_event();
+        ) = withdraw[0].unwrap_external_withdrawn_v3_event();
         assert!(event_token_type == token_type);
         assert!(event_source_chain == target_chain );
         assert!(event_target_chain == source_chain);
@@ -1665,20 +1692,41 @@ module bridge::bridge_env {
         assert!(
             total_supply_before - coin_value == get_total_supply<T>(&bridge),
         );
-        let deposited_events = event::events_by_type<TokenDepositedEventV2>();
-        assert!(deposited_events.length() == 1);
-        let (
-            event_seq_num,
-            _event_source_chain,
-            _event_sender_address,
-            _event_target_chain,
-            _event_target_address,
-            _event_token_type,
-            event_amount_before_fee,
-            _event_amount_after_fee
-        ) = deposited_events[0].unwrap_deposited_event_v2();
-        assert!(event_seq_num == seq_num);
-        assert!(event_amount_before_fee == coin_value);
+        if (target_chain_id == chain_ids::solana_testnet() || target_chain_id == chain_ids::solana_mainnet()) {
+            let deposited_events = event::events_by_type<TokenDepositedEventForSolanaV3>();
+            assert!(deposited_events.length() == 1);
+            let (
+                event_seq_num,
+                _event_source_chain,
+                _event_sender_address,
+                _event_target_chain,
+                _event_target_address,
+                _event_token_type,
+                _event_origin_token_type,
+                event_amount_before_fee,
+                event_amount_after_fee
+            ) = deposited_events[0].unwrap_deposited_event_for_solana_v3();
+            assert!(event_seq_num == seq_num);
+            assert!(event_amount_before_fee == coin_value);
+            assert!(event_amount_after_fee == coin_value);
+        } else {
+            let deposited_events = event::events_by_type<TokenDepositedEventV3>();
+            assert!(deposited_events.length() == 1);
+            let (
+                event_seq_num,
+                _event_source_chain,
+                _event_sender_address,
+                _event_target_chain,
+                _event_target_address,
+                _event_token_type,
+                _event_origin_token_type,
+                event_amount_before_fee,
+                event_amount_after_fee
+            ) = deposited_events[0].unwrap_deposited_event_v3();
+            assert!(event_seq_num == seq_num);
+            assert!(event_amount_before_fee == coin_value);
+            assert!(event_amount_after_fee == coin_value);
+        };
         assert_key(chain_id, &bridge);
 
         // tear down
@@ -1705,21 +1753,39 @@ module bridge::bridge_env {
         // run send
         bridge.send_back_token_v2(target_chain_id, eth_address,token_type, amount, tx_hash, 0u16, scenario.ctx());
         // verify send events
-        let send_back_events = event::events_by_type<TokenSendBackEventV2>();
-        assert!(send_back_events.length() == 1);
-        let (
-            event_seq_num,
-            _event_source_chain,
-            _event_sender_address,
-            _event_target_chain,
-            _event_target_address,
-            _event_token_type,
-            event_amount,
-            event_tx_hash,
-        ) = send_back_events[0].unwrap_send_back_event_v2();
-        assert!(event_seq_num == seq_num);
-        assert!(event_amount == 100);
-        assert!(event_tx_hash == tx_hash);
+        if (target_chain_id == chain_ids::solana_testnet() || target_chain_id == chain_ids::solana_mainnet()) {
+            let send_back_events = event::events_by_type<TokenSendBackEventForSolanaV2>();
+            assert!(send_back_events.length() == 1);
+            let (
+                event_seq_num,
+                _event_source_chain,
+                _event_sender_address,
+                _event_target_chain,
+                _event_target_address,
+                _event_token_type,
+                event_amount,
+                event_tx_hash,
+            ) = send_back_events[0].unwrap_send_back_event_for_solana_v2();
+            assert!(event_seq_num == seq_num);
+            assert!(event_amount == amount);
+            assert!(event_tx_hash == tx_hash);
+        } else {
+            let send_back_events = event::events_by_type<TokenSendBackEventV2>();
+            assert!(send_back_events.length() == 1);
+            let (
+                event_seq_num,
+                _event_source_chain,
+                _event_sender_address,
+                _event_target_chain,
+                _event_target_address,
+                _event_token_type,
+                event_amount,
+                event_tx_hash,
+            ) = send_back_events[0].unwrap_send_back_event_v2();
+            assert!(event_seq_num == seq_num);
+            assert!(event_amount == amount);
+            assert!(event_tx_hash == tx_hash);
+        };
         assert_key(chain_id, &bridge);
 
         // tear down
@@ -2154,7 +2220,7 @@ module bridge::bridge_env {
     // Mint some coins
     fun mint_some<T>(bridge: &mut Bridge, ctx: &mut TxContext): Coin<T> {
         let treasury = bridge.test_load_inner_mut().inner_treasury_mut();
-        let coin = treasury.mint<T>(1_000_000_000, ctx);
+        let coin = treasury.mint<T>(1_000_000_000_000_000, ctx);
         coin
     }
 

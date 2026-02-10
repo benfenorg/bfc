@@ -390,10 +390,13 @@ where
         match &action {
             BridgeAction::ExternalDepositStartBridgeAction(_)
             | BridgeAction::SuiToEthBridgeAction(_)
+            | BridgeAction::SuiToSolanaBridgeAction(_)
             | BridgeAction::EthToSuiBridgeAction(_)
             | BridgeAction::EthSendBackBridgeAction(_)
             | BridgeAction::SuiToEthDefiBridgeAction(_)
-            | BridgeAction::EthToSuiDefiBridgeAction(_) => (),
+            | BridgeAction::EthToSuiDefiBridgeAction(_)
+            | BridgeAction::SolanaToSuiBridgeAction(_) => (),
+            | BridgeAction::SolanaSendBackBridgeAction(_) => (),
             _ => unreachable!("Non token transfer action should not reach here"),
         };
 
@@ -670,6 +673,7 @@ where
                 //     "Expected TokenTransferAlreadyClaimed, TokenTransferClaimed, TokenTransferApproved or TokenTransferAlreadyApproved event but got: {:?}",
                 //     events,
                 //     );
+                info!("Sui transaction effects: {:?}", effects);
                 info!(?tx_digest, "Sui transaction executed successfully");
                 // track successful approval and claim events
                 relevant_events.iter().for_each(|e| {
@@ -756,9 +760,20 @@ pub async fn submit_to_executor(
                 .await
                 .map_err(|e| BridgeError::Generic(e.to_string()))
             },
-            _ => {
-                return Err(BridgeError::Generic("Not a stable coin".to_string()));
+            BridgeAction::SolanaToSuiBridgeAction(action_inner) => {
+                let action = crate::types::SolanaToSuiBridgeAction {
+                    solana_tx_signature: action_inner.solana_tx_signature,
+                    solana_event_index: action_inner.solana_event_index,
+                    solana_bridge_event: crate::types::SolanaToSuiTokenBridgeV1::try_from(
+                        &action_inner.solana_bridge_event,
+                    )
+                    .unwrap(),
+                };
+                tx.send(BridgeActionExecutionWrapper(BridgeAction::SolanaToSuiBridgeAction(action), retry_times_count))
+                    .await
+                    .map_err(|e| BridgeError::Generic(e.to_string()))
             }
+            _ => Err(BridgeError::Generic("Not a stable coin".to_string())),
         }
     }else{
         tx.send(BridgeActionExecutionWrapper(action, retry_times_count))
@@ -1762,7 +1777,8 @@ mod tests {
 
         let (executor_handle, signing_tx, execution_tx) = executor.run_inner();
         let aml_key = "".to_string();
-        let aml_checker = AMLChecker::new(store.clone(), sui_client.clone(), sui_address, gas_object_ref.0, sui_key.copy(), metrics.clone(),aml_key).await;
+        let aml_block_list = vec![];
+        let aml_checker = AMLChecker::new(store.clone(), sui_client.clone(), sui_address, gas_object_ref.0, sui_key.copy(), metrics.clone(),aml_key,aml_block_list.clone()).await;
         let (aml_checker_handle, aml_checker_tx) = aml_checker.run(signing_tx.clone());
         handles.extend(executor_handle);
         handles.extend(aml_checker_handle);

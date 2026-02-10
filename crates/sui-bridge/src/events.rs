@@ -13,7 +13,10 @@ use crate::error::BridgeError;
 use crate::error::BridgeResult;
 use crate::types::BridgeAction;
 use crate::types::EthSendBackBridgeAction;
+use crate::types::SolanaSendBackBridgeAction;
 use crate::types::SuiToEthBridgeAction;
+use crate::types::SuiToSolanaBridgeAction;
+use solana_sdk::pubkey::Pubkey;
 use crate::types::ExternalDepositStartBridgeAction;
 use crate::types::SuiToEthDefiBridgeAction;
 use ethers::types::Address as EthAddress;
@@ -56,6 +59,45 @@ pub struct MoveTokenDepositedEventV2 {
     pub target_chain: u8,
     pub target_address: Vec<u8>,
     pub token_type: u64,
+    pub amount_before_fee: u64,
+    pub amount_after_fee: u64,
+}
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+// `TokenDepositedEventV3` emitted in bridge.move
+pub struct MoveTokenDepositedEventV3 {
+    pub seq_num: u64,
+    pub source_chain: u8,
+    pub sender_address: Vec<u8>,
+    pub target_chain: u8,
+    pub target_address: Vec<u8>,
+    pub token_type: u64,
+    pub origin_token_type: u64,
+    pub amount_before_fee: u64,
+    pub amount_after_fee: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+// `TokenDepositedEventForSolanaV2` emitted in bridge.move
+pub struct MoveTokenDepositedEventForSolanaV2 {
+    pub seq_num: u64,
+    pub source_chain: u8,
+    pub sender_address: Vec<u8>,
+    pub target_chain: u8,
+    pub target_address: Vec<u8>,
+    pub token_type: u64,
+    pub amount_before_fee: u64,
+    pub amount_after_fee: u64,
+}
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+// `TokenDepositedEventForSolanaV3` emitted in bridge.move
+pub struct MoveTokenDepositedEventForSolanaV3 {
+    pub seq_num: u64,
+    pub source_chain: u8,
+    pub sender_address: Vec<u8>,
+    pub target_chain: u8,
+    pub target_address: Vec<u8>,
+    pub token_type: u64,
+    pub origin_token_type: u64,
     pub amount_before_fee: u64,
     pub amount_after_fee: u64,
 }
@@ -125,7 +167,18 @@ pub struct MoveTokenSendBackEventV2 {
     pub tx_hash: Vec<u8>,
     pub event_idx: u16,
 }
-
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct MoveTokenSendBackEventForSolanaV2 {
+    pub seq_num: u64,
+    pub source_chain: u8,
+    pub sender_address: Vec<u8>,
+    pub target_chain: u8,
+    pub target_address: Vec<u8>,
+    pub token_type: u64,
+    pub amount_sui_adjusted: u64,
+    pub tx_hash: Vec<u8>,
+    pub event_idx: u16,
+}
 
 macro_rules! new_move_event {
     ($struct_name:ident, $move_struct_name:ident) => {
@@ -306,6 +359,21 @@ pub struct EmittedSuiToEthTokenBridgeV1 {
     pub event_idx: u16,
 }
 
+// Sanitized version of MoveTokenDepositedEvent for Sui -> Solana transfers
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
+pub struct EmittedSuiToSolanaTokenBridgeV2 {
+    pub nonce: u64,
+    pub sui_chain_id: BridgeChainId,
+    pub solana_chain_id: BridgeChainId,
+    pub sui_address: SuiAddress,
+    pub solana_address: Pubkey,
+    pub token_id: u64,
+    // The amount of tokens deposited with decimal points on Sui side
+    pub amount_sui_adjusted: u64,
+    pub tx_hash: Vec<u8>,
+    pub event_idx: u16,
+}
+
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
 pub struct EmittedSuiToEthDefiBridgeV1 {
     pub nonce: u64,
@@ -363,6 +431,18 @@ pub struct EmittedEthTokenSendBackBridgeV1 {
     pub event_idx: u16,
 }
 
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
+pub struct EmittedSolanaTokenSendBackV2 {
+    pub nonce: u64,
+    pub sui_chain_id: BridgeChainId,
+    pub solana_chain_id: BridgeChainId,
+    pub sui_address: SuiAddress,
+    pub solana_address: Pubkey,
+    pub token_id: u64,
+    pub amount_sui_adjusted: u64,
+    pub tx_hash: Vec<u8>,
+    pub event_idx: u16,
+}
 // Sanitized version of MoveCommitteeUpdateEvent
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct CommitteeUpdate {
@@ -486,6 +566,7 @@ impl TryFrom<MoveTokenDepositedEvent> for EmittedSuiToEthTokenBridgeV1 {
     }
 }
 
+
 impl TryFrom<MoveTokenDepositedEventV2> for EmittedSuiToEthTokenBridgeV1 {
     type Error = BridgeError;
 
@@ -533,6 +614,199 @@ impl TryFrom<MoveTokenDepositedEventV2> for EmittedSuiToEthTokenBridgeV1 {
             eth_chain_id,
             sui_address,
             eth_address,
+            token_id,
+            amount_sui_adjusted: event.amount_after_fee,
+            tx_hash: vec![],
+            event_idx: 0,
+        })
+    }
+}
+
+impl TryFrom<MoveTokenDepositedEventV3> for EmittedSuiToEthTokenBridgeV1 {
+    type Error = BridgeError;
+
+    fn try_from(event: MoveTokenDepositedEventV3) -> BridgeResult<Self> {
+        if event.amount_after_fee == 0 {
+            return Err(BridgeError::ZeroValueBridgeTransfer(format!(
+                "Failed to convert MoveTokenDepositedEventV3 to EmittedSuiToEthTokenBridgeV1. Manual intervention is required. 0 value transfer should not be allowed in Move: {:?}",
+                event,
+            )));
+        }
+
+        let token_id = event.token_type;
+        let sui_chain_id = BridgeChainId::try_from(event.source_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventV3 to EmittedSuiToEthTokenBridgeV1. Failed to convert source chain {} to BridgeChainId",
+                event.token_type,
+            ))
+        })?;
+        let eth_chain_id = BridgeChainId::try_from(event.target_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventV3 to EmittedSuiToEthTokenBridgeV1. Failed to convert target chain {} to BridgeChainId",
+                event.token_type,
+            ))
+        })?;
+        if !sui_chain_id.is_sui_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventV3 to EmittedSuiToEthTokenBridgeV1. Invalid source chain {}",
+                event.source_chain
+            )));
+        }
+        if eth_chain_id.is_sui_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventV3 to EmittedSuiToEthTokenBridgeV1. Invalid target chain {}",
+                event.target_chain
+            )));
+        }
+
+        let sui_address = SuiAddress::from_bytes(event.sender_address)
+            .map_err(|e| BridgeError::Generic(format!("Failed to convert MoveTokenDepositedEventV3 to EmittedSuiToEthTokenBridgeV1. Failed to convert sender_address to SuiAddress: {:?}", e)))?;
+        let eth_address = EthAddress::from_str(&Hex::encode(&event.target_address))?;
+
+        Ok(Self {
+            nonce: event.seq_num,
+            sui_chain_id,
+            eth_chain_id,
+            sui_address,
+            eth_address,
+            token_id,
+            amount_sui_adjusted: event.amount_after_fee,
+            tx_hash: vec![],
+            event_idx: 0,
+        })
+    }
+}
+
+impl TryFrom<MoveTokenDepositedEventForSolanaV2> for EmittedSuiToSolanaTokenBridgeV2 {
+    type Error = BridgeError;
+
+    fn try_from(event: MoveTokenDepositedEventForSolanaV2) -> BridgeResult<Self> {
+        if event.amount_after_fee == 0 {
+            return Err(BridgeError::ZeroValueBridgeTransfer(format!(
+                "Failed to convert MoveTokenDepositedEventForSolanaV2 to EmittedSuiToSolanaTokenBridgeV2. Manual intervention is required. 0 value transfer should not be allowed in Move: {:?}",
+                event,
+            )));
+        }
+
+        let token_id = event.token_type;
+        let sui_chain_id = BridgeChainId::try_from(event.source_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventForSolanaV2 to EmittedSuiToSolanaTokenBridgeV2. Failed to convert source chain {} to BridgeChainId",
+                event.token_type,
+            ))
+        })?;
+        let solana_chain_id = BridgeChainId::try_from(event.target_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventForSolanaV2 to EmittedSuiToSolanaTokenBridgeV2. Failed to convert target chain {} to BridgeChainId",
+                event.token_type,
+            ))
+        })?;
+        if !sui_chain_id.is_sui_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventForSolanaV2 to EmittedSuiToSolanaTokenBridgeV2. Invalid source chain {}",
+                event.source_chain
+            )));
+        }
+        if !solana_chain_id.is_solana_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventForSolanaV2 to EmittedSuiToSolanaTokenBridgeV2. Invalid target chain {}",
+                event.target_chain
+            )));
+        }
+
+        let sui_address = SuiAddress::from_bytes(event.sender_address).map_err(|e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventForSolanaV2 to EmittedSuiToSolanaTokenBridgeV2. Failed to convert sender_address to SuiAddress: {:?}",
+                e
+            ))
+        })?;
+        let solana_address_bytes: [u8; 32] = event
+            .target_address
+            .as_slice()
+            .try_into()
+            .map_err(|_e| {
+                BridgeError::Generic(format!(
+                    "Failed to convert MoveTokenDepositedEventForSolanaV2 to EmittedSuiToSolanaTokenBridgeV2. Invalid solana target_address length: {}",
+                    event.target_address.len()
+                ))
+            })?;
+        let solana_address = Pubkey::new_from_array(solana_address_bytes);
+
+        Ok(Self {
+            nonce: event.seq_num,
+            sui_chain_id,
+            solana_chain_id,
+            sui_address,
+            solana_address,
+            token_id,
+            amount_sui_adjusted: event.amount_after_fee,
+            tx_hash: vec![],
+            event_idx: 0,
+        })
+    }
+}
+
+impl TryFrom<MoveTokenDepositedEventForSolanaV3> for EmittedSuiToSolanaTokenBridgeV2 {
+    type Error = BridgeError;
+
+    fn try_from(event: MoveTokenDepositedEventForSolanaV3) -> BridgeResult<Self> {
+        if event.amount_after_fee == 0 {
+            return Err(BridgeError::ZeroValueBridgeTransfer(format!(
+                "Failed to convert MoveTokenDepositedEventForSolanaV3 to EmittedSuiToSolanaTokenBridgeV2. Manual intervention is required. 0 value transfer should not be allowed in Move: {:?}",
+                event,
+            )));
+        }
+
+        let token_id = event.token_type;
+        let sui_chain_id = BridgeChainId::try_from(event.source_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventForSolanaV3 to EmittedSuiToSolanaTokenBridgeV2. Failed to convert source chain {} to BridgeChainId",
+                event.token_type,
+            ))
+        })?;
+        let solana_chain_id = BridgeChainId::try_from(event.target_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventForSolanaV3 to EmittedSuiToSolanaTokenBridgeV2. Failed to convert target chain {} to BridgeChainId",
+                event.token_type,
+            ))
+        })?;
+        if !sui_chain_id.is_sui_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventForSolanaV3 to EmittedSuiToSolanaTokenBridgeV2. Invalid source chain {}",
+                event.source_chain
+            )));
+        }
+        if !solana_chain_id.is_solana_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventForSolanaV3 to EmittedSuiToSolanaTokenBridgeV2. Invalid target chain {}",
+                event.target_chain
+            )));
+        }
+
+        let sui_address = SuiAddress::from_bytes(event.sender_address).map_err(|e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenDepositedEventForSolanaV3 to EmittedSuiToSolanaTokenBridgeV2. Failed to convert sender_address to SuiAddress: {:?}",
+                e
+            ))
+        })?;
+        let solana_address_bytes: [u8; 32] = event
+            .target_address
+            .as_slice()
+            .try_into()
+            .map_err(|_e| {
+                BridgeError::Generic(format!(
+                    "Failed to convert MoveTokenDepositedEventForSolanaV3 to EmittedSuiToSolanaTokenBridgeV2. Invalid solana target_address length: {}",
+                    event.target_address.len()
+                ))
+            })?;
+        let solana_address = Pubkey::new_from_array(solana_address_bytes);
+
+        Ok(Self {
+            nonce: event.seq_num,
+            sui_chain_id,
+            solana_chain_id,
+            sui_address,
+            solana_address,
             token_id,
             amount_sui_adjusted: event.amount_after_fee,
             tx_hash: vec![],
@@ -755,6 +1029,71 @@ impl TryFrom<MoveTokenSendBackEventV2> for EmittedEthTokenSendBackBridgeV1 {
     }
 }
 
+impl TryFrom<MoveTokenSendBackEventForSolanaV2> for EmittedSolanaTokenSendBackV2 {
+    type Error = BridgeError;
+
+    fn try_from(event: MoveTokenSendBackEventForSolanaV2) -> BridgeResult<Self> {
+        if event.amount_sui_adjusted == 0 {
+            return Err(BridgeError::ZeroValueBridgeTransfer(format!(
+                "Failed to convert MoveTokenSendBackEventForSolanaV2 to EmittedSolanaTokenSendBackV2. Manual intervention is required. 0 value transfer should not be allowed in Move: {:?}",
+                event,
+            )));
+        }
+
+        let token_id = event.token_type;
+        let sui_chain_id = BridgeChainId::try_from(event.source_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEventForSolanaV2 to EmittedSolanaTokenSendBackV2. Failed to convert source chain {} to BridgeChainId",
+                event.token_type,
+            ))
+        })?;
+        let solana_chain_id = BridgeChainId::try_from(event.target_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEventForSolanaV2 to EmittedSolanaTokenSendBackV2. Failed to convert target chain {} to BridgeChainId",
+                event.token_type,
+            ))
+        })?;
+        if !sui_chain_id.is_sui_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEventForSolanaV2 to EmittedSolanaTokenSendBackV2. Invalid source chain {}",
+                event.source_chain
+            )));
+        }
+        if !solana_chain_id.is_solana_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEventForSolanaV2 to EmittedSolanaTokenSendBackV2. Invalid target chain {}",
+                event.target_chain
+            )));
+        }
+
+        let sui_address = SuiAddress::from_bytes(event.sender_address).map_err(|e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEventForSolanaV2 to EmittedSolanaTokenSendBackV2. Failed to convert sender_address to SuiAddress: {:?}",
+                e
+            ))
+        })?;
+        let solana_address_bytes: [u8; 32] = event.target_address.as_slice().try_into().map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEventForSolanaV2 to EmittedSolanaTokenSendBackV2. Invalid solana target_address length: {}",
+                event.target_address.len()
+            ))
+        })?;
+        let solana_address = Pubkey::new_from_array(solana_address_bytes);
+
+        Ok(Self {
+            nonce: event.seq_num,
+            sui_chain_id,
+            solana_chain_id,
+            sui_address,
+            solana_address,
+            token_id,
+            amount_sui_adjusted: event.amount_sui_adjusted,
+            tx_hash: event.tx_hash,
+            event_idx: event.event_idx,
+        })
+    }
+}
+
 impl TryFrom<MoveExternalDepositStartEvent> for EmittedExternalDepositStartBridgeV1 {
     type Error = BridgeError;
 
@@ -801,11 +1140,15 @@ impl TryFrom<MoveExternalDepositStartEvent> for EmittedExternalDepositStartBridg
 crate::declare_events!(
     SuiToEthTokenBridgeV1(EmittedSuiToEthTokenBridgeV1) => ("bridge::TokenDepositedEvent", MoveTokenDepositedEvent),
     SuiToEthTokenBridgeV2(EmittedSuiToEthTokenBridgeV1) => ("bridge::TokenDepositedEventV2", MoveTokenDepositedEventV2),
+    SuiToEthTokenBridgeV3(EmittedSuiToEthTokenBridgeV1) => ("bridge::TokenDepositedEventV3", MoveTokenDepositedEventV3),
+    SuiToSolanaTokenBridgeV2(EmittedSuiToSolanaTokenBridgeV2) => ("bridge::TokenDepositedEventForSolanaV2", MoveTokenDepositedEventForSolanaV2),
+    SuiToSolanaTokenBridgeV3(EmittedSuiToSolanaTokenBridgeV2) => ("bridge::TokenDepositedEventForSolanaV3", MoveTokenDepositedEventForSolanaV3),
     SuiToEthDefiBridgeV1(EmittedSuiToEthDefiBridgeV1) => ("bridge::DefiTransferOutEvent", MoveDefiTransferOutEvent),
     SuiToEthDefiTokensStaked(EmittedSuiToEthDefiTokensStaked) => ("bridge::DefiTokensStakedEvent", MoveDefiTokensStakedEvent),
     ExternalDepositStartBridgeV1(EmittedExternalDepositStartBridgeV1) => ("bridge::ExternalDepositStartEvent", MoveExternalDepositStartEvent),
     TokenSendBackEvent(EmittedEthTokenSendBackBridgeV1) => ("bridge::TokenSendBackEvent", MoveTokenSendBackEvent),
     TokenSendBackEventV2(EmittedEthTokenSendBackBridgeV1) => ("bridge::TokenSendBackEventV2", MoveTokenSendBackEventV2),
+    TokenSendBackForSolanaV2(EmittedSolanaTokenSendBackV2) => ("bridge::TokenSendBackEventForSolanaV2", MoveTokenSendBackEventForSolanaV2),
     TokenTransferApproved(TokenTransferApproved) => ("bridge::TokenTransferApproved", MoveTokenTransferApproved),
     TokenTransferClaimed(TokenTransferClaimed) => ("bridge::TokenTransferClaimed", MoveTokenTransferClaimed),
     TokenTransferAlreadyApproved(TokenTransferAlreadyApproved) => ("bridge::TokenTransferAlreadyApproved", MoveTokenTransferAlreadyApproved),
@@ -883,6 +1226,27 @@ impl SuiBridgeEvent {
                     sui_bridge_event: event.clone(),
                 }))
             }
+            SuiBridgeEvent::SuiToEthTokenBridgeV3(event) => {
+                Some(BridgeAction::SuiToEthBridgeAction(SuiToEthBridgeAction {
+                    sui_tx_digest,
+                    sui_tx_event_index,
+                    sui_bridge_event: event.clone(),
+                }))
+            }
+            SuiBridgeEvent::SuiToSolanaTokenBridgeV2(event) => {
+                Some(BridgeAction::SuiToSolanaBridgeAction(SuiToSolanaBridgeAction {
+                    sui_tx_digest,
+                    sui_tx_event_index,
+                    sui_bridge_event: event.clone(),
+                }))
+            }
+            SuiBridgeEvent::SuiToSolanaTokenBridgeV3(event) => {
+                Some(BridgeAction::SuiToSolanaBridgeAction(SuiToSolanaBridgeAction {
+                    sui_tx_digest,
+                    sui_tx_event_index,
+                    sui_bridge_event: event.clone(),
+                }))
+            }
             SuiBridgeEvent::SuiToEthDefiBridgeV1(event) => {
                 Some(BridgeAction::SuiToEthDefiBridgeAction(SuiToEthDefiBridgeAction {
                     sui_tx_digest,
@@ -902,6 +1266,13 @@ impl SuiBridgeEvent {
             ),
             SuiBridgeEvent::TokenSendBackEventV2(event) => Some(
                 BridgeAction::EthSendBackBridgeAction(EthSendBackBridgeAction {
+                    sui_tx_digest,
+                    sui_tx_event_index,
+                    sui_bridge_event: event.clone(),
+                }),
+            ),
+            SuiBridgeEvent::TokenSendBackForSolanaV2(event) => Some(
+                BridgeAction::SolanaSendBackBridgeAction(SolanaSendBackBridgeAction {
                     sui_tx_digest,
                     sui_tx_event_index,
                     sui_bridge_event: event.clone(),

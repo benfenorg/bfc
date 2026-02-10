@@ -31,6 +31,8 @@ pub struct BridgeMetrics {
     pub(crate) last_synced_sui_checkpoints: IntGaugeVec,
     pub(crate) last_finalized_eth_block: IntGauge,
     pub(crate) last_synced_eth_blocks: IntGaugeVec,
+    pub(crate) last_finalized_solana_slot: IntGauge,
+    pub(crate) last_synced_solana_slot: IntGaugeVec,
 
     pub(crate) sui_watcher_received_events: IntCounter,
     pub(crate) sui_watcher_received_actions: IntCounter,
@@ -38,6 +40,9 @@ pub struct BridgeMetrics {
     pub(crate) eth_watcher_received_events: IntCounter,
     pub(crate) eth_watcher_received_actions: IntCounter,
     pub(crate) eth_watcher_unrecognized_events: IntCounter,
+    pub(crate) solana_watcher_received_events: IntCounter,
+    pub(crate) solana_watcher_received_actions: IntCounter,
+    pub(crate) solana_watcher_unrecognized_events: IntCounter,
     pub(crate) action_executor_already_processed_actions: IntCounter,
     pub(crate) action_executor_signing_queue_received_actions: IntCounter,
     pub(crate) action_executor_signing_queue_skipped_actions: IntCounter,
@@ -170,6 +175,24 @@ impl BridgeMetrics {
                 registry,
             )
             .unwrap(),
+            solana_watcher_received_events: register_int_counter_with_registry!(
+                "bridge_solana_watcher_received_events",
+                "Total number of received events in solana watcher",
+                registry,
+            )
+            .unwrap(),
+            solana_watcher_received_actions: register_int_counter_with_registry!(
+                "bridge_solana_watcher_received_actions",
+                "Total number of received actions in solana watcher",
+                registry,
+            )
+            .unwrap(),
+            solana_watcher_unrecognized_events: register_int_counter_with_registry!(
+                "bridge_solana_watcher_unrecognized_events",
+                "Total number of unrecognized events in solana watcher",
+                registry,
+            )
+            .unwrap(),
             action_executor_already_processed_actions: register_int_counter_with_registry!(
                 "bridge_action_executor_already_processed_actions",
                 "Total number of already processed actions action executor",
@@ -238,6 +261,19 @@ impl BridgeMetrics {
             last_finalized_eth_block: register_int_gauge_with_registry!(
                 "bridge_last_finalized_eth_block",
                 "The latest finalized eth block observed",
+                registry,
+            )
+            .unwrap(),
+            last_finalized_solana_slot: register_int_gauge_with_registry!(
+                "bridge_last_finalized_solana_slot",
+                "The latest finalized solana slot observed",
+                registry,
+            )
+            .unwrap(),
+            last_synced_solana_slot: register_int_gauge_vec_with_registry!(
+                "bridge_last_synced_solana_slot",
+                "The latest synced solana slot for each address",
+                &["address"],
                 registry,
             )
             .unwrap(),

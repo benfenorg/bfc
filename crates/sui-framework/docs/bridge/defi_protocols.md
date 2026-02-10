@@ -166,7 +166,6 @@ token id 映射表
 <code><a href="../bridge/defi_protocols.md#bridge_defi_protocols_fee_type">fee_type</a>: u8</code>
 </dt>
 <dd>
- fee type, 0: fixed, 1: percentage
 </dd>
 <dt>
 <code><a href="../bridge/defi_protocols.md#bridge_defi_protocols_fee_rate">fee_rate</a>: u64</code>

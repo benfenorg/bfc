@@ -4,6 +4,8 @@ title: Module `bridge::limiter`
 
 
 
+-  [Struct `ExternalTransferRecordsKey`](#bridge_limiter_ExternalTransferRecordsKey)
+-  [Struct `ExternalTransfer24hLimitsKey`](#bridge_limiter_ExternalTransfer24hLimitsKey)
 -  [Struct `TransferLimiter`](#bridge_limiter_TransferLimiter)
 -  [Struct `ExternalLimiter`](#bridge_limiter_ExternalLimiter)
 -  [Struct `TransferRecord`](#bridge_limiter_TransferRecord)
@@ -15,10 +17,14 @@ title: Module `bridge::limiter`
 -  [Function `new`](#bridge_limiter_new)
 -  [Function `new_external_limits`](#bridge_limiter_new_external_limits)
 -  [Function `initial_external_limits`](#bridge_limiter_initial_external_limits)
+-  [Function `initial_external_24h_limits`](#bridge_limiter_initial_external_24h_limits)
 -  [Function `get_external_limiter`](#bridge_limiter_get_external_limiter)
 -  [Function `update_external_out_limit`](#bridge_limiter_update_external_out_limit)
 -  [Function `add_external_out_limit`](#bridge_limiter_add_external_out_limit)
 -  [Function `get_external_out_limit`](#bridge_limiter_get_external_out_limit)
+-  [Function `update_external_24h_limit`](#bridge_limiter_update_external_24h_limit)
+-  [Function `check_and_record_external_24h_transfer`](#bridge_limiter_check_and_record_external_24h_transfer)
+-  [Function `get_external_available_transfer_amount`](#bridge_limiter_get_external_available_transfer_amount)
 -  [Function `get_available_claim_amount`](#bridge_limiter_get_available_claim_amount)
 -  [Function `check_and_record_sending_transfer`](#bridge_limiter_check_and_record_sending_transfer)
 -  [Function `update_route_limit`](#bridge_limiter_update_route_limit)
@@ -69,6 +75,48 @@ title: Module `bridge::limiter`
 </code></pre>
 
 
+
+<a name="bridge_limiter_ExternalTransferRecordsKey"></a>
+
+## Struct `ExternalTransferRecordsKey`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/limiter.md#bridge_limiter_ExternalTransferRecordsKey">ExternalTransferRecordsKey</a> <b>has</b> <b>copy</b>, drop, store
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+</dl>
+
+
+</details>
+
+<a name="bridge_limiter_ExternalTransfer24hLimitsKey"></a>
+
+## Struct `ExternalTransfer24hLimitsKey`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/limiter.md#bridge_limiter_ExternalTransfer24hLimitsKey">ExternalTransfer24hLimitsKey</a> <b>has</b> <b>copy</b>, drop, store
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+</dl>
+
+
+</details>
 
 <a name="bridge_limiter_TransferLimiter"></a>
 
@@ -729,6 +777,83 @@ title: Module `bridge::limiter`
 
 </details>
 
+<a name="bridge_limiter_initial_external_24h_limits"></a>
+
+## Function `initial_external_24h_limits`
+
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/limiter.md#bridge_limiter_initial_external_24h_limits">initial_external_24h_limits</a>(parent_id: &<b>mut</b> <a href="../sui/object.md#sui_object_UID">sui::object::UID</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/limiter.md#bridge_limiter_initial_external_24h_limits">initial_external_24h_limits</a>(
+    parent_id: &<b>mut</b> UID,
+) {
+    <a href="../bridge/limiter.md#bridge_limiter_update_external_24h_limit">update_external_24h_limit</a>(
+        parent_id,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_btc_mainnet">chain_ids::btc_mainnet</a>()),
+        // 10 BTC, assuming 1 BTC = 80,000 USD
+        800_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_update_external_24h_limit">update_external_24h_limit</a>(
+        parent_id,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>()),
+        // 100_0000 USD
+        100_0000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_update_external_24h_limit">update_external_24h_limit</a>(
+        parent_id,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_mainnet">chain_ids::tron_mainnet</a>()),
+        // 100_0000 USD
+        100_0000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
+    );
+    // testnet
+    <a href="../bridge/limiter.md#bridge_limiter_update_external_24h_limit">update_external_24h_limit</a>(
+        parent_id,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_btc_testnet">chain_ids::btc_testnet</a>()),
+        // 0.005 BTC, assuming 1 BTC = 100,000 USD
+        500 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_update_external_24h_limit">update_external_24h_limit</a>(
+        parent_id,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>()),
+        1000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_update_external_24h_limit">update_external_24h_limit</a>(
+        parent_id,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_testnet">chain_ids::tron_testnet</a>()),
+        1000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
+    );
+    // custom
+    <a href="../bridge/limiter.md#bridge_limiter_update_external_24h_limit">update_external_24h_limit</a>(
+        parent_id,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_btc_testnet">chain_ids::btc_testnet</a>()),
+        // 0.005 BTC, assuming 1 BTC = 100,000 USD
+        500 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_update_external_24h_limit">update_external_24h_limit</a>(
+        parent_id,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>()),
+        1000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
+    );
+    <a href="../bridge/limiter.md#bridge_limiter_update_external_24h_limit">update_external_24h_limit</a>(
+        parent_id,
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_testnet">chain_ids::tron_testnet</a>()),
+        1000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>,
+    );
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="bridge_limiter_get_external_limiter"></a>
 
 ## Function `get_external_limiter`
@@ -839,6 +964,167 @@ title: Module `bridge::limiter`
     <b>let</b> limit = external_limiter.transfer_out_limits.try_get(route);
     <b>assert</b>!(limit.is_some(), <a href="../bridge/limiter.md#bridge_limiter_EExternalLimitNotFoundForRoute">EExternalLimitNotFoundForRoute</a>);
     limit.destroy_some()
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_limiter_update_external_24h_limit"></a>
+
+## Function `update_external_24h_limit`
+
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/limiter.md#bridge_limiter_update_external_24h_limit">update_external_24h_limit</a>(parent_id: &<b>mut</b> <a href="../sui/object.md#sui_object_UID">sui::object::UID</a>, route: &<a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">bridge::chain_ids::BridgeRoute</a>, limit: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/limiter.md#bridge_limiter_update_external_24h_limit">update_external_24h_limit</a>(
+    parent_id: &<b>mut</b> UID,
+    route: &BridgeRoute,
+    limit: u64,
+) {
+    <b>let</b> <a href="../bridge/limiter.md#bridge_limiter">limiter</a> = dynamic_field::borrow_mut&lt;vector&lt;u8&gt;, <a href="../bridge/limiter.md#bridge_limiter_ExternalLimiter">ExternalLimiter</a>&gt;(parent_id, <a href="../bridge/limiter.md#bridge_limiter_EXTERNAL_LIMITS_KEY">EXTERNAL_LIMITS_KEY</a>);
+    <b>if</b> (!<a href="../bridge/limiter.md#bridge_limiter">limiter</a>.external.contains(<a href="../bridge/limiter.md#bridge_limiter_ExternalTransfer24hLimitsKey">ExternalTransfer24hLimitsKey</a> {})) {
+         <a href="../bridge/limiter.md#bridge_limiter">limiter</a>.external.add(<a href="../bridge/limiter.md#bridge_limiter_ExternalTransfer24hLimitsKey">ExternalTransfer24hLimitsKey</a> {}, vec_map::empty&lt;BridgeRoute, u64&gt;());
+    };
+    <b>let</b> limits = <a href="../bridge/limiter.md#bridge_limiter">limiter</a>.external.borrow_mut&lt;<a href="../bridge/limiter.md#bridge_limiter_ExternalTransfer24hLimitsKey">ExternalTransfer24hLimitsKey</a>, VecMap&lt;BridgeRoute, u64&gt;&gt;(<a href="../bridge/limiter.md#bridge_limiter_ExternalTransfer24hLimitsKey">ExternalTransfer24hLimitsKey</a> {});
+    <b>if</b> (limits.contains(route)) {
+        *limits.get_mut(route) = limit;
+    } <b>else</b> {
+        limits.insert(*route, limit);
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_limiter_check_and_record_external_24h_transfer"></a>
+
+## Function `check_and_record_external_24h_transfer`
+
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/limiter.md#bridge_limiter_check_and_record_external_24h_transfer">check_and_record_external_24h_transfer</a>(parent_id: &<b>mut</b> <a href="../sui/object.md#sui_object_UID">sui::object::UID</a>, clock: &<a href="../sui/clock.md#sui_clock_Clock">sui::clock::Clock</a>, route: <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">bridge::chain_ids::BridgeRoute</a>, amount: u64): bool
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/limiter.md#bridge_limiter_check_and_record_external_24h_transfer">check_and_record_external_24h_transfer</a>(
+    parent_id: &<b>mut</b> UID,
+    clock: &Clock,
+    route: BridgeRoute,
+    amount: u64
+): bool {
+    <b>let</b> <a href="../bridge/limiter.md#bridge_limiter">limiter</a> = dynamic_field::borrow_mut&lt;vector&lt;u8&gt;, <a href="../bridge/limiter.md#bridge_limiter_ExternalLimiter">ExternalLimiter</a>&gt;(parent_id, <a href="../bridge/limiter.md#bridge_limiter_EXTERNAL_LIMITS_KEY">EXTERNAL_LIMITS_KEY</a>);
+    // 1. Check <b>if</b> 24h limit exists <b>for</b> this route
+    <b>if</b> (!<a href="../bridge/limiter.md#bridge_limiter">limiter</a>.external.contains(<a href="../bridge/limiter.md#bridge_limiter_ExternalTransfer24hLimitsKey">ExternalTransfer24hLimitsKey</a> {})) {
+        <b>return</b> <b>true</b>
+    };
+    <b>let</b> limits = <a href="../bridge/limiter.md#bridge_limiter">limiter</a>.external.borrow&lt;<a href="../bridge/limiter.md#bridge_limiter_ExternalTransfer24hLimitsKey">ExternalTransfer24hLimitsKey</a>, VecMap&lt;BridgeRoute, u64&gt;&gt;(<a href="../bridge/limiter.md#bridge_limiter_ExternalTransfer24hLimitsKey">ExternalTransfer24hLimitsKey</a> {});
+    <b>if</b> (!limits.contains(&route)) {
+        <b>return</b> <b>true</b>
+    };
+    <b>let</b> limit = *limits.get(&route);
+    // 2. Get/Init records
+    <b>if</b> (!<a href="../bridge/limiter.md#bridge_limiter">limiter</a>.external.contains(<a href="../bridge/limiter.md#bridge_limiter_ExternalTransferRecordsKey">ExternalTransferRecordsKey</a> {})) {
+        <a href="../bridge/limiter.md#bridge_limiter">limiter</a>.external.add(<a href="../bridge/limiter.md#bridge_limiter_ExternalTransferRecordsKey">ExternalTransferRecordsKey</a> {}, vec_map::empty&lt;BridgeRoute, <a href="../bridge/limiter.md#bridge_limiter_TransferRecord">TransferRecord</a>&gt;());
+    };
+    <b>let</b> records = <a href="../bridge/limiter.md#bridge_limiter">limiter</a>.external.borrow_mut&lt;<a href="../bridge/limiter.md#bridge_limiter_ExternalTransferRecordsKey">ExternalTransferRecordsKey</a>, VecMap&lt;BridgeRoute, <a href="../bridge/limiter.md#bridge_limiter_TransferRecord">TransferRecord</a>&gt;&gt;(<a href="../bridge/limiter.md#bridge_limiter_ExternalTransferRecordsKey">ExternalTransferRecordsKey</a> {});
+    <b>if</b> (!records.contains(&route)) {
+        records.insert(route, <a href="../bridge/limiter.md#bridge_limiter_TransferRecord">TransferRecord</a> {
+            hour_head: 0,
+            hour_tail: 0,
+            per_hour_amounts: vector[],
+            total_amount: 0
+        });
+    };
+    <b>let</b> record = records.get_mut(&route);
+    // 3. Adjust window
+    <b>let</b> current_hour = <a href="../bridge/limiter.md#bridge_limiter_current_hour_since_epoch">current_hour_since_epoch</a>(clock);
+    record.<a href="../bridge/limiter.md#bridge_limiter_adjust_transfer_records">adjust_transfer_records</a>(current_hour);
+    // 4. Check limit
+    <b>if</b> (record.total_amount + amount &gt; limit) {
+        <b>return</b> <b>false</b>
+    };
+    // 5. Update record
+    <b>let</b> new_amount = record.per_hour_amounts.pop_back() + amount;
+    record.per_hour_amounts.push_back(new_amount);
+    record.total_amount = record.total_amount + amount;
+    <b>true</b>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_limiter_get_external_available_transfer_amount"></a>
+
+## Function `get_external_available_transfer_amount`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/limiter.md#bridge_limiter_get_external_available_transfer_amount">get_external_available_transfer_amount</a>&lt;T&gt;(parent_id: &<a href="../sui/object.md#sui_object_UID">sui::object::UID</a>, <a href="../bridge/treasury.md#bridge_treasury">treasury</a>: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, route: <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">bridge::chain_ids::BridgeRoute</a>): u128
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/limiter.md#bridge_limiter_get_external_available_transfer_amount">get_external_available_transfer_amount</a>&lt;T&gt;(
+    parent_id: &UID,
+    <a href="../bridge/treasury.md#bridge_treasury">treasury</a>: &BridgeTreasury,
+    route: BridgeRoute
+): u128 {
+    <b>let</b> <a href="../bridge/limiter.md#bridge_limiter">limiter</a> = dynamic_field::borrow&lt;vector&lt;u8&gt;, <a href="../bridge/limiter.md#bridge_limiter_ExternalLimiter">ExternalLimiter</a>&gt;(parent_id, <a href="../bridge/limiter.md#bridge_limiter_EXTERNAL_LIMITS_KEY">EXTERNAL_LIMITS_KEY</a>);
+    // 1. Check <b>if</b> 24h limit exists <b>for</b> this route
+    <b>if</b> (!<a href="../bridge/limiter.md#bridge_limiter">limiter</a>.external.contains(<a href="../bridge/limiter.md#bridge_limiter_ExternalTransfer24hLimitsKey">ExternalTransfer24hLimitsKey</a> {})) {
+        <b>abort</b> <a href="../bridge/limiter.md#bridge_limiter_EExternalLimitNotFoundForRoute">EExternalLimitNotFoundForRoute</a>
+    };
+    <b>let</b> limits = <a href="../bridge/limiter.md#bridge_limiter">limiter</a>.external.borrow&lt;<a href="../bridge/limiter.md#bridge_limiter_ExternalTransfer24hLimitsKey">ExternalTransfer24hLimitsKey</a>, VecMap&lt;BridgeRoute, u64&gt;&gt;(<a href="../bridge/limiter.md#bridge_limiter_ExternalTransfer24hLimitsKey">ExternalTransfer24hLimitsKey</a> {});
+    <b>if</b> (!limits.contains(&route)) {
+        <b>abort</b> <a href="../bridge/limiter.md#bridge_limiter_EExternalLimitNotFoundForRoute">EExternalLimitNotFoundForRoute</a>
+    };
+    <b>let</b> limit = *limits.get(&route);
+    // 2. Get records
+    <b>let</b> total_used = <b>if</b> (<a href="../bridge/limiter.md#bridge_limiter">limiter</a>.external.contains(<a href="../bridge/limiter.md#bridge_limiter_ExternalTransferRecordsKey">ExternalTransferRecordsKey</a> {})) {
+        <b>let</b> records = <a href="../bridge/limiter.md#bridge_limiter">limiter</a>.external.borrow&lt;<a href="../bridge/limiter.md#bridge_limiter_ExternalTransferRecordsKey">ExternalTransferRecordsKey</a>, VecMap&lt;BridgeRoute, <a href="../bridge/limiter.md#bridge_limiter_TransferRecord">TransferRecord</a>&gt;&gt;(<a href="../bridge/limiter.md#bridge_limiter_ExternalTransferRecordsKey">ExternalTransferRecordsKey</a> {});
+        <b>if</b> (records.contains(&route)) {
+            records.get(&route).total_amount
+        } <b>else</b> {
+            0
+        }
+    } <b>else</b> {
+        0
+    };
+    <b>if</b> (total_used &gt;= limit) {
+        <b>return</b> 0
+    };
+    <b>let</b> remaining_usd_limit = limit - total_used;
+    // 3. Convert USD limit to Token Amount
+    <b>let</b> price = (<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.notional_value&lt;T&gt;() <b>as</b> u128);
+    <b>if</b> (price == 0) {
+        <b>return</b> 0
+    };
+    <b>let</b> remaining_adjusted = (remaining_usd_limit <b>as</b> u128) * (<a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a> <b>as</b> u128);
+    <b>let</b> available = remaining_adjusted / price;
+    <b>return</b> available
 }
 </code></pre>
 
@@ -1170,6 +1456,10 @@ title: Module `bridge::limiter`
         1_000_000_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>
     );
     self.<a href="../bridge/limiter.md#bridge_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>()),
+        1_000_000_000 * <a href="../bridge/limiter.md#bridge_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>
+    );
+    self.<a href="../bridge/limiter.md#bridge_limiter_update_route_limit">update_route_limit</a>(
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>()),
         <a href="../bridge/limiter.md#bridge_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
     );
@@ -1263,6 +1553,14 @@ title: Module `bridge::limiter`
     );
     self.<a href="../bridge/limiter.md#bridge_limiter_update_route_limit">update_route_limit</a>(
         &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_avax_custom">chain_ids::avax_custom</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>()),
+        <a href="../bridge/limiter.md#bridge_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+    self.<a href="../bridge/limiter.md#bridge_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_testnet">chain_ids::sui_testnet</a>()),
+        <a href="../bridge/limiter.md#bridge_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+    self.<a href="../bridge/limiter.md#bridge_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>(), <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_custom">chain_ids::sui_custom</a>()),
         <a href="../bridge/limiter.md#bridge_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
     );
 }

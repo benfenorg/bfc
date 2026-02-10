@@ -66,6 +66,7 @@ module bridge::bridge {
     const TRANSFER_STATUS_NOT_FOUND: u8 = 3;
 
     const EVM_ADDRESS_LENGTH: u64 = 20;
+    const SOLANA_ADDRESS_LENGTH: u64 = 32;
 
     //defi
     const STAKE: u8 = 0;
@@ -128,7 +129,7 @@ module bridge::bridge {
         amount: u64,
     }
 
-     public struct TokenDepositedEventV2 has copy, drop {
+    public struct TokenDepositedEventV2 has copy, drop {
         seq_num: u64,
         source_chain: u8,
         sender_address: vector<u8>,
@@ -138,6 +139,42 @@ module bridge::bridge {
         amount_before_fee: u64,
         amount_after_fee: u64
     }
+
+    public struct TokenDepositedEventV3 has copy, drop {
+        seq_num: u64,
+        source_chain: u8,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        origin_token_type: u64,
+        amount_before_fee: u64,
+        amount_after_fee: u64
+    }
+    
+    public struct TokenDepositedEventForSolanaV2 has copy, drop {
+        seq_num: u64,
+        source_chain: u8,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount_before_fee: u64,
+        amount_after_fee: u64,
+    }
+
+    public struct TokenDepositedEventForSolanaV3 has copy, drop {
+        seq_num: u64,
+        source_chain: u8,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        origin_token_type: u64,
+        amount_before_fee: u64,
+        amount_after_fee: u64,
+    }
+
     //defi event: benfen to evm
     public struct DefiTransferOutEvent has copy, drop {
         seq_num: u64,
@@ -204,6 +241,18 @@ module bridge::bridge {
         event_idx: u16,
     }
 
+    public struct TokenSendBackEventForSolanaV2 has copy, drop {
+        seq_num: u64,
+        source_chain: u8,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+    }
+
     public struct EmergencyOpEvent has copy, drop {
         frozen: bool,
     }
@@ -258,6 +307,7 @@ module bridge::bridge {
     const EFastPathLimitError: u64 = 51;
     const EOnlySupportTokenTransferIn: u64 = 52;
     const ETransferLimit: u64 = 55;
+    const ETransfer24hLimit: u64 = 56;
 
     const EMustBeDefiMessage: u64 = 57;
     const EOnlySupportDefiTransferOut: u64 = 58;
@@ -377,6 +427,17 @@ module bridge::bridge {
         amount_after_fee: u64
     }
 
+    public struct ExternalWithdrawEventV3 has copy, drop {
+        origin_token_type: u64,
+        token_type: u64,
+        source_chain: u8,
+        target_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount_before_fee: u64,
+        amount_after_fee: u64
+    }
+
     public struct ExternalBridgeMessageKey has copy, drop, store {
         source_chain: u8,
         source_address: vector<u8>,
@@ -450,6 +511,15 @@ module bridge::bridge {
         ctx: &mut TxContext
     ){
         ensure_defi_holders_initialized(&mut bridge.id, ctx);
+        limiter::initial_external_24h_limits(&mut bridge.id);
+    }
+
+    #[test_only]
+    public fun test_migrate(
+        bridge: &mut Bridge,
+        ctx: &mut TxContext
+    ){
+        ensure_defi_holders_initialized(&mut bridge.id, ctx);
         defi_protocols::registry(&mut bridge.id, ctx);
         defi_protocols::initial_defi_protocol(&mut bridge.id);
     }
@@ -478,6 +548,24 @@ module bridge::bridge {
         assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
         let route = chain_ids::get_route(inner.chain_id, target_chain);
         limiter::update_external_out_limit(
+            parent_id,
+            &route,
+            limit
+        );
+    }
+
+    public fun update_external_24h_limit(
+        bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
+        cap: &BfcSystemModifyCap,
+        target_chain: u8,
+        limit: u64,
+        ctx: &mut TxContext,
+    ) {
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        limiter::update_external_24h_limit(
             parent_id,
             &route,
             limit
@@ -707,16 +795,19 @@ module bridge::bridge {
         let (inner,parent_id) = load_inner_mut_and_uid(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
-        assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+        if (is_solana_chain(target_chain)) {
+            assert!(target_address.length() == get_expected_address_length(target_chain), EInvalidEvmAddress);
+        } else {
+            assert!(target_address.length() == get_expected_address_length(target_chain), EInvalidEvmAddress);
+        };
 
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::token());
         let token_id = inner.treasury.token_id<T>();
-        let token_amount = token.balance().value();
+        let token_amount=token.balance().value();
         assert!(token_amount > 0, ETokenValueIsZero);
         assert!(token_id != 5, EUseSendBusd);
 
         assert!(tokenlist::is_supported_from_benfen(parent_id, target_chain as u64, token_id),EInvalidChainIDAndTokenIDExpect);
-
         let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,token_amount);
         assert!(token_amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
@@ -752,18 +843,35 @@ module bridge::bridge {
         );
 
         // emit event
-        emit(
-            TokenDepositedEventV2 {
-                seq_num: bridge_seq_num,
-                source_chain: inner.chain_id,
-                sender_address: address::to_bytes(ctx.sender()),
-                target_chain,
-                target_address,
-                token_type: token_id,
-                amount_before_fee: token_amount,
-                amount_after_fee,
-            },
-        );
+        if (is_solana_chain(target_chain)) {
+            emit(
+                TokenDepositedEventForSolanaV3 {
+                    seq_num: bridge_seq_num,
+                    source_chain: inner.chain_id,
+                    sender_address: address::to_bytes(ctx.sender()),
+                    target_chain,
+                    target_address,
+                    token_type: token_id,
+                    origin_token_type: token_id,
+                    amount_before_fee: token_amount,
+                    amount_after_fee,
+                },
+            );
+        } else {
+            emit(
+                TokenDepositedEventV3 {
+                    seq_num: bridge_seq_num,
+                    source_chain: inner.chain_id,
+                    sender_address: address::to_bytes(ctx.sender()),
+                    target_chain,
+                    target_address,
+                    token_type: token_id,
+                    origin_token_type: token_id,
+                    amount_before_fee: token_amount,
+                    amount_after_fee,
+                },
+            );
+        }
     }
 
     public fun defi_stake<T>(
@@ -786,7 +894,7 @@ module bridge::bridge {
             assert!(token_amount >= 1000, EDefiStakeAmountNotEnough);
         };
         
-        // 检查质押金额是否超过协议限制
+        // Check if the stake amount exceeds the protocol limit
         let protocol_info = defi_protocols::get_protocol_info(bridge_id, protocol_type, protocol_version, protocol_token_id, target_chain);
         assert!(token_amount <= defi_protocols::limit_stake_amount(&protocol_info), ETransferLimit);
 
@@ -893,7 +1001,11 @@ module bridge::bridge {
         assert!(tokenlist::is_supported_from_benfen(bridge_id, target_chain as u64, token_id_expect),EInvalidChainIDAndTokenIDExpect);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
-        assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+        if (is_solana_chain(target_chain)) {
+            assert!(target_address.length() == get_expected_address_length(target_chain), EInvalidEvmAddress);
+        } else {
+            assert!(target_address.length() == get_expected_address_length(target_chain), EInvalidEvmAddress);
+        };
         let is_busd = type_name::get<T>() == type_name::get<BUSD>();
         assert!(is_busd, EOnlySupportBusd);
         assert!(token_id_expect == 3 || token_id_expect == 4, EInvalidTokenIdExpect);
@@ -903,22 +1015,14 @@ module bridge::bridge {
         // assert!(token_id_origin == 5, EOnlySupportBusd);
         let token_id = token_id_expect;
         //token amount is usdc or usdt amount
-        let token_amount=if (target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom()) {
-            token.balance().value()/1000u64
-        }else{
-            token.balance().value()
-        };
+        let token_amount = get_token_amount_for_target_chain(target_chain, token.balance().value());
         assert!(token_amount > 0, ETokenValueIsZero);
         //fee is usdc or usdt amount
         let fee=bridge_fee::calculate_cross_out_fee_amount(bridge_id,target_chain as u64,token_id,token_amount);
         assert!(token_amount>fee,EInputAmountLteBridgeFee);
         let amount_after_fee=token_amount-fee;
         //fee coin is busd,so we need convert fee to busd
-        let fee_busd= if (target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom()) {
-            fee*1000u64
-        }else{
-            fee
-        };
+        let fee_busd = get_fee_busd_for_target_chain(target_chain, fee);
         let fee_coin=token.split<T>(fee_busd, ctx);
         bridge_fee::deposit_fee(bridge_id, fee_coin);
         // create bridge message
@@ -948,18 +1052,35 @@ module bridge::bridge {
         );
 
         // emit event
-        emit(
-            TokenDepositedEventV2 {
-                seq_num: bridge_seq_num,
-                source_chain: inner.chain_id,
-                sender_address: address::to_bytes(ctx.sender()),
-                target_chain,
-                target_address,
-                token_type: token_id,
-                amount_before_fee: token_amount,
-                amount_after_fee,
-            },
-        );
+        if (is_solana_chain(target_chain)) {
+            emit(
+                TokenDepositedEventForSolanaV3 {
+                    seq_num: bridge_seq_num,
+                    source_chain: inner.chain_id,
+                    sender_address: address::to_bytes(ctx.sender()),
+                    target_chain,
+                    target_address,
+                    token_type: token_id,
+                    origin_token_type: 5, // BUSD
+                    amount_before_fee: token_amount,
+                    amount_after_fee,
+                },
+            );
+        } else {    
+            emit(
+                TokenDepositedEventV3 {
+                    seq_num: bridge_seq_num,
+                    source_chain: inner.chain_id,
+                    sender_address: address::to_bytes(ctx.sender()),
+                    target_chain,
+                    target_address,
+                    token_type: token_id,
+                    origin_token_type: 5, // BUSD
+                    amount_before_fee: token_amount,
+                    amount_after_fee,
+                },
+            );
+        }
     }
 
     // Create bridge request to send token back to EVM, the request will be in
@@ -1043,7 +1164,11 @@ module bridge::bridge {
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
         assert!(!inner.refund_records.contains(message::key_refund(tx_hash)), EDuplicateRefund);
-        assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+        if (target_chain == chain_ids::solana_testnet() || target_chain == chain_ids::solana_mainnet()) {
+            assert!(target_address.length() == SOLANA_ADDRESS_LENGTH, EInvalidEvmAddress);
+        } else {
+            assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+        };
         assert!(token_amount > 0, ETokenValueIsZero);
         assert!(tx_hash.length() >= 1, EInvalidTxHash);
         assert!(inner.is_refund_admin(ctx.sender().to_ascii_string()), EInvalidSender);
@@ -1079,20 +1204,35 @@ module bridge::bridge {
             },
         );
 
-        // emit event
-        emit(
-            TokenSendBackEventV2 {
-                seq_num: bridge_seq_num,
-                source_chain: inner.chain_id,
-                sender_address: address::to_bytes(ctx.sender()),
-                target_chain,
-                target_address,
-                token_type: token_type,
-                amount: token_amount,
-                tx_hash,
-                event_idx,
-            },
-        );
+        if (target_chain == chain_ids::solana_testnet() || target_chain == chain_ids::solana_mainnet()) {
+            emit(
+                TokenSendBackEventForSolanaV2 {
+                    seq_num: bridge_seq_num,
+                    source_chain: inner.chain_id,
+                    sender_address: address::to_bytes(ctx.sender()),
+                    target_chain,
+                    target_address,
+                    token_type: token_type,
+                    amount: token_amount,
+                    tx_hash,
+                    event_idx,
+                },
+            );
+        } else {
+            emit(
+                TokenSendBackEventV2 {
+                    seq_num: bridge_seq_num,
+                    source_chain: inner.chain_id,
+                    sender_address: address::to_bytes(ctx.sender()),
+                    target_chain,
+                    target_address,
+                    token_type: token_type,
+                    amount: token_amount,
+                    tx_hash,
+                    event_idx,
+                },
+            );
+        }
     }
 
     public fun fast_path_limit_by_sender(
@@ -1610,6 +1750,15 @@ module bridge::bridge {
         inner.limiter.get_available_claim_amount<T>(&inner.treasury, route)
     }
 
+    public fun get_external_available_transfer_amount<T>(
+          bridge: &Bridge,
+          target_chain: u8,
+    ): u128 {
+        let inner = load_inner(bridge);
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        limiter::get_external_available_transfer_amount<T>(&bridge.id, &inner.treasury, route)
+    }
+
     public fun pre_deposit_external_coin<T>(
         bridge: &mut Bridge,
         source_chain: u8,
@@ -1726,35 +1875,6 @@ module bridge::bridge {
         if (inner.external_bridge_records.contains(key)) {
             abort EDuplicatedMessage
         };
-
-        // // v1
-        // let token = inner.treasury.mint<T>(amount, ctx);
-        // transfer::public_transfer(token, address::from_bytes(target_address));
-
-        // inner.external_bridge_records.push_back(
-        //     key,
-        //     ExternalBridgeRecord {
-        //         source_chain,
-        //         target_chain: inner.chain_id,
-        //         source_address,
-        //         target_address,
-        //         amount,
-        //         verified_signatures: option::none(),
-        //         claimed: true,
-        //     },
-        // );
-
-        // emit(
-        //     ExternalDepositedEvent {
-        //         tx_hash,
-        //         coin_type,
-        //         source_chain,
-        //         target_chain: inner.chain_id,
-        //         source_address,
-        //         target_address,
-        //         amount,
-        //     },
-        // )
 
         // v2
         let seq_num = inner.get_current_seq_num_and_increment(message_types::token());
@@ -1958,6 +2078,56 @@ module bridge::bridge {
         )
     }
 
+    public fun withdraw_external_busd_coin_v2<T>(
+        bridge: &mut Bridge,
+        target_chain: u8,
+        target_address: vector<u8>,
+        mut token: Coin<T>,
+        token_id_expect: u64,
+        bfc_system_state: &mut BfcSystemState,
+        clock: &Clock,
+        ctx: &mut TxContext
+    ) {
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
+
+        assert!(tokenlist::is_supported_from_benfen(
+            parent_id, target_chain as u64, token_id_expect),EInvalidChainIDAndTokenIDExpect);
+        assert!(token_id_expect == TOKEN_ID_USDC || token_id_expect == TOKEN_ID_USDT, EInvalidTokenIdExpect);
+        assert!(type_name::get<T>() == type_name::get<BUSD>(), EOnlySupportBusd);
+        assert!(!inner.paused, EBridgeUnavailable);
+        assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
+
+        let amount = token.balance().value();
+        assert!(amount > 0, ETokenValueIsZero);
+        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id_expect,amount);
+        assert!(amount>fee,EInputAmountLteBridgeFee);
+        let fee_coin=token.split<T>(fee, ctx);
+        bridge_fee::deposit_fee(parent_id, fee_coin);
+        let amount_after_fee=amount-fee;
+
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        assert!(amount_after_fee <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
+
+        // 24h limiter check
+        assert!(limiter::check_and_record_external_24h_transfer(parent_id, clock, route, amount_after_fee), ETransfer24hLimit);
+
+        bfc_system_state.burn_stable(token, ctx);
+
+        // emit event
+       emit(
+            ExternalWithdrawEventV3 {
+                origin_token_type: 5, // BUSD
+                token_type: token_id_expect,
+                source_chain: inner.chain_id,
+                target_chain,
+                source_address: address::to_bytes(ctx.sender()),
+                target_address,
+                amount_before_fee: amount,
+                amount_after_fee,
+            },
+        );
+    }
+
     public fun withdraw_external_busd_coin<T>(
         bridge: &mut Bridge,
         target_chain: u8,
@@ -1984,12 +2154,62 @@ module bridge::bridge {
         bridge_fee::deposit_fee(parent_id, fee_coin);
         let amount_after_fee=amount-fee;
 
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        assert!(amount_after_fee <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
+
         bfc_system_state.burn_stable(token, ctx);
 
         // emit event
        emit(
-            ExternalWithdrawEventV2 {
+            ExternalWithdrawEventV3 {
+                origin_token_type: 5, // BUSD
                 token_type: token_id_expect,
+                source_chain: inner.chain_id,
+                target_chain,
+                source_address: address::to_bytes(ctx.sender()),
+                target_address,
+                amount_before_fee: amount,
+                amount_after_fee,
+            },
+        );
+    }
+
+    public fun withdraw_external_coin_v2<T>(
+        bridge: &mut Bridge,
+        target_chain: u8,
+        target_address: vector<u8>,
+        mut token: Coin<T>,
+        clock: &Clock,
+        ctx: &mut TxContext
+    ) {
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
+        let token_id=treasury::token_id<T>(&inner.treasury);
+        assert!(tokenlist::is_supported_from_benfen(
+            parent_id, target_chain as u64, token_id),EInvalidChainIDAndTokenIDExpect);
+
+        assert!(!inner.paused, EBridgeUnavailable);
+        assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
+
+        let amount = token.balance().value();
+        assert!(amount > 0, ETokenValueIsZero);
+        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,amount);
+        assert!(amount>fee,EInputAmountLteBridgeFee);
+        let fee_coin=token.split<T>(fee, ctx);
+        bridge_fee::deposit_fee(parent_id, fee_coin);
+        let amount_after_fee=amount-fee;
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        let amount_in_usd = inner.treasury.calculate_amount_in_usd<T>(amount_after_fee);
+        assert!(amount_in_usd <= limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
+        // 24h limiter check
+        assert!(limiter::check_and_record_external_24h_transfer(parent_id, clock, route, amount_in_usd), ETransfer24hLimit);
+
+        inner.treasury.burn(token);
+
+        // emit event
+        emit(
+            ExternalWithdrawEventV3 {
+                origin_token_type: token_id,
+                token_type: token_id,
                 source_chain: inner.chain_id,
                 target_chain,
                 source_address: address::to_bytes(ctx.sender()),
@@ -2029,7 +2249,8 @@ module bridge::bridge {
 
         // emit event
         emit(
-            ExternalWithdrawEventV2 {
+            ExternalWithdrawEventV3 {
+                origin_token_type: token_id,
                 token_type: token_id,
                 source_chain: inner.chain_id,
                 target_chain,
@@ -3024,6 +3245,38 @@ module bridge::bridge {
         option::some(to_parsed_token_transfer_message_v2(message))
     }
 
+    fun is_solana_chain(chain_id: u8): bool {
+        chain_id == chain_ids::solana_testnet() || chain_id == chain_ids::solana_mainnet()
+    }
+
+    fun get_expected_address_length(chain_id: u8): u64 {
+        if (is_solana_chain(chain_id)) SOLANA_ADDRESS_LENGTH else EVM_ADDRESS_LENGTH
+    }
+
+    /// For ETH/Solana chains, token balance is in 6 decimals (e.g. USDC), we use value/1000 as bridge amount.
+    /// For other chains, use balance value as-is.
+    fun get_token_amount_for_target_chain(target_chain: u8, balance_value: u64): u64 {
+        if (target_chain == chain_ids::eth_mainnet() || target_chain == chain_ids::eth_sepolia() || target_chain == chain_ids::eth_custom()) {
+            balance_value / 1000u64
+        } else if (is_solana_chain(target_chain)) {
+            balance_value / 1000u64
+        } else {
+            balance_value
+        }
+    }
+
+    /// For ETH/Solana chains, fee is in bridge amount (6 decimals), convert to BUSD by fee*1000.
+    /// For other chains, fee is already in BUSD units.
+    fun get_fee_busd_for_target_chain(target_chain: u8, fee: u64): u64 {
+        if (target_chain == chain_ids::eth_mainnet() || target_chain == chain_ids::eth_sepolia() || target_chain == chain_ids::eth_custom()) {
+            fee * 1000u64
+        } else if (is_solana_chain(target_chain)) {
+            fee * 1000u64
+        } else {
+            fee
+        }
+    }
+
     //////////////////////////////////////////////////////
     // Test functions
     //
@@ -3537,6 +3790,20 @@ module bridge::bridge {
     }
 
     #[test_only]
+    public fun unwrap_external_withdrawn_v3_event(event: ExternalWithdrawEventV3): (u64, u64, u8,u8,vector<u8>,vector<u8>, u64,u64){
+        (
+            event.origin_token_type,
+            event.token_type,
+            event.source_chain,
+            event.target_chain,
+            event.source_address,
+            event.target_address,
+            event.amount_before_fee,
+            event.amount_after_fee,
+        )
+    }
+
+    #[test_only]
     public fun unwrap_external_bridge_record(record: ExternalBridgeRecord): (u8, u8, vector<u8>, vector<u8>, u64) {
         (
             record.source_chain,
@@ -3575,6 +3842,52 @@ module bridge::bridge {
     }
 
     #[test_only]
+    public fun unwrap_deposited_event_v3(event: TokenDepositedEventV3): (u64, u8, vector<u8>, u8, vector<u8>, u64, u64,u64,u64) {
+        (
+            event.seq_num,
+            event.source_chain,
+            event.sender_address,
+            event.target_chain,
+            event.target_address,
+            event.token_type,
+            event.origin_token_type,
+            event.amount_before_fee,
+            event.amount_after_fee,
+        )
+    }
+
+    #[test_only]
+    public fun unwrap_deposited_event_for_solana_v2(
+        event: TokenDepositedEventForSolanaV2,
+    ): (u64, u8, vector<u8>, u8, vector<u8>, u64, u64, u64) {
+        (
+            event.seq_num,
+            event.source_chain,
+            event.sender_address,
+            event.target_chain,
+            event.target_address,
+            event.token_type,
+            event.amount_before_fee,
+            event.amount_after_fee,
+        )
+    }
+
+    #[test_only]
+    public fun unwrap_deposited_event_for_solana_v3(event: TokenDepositedEventForSolanaV3): (u64, u8, vector<u8>, u8, vector<u8>, u64, u64, u64, u64) {
+        (
+            event.seq_num,
+            event.source_chain,
+            event.sender_address,
+            event.target_chain,
+            event.target_address,
+            event.token_type,
+            event.origin_token_type,
+            event.amount_before_fee,
+            event.amount_after_fee,
+        )
+    }
+
+    #[test_only]
     public fun unwrap_send_back_event(event: TokenSendBackEvent): (u64, u8, vector<u8>, u8, vector<u8>, u64, u64, vector<u8>) {
         (
             event.seq_num,
@@ -3590,6 +3903,22 @@ module bridge::bridge {
 
     #[test_only]
     public fun unwrap_send_back_event_v2(event: TokenSendBackEventV2): (u64, u8, vector<u8>, u8, vector<u8>, u64, u64, vector<u8>) {
+        (
+            event.seq_num,
+            event.source_chain,
+            event.sender_address,
+            event.target_chain,
+            event.target_address,
+            event.token_type,
+            event.amount,
+            event.tx_hash,
+        )
+    }
+
+    #[test_only]
+    public fun unwrap_send_back_event_for_solana_v2(
+        event: TokenSendBackEventForSolanaV2,
+    ): (u64, u8, vector<u8>, u8, vector<u8>, u64, u64, vector<u8>) {
         (
             event.seq_num,
             event.source_chain,

@@ -231,6 +231,7 @@ pub struct EthToSuiTokenBridgeV1 {
     pub tx_hash: Vec<u8>,
     pub event_idx: u16,
     pub fast_path_selector: FastPathSelector,
+    pub target_token_id: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
@@ -295,6 +296,7 @@ impl TryFrom<&TokensDepositedFilter> for EthToSuiTokenBridgeV1 {
             tx_hash: vec![],
             event_idx: 0,
             fast_path_selector: FastPathSelector::Finalized,
+            target_token_id: event.target_token_id,
         })
     }
 }
@@ -352,7 +354,7 @@ impl TryFrom<&EthToSuiTokenBridgeV1> for EthToSuiTokenBridgeV1 {
     fn try_from(msg: &EthToSuiTokenBridgeV1) -> BridgeResult<Self> {
         //only eth chain need to adjust
         let need_adjust = (msg.token_id == TOKEN_ID_USDC || msg.token_id == TOKEN_ID_USDT)
-            && msg.eth_chain_id.is_eth_chain();
+            && msg.eth_chain_id.is_eth_chain() && msg.target_token_id == TOKEN_ID_BUSD;
         Ok(Self {
             nonce: msg.nonce,
             sui_chain_id: msg.sui_chain_id,
@@ -360,7 +362,7 @@ impl TryFrom<&EthToSuiTokenBridgeV1> for EthToSuiTokenBridgeV1 {
             sui_address: msg.sui_address,
             eth_address: msg.eth_address,
             token_id: if msg.token_id == TOKEN_ID_USDC || msg.token_id == TOKEN_ID_USDT {
-                TOKEN_ID_BUSD
+                msg.target_token_id 
             } else {
                 msg.token_id
             },
@@ -374,6 +376,7 @@ impl TryFrom<&EthToSuiTokenBridgeV1> for EthToSuiTokenBridgeV1 {
             tx_hash: msg.tx_hash.clone(),
             event_idx: msg.event_idx,
             fast_path_selector: msg.fast_path_selector,
+            target_token_id: msg.target_token_id,
         })
     }
 }
@@ -544,7 +547,9 @@ mod tests {
         crypto::BridgeAuthorityPublicKeyBytes,
         types::{BlocklistType, EmergencyActionType},
     };
-    use ethers::types::TxHash;
+    use ethers::abi::{encode, Token};
+    use ethers::types::{TxHash, U256};
+    use ethers::utils::keccak256;
     use fastcrypto::encoding::{Encoding, Hex};
     use hex_literal::hex;
     use std::str::FromStr;
@@ -688,6 +693,7 @@ mod tests {
                 EthAddress::repeat_byte(3),
             ],
             token_sui_decimals: vec![5, 6, 7],
+            token_original_decimals: vec![5, 6, 7],
             token_prices: vec![1_000_000_000, 2_000_000_000, 3_000_000_000],
         };
         let message: eth_bridge_config::Message = action.into();
@@ -708,6 +714,18 @@ mod tests {
     fn test_token_deposit_eth_log_to_sui_bridge_event_regression() -> anyhow::Result<()> {
         telemetry_subscribers::init_for_testing();
         let tx_hash = TxHash::random();
+        let sender = EthAddress::from_str("0x58ac1eab83ae5ad29e0f1f566770d57c64cd7229").unwrap();
+        let recipient_bytes = Hex::decode("8f7c7cafbc956fe578a44b1034eb42a8d974c9098889125cab8b86be9bcdcf63").unwrap();
+        // TokensDeposited(uint8,uint64,uint8,uint64,uint64,uint64,address,bytes) - topic0 when targetTokenID was added
+        let topic0 = keccak256("TokensDeposited(uint8,uint64,uint8,uint64,uint64,uint64,address,bytes)");
+        // ABI data: tokenID, targetTokenID, suiAdjustedAmount, senderAddress, recipientAddress
+        let data = encode(&[
+            Token::Uint(U256::from(3u64)),
+            Token::Uint(U256::from(5u64)),
+            Token::Uint(U256::from(10000000u64)),
+            Token::Address(sender),
+            Token::Bytes(recipient_bytes.clone()),
+        ]);
         let action = EthLog {
             block_number: 33,
             tx_hash,
@@ -715,14 +733,12 @@ mod tests {
             log: Log {
                 address: EthAddress::repeat_byte(1),
                 topics: vec![
-                    hex!("5aeed19d0207dbc2897bec15241a138fed03931a5b2d8dfe2364b7c2ae33431b").into(),
+                    topic0.into(),
                     hex!("0000000000000000000000000000000000000000000000000000000000000001").into(),
                     hex!("0000000000000000000000000000000000000000000000000000000000000010").into(),
                     hex!("000000000000000000000000000000000000000000000000000000000000000b").into(),
                 ],
-                data: ethers::types::Bytes::from(
-                    Hex::decode("0x0000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000098968000000000000000000000000058ac1eab83ae5ad29e0f1f566770d57c64cd7229000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000208f7c7cafbc956fe578a44b1034eb42a8d974c9098889125cab8b86be9bcdcf63").unwrap(),
-                ),
+                data: ethers::types::Bytes::from(data),
                 block_hash: None,
                 block_number: None,
                 transaction_hash: Some(tx_hash),
@@ -753,6 +769,7 @@ mod tests {
                         )
                         .unwrap(),
                     ),
+                    target_token_id: 5,
                 }
             ))
         );
@@ -772,6 +789,7 @@ mod tests {
                 recipient_address: ethers::types::Bytes::from(
                     SuiAddress::random_for_testing_only().to_vec(),
                 ),
+                target_token_id: 2,
             },
         ));
         assert!(e
@@ -790,6 +808,7 @@ mod tests {
                 recipient_address: ethers::types::Bytes::from(
                     SuiAddress::random_for_testing_only().to_vec(),
                 ),
+                target_token_id: 2,
             },
         ));
         match e.try_into_bridge_action(TxHash::random(), 0).unwrap_err() {
