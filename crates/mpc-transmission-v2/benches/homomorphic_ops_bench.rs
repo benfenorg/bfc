@@ -6,12 +6,12 @@
 //! - Beaver multiplication: secure multiplication using Beaver triples
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use mpc_framework_core::beaver::BeaverTriple;
-use mpc_framework_core::field::gf64_sss::FieldElement;
-use mpc_framework_core::field::FieldElement as FieldElementTrait;
-use mpc_framework_core::math::HomomorphicOperations;
-use mpc_framework_core::poly::Polynomial;
-use mpc_framework_core::SecretSharing;
+use mpc_transmission_v2::beaver::BeaverTriple;
+use mpc_transmission_v2::field::gf64_sss::FieldElement;
+use mpc_transmission_v2::field::FieldElement as FieldElementTrait;
+use mpc_transmission_v2::math::HomomorphicOperations;
+use mpc_transmission_v2::poly::Polynomial;
+use mpc_transmission_v2::SecretSharing;
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use rand_core::RngCore;

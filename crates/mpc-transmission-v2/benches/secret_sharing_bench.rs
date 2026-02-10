@@ -6,7 +6,7 @@
 //! - Comparison: split vs split_with_seed
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use mpc_framework_core::SecretSharing;
+use mpc_transmission_v2::SecretSharing;
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 

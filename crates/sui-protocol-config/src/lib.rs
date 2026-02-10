@@ -3581,6 +3581,9 @@ impl ProtocolConfig {
 
                 }
                 79 => {
+
+                }
+                80 => {
                     if chain != Chain::Mainnet {
                         cfg.consensus_gc_depth = Some(60);
                         cfg.feature_flags.consensus_linearize_subdag_v2 = true;
@@ -3630,8 +3633,7 @@ impl ProtocolConfig {
 
                     cfg.consensus_gc_depth = Some(60);
                     cfg.feature_flags.consensus_linearize_subdag_v2 = true;
-                }
-                80 => {
+
                     cfg.max_ptb_value_size = Some(1024 * 1024);
                 }
                 81 => {

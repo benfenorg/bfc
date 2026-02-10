@@ -279,21 +279,17 @@ pub fn recover_from_shares_internal(shares: &[Share]) -> Result<u64, SSSError> {
 /// # Returns
 /// * `Ok(BeaverTriple)` - The generated Beaver triple
 /// * `Err(SSSError)` - If generation fails
-pub fn generate_beaver_triple(mask_secret: u64) -> Result<BeaverTriple, SSSError> {
-    use crate::field::gf64_sss::random_element;
+pub fn generate_beaver_triple(mask_secret: u64, coord_seed: u64) -> Result<BeaverTriple, SSSError> {
+    // 1. Generate fixed x-coordinates using the standard helper and dedicated coord_seed
+    let x_coords = get_two_party_coordinates(coord_seed);
 
+    // 2. Use mask_secret for values a, b and their polynomial randomization
     let mut rng = ChaCha20Rng::seed_from_u64(mask_secret);
-
-    // Generate fixed x-coordinates (same for all a, b, c shares)
-    let x_coords: Vec<FieldElement> = (0..TOTAL_SHARES)
-        .map(|_| random_element(&mut rng))
-        .collect();
-
-    // Generate random a and b
     let a = rng.next_u64();
     let b = rng.next_u64();
 
     // Use new_with_coordinates to ensure all shares use same x-coords
+    // The RNG here will handle the random polynomial coefficients for Beaver
     BeaverTriple::new_with_coordinates(a, b, &x_coords, THRESHOLD, &mut rng)
 }
 
@@ -311,15 +307,12 @@ pub fn generate_beaver_triple_with_values(
     a: u64,
     b: u64,
     mask_secret: u64,
+    coord_seed: u64,
 ) -> Result<BeaverTriple, SSSError> {
-    use crate::field::gf64_sss::random_element;
+    // Generate fixed x-coordinates using the standard helper
+    let x_coords = get_two_party_coordinates(coord_seed);
 
     let mut rng = ChaCha20Rng::seed_from_u64(mask_secret);
-
-    // Generate fixed x-coordinates
-    let x_coords: Vec<FieldElement> = (0..TOTAL_SHARES)
-        .map(|_| random_element(&mut rng))
-        .collect();
 
     BeaverTriple::new_with_coordinates(a, b, &x_coords, THRESHOLD, &mut rng)
 }
@@ -453,7 +446,7 @@ mod tests {
 
     #[test]
     fn test_generate_beaver_triple() {
-        let triple = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple(TEST_MASK_SECRET, TEST_MASK_SECRET).unwrap();
 
         assert_eq!(triple.a_shares.len(), 2);
         assert_eq!(triple.b_shares.len(), 2);
@@ -474,7 +467,7 @@ mod tests {
     fn test_generate_beaver_triple_with_values() {
         let a = 5u64;
         let b = 7u64;
-        let triple = generate_beaver_triple_with_values(a, b, TEST_MASK_SECRET).unwrap();
+        let triple = generate_beaver_triple_with_values(a, b, TEST_MASK_SECRET, TEST_MASK_SECRET).unwrap();
 
         // Verify recovered values
         let recovered_a = recover_from_shares_internal(&triple.a_shares).unwrap();
@@ -492,8 +485,8 @@ mod tests {
 
     #[test]
     fn test_beaver_triple_determinism() {
-        let triple1 = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
-        let triple2 = generate_beaver_triple(TEST_MASK_SECRET).unwrap();
+        let triple1 = generate_beaver_triple(TEST_MASK_SECRET, TEST_MASK_SECRET).unwrap();
+        let triple2 = generate_beaver_triple(TEST_MASK_SECRET, TEST_MASK_SECRET).unwrap();
 
         // Same seed should produce same triple
         assert_eq!(triple1.a_shares[0].0, triple2.a_shares[0].0);
