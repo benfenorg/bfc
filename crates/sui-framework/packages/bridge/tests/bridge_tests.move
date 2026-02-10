@@ -71,6 +71,8 @@ use bfc_system::bfc_system;
 use bfc_system::bfc_system_tests::public_setup;
 use bfc_system::busd::BUSD;
 use bridge::busd::BUSD as BUSDFAKER;
+use bridge::bridge_fee;
+use bridge::bridge::test_load_mut_uid;
 
 
 use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
@@ -2301,6 +2303,11 @@ fun test_defi_stake_exceeds_limit() {
 }
 
 #[test]
+fun test_external_busd_withdraw_external_busd_coin_tron_test_and_vaild_fee(){
+    test_external_busd_withdraw_external_busd_coin_and_vaild_fee(4u64,  chain_ids::tron_testnet(),chain_ids::sui_custom());
+}
+
+#[test]
 fun test_external_busd_withdraw_external_busd_coin_tron_test() {
     test_external_busd_withdraw_external_busd_coin(4u64,  chain_ids::tron_testnet(),chain_ids::sui_custom());
 }
@@ -2728,6 +2735,67 @@ fun test_external_busd_withdraw_external_busd_coin(token_id_expect: u64, target_
     let amount = 9*1_000_000_000u64;
     test_external_busd_withdraw_external_busd_coin_with_amount(token_id_expect, target_chain, source_chain, amount);
 }
+
+fun test_external_busd_withdraw_external_busd_coin_and_vaild_fee(token_id_expect: u64, target_chain: u8, source_chain: u8){
+    test_external_busd_withdraw_external_busd_coin_with_vaild_fee(token_id_expect, target_chain, source_chain, 10*1_000_000_000u64);
+}
+
+fun test_external_busd_withdraw_external_busd_coin_with_vaild_fee(token_id_expect: u64, target_chain: u8, source_chain: u8, amount: u64) {
+    let source_address = vector[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+
+    let mut env = create_env(source_chain);
+    env.create_bridge_default();
+
+    let mut bridge = env.bridge(@0x0);
+    let bridgeID=test_load_mut_uid(bridge.bridge_ref_mut());
+
+    let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    {
+         bridge_fee::set_fee_in_cross_out(bridgeID, chain_ids::tron_testnet() as u64, 5 ,0,5_000_000_000,  scenario.ctx());
+
+    };
+   
+    let ctx = env.ctx();
+  
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+    let coin = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, amount, &cap, ctx);
+
+    let clock = sui::clock::create_for_testing(ctx);
+
+    bridge.bridge_ref_mut().withdraw_external_busd_coin_v2<BUSD>(
+        target_chain,
+        source_address,
+        coin,
+        token_id_expect,
+        &mut bfc_system_state,
+        &clock,
+        ctx,
+    );
+    sui::clock::destroy_for_testing(clock);
+
+    let withdraw = sui::event::events_by_type<bridge::bridge::ExternalWithdrawEventV3>();
+    assert!(withdraw.length() == 1);
+    let (
+                _,
+                _,
+                _,
+                _,
+                _,
+                _,
+                event_amount_before_fee,
+                event_amount_after_fee,
+            ) = withdraw[0].unwrap_external_withdrawn_v3_event();
+    assert_eq!(event_amount_before_fee-event_amount_after_fee, 5_000_000_000);
+    
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+
+    bridge.return_bridge();
+    env.destroy_env();
+}
+
 
 fun test_external_busd_withdraw_external_busd_coin_with_amount(token_id_expect: u64, target_chain: u8, source_chain: u8, amount: u64) {
     let source_address = vector[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
