@@ -1113,7 +1113,7 @@ Compute the net amount after applying the fee
 
 <pre><code><b>fun</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_fee">calculate_fee</a>(amount: u64,fee_rate: u64) : u64 {
     <b>assert</b>!(fee_rate &lt; <a href="../bridge/bridge_fee.md#bridge_bridge_fee_FEE_RATE_PRECISION">FEE_RATE_PRECISION</a>, <a href="../bridge/bridge_fee.md#bridge_bridge_fee_EBridgeFeeSettingWrong">EBridgeFeeSettingWrong</a>);
-    (amount * fee_rate) / <a href="../bridge/bridge_fee.md#bridge_bridge_fee_FEE_RATE_PRECISION">FEE_RATE_PRECISION</a>
+    (((amount <b>as</b> u128)*( fee_rate <b>as</b> u128)) /(<a href="../bridge/bridge_fee.md#bridge_bridge_fee_FEE_RATE_PRECISION">FEE_RATE_PRECISION</a> <b>as</b> u128)) <b>as</b> u64
 }
 </code></pre>
 

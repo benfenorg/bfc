@@ -44,6 +44,7 @@ title: Module `bridge::bridge`
 -  [Function `migrate`](#bridge_bridge_migrate)
 -  [Function `init_token_list`](#bridge_bridge_init_token_list)
 -  [Function `update_external_out_limit`](#bridge_bridge_update_external_out_limit)
+-  [Function `update_external_24h_limit`](#bridge_bridge_update_external_24h_limit)
 -  [Function `update_defi_protocol_info`](#bridge_bridge_update_defi_protocol_info)
 -  [Function `delete_defi_protocol_info`](#bridge_bridge_delete_defi_protocol_info)
 -  [Function `get_defi_protocol_info_stake_limit`](#bridge_bridge_get_defi_protocol_info_stake_limit)
@@ -77,11 +78,14 @@ title: Module `bridge::bridge`
 -  [Function `execute_system_message_with_ctx`](#bridge_bridge_execute_system_message_with_ctx)
 -  [Function `execute_system_message`](#bridge_bridge_execute_system_message)
 -  [Function `get_available_claim_amount`](#bridge_bridge_get_available_claim_amount)
+-  [Function `get_external_available_transfer_amount`](#bridge_bridge_get_external_available_transfer_amount)
 -  [Function `pre_deposit_external_coin`](#bridge_bridge_pre_deposit_external_coin)
 -  [Function `deposit_external_coin`](#bridge_bridge_deposit_external_coin)
 -  [Function `approval_and_claimed_external_coin`](#bridge_bridge_approval_and_claimed_external_coin)
 -  [Function `approval_and_claimed_external_busd_coin`](#bridge_bridge_approval_and_claimed_external_busd_coin)
+-  [Function `withdraw_external_busd_coin_v2`](#bridge_bridge_withdraw_external_busd_coin_v2)
 -  [Function `withdraw_external_busd_coin`](#bridge_bridge_withdraw_external_busd_coin)
+-  [Function `withdraw_external_coin_v2`](#bridge_bridge_withdraw_external_coin_v2)
 -  [Function `withdraw_external_coin`](#bridge_bridge_withdraw_external_coin)
 -  [Function `defi_holders_lp_token_amount_get`](#bridge_bridge_defi_holders_lp_token_amount_get)
 -  [Function `defi_holders_amount_get`](#bridge_bridge_defi_holders_amount_get)
@@ -2351,6 +2355,15 @@ title: Module `bridge::bridge`
 
 
 
+<a name="bridge_bridge_ETransfer24hLimit"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_ETransfer24hLimit">ETransfer24hLimit</a>: u64 = 56;
+</code></pre>
+
+
+
 <a name="bridge_bridge_ETransferLimit"></a>
 
 
@@ -2723,8 +2736,7 @@ title: Module `bridge::bridge`
     ctx: &<b>mut</b> TxContext
 ){
     <a href="../bridge/bridge.md#bridge_bridge_ensure_defi_holders_initialized">ensure_defi_holders_initialized</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
-    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_registry">defi_protocols::registry</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
-    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_initial_defi_protocol">defi_protocols::initial_defi_protocol</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id);
+    <a href="../bridge/limiter.md#bridge_limiter_initial_external_24h_limits">limiter::initial_external_24h_limits</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id);
 }
 </code></pre>
 
@@ -2791,6 +2803,44 @@ title: Module `bridge::bridge`
     <b>assert</b>!(bfc_system_state.verify_capability(cap, ctx), <a href="../bridge/bridge.md#bridge_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>);
     <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(inner.chain_id, target_chain);
     <a href="../bridge/limiter.md#bridge_limiter_update_external_out_limit">limiter::update_external_out_limit</a>(
+        parent_id,
+        &route,
+        limit
+    );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_update_external_24h_limit"></a>
+
+## Function `update_external_24h_limit`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_external_24h_limit">update_external_24h_limit</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, bfc_system_state: &<a href="../bfc_system/bfc_system.md#bfc_system_bfc_system_BfcSystemState">bfc_system::bfc_system::BfcSystemState</a>, cap: &<a href="../bfc_system/bfc_system_state_inner.md#bfc_system_bfc_system_state_inner_BfcSystemModifyCap">bfc_system::bfc_system_state_inner::BfcSystemModifyCap</a>, target_chain: u8, limit: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_external_24h_limit">update_external_24h_limit</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &BfcSystemState,
+    cap: &BfcSystemModifyCap,
+    target_chain: u8,
+    limit: u64,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>assert</b>!(bfc_system_state.verify_capability(cap, ctx), <a href="../bridge/bridge.md#bridge_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>);
+    <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(inner.chain_id, target_chain);
+    <a href="../bridge/limiter.md#bridge_limiter_update_external_24h_limit">limiter::update_external_24h_limit</a>(
         parent_id,
         &route,
         limit
@@ -3342,7 +3392,7 @@ title: Module `bridge::bridge`
     } <b>else</b> {
         <b>assert</b>!(token_amount &gt;= 1000, <a href="../bridge/bridge.md#bridge_bridge_EDefiStakeAmountNotEnough">EDefiStakeAmountNotEnough</a>);
     };
-    // 检查质押金额是否超过协议限制
+    // Check <b>if</b> the stake amount exceeds the protocol limit
     <b>let</b> protocol_info = <a href="../bridge/defi_protocols.md#bridge_defi_protocols_get_protocol_info">defi_protocols::get_protocol_info</a>(bridge_id, protocol_type, protocol_version, protocol_token_id, target_chain);
     <b>assert</b>!(token_amount &lt;= <a href="../bridge/defi_protocols.md#bridge_defi_protocols_limit_stake_amount">defi_protocols::limit_stake_amount</a>(&protocol_info), <a href="../bridge/bridge.md#bridge_bridge_ETransferLimit">ETransferLimit</a>);
     <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
@@ -4561,6 +4611,35 @@ title: Module `bridge::bridge`
 
 </details>
 
+<a name="bridge_bridge_get_external_available_transfer_amount"></a>
+
+## Function `get_external_available_transfer_amount`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_external_available_transfer_amount">get_external_available_transfer_amount</a>&lt;T&gt;(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, target_chain: u8): u128
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_external_available_transfer_amount">get_external_available_transfer_amount</a>&lt;T&gt;(
+      <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+      target_chain: u8,
+): u128 {
+    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner">load_inner</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(inner.chain_id, target_chain);
+    <a href="../bridge/limiter.md#bridge_limiter_get_external_available_transfer_amount">limiter::get_external_available_transfer_amount</a>&lt;T&gt;(&<a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, &inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, route)
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="bridge_bridge_pre_deposit_external_coin"></a>
 
 ## Function `pre_deposit_external_coin`
@@ -4930,6 +5009,70 @@ title: Module `bridge::bridge`
 
 </details>
 
+<a name="bridge_bridge_withdraw_external_busd_coin_v2"></a>
+
+## Function `withdraw_external_busd_coin_v2`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_withdraw_external_busd_coin_v2">withdraw_external_busd_coin_v2</a>&lt;T&gt;(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, target_chain: u8, target_address: vector&lt;u8&gt;, token: <a href="../sui/coin.md#sui_coin_Coin">sui::coin::Coin</a>&lt;T&gt;, token_id_expect: u64, bfc_system_state: &<b>mut</b> <a href="../bfc_system/bfc_system.md#bfc_system_bfc_system_BfcSystemState">bfc_system::bfc_system::BfcSystemState</a>, clock: &<a href="../sui/clock.md#sui_clock_Clock">sui::clock::Clock</a>, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_withdraw_external_busd_coin_v2">withdraw_external_busd_coin_v2</a>&lt;T&gt;(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    target_chain: u8,
+    target_address: vector&lt;u8&gt;,
+    <b>mut</b> token: Coin&lt;T&gt;,
+    token_id_expect: u64,
+    bfc_system_state: &<b>mut</b> BfcSystemState,
+    clock: &Clock,
+    ctx: &<b>mut</b> TxContext
+) {
+    <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>assert</b>!(<a href="../bridge/tokenlist.md#bridge_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(
+        parent_id, target_chain <b>as</b> u64, token_id_expect),<a href="../bridge/bridge.md#bridge_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
+    <b>assert</b>!(token_id_expect == <a href="../bridge/bridge.md#bridge_bridge_TOKEN_ID_USDC">TOKEN_ID_USDC</a> || token_id_expect == <a href="../bridge/bridge.md#bridge_bridge_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, <a href="../bridge/bridge.md#bridge_bridge_EInvalidTokenIdExpect">EInvalidTokenIdExpect</a>);
+    <b>assert</b>!(type_name::get&lt;T&gt;() == type_name::get&lt;BUSD&gt;(), <a href="../bridge/bridge.md#bridge_bridge_EOnlySupportBusd">EOnlySupportBusd</a>);
+    <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
+    <b>assert</b>!(<a href="../bridge/chain_ids.md#bridge_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="../bridge/bridge.md#bridge_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
+    <b>let</b> amount = token.balance().value();
+    <b>assert</b>!(amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
+    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(parent_id,target_chain <b>as</b> u64,token_id_expect,amount);
+    <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
+    <b>let</b> fee_coin=token.split&lt;T&gt;(fee, ctx);
+    <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
+    <b>let</b> amount_after_fee=amount-fee;
+    <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(inner.chain_id, target_chain);
+    <b>assert</b>!(amount_after_fee &lt;= <a href="../bridge/limiter.md#bridge_limiter_get_external_out_limit">limiter::get_external_out_limit</a>(parent_id, &route), <a href="../bridge/bridge.md#bridge_bridge_ETransferLimit">ETransferLimit</a>);
+    // 24h <a href="../bridge/limiter.md#bridge_limiter">limiter</a> check
+    <b>assert</b>!(<a href="../bridge/limiter.md#bridge_limiter_check_and_record_external_24h_transfer">limiter::check_and_record_external_24h_transfer</a>(parent_id, clock, route, amount_after_fee), <a href="../bridge/bridge.md#bridge_bridge_ETransfer24hLimit">ETransfer24hLimit</a>);
+    bfc_system_state.burn_stable(token, ctx);
+    // emit event
+   emit(
+        <a href="../bridge/bridge.md#bridge_bridge_ExternalWithdrawEventV3">ExternalWithdrawEventV3</a> {
+            origin_token_type: 5, // BUSD
+            token_type: token_id_expect,
+            source_chain: inner.chain_id,
+            target_chain,
+            source_address: address::to_bytes(ctx.sender()),
+            target_address,
+            amount_before_fee: amount,
+            amount_after_fee,
+        },
+    );
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="bridge_bridge_withdraw_external_busd_coin"></a>
 
 ## Function `withdraw_external_busd_coin`
@@ -4968,12 +5111,76 @@ title: Module `bridge::bridge`
     <b>let</b> fee_coin=token.split&lt;T&gt;(fee, ctx);
     <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
     <b>let</b> amount_after_fee=amount-fee;
+    <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(inner.chain_id, target_chain);
+    <b>assert</b>!(amount_after_fee &lt;= <a href="../bridge/limiter.md#bridge_limiter_get_external_out_limit">limiter::get_external_out_limit</a>(parent_id, &route), <a href="../bridge/bridge.md#bridge_bridge_ETransferLimit">ETransferLimit</a>);
     bfc_system_state.burn_stable(token, ctx);
     // emit event
    emit(
         <a href="../bridge/bridge.md#bridge_bridge_ExternalWithdrawEventV3">ExternalWithdrawEventV3</a> {
             origin_token_type: 5, // BUSD
             token_type: token_id_expect,
+            source_chain: inner.chain_id,
+            target_chain,
+            source_address: address::to_bytes(ctx.sender()),
+            target_address,
+            amount_before_fee: amount,
+            amount_after_fee,
+        },
+    );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_withdraw_external_coin_v2"></a>
+
+## Function `withdraw_external_coin_v2`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_withdraw_external_coin_v2">withdraw_external_coin_v2</a>&lt;T&gt;(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, target_chain: u8, target_address: vector&lt;u8&gt;, token: <a href="../sui/coin.md#sui_coin_Coin">sui::coin::Coin</a>&lt;T&gt;, clock: &<a href="../sui/clock.md#sui_clock_Clock">sui::clock::Clock</a>, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_withdraw_external_coin_v2">withdraw_external_coin_v2</a>&lt;T&gt;(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    target_chain: u8,
+    target_address: vector&lt;u8&gt;,
+    <b>mut</b> token: Coin&lt;T&gt;,
+    clock: &Clock,
+    ctx: &<b>mut</b> TxContext
+) {
+    <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> token_id=<a href="../bridge/treasury.md#bridge_treasury_token_id">treasury::token_id</a>&lt;T&gt;(&inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>);
+    <b>assert</b>!(<a href="../bridge/tokenlist.md#bridge_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(
+        parent_id, target_chain <b>as</b> u64, token_id),<a href="../bridge/bridge.md#bridge_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
+    <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
+    <b>assert</b>!(<a href="../bridge/chain_ids.md#bridge_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="../bridge/bridge.md#bridge_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
+    <b>let</b> amount = token.balance().value();
+    <b>assert</b>!(amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
+    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(parent_id,target_chain <b>as</b> u64,token_id,amount);
+    <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
+    <b>let</b> fee_coin=token.split&lt;T&gt;(fee, ctx);
+    <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
+    <b>let</b> amount_after_fee=amount-fee;
+    <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(inner.chain_id, target_chain);
+    <b>let</b> amount_in_usd = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.calculate_amount_in_usd&lt;T&gt;(amount_after_fee);
+    <b>assert</b>!(amount_in_usd &lt;= <a href="../bridge/limiter.md#bridge_limiter_get_external_out_limit">limiter::get_external_out_limit</a>(parent_id, &route), <a href="../bridge/bridge.md#bridge_bridge_ETransferLimit">ETransferLimit</a>);
+    // 24h <a href="../bridge/limiter.md#bridge_limiter">limiter</a> check
+    <b>assert</b>!(<a href="../bridge/limiter.md#bridge_limiter_check_and_record_external_24h_transfer">limiter::check_and_record_external_24h_transfer</a>(parent_id, clock, route, amount_in_usd), <a href="../bridge/bridge.md#bridge_bridge_ETransfer24hLimit">ETransfer24hLimit</a>);
+    inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.burn(token);
+    // emit event
+    emit(
+        <a href="../bridge/bridge.md#bridge_bridge_ExternalWithdrawEventV3">ExternalWithdrawEventV3</a> {
+            origin_token_type: token_id,
+            token_type: token_id,
             source_chain: inner.chain_id,
             target_chain,
             source_address: address::to_bytes(ctx.sender()),
