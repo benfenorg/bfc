@@ -5046,6 +5046,16 @@ fun test_withdraw_external_busd_coin_v2_24h_limit_test() {
         env.ctx()
     );
 
+    // Set fee to 0.05% (500 ppm) for BUSD (token_id=5) on target_chain
+    bridge_fee::set_fee_in_cross_out(
+        bridge.bridge_ref_mut().test_load_mut_uid(),
+        target_chain as u64,
+        5, // BUSD
+        1, // Mode 1 (Percentage)
+        500, // 500 ppm = 0.05%
+        env.ctx()
+    );
+
     // 2. Withdraw 60 BUSD (Should succeed)
     // 60 BUSD < 100 BUSD
     let amount1 = 60 * 1_000_000_000;
