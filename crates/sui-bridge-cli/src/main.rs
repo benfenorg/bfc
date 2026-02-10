@@ -16,16 +16,21 @@ use std::time::Duration;
 use sui_bridge::client::bridge_authority_aggregator::BridgeAuthorityAggregator;
 use sui_bridge::crypto::{BridgeAuthorityPublicKey, BridgeAuthorityPublicKeyBytes};
 use sui_bridge::eth_transaction_builder::build_eth_transaction;
+
 use sui_bridge::metrics::BridgeMetrics;
 use sui_bridge::sui_client::SuiClient;
 use sui_bridge::sui_transaction_builder::build_sui_transaction;
+use sui_bridge::solana_transaction_builder::build_solana_transaction;
 use sui_bridge::types::BridgeActionType;
 use sui_bridge::utils::{
     examine_key, generate_bridge_authority_key_and_write_to_file,
     generate_bridge_client_key_and_write_to_file, generate_bridge_node_config_and_write_to_file,
 };
 use sui_bridge::utils::{get_eth_contracts, EthBridgeContracts};
-use sui_bridge_cli::{make_action, select_contract_address, Args, BridgeCliConfig, BridgeCommand, LoadedBridgeCliConfig, Network, SEPOLIA_BRIDGE_PROXY_ADDR};
+use sui_bridge_cli::{
+    make_action, select_contract_address, Args, BridgeCliConfig, BridgeCommand,
+    LoadedBridgeCliConfig, Network, SEPOLIA_BRIDGE_PROXY_ADDR,
+};
 use sui_config::Config;
 use sui_sdk::SuiClient as SuiSdkClient;
 use sui_sdk::SuiClientBuilder;
@@ -37,6 +42,11 @@ use sui_types::crypto::AuthorityPublicKeyBytes;
 use sui_types::crypto::Signature;
 use sui_types::crypto::ToFromBytes;
 use sui_types::transaction::Transaction;
+use solana_sdk::{
+    commitment_config::CommitmentConfig,
+};
+use anchor_client::{Client, Cluster};
+
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -102,10 +112,10 @@ async fn main() -> anyhow::Result<()> {
                 metrics,
                 Arc::new(BTreeMap::new()),
             );
+            let sui_chain_id = BridgeChainId::try_from(bridge_summary.chain_id).unwrap();
 
             // Handle Sui Side
             if chain_id.is_sui_chain() {
-                let sui_chain_id = BridgeChainId::try_from(bridge_summary.chain_id).unwrap();
                 assert_eq!(
                     sui_chain_id, chain_id,
                     "Chain ID mismatch, expected: {:?}, got from url: {:?}",
@@ -159,6 +169,57 @@ async fn main() -> anyhow::Result<()> {
                 return Ok(());
             }
 
+            if chain_id.is_solana_chain() {
+                let solana_chain_id = BridgeChainId::try_from(chain_id).unwrap();     
+                let solana_signer=config.solana_signer();
+                let solana_rpc_url = config.solana_rpc_url.as_ref().expect("Solana RPC URL is missing").to_string();
+                let solana_client = Arc::new(Client::new_with_options(
+                    Cluster::Custom(
+                        solana_rpc_url.clone(), 
+                        solana_rpc_url
+                    ),
+                    solana_signer.clone(),
+                    CommitmentConfig::confirmed(),
+                ));
+
+                let program_id = config.solana_bridge_program_id.expect("Solana bridge program ID is missing");
+                let program=Arc::new(solana_client.clone().program(program_id).expect("Failed to get solana bridge program"));
+
+                // let solana_client=config.;
+                let solana_action = make_action(chain_id, &cmd);
+               
+                println!("Action to execute on Solana: {:?}", solana_action);
+                let certified_action = agg
+                    .request_committee_signatures(solana_action)
+                    .await
+                    .expect("Failed to request committee signatures");
+                if dry_run {
+                    println!("Dryrun succeeded.");
+                    return Ok(());
+                }
+                let solana_tx = build_solana_transaction(
+                    program.clone(),
+                    solana_chain_id,
+                    sui_chain_id,
+                    solana_signer,
+                    certified_action,
+                )
+                .await
+                .expect("Failed to build solana transaction");
+            
+                let signature = program
+                    .request()
+                    .instruction(solana_tx)
+                    .signer(solana_signer.clone())
+                    .send()
+                    .await
+                    .map_err(|e| anyhow::anyhow!(
+                        "Failed to send and confirm solana transaction: {}",
+                        e
+                    ))?;
+                println!("solana signature: {:?}", signature);
+                return Ok(());
+            }
             // Handle eth side
             // TODO assert chain id returned from rpc matches chain_id
             let eth_signer_client = config.eth_signer();

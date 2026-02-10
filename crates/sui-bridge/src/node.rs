@@ -53,8 +53,11 @@ use sui_types::{
 use tokio::task::JoinHandle;
 use tracing::info;
 use crate::storage::EthSyncerCursorsKey;
+use crate::solana_client::SolanaClient;
+use crate::solana_syncer::{SolanaSyncer, SolanaTargetAddressInfo};
 
 const ETH_EVENTS_CHANNEL_SIZE: usize = 1000;
+const SOLANA_EVENTS_CHANNEL_SIZE: usize = 1000;
 
 pub async fn run_bridge_node(
     config: BridgeNodeConfig,
@@ -124,6 +127,7 @@ pub async fn run_bridge_node(
             Arc::new(get_validator_names_by_pub_keys(&committee, &sui_system).await);
         let client_components = start_client_components(
             client_config,
+            config.solana.clone(),
             committee.clone(),
             committee_keys_to_names,
             metrics.clone(),
@@ -155,7 +159,9 @@ pub async fn run_bridge_node(
             server_config.evm_clients,
             server_config.approved_governance_actions,
             metrics.clone(),
-            fast_path_config
+            fast_path_config,
+            server_config.external_rpc,
+            Some(config.solana.getblock_base_url),
         ),
         metrics,
         Arc::new(metadata),
@@ -270,6 +276,7 @@ async fn start_watchdog(
 // TODO: is there a way to clean up the overrides after it's stored in DB?
 async fn start_client_components(
     client_config: BridgeClientConfig,
+    solana_config: crate::config::SolanaConfig,
     committee: Arc<BridgeCommittee>,
     committee_keys_to_names: Arc<BTreeMap<BridgeAuthorityPublicKeyBytes, String>>,
     metrics: Arc<BridgeMetrics>,
@@ -301,6 +308,13 @@ async fn start_client_components(
             .unwrap()
             .channel_inflight
             .with_label_values(&["evm_events_queue"]),
+    );
+    let (sol_events_tx, sol_events_rx) = mysten_metrics::metered_channel::channel(
+        SOLANA_EVENTS_CHANNEL_SIZE,
+        &mysten_metrics::get_metrics()
+            .unwrap()
+            .channel_inflight
+            .with_label_values(&["solana_events_queue"]),
     );
     if client_config.eth_enable_fast_path_finalized {
         let (task_handles, _) =
@@ -408,6 +422,28 @@ async fn start_client_components(
         .expect("Failed to start sui syncer");
     all_handles.extend(task_handles);
 
+    let sol_client = Arc::new(SolanaClient::new(&solana_config.getblock_base_url));
+    let sol_keys = vec![solana_config.bridge_proxy_address.clone()];
+    let sol_targets_to_watch = get_solana_targets_to_watch(
+        &store,
+        &sol_keys,
+        solana_config.contracts_start_slot_fallback.unwrap_or(0),
+        solana_config.contracts_start_slot_override,
+    );
+
+    let finalized_slot_query_interval = solana_config
+        .query_interval_secs
+        .map(Duration::from_secs)
+        .unwrap_or(Duration::from_secs(10));
+    let (sol_handles, _last_finalized_solana_slot_rx) = SolanaSyncer::new(
+        sol_client.clone(),
+        sol_targets_to_watch,
+        sol_events_tx,
+    )
+    .run(metrics.clone(), finalized_slot_query_interval)
+    .await
+    .expect("Failed to start solana syncer");
+    all_handles.extend(sol_handles);
     let bridge_auth_agg = Arc::new(ArcSwap::from(Arc::new(BridgeAuthorityAggregator::new(
         committee,
         metrics.clone(),
@@ -456,6 +492,7 @@ async fn start_client_components(
         client_config.key.copy(),
         metrics.clone(),
         client_config.aml_key.clone(),
+        client_config.aml_block_list.clone(),
     )
         .await;
 
@@ -480,6 +517,7 @@ async fn start_client_components(
         sui_client,
         sui_events_rx,
         evm_events_rx,
+        sol_events_rx,
         store.clone(),
         sui_monitor_tx,
         eth_monitor_tx,
@@ -564,6 +602,44 @@ fn get_eth_contracts_to_watch(
     eth_contracts_to_watch
 }
 
+
+fn get_solana_targets_to_watch(
+    store: &std::sync::Arc<BridgeOrchestratorTables>,
+    keys: &[String],
+    solana_contracts_start_slot_fallback: u64,
+    solana_contracts_start_slot_override: Option<u64>,
+) -> HashMap<String, SolanaTargetAddressInfo> {
+    let stored_sigs = store
+        .get_solana_signature_cursors(keys)
+        .expect("Failed to get solana signature cursors from storage");
+    let stored_slots = store
+        .get_solana_slot_cursors(keys)
+        .expect("Failed to get solana slot cursors from storage");
+    let mut targets = HashMap::new();
+    for ((addr, stored_sig), stored_slot) in keys.iter().zip(stored_sigs).zip(stored_slots) {
+        // Priority: override > stored_slot > fallback
+        // This ensures we resume from the correct position after restart
+        let start_slot = solana_contracts_start_slot_override
+            .unwrap_or_else(|| stored_slot.unwrap_or(solana_contracts_start_slot_fallback));
+        
+        info!(
+            address = %addr,
+            start_slot = start_slot,
+            stored_slot = ?stored_slot,
+            stored_sig = ?stored_sig,
+            "Initializing Solana target to watch"
+        );
+        
+        targets.insert(
+            addr.clone(),
+            SolanaTargetAddressInfo {
+                start_slot,
+                until_signature: stored_sig,
+            },
+        );
+    }
+    targets
+}
 #[cfg(test)]
 mod tests {
     use ethers::types::Address as EthAddress;
@@ -575,6 +651,7 @@ mod tests {
     use crate::config::BridgeNodeConfig;
     use crate::config::EthConfig;
     use crate::config::SuiConfig;
+    use crate::config::{ChainRpcUrls, ExternalChainRpcConfig};
     use crate::e2e_tests::auth;
     use crate::e2e_tests::test_utils::BridgeTestCluster;
     use crate::e2e_tests::test_utils::BridgeTestClusterBuilder;
@@ -644,6 +721,23 @@ mod tests {
                 .into_iter()
                 .collect::<HashMap<_, _>>()
         );
+    }
+
+    #[tokio::test]
+    async fn test_get_solana_addresses_to_watch() {
+        telemetry_subscribers::init_for_testing();
+        let temp_dir = tempfile::tempdir().unwrap();
+        let store = BridgeOrchestratorTables::new(temp_dir.path());
+        let keys = vec![
+            "11111111111111111111111111111111".to_string(),
+            "Vote111111111111111111111111111111111111111".to_string(),
+        ];
+        let targets = get_solana_targets_to_watch(&store, &keys, 10, None);
+        assert_eq!(targets.get(&keys[0]).unwrap().start_slot, 10u64);
+        assert_eq!(targets.get(&keys[1]).unwrap().start_slot, 10u64);
+        let targets = get_solana_targets_to_watch(&store, &keys, 10, Some(420));
+        assert_eq!(targets.get(&keys[0]).unwrap().start_slot, 420u64);
+        assert_eq!(targets.get(&keys[1]).unwrap().start_slot, 420u64);
     }
 
     #[tokio::test]
@@ -779,7 +873,26 @@ mod tests {
             metrics_key_pair: default_ed25519_key_pair(),
             metrics: None,
             watchdog_config: None,
+            solana: crate::config::SolanaConfig {
+                getblock_base_url: bridge_test_cluster.solana_rpc_url(),
+                bridge_proxy_address: bridge_test_cluster.sol_environment.contract().to_string(),
+                bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
+                contracts_start_slot_fallback: Some(0),
+                contracts_start_slot_override: None,
+                query_interval_secs: None,
+            },
             user_limit_db_url: None,
+            external_rpc: Some(ExternalChainRpcConfig {
+                solana: ChainRpcUrls {
+                    mainnet_url: "http://127.0.0.1:8899".to_string(),
+                    testnet_url: "http://127.0.0.1:8899".to_string(),
+                },
+                tron: ChainRpcUrls {
+                    mainnet_url: "http://127.0.0.1:18190".to_string(),
+                    testnet_url: "http://127.0.0.1:18190".to_string(),
+                },
+            }),
+            aml_block_list: vec![],
         };
         // Spawn bridge node in memory
         let _handle = run_bridge_node(
@@ -867,7 +980,26 @@ mod tests {
             metrics_key_pair: default_ed25519_key_pair(),
             metrics: None,
             watchdog_config: None,
+            solana: crate::config::SolanaConfig {
+                getblock_base_url: bridge_test_cluster.solana_rpc_url(),
+                bridge_proxy_address: bridge_test_cluster.sol_environment.contract().to_string(),
+                bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
+                contracts_start_slot_fallback: Some(0),
+                contracts_start_slot_override: None,
+                query_interval_secs: None,
+            },
             user_limit_db_url: None,
+            external_rpc: Some(ExternalChainRpcConfig {
+                solana: ChainRpcUrls {
+                    mainnet_url: "http://127.0.0.1:8899".to_string(),
+                    testnet_url: "http://127.0.0.1:8899".to_string(),
+                },
+                tron: ChainRpcUrls {
+                    mainnet_url: "http://127.0.0.1:18190".to_string(),
+                    testnet_url: "http://127.0.0.1:18190".to_string(),
+                },
+            }),
+            aml_block_list: vec![],
         };
 
         let prometheus_registry = Registry::new();
@@ -984,7 +1116,26 @@ mod tests {
             metrics_key_pair: default_ed25519_key_pair(),
             metrics: None,
             watchdog_config: None,
+            solana: crate::config::SolanaConfig {
+                getblock_base_url: bridge_test_cluster.solana_rpc_url(),
+                bridge_proxy_address: bridge_test_cluster.sol_environment.contract().to_string(),
+                bridge_chain_id: BridgeChainId::SolanaTestnet as u8,
+                contracts_start_slot_fallback: Some(0),
+                contracts_start_slot_override: None,
+                query_interval_secs: None,
+            },
             user_limit_db_url: None,
+            external_rpc: Some(ExternalChainRpcConfig {
+                solana: ChainRpcUrls {
+                    mainnet_url: "http://127.0.0.1:8899".to_string(),
+                    testnet_url: "http://127.0.0.1:8899".to_string(),
+                },
+                tron: ChainRpcUrls {
+                    mainnet_url: "http://127.0.0.1:18190".to_string(),
+                    testnet_url: "http://127.0.0.1:18190".to_string(),
+                },
+            }),
+            aml_block_list: vec![],
         };
         let prometheus_registry = Registry::new();
         let metrics = Arc::new(BridgeMetrics::new(&prometheus_registry));
@@ -1028,5 +1179,93 @@ mod tests {
             .with_num_validators(2)
             .build()
             .await
+    }
+
+    #[tokio::test]
+    async fn test_load_solana_config_from_file() {
+        telemetry_subscribers::init_for_testing();
+        let tmp_dir = tempdir().unwrap().keep();
+        let authority_key_path = tmp_dir.join("bridge_authority_key.key");
+        let db_path = tmp_dir.join("client_db");
+        let (_, kp): (_, Secp256k1KeyPair) = get_key_pair();
+        let kp = SuiKeyPair::from(kp);
+        std::fs::write(&authority_key_path, kp.encode_base64()).unwrap();
+
+        let yaml_str = format!(
+            r#"
+server-listen-port: 8080
+metrics-port: 9090
+bridge-authority-key-path: "{}"
+run-client: true
+db-path: "{}"
+approved-governance-actions: []
+aml-key: "test_key"
+sui:
+    sui-rpc-url: "http://127.0.0.1:5001"
+    sui-bridge-chain-id: 255
+eth:
+    eth-rpc-url: "http://127.0.0.1:8545"
+    eth-bridge-proxy-address: "0x0000000000000000000000000000000000000000"
+    eth-bridge-chain-id: 254
+    eth-contracts-start-block-fallback: 0
+    enable-fast-path-latest: false
+    enable-fast-path-safe: false
+    enable-fast-path-finalized: true
+evm:
+  - eth-rpc-url: "http://127.0.0.1:8545"
+    eth-bridge-proxy-address: "0x0000000000000000000000000000000000000000"
+    eth-bridge-chain-id: 254
+    eth-contracts-start-block-fallback: 0
+    enable-fast-path-latest: false
+    enable-fast-path-safe: false
+    enable-fast-path-finalized: true
+
+external-rpc:
+    solana:
+        mainnet-url: "http://solana-mainnet-test.com"
+        testnet-url: "http://solana-testnet-test.com"
+    tron:
+        mainnet-url: "http://tron-mainnet-test.com"
+        testnet-url: "http://tron-testnet-test.com"
+solana:
+    getblock-base-url: "http://solana-test.com"
+    bridge-proxy-address: "Brdg4A3kL1R81GSy2rGKaSQtnwmKLaaSPu94sS5n1Smy"
+    bridge-chain-id: 10
+    contracts-start-slot-fallback: 12345
+    contracts-start-slot-override: 54321
+aml-block-list: []
+"#,
+            authority_key_path.to_str().unwrap(),
+            db_path.to_str().unwrap()
+        );
+
+        let config: BridgeNodeConfig = serde_yaml::from_str(&yaml_str).unwrap();
+        // external rpc
+        assert_eq!(
+            config.external_rpc.as_ref().unwrap().solana.mainnet_url,
+            "http://solana-mainnet-test.com"
+        );
+        assert_eq!(
+            config.external_rpc.as_ref().unwrap().solana.testnet_url,
+            "http://solana-testnet-test.com"
+        );
+        assert_eq!(
+            config.external_rpc.as_ref().unwrap().tron.mainnet_url,
+            "http://tron-mainnet-test.com"
+        );
+        assert_eq!(
+            config.external_rpc.as_ref().unwrap().tron.testnet_url,
+            "http://tron-testnet-test.com"
+        );
+
+        // solana config
+        assert_eq!(config.solana.getblock_base_url, "http://solana-test.com");
+        assert_eq!(
+            config.solana.bridge_proxy_address,
+            "Brdg4A3kL1R81GSy2rGKaSQtnwmKLaaSPu94sS5n1Smy"
+        );
+        assert_eq!(config.solana.bridge_chain_id, 10);
+        assert_eq!(config.solana.contracts_start_slot_fallback, Some(12345));
+        assert_eq!(config.solana.contracts_start_slot_override, Some(54321));
     }
 }

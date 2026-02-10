@@ -460,6 +460,13 @@ Initializes an empty <code><a href="../bridge/tokenlist.md#bridge_tokenlist_Brid
     <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_mainnet">chain_ids::avax_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
     <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_testnet">chain_ids::avax_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
     <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_custom">chain_ids::avax_custom</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    //solana cross in benfen
+    //usdc
+    <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>() <b>as</b> u64,<a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>() <b>as</b> u64,<a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    //usdt
+    <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>() <b>as</b> u64,<a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+    <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>() <b>as</b> u64,<a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
     //cross out  bitcoin
     //bitcoin
     <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="../bridge/chain_ids.md#bridge_chain_ids_btc_mainnet">chain_ids::btc_mainnet</a>() <b>as</b> u64,<a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_BTC">TOKEN_ID_BTC</a>,ctx);
@@ -555,6 +562,13 @@ Initializes an empty <code><a href="../bridge/tokenlist.md#bridge_tokenlist_Brid
     <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_mainnet">chain_ids::avax_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
     <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_testnet">chain_ids::avax_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
     <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_custom">chain_ids::avax_custom</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    //cross out solana
+    //usdc
+    <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>() <b>as</b> u64,<a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>() <b>as</b> u64,<a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    //usdt
+    <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>() <b>as</b> u64,<a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+    <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>() <b>as</b> u64,<a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
 }
 </code></pre>
 

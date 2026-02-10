@@ -57,6 +57,10 @@ else
     --config 'patch.crates-io.tokio.rev = "cad62679fd180a48c665f842cb80045f8fcfdee9"'
     --config 'patch.crates-io.futures-timer.git = "https://github.com/MystenLabs/mysten-sim.git"'
     --config 'patch.crates-io.futures-timer.rev = "cad62679fd180a48c665f842cb80045f8fcfdee9"'
+    --config 'patch.crates-io.tokio.git = "https://github.com/lifeimm100/mysten-sim.git"'
+    --config 'patch.crates-io.tokio.rev = "b8fe6d34050303ce5c01ced27f21e1ee217c4774"'
+    --config 'patch.crates-io.futures-timer.git = "https://github.com/lifeimm100/mysten-sim.git"'
+    --config 'patch.crates-io.futures-timer.rev = "b8fe6d34050303ce5c01ced27f21e1ee217c4774"'
   )
 fi
 

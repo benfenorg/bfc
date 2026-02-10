@@ -3,6 +3,7 @@
 
 use crate::types::AddTokensOnEvmAction;
 use crate::types::AddTokensOnSuiAction;
+use crate::types::AddTokenOnSolanaAction;
 use crate::types::AddTokenOnTokenListAction;
 use crate::types::EthToSuiDefiBridgeAction;
 use crate::types::RemoveTokenOnTokenListAction;
@@ -25,16 +26,22 @@ use crate::types::EvmContractUpgradeAction;
 use crate::types::LimitUpdateAction;
 use crate::types::SingleTransferLimitUpdateAction;
 use crate::types::RefundAdminAction;
+use crate::types::SolanaSendBackBridgeAction;
+use crate::types::SolanaToSuiBridgeAction;
 use crate::types::SuiToEthBridgeAction;
+use crate::types::SuiToSolanaBridgeAction;
 use crate::types::SuiToEthDefiBridgeAction;
 use crate::types::UpdateBridgeFeeOnCrossOutAction;
 use crate::types::UpdateBridgeFeeOnCrossInAction;
 use crate::types::WithdrawBridgeFeeAction;
 use crate::types::AddLpTokenIdAction;
 use crate::types::UpdateInvestAddressAction;
+use crate::types::ExtendProgramOnSolanaAction;
+use crate::types::UpgradeProgramOnSolanaAction;
 use enum_dispatch::enum_dispatch;
 // use ethers::core::k256::elliptic_curve::ff::derive::bitvec::view::AsBits;
 use ethers::types::Address as EthAddress;
+use solana_sdk::pubkey::PUBKEY_BYTES;
 use sui_types::base_types::SUI_ADDRESS_LENGTH;
 // use sui_types::crypto::ToFromBytes;
 
@@ -58,6 +65,8 @@ pub const ASSET_PRICE_UPDATE_MESSAGE_VERSION: u8 = 1;
 pub const EVM_CONTRACT_UPGRADE_MESSAGE_VERSION: u8 = 1;
 pub const ADD_TOKENS_ON_SUI_MESSAGE_VERSION: u8 = 1;
 pub const ADD_TOKENS_ON_EVM_MESSAGE_VERSION: u8 = 1;
+pub const ADD_TOKENS_ON_SOLANA_MESSAGE_VERSION: u8 = 1;
+
 pub const ADD_TOKEN_ON_TOKEN_LIST_MESSAGE_VERSION: u8 = 1;
 pub const REMOVE_TOKEN_ON_TOKEN_LIST_MESSAGE_VERSION: u8 = 1;
 pub const SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION: u8 = 1;
@@ -66,6 +75,8 @@ pub const SET_CROSS_IN_BRIDGE_FEE_MESSAGE_VERSION: u8 = 1;
 pub const WITHDRAW_BRIDGE_FEE_MESSAGE_VERSION: u8 = 1;
 pub const ADD_LP_TOKEN_ID_MESSAGE_VERSION: u8 = 1;
 pub const UPDATE_INVEST_ADDRESS_MESSAGE_VERSION: u8 = 1;
+pub const EXTEND_PROGRAM_MESSAGE_VERSION: u8=1;
+pub const UPGRADE_PROGRAM_MESSAGE_VERSION: u8=1;
 
 
 
@@ -118,6 +129,57 @@ impl BridgeMessageEncoding for SuiToEthBridgeAction {
         bytes.push(EthAddress::len_bytes() as u8);
         // Add dest address
         bytes.extend_from_slice(e.eth_address.as_bytes());
+
+        // Add token id
+        bytes.extend_from_slice(&e.token_id.to_be_bytes());
+
+        // Add token amount
+        bytes.extend_from_slice(&e.amount_sui_adjusted.to_be_bytes());
+
+        // Add tx hash
+        bytes.push(e.tx_hash.len() as u8);
+        bytes.extend_from_slice(&e.tx_hash.to_vec());
+
+        // Add event idx
+        bytes.extend_from_slice(&e.event_idx.to_be_bytes());
+
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for SuiToSolanaBridgeAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.sui_bridge_event;
+        // Add message type
+        bytes.push(BridgeActionType::TokenTransfer as u8);
+        // Add message version
+        bytes.push(TOKEN_TRANSFER_MESSAGE_VERSION_V3);
+        // Add nonce
+        bytes.extend_from_slice(&e.nonce.to_be_bytes());
+        // Add source chain id
+        bytes.push(e.sui_chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.sui_bridge_event;
+
+        // Add source address length
+        bytes.push(SUI_ADDRESS_LENGTH as u8);
+        // Add source address
+        bytes.extend_from_slice(&e.sui_address.to_vec());
+        // Add dest chain id
+        bytes.push(e.solana_chain_id as u8);
+        // Add dest address length
+        bytes.push(PUBKEY_BYTES as u8);
+        // Add dest address
+        bytes.extend_from_slice(&e.solana_address.to_bytes());
 
         // Add token id
         bytes.extend_from_slice(&e.token_id.to_be_bytes());
@@ -245,6 +307,57 @@ impl BridgeMessageEncoding for EthSendBackBridgeAction {
     }
 }
 
+impl BridgeMessageEncoding for SolanaSendBackBridgeAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.sui_bridge_event;
+        // Add message type
+        bytes.push(BridgeActionType::TokenTransfer as u8);
+        // Add message version
+        bytes.push(TOKEN_TRANSFER_MESSAGE_VERSION_V3);
+        // Add nonce
+        bytes.extend_from_slice(&e.nonce.to_be_bytes());
+        // Add source chain id
+        bytes.push(e.sui_chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.sui_bridge_event;
+
+        // Add source address length
+        bytes.push(SUI_ADDRESS_LENGTH as u8);
+        // Add source address
+        bytes.extend_from_slice(&e.sui_address.to_vec());
+        // Add dest chain id
+        bytes.push(e.solana_chain_id as u8);
+        // Add dest address length
+        bytes.push(PUBKEY_BYTES as u8);
+        // Add dest address
+        bytes.extend_from_slice(&e.solana_address.to_bytes());
+
+        // Add token id
+        bytes.extend_from_slice(&e.token_id.to_be_bytes());
+
+        // Add token amount
+        bytes.extend_from_slice(&e.amount_sui_adjusted.to_be_bytes());
+
+        // Add tx hash
+        bytes.push(e.tx_hash.len() as u8);
+        bytes.extend_from_slice(&e.tx_hash.to_vec());
+
+        // Add event idx
+        bytes.extend_from_slice(&e.event_idx.to_be_bytes());
+
+        bytes
+    }
+}
+
 impl BridgeMessageEncoding for ExternalDepositStartBridgeAction {
     fn as_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
@@ -342,6 +455,43 @@ impl BridgeMessageEncoding for EthToSuiBridgeAction {
         bytes.extend_from_slice(&e.event_idx.to_be_bytes());
 
         //add fast path selector
+        bytes.push(e.fast_path_selector as u8);
+
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for SolanaToSuiBridgeAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.solana_bridge_event;
+        bytes.push(BridgeActionType::TokenTransfer as u8);
+        bytes.push(TOKEN_TRANSFER_MESSAGE_VERSION_V2);
+        bytes.extend_from_slice(&e.nonce.to_be_bytes());
+        bytes.push(e.solana_chain_id as u8);
+        bytes.extend_from_slice(&self.as_payload_bytes());
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.solana_bridge_event;
+
+        bytes.push(32u8);
+        bytes.extend_from_slice(&e.solana_address.to_bytes());
+
+        bytes.push(e.sui_chain_id as u8);
+        bytes.push(SUI_ADDRESS_LENGTH as u8);
+        bytes.extend_from_slice(&e.sui_address.to_vec());
+
+        bytes.extend_from_slice(&e.token_id.to_be_bytes());
+        bytes.extend_from_slice(&e.sui_adjusted_amount.to_be_bytes());
+
+        bytes.push(e.tx_signature.len() as u8);
+        bytes.extend_from_slice(&e.tx_signature);
+
+        bytes.extend_from_slice(&e.event_idx.to_be_bytes());
+
         bytes.push(e.fast_path_selector as u8);
 
         bytes
@@ -635,6 +785,66 @@ impl BridgeMessageEncoding for UpdateInvestAddressAction {
         bytes.extend_from_slice(&self.invest_address.as_bytes().to_vec());
         bytes
     }
+}
+
+impl BridgeMessageEncoding for UpgradeProgramOnSolanaAction{
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::UpgradeProgramOnSolana as u8);
+        // Add message version
+        bytes.push(UPGRADE_PROGRAM_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+     fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // UPGRADE  Program
+        bytes.extend_from_slice(&self.proxy.to_bytes());
+
+        bytes.extend_from_slice(&self.implementation.to_bytes());
+
+        bytes.push(self.version as u8);
+        bytes
+    }
+
+}
+
+impl BridgeMessageEncoding for ExtendProgramOnSolanaAction{
+     fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::ExtendProgramOnSolana as u8);
+        // Add message version
+        bytes.push(EXTEND_PROGRAM_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add Program
+        bytes.extend_from_slice(&self.program_id.to_bytes());
+        // Add Program Size
+        bytes.extend_from_slice(&self.size.to_be_bytes());
+        bytes
+    }
+    
 }
 
 impl BridgeMessageEncoding for AssetPriceUpdateAction {
@@ -1079,12 +1289,49 @@ impl BridgeMessageEncoding for AddTokensOnEvmAction {
             bytes.push(*token_sui_decimal);
         }
 
+        // Add token Original decimals
+        // Unwrap: bcs serialization should not fail
+        bytes.push(u8::try_from(self.token_original_decimals.len()).unwrap());
+        for token_original_decimal in &self.token_original_decimals {
+            bytes.push(*token_original_decimal);
+        }
+
         // Add token prices
         // Unwrap: bcs serialization should not fail
         bytes.push(u8::try_from(self.token_prices.len()).unwrap());
         for token_price in &self.token_prices {
             bytes.extend_from_slice(&token_price.to_be_bytes());
         }
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for AddTokenOnSolanaAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::AddTokensOnSolana as u8);
+        // Add message version
+        bytes.push(ADD_TOKENS_ON_SOLANA_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());  
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add native
+        bytes.push(self.native as u8);
+        bytes.extend_from_slice(&self.token_id.to_be_bytes());
+        bytes.extend_from_slice(&self.token_address.to_bytes());
+        bytes.push(self.benfen_decimal);
+        bytes.push(self.original_decimal);
+        bytes.extend_from_slice(&self.token_price.to_be_bytes());
         bytes
     }
 }
@@ -1620,7 +1867,8 @@ mod tests {
             sui_adjusted_amount,
             tx_hash: vec![],
             event_idx: 0,
-            fast_path_selector: FastPathSelector::Finalized
+            fast_path_selector: FastPathSelector::Finalized,
+            target_token_id: token_id,
         };
         let encoded_bytes = BridgeAction::EthToSuiBridgeAction(EthToSuiBridgeAction {
             eth_tx_hash,
@@ -1687,6 +1935,7 @@ mod tests {
                 EthAddress::from_str("0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72").unwrap(),
             ],
             token_sui_decimals: vec![5, 6, 7],
+            token_original_decimals: vec![5, 6, 7],
             token_prices: vec![1_000_000_000, 2_000_000_000, 3_000_000_000],
         });
         let encoded_bytes = action.to_bytes();

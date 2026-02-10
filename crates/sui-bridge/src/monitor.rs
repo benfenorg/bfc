@@ -124,14 +124,19 @@ where
             SuiBridgeEvent::SuiToEthDefiTokensStaked(_) => (),
             SuiBridgeEvent::SuiToEthTokenBridgeV1(_) => (),
             SuiBridgeEvent::SuiToEthTokenBridgeV2(_) => (),
+            SuiBridgeEvent::SuiToEthTokenBridgeV3(_) => (),
+            SuiBridgeEvent::SuiToSolanaTokenBridgeV2(_) => (),
+            SuiBridgeEvent::SuiToSolanaTokenBridgeV3(_) => (),
             SuiBridgeEvent::SuiToEthDefiBridgeV1(_) => (),
             SuiBridgeEvent::TokenSendBackEvent(_) => (),
             SuiBridgeEvent::TokenSendBackEventV2(_) => (),
+            SuiBridgeEvent::TokenSendBackForSolanaV2(_) => (),
             SuiBridgeEvent::ExternalDepositStartBridgeV1(_) => (),
             SuiBridgeEvent::TokenTransferApproved(_) => (),
             SuiBridgeEvent::TokenTransferClaimed(_) => (),
             SuiBridgeEvent::TokenTransferAlreadyApproved(_) => (),
             SuiBridgeEvent::TokenTransferAlreadyClaimed(_) => (),
+
             SuiBridgeEvent::TokenTransferLimitExceed(_) => {
                 // TODO do we want to do anything here?
             }

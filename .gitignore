@@ -76,8 +76,14 @@ docs/content/references/framework/**
 lcov.info
 
 .sparse
-bridge/evm/broadcast/deploy_bridge.s.sol/12/run-*.json
-!bridge/evm/broadcast/deploy_bridge.s.sol/12/run-latest.json
+
+# solana
+test-ledger/
+test-ledger/**
+crates/sui-bridge/test-ledger/*
+crates/sui-bridge/test-ledger/**
+bridge/evm/broadcast/deploy_bridge.s.sol/*/run-*.json
+!bridge/evm/broadcast/deploy_bridge.s.sol/*/run-latest.json
 
 
 /crates/sui/tests/shell_tests/summaries/data/move_package/package_summaries/

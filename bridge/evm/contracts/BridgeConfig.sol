@@ -57,7 +57,8 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         for (uint8 i; i < _tokenIds.length; i++) {
             // `is_native` is hardcoded to `true` because we only support Eth native tokens
             // at the moment. This needs to change when we support tokens native on other chains.
-            supportedTokens[_tokenIds[i]] = Token(_supportedTokens[i], _suiDecimals[i], true);
+            //todo 这里先默认原始decimal是6 后续再改
+            supportedTokens[_tokenIds[i]] = Token(_supportedTokens[i], _suiDecimals[i], true,6);
         }
 
         for (uint8 i; i < _supportedChains.length; i++) {
@@ -88,6 +89,13 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
     /// @return amount of sui decimal places of the provided token.
     function tokenSuiDecimalOf(uint64 tokenID) public view override returns (uint8) {
         return supportedTokens[tokenID].suiDecimal;
+    }
+
+    /// @notice Returns the original decimal places of the token with the given ID.
+    /// @param tokenID The ID of the token.
+    /// @return amount of original decimal places of the provided token.
+    function tokenOriginalDecimalOf(uint64 tokenID) public view override returns (uint8) {
+        return supportedTokens[tokenID].originalDecimal;
     }
 
     /// @notice Returns the price of the token with the given ID.
@@ -177,15 +185,16 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
             uint64[] memory tokenIDs,
             address[] memory tokenAddresses,
             uint8[] memory suiDecimals,
+            uint8[] memory originalDecimals,
             uint64[] memory _tokenPrices
         ) = BridgeUtils.decodeAddTokensPayload(message.payload);
 
         // update the token
         for (uint8 i; i < tokenIDs.length; i++) {
-            _addToken(tokenIDs[i], tokenAddresses[i], suiDecimals[i], _tokenPrices[i], native);
+            _addToken(tokenIDs[i], tokenAddresses[i], suiDecimals[i], originalDecimals[i],_tokenPrices[i], native);
         }
 
-        emit TokensAddedV2(message.nonce, tokenIDs, tokenAddresses, suiDecimals, _tokenPrices);
+        emit TokensAddedV3(message.nonce, tokenIDs, tokenAddresses, suiDecimals, originalDecimals, _tokenPrices);
     }
 
     /* ========== PRIVATE FUNCTIONS ========== */
@@ -210,14 +219,16 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         uint64 tokenID,
         address tokenAddress,
         uint8 suiDecimal,
+        uint8 originalDecimal,
         uint64 tokenPrice,
         bool native
     ) private {
         require(tokenAddress != address(0), "BridgeConfig: Invalid token address");
         require(suiDecimal > 0, "BridgeConfig: Invalid Sui decimal");
         require(tokenPrice > 0, "BridgeConfig: Invalid token price");
-
-        supportedTokens[tokenID] = Token(tokenAddress, suiDecimal, native);
+        
+        //todo 这里先默认原始decimal是6 后续再改
+        supportedTokens[tokenID] = Token(tokenAddress, suiDecimal, native, originalDecimal);
         tokenPrices[tokenID] = tokenPrice;
     }
 

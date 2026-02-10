@@ -17,6 +17,7 @@ use crate::error::BridgeError;
 use crate::events::SuiBridgeEvent;
 use crate::fast_path::{FastPathConfig, FastPathSelector};
 use crate::metrics::BridgeMetrics;
+use crate::solana_syncer::{SolanaEventWrapper, SolanaSyncerCursorsKey};
 use crate::storage::{BridgeOrchestratorTables, EthSyncerCursorsKey};
 use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::{BridgeAction, ETHLogWrapper};
@@ -35,6 +36,8 @@ pub struct BridgeOrchestrator<C> {
     sui_events_rx: mysten_metrics::metered_channel::Receiver<(Identifier, Vec<SuiEvent>)>,
     eth_events_rx:
         mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, ETHLogWrapper)>,
+    sol_events_rx:
+        mysten_metrics::metered_channel::Receiver<(SolanaSyncerCursorsKey, SolanaEventWrapper)>,
     store: Arc<BridgeOrchestratorTables>,
     sui_monitor_tx: mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
     eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
@@ -54,6 +57,10 @@ where
             u64,
             ETHLogWrapper,
         )>,
+        sol_events_rx: mysten_metrics::metered_channel::Receiver<(
+            SolanaSyncerCursorsKey,
+            SolanaEventWrapper,
+        )>,
         store: Arc<BridgeOrchestratorTables>,
         sui_monitor_tx: mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
         eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
@@ -64,6 +71,7 @@ where
             _sui_client: sui_client,
             sui_events_rx,
             eth_events_rx,
+            sol_events_rx,
             store,
             sui_monitor_tx,
             eth_monitor_tx,
@@ -90,6 +98,7 @@ where
         let executor_sender_clone4 = executor_sender.clone();
         task_handles.extend(handles);
         let (aml_checker_handles, aml_checker_sender) = aml_checker.run(executor_sender_clone);
+        let aml_checker_sender_clone = aml_checker_sender.clone();
         task_handles.extend(aml_checker_handles);
         let metrics_clone = self.metrics.clone();
         task_handles.push(spawn_logged_monitored_task!(Self::run_sui_watcher(
@@ -134,6 +143,16 @@ where
             metrics_clone,
             fast_path_config,
             self.user_limit_handle,
+        )));
+
+        // Spawn Solana watcher
+        let store_clone = self.store.clone();
+        let metrics_clone = self.metrics.clone();
+        task_handles.push(spawn_logged_monitored_task!(Self::run_solana_watcher(
+            store_clone,
+            aml_checker_sender_clone,
+            self.sol_events_rx,
+            metrics_clone,
         )));
 
         task_handles
@@ -318,6 +337,7 @@ where
                                 action_inner.eth_bridge_event.token_id,
                                 action_inner.eth_bridge_event.sui_adjusted_amount,
                                 config,
+                                action_inner.eth_bridge_event.target_token_id,
                             );
 
                             if fast_path_selector == log_wrapper.fast_path_selector {
@@ -384,6 +404,134 @@ where
         }
         panic!("Eth event channel was closed");
     }
+
+    /// Solana watcher task that processes Solana bridge events
+    /// 
+    /// This task:
+    /// 1. Receives Solana events from SolanaSyncer
+    /// 2. Parses events and converts them to BridgeActions
+    /// 3. Atomically writes actions to DB and updates cursors (crash recovery safe)
+    /// 4. Submits actions to AML checker for processing
+    async fn run_solana_watcher(
+        store: Arc<BridgeOrchestratorTables>,
+        aml_checker_tx: mysten_metrics::metered_channel::Sender<AMLCheckerWrapper>,
+        mut sol_events_rx: mysten_metrics::metered_channel::Receiver<(
+            SolanaSyncerCursorsKey,
+            SolanaEventWrapper,
+        )>,
+        metrics: Arc<BridgeMetrics>,
+    ) {
+        info!("Starting solana watcher task");
+        while let Some((address, wrapper)) = sol_events_rx.recv().await {
+            // Skip if no events - still update cursor atomically
+            if wrapper.parsed_events.is_empty() {
+                store
+                    .update_solana_cursors(
+                        address.clone(),
+                        wrapper.newest_signature.clone(),
+                        wrapper.newest_slot,
+                    )
+                    .expect("Store operation should not fail");
+                continue;
+            }
+
+            info!(
+                address = %address,
+                event_count = wrapper.parsed_events.len(),
+                newest_signature = ?wrapper.newest_signature,
+                newest_slot = ?wrapper.newest_slot,
+                "Received Solana events"
+            );
+            metrics
+                .solana_watcher_received_events
+                .inc_by(wrapper.parsed_events.len() as u64);
+
+            // Convert events to BridgeActions
+            let mut actions = vec![];
+            for parsed_event in wrapper.parsed_events.iter() {
+                let tx_signature = &parsed_event.tx_signature;
+                for (event_idx, event) in parsed_event.events.iter().enumerate() {
+                    match event.try_into_bridge_action(tx_signature.clone(), event_idx as u16) {
+                        Ok(Some(action)) => {
+                            info!(
+                                tx_signature = %tx_signature,
+                                event_idx = event_idx,
+                                action_type = ?action.action_type(),
+                                chain_id = ?action.chain_id(),
+                                seq_num = action.seq_number(),
+                                "Converted Solana event to BridgeAction"
+                            );
+                            metrics.last_observed_actions_seq_num.with_label_values(&[
+                                action.chain_id().to_string().as_str(),
+                                action.action_type().to_string().as_str(),
+                            ]);
+                            actions.push(action);
+                        }
+                        Ok(None) => {
+                            // Event type doesn't need to be converted to BridgeAction
+                            info!(
+                                tx_signature = %tx_signature,
+                                event_idx = event_idx,
+                                event_name = ?event.event_name(),
+                                "Skipping Solana event (not a bridge action)"
+                            );
+                        }
+                        Err(e) => {
+                            error!(
+                                tx_signature = %tx_signature,
+                                event_idx = event_idx,
+                                "Error converting Solana event to BridgeAction: {:?}",
+                                e
+                            );
+                            metrics.solana_watcher_unrecognized_events.inc();
+                        }
+                    }
+                }
+            }
+
+            // Process actions - atomically write to DB and update cursors
+            // This ensures crash recovery consistency: either all succeed or none
+            if !actions.is_empty() {
+                info!(
+                    address = %address,
+                    action_count = actions.len(),
+                    "Processing Solana bridge actions"
+                );
+                metrics
+                    .solana_watcher_received_actions
+                    .inc_by(actions.len() as u64);
+
+                // Atomically: insert pending actions + update cursors
+                store
+                    .insert_pending_aml_actions_and_update_solana_cursors(
+                        &actions,
+                        address.clone(),
+                        wrapper.newest_signature.clone(),
+                        wrapper.newest_slot,
+                    )
+                    .expect("Store operation should not fail");
+
+                // Submit to AML checker (after DB write succeeds)
+                // Note: If crash happens here, actions will be re-submitted on restart
+                // from pending_aml_checked_actions, which is the expected behavior
+                for action in actions {
+                    submit_to_aml_checker(&aml_checker_tx, action)
+                        .await
+                        .expect("Submit to aml checker should not fail");
+                }
+            } else {
+                // No actions but still need to update cursors atomically
+                store
+                    .update_solana_cursors(
+                        address.clone(),
+                        wrapper.newest_signature.clone(),
+                        wrapper.newest_slot,
+                    )
+                    .expect("Store operation should not fail");
+            }
+        }
+        panic!("Solana event channel was closed unexpectedly");
+    }
 }
 
 async fn process_actions(
@@ -443,10 +591,13 @@ mod tests {
         events::tests::get_test_external_coin_event_and_action,
         test_utils::{get_test_eth_to_sui_bridge_action, get_test_log_and_action},
         types::{BridgeActionDigest, EthLog},
+        solana_syncer::{SolanaParsedEvent, SolanaEventWrapper},
+        solana_events::{SolanaBridgeEvent, TokensDeposited},
     };
     use ethers::types::{Address as EthAddress, TxHash};
     use prometheus::Registry;
     use std::str::FromStr;
+    use sui_types::base_types::SuiAddress;
     use sui_types::bridge::BridgeChainId;
 
     use super::*;
@@ -467,6 +618,8 @@ mod tests {
             sui_events_rx,
             _eth_events_tx,
             eth_events_rx,
+            _sol_events_tx,
+            sol_events_rx,
             sui_monitor_tx,
             _sui_monitor_rx,
             eth_monitor_tx,
@@ -484,6 +637,7 @@ mod tests {
             Arc::new(sui_client),
             sui_events_rx,
             eth_events_rx,
+            sol_events_rx,
             store.clone(),
             sui_monitor_tx,
             eth_monitor_tx,
@@ -535,6 +689,8 @@ mod tests {
             sui_events_rx,
             _eth_events_tx,
             eth_events_rx,
+            _sol_events_tx,
+            sol_events_rx,
             sui_monitor_tx,
             _sui_monitor_rx,
             eth_monitor_tx,
@@ -552,6 +708,7 @@ mod tests {
             Arc::new(sui_client),
             sui_events_rx,
             eth_events_rx,
+            sol_events_rx,
             store.clone(),
             sui_monitor_tx,
             eth_monitor_tx,
@@ -601,6 +758,8 @@ mod tests {
             _sui_events_rx,
             _eth_events_tx,
             _eth_events_rx,
+            _sol_events_tx,
+            _sol_events_rx,
             _sui_monitor_tx,
             _sui_monitor_rx,
             _eth_monitor_tx,
@@ -646,6 +805,8 @@ mod tests {
             sui_events_rx,
             _eth_events_tx,
             eth_events_rx,
+            _sol_events_tx,
+            sol_events_rx,
             sui_monitor_tx,
             _sui_monitor_rx,
             eth_monitor_tx,
@@ -663,6 +824,7 @@ mod tests {
             Arc::new(sui_client),
             sui_events_rx,
             eth_events_rx,
+            sol_events_rx,
             store.clone(),
             sui_monitor_tx,
             eth_monitor_tx,
@@ -750,6 +912,8 @@ mod tests {
             sui_events_rx,
             eth_events_tx,
             eth_events_rx,
+            _sol_events_tx,
+            sol_events_rx,
             sui_monitor_tx,
             _sui_monitor_rx,
             eth_monitor_tx,
@@ -767,6 +931,7 @@ mod tests {
             Arc::new(sui_client),
             sui_events_rx,
             eth_events_rx,
+            sol_events_rx,
             store.clone(),
             sui_monitor_tx,
             eth_monitor_tx,
@@ -844,6 +1009,8 @@ mod tests {
             sui_events_rx,
             _eth_events_tx,
             eth_events_rx,
+            _sol_events_tx,
+            sol_events_rx,
             sui_monitor_tx,
             _sui_monitor_rx,
             eth_monitor_tx,
@@ -876,6 +1043,7 @@ mod tests {
             Arc::new(sui_client),
             sui_events_rx,
             eth_events_rx,
+            sol_events_rx,
             store.clone(),
             sui_monitor_tx,
             eth_monitor_tx,
@@ -900,6 +1068,8 @@ mod tests {
         mysten_metrics::metered_channel::Receiver<(Identifier, Vec<SuiEvent>)>,
         mysten_metrics::metered_channel::Sender<(EthSyncerCursorsKey, u64, ETHLogWrapper)>,
         mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, ETHLogWrapper)>,
+        mysten_metrics::metered_channel::Sender<(SolanaSyncerCursorsKey, SolanaEventWrapper)>,
+        mysten_metrics::metered_channel::Receiver<(SolanaSyncerCursorsKey, SolanaEventWrapper)>,
         mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
         mysten_metrics::metered_channel::Receiver<SuiBridgeEvent>,
         mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
@@ -935,6 +1105,15 @@ mod tests {
                 .channel_inflight
                 .with_label_values(&["unit_test_sui_events_queue"]),
         );
+
+        let (sol_events_tx, sol_events_rx) = mysten_metrics::metered_channel::channel(
+            100,
+            &mysten_metrics::get_metrics()
+                .unwrap()
+                .channel_inflight
+                .with_label_values(&["unit_test_sol_events_queue"]),
+        );
+
         let (sui_monitor_tx, sui_monitor_rx) = mysten_metrics::metered_channel::channel(
             10000,
             &mysten_metrics::get_metrics()
@@ -955,6 +1134,8 @@ mod tests {
             sui_events_rx,
             eth_events_tx,
             eth_events_rx,
+            sol_events_tx,
+            sol_events_rx,
             sui_monitor_tx,
             sui_monitor_rx,
             eth_monitor_tx,
@@ -1042,5 +1223,372 @@ mod tests {
             });
             (vec![handles], tx)
         }
+    }
+
+    /// Helper function to create a test SolanaParsedEvent with TokensDeposited
+    fn create_test_solana_parsed_event(
+        tx_signature: &str,
+        nonce: u64,
+        amount: u64,
+    ) -> SolanaParsedEvent {
+        let tokens_deposited = TokensDeposited {
+            discriminator: [196, 217, 199, 88, 35, 117, 60, 96], // TokensDeposited discriminator
+            nonce,
+            source_chain_id: BridgeChainId::SolanaTestnet as u8,
+            target_chain_id: BridgeChainId::SuiCustom as u8,
+            token_id: 1, // ETH token
+            amount,
+            sender_pubkey: [0u8; 32], // Random sender
+            recipient_length: 32,
+            recipient_bytes: SuiAddress::random_for_testing_only().to_vec(),
+            target_token_id: 1,
+        };
+        SolanaParsedEvent {
+            tx_signature: tx_signature.to_string(),
+            events: vec![SolanaBridgeEvent::TokensDeposited(tokens_deposited)],
+        }
+    }
+
+    #[tokio::test]
+    async fn test_solana_watcher_task() {
+        let (
+            _sui_events_tx,
+            sui_events_rx,
+            _eth_events_tx,
+            eth_events_rx,
+            sol_events_tx,
+            sol_events_rx,
+            sui_monitor_tx,
+            _sui_monitor_rx,
+            eth_monitor_tx,
+            _eth_monitor_rx,
+            sui_client,
+            store,
+            fast_path_config,
+        ) = setup();
+        let (executor, mut executor_requested_action_rx) = MockExecutor::new();
+        let aml_checker = MockAMLChecker::new();
+
+        // start orchestrator
+        let registry = Registry::new();
+        let metrics = Arc::new(BridgeMetrics::new(&registry));
+        let _handles = BridgeOrchestrator::new(
+            Arc::new(sui_client),
+            sui_events_rx,
+            eth_events_rx,
+            sol_events_rx,
+            store.clone(),
+            sui_monitor_tx,
+            eth_monitor_tx,
+            metrics,
+            None,
+        )
+        .run(executor, aml_checker, fast_path_config)
+        .await;
+
+        let address = "SolanaTestAddress123".to_string();
+        let tx_signature = "test_solana_sig_12345";
+        let newest_slot = 12345u64;
+
+        // Create a test Solana event
+        let parsed_event = create_test_solana_parsed_event(tx_signature, 1, 100_000);
+
+        let wrapper = SolanaEventWrapper {
+            parsed_events: vec![parsed_event],
+            newest_signature: Some(tx_signature.to_string()),
+            newest_slot: Some(newest_slot),
+        };
+
+        sol_events_tx
+            .send((address.clone(), wrapper))
+            .await
+            .unwrap();
+
+        // Wait for executor to receive the action
+        let start = std::time::Instant::now();
+        let received_digest = executor_requested_action_rx.recv().await.unwrap();
+
+        // Verify action was written to pending AML actions
+        loop {
+            let actions = store.get_all_pending_actions_4_aml();
+            if actions.is_empty() {
+                if start.elapsed().as_secs() > 5 {
+                    panic!("Timed out waiting for action to be written to WAL");
+                }
+                tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
+                continue;
+            }
+            assert_eq!(actions.len(), 1);
+            // Verify the action digest matches
+            assert!(actions.contains_key(&received_digest));
+            break;
+        }
+
+        // Verify cursors were updated atomically
+        assert_eq!(
+            store.get_solana_signature_cursors(&[address.clone()]).unwrap()[0],
+            Some(tx_signature.to_string())
+        );
+        assert_eq!(
+            store.get_solana_slot_cursors(&[address.clone()]).unwrap()[0],
+            Some(newest_slot)
+        );
+    }
+
+    #[tokio::test]
+    async fn test_solana_watcher_empty_events_updates_cursor() {
+        let (
+            _sui_events_tx,
+            sui_events_rx,
+            _eth_events_tx,
+            eth_events_rx,
+            sol_events_tx,
+            sol_events_rx,
+            sui_monitor_tx,
+            _sui_monitor_rx,
+            eth_monitor_tx,
+            _eth_monitor_rx,
+            sui_client,
+            store,
+            fast_path_config,
+        ) = setup();
+        let (executor, _executor_requested_action_rx) = MockExecutor::new();
+        let aml_checker = MockAMLChecker::new();
+
+        // start orchestrator
+        let registry = Registry::new();
+        let metrics = Arc::new(BridgeMetrics::new(&registry));
+        let _handles = BridgeOrchestrator::new(
+            Arc::new(sui_client),
+            sui_events_rx,
+            eth_events_rx,
+            sol_events_rx,
+            store.clone(),
+            sui_monitor_tx,
+            eth_monitor_tx,
+            metrics,
+            None,
+        )
+        .run(executor, aml_checker, fast_path_config)
+        .await;
+
+        let address = "SolanaEmptyEventsAddress".to_string();
+        let tx_signature = "empty_events_sig";
+        let newest_slot = 99999u64;
+
+        // Send empty events wrapper - should still update cursors
+        let wrapper = SolanaEventWrapper {
+            parsed_events: vec![], // No events
+            newest_signature: Some(tx_signature.to_string()),
+            newest_slot: Some(newest_slot),
+        };
+
+        sol_events_tx
+            .send((address.clone(), wrapper))
+            .await
+            .unwrap();
+
+        // Wait a bit for processing
+        tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
+
+        // Verify cursors were updated even with empty events
+        assert_eq!(
+            store.get_solana_signature_cursors(&[address.clone()]).unwrap()[0],
+            Some(tx_signature.to_string())
+        );
+        assert_eq!(
+            store.get_solana_slot_cursors(&[address.clone()]).unwrap()[0],
+            Some(newest_slot)
+        );
+
+        // Verify no pending actions were created
+        let actions = store.get_all_pending_actions_4_aml();
+        assert!(actions.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_solana_watcher_multiple_events() {
+        let (
+            _sui_events_tx,
+            sui_events_rx,
+            _eth_events_tx,
+            eth_events_rx,
+            sol_events_tx,
+            sol_events_rx,
+            sui_monitor_tx,
+            _sui_monitor_rx,
+            eth_monitor_tx,
+            _eth_monitor_rx,
+            sui_client,
+            store,
+            fast_path_config,
+        ) = setup();
+        let (executor, mut executor_requested_action_rx) = MockExecutor::new();
+        let aml_checker = MockAMLChecker::new();
+
+        // start orchestrator
+        let registry = Registry::new();
+        let metrics = Arc::new(BridgeMetrics::new(&registry));
+        let _handles = BridgeOrchestrator::new(
+            Arc::new(sui_client),
+            sui_events_rx,
+            eth_events_rx,
+            sol_events_rx,
+            store.clone(),
+            sui_monitor_tx,
+            eth_monitor_tx,
+            metrics,
+            None,
+        )
+        .run(executor, aml_checker, fast_path_config)
+        .await;
+
+        let address = "SolanaMultiEventAddress".to_string();
+        let newest_slot = 55555u64;
+
+        // Create multiple test events
+        let event1 = create_test_solana_parsed_event("sig_event_1", 1, 100_000);
+        let event2 = create_test_solana_parsed_event("sig_event_2", 2, 200_000);
+        let event3 = create_test_solana_parsed_event("sig_event_3", 3, 300_000);
+
+        let wrapper = SolanaEventWrapper {
+            parsed_events: vec![event1, event2, event3],
+            newest_signature: Some("sig_event_3".to_string()),
+            newest_slot: Some(newest_slot),
+        };
+
+        sol_events_tx
+            .send((address.clone(), wrapper))
+            .await
+            .unwrap();
+
+        // Wait for all actions to be processed
+        let mut received_digests = std::collections::HashSet::new();
+        for _ in 0..3 {
+            let digest = executor_requested_action_rx.recv().await.unwrap();
+            received_digests.insert(digest);
+        }
+        assert_eq!(received_digests.len(), 3);
+
+        // Verify all actions were written to pending AML actions
+        let start = std::time::Instant::now();
+        loop {
+            let actions = store.get_all_pending_actions_4_aml();
+            if actions.len() < 3 {
+                if start.elapsed().as_secs() > 5 {
+                    panic!("Timed out waiting for all actions to be written to WAL");
+                }
+                tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
+                continue;
+            }
+            assert_eq!(actions.len(), 3);
+            break;
+        }
+
+        // Verify cursors point to the newest event
+        assert_eq!(
+            store.get_solana_signature_cursors(&[address.clone()]).unwrap()[0],
+            Some("sig_event_3".to_string())
+        );
+        assert_eq!(
+            store.get_solana_slot_cursors(&[address.clone()]).unwrap()[0],
+            Some(newest_slot)
+        );
+    }
+
+    #[tokio::test]
+    async fn test_solana_watcher_atomic_cursor_update() {
+        // This test verifies that cursor updates are atomic with action insertion
+        let (
+            _sui_events_tx,
+            sui_events_rx,
+            _eth_events_tx,
+            eth_events_rx,
+            sol_events_tx,
+            sol_events_rx,
+            sui_monitor_tx,
+            _sui_monitor_rx,
+            eth_monitor_tx,
+            _eth_monitor_rx,
+            sui_client,
+            store,
+            fast_path_config,
+        ) = setup();
+        let (executor, mut executor_requested_action_rx) = MockExecutor::new();
+        let aml_checker = MockAMLChecker::new();
+
+        // start orchestrator
+        let registry = Registry::new();
+        let metrics = Arc::new(BridgeMetrics::new(&registry));
+        let _handles = BridgeOrchestrator::new(
+            Arc::new(sui_client),
+            sui_events_rx,
+            eth_events_rx,
+            sol_events_rx,
+            store.clone(),
+            sui_monitor_tx,
+            eth_monitor_tx,
+            metrics,
+            None,
+        )
+        .run(executor, aml_checker, fast_path_config)
+        .await;
+
+        let address = "SolanaAtomicTestAddress".to_string();
+
+        // Send first batch
+        let event1 = create_test_solana_parsed_event("atomic_sig_1", 1, 100_000);
+        let wrapper1 = SolanaEventWrapper {
+            parsed_events: vec![event1],
+            newest_signature: Some("atomic_sig_1".to_string()),
+            newest_slot: Some(10000),
+        };
+        sol_events_tx.send((address.clone(), wrapper1)).await.unwrap();
+
+        // Wait for first action
+        let _digest1 = executor_requested_action_rx.recv().await.unwrap();
+
+        // Verify first cursor update
+        let start = std::time::Instant::now();
+        loop {
+            let sig = store.get_solana_signature_cursors(&[address.clone()]).unwrap()[0].clone();
+            if sig == Some("atomic_sig_1".to_string()) {
+                break;
+            }
+            if start.elapsed().as_secs() > 5 {
+                panic!("Timed out waiting for first cursor update");
+            }
+            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+        }
+
+        // Send second batch
+        let event2 = create_test_solana_parsed_event("atomic_sig_2", 2, 200_000);
+        let wrapper2 = SolanaEventWrapper {
+            parsed_events: vec![event2],
+            newest_signature: Some("atomic_sig_2".to_string()),
+            newest_slot: Some(20000),
+        };
+        sol_events_tx.send((address.clone(), wrapper2)).await.unwrap();
+
+        // Wait for second action
+        let _digest2 = executor_requested_action_rx.recv().await.unwrap();
+
+        // Verify second cursor update
+        let start = std::time::Instant::now();
+        loop {
+            let sig = store.get_solana_signature_cursors(&[address.clone()]).unwrap()[0].clone();
+            let slot = store.get_solana_slot_cursors(&[address.clone()]).unwrap()[0];
+            if sig == Some("atomic_sig_2".to_string()) && slot == Some(20000) {
+                break;
+            }
+            if start.elapsed().as_secs() > 5 {
+                panic!("Timed out waiting for second cursor update");
+            }
+            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+        }
+
+        // Verify both actions are in pending
+        let actions = store.get_all_pending_actions_4_aml();
+        assert_eq!(actions.len(), 2);
     }
 }

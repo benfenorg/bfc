@@ -6,7 +6,7 @@ use sui_json_rpc_types::{SuiExecutionStatus, SuiTransactionBlockEffectsAPI, SuiT
 use sui_types::{base_types::{ObjectID, ObjectRef, SuiAddress}, crypto::{Signature, SuiKeyPair}, digests::TransactionDigest, gas_coin::GasCoin, object::Owner, transaction::{ObjectArg, Transaction}};
 use tracing::{error, info};
 
-use crate::{action_executor::{submit_to_executor, BridgeActionExecutionWrapper, CHANNEL_SIZE}, aml::check_aml_risk_score, fast_path::FastPathSelector, metrics::BridgeMetrics, storage::BridgeOrchestratorTables, sui_client::SuiClientInner, sui_transaction_builder::build_token_send_back_transaction, types::{BridgeAction, BridgeActionStatus}};
+use crate::{action_executor::{BridgeActionExecutionWrapper, CHANNEL_SIZE, submit_to_executor}, aml::{check_aml_risk_score, check_aml_risk_score_solana}, fast_path::FastPathSelector, metrics::BridgeMetrics, storage::BridgeOrchestratorTables, sui_client::SuiClientInner, sui_transaction_builder::build_token_send_back_transaction, types::{BridgeAction, BridgeActionStatus}};
 use crate::sui_client::SuiClient;
 
 #[derive(Debug)]
@@ -31,6 +31,7 @@ pub struct AMLChecker<P> {
     metrics: Arc<BridgeMetrics>,
     key: SuiKeyPair,
     aml_key: String,
+    aml_block_list: Vec<String>,
 }
 
 impl<P> AMLCheckerTrait for AMLChecker<P>
@@ -52,7 +53,7 @@ where
         let store_clone = self.store.clone();
         let mut tasks = vec![];
         tasks.push(spawn_logged_monitored_task!(
-            Self::run_inner(&self.sui_client, receiver, &store_clone, executor_sender_clone.clone(), &self.metrics,self.sui_address,self.gas_object_id,self.bridge_object_arg,&self.key,self.aml_key.clone())
+            Self::run_inner(&self.sui_client, receiver, &store_clone, executor_sender_clone.clone(), &self.metrics,self.sui_address,self.gas_object_id,self.bridge_object_arg,&self.key,self.aml_key.clone(),self.aml_block_list.clone())
         ));
         tasks.push(spawn_logged_monitored_task!(
             Self::resubmit_pending_actions(&self.store,executor_sender)
@@ -72,6 +73,7 @@ where
         key: SuiKeyPair,
         metrics: Arc<BridgeMetrics>,
         aml_key: String,
+        aml_block_list: Vec<String>,
     ) -> Self {
         let bridge_object_arg = sui_client
             .get_mutable_bridge_object_arg_must_succeed()
@@ -85,6 +87,7 @@ where
             key,
             metrics,
             aml_key,
+            aml_block_list,
         }
     }
 
@@ -102,7 +105,7 @@ where
             }
     }
 
-    async fn run_inner(sui_client: &Arc<SuiClient<P>>,mut receiver: mysten_metrics::metered_channel::Receiver<AMLCheckerWrapper>, store: &Arc<BridgeOrchestratorTables>, executor_sender: mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>,metrics: &Arc<BridgeMetrics>,sui_address: SuiAddress,gas_object_id: ObjectID,bridge_object_arg: ObjectArg,key: &SuiKeyPair,aml_key: String){
+    async fn run_inner(sui_client: &Arc<SuiClient<P>>,mut receiver: mysten_metrics::metered_channel::Receiver<AMLCheckerWrapper>, store: &Arc<BridgeOrchestratorTables>, executor_sender: mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>,metrics: &Arc<BridgeMetrics>,sui_address: SuiAddress,gas_object_id: ObjectID,bridge_object_arg: ObjectArg,key: &SuiKeyPair,aml_key: String,aml_block_list: Vec<String>){
         info!("[DEBUG] AMLChecker run_inner started");
 
         while let Some(action) = receiver.recv().await {
@@ -110,7 +113,12 @@ where
             info!("[DEBUG]  AMLChecker received action: {:?}", bridge_action);
             // Only token transfer action should reach here
             match &bridge_action {
-                BridgeAction::SuiToEthBridgeAction(_) | BridgeAction::EthToSuiBridgeAction(_) | BridgeAction::SuiToEthDefiBridgeAction(_) | BridgeAction::EthToSuiDefiBridgeAction(_) => (),
+                BridgeAction::SuiToEthBridgeAction(_)
+                | BridgeAction::SuiToSolanaBridgeAction(_)
+                | BridgeAction::EthToSuiBridgeAction(_)
+                | BridgeAction::SuiToEthDefiBridgeAction(_)
+                | BridgeAction::EthToSuiDefiBridgeAction(_)
+                | BridgeAction::SolanaToSuiBridgeAction(_) => (),
                 _ => unreachable!("Non token transfer action should not reach here"),
             };
             match &bridge_action {
@@ -126,7 +134,8 @@ where
                         action_inner.eth_bridge_event.eth_chain_id,
                         action_inner.eth_bridge_event.token_id,
                         eth_address,
-                        aml_key.clone()
+                        aml_key.clone(),
+                        aml_block_list.clone()
                     ).await;
 
                     info!("aml checker eth address:{:?} is_passed: {:?} tx_hash: {:?}", &eth_address, &is_passed, &action_inner.eth_tx_hash);
@@ -160,6 +169,38 @@ where
                         panic!("Write to DB should not fail: {:?}", e);
                     });
                     sui_client.notify_something_done().await;
+                },
+                BridgeAction::SolanaToSuiBridgeAction(action_inner) => {
+                    let solana_address = action_inner.solana_bridge_event.solana_address;
+
+                    let is_passed = check_aml_risk_score_solana(
+                        action_inner.solana_bridge_event.solana_chain_id,
+                        action_inner.solana_bridge_event.token_id,
+                        solana_address,
+                        aml_key.clone(),
+                        aml_block_list.clone()
+                    ).await;
+                    info!("aml checker solana address:{:?} is_passed: {:?} tx_hash: {:?}", &solana_address, &is_passed, &action_inner.solana_tx_signature);
+                    if is_passed {
+                        store.insert_pending_actions(&[bridge_action.clone()]).unwrap_or_else(|e| {
+                            panic!("Write to DB should not fail: {:?}", e);
+                        });
+                        submit_to_executor(&executor_sender, bridge_action.clone(),true).await.expect("Submit to executor should not fail");
+                        store.remove_pending_aml_checked_actions(&[bridge_action.digest()]).unwrap_or_else(|e| {
+                            panic!("Write to DB should not fail: {:?}", e);
+                        });
+                        sui_client.notify_something_done().await;
+                    }else{
+                        // only finalized fast path selector will be sent back
+                        if action_inner.solana_bridge_event.fast_path_selector == FastPathSelector::Finalized {
+                            Self::send_back(bridge_action.clone(), store, key, metrics,sui_client,sui_address,gas_object_id,bridge_object_arg).await;
+                        }else{
+                            store.remove_pending_aml_checked_actions(&[bridge_action.digest()]).unwrap_or_else(|e| {
+                                panic!("remove from DB should not fail: {:?}", e);
+                            });
+                            info!("fast path selector is not finalized, skipping send back address:{:?} tx_hash:{:?}", &solana_address, &action_inner.solana_tx_signature);
+                        }
+                    }
                 },
                 _ => {
                     continue;
@@ -218,37 +259,6 @@ where
             // If the transaction did not go through, retry up to a certain times.
             Err(_err) => {
                 info!("Sui transaction failed at signing err:{:?}",_err);
-                //todo fix errors
-                // error!(
-                //     ?action_key,
-                //     ?tx_digest,
-                //     "Sui transaction failed at signing: {err:?}"
-                // );
-                // metrics.err_sui_transaction_submission.inc();
-                // let metrics_clone = metrics.clone();
-                // // Do this in a separate task so we won't deadlock here
-                // let sender_clone = execution_queue_sender.clone();
-                // spawn_logged_monitored_task!(async move {
-                //     // If it fails for too many times, log and ask for manual intervention.
-                //     if attempt_times >= MAX_EXECUTION_ATTEMPTS {
-                //         metrics_clone
-                //             .err_sui_transaction_submission_too_many_failures
-                //             .inc();
-                //         error!("Manual intervention is required. Failed to collect execute transaction for bridge action after {MAX_EXECUTION_ATTEMPTS} attempts: {:?}", err);
-                //         return;
-                //     }
-                //     delay(attempt_times).await;
-                //     sender_clone
-                //         .send(CertifiedBridgeActionExecutionWrapper(
-                //             certificate,
-                //             attempt_times + 1,
-                //         ))
-                //         .await
-                //         .unwrap_or_else(|e| {
-                //             panic!("Sending to execution queue should not fail: {:?}", e);
-                //         });
-                //     info!("Re-enqueued certificate for execution");
-                // }.instrument(tracing::debug_span!("reenqueue_execution_task", action_key=?action_key)));
             }
         }
 
@@ -270,6 +280,9 @@ where
         let tx_hash = match action {
             BridgeAction::EthToSuiBridgeAction(a) => {
                 a.eth_tx_hash.as_bytes().to_vec()
+            }
+            BridgeAction::SolanaToSuiBridgeAction(a) => {
+                a.solana_tx_signature.as_bytes().to_vec()
             }
             _ => unreachable!(),
         };
@@ -341,8 +354,8 @@ where
                             .data
                             .iter()
                             .any(|e| {
-                                e.type_.name.as_str() == "TokenSendBackEvent" || e.type_.name.as_str() == "TokenSendBackEventV2"}),
-                        "Expected TokenSendBackEvent or TokenSendBackEventV2 event but got: {:?}",
+                                e.type_.name.as_str() == "TokenSendBackEvent" || e.type_.name.as_str() == "TokenSendBackEventV2" || e.type_.name.as_str() == "TokenSendBackEventForSolanaV2"}),
+                        "Expected TokenSendBackEvent or TokenSendBackEventV2 or TokenSendBackForSolanaV2 event but got: {:?}",
                         events,
                 );
                 info!(?tx_digest, "send back transaction executed successfully");

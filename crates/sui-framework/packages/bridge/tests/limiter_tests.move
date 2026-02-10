@@ -11,8 +11,10 @@ module bridge::limiter_tests {
             max_transfer_limit, new,
             transfer_limits_mut, total_amount, transfer_records,
             update_route_limit, usd_value_multiplier,
+            new_external_limits, update_external_24h_limit, initial_external_24h_limits, check_and_record_external_24h_transfer,
+            get_external_available_transfer_amount
         },
-        treasury::{Self, BTC, ETH, USDC, USDT,BUSD,LTC},
+        treasury::{Self, BTC, ETH, USDC, USDT, BUSD, LTC},
     };
 
     use sui::clock;
@@ -655,5 +657,202 @@ module bridge::limiter_tests {
         assert_eq(treasury.notional_value<USDC>(), (1 * usd_value_multiplier()));
         scenario.end();
         destroy(treasury);
+    }
+
+    #[test]
+    fun test_external_limiter_24h() {
+        let mut scenario = test_scenario::begin(@0x1);
+        let ctx = test_scenario::ctx(&mut scenario);
+        
+        let mut parent_id = sui::object::new(ctx);
+        new_external_limits(&mut parent_id, ctx);
+        
+        let treasury = treasury::mock_for_test(ctx);
+
+        let mut clock = clock::create_for_testing(ctx);
+        // Start at hour 100
+        clock.set_for_testing(100 * 3600 * 1000); 
+        
+        let route = chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::eth_mainnet());
+        
+        // 1. Set 24h limit to 100 * M (USD value)
+        // Assume BTC price is 50,000 * M.
+        // Limit 100 * M is extremely small for BTC (0.002 BTC).
+        // Let's use simpler numbers.
+        // Limit = 100,000 USD (100_000 * M).
+        let limit_usd = 100_000 * usd_value_multiplier();
+        update_external_24h_limit(&mut parent_id, &route, limit_usd);
+        
+        // Price of BTC = 50,000 * M.
+        // Available BTC = LimitUSD / Price = 100,000 / 50,000 = 2 BTC.
+        // But the formula is (Limit * M) / Price = (Limit * M) / (50000 * M) = Limit / 50000.
+        // Wait, Limit is 100_000 * M.
+        // (100_000 * M * M) / (50_000 * M) = 2 * M.
+        // So it returns 2 * 10^8 (2 BTC in 8 decimals).
+        // If BTC has 8 decimals, this is correct.
+        
+        assert_eq(get_external_available_transfer_amount<BTC>(&parent_id, &treasury, route), 2 * (usd_value_multiplier() as u128));
+        
+        // 2. Transfer 50,000 USD worth of BTC (1 BTC).
+        // 1 BTC = 50,000 USD.
+        // check_and_record... takes amount in USD (50_000 * M).
+        let transfer_amount_usd = 50_000 * usd_value_multiplier();
+        assert!(check_and_record_external_24h_transfer(&mut parent_id, &clock, route, transfer_amount_usd), 0);
+        
+        // Remaining Limit: 50,000 USD.
+        // Available BTC: 1 BTC.
+        assert_eq(get_external_available_transfer_amount<BTC>(&parent_id, &treasury, route), 1 * (usd_value_multiplier() as u128));
+        
+        // 3. Transfer another 50,000 USD (1 BTC). Total 100,000 USD.
+        assert!(check_and_record_external_24h_transfer(&mut parent_id, &clock, route, transfer_amount_usd), 1);
+        assert_eq(get_external_available_transfer_amount<BTC>(&parent_id, &treasury, route), 0);
+        
+        // 4. Transfer 1 USD (Fail)
+        assert!(!check_and_record_external_24h_transfer(&mut parent_id, &clock, route, 1 * usd_value_multiplier()), 2);
+        assert_eq(get_external_available_transfer_amount<BTC>(&parent_id, &treasury, route), 0);
+        
+        // 5. Advance clock
+        clock.increment_for_testing(23 * 3600 * 1000);
+        assert!(!check_and_record_external_24h_transfer(&mut parent_id, &clock, route, 1 * usd_value_multiplier()), 3);
+        assert_eq(get_external_available_transfer_amount<BTC>(&parent_id, &treasury, route), 0);
+        
+        // 6. Expire
+         clock.increment_for_testing(1 * 3600 * 1000);
+         
+         // View is stale (no Clock access), so still returns 0
+         assert_eq(get_external_available_transfer_amount<BTC>(&parent_id, &treasury, route), 0);
+         
+         // But transfer succeeds because it updates the record
+         assert!(check_and_record_external_24h_transfer(&mut parent_id, &clock, route, limit_usd), 4);
+         assert_eq(get_external_available_transfer_amount<BTC>(&parent_id, &treasury, route), 0);
+         
+         clock::destroy_for_testing(clock);
+        sui::object::delete(parent_id);
+        destroy(treasury);
+        test_scenario::end(scenario);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = bridge::limiter::EExternalLimitNotFoundForRoute)]
+    fun test_external_limiter_not_found_abort() {
+        let mut scenario = test_scenario::begin(@0x1);
+        let ctx = test_scenario::ctx(&mut scenario);
+        
+        let mut parent_id = sui::object::new(ctx);
+        new_external_limits(&mut parent_id, ctx);
+        
+        let treasury = treasury::mock_for_test(ctx);
+        
+        let route = chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::eth_mainnet());
+        
+        // Should abort because no limit is configured
+        get_external_available_transfer_amount<BTC>(&parent_id, &treasury, route);
+        
+        sui::object::delete(parent_id);
+        destroy(treasury);
+        test_scenario::end(scenario);
+    }
+
+    #[test]
+    fun test_update_external_24h_limit() {
+        let mut scenario = test_scenario::begin(@0x1);
+        let ctx = test_scenario::ctx(&mut scenario);
+        
+        // 1. Setup
+        let mut parent_id = sui::object::new(ctx);
+        new_external_limits(&mut parent_id, ctx);
+        let mut treasury = treasury::mock_for_test(ctx);
+        
+        let route = chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::eth_mainnet());
+        let usd_multiplier = usd_value_multiplier(); // 10^8
+
+        // Mock Price: 1 Token = 1 USD (scaled)
+        // We use USDC for testing, or any type T
+        let id = treasury::token_id<USDC>(&treasury);
+        treasury.update_asset_notional_price(id, 1 * usd_multiplier); 
+
+        // 2. Test Initial Update (Insert)
+        let limit_1 = 1000 * usd_multiplier;
+        update_external_24h_limit(&mut parent_id, &route, limit_1);
+        
+        // Verify
+        let available = get_external_available_transfer_amount<USDC>(&parent_id, &treasury, route);
+        // Formula: available = limit * 10^8 / price
+        // With price = 10^8, available = limit
+        assert!(available == (limit_1 as u128), 0);
+
+        // 3. Test Update Existing (Update)
+        let limit_2 = 5000 * usd_multiplier;
+        update_external_24h_limit(&mut parent_id, &route, limit_2);
+        
+        let available = get_external_available_transfer_amount<USDC>(&parent_id, &treasury, route);
+        assert!(available == (limit_2 as u128), 1);
+
+        // 4. Test Zero Limit
+        let limit_0 = 0;
+        update_external_24h_limit(&mut parent_id, &route, limit_0);
+        
+        let available = get_external_available_transfer_amount<USDC>(&parent_id, &treasury, route);
+        assert!(available == 0, 2);
+
+        // 5. Test Max Limit
+        let limit_max = 18446744073709551615; // u64::MAX
+        update_external_24h_limit(&mut parent_id, &route, limit_max);
+        
+        let available = get_external_available_transfer_amount<USDC>(&parent_id, &treasury, route);
+        assert!(available == (limit_max as u128), 3);
+
+        // 6. Test Multiple Routes
+        let route_2 = chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::btc_mainnet());
+        let limit_btc = 500 * usd_multiplier;
+        update_external_24h_limit(&mut parent_id, &route_2, limit_btc);
+
+        // Check route 1 is still max
+        let available_1 = get_external_available_transfer_amount<USDC>(&parent_id, &treasury, route);
+        assert!(available_1 == (limit_max as u128), 4);
+
+        // Check route 2
+        let available_2 = get_external_available_transfer_amount<USDC>(&parent_id, &treasury, route_2);
+        assert!(available_2 == (limit_btc as u128), 5);
+
+        // Clean up
+        sui::object::delete(parent_id);
+        destroy(treasury);
+        test_scenario::end(scenario);
+    }
+
+    #[test]
+    fun test_initial_external_24h_limits() {
+        let mut scenario = test_scenario::begin(@0x1);
+        let ctx = test_scenario::ctx(&mut scenario);
+        
+        let mut parent_id = sui::object::new(ctx);
+        new_external_limits(&mut parent_id, ctx);
+        let mut treasury = treasury::mock_for_test(ctx);
+        let usd_multiplier = usd_value_multiplier();
+
+        // Initialize limits
+        initial_external_24h_limits(&mut parent_id);
+
+        // Verify SUI Mainnet -> BTC Mainnet
+        let route_mainnet = chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::btc_mainnet());
+        
+        // Mock Price: 1 Token = 1 USD (scaled) to read raw limit value via available amount
+        let id = treasury::token_id<USDC>(&treasury);
+        treasury.update_asset_notional_price(id, 1 * usd_multiplier); 
+
+        let available_mainnet = get_external_available_transfer_amount<USDC>(&parent_id, &treasury, route_mainnet);
+        // Expected: 800_000 * USD_VALUE_MULTIPLIER
+        assert!(available_mainnet == 800_000 * (usd_multiplier as u128), 0);
+
+        // Verify SUI Testnet -> Solana Testnet
+        let route_testnet = chain_ids::get_route(chain_ids::sui_testnet(), chain_ids::solana_testnet());
+        let available_testnet = get_external_available_transfer_amount<USDC>(&parent_id, &treasury, route_testnet);
+        // Expected: 1000 * USD_VALUE_MULTIPLIER
+        assert!(available_testnet == 1000 * (usd_multiplier as u128), 1);
+
+        sui::object::delete(parent_id);
+        destroy(treasury);
+        test_scenario::end(scenario);
     }
 }

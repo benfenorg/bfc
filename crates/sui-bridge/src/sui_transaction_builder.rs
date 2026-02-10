@@ -45,6 +45,18 @@ pub fn build_sui_transaction(
             sui_token_type_tags,
             rgp,
         ),
+        BridgeAction::SolanaToSuiBridgeAction(_) => {
+            build_token_bridge_approve_transaction(
+                client_address,
+                gas_object_ref,
+                action,
+                true,
+                bridge_object_arg,
+                admin_cap_arg,
+                sui_token_type_tags,
+                rgp,
+            )
+        }
         BridgeAction::EthToSuiDefiBridgeAction(_) => build_defi_bridge_approve_transaction(
             client_address,
             gas_object_ref,
@@ -56,6 +68,16 @@ pub fn build_sui_transaction(
             rgp,
         ),
         BridgeAction::EthSendBackBridgeAction(_) => build_token_bridge_approve_transaction(
+            client_address,
+            gas_object_ref,
+            action,
+            false,
+            bridge_object_arg,
+            admin_cap_arg,
+            sui_token_type_tags,
+            rgp,
+        ),
+        BridgeAction::SolanaSendBackBridgeAction(_) => build_token_bridge_approve_transaction(
             client_address,
             gas_object_ref,
             action,
@@ -77,6 +99,16 @@ pub fn build_sui_transaction(
             )
         }
         BridgeAction::SuiToEthBridgeAction(_) => build_token_bridge_approve_transaction(
+            client_address,
+            gas_object_ref,
+            action,
+            false,
+            bridge_object_arg,
+            admin_cap_arg,
+            sui_token_type_tags,
+            rgp,
+        ),
+        BridgeAction::SuiToSolanaBridgeAction(_) => build_token_bridge_approve_transaction(
             client_address,
             gas_object_ref,
             action,
@@ -128,7 +160,9 @@ pub fn build_sui_transaction(
         BridgeAction::UpdateInvestAddressAction(_) => {
             unreachable!()
         }
-
+        BridgeAction::ExtendProgramOnSolanaAction(_) => {
+            unreachable!();
+        }
         BridgeAction::AssetPriceUpdateAction(_) => build_asset_price_update_approve_transaction(
             client_address,
             gas_object_ref,
@@ -139,6 +173,12 @@ pub fn build_sui_transaction(
         BridgeAction::EvmContractUpgradeAction(_) => {
             // It does not need a Sui tranaction to execute EVM contract upgrade
             unreachable!()
+        }
+        BridgeAction::AddTokenOnSolanaAction(_)=> {
+            unreachable!();
+        }
+        BridgeAction::UpgradeProgramOnSolanaAction(_) => {
+            unreachable!();
         }
         BridgeAction::AddExternalCoinAdminAction(_) => build_add_external_coin_admin_transaction(
             client_address,
@@ -344,9 +384,7 @@ fn build_external_token_bridge_approve_and_claim_transaction(
     })?;
 
     match token_type {
-        sui_types::bridge::TOKEN_ID_BUSD
-        | sui_types::bridge::TOKEN_ID_USDC
-        | sui_types::bridge::TOKEN_ID_USDT => {
+        sui_types::bridge::TOKEN_ID_BUSD => {
             let admin_cap = builder.obj(admin_cap_arg.unwrap()).unwrap();
             let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
 
@@ -429,6 +467,23 @@ fn build_token_bridge_approve_transaction(
                 None,
             )
         }
+        BridgeAction::SuiToSolanaBridgeAction(a) => {
+            let bridge_event = a.sui_bridge_event;
+            (
+                bridge_event.sui_chain_id,
+                bridge_event.nonce,
+                bridge_event.sui_address.to_vec(),
+                bridge_event.solana_chain_id,
+                bridge_event.solana_address.to_bytes().to_vec(),
+                bridge_event.token_id,
+                bridge_event.amount_sui_adjusted,
+                vec![],
+                0u16,
+                "create_token_bridge_message_v2",
+                "approve_token_transfer_v2",
+                None,
+            )
+        }
         BridgeAction::SuiToEthDefiBridgeAction(a) => {
             let bridge_event = a.sui_bridge_event;
             (
@@ -463,6 +518,23 @@ fn build_token_bridge_approve_transaction(
                 None,
             )
         }
+        BridgeAction::SolanaSendBackBridgeAction(a) => {
+            let bridge_event = a.sui_bridge_event;
+            (
+                bridge_event.sui_chain_id,
+                bridge_event.nonce,
+                bridge_event.sui_address.to_vec(),
+                bridge_event.solana_chain_id,
+                bridge_event.solana_address.to_bytes().to_vec(),
+                bridge_event.token_id,
+                bridge_event.amount_sui_adjusted,
+                bridge_event.tx_hash,
+                bridge_event.event_idx,
+                "create_token_bridge_message_v2",
+                "approve_token_transfer_v2",
+                None,
+            )
+        }
         BridgeAction::EthToSuiBridgeAction(a) => {
             let bridge_event = a.eth_bridge_event;
             (
@@ -475,6 +547,23 @@ fn build_token_bridge_approve_transaction(
                 bridge_event.sui_adjusted_amount,
                 a.eth_tx_hash.as_bytes().to_vec(),
                 a.eth_event_index,
+                "create_token_bridge_in_message",
+                "approve_token_transfer_in",
+                Some(bridge_event.fast_path_selector),
+            )
+        }
+        BridgeAction::SolanaToSuiBridgeAction(a) => {
+            let bridge_event = a.solana_bridge_event;
+            (
+                bridge_event.solana_chain_id,
+                bridge_event.nonce,
+                bridge_event.solana_address.to_bytes().to_vec(),
+                bridge_event.sui_chain_id,
+                bridge_event.sui_address.to_vec(),
+                bridge_event.token_id,
+                bridge_event.sui_adjusted_amount,
+                bridge_event.tx_signature.clone(),
+                bridge_event.event_idx,
                 "create_token_bridge_in_message",
                 "approve_token_transfer_in",
                 Some(bridge_event.fast_path_selector),
@@ -838,6 +927,7 @@ pub fn build_token_send_back_transaction(
 ) -> BridgeResult<TransactionData> {
     match &action {
         BridgeAction::EthToSuiBridgeAction(_) => (),
+        BridgeAction::SolanaToSuiBridgeAction(_) => (),
         _ => unreachable!("Non token transfer action should not reach here"),
     };
     let mut builder = ProgrammableTransactionBuilder::new();
@@ -854,9 +944,22 @@ pub fn build_token_send_back_transaction(
                 a.eth_event_index,
             )
         }
+        BridgeAction::SolanaToSuiBridgeAction(a) => {
+            let bridge_event = a.solana_bridge_event;
+            (
+                bridge_event.solana_chain_id,
+                bridge_event.solana_address.to_bytes().to_vec(),
+                bridge_event.token_id,
+                bridge_event.sui_adjusted_amount,
+                a.solana_tx_signature.as_bytes().to_vec(), 
+                a.solana_event_index,
+            )
+        }
         _ => unreachable!(),
     };
-
+    info!("send back transaction: source_chain: {:?}, sender: {:?}, token_type: {:?}, amount: {:?}, tx_hash: {:?}, event_idx: {:?}", source_chain, sender, token_type, amount, tx_hash, event_idx);
+    // Unwrap: these should not fail
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
     let source_chain = builder.pure(source_chain as u8).unwrap();
     let source_address = builder.pure(sender.clone()).map_err(|e| {
         BridgeError::BridgeSerializationError(format!(
@@ -869,9 +972,8 @@ pub fn build_token_send_back_transaction(
     let tx_hash = builder.pure(tx_hash.clone()).unwrap();
     let event_idx = builder.pure(event_idx).unwrap();
 
-    // Unwrap: these should not fail
-    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
-
+    
+    
     builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
         sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),

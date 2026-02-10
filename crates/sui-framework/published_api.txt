@@ -7087,6 +7087,12 @@ current_hour_since_epoch
 adjust_user_limit_records
 	fun
 	0xb::limiter_fast_path
+ExternalTransferRecordsKey
+	public struct
+	0xb::limiter
+ExternalTransfer24hLimitsKey
+	public struct
+	0xb::limiter
 TransferLimiter
 	public struct
 	0xb::limiter
@@ -7117,6 +7123,9 @@ new_external_limits
 initial_external_limits
 	public(package) fun
 	0xb::limiter
+initial_external_24h_limits
+	public(package) fun
+	0xb::limiter
 get_external_limiter
 	public(package) fun
 	0xb::limiter
@@ -7128,6 +7137,15 @@ add_external_out_limit
 	0xb::limiter
 get_external_out_limit
 	public(package) fun
+	0xb::limiter
+update_external_24h_limit
+	public(package) fun
+	0xb::limiter
+check_and_record_external_24h_transfer
+	public(package) fun
+	0xb::limiter
+get_external_available_transfer_amount
+	public fun
 	0xb::limiter
 get_available_claim_amount
 	public fun
@@ -7372,6 +7390,15 @@ TokenDepositedEvent
 TokenDepositedEventV2
 	public struct
 	0xb::bridge
+TokenDepositedEventV3
+	public struct
+	0xb::bridge
+TokenDepositedEventForSolanaV2
+	public struct
+	0xb::bridge
+TokenDepositedEventForSolanaV3
+	public struct
+	0xb::bridge
 DefiTransferOutEvent
 	public struct
 	0xb::bridge
@@ -7385,6 +7412,9 @@ TokenSendBackEvent
 	public struct
 	0xb::bridge
 TokenSendBackEventV2
+	public struct
+	0xb::bridge
+TokenSendBackEventForSolanaV2
 	public struct
 	0xb::bridge
 EmergencyOpEvent
@@ -7432,6 +7462,9 @@ ExternalWithdrawEvent
 ExternalWithdrawEventV2
 	public struct
 	0xb::bridge
+ExternalWithdrawEventV3
+	public struct
+	0xb::bridge
 ExternalBridgeMessageKey
 	public struct
 	0xb::bridge
@@ -7451,6 +7484,9 @@ init_token_list
 	public fun
 	0xb::bridge
 update_external_out_limit
+	public fun
+	0xb::bridge
+update_external_24h_limit
 	public fun
 	0xb::bridge
 update_defi_protocol_info
@@ -7552,6 +7588,9 @@ execute_system_message
 get_available_claim_amount
 	public fun
 	0xb::bridge
+get_external_available_transfer_amount
+	public fun
+	0xb::bridge
 pre_deposit_external_coin
 	public fun
 	0xb::bridge
@@ -7564,7 +7603,13 @@ approval_and_claimed_external_coin
 approval_and_claimed_external_busd_coin
 	public fun
 	0xb::bridge
+withdraw_external_busd_coin_v2
+	public fun
+	0xb::bridge
 withdraw_external_busd_coin
+	public fun
+	0xb::bridge
+withdraw_external_coin_v2
 	public fun
 	0xb::bridge
 withdraw_external_coin
@@ -7724,6 +7769,18 @@ get_parsed_defi_transfer_out_message
 	fun
 	0xb::bridge
 get_parsed_defi_transfer_message
+	fun
+	0xb::bridge
+is_solana_chain
+	fun
+	0xb::bridge
+get_expected_address_length
+	fun
+	0xb::bridge
+get_token_amount_for_target_chain
+	fun
+	0xb::bridge
+get_fee_busd_for_target_chain
 	fun
 	0xb::bridge
 to_bytes

@@ -56,6 +56,10 @@ impl BridgeClient {
                 "sign/bridge_tx/sui/eth/{}/{}",
                 e.sui_tx_digest, e.sui_tx_event_index
             ),
+            BridgeAction::SuiToSolanaBridgeAction(e) => format!(
+                "sign/bridge_tx/sui/solana/{}/{}",
+                e.sui_tx_digest, e.sui_tx_event_index
+            ),
             BridgeAction::SuiToEthDefiBridgeAction(e) => format!(
                 "sign/bridge_tx/sui/eth/defi/{}/{}",
                 e.sui_tx_digest, e.sui_tx_event_index
@@ -73,6 +77,10 @@ impl BridgeClient {
                     )
                 }
             },
+            BridgeAction::SolanaSendBackBridgeAction(e) => format!(
+                "sign/bridge_tx/sui/solana/send/back/{}/{}",
+                e.sui_tx_digest, e.sui_tx_event_index
+            ),
             BridgeAction::ExternalDepositStartBridgeAction(e) => format!(
                 "sign/bridge_tx/external/sui/{}/{}",
                 e.sui_tx_digest,
@@ -104,6 +112,14 @@ impl BridgeClient {
                     e.eth_bridge_event.fast_path_selector as u8
                 )
             },
+            BridgeAction::SolanaToSuiBridgeAction(e) => {
+                format!(
+                    "sign/bridge_tx/solana/sui/{}/{}/{}",
+                    e.solana_tx_signature,
+                    e.solana_event_index,
+                    e.solana_bridge_event.fast_path_selector as u8
+                )
+            }
             BridgeAction::BlocklistCommitteeAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();
@@ -350,6 +366,13 @@ impl BridgeClient {
                     .map(|id| id.to_string())
                     .collect::<Vec<_>>()
                     .join(",");
+                
+                let token_original_decimals = a
+                    .token_original_decimals
+                    .iter()
+                    .map(|id| id.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",");
                 let token_prices = a
                     .token_prices
                     .iter()
@@ -357,7 +380,40 @@ impl BridgeClient {
                     .collect::<Vec<_>>()
                     .join(",");
                 format!(
-                    "sign/add_tokens_on_evm/{chain_id}/{nonce}/{native}/{token_ids}/{token_addresses}/{token_sui_decimals}/{token_prices}"
+                    "sign/add_tokens_on_evm/{chain_id}/{nonce}/{native}/{token_ids}/{token_addresses}/{token_sui_decimals}/{token_original_decimals}/{token_prices}"
+                )
+            }
+            BridgeAction::AddTokenOnSolanaAction(a) => {
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let native = if a.native { "1" } else { "0" };
+                let token_id = a.token_id.to_string();
+                let token_address = a.token_address.to_string();
+                let benfen_decimal = a.benfen_decimal.to_string();
+                let original_decimal = a.original_decimal.to_string();
+                let token_price = a.token_price.to_string();
+                format!(
+                    "sign/add_token_on_solana/{chain_id}/{nonce}/{native}/{token_id}/{token_address}/{benfen_decimal}/{original_decimal}/{token_price}"
+                )
+            }
+            BridgeAction::UpgradeProgramOnSolanaAction(a) =>{
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let program = a.proxy.to_string();
+                let implementation = a.implementation.to_string();
+                let version = a.version.to_string();
+                format!(
+                    "sign/upgrade_program_on_solana/{chain_id}/{nonce}/{program}/{implementation}/{version}"
+                )
+            }
+
+            BridgeAction::ExtendProgramOnSolanaAction(a ) => {
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let program = a.program_id.to_string();
+                let size =a.size.to_string();
+                format!(
+                    "sign/extend_program_on_solana/{chain_id}/{nonce}/{program}/{size}"
                 )
             }
             BridgeAction::FastPathLimitUpdateAction(a) => {
@@ -370,6 +426,7 @@ impl BridgeClient {
                     "sign/update_fast_path_limit/{chain_id}/{nonce}/{token_id}/{amount}/{chain_id_evm}"
                 )
             }
+            _ => unreachable!("BridgeAction variant is not supported by bridge_action_to_path"),
         }
     }
 
@@ -678,7 +735,8 @@ mod tests {
                 sui_adjusted_amount: 1,
                 tx_hash: vec![],
                 event_idx: 0,
-                fast_path_selector: FastPathSelector::Finalized
+                fast_path_selector: FastPathSelector::Finalized,
+                target_token_id: 5,
             },
         });
 
@@ -829,6 +887,7 @@ mod tests {
                 EthAddress::repeat_byte(3),
             ],
             token_sui_decimals: vec![5, 6, 7],
+            token_original_decimals: vec![5, 6, 7],
             token_prices: vec![1_000_000_000, 2_000_000_000, 3_000_000_000],
         });
         assert_eq!(
