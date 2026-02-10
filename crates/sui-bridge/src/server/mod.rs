@@ -117,7 +117,6 @@ pub const WITHDRAW_BRIDGE_FEE: &str =
 pub const ADD_TOKENS_ON_SUI_PATH: &str =
     "/sign/add_tokens_on_sui/{chain_id}/{nonce}/{native}/{token_ids}/{token_type_names}/{token_prices}";
 pub const ADD_TOKENS_ON_EVM_PATH: &str =
-    "/sign/add_tokens_on_evm/{chain_id}/{nonce}/{native}/{token_ids}/{token_addresses}/{token_sui_decimals}/{token_prices}";
     "/sign/add_tokens_on_evm/:chain_id/:nonce/:native/:token_ids/:token_addresses/:token_sui_decimals/:token_original_decimals/:token_prices";
 
 pub const ADD_TOKEN_ON_SOLANA_PATH: &str =
