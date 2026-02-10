@@ -172,33 +172,32 @@ impl BridgeOrchestratorTables {
     pub fn get_all_pending_actions(&self) -> HashMap<BridgeActionDigest, BridgeAction> {
         self.pending_actions
             .safe_iter()
-            .collect::<Result<HashMap<_, _>, _>>()
-            .expect("failed to get all pending actions");
+            .filter_map(|item| match item {
+                Ok((k, action)) => {
+                    if let BridgeAction::ExternalDepositStartBridgeAction(external_action) = &action {
+                        let tx_hash = &external_action.sui_bridge_event.tx_hash;
 
-        self.pending_actions.safe_iter().filter_map(
-            |result| {
-                match result {
-                    Ok((digest, action)) => {
-                        // 在这里使用 digest 和 action
-                        if let BridgeAction::ExternalDepositStartBridgeAction(ref external_action) = action {
-                            let tx_hash = &external_action.sui_bridge_event.tx_hash;
-                            if tx_hash == "abb26e297b0d347834a99b9fdf43d40c828532740b4c643b607192a83dd86340#result-2" {
-                                info!("filter pending actions by tx_hash for hard code fix bug, sui_hash {} tx_hash: {}",
-                        &external_action.sui_tx_digest, tx_hash);
-                                return None; // 过滤掉这个元素
-                            }
+                        if tx_hash
+                            == "abb26e297b0d347834a99b9fdf43d40c828532740b4c643b607192a83dd86340#result-2"
+                        {
+                            info!(
+                            "filter pending actions by tx_hash for hard code fix bug, sui_hash {} tx_hash: {}",
+                            &external_action.sui_tx_digest,
+                            tx_hash
+                        );
+                            // TODO: delete it from pending_actions storage
+                            return None; // 跳过：不进入 HashMap
                         }
-                        info!("[DEBUG] pending_actions: {:#?}", action);
-                        Some((digest, action)) // 保留这个元素
                     }
-                    Err(e) => {
-                        // 处理错误情况
-                        eprintln!("Error reading from storage: {:?}", e);
-                        None
-                    }
+
+                    info!("[DEBUG] pending_actions: {:#?}", action);
+
+                    Some(Ok((k, action))) // 保留：继续给 collect
                 }
-            }
-        ).collect()
+                Err(e) => Some(Err(e)), // 传播错误给 collect
+            })
+            .collect::<Result<HashMap<_, _>, _>>()
+            .expect("failed to get all pending actions")
     }
 
     pub fn get_all_pending_actions_4_aml(&self) -> HashMap<BridgeActionDigest, BridgeAction> {
