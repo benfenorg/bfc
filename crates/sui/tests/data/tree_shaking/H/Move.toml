@@ -5,7 +5,7 @@ edition = "2024.beta"
 [dependencies]
 G = { local = "../G" }
 
-Sui = { git = "https://github.com/benfenorg/bfc.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "develop_v1.24.0" , override = true}
+Sui = { local = "../../system-packages/sui-framework" }
 
 [addresses]
 h = "0x0"
