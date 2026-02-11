@@ -80,8 +80,8 @@ gas summary: computation_cost: 1000000, storage_cost: 6178800,  storage_rebate: 
 
 task 10, line 73:
 //# run test::m::remove_and_add --sender A --args object(7,0) 1
-mutated: object(0,0), object(7,0)
-gas summary: computation_cost: 1000000, storage_cost: 2515600,  storage_rebate: 2490444, non_refundable_storage_fee: 25156
+mutated: object(0,0), object(7,0), object(9,0), object(9,1)
+gas summary: computation_cost: 1000000, storage_cost: 6178800,  storage_rebate: 6117012, non_refundable_storage_fee: 61788
 
 task 11, lines 75-79:
 //# view-object 7,0
