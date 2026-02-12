@@ -54,7 +54,7 @@ Failed to build Move modules: Failed to resolve dependencies for package 'exampl
 
 Caused by:
     0: Fetching 'BfcSystem'
-    1: Failed to reset to latest Git state '8fa330904a19' for package 'BfcSystem', to skip set --skip-fetch-latest-git-deps | Exit status: exit status: 128.
+    1: Failed to reset to latest Git state '134d3e5a6e17-dirty' for package 'BfcSystem', to skip set --skip-fetch-latest-git-deps | Exit status: exit status: 128.
 === try to upgrade with modified dep (should fail) ===
 
 ----- stderr -----

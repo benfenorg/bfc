@@ -14,19 +14,26 @@ echo "ignore2" >> example/.gitignore
 bfc move new example
 cat example/.gitignore
 echo
-echo ==== files in example/ ====
+echo "==== files in example ==== "
 ls -A example
 
 ----- results -----
 success: true
 exit_code: 0
 ----- stdout -----
+existing_ignore
 build/*
 ignore1
 build/*
 ignore2
+ignore1
+build/*
+ignore2
+ignore1
+build/*
+ignore2
 
-==== files in example/ ====
+==== files in example ==== 
 .gitignore
 Move.toml
 sources
