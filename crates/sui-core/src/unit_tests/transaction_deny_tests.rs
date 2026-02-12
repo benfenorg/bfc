@@ -662,8 +662,9 @@ async fn test_package_denied_dynamic_check() {
         &[tx_c, tx_b, tx_a, tx_c_prime, tx_b_prime],
     );
 
+    let bfc_address = convert_to_bfc_address(&*package_c.to_string());
     let program = include_str!("data/dynamic_checks/package_denied.star")
-        .replace("$OBJECT_ID", &format!("{}", package_c));
+        .replace("$OBJECT_ID", &format!("{}", bfc_address));
     // Re-create the state such that we could deny package c.
     let state = reload_state_with_new_deny_config(
         &network_config,
