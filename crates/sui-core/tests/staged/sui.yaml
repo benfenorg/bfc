@@ -443,6 +443,8 @@ EndOfEpochTransactionKind:
       StoreExecutionTimeObservations:
         NEWTYPE:
           TYPENAME: StoredExecutionTimeObservations
+    8:
+      AnonymousStateCreate: UNIT
 Event:
   STRUCT:
     - package_id:
