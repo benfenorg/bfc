@@ -1806,6 +1806,8 @@ async fn test_puase_bridge_on_solana(){
 
     let accounts=crate::query_solana_account::get_update_committee_blocklist_account(benfen_bridge::ID,BridgeChainId::SuiCustom as u8);
 
+    tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+
 
     let committee_accounts = program
         .account::<Committee>(accounts.bridge_committee)
