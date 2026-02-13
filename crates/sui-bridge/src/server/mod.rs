@@ -53,88 +53,95 @@ pub const METRICS_KEY_PATH: &str = "/metrics_pub_key";
 
 // Important: for BridgeActions, the paths need to match the ones in bridge_client.rs
 pub const ETH_TO_SUI_TX_PATH: &str =
-    "/sign/bridge_tx/eth/sui/:tx_hash/:event_index/:fast_path_selector";
+    "/sign/bridge_tx/eth/sui/{tx_hash}/{event_index}/{fast_path_selector}";
 pub const SOLANA_TO_SUI_TX_PATH: &str =
-    "/sign/bridge_tx/solana/sui/:tx_signature/:event_index/:fast_path_selector";
+    "/sign/bridge_tx/solana/sui/{tx_signature}/{event_index}/{fast_path_selector}";
 pub const ETH_TO_SUI_DEFI_TX_PATH: &str =
-    "/sign/bridge_tx/eth/sui/defi/:tx_hash/:event_index/:fast_path_selector";
+    "/sign/bridge_tx/eth/sui/defi/{tx_hash}/{event_index}/{fast_path_selector}";
 pub const EVM_TO_SUI_TX_PATH: &str =
-    "/sign/bridge_tx/evm/:chain_id/sui/:tx_hash/:event_index/:fast_path_selector";
-pub const SUI_TO_ETH_TX_PATH: &str = "/sign/bridge_tx/sui/eth/:tx_digest/:event_index";
-pub const SUI_TO_ETH_DEFI_TX_PATH: &str = "/sign/bridge_tx/sui/eth/defi/:tx_digest/:event_index";
-pub const SUI_TO_SOLANA_TX_PATH: &str = "/sign/bridge_tx/sui/solana/:tx_digest/:event_index";
-pub const SUI_TO_EVM_TX_PATH: &str = "/sign/bridge_tx/sui/evm/:tx_digest/:event_index";
+    "/sign/bridge_tx/evm/{chain_id}/sui/{tx_hash}/{event_index}/{fast_path_selector}";
+pub const SUI_TO_ETH_TX_PATH: &str = "/sign/bridge_tx/sui/eth/{tx_digest}/{event_index}";
+pub const SUI_TO_ETH_DEFI_TX_PATH: &str =
+    "/sign/bridge_tx/sui/eth/defi/{tx_digest}/{event_index}";
+pub const SUI_TO_SOLANA_TX_PATH: &str =
+    "/sign/bridge_tx/sui/solana/{tx_digest}/{event_index}";
+pub const SUI_TO_EVM_TX_PATH: &str = "/sign/bridge_tx/sui/evm/{tx_digest}/{event_index}";
 pub const SUI_TO_ETH_SEND_BACK_TX_PATH: &str =
-    "/sign/bridge_tx/sui/eth/send/back/:tx_digest/:event_index";
+    "/sign/bridge_tx/sui/eth/send/back/{tx_digest}/{event_index}";
 pub const SUI_TO_EVM_SEND_BACK_TX_PATH: &str =
-    "/sign/bridge_tx/sui/evm/send/back/:tx_digest/:event_index";
+    "/sign/bridge_tx/sui/evm/send/back/{tx_digest}/{event_index}";
 //todo: add solana send back tx path @lifei
 pub const SUI_TO_SOLANA_SEND_BACK_TX_PATH: &str =
-    "/sign/bridge_tx/sui/solana/send/back/:tx_digest/:event_index";
-pub const EXTERNAL_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/external/sui/:tx_digest/:event_index";
+    "/sign/bridge_tx/sui/solana/send/back/{tx_digest}/{event_index}";
+pub const EXTERNAL_TO_SUI_TX_PATH: &str =
+    "/sign/bridge_tx/external/sui/{tx_digest}/{event_index}";
+
 pub const COMMITTEE_BLOCKLIST_UPDATE_PATH: &str =
     "/sign/update_committee_blocklist/{chain_id}/{nonce}/{type}/{keys}";
-pub const EMERGENCY_BUTTON_PATH: &str = "/sign/emergency_button/{chain_id}/{nonce}/{type}";
+pub const EMERGENCY_BUTTON_PATH: &str =
+    "/sign/emergency_button/{chain_id}/{nonce}/{type}";
 pub const LIMIT_UPDATE_PATH: &str =
     "/sign/update_limit/{chain_id}/{nonce}/{sending_chain_id}/{new_usd_limit}";
 pub const SINGLE_TRANSFER_LIMIT_PATH: &str =
-    "/sign/update_single_transfer_limit/:chain_id/:nonce/:sending_chain_id/:new_usd_limit";
-pub const MINT_BUSD_LIMIT_PATH: &str = "/sign/mint_busd_limit/:chain_id/:modify_cap/:new_limit";
+    "/sign/update_single_transfer_limit/{chain_id}/{nonce}/{sending_chain_id}/{new_usd_limit}";
+pub const MINT_BUSD_LIMIT_PATH: &str =
+    "/sign/mint_busd_limit/{chain_id}/{modify_cap}/{new_limit}";
 pub const ASSET_PRICE_UPDATE_PATH: &str =
     "/sign/update_asset_price/{chain_id}/{nonce}/{token_id}/{new_usd_price}";
 pub const EVM_CONTRACT_UPGRADE_PATH_WITH_CALLDATA: &str =
     "/sign/upgrade_evm_contract/{chain_id}/{nonce}/{proxy_address}/{new_impl_address}/{calldata}";
 pub const EVM_CONTRACT_UPGRADE_PATH: &str =
     "/sign/upgrade_evm_contract/{chain_id}/{nonce}/{proxy_address}/{new_impl_address}";
+
 pub const ADD_EXTERNAL_COIN_ADMIN: &str =
-    "/sign/add_external_coin_admin/:chain_id/:nonce/:coin_type/:admin_address";
+    "/sign/add_external_coin_admin/{chain_id}/{nonce}/{coin_type}/{admin_address}";
 pub const REMOVE_EXTERNAL_COIN_ADMIN: &str =
-    "/sign/remove_external_coin_admin/:chain_id/:nonce/:coin_type/:admin_address";
+    "/sign/remove_external_coin_admin/{chain_id}/{nonce}/{coin_type}/{admin_address}";
 pub const ADD_EXTERNAL_COIN_WITNESS: &str =
-    "/sign/add_external_coin_witness/:chain_id/:nonce/:coin_type/:witness_address";
+    "/sign/add_external_coin_witness/{chain_id}/{nonce}/{coin_type}/{witness_address}";
 pub const REMOVE_EXTERNAL_COIN_WITNESS: &str =
-    "/sign/remove_external_coin_witness/:chain_id/:nonce/:coin_type/:witness_address";
+    "/sign/remove_external_coin_witness/{chain_id}/{nonce}/{coin_type}/{witness_address}";
 pub const ADD_EXTERNAL_COIN_TARGET: &str =
-    "/sign/add_external_coin_target/:chain_id/:nonce/:coin_type/:target_address";
+    "/sign/add_external_coin_target/{chain_id}/{nonce}/{coin_type}/{target_address}";
 pub const REMOVE_EXTERNAL_COIN_TARGET: &str =
-    "/sign/remove_external_coin_target/:chain_id/:nonce/:coin_type/:target_address";
+    "/sign/remove_external_coin_target/{chain_id}/{nonce}/{coin_type}/{target_address}";
 
 pub const ADD_TOKEN_ON_TOKEN_LIST: &str =
-    "/sign/add_token_on_token_list/:chain_id/:nonce/:from_chain_id/:to_chain_id/:token_id";
-
+    "/sign/add_token_on_token_list/{chain_id}/{nonce}/{from_chain_id}/{to_chain_id}/{token_id}";
 pub const REMOVE_TOKEN_ON_TOKEN_LIST: &str =
-    "/sign/remove_token_on_token_list/:chain_id/:nonce/:from_chain_id/:to_chain_id/:token_id";
+    "/sign/remove_token_on_token_list/{chain_id}/{nonce}/{from_chain_id}/{to_chain_id}/{token_id}";
 
 pub const UPDATE_BRIDGE_FEE_ON_CROSS_OUT: &str =
-    "/sign/set_bridge_fee_on_cross_out/:chain_id/:nonce/:to_chain_id/:token_id/:mode/:amount";
-
+    "/sign/set_bridge_fee_on_cross_out/{chain_id}/{nonce}/{to_chain_id}/{token_id}/{mode}/{amount}";
 pub const UPDATE_BRIDGE_FEE_ON_CROSS_IN: &str =
-    "/sign/set_bridge_fee_on_cross_in/:chain_id/:nonce/:from_chain_id/:token_id/:mode/:amount";
+    "/sign/set_bridge_fee_on_cross_in/{chain_id}/{nonce}/{from_chain_id}/{token_id}/{mode}/{amount}";
 
 pub const WITHDRAW_BRIDGE_FEE: &str =
-    "/sign/withdraw_bridge_fee/:chain_id/:nonce/:addr/:coin_type/:amount";
+    "/sign/withdraw_bridge_fee/{chain_id}/{nonce}/{addr}/{coin_type}/{amount}";
 
 pub const ADD_TOKENS_ON_SUI_PATH: &str =
     "/sign/add_tokens_on_sui/{chain_id}/{nonce}/{native}/{token_ids}/{token_type_names}/{token_prices}";
 pub const ADD_TOKENS_ON_EVM_PATH: &str =
-    "/sign/add_tokens_on_evm/:chain_id/:nonce/:native/:token_ids/:token_addresses/:token_sui_decimals/:token_original_decimals/:token_prices";
+    "/sign/add_tokens_on_evm/{chain_id}/{nonce}/{native}/{token_ids}/{token_addresses}/{token_sui_decimals}/{token_original_decimals}/{token_prices}";
 
 pub const ADD_TOKEN_ON_SOLANA_PATH: &str =
-    "/sign/add_token_on_solana/:chain_id/:nonce/:native/:token_id/:token_address/:benfen_decimal/:original_decimal/:token_price";
+    "/sign/add_token_on_solana/{chain_id}/{nonce}/{native}/{token_id}/{token_address}/{benfen_decimal}/{original_decimal}/{token_price}";
 
 pub const UPDATE_REFUND_ADMIN_PATH: &str =
-    "/sign/update_refund_admin/:chain_id/:nonce/:op_type/:sui_address";
+    "/sign/update_refund_admin/{chain_id}/{nonce}/{op_type}/{sui_address}";
 pub const UPDATE_FAST_PATH_LIMIT_PATH: &str =
-    "/sign/update_fast_path_limit/:chain_id/:nonce/:token_id/:amount/:chain_id_evm";
+    "/sign/update_fast_path_limit/{chain_id}/{nonce}/{token_id}/{amount}/{chain_id_evm}";
 
 pub const UPDATE_INVEST_ADDRESS_PATH: &str =
-    "/sign/update_invest_address/:chain_id/:nonce/:invest_address";
+    "/sign/update_invest_address/{chain_id}/{nonce}/{invest_address}";
 pub const ADD_LP_TOKEN_ID_PATH: &str =
-    "/sign/add_lp_token_id/:chain_id/:nonce/:protocol_type/:token_id/:lp_token_id";
+    "/sign/add_lp_token_id/{chain_id}/{nonce}/{protocol_type}/{token_id}/{lp_token_id}";
 
-pub const EXTEND_PROGRAM_PATH: &str = "/sign/extend_program_on_solana/:chain_id/:nonce/:program/:size";
+pub const EXTEND_PROGRAM_PATH: &str =
+    "/sign/extend_program_on_solana/{chain_id}/{nonce}/{program}/{size}";
+pub const UPGRADE_PROGRAM_PATH: &str =
+    "/sign/upgrade_program_on_solana/{chain_id}/{nonce}/{program}/{implementation}/{version}";
 
-pub const UPGRADE_PROGRAM_PATH: &str = "/sign/upgrade_program_on_solana/:chain_id/:nonce/:program/:implementation/:version";
 
 // BridgeNode's public metadata that is accessible via the `/ping` endpoint.
 // Be careful with what to put here, as it is public.
