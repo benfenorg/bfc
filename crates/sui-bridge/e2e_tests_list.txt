@@ -1,0 +1,5 @@
+# sui-bridge e2e_tests 单测列表（固定列表，每行一个完整测试路径）
+# 新增/删除单测时需同步更新此文件
+
+e2e_tests::basic::test_eth_test_cluster_builder
+e2e_tests::basic::test_solana_test_cluster_builder
