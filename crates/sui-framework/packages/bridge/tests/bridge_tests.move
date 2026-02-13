@@ -1835,24 +1835,6 @@ fun test_twice_call_init_token_list() {
     env.destroy_env();
 }
 
-
-#[test]
-#[
-expected_failure(
-    abort_code = bridge::defi_protocols::EDefiProtocolConfigRegistryAlreadyExists,
-)]
-fun test_twice_call_migrate(){
-    let chain_id = chain_ids::sui_testnet();
-    let mut env = create_env(chain_id);
-    env.create_bridge_default();
-    let mut bridge = env.bridge(@0x0);
-    let bridge_inner = bridge.bridge_ref_mut();
-    bridge_inner.test_migrate(env.scenario().ctx());
-    //bridge_inner.migrate(env.scenario().ctx());
-    bridge.return_bridge();
-    env.destroy_env();
-}
-
 #[test]
 fun test_add_token_on_benfen(){
     let chain_id = chain_ids::sui_testnet();
@@ -5043,6 +5025,16 @@ fun test_withdraw_external_busd_coin_v2_24h_limit_test() {
         &cap,
         target_chain,
         limit_amount,
+        env.ctx()
+    );
+
+    // Set fee to 0.05% (500 ppm) for BUSD (token_id=5) on target_chain
+    bridge_fee::set_fee_in_cross_out(
+        bridge.bridge_ref_mut().test_load_mut_uid(),
+        target_chain as u64,
+        5, // BUSD
+        1, // Mode 1 (Percentage)
+        500, // 500 ppm = 0.05%
         env.ctx()
     );
 

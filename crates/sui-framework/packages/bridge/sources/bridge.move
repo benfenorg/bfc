@@ -514,16 +514,6 @@ module bridge::bridge {
         limiter::initial_external_24h_limits(&mut bridge.id);
     }
 
-    #[test_only]
-    public fun test_migrate(
-        bridge: &mut Bridge,
-        ctx: &mut TxContext
-    ){
-        ensure_defi_holders_initialized(&mut bridge.id, ctx);
-        defi_protocols::registry(&mut bridge.id, ctx);
-        defi_protocols::initial_defi_protocol(&mut bridge.id);
-    }
-
     public fun init_token_list(
         bridge: &mut Bridge,
         ctx: &mut TxContext
@@ -534,6 +524,10 @@ module bridge::bridge {
         bridge_fee::new_bridge_fee_registry(&mut bridge.id, ctx);
         limiter_fast_path::registry(&mut bridge.id, ctx);
         limiter::new_external_limits(&mut bridge.id, ctx);
+
+        ensure_defi_holders_initialized(&mut bridge.id, ctx);     
+        defi_protocols::registry(&mut bridge.id, ctx);
+        defi_protocols::initial_defi_protocol(&mut bridge.id);
     }
 
     public fun update_external_out_limit(

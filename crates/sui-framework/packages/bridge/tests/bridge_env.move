@@ -384,7 +384,6 @@ module bridge::bridge_env {
         let ctx = env.scenario.ctx();
         bridge.init_token_list(ctx);
         //add center token list
-        bridge.test_migrate(ctx);
         test_scenario::return_shared(bridge);
     }
 
