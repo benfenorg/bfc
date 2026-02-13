@@ -2099,7 +2099,7 @@ module bridge::bridge {
 
         let amount = token.balance().value();
         assert!(amount > 0, ETokenValueIsZero);
-        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id_expect,amount);
+        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,5,amount);
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(parent_id, fee_coin);
