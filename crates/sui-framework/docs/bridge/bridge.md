@@ -2769,6 +2769,9 @@ title: Module `bridge::bridge`
     <a href="../bridge/bridge_fee.md#bridge_bridge_fee_new_bridge_fee_registry">bridge_fee::new_bridge_fee_registry</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
     <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_registry">limiter_fast_path::registry</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
     <a href="../bridge/limiter.md#bridge_limiter_new_external_limits">limiter::new_external_limits</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
+    <a href="../bridge/bridge.md#bridge_bridge_ensure_defi_holders_initialized">ensure_defi_holders_initialized</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_registry">defi_protocols::registry</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_initial_defi_protocol">defi_protocols::initial_defi_protocol</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id);
 }
 </code></pre>
 
