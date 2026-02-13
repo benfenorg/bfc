@@ -1249,6 +1249,7 @@ fun test_execute_send_token_zero_value() {
     abort TEST_DONE
 }
 
+#[test]
 #[expected_failure(abort_code = bridge::bridge::EInvalidEvmAddress)]
 fun test_send_back_token_to_solana_with_wrong_address_length() {
     let mut env = create_env(chain_ids::sui_testnet());
