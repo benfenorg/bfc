@@ -496,16 +496,16 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         assertFalse(bridge.paused());
     }
 
-    function testBridgeERC20UnsupportedToken() public {
+    function testbridgeERC20WithTargetTokenIDUnsupportedToken() public {
         vm.expectRevert(bytes("SuiBridge: Unsupported token"));
-        bridge.bridgeERC20(
+        bridge.bridgeERC20WithTargetTokenID(
             255, 1 ether, hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4", 0, 255
         );
     }
 
-    function testBridgeERC20InsufficientAllowance() public {
+    function testbridgeERC20WithTargetTokenIDInsufficientAllowance() public {
         vm.expectRevert(bytes("SuiBridge: Insufficient allowance"));
-        bridge.bridgeERC20(
+        bridge.bridgeERC20WithTargetTokenID(
             BridgeUtils.ETH,
             type(uint256).max,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
@@ -514,9 +514,9 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         );
     }
 
-    function testBridgeERC20InvalidRecipientAddress() public {
+    function testbridgeERC20WithTargetTokenIDInvalidRecipientAddress() public {
         vm.expectRevert(bytes("SuiBridge: Invalid recipient address length"));
-        bridge.bridgeERC20(
+        bridge.bridgeERC20WithTargetTokenID(
             BridgeUtils.ETH,
             1 ether,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3",
@@ -552,7 +552,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4"
         );
 
-        bridge.bridgeERC20(
+        bridge.bridgeERC20WithTargetTokenID(
             BridgeUtils.ETH,
             1 ether,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
@@ -576,7 +576,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4"
         );
         // 2_000_000_011_000_000_888 is rounded to 2.00000001 eth
-        bridge.bridgeERC20(
+        bridge.bridgeERC20WithTargetTokenID(
             BridgeUtils.ETH,
             2_000_000_011_000_000_888,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
@@ -611,7 +611,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             USDCWhale,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4"
         );
-        bridge.bridgeERC20(
+        bridge.bridgeERC20WithTargetTokenID(
             BridgeUtils.USDC,
             usdcAmount,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
@@ -649,7 +649,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             USDCWhale,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4"
         );
-        bridge.bridgeERC20(
+        bridge.bridgeERC20WithTargetTokenID(
             BridgeUtils.USDC,
             usdcAmount,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
@@ -684,7 +684,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             USDCWhale,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4"
         );
-        bridge.bridgeERC20(
+        bridge.bridgeERC20WithTargetTokenID(
             BridgeUtils.USDC,
             usdcAmount,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
@@ -699,7 +699,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
     function testBridgeUSDTExceedLimit() public{
         changePrank(USDCWhale);
 
-        uint256 usdcAmount = 100*1000000;
+        uint256 usdcAmount = 200*1000000;
 
         // approve
         IERC20(USDC).approve(address(bridge), usdcAmount);
@@ -708,7 +708,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         uint256 balance = IERC20(USDC).balanceOf(USDCWhale);
 
         vm.expectRevert("SuiBridge: USD Exceed Limit");
-        bridge.bridgeERC20(
+        bridge.bridgeERC20WithTargetTokenID(
             BridgeUtils.USDC,
             usdcAmount,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
@@ -743,7 +743,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             USDTWhale,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4"
         );
-        bridge.bridgeERC20(
+        bridge.bridgeERC20WithTargetTokenID(
             BridgeUtils.USDT,
             usdtAmount,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
@@ -778,7 +778,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             wBTCWhale,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4"
         );
-        bridge.bridgeERC20(
+        bridge.bridgeERC20WithTargetTokenID(
             BridgeUtils.BTC,
             wbtcAmount,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
@@ -832,7 +832,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
     function testSuiBridgeInvalidERC20DecimalConversion() public {
         IERC20(wETH).approve(address(bridge), 10 ether);
         vm.expectRevert(bytes("BridgeUtils: Insufficient amount provided"));
-        bridge.bridgeERC20(
+        bridge.bridgeERC20WithTargetTokenID(
             BridgeUtils.ETH,
             1,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
@@ -850,7 +850,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
 
     function testSuiBridgeInvalidERC20Transfer() public {
         vm.expectRevert(bytes("BridgeUtils: Insufficient amount provided"));
-        bridge.bridgeERC20(
+        bridge.bridgeERC20WithTargetTokenID(
             BridgeUtils.USDC,
             0,
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",

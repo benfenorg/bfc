@@ -24,6 +24,10 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
     mapping(uint64 => mapping(uint64 => uint64)) public lpToToken;
     /* ========== INITIALIZER ========== */
 
+    
+    //store bridge fee
+    mapping(uint64 tokenID => mapping (uint8 feeType => uint64 fee)) public bridgeFees;
+
     /// @notice Constructor function for the BridgeConfig contract.
     /// @dev the provided arrays must have the same length.
     /// @param _committee The address of the BridgeCommittee contract.

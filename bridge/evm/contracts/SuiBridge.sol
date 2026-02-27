@@ -10,7 +10,8 @@ import "./interfaces/ISuiBridge.sol";
 import "./interfaces/IBridgeVault.sol";
 import "./interfaces/IBridgeLimiter.sol";
 import "./interfaces/IBridgeConfig.sol";
-import  {ArrowLib} from "./utils/ArrowLib.sol";
+import {ArrowLib} from "./utils/ArrowLib.sol";
+import {BridgeLib} from "./utils/BridgeLib.sol";
 
 /// @title SuiBridge
 /// @notice This contract implements a token bridge that enables users to deposit and withdraw
@@ -348,6 +349,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         emit EmergencyOperation(message.nonce, isFreezing);
     }
 
+
     /// @notice Enables the caller to deposit supported tokens to be bridged to a given
     /// destination chain.
     /// @dev The provided tokenID and destinationChainID must be supported. The caller must
@@ -360,69 +362,76 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         uint64 tokenID,
         uint256 amount,
         bytes memory recipientAddress,
+        uint8 destinationChainID
+    ) external whenNotPaused nonReentrant onlySupportedChain(destinationChainID) {
+        IBridgeConfig config = committee.config();
+        uint8 decimal = config.tokenSuiDecimalOf(tokenID);
+        
+        BridgeLib.BridgeERC20Args memory args = BridgeLib.BridgeERC20Args({
+            tokenID: tokenID,
+            amount: amount,
+            recipientAddress: recipientAddress,
+            destinationChainID: destinationChainID,
+            targetTokenID: 5, // busd
+            decimal: decimal,
+            nonce: nonces[BridgeUtils.TOKEN_TRANSFER],
+            config: config,
+            limiter: limiter,
+            vault: vault
+        });
+        
+        BridgeLib.bridgeERC20Common(args);
+        
+        // increment token transfer nonce
+        nonces[BridgeUtils.TOKEN_TRANSFER]++;
+    }
+
+    /// @notice Enables the caller to deposit supported tokens to be bridged to a given
+    /// destination chain.
+    /// @dev The provided tokenID and destinationChainID must be supported. The caller must
+    /// have approved this contract to transfer the given token.
+    /// @param tokenID The ID of the token to be bridged.
+    /// @param amount The amount of tokens to be bridged.
+    /// @param recipientAddress The address on the Sui chain where the tokens will be sent.
+    /// @param destinationChainID The ID of the destination chain.
+    /// @param targetTokenID The ID of the target token.
+    function bridgeERC20WithTargetTokenID(
+        uint64 tokenID,
+        uint256 amount,
+        bytes memory recipientAddress,
         uint8 destinationChainID,
         uint64 targetTokenID
     ) external whenNotPaused nonReentrant onlySupportedChain(destinationChainID) {
-        require(
-            recipientAddress.length == SUI_ADDRESS_LENGTH,
-            "SuiBridge: Invalid recipient address length"
-        );
-
         IBridgeConfig config = committee.config();
-
         uint8 decimal = config.tokenSuiDecimalOf(tokenID);
-        if (tokenID == 3 || tokenID==4) {
-
+        if (tokenID == 3 || tokenID == 4) {
             // USDT/USDC only support cross to SUI
-            require(targetTokenID == tokenID || targetTokenID == 5, "SuiBridge: Invalid target token ID");
+            require(
+                targetTokenID == tokenID || targetTokenID == 5,
+                "SuiBridge: Invalid target token ID"
+            );
             if (targetTokenID == tokenID) {
                 decimal = config.tokenOriginalDecimalOf(tokenID);
             }
-        }else{
-            require(tokenID==targetTokenID, "SuiBridge: Invalid target token ID");
+        } else {
+            require(tokenID == targetTokenID, "SuiBridge: Invalid target token ID");
         }
-
-        require(config.isTokenSupported(tokenID), "SuiBridge: Unsupported token");
-
-        address tokenAddress = config.tokenAddressOf(tokenID);
-
-        // check that the bridge contract has allowance to transfer the tokens
-        require(
-            IERC20(tokenAddress).allowance(msg.sender, address(this)) >= amount,
-            "SuiBridge: Insufficient allowance"
-        );
-        require(limiter.calculateAmountInUSD(tokenID, amount) < limiter.getUsdMaxLimit(), "SuiBridge: USD Exceed Limit");
-
-        // calculate old vault balance
-        uint256 oldBalance = IERC20(tokenAddress).balanceOf(address(vault));
-
-        // Transfer the tokens from the contract to the vault
-        SafeERC20.safeTransferFrom(IERC20(tokenAddress), msg.sender, address(vault), amount);
-
-        // calculate new vault balance
-        uint256 newBalance = IERC20(tokenAddress).balanceOf(address(vault));
-
-        // calculate the amount transferred
-        uint256 amountTransfered = newBalance - oldBalance;
-
-        // Adjust the amount
-        uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
-            IERC20Metadata(tokenAddress).decimals(),
-            decimal,
-            amountTransfered
-        );
-
-        emit TokensDeposited(
-            config.chainID(),
-            nonces[BridgeUtils.TOKEN_TRANSFER],
-            destinationChainID,
-            tokenID,
-            targetTokenID,
-            suiAdjustedAmount,
-            msg.sender,
-            recipientAddress
-        );
-
+        
+        BridgeLib.BridgeERC20Args memory args = BridgeLib.BridgeERC20Args({
+            tokenID: tokenID,
+            amount: amount,
+            recipientAddress: recipientAddress,
+            destinationChainID: destinationChainID,
+            targetTokenID: targetTokenID,
+            decimal: decimal,
+            nonce: nonces[BridgeUtils.TOKEN_TRANSFER],
+            config: config,
+            limiter: limiter,
+            vault: vault
+        });
+        
+        BridgeLib.bridgeERC20Common(args);
+        
         // increment token transfer nonce
         nonces[BridgeUtils.TOKEN_TRANSFER]++;
     }
