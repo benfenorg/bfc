@@ -1013,8 +1013,8 @@ mod tests {
             .contains_key(&action.digest()));
 
         // Now let it succeed
-        let event = SuiEvent::random_for_testing();
-        //event.type_ = TokenTransferClaimed.get("").unwrap().clone();
+        let mut event = SuiEvent::random_for_testing();
+        event.type_ = TokenTransferClaimed.get().unwrap().clone();
         let events = vec![event];
         mock_transaction_response(
             &sui_client_mock,
