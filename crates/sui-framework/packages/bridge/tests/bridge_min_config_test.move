@@ -5,6 +5,7 @@ module bridge::bridge_min_config_tests {
     use bridge::chain_ids::{eth_mainnet, bsc_mainnet};
     use std::unit_test::assert_eq;
     use sui::test_utils;
+    use bridge::bridge_env::{usdc_id, usdt_id};
 
     public struct MinConfigObject has key,store {
         id: UID
@@ -23,8 +24,8 @@ module bridge::bridge_min_config_tests {
         let chain = eth_mainnet() as u64;
         assert_eq!(bridge_min_config::get_min_limit_cross_out(&obj.id, chain)==0, true);
         assert_eq!(bridge_min_config::get_min_limit_cross_in(&obj.id, chain)==0, true);
-        assert_eq!(bridge_min_config::get_min_fee_cross_out(&obj.id, chain)==0, true);
-        assert_eq!(bridge_min_config::get_min_fee_cross_in(&obj.id, chain)==0, true);
+        assert_eq!(bridge_min_config::get_min_fee_cross_out(&obj.id, chain, usdc_id())==0, true);
+        assert_eq!(bridge_min_config::get_min_fee_cross_in(&obj.id, chain, usdc_id())==0, true);
         let _r = bridge_min_config::borrow(&obj.id);
         let _rm = bridge_min_config::borrow_mut(&mut obj.id);
         test_utils::destroy(obj);
@@ -55,13 +56,13 @@ module bridge::bridge_min_config_tests {
         scenario.next_tx(@0xABF);
         bridge_min_config::set_min_limit_cross_in(&mut obj.id, chain, 2_000);
         scenario.next_tx(@0xAC0);
-        bridge_min_config::set_min_fee_cross_out(&mut obj.id, chain, 100);
+        bridge_min_config::set_min_fee_cross_out(&mut obj.id, chain, usdc_id(), 100, scenario.ctx());
         scenario.next_tx(@0xAC1);
-        bridge_min_config::set_min_fee_cross_in(&mut obj.id, chain, 200);
+        bridge_min_config::set_min_fee_cross_in(&mut obj.id, chain, usdc_id(), 200, scenario.ctx());
         assert_eq!(bridge_min_config::get_min_limit_cross_out(&obj.id, chain)==1_000, true);
         assert_eq!(bridge_min_config::get_min_limit_cross_in(&obj.id, chain)==2_000, true);
-        assert_eq!(bridge_min_config::get_min_fee_cross_out(&obj.id, chain)==100, true);
-        assert_eq!(bridge_min_config::get_min_fee_cross_in(&obj.id, chain)==200, true);
+        assert_eq!(bridge_min_config::get_min_fee_cross_out(&obj.id, chain, usdc_id())==100, true);
+        assert_eq!(bridge_min_config::get_min_fee_cross_in(&obj.id, chain, usdc_id())==200, true);
         test_utils::destroy(obj);
         test_scenario::end(scenario);
     }
@@ -75,20 +76,20 @@ module bridge::bridge_min_config_tests {
         let chain = eth_mainnet() as u64;
         bridge_min_config::set_min_limit_cross_out(&mut obj.id, chain, 1_000);
         bridge_min_config::set_min_limit_cross_in(&mut obj.id, chain, 2_000);
-        bridge_min_config::set_min_fee_cross_out(&mut obj.id, chain, 100);
-        bridge_min_config::set_min_fee_cross_in(&mut obj.id, chain, 200);
+        bridge_min_config::set_min_fee_cross_out(&mut obj.id, chain, usdc_id(), 100, scenario.ctx());
+        bridge_min_config::set_min_fee_cross_in(&mut obj.id, chain, usdc_id(), 200, scenario.ctx());
         scenario.next_tx(@0xAC3);
         bridge_min_config::set_min_limit_cross_out(&mut obj.id, chain, 5_000);
         scenario.next_tx(@0xAC4);
         bridge_min_config::set_min_limit_cross_in(&mut obj.id, chain, 6_000);
         scenario.next_tx(@0xAC5);
-        bridge_min_config::set_min_fee_cross_out(&mut obj.id, chain, 300);
+        bridge_min_config::set_min_fee_cross_out(&mut obj.id, chain, usdc_id(), 300, scenario.ctx());
         scenario.next_tx(@0xAC6);
-        bridge_min_config::set_min_fee_cross_in(&mut obj.id, chain, 400);
+        bridge_min_config::set_min_fee_cross_in(&mut obj.id, chain, usdc_id(), 400, scenario.ctx());
         assert_eq!(bridge_min_config::get_min_limit_cross_out(&obj.id, chain)==5_000, true);
         assert_eq!(bridge_min_config::get_min_limit_cross_in(&obj.id, chain)==6_000, true);
-        assert_eq!(bridge_min_config::get_min_fee_cross_out(&obj.id, chain)==300, true);
-        assert_eq!(bridge_min_config::get_min_fee_cross_in(&obj.id, chain)==400, true);
+        assert_eq!(bridge_min_config::get_min_fee_cross_out(&obj.id, chain, usdc_id())==300, true);
+        assert_eq!(bridge_min_config::get_min_fee_cross_in(&obj.id, chain, usdc_id())==400, true);
         test_utils::destroy(obj);
         test_scenario::end(scenario);
     }
@@ -102,17 +103,17 @@ module bridge::bridge_min_config_tests {
         let chain_a = eth_mainnet() as u64;
         let chain_b = bsc_mainnet() as u64;
         bridge_min_config::set_min_limit_cross_out(&mut obj.id, chain_a, 1_000);
-        bridge_min_config::set_min_fee_cross_out(&mut obj.id, chain_a, 100);
+        bridge_min_config::set_min_fee_cross_out(&mut obj.id, chain_a, usdc_id(), 100, scenario.ctx());
         bridge_min_config::set_min_limit_cross_in(&mut obj.id, chain_b, 9_000);
-        bridge_min_config::set_min_fee_cross_in(&mut obj.id, chain_b, 900);
+        bridge_min_config::set_min_fee_cross_in(&mut obj.id, chain_b, usdt_id(), 900, scenario.ctx());
         assert_eq!(bridge_min_config::get_min_limit_cross_out(&obj.id, chain_a)==1_000, true);
-        assert_eq!(bridge_min_config::get_min_fee_cross_out(&obj.id, chain_a)==100, true);
+        assert_eq!(bridge_min_config::get_min_fee_cross_out(&obj.id, chain_a, usdc_id())==100, true);
         assert_eq!(bridge_min_config::get_min_limit_cross_in(&obj.id, chain_b)==9_000, true);
-        assert_eq!(bridge_min_config::get_min_fee_cross_in(&obj.id, chain_b)==900, true);
+        assert_eq!(bridge_min_config::get_min_fee_cross_in(&obj.id, chain_b, usdt_id())==900, true);
         assert_eq!(bridge_min_config::get_min_limit_cross_in(&obj.id, chain_a)==0, true);
-        assert_eq!(bridge_min_config::get_min_fee_cross_in(&obj.id, chain_a)==0, true);
+        assert_eq!(bridge_min_config::get_min_fee_cross_in(&obj.id, chain_a, usdc_id())==0, true);
         assert_eq!(bridge_min_config::get_min_limit_cross_out(&obj.id, chain_b)==0, true);
-        assert_eq!(bridge_min_config::get_min_fee_cross_out(&obj.id, chain_b)==0, true);
+        assert_eq!(bridge_min_config::get_min_fee_cross_out(&obj.id, chain_b, usdt_id())==0, true);
         test_utils::destroy(obj);
         test_scenario::end(scenario);
     }
