@@ -428,6 +428,28 @@ module bridge::treasury {
         ((amount as u128) * (metadata.notional_value as u128) / (metadata.decimal_multiplier as u128)) as u64
     }
 
+    /// 根据 token_id 和数量 amount（该代币最小单位）计算 USD 价值，返回值使用 8 位小数（与 limiter 的 USD_VALUE_MULTIPLIER 一致）。
+    public fun get_amount_in_usd_by_token_id(self: &BridgeTreasury, token_id: u64, amount: u64): u64 {
+        let type_name_opt = self.id_token_type_map.try_get(&token_id);
+        assert!(type_name_opt.is_some(), EUnsupportedTokenType);
+        let type_name = type_name_opt.destroy_some();
+        let metadata_opt = self.supported_tokens.try_get(&type_name);
+        assert!(metadata_opt.is_some(), EUnsupportedTokenType);
+        let metadata = metadata_opt.destroy_some();
+        ((amount as u128) * (metadata.notional_value as u128) / (metadata.decimal_multiplier as u128)) as u64
+    }
+
+    /// 根据 token_id 和 USD 价值（8 位小数）换算为该代币最小单位的数量。
+    public fun get_token_amount_by_usd(self: &BridgeTreasury, token_id: u64, usd_amount_8dp: u64): u64 {
+        let type_name_opt = self.id_token_type_map.try_get(&token_id);
+        assert!(type_name_opt.is_some(), EUnsupportedTokenType);
+        let type_name = type_name_opt.destroy_some();
+        let metadata_opt = self.supported_tokens.try_get(&type_name);
+        assert!(metadata_opt.is_some(), EUnsupportedTokenType);
+        let metadata = metadata_opt.destroy_some();
+        ((usd_amount_8dp as u128) * (metadata.decimal_multiplier as u128) / (metadata.notional_value as u128)) as u64
+    }
+
 
     public(package) fun update_asset_notional_price(
         self: &mut BridgeTreasury,
