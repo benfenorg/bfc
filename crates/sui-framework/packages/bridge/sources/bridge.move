@@ -511,8 +511,12 @@ module bridge::bridge {
         bridge: &mut Bridge,
         ctx: &mut TxContext
     ){
+        if (!bridge_min_config::exists(&bridge.id)) {
+            bridge_min_config::new_bridge_min_config_registry(&mut bridge.id, ctx);
+        };
         ensure_defi_holders_initialized(&mut bridge.id, ctx);
         limiter::initial_external_24h_limits(&mut bridge.id);
+        bridge_min_config::initial_min_fee_limits(&mut bridge.id, ctx);
     }
 
     public fun init_token_list(

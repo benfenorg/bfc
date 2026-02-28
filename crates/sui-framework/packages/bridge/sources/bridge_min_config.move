@@ -1,6 +1,8 @@
 module bridge::bridge_min_config{
     use sui::table::{Self, Table};
     use sui::dynamic_field;
+    use bridge::chain_ids;
+    use bridge::tokenlist;
 
     const KEY: vector<u8> = b"bridge_min_config";
     const EBridgeMinConfigRegistryAlreadyExists: u64=0;
@@ -54,6 +56,10 @@ module bridge::bridge_min_config{
 
     public(package) fun borrow_mut(parent_id: &mut UID): &mut BridgeMinConfig{
         dynamic_field::borrow_mut<vector<u8>,BridgeMinConfig>(parent_id, KEY)
+    }
+
+    public fun exists(parent_id: &UID): bool {
+        dynamic_field::exists_(parent_id, KEY)
     }
 
     public(package) fun set_min_limit_cross_out(
@@ -184,5 +190,38 @@ module bridge::bridge_min_config{
             return 0
         };
         inner.borrow(token_id).cross_in_fee_min
+    }
+
+    public(package) fun initial_min_fee_limits(parent_id: &mut UID, ctx: &mut TxContext) {
+        {
+            let chain = chain_ids::tron_mainnet() as u64;
+            let usdt = tokenlist::get_usdt_token_id();
+            set_min_fee_cross_out(parent_id, chain, usdt, 5_000_000, ctx);
+            set_min_fee_cross_in(parent_id, chain, usdt, 0, ctx);
+        };
+        {
+            let chain = chain_ids::tron_testnet() as u64;
+            let usdt = tokenlist::get_usdt_token_id();
+            set_min_fee_cross_out(parent_id, chain, usdt, 5_000_000, ctx);
+            set_min_fee_cross_in(parent_id, chain, usdt, 0, ctx);
+        };
+        {
+            let chain = chain_ids::solana_mainnet() as u64;
+            let usdt = tokenlist::get_usdt_token_id();
+            let usdc = tokenlist::get_usdc_token_id();
+            set_min_fee_cross_out(parent_id, chain, usdt, 500_000, ctx);
+            set_min_fee_cross_in(parent_id, chain, usdt, 0, ctx);
+            set_min_fee_cross_out(parent_id, chain, usdc, 500_000, ctx);
+            set_min_fee_cross_in(parent_id, chain, usdc, 0, ctx);
+        };
+        {
+            let chain = chain_ids::solana_testnet() as u64;
+            let usdt = tokenlist::get_usdt_token_id();
+            let usdc = tokenlist::get_usdc_token_id();
+            set_min_fee_cross_out(parent_id, chain, usdt, 500_000, ctx);
+            set_min_fee_cross_in(parent_id, chain, usdt, 0, ctx);
+            set_min_fee_cross_out(parent_id, chain, usdc, 500_000, ctx);
+            set_min_fee_cross_in(parent_id, chain, usdc, 0, ctx);
+        };
     }
 }
