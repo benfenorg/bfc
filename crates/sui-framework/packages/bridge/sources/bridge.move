@@ -33,6 +33,7 @@ module bridge::bridge {
     };
     use bridge::tokenlist;
     use bridge::bridge_fee;
+    use bridge::bridge_min_config;
     use bridge::defi_protocols;
     use bridge::message_types;
     use bridge::treasury::{Self, BridgeTreasury};
@@ -2321,7 +2322,13 @@ module bridge::bridge {
     ):u64{
         let (inner,parent_id) = load_inner_and_uid(bridge);
         let token_id = inner.treasury.token_id<T>();
-        bridge_fee::calculate_cross_out_fee_amount(parent_id,chain_id,token_id,amount)
+        let fee = bridge_fee::calculate_cross_out_fee_amount(parent_id,chain_id,token_id,amount);
+        let min = bridge_min_config::get_min_fee_cross_out(parent_id, chain_id, token_id);
+        if (min > 0 && fee < min) {
+           min 
+        } else {
+           fee
+        }
     }
 
     public fun get_cross_in_fee_amount<T>(

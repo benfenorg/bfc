@@ -157,6 +157,9 @@ module bridge::bridge_min_config{
     }
 
     public fun get_min_fee_cross_out(parent_id: &UID,chain_id: u64, token_id: u64): u64{
+        if (!dynamic_field::exists_(parent_id, KEY)) {
+            return 0
+        };
         let self=borrow(parent_id);
         if (!self.fee_limit.contains(chain_id)) {
             return 0
@@ -169,6 +172,9 @@ module bridge::bridge_min_config{
     }
 
     public fun get_min_fee_cross_in(parent_id: &UID,chain_id: u64, token_id: u64): u64{
+        if (!dynamic_field::exists_(parent_id, KEY)) {
+            return 0
+        };
         let self=borrow(parent_id);
         if (!self.fee_limit.contains(chain_id)) {
             return 0
