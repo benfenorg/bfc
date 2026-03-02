@@ -104,6 +104,153 @@ fun test_bridge_create() {
 }
 
 #[test]
+#[expected_failure(abort_code = bridge::bridge::EAmountBelowMinOutLimit)]
+fun test_withdraw_external_coin_v2_blocked_by_min_out() {
+    let mut env = create_env(chain_ids::sui_mainnet());
+    env.create_bridge_default();
+    {
+        let mut bridge = env.bridge(@0x0);
+        let uid = bridge.bridge_ref_mut().test_load_mut_uid();
+        let ctx = env.ctx();
+        if (!bridge::bridge_min_config::exists(uid)) {
+            bridge::bridge_min_config::new_bridge_min_config_registry(uid, ctx);
+        };
+        // Use BTC mainnet as target; set a high min-out to force failure
+        bridge::bridge_min_config::set_min_limit_cross_out(uid, chain_ids::btc_mainnet() as u64, 10_000_000_000); // satoshi
+        bridge.return_bridge();
+    };
+    let coin = bridge::bridge_env::get_btc(&mut env, 1); // tiny BTC amount
+    let btc_addr = x"0000000000000000000000000000000000000000000000000000000000000001";
+    let mut bridge2 = env.bridge(@0x0);
+    let mut clock = sui::clock::create_for_testing(env.ctx());
+    bridge2.bridge_ref_mut().withdraw_external_coin_v2<bridge::btc::BTC>(chain_ids::btc_mainnet(), btc_addr, coin, &clock, env.ctx());
+    bridge2.return_bridge();
+    sui::clock::destroy_for_testing(clock);
+    env.destroy_env();
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EAmountBelowMinOutLimit)]
+fun test_withdraw_external_busd_coin_v2_blocked_by_min_out() {
+    let mut env = create_env(chain_ids::sui_mainnet());
+    env.create_bridge_default();
+    {
+        let mut bridge = env.bridge(@0x0);
+        let uid = bridge.bridge_ref_mut().test_load_mut_uid();
+        let ctx = env.ctx();
+        if (!bridge::bridge_min_config::exists(uid)) {
+            bridge::bridge_min_config::new_bridge_min_config_registry(uid, ctx);
+        };
+        bridge::bridge_min_config::set_min_limit_cross_out(uid, chain_ids::eth_mainnet() as u64, 10_000_000_000_000);
+        bridge.return_bridge();
+    };
+    let scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+    let coin = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, 1_000_000_000_000_000, &cap, env.ctx());
+    let evm_addr = x"0000000000000000000000000000000000000001";
+    let mut bridge2 = env.bridge(@0x0);
+    let mut clock = sui::clock::create_for_testing(env.ctx());
+    bridge2.bridge_ref_mut().withdraw_external_busd_coin_v2<BUSD>(
+        chain_ids::eth_mainnet(),
+        evm_addr,
+        coin,
+        3u64,
+        &mut bfc_system_state,
+        &clock,
+        env.ctx(),
+    );
+    bridge2.return_bridge();
+    sui::clock::destroy_for_testing(clock);
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EAmountBelowMinOutLimit)]
+fun test_send_busd_blocked_by_min_out() {
+    let mut env = create_env(chain_ids::sui_mainnet());
+    env.create_bridge_default();
+    {
+        let mut bridge = env.bridge(@0x0);
+        let uid = bridge.bridge_ref_mut().test_load_mut_uid();
+        let ctx = env.ctx();
+        if (!bridge::bridge_min_config::exists(uid)) {
+            bridge::bridge_min_config::new_bridge_min_config_registry(uid, ctx);
+        };
+        bridge::bridge_min_config::set_min_limit_cross_out(uid, chain_ids::eth_mainnet() as u64, 10_000_000_000_000);
+        bridge.return_bridge();
+    };
+    let scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+    let coin = bfc_system::mint_stable<BUSD>(&mut bfc_system_state, 1_000_000_000_000, &cap, env.ctx());
+    let evm_addr = x"0000000000000000000000000000000000000001";
+    let mut bridge2 = env.bridge(@0x0);
+    bridge2.bridge_ref_mut().send_busd<BUSD>(
+        &mut bfc_system_state,
+        chain_ids::eth_mainnet(),
+        evm_addr,
+        coin,
+        3u64,
+        env.ctx(),
+    );
+    bridge2.return_bridge();
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+    env.destroy_env();
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EAmountBelowMinOutLimit)]
+fun test_send_token_blocked_by_min_out() {
+    let mut env = create_env(chain_ids::sui_mainnet());
+    env.create_bridge_default();
+    {
+        let mut bridge = env.bridge(@0x0);
+        let uid = bridge.bridge_ref_mut().test_load_mut_uid();
+        let ctx = env.ctx();
+        if (!bridge::bridge_min_config::exists(uid)) {
+            bridge::bridge_min_config::new_bridge_min_config_registry(uid, ctx);
+        };
+        bridge::bridge_min_config::set_min_limit_cross_out(uid, chain_ids::eth_mainnet() as u64, 10_000_000_000_000); // 100,000 USD (8dp)
+        bridge.return_bridge();
+    };
+    let coin = get_usdc(&mut env, 1);
+    let evm_addr = x"0000000000000000000000000000000000000001"; // 20 bytes
+    let _ = bridge::bridge_env::send_token<USDC>(&mut env, @0x1, chain_ids::eth_mainnet(), evm_addr, coin);
+    env.destroy_env();
+}
+
+#[test]
+fun test_initial_min_fee_limits_applied() {
+    let mut env = create_env(chain_ids::sui_mainnet());
+    env.create_bridge_default();
+    let mut bridge = env.bridge(@0x0);
+    let uid = bridge.bridge_ref_mut().test_load_mut_uid();
+    let ctx = env.ctx();
+    if (!bridge::bridge_min_config::exists(uid)) {
+        bridge::bridge_min_config::new_bridge_min_config_registry(uid, ctx);
+    };
+    bridge::bridge_min_config::initial_min_fee_limits(uid, ctx);
+    let tron = chain_ids::tron_mainnet() as u64;
+    let sol = chain_ids::solana_mainnet() as u64;
+    let usdt = bridge::tokenlist::get_usdt_token_id();
+    let usdc = bridge::tokenlist::get_usdc_token_id();
+    assert!(bridge::bridge_min_config::get_min_fee_cross_out(uid, tron, usdt) == 5_000_000);
+    assert!(bridge::bridge_min_config::get_min_fee_cross_in(uid, tron, usdt) == 0);
+    assert!(bridge::bridge_min_config::get_min_fee_cross_out(uid, sol, usdt) == 500_000);
+    assert!(bridge::bridge_min_config::get_min_fee_cross_out(uid, sol, usdc) == 500_000);
+    assert!(bridge::bridge_min_config::get_min_limit_cross_out(uid, tron) == 1_000_000_000);
+    assert!(bridge::bridge_min_config::get_min_limit_cross_in(uid, tron) == 0);
+    bridge.return_bridge();
+    env.destroy_env();
+}
+
+#[test]
 #[expected_failure(abort_code = bridge::bridge::ENotSystemAddress)]
 fun test_bridge_create_non_system_addr() {
     let mut env = create_env(chain_ids::sui_mainnet());
