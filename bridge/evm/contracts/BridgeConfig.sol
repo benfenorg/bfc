@@ -4,6 +4,8 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "./utils/CommitteeUpgradeable.sol";
 import "./interfaces/IBridgeConfig.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
+
 
 /// @title BridgeConfig
 /// @notice This contract manages a registry of supported tokens and supported chain IDs for the SuiBridge.
@@ -26,7 +28,8 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
 
     
     //store bridge fee
-    mapping(uint64 tokenID => mapping (uint8 feeType => uint64 fee)) public bridgeFees;
+    mapping(uint64 tokenID => BridgeFeeInfo) public bridgeFeeInfos;
+
 
     /// @notice Constructor function for the BridgeConfig contract.
     /// @dev the provided arrays must have the same length.
@@ -117,6 +120,45 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         return lpToToken[protocolType][lpTokenId];
     }
 
+    /// @notice Returns the bridge fee info of the token with the given ID.
+    /// @param tokenID The ID of the token.
+    /// @return BridgeFeeInfo of the provided token.
+    function bridgeFeeInfoOf(uint64 tokenID) public view override returns (BridgeFeeInfo memory) {
+        return bridgeFeeInfos[tokenID];
+    }
+
+    
+    function bridgeFeeModeOf(uint64 tokenID) public view returns (uint8) {
+        return bridgeFeeInfos[tokenID].mode;
+    }
+
+    function bridgeFeeValueOf(uint64 tokenID) public view returns (uint64) {
+        return bridgeFeeInfos[tokenID].value;
+    }
+
+    function bridgeFeeMinFeeValueOf(uint64 tokenID) public view returns (uint256) {
+        return bridgeFeeInfos[tokenID].minFeeValue;
+    }
+
+
+    function calculateBridgeFee(uint64 tokenID, uint256 amount) public view returns (uint256) {
+        BridgeFeeInfo memory feeInfo = bridgeFeeInfos[tokenID];
+        uint256 fee;
+        if (feeInfo.mode == 0) {
+            // Fixed fee
+            fee = feeInfo.value;
+        } else {
+            // Percentage fee
+            // e.g. 1% = 10000; 0.01% = 100; 0.0001% = 1
+            fee = Math.mulDiv(amount, feeInfo.value, 1000000);
+        }
+
+        if (fee < feeInfo.minFeeValue) {
+            fee = feeInfo.minFeeValue;
+        }
+        return fee;
+    }
+
 
     /// @notice Returns whether a token is supported in SuiBridge with the given ID.
     /// @param tokenID The ID of the token.
@@ -176,6 +218,24 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         _updateTokenPrice(tokenID, price);
 
         emit TokenPriceUpdatedV2(message.nonce, tokenID, price);
+    }
+
+    /// @notice Updates the bridge fee info with the provided message if the provided signatures are valid.
+    /// @param signatures array of signatures to validate the message.
+    /// @param message BridgeMessage containing the update bridge fee payload.
+    function updateBridgeFeeWithSignatures(
+        bytes[] memory signatures,
+        BridgeUtils.Message memory message
+    )
+        external
+        nonReentrant
+        verifyMessageAndSignatures(message, signatures, BridgeUtils.UPDATE_BRIDGE_FEE)
+    {
+        (uint64 tokenID, uint8 mode, uint64 value, uint256 minFeeValue) = BridgeUtils.decodeUpdateBridgeFeePayload(message.payload);
+        
+        bridgeFeeInfos[tokenID] = BridgeFeeInfo(mode, value, minFeeValue);
+
+        emit BridgeFeeUpdated(message.nonce, tokenID, mode, value, minFeeValue);
     }
 
     function addTokensWithSignatures(bytes[] memory signatures, BridgeUtils.Message memory message)

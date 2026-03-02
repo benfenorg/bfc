@@ -104,8 +104,8 @@ library BridgeUtils {
     uint8 public constant DEFI=23;
     uint8 public constant UPDATE_INVEST_ADDRESS =26;
     uint8 public constant ADD_LP_TOKEN_ID =27;
-
-
+    uint8 public constant UPDATE_BRIDGE_FEE = 28;
+    uint8 public constant UPDATE_MIN_LIMIT = 29;
 
 
     // Message type stake requirements
@@ -122,6 +122,8 @@ library BridgeUtils {
     uint32 public constant DEFI_STAKE_REQUIRED = 3334;
     uint32 public constant ADD_LP_TOKEN_ID_STAKE_REQUIRED = 5001;
     uint32 public constant UPDATE_INVEST_ADDRESS_STAKE_REQUIRED = 5001;
+    uint32 public constant UPDATE_BRIDGE_FEE_STAKE_REQUIRED = 5001;
+    uint32 public constant UPDATE_MIN_LIMIT_STAKE_REQUIRED = 5001;
 
     // token Ids
     uint64 public constant SUI = 0;
@@ -188,6 +190,10 @@ library BridgeUtils {
             return ADD_LP_TOKEN_ID_STAKE_REQUIRED;
         }else if(_message.messageType == UPDATE_INVEST_ADDRESS){
             return UPDATE_INVEST_ADDRESS_STAKE_REQUIRED;
+        }else if(_message.messageType == UPDATE_BRIDGE_FEE){
+            return UPDATE_BRIDGE_FEE_STAKE_REQUIRED;
+        }else if(_message.messageType == UPDATE_MIN_LIMIT){
+            return UPDATE_MIN_LIMIT_STAKE_REQUIRED;
         }else{
             revert("BridgeUtils: Invalid message type");
         }
@@ -866,6 +872,51 @@ library BridgeUtils {
             offset += 8;
             // Store the extracted price
             tokenPrices[i] = tokenPrice;
+        }
+    }
+
+    function decodeUpdateBridgeFeePayload(bytes memory _payload)
+        internal
+        pure
+        returns (uint64 tokenID, uint8 mode, uint64 value, uint256 minFeeValue)
+    {
+        require(_payload.length == 49, "BridgeUtils: Invalid payload length");
+        
+        uint8 offset = 0;
+        
+        // tokenID (8 bytes)
+        assembly {
+            tokenID := shr(192, mload(add(add(_payload, 0x20), offset)))
+        }
+        offset += 8;
+
+        // mode (1 byte)
+        mode = uint8(_payload[offset]);
+        offset += 1;
+
+        // value (8 bytes)
+        assembly {
+            value := shr(192, mload(add(add(_payload, 0x20), offset)))
+        }
+        offset += 8;
+
+        // minFeeValue (32 bytes)
+        assembly {
+            minFeeValue := mload(add(add(_payload, 0x20), offset))
+        }
+    }
+
+    function decodeUpdateMinLimitPayload(bytes memory _payload)
+        internal
+        pure
+        returns (uint8 senderChainID, uint64 newLimit)
+    {
+       require(_payload.length == 9, "BridgeUtils: Invalid payload length");
+       senderChainID = uint8(_payload[0]);
+
+        assembly {
+             newLimit := shr(192, mload(add(add(_payload, 0x20), 1)))
+            //newLimit := mload(add(add(_payload, 0x20), 1))
         }
     }
 }
