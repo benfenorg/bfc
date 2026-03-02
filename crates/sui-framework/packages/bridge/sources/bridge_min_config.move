@@ -276,20 +276,75 @@ module bridge::bridge_min_config{
     }
 
     public(package) fun initial_min_fee_limits(parent_id: &mut UID, ctx: &mut TxContext) {
+        // ========================
+        // Mainnet configuration
+        // ========================
         {
+            // BTC: min single cross-in/out = 0.0001 BTC (10_000 satoshi)
+            let chain = chain_ids::btc_mainnet() as u64;
+            set_min_limit_cross_in(parent_id, chain, 10_000);
+            set_min_limit_cross_out(parent_id, chain, 10_000);
+        };
+        {
+            // ETH: min_in = 0 USD, min_out = 1 USD (8 dp: 100_000_000)
+            let chain = chain_ids::eth_mainnet() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 100_000_000);
+        };
+        {
+            // Base: min_in = 0 USD, min_out = 1 USD
+            let chain = chain_ids::base_mainnet() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 100_000_000);
+        };
+        {
+            // Optimism: min_in = 0 USD, min_out = 1 USD
+            let chain = chain_ids::op_mainnet() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 100_000_000);
+        };
+        {
+            // BSC: min_in = 0 USD, min_out = 1 USD
+            let chain = chain_ids::bsc_mainnet() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 100_000_000);
+        };
+        {
+            // Polygon: min_in = 0 USD, min_out = 1 USD
+            let chain = chain_ids::pol_mainnet() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 100_000_000);
+        };
+        {
+            // Arbitrum: min_in = 0 USD, min_out = 1 USD
+            let chain = chain_ids::arb_mainnet() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 100_000_000);
+        };
+        {
+            // AVAX-C: min_in = 0 USD, min_out = 1 USD
+            let chain = chain_ids::avax_mainnet() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 100_000_000);
+        };
+        {
+            // Tron: min_in = 0 USD, min_out = 10 USD (8 dp: 1_000_000_000)
             let chain = chain_ids::tron_mainnet() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 1_000_000_000);
+
+            // Tron USDT min cross-out fee: 5 USDT (6 dp: 5_000_000)
             let usdt = tokenlist::get_usdt_token_id();
+            // set_min_fee_cross_in(parent_id, chain, usdt, 0, ctx);
             set_min_fee_cross_out(parent_id, chain, usdt, 5_000_000, ctx);
-            set_min_fee_cross_in(parent_id, chain, usdt, 0, ctx);
         };
         {
-            let chain = chain_ids::tron_testnet() as u64;
-            let usdt = tokenlist::get_usdt_token_id();
-            set_min_fee_cross_out(parent_id, chain, usdt, 5_000_000, ctx);
-            set_min_fee_cross_in(parent_id, chain, usdt, 0, ctx);
-        };
-        {
+            // Solana: min_in = 0 USD, min_out = 10 USD
             let chain = chain_ids::solana_mainnet() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 1_000_000_000);
+
+            // Solana stablecoins min cross-out fee: USDT/USDC = 0.5 USD (6 dp: 500_000)
             let usdt = tokenlist::get_usdt_token_id();
             let usdc = tokenlist::get_usdc_token_id();
             set_min_fee_cross_out(parent_id, chain, usdt, 500_000, ctx);
@@ -297,14 +352,81 @@ module bridge::bridge_min_config{
             set_min_fee_cross_out(parent_id, chain, usdc, 500_000, ctx);
             set_min_fee_cross_in(parent_id, chain, usdc, 0, ctx);
         };
+
+        // ========================
+        // Testnet configuration
+        // ========================
         {
+            // BTC Testnet: 0.0001 BTC (satoshi)
+            let chain = chain_ids::btc_testnet() as u64;
+            set_min_limit_cross_in(parent_id, chain, 10_000);
+            set_min_limit_cross_out(parent_id, chain, 10_000);
+        };
+        {
+            // ETH Sepolia: min_in = 0 USD, min_out = 1 USD
+            let chain = chain_ids::eth_sepolia() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 100_000_000);
+        };
+        {
+            // Base Testnet: min_in = 0 USD, min_out = 1 USD
+            let chain = chain_ids::base_testnet() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 100_000_000);
+        };
+        {
+            // Optimism Testnet: min_in = 0 USD, min_out = 1 USD
+            let chain = chain_ids::op_testnet() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 100_000_000);
+        };
+        {
+            // BSC Testnet: min_in = 0 USD, min_out = 1 USD
+            let chain = chain_ids::bsc_testnet() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 100_000_000);
+        };
+        {
+            // Polygon Testnet: min_in = 0 USD, min_out = 1 USD
+            let chain = chain_ids::pol_testnet() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 100_000_000);
+        };
+        {
+            // Arbitrum Testnet: min_in = 0 USD, min_out = 1 USD
+            let chain = chain_ids::arb_testnet() as u64;
+            set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 100_000_000);
+        };
+        {
+            // AVAX-C Testnet: min_in = 0 USD, min_out = 1 USD
+            let chain = chain_ids::avax_testnet() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 100_000_000);
+        };
+        {
+            // Tron Testnet: min_in = 0 USD, min_out = 10 USD
+            let chain = chain_ids::tron_testnet() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 1_000_000_000);
+
+            // Tron Testnet USDT min cross-out fee: 5 USDT
+            let usdt = tokenlist::get_usdt_token_id();
+            set_min_fee_cross_out(parent_id, chain, usdt, 5_000_000, ctx);
+            // set_min_fee_cross_in(parent_id, chain, usdt, 0, ctx);
+        };
+        {
+            // Solana Testnet: min_in = 0 USD, min_out = 10 USD
             let chain = chain_ids::solana_testnet() as u64;
+            // set_min_limit_cross_in(parent_id, chain, 0);
+            set_min_limit_cross_out(parent_id, chain, 1_000_000_000);
+            // Solana Testnet stablecoins min cross-out fee: USDT/USDC = 0.5 USD
             let usdt = tokenlist::get_usdt_token_id();
             let usdc = tokenlist::get_usdc_token_id();
             set_min_fee_cross_out(parent_id, chain, usdt, 500_000, ctx);
-            set_min_fee_cross_in(parent_id, chain, usdt, 0, ctx);
+            // set_min_fee_cross_in(parent_id, chain, usdt, 0, ctx);
             set_min_fee_cross_out(parent_id, chain, usdc, 500_000, ctx);
-            set_min_fee_cross_in(parent_id, chain, usdc, 0, ctx);
+            // set_min_fee_cross_in(parent_id, chain, usdc, 0, ctx);
         };
     }
 }
