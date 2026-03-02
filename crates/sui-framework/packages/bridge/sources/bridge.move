@@ -321,6 +321,7 @@ module bridge::bridge {
     const EDefiUnstakeAmountNotEnoughForDel: u64 = 65;
     const EDefiStakeAmountNotEnough: u64 = 66;
     const EDefiHoldersNotInitialized: u64 = 67;
+    const ECrossInAmountBelowMin: u64 = 68;
 
 
     const CURRENT_VERSION: u64 = 1;
@@ -2614,7 +2615,18 @@ module bridge::bridge {
         );
 
         let amount = token_payload.token_amount_in();
-        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_payload.token_type_in(),amount);
+        let token_id = token_payload.token_type_in();
+        if (bridge_min_config::exists(parent_id)) {
+            assert!(
+                bridge_min_config::check_cross_in_amount_ok(parent_id, &inner.treasury, source_chain as u64, token_id, amount),
+                ECrossInAmountBelowMin,
+            );
+        };
+        let fee = if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_in_fee(parent_id, &inner.treasury, source_chain as u64, token_id, amount)
+        } else {
+            bridge_fee::calculate_cross_in_fee_amount(parent_id, source_chain as u64, token_id, amount)
+        };
         assert!(amount>fee,EInputAmountLteBridgeFee);
 
         // Make sure transfer is within limit.
@@ -2633,8 +2645,8 @@ module bridge::bridge {
 
         let mut token = inner.treasury.mint<T>(amount, ctx);
         if (fee!=0){
-              let fee_coin=token.split<T>(fee, ctx);
-              bridge_fee::deposit_fee(parent_id, fee_coin);
+            let fee_coin=token.split<T>(fee, ctx);
+            bridge_fee::deposit_fee(parent_id, fee_coin);
         };
         // Record changes
         record.claimed = true;
@@ -2712,6 +2724,12 @@ module bridge::bridge {
 
         let amount = token_payload.token_amount_in();
         assert!(amount <= inner.limiter.get_mint_busd_max_limit(), EInvalidMintAmount);
+        if (bridge_min_config::exists(parent_id)) {
+            assert!(
+                bridge_min_config::check_cross_in_amount_ok(parent_id, &inner.treasury, source_chain as u64, token_id, amount),
+                ECrossInAmountBelowMin,
+            );
+        };
         // Make sure transfer is within limit.
         if (!inner
             .limiter
@@ -2726,7 +2744,11 @@ module bridge::bridge {
             return (option::none(), owner)
         };
         let token_id=token_payload.token_type_in();
-        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_id,amount);
+        let fee = if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_in_fee(parent_id, &inner.treasury, source_chain as u64, token_id, amount)
+        } else {
+            bridge_fee::calculate_cross_in_fee_amount(parent_id, source_chain as u64, token_id, amount)
+        };
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let amount_after_fee=amount-fee;
         check_fast_path_limit(parent_id, clock, token_payload);
