@@ -195,8 +195,8 @@ module bridge::bridge_min_config{
         inner.borrow(token_id).cross_in_fee_min
     }
 
-    /// 判断跨入金额是否满足该链单笔跨入下限。未配置或未安装 registry 时视为无下限要求，返回 true。
-    /// BTC 链的 min 为 satoshi，amount 为 token 数量（satoshi），直接比较；其他链的 min 为 8 位小数 USD，先将 amount 转为 USD 再比较。
+    /// Returns true if cross-in amount meets the chain's single-tx cross-in minimum. If registry is not installed or not configured, no minimum is enforced and returns true.
+    /// For BTC chains min is in satoshi and amount is token amount (satoshi), compared directly; for other chains min is 8-decimal USD, amount is converted to USD before comparison.
     public fun check_cross_in_amount_ok(
         parent_id: &UID,
         treasury: &treasury::BridgeTreasury,
@@ -216,8 +216,8 @@ module bridge::bridge_min_config{
         }
     }
 
-    /// 判断跨出金额是否满足该链单笔跨出下限。未配置或未安装 registry 时视为无下限要求，返回 true。
-    /// BTC 链的 min 为 satoshi，amount 为 token 数量（satoshi），直接比较；其他链的 min 为 8 位小数 USD，先将 amount 转为 USD 再比较。
+    /// Returns true if cross-out amount meets the chain's single-tx cross-out minimum. If registry is not installed or not configured, no minimum is enforced and returns true.
+    /// For BTC chains min is in satoshi and amount is token amount (satoshi), compared directly; for other chains min is 8-decimal USD, amount is converted to USD before comparison.
     public fun check_cross_out_amount_ok(
         parent_id: &UID,
         treasury: &treasury::BridgeTreasury,
@@ -237,8 +237,8 @@ module bridge::bridge_min_config{
         }
     }
 
-    /// 计算跨出手续费并取与配置的跨出手续费下限的较大值，返回实际应收取的手续费（token 数量）。
-    /// 配置中的手续费下限为美元价值（8 位小数），fee 计算为 token 数量；内部先统一为 USD 比较后再换算回 token。
+    /// Computes cross-out fee and returns the greater of that and the configured cross-out fee minimum, as token amount.
+    /// Configured fee minimum is in USD (8 decimals); fee is computed in token amount; internally compared in USD then converted back to token.
     public fun get_effective_cross_out_fee(
         parent_id: &UID,
         treasury: &treasury::BridgeTreasury,
@@ -253,8 +253,8 @@ module bridge::bridge_min_config{
         treasury::get_token_amount_by_usd(treasury, token_id, effective_usd)
     }
 
-    /// 计算跨入手续费并取与配置的跨入手续费下限的较大值，返回实际应收取的手续费（token 数量）。
-    /// 配置中的手续费下限为美元价值（8 位小数），fee 计算为 token 数量；内部先统一为 USD 比较后再换算回 token。
+    /// Computes cross-in fee and returns the greater of that and the configured cross-in fee minimum, as token amount.
+    /// Configured fee minimum is in USD (8 decimals); fee is computed in token amount; internally compared in USD then converted back to token.
     public fun get_effective_cross_in_fee(
         parent_id: &UID,
         treasury: &treasury::BridgeTreasury,
@@ -269,8 +269,8 @@ module bridge::bridge_min_config{
         treasury::get_token_amount_by_usd(treasury, token_id, effective_usd)
     }
 
-    /// 根据 token_id 和 amount（该代币最小单位）计算 USD 价值，返回值使用 8 位小数（与 limiter 的 USD 精度一致）。
-    /// 需传入持有该 token 价格信息的 treasury。
+    /// Converts token amount (in smallest unit for the given token_id) to USD value with 8 decimals (same as limiter USD precision).
+    /// Requires treasury that holds price info for the token.
     public fun get_usd_value(treasury: &treasury::BridgeTreasury, token_id: u64, amount: u64): u64 {
         treasury::get_amount_in_usd_by_token_id(treasury, token_id, amount)
     }
