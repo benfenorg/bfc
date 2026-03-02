@@ -321,6 +321,7 @@ module bridge::bridge {
     const EDefiUnstakeAmountNotEnoughForDel: u64 = 65;
     const EDefiStakeAmountNotEnough: u64 = 66;
     const EDefiHoldersNotInitialized: u64 = 67;
+    const EAmountBelowMinOutLimit: u64 = 68;
 
 
     const CURRENT_VERSION: u64 = 1;
@@ -809,6 +810,7 @@ module bridge::bridge {
         assert!(tokenlist::is_supported_from_benfen(parent_id, target_chain as u64, token_id),EInvalidChainIDAndTokenIDExpect);
         let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,token_amount);
         assert!(token_amount>fee,EInputAmountLteBridgeFee);
+        assert!(bridge_min_config::check_cross_out_amount_ok(parent_id, &inner.treasury, target_chain as u64, token_id, token_amount), EAmountBelowMinOutLimit);
         let fee_coin=token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(parent_id, fee_coin);
         let amount_after_fee=token_amount-fee;
@@ -1016,6 +1018,7 @@ module bridge::bridge {
         //token amount is usdc or usdt amount
         let token_amount = get_token_amount_for_target_chain(target_chain, token.balance().value());
         assert!(token_amount > 0, ETokenValueIsZero);
+        assert!(bridge_min_config::check_cross_out_amount_ok(bridge_id, &inner.treasury, target_chain as u64, token_id, token_amount), EAmountBelowMinOutLimit);
         //fee is usdc or usdt amount
         let fee=bridge_fee::calculate_cross_out_fee_amount(bridge_id,target_chain as u64,token_id,token_amount);
         assert!(token_amount>fee,EInputAmountLteBridgeFee);
@@ -2098,6 +2101,7 @@ module bridge::bridge {
 
         let amount = token.balance().value();
         assert!(amount > 0, ETokenValueIsZero);
+        assert!(bridge_min_config::check_cross_out_amount_ok(parent_id, &inner.treasury, target_chain as u64, 5, amount), EAmountBelowMinOutLimit);
         let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,5,amount);
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
@@ -2147,6 +2151,7 @@ module bridge::bridge {
 
         let amount = token.balance().value();
         assert!(amount > 0, ETokenValueIsZero);
+        assert!(bridge_min_config::check_cross_out_amount_ok(parent_id, &inner.treasury, target_chain as u64, token_id_expect, amount), EAmountBelowMinOutLimit);
         let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id_expect,amount);
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
@@ -2191,6 +2196,7 @@ module bridge::bridge {
 
         let amount = token.balance().value();
         assert!(amount > 0, ETokenValueIsZero);
+        assert!(bridge_min_config::check_cross_out_amount_ok(parent_id, &inner.treasury, target_chain as u64, token_id, amount), EAmountBelowMinOutLimit);
         let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,amount);
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
@@ -2236,6 +2242,7 @@ module bridge::bridge {
 
         let amount = token.balance().value();
         assert!(amount > 0, ETokenValueIsZero);
+        assert!(bridge_min_config::check_cross_out_amount_ok(parent_id, &inner.treasury, target_chain as u64, token_id, amount), EAmountBelowMinOutLimit);
         let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,amount);
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
