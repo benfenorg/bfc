@@ -2396,8 +2396,31 @@ module bridge::bridge {
     ):u64{
         let (inner,parent_id) = load_inner_and_uid(bridge);
         let token_id = inner.treasury.token_id<T>();
-        bridge_fee::calculate_cross_in_fee_amount(parent_id,chain_id,token_id,amount)
+        let fee = bridge_fee::calculate_cross_in_fee_amount(parent_id,chain_id,token_id,amount);
+        let min = bridge_min_config::get_min_fee_cross_in(parent_id, chain_id, token_id);
+        if (min > 0 && fee < min) {
+           min 
+        } else {
+           fee
+        }
     }
+
+    public fun get_min_limit_cross_out(
+         bridge: &Bridge,
+         chain_id: u64,
+    ):u64{
+        let (_,parent_id) = load_inner_and_uid(bridge);
+        bridge_min_config::get_min_limit_cross_out(parent_id, chain_id)
+    }
+
+    public fun get_min_limit_cross_in(
+         bridge: &Bridge,
+         chain_id: u64,
+    ):u64{
+        let (_,parent_id) = load_inner_and_uid(bridge);
+        bridge_min_config::get_min_limit_cross_in(parent_id, chain_id)
+    }
+
 
     #[allow(unused_function)]
     fun get_token_transfer_action_status(
