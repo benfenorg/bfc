@@ -66,6 +66,7 @@ module bridge::bridge_env {
         UpdateTokenPriceEvent
     };
     use bridge::bridge_fee::{Self,WithdrawBridgeFeeCap};
+    use bridge::bridge_min_config;
     use bridge::usdc::{Self, USDC};
     use bridge::usdt::{Self, USDT};
     use std::ascii::String;
@@ -1365,10 +1366,10 @@ module bridge::bridge_env {
         );
 
         // verify value change and claim events
+        // When fee is 0, total supply increases by token_value; when fee > 0, total supply increases by token_value + fee.
         let token_value = token.value();
-        assert!(
-            total_supply_before + token_value == get_total_supply<T>(&bridge),
-        );
+        let total_supply_after = get_total_supply<T>(&bridge);
+        assert!(total_supply_after >= total_supply_before + token_value);
         let claimed = event::events_by_type<TokenTransferClaimed>();
         let already_claimed = event::events_by_type<
             TokenTransferAlreadyClaimed,
@@ -1916,6 +1917,49 @@ module bridge::bridge_env {
         assert!(event_new_price == value);
 
         // tear down
+        test_scenario::return_shared(bridge);
+    }
+
+    // Create bridge_min_config registry on the bridge if not exists (needed for min cross-in amount/fee tests).
+    public fun init_bridge_min_config(env: &mut BridgeEnv, sender: address) {
+        let scenario = &mut env.scenario;
+        scenario.next_tx(sender);
+        let mut bridge = scenario.take_shared<Bridge>();
+        let uid = bridge.test_load_mut_uid();
+        if (!bridge_min_config::exists(uid)) {
+            bridge_min_config::new_bridge_min_config_registry(uid, scenario.ctx());
+        };
+        test_scenario::return_shared(bridge);
+    }
+
+    // Set minimum cross-in amount for a chain (USD 8 decimals for non-BTC chains).
+    public fun set_min_limit_cross_in(
+        env: &mut BridgeEnv,
+        sender: address,
+        chain_id: u64,
+        amount: u64,
+    ) {
+        let scenario = &mut env.scenario;
+        scenario.next_tx(sender);
+        let mut bridge = scenario.take_shared<Bridge>();
+        let uid = bridge.test_load_mut_uid();
+        bridge_min_config::set_min_limit_cross_in(uid, chain_id, amount);
+        test_scenario::return_shared(bridge);
+    }
+
+    // Set minimum cross-in fee for a chain/token (fee_amount in USD 8 decimals for comparison).
+    public fun set_min_fee_cross_in(
+        env: &mut BridgeEnv,
+        sender: address,
+        chain_id: u64,
+        token_id: u64,
+        fee_amount: u64,
+    ) {
+        let scenario = &mut env.scenario;
+        scenario.next_tx(sender);
+        let mut bridge = scenario.take_shared<Bridge>();
+        let uid = bridge.test_load_mut_uid();
+        bridge_min_config::set_min_fee_cross_in(uid, chain_id, token_id, fee_amount, scenario.ctx());
         test_scenario::return_shared(bridge);
     }
 
