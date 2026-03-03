@@ -96,6 +96,7 @@ module bridge::bridge_env {
     use bridge::limiter_fast_path;
     use bridge::bridge::TokenDepositedEventV3;
     use bridge::bridge::TokenDepositedEventForSolanaV3;
+    use bridge::bridge_min_config;
 
     //
     // Token IDs
@@ -2287,6 +2288,40 @@ module bridge::bridge_env {
         let treasuries = treasury.treasuries();
         let tc: &TreasuryCap<T> = &treasuries[type_name::get<T>()];
         tc.total_supply()
+    }
+
+    public fun setup_min_config_registry(env: &mut BridgeEnv) {
+        env.scenario.next_tx(@0x0);
+        let mut bridge = env.scenario.take_shared<Bridge>();
+        let uid = test_load_mut_uid(&mut bridge);
+        bridge_min_config::new_bridge_min_config_registry(uid, env.scenario.ctx());
+        test_scenario::return_shared(bridge);
+    }
+
+    public fun set_min_fee_cross_out(
+        env: &mut BridgeEnv,
+        chain_id: u64,
+        token_id: u64,
+        fee_amount: u64,
+    ) {
+        env.scenario.next_tx(@0x0);
+        let mut bridge = env.scenario.take_shared<Bridge>();
+        let uid = test_load_mut_uid(&mut bridge);
+        bridge_min_config::set_min_fee_cross_out(uid, chain_id, token_id, fee_amount, env.scenario.ctx());
+        test_scenario::return_shared(bridge);
+    }
+
+    public fun send_token_test<T>(
+        env: &mut BridgeEnv,
+        sender: address,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token: Coin<T>
+    ) {
+        env.scenario.next_tx(sender);
+        let mut bridge = env.scenario.take_shared<Bridge>();
+        bridge.send_token(target_chain, target_address, token, env.scenario.ctx());
+        test_scenario::return_shared(bridge);
     }
 }
 

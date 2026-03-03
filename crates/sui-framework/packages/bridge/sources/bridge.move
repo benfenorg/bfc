@@ -809,9 +809,13 @@ module bridge::bridge {
         assert!(token_id != 5, EUseSendBusd);
 
         assert!(tokenlist::is_supported_from_benfen(parent_id, target_chain as u64, token_id),EInvalidChainIDAndTokenIDExpect);
-        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,token_amount);
-        assert!(token_amount>fee,EInputAmountLteBridgeFee);
         assert!(bridge_min_config::check_cross_out_amount_ok(parent_id, &inner.treasury, target_chain as u64, token_id, token_amount), EAmountBelowMinOutLimit);
+        let fee = if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_out_fee(parent_id, &inner.treasury, target_chain as u64, token_id, token_amount)
+        } else {
+            bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,token_amount)
+        };
+        assert!(token_amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(parent_id, fee_coin);
         let amount_after_fee=token_amount-fee;
@@ -1021,7 +1025,11 @@ module bridge::bridge {
         assert!(token_amount > 0, ETokenValueIsZero);
         assert!(bridge_min_config::check_cross_out_amount_ok(bridge_id, &inner.treasury, target_chain as u64, token_id, token_amount), EAmountBelowMinOutLimit);
         //fee is usdc or usdt amount
-        let fee=bridge_fee::calculate_cross_out_fee_amount(bridge_id,target_chain as u64,token_id,token_amount);
+        let fee= if (bridge_min_config::exists(bridge_id)) {
+            bridge_min_config::get_effective_cross_out_fee(bridge_id, &inner.treasury, target_chain as u64, token_id, token_amount)
+        } else {
+            bridge_fee::calculate_cross_out_fee_amount(bridge_id,target_chain as u64,token_id,token_amount)
+        };
         assert!(token_amount>fee,EInputAmountLteBridgeFee);
         let amount_after_fee=token_amount-fee;
         //fee coin is busd,so we need convert fee to busd
@@ -2121,7 +2129,12 @@ module bridge::bridge {
         let amount = token.balance().value();
         assert!(amount > 0, ETokenValueIsZero);
         assert!(bridge_min_config::check_cross_out_amount_ok(parent_id, &inner.treasury, target_chain as u64, 5, amount), EAmountBelowMinOutLimit);
-        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,5,amount);
+
+        let fee= if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_out_fee(parent_id, &inner.treasury, target_chain as u64, 5, amount)
+        } else {
+            bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,5,amount)
+        };
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(parent_id, fee_coin);
@@ -2171,7 +2184,12 @@ module bridge::bridge {
         let amount = token.balance().value();
         assert!(amount > 0, ETokenValueIsZero);
         assert!(bridge_min_config::check_cross_out_amount_ok(parent_id, &inner.treasury, target_chain as u64, token_id_expect, amount), EAmountBelowMinOutLimit);
-        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id_expect,amount);
+        
+        let fee= if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_out_fee(parent_id, &inner.treasury, target_chain as u64, token_id_expect, amount)
+        } else {
+            bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id_expect,amount)
+        };
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(parent_id, fee_coin);
@@ -2217,7 +2235,11 @@ module bridge::bridge {
         assert!(amount > 0, ETokenValueIsZero);
         assert!(bridge_min_config::check_cross_out_amount_ok(parent_id, &inner.treasury, target_chain as u64, token_id, amount), EAmountBelowMinOutLimit);
         
-        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,amount);
+        let fee= if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_out_fee(parent_id, &inner.treasury, target_chain as u64, token_id, amount)
+        } else {
+            bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,amount)
+        };
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(parent_id, fee_coin);
@@ -2263,7 +2285,12 @@ module bridge::bridge {
         let amount = token.balance().value();
         assert!(amount > 0, ETokenValueIsZero);
         assert!(bridge_min_config::check_cross_out_amount_ok(parent_id, &inner.treasury, target_chain as u64, token_id, amount), EAmountBelowMinOutLimit);
-        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,amount);
+        
+        let fee = if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_out_fee(parent_id, &inner.treasury, target_chain as u64, token_id, amount)
+        } else {
+            bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,amount)
+        };
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(parent_id, fee_coin);
