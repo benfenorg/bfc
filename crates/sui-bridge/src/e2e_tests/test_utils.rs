@@ -3253,7 +3253,7 @@ pub async fn initiate_bridge_erc20_to_sui(
         bridge_test_cluster.contracts().sui_bridge,
         eth_signer.clone().into(),
     );
-    let deposit_call = contract.bridge_erc20(
+    let deposit_call = contract.bridge_erc20_with_target_token_id(
         token_id,
         amount,
         sui_recipient_address.to_vec().into(),

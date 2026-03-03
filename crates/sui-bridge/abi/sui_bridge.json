@@ -16,7 +16,7 @@
     },
     {
         "type": "function",
-        "name": "bridgeERC20",
+        "name": "bridgeERC20WithTargetTokenID",
         "inputs": [
             {
                 "name": "tokenID",
