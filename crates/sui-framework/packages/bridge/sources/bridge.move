@@ -1945,20 +1945,30 @@ module bridge::bridge {
                 source_address: source_address,
                 target_address: target_address,
                 amount: token_payload.token_amount(),
-               });
+            });
 
             return
         };
         assert!(token_payload.token_amount() > 0, ETokenValueIsZero);
 
-        let mut token = inner.treasury.mint<T>(amount, ctx);
-
-        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_id,amount);
+        if (bridge_min_config::exists(parent_id)) {
+            assert!(
+                bridge_min_config::check_cross_in_amount_ok(parent_id, &inner.treasury, source_chain as u64, token_id, amount),
+                ECrossInAmountBelowMin,
+            );
+        };
+        let fee = if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_in_fee(parent_id, &inner.treasury, source_chain as u64, token_id, amount)
+        } else {
+            bridge_fee::calculate_cross_in_fee_amount(parent_id, source_chain as u64, token_id, amount)
+        };
         assert!(amount>fee,EInputAmountLteBridgeFee);
 
+        let mut token = inner.treasury.mint<T>(amount, ctx);
+
         if (fee != 0){
-              let fee_coin=token.split<T>(fee, ctx);
-              bridge_fee::deposit_fee(parent_id, fee_coin);
+            let fee_coin=token.split<T>(fee, ctx);
+            bridge_fee::deposit_fee(parent_id, fee_coin);
         };
         transfer::public_transfer(token, address::from_bytes(target_address));
 
@@ -2043,15 +2053,23 @@ module bridge::bridge {
             return
         };
         assert!(token_payload.token_amount() > 0, ETokenValueIsZero);
-        let mut token =bfc_system_state.mint_stable<BUSD>(amount, cap,  ctx);
-        //address::from_bytes(target_address),
-
-        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_id,amount);
+        if (bridge_min_config::exists(parent_id)) {
+            assert!(
+                bridge_min_config::check_cross_in_amount_ok(parent_id, &inner.treasury, source_chain as u64, token_id, amount),
+                ECrossInAmountBelowMin,
+            );
+        };
+        let fee = if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_in_fee(parent_id, &inner.treasury, source_chain as u64, token_id, amount)
+        } else {
+            bridge_fee::calculate_cross_in_fee_amount(parent_id, source_chain as u64, token_id, amount)
+        };
         assert!(amount>fee,EInputAmountLteBridgeFee);
+        let mut token =bfc_system_state.mint_stable<BUSD>(amount, cap,  ctx);
 
         if (fee != 0){
-              let fee_coin=token.split<BUSD>(fee, ctx);
-              bridge_fee::deposit_fee(parent_id, fee_coin);
+            let fee_coin=token.split<BUSD>(fee, ctx);
+            bridge_fee::deposit_fee(parent_id, fee_coin);
         };
         transfer::public_transfer(token, address::from_bytes(target_address));
 
