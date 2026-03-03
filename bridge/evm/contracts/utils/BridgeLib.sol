@@ -54,7 +54,7 @@ library BridgeLib {
         return fee;
     }
 
-    function bridgeERC20Common(BridgeERC20Args memory args) public {
+    function bridgeERC20Common(BridgeERC20Args memory args) internal {
         require(
             args.recipientAddress.length == 32, // SUI_ADDRESS_LENGTH
             "SuiBridge: Invalid recipient address length"
