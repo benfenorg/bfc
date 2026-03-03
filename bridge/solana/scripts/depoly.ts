@@ -45,19 +45,19 @@ async function main() {
   );
 
   console.log("Initializing Bridge Config...");
-  try {
-      await program.methods
-        .initializeBridgeConfig(cfg.sourceChainId)
-        .accounts({
-          payer: program.provider.wallet.publicKey,
-          bridgeConfig: bridgeConfigPDA,
-          systemProgram: anchor.web3.SystemProgram.programId,
-        } as any)
-        .rpc();
-      console.log("Bridge Config Initialized");
-  } catch(e) {
-      console.log("Bridge Config might be already initialized or failed:", e);
-  }
+  // try {
+  //     await program.methods
+  //       .initializeBridgeConfig(cfg.sourceChainId)
+  //       .accounts({
+  //         payer: program.provider.wallet.publicKey,
+  //         bridgeConfig: bridgeConfigPDA,
+  //         systemProgram: anchor.web3.SystemProgram.programId,
+  //       } as any)
+  //       .rpc();
+  //     console.log("Bridge Config Initialized");
+  // } catch(e) {
+  //     console.log("Bridge Config might be already initialized or failed:", e);
+  // }
 
   const [committeePDA] = anchor.web3.PublicKey.findProgramAddressSync(
     [Buffer.from(SEEDS.COMMITTEE_SEED), bridgeConfigPDA.toBuffer()],
@@ -69,20 +69,20 @@ async function main() {
   const minStakeRequired = cfg.minCommitteeStakeRequired;
 
   console.log("Initializing Committee...");
-  try {
-      await program.methods
-        .initializeCommittee(addresses, stakes, minStakeRequired)
-        .accounts({
-          payer: program.provider.wallet.publicKey,
-          committee: committeePDA,
-          bridgeConfig: bridgeConfigPDA,
-          systemProgram: anchor.web3.SystemProgram.programId,
-        } as any)
-        .rpc();
-      console.log("Committee Initialized");
-  } catch(e) {
-       console.log("Committee might be already initialized or failed:", e);
-  }
+  // try {
+  //     await program.methods
+  //       .initializeCommittee(addresses, stakes, minStakeRequired)
+  //       .accounts({
+  //         payer: program.provider.wallet.publicKey,
+  //         committee: committeePDA,
+  //         bridgeConfig: bridgeConfigPDA,
+  //         systemProgram: anchor.web3.SystemProgram.programId,
+  //       } as any)
+  //       .rpc();
+  //     console.log("Committee Initialized");
+  // } catch(e) {
+  //      console.log("Committee might be already initialized or failed:", e);
+  // }
 
   const [messageVerifierPDA] = anchor.web3.PublicKey.findProgramAddressSync(
     [Buffer.from(SEEDS.MESSAGE_VERIFIER), committeePDA.toBuffer()],
@@ -90,20 +90,20 @@ async function main() {
   );
 
   console.log("Initializing Message Verifier...");
-  try {
-      await program.methods
-        .initializeMessageVerifier()
-        .accounts({
-          payer: program.provider.wallet.publicKey,
-          messageVerifier: messageVerifierPDA,
-          committee: committeePDA,
-          systemProgram: anchor.web3.SystemProgram.programId,
-        } as any)
-        .rpc();
-      console.log("Message Verifier Initialized");
-  } catch(e) {
-      console.log("Message Verifier might be already initialized or failed:", e);
-  }
+  // try {
+  //     await program.methods
+  //       .initializeMessageVerifier()
+  //       .accounts({
+  //         payer: program.provider.wallet.publicKey,
+  //         messageVerifier: messageVerifierPDA,
+  //         committee: committeePDA,
+  //         systemProgram: anchor.web3.SystemProgram.programId,
+  //       } as any)
+  //       .rpc();
+  //     console.log("Message Verifier Initialized");
+  // } catch(e) {
+  //     console.log("Message Verifier might be already initialized or failed:", e);
+  // }
 
   const [chainLimitPDA] = anchor.web3.PublicKey.findProgramAddressSync(
     [
@@ -119,8 +119,8 @@ async function main() {
       await program.methods
         .initializeBridgeLimiter(
           cfg.destinationChainId,
-          new anchor.BN(cfg.supportedChainLimitsInDollars),
-          new anchor.BN(cfg.maxSingleTransferLimitInDollars)
+          new BN(cfg.supportedChainLimitsInDollars),
+          new BN(cfg.maxSingleTransferLimitInDollars)
         )
         .accounts({
           payer: program.provider.wallet.publicKey,
@@ -190,10 +190,10 @@ async function main() {
         .transferUpgradeAuthority()
         .accounts({
           program: program.programId,
-          old_upgrade_authority: program.provider.wallet.publicKey,
-          new_upgrade_authority: upgradeAuthorityPDA,
-          program_data: programDataAddress,
-          bpf_loader_upgradeable: bpfLoaderUpgradeable,
+          oldUpgradeAuthority: program.provider.wallet.publicKey,
+          newUpgradeAuthority: upgradeAuthorityPDA,
+          programData: programDataAddress,
+          bpfLoaderUpgradeable: bpfLoaderUpgradeable,
         } as any)
         .rpc();
       console.log("Upgrade Authority Transferred to Benfen Bridge");

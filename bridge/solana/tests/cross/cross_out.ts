@@ -819,7 +819,8 @@ describe("BenfenBridge - Cross Chain", () => {
         await program.provider.connection.confirmTransaction(tx);
 
         await new Promise(resolve => setTimeout(resolve, 1000));
-        let receiver_amount=convertBenfenToSlpDecimal(9,6,BigInt(100000000));
+        let receiver_amount=convertBenfenToSlpDecimal(6,6,BigInt(100000000));
+        console.log("receiver_amount:", receiver_amount);
 
         let processedTransferInfo = await program.provider.connection.getAccountInfo(processedTransferPDA);
         expect(processedTransferInfo).to.be.not.null;

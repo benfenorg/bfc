@@ -47,7 +47,7 @@ pub struct TokensClaimed {
 
 #[event]
 pub struct ProgramUpgradeEvent {
-   pub nonce: u64,
+    pub nonce: u64,
     pub program: Pubkey,
     pub buffer: Pubkey,
     pub old_version: u8,
@@ -66,6 +66,13 @@ pub struct ChainLimitUpdated {
 /// 单笔转账限制事件
 #[event]
 pub struct SingleTransferLimitUpdated {
+    pub nonce: u64,
+    pub source_chain_id: u8,
+    pub new_limit: u64,
+}
+
+#[event]
+pub struct MinSingleTransferLimitUpdated {
     pub nonce: u64,
     pub source_chain_id: u8,
     pub new_limit: u64,
@@ -92,6 +99,15 @@ pub struct TokenPriceUpdated {
     pub nonce: u64,    
     pub token_id: u64,
     pub new_price: u64,
+}
+
+#[event]
+pub struct TokenFeeInfoUpdated {
+    pub nonce: u64,    
+    pub token_id: u64,
+    pub mode: u8,
+    pub fee_value: u64,
+    pub min_fee_value: u64,
 }
 
 #[event]

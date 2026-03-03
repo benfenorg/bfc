@@ -22,7 +22,7 @@ describe("upgrade program", () => {
     let chain_id=CHAIN_IDS.SOLANA_TESTNET;
 
       // 最新编译的代码写到buffer中
-      const buffer = new anchor.web3.PublicKey("3MWj5y6LFUu89utM7jxF99tBNty6oxzXpQybwVwsGt4r");
+      const buffer = new anchor.web3.PublicKey("GC6w9oACY663bwbrvieqPbnRtLckFCR229Xvux6mh4gf");
 
       //管理系统升级合约的程序ID
       const BPF_LOADER_UPGRADEABLE_ID = new anchor.web3.PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
@@ -142,7 +142,7 @@ try {
             )
             .accounts({
                 payer: provider.wallet.publicKey,
-                spill: nonAdminKeypair.publicKey,
+                spill: provider.wallet.publicKey,
                 upgradeAuthority: upgradeAuthorityPDA,
                 buffer,
                 program: targetProgram,

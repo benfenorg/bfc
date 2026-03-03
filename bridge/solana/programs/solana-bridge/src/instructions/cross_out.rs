@@ -152,10 +152,11 @@ pub fn cross_out_with_signature(
         BridgeError::InvalidRecipientAddress
     );
     
-    let mut bdecimal = token_config.benfen_decimal;
-    if token_transfer_payload.token_id==3 || token_transfer_payload.token_id==4 {
-       bdecimal=token_config.original_decimal;
-    };
+    let mut bdecimal = token_config.original_decimal;
+    // 兼容benfen那边event
+    // if token_transfer_payload.token_id==3 || token_transfer_payload.token_id==4 {
+    //    bdecimal=6;
+    // };
 
     let slp_token_adjusted_amount=message::convert_benfen_to_slp_decimal(
        bdecimal, 

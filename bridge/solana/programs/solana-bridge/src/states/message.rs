@@ -59,6 +59,9 @@ pub const UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT: u8 = 19;
 pub const ADD_SVM_TOKENS: u8 = 30;
 pub const EXTEND_PROGRAM: u8 = 31;
 pub const UPGRADE_PROGRAM: u8 = 32;
+pub const UPDATE_TOKEN_FEE_INFO: u8 = 33;
+pub const UPDATE_BRIDGE_MIN_SINGLE_TRANSFER_LIMIT: u8 = 34;
+
 
 // pub const 
 
@@ -77,6 +80,8 @@ pub const ADD_EVM_TOKENS_STAKE_REQUIRED: u32 = 5001;
 pub const ADD_SVM_TOKENS_STAKE_REQUIRED: u32 = 5001;
 pub const EXTEND_PROGRAM_STAKE_REQUIRED: u32 = 5001;
 pub const UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT_STAKE_REQUIRED: u32 = 5001;
+pub const UPDATE_TOKEN_FEE_INFO_STAKE_REQUIRED: u32 = 5001;
+pub const UPDATE_BRIDGE_MIN_SINGLE_TRANSFER_LIMIT_STAKE_REQUIRED: u32 = 5001;
 
 // Token IDs
 pub const SUI: u64 = 0;
@@ -169,6 +174,8 @@ pub fn compute_required_stake(message: &Message) -> Result<u32> {
         ADD_SVM_TOKENS => Ok(ADD_SVM_TOKENS_STAKE_REQUIRED),
         EXTEND_PROGRAM => Ok(EXTEND_PROGRAM_STAKE_REQUIRED),
         UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT => Ok(UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT_STAKE_REQUIRED),
+        UPDATE_BRIDGE_MIN_SINGLE_TRANSFER_LIMIT => Ok(UPDATE_BRIDGE_MIN_SINGLE_TRANSFER_LIMIT_STAKE_REQUIRED),
+        UPDATE_TOKEN_FEE_INFO => Ok(UPDATE_TOKEN_FEE_INFO_STAKE_REQUIRED),
         _ => Err(MessageError::InvalidMessageType.into()),
     }
 }
@@ -400,7 +407,16 @@ pub fn decode_update_limit_payload(payload: &[u8]) -> Result<(u8, u64)> {
 ///
 /// # Errors
 /// * Returns error if payload length is invalid
-pub fn decode_update_single_transfer_limit_payload(payload: &[u8]) -> Result<(u8, u64)> {
+pub fn decode_update_max_single_transfer_limit_payload(payload: &[u8]) -> Result<(u8, u64)> {
+    require!(payload.len() == 9, MessageError::InvalidPayloadLength);
+    
+    let sender_chain_id = payload[0];
+    let new_limit = u64::from_be_bytes(payload[1..9].try_into().unwrap());
+    
+    Ok((sender_chain_id, new_limit))
+}
+
+pub fn decode_update_min_single_transfer_limit_payload(payload: &[u8]) -> Result<(u8, u64)> {
     require!(payload.len() == 9, MessageError::InvalidPayloadLength);
     
     let sender_chain_id = payload[0];
@@ -457,6 +473,19 @@ pub fn decode_update_token_price_payload(payload: &[u8]) -> Result<(u64, u64)> {
     let token_price = u64::from_be_bytes(payload[8..16].try_into().unwrap());
     
     Ok((token_id, token_price))
+}
+
+
+pub fn decode_update_fee_info_payload(payload: &[u8]) -> Result<(u64, u8, u64, u64)> {
+    // 8 bytes (token_id) + 1 byte (mode) + 8 bytes (fee_value) + 8 bytes (min_fee_value) = 25 bytes
+    require!(payload.len() == 25, MessageError::InvalidPayloadLength);
+    
+    let token_id = u64::from_be_bytes(payload[0..8].try_into().unwrap());
+    let mode = payload[8];
+    let fee_value = u64::from_be_bytes(payload[9..17].try_into().unwrap());
+    let min_fee_value = u64::from_be_bytes(payload[17..25].try_into().unwrap());
+    
+    Ok((token_id, mode, fee_value, min_fee_value))
 }
 
 

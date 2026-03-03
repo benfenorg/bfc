@@ -66,6 +66,7 @@ describe("BenfenBridge - Bridge Config", () => {
             CHAIN_IDS.BENFEN_TESTNET,
             new anchor.BN(1000000),
             new anchor.BN(1000000),
+            new anchor.BN(1000000),
         )
         .accounts({
           payer: nonAdminKeypair.publicKey,
@@ -138,6 +139,7 @@ describe("BenfenBridge - Bridge Config", () => {
             CHAIN_IDS.BENFEN_TESTNET,
             new anchor.BN(1000000),
             new anchor.BN(1000000),
+            new anchor.BN(1000000),
     )
     .accounts({
         payer: program.provider.wallet.publicKey,
@@ -202,6 +204,7 @@ describe("BenfenBridge - Bridge Config", () => {
       try {
         await program.methods.initializeBridgeLimiter(
             CHAIN_IDS.BENFEN_TESTNET,
+            new anchor.BN(1000000),
             new anchor.BN(1000000),
             new anchor.BN(1000000),
         )
