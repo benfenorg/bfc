@@ -573,6 +573,10 @@
           "type": "u64"
         },
         {
+          "name": "min_usd_limit",
+          "type": "u64"
+        },
+        {
           "name": "max_usd_limit",
           "type": "u64"
         }
@@ -1039,6 +1043,78 @@
       ]
     },
     {
+      "name": "update_min_single_transfer_limit",
+      "discriminator": [
+        89,
+        77,
+        24,
+        66,
+        105,
+        57,
+        83,
+        83
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "message_config",
+          "writable": true
+        },
+        {
+          "name": "bridge_config",
+          "writable": true
+        },
+        {
+          "name": "chain_limit",
+          "writable": true
+        },
+        {
+          "name": "verifier",
+          "writable": true
+        },
+        {
+          "name": "committee",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "message_type",
+          "type": "u8"
+        },
+        {
+          "name": "version",
+          "type": "u8"
+        },
+        {
+          "name": "nonce",
+          "type": "u64"
+        },
+        {
+          "name": "chain_id",
+          "type": "u8"
+        },
+        {
+          "name": "payload",
+          "type": "bytes"
+        },
+        {
+          "name": "signatures",
+          "type": {
+            "vec": "bytes"
+          }
+        }
+      ]
+    },
+    {
       "name": "update_single_transfer_limit",
       "discriminator": [
         35,
@@ -1066,6 +1142,78 @@
         },
         {
           "name": "chain_limit",
+          "writable": true
+        },
+        {
+          "name": "verifier",
+          "writable": true
+        },
+        {
+          "name": "committee",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "message_type",
+          "type": "u8"
+        },
+        {
+          "name": "version",
+          "type": "u8"
+        },
+        {
+          "name": "nonce",
+          "type": "u64"
+        },
+        {
+          "name": "chain_id",
+          "type": "u8"
+        },
+        {
+          "name": "payload",
+          "type": "bytes"
+        },
+        {
+          "name": "signatures",
+          "type": {
+            "vec": "bytes"
+          }
+        }
+      ]
+    },
+    {
+      "name": "update_token_fee_info",
+      "discriminator": [
+        239,
+        171,
+        238,
+        85,
+        79,
+        84,
+        142,
+        186
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "message_config",
+          "writable": true
+        },
+        {
+          "name": "token_config",
+          "writable": true
+        },
+        {
+          "name": "bridge_config",
           "writable": true
         },
         {
@@ -1443,6 +1591,19 @@
       ]
     },
     {
+      "name": "MinSingleTransferLimitUpdated",
+      "discriminator": [
+        218,
+        23,
+        54,
+        131,
+        242,
+        46,
+        142,
+        53
+      ]
+    },
+    {
       "name": "ProgramUpgradeEvent",
       "discriminator": [
         206,
@@ -1479,6 +1640,19 @@
         101,
         116,
         48
+      ]
+    },
+    {
+      "name": "TokenFeeInfoUpdated",
+      "discriminator": [
+        62,
+        13,
+        148,
+        61,
+        108,
+        30,
+        171,
+        146
       ]
     },
     {
@@ -1524,98 +1698,58 @@
   "errors": [
     {
       "code": 6000,
-      "name": "InvalidCommitteeSize",
-      "msg": "Invalid committee size"
+      "name": "InvalidMessageType",
+      "msg": "Invalid message type"
     },
     {
       "code": 6001,
-      "name": "CommitteeTooLarge",
-      "msg": "Committee size must be less than 256"
+      "name": "InvalidMessageNonce",
+      "msg": "Invalid message nonce"
     },
     {
       "code": 6002,
-      "name": "StakeOverflow",
-      "msg": "Stake calculation overflow"
+      "name": "InvalidMessageChainId",
+      "msg": "Invalid message chain id"
     },
     {
       "code": 6003,
-      "name": "InsufficientStake",
-      "msg": "Total stake is less than minimum required"
+      "name": "InvalidMessageVerifier",
+      "msg": "Invalid message verifier"
     },
     {
       "code": 6004,
-      "name": "CommitteeMemberStakeMismatch",
-      "msg": "Committee member stake mismatch"
+      "name": "InvalidSenderAddressLength",
+      "msg": "Invalid sender address length"
     },
     {
       "code": 6005,
-      "name": "CommitteeMemberIndexMismatch",
-      "msg": "Committee member index mismatch"
+      "name": "InvalidRecipientAddressLength",
+      "msg": "Invalid recipient address length"
     },
     {
       "code": 6006,
-      "name": "CommitteeMemberIsBlocklistedMismatch",
-      "msg": "Committee member is blocklisted mismatch"
+      "name": "InvalidPayloadLength",
+      "msg": "Invalid payload length"
     },
     {
       "code": 6007,
-      "name": "CommitteeSizeExceeded",
-      "msg": "Committee size limit exceeded"
+      "name": "InvalidOpCode",
+      "msg": "Invalid operation code"
     },
     {
       "code": 6008,
-      "name": "NotCommitteeMember",
-      "msg": "Not committee member"
+      "name": "InvalidTokenIdNotSupported",
+      "msg": "Invalid token id not supported"
     },
     {
       "code": 6009,
-      "name": "DuplicateMemberAddress",
-      "msg": "Duplicate member address"
+      "name": "InvalidMintAddress",
+      "msg": "Invalid mint address: cannot be default address"
     },
     {
       "code": 6010,
-      "name": "InvalidMemberIndex",
-      "msg": "Invalid member index"
-    },
-    {
-      "code": 6011,
-      "name": "InvalidSignature",
-      "msg": "Invalid signature"
-    },
-    {
-      "code": 6012,
-      "name": "InvalidSigner",
-      "msg": "Invalid signer"
-    },
-    {
-      "code": 6013,
-      "name": "SignerBlocklisted",
-      "msg": "Signer is blocklisted"
-    },
-    {
-      "code": 6014,
-      "name": "DuplicateSignature",
-      "msg": "Duplicate signature provided"
-    },
-    {
-      "code": 6015,
-      "name": "MessageVerifierNonceOverflow",
-      "msg": "Message verifier nonce overflow"
-    },
-    {
-      "code": 6016,
-      "name": "InvalidSignatureFormat",
-      "msg": "Invalid signature format"
-    },
-    {
-      "code": 6017,
-      "name": "SignatureVerificationFailed",
-      "msg": "Signature verification failed"
-    },
-    {
-      "code": 6018,
-      "name": "InvalidRecoveryId",
-      "msg": "Invalid recovery ID"
+      "name": "InvalidTokenPrice",
+      "msg": "Invalid token price"
     }
   ],
   "types": [
@@ -1835,11 +1969,15 @@
             }
           },
           {
+            "name": "min_usd_limit",
+            "type": "u64"
+          },
+          {
             "name": "padding",
             "type": {
               "array": [
                 "u64",
-                8
+                7
               ]
             }
           }
@@ -2041,6 +2179,26 @@
       }
     },
     {
+      "name": "MinSingleTransferLimitUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "source_chain_id",
+            "type": "u8"
+          },
+          {
+            "name": "new_limit",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "ProcessTransfer",
       "docs": [
         "Tracks processed transfer messages to prevent replay attacks"
@@ -2220,13 +2378,53 @@
             "type": "u8"
           },
           {
+            "name": "mode",
+            "type": "u8"
+          },
+          {
+            "name": "fee_value",
+            "type": "u64"
+          },
+          {
+            "name": "min_fee_value",
+            "type": "u64"
+          },
+          {
             "name": "padding",
             "type": {
               "array": [
                 "u8",
-                23
+                6
               ]
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "TokenFeeInfoUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "token_id",
+            "type": "u64"
+          },
+          {
+            "name": "mode",
+            "type": "u8"
+          },
+          {
+            "name": "fee_value",
+            "type": "u64"
+          },
+          {
+            "name": "min_fee_value",
+            "type": "u64"
           }
         ]
       }

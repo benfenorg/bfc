@@ -877,6 +877,7 @@ pub(crate) async fn init_solana_program(
         .args(args::InitializeBridgeLimiter {
             chain_id: target_chain_id as u8,
             limit: 1000000000000000,
+            min_usd_limit: 0,
             max_usd_limit: 1000000000000000,
         })
         .instructions()?
