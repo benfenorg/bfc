@@ -1811,7 +1811,7 @@ pub(crate) async fn start_bridge_cluster(
         let prometheus_registry = Registry::new();
         if i == 0 {
             let metrics = Arc::new(BridgeMetrics::new(&prometheus_registry));
-            let (_, client_config) = config.validate(metrics.clone()).await.unwrap();
+            let (_, client_config) = config.validate(metrics.clone()).await.expect("bridge config validate");
             let client_config = client_config.unwrap();
             let sui_address = client_config.sui_address;
             let sui_key_pair = client_config.key;
