@@ -237,36 +237,30 @@ module bridge::bridge_min_config{
         }
     }
 
-    /// Computes cross-out fee and returns the greater of that and the configured cross-out fee minimum, as token amount.
-    /// Configured fee minimum is in USD (8 decimals); fee is computed in token amount; internally compared in USD then converted back to token.
+    /// Computes cross-out fee and returns the greater of that and the configured cross-out fee minimum.
+    /// Configured fee minimum is in token amount (smallest unit for the token, e.g. wei for ETH); comparison is done in token.
     public fun get_effective_cross_out_fee(
         parent_id: &UID,
-        treasury: &treasury::BridgeTreasury,
         chain_id: u64,
         token_id: u64,
         amount: u64,
     ): u64 {
         let fee_token = bridge_fee::calculate_cross_out_fee_amount(parent_id, chain_id, token_id, amount);
-        let fee_usd = treasury::get_amount_in_usd_by_token_id(treasury, token_id, fee_token);
-        let min_usd = get_min_fee_cross_out(parent_id, chain_id, token_id);
-        let effective_usd = if (fee_usd >= min_usd) { fee_usd } else { min_usd };
-        treasury::get_token_amount_by_usd(treasury, token_id, effective_usd)
+        let min_token = get_min_fee_cross_out(parent_id, chain_id, token_id);
+        if (fee_token >= min_token) { fee_token } else { min_token }
     }
 
-    /// Computes cross-in fee and returns the greater of that and the configured cross-in fee minimum, as token amount.
-    /// Configured fee minimum is in USD (8 decimals); fee is computed in token amount; internally compared in USD then converted back to token.
+    /// Computes cross-in fee and returns the greater of that and the configured cross-in fee minimum.
+    /// Configured fee minimum is in token amount (smallest unit for the token, e.g. wei for ETH); comparison is done in token.
     public fun get_effective_cross_in_fee(
         parent_id: &UID,
-        treasury: &treasury::BridgeTreasury,
         chain_id: u64,
         token_id: u64,
         amount: u64,
     ): u64 {
         let fee_token = bridge_fee::calculate_cross_in_fee_amount(parent_id, chain_id, token_id, amount);
-        let fee_usd = treasury::get_amount_in_usd_by_token_id(treasury, token_id, fee_token);
-        let min_usd = get_min_fee_cross_in(parent_id, chain_id, token_id);
-        let effective_usd = if (fee_usd >= min_usd) { fee_usd } else { min_usd };
-        treasury::get_token_amount_by_usd(treasury, token_id, effective_usd)
+        let min_token = get_min_fee_cross_in(parent_id, chain_id, token_id);
+        if (fee_token >= min_token) { fee_token } else { min_token }
     }
 
     /// Converts token amount (in smallest unit for the given token_id) to USD value with 8 decimals (same as limiter USD precision).

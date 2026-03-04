@@ -149,7 +149,7 @@ module bridge::bridge_min_config_tests {
         scenario.next_tx(@0xAEC);
         let treas = treasury::mock_for_test(scenario.ctx());
         let amount = 100_000_000; // 100 USDC (6 decimals)
-        let effective = bridge_min_config::get_effective_cross_out_fee(&obj.id, &treas, chain, usdc_id(), amount);
+        let effective = bridge_min_config::get_effective_cross_out_fee(&obj.id, chain, usdc_id(), amount);
         let calculated = bridge_fee::calculate_cross_out_fee_amount(&obj.id, chain, usdc_id(), amount); // 0.05% of 100 = 0.05 USDC
         assert_eq!(effective >= calculated, true);
         assert_eq!(effective >= 5_000_000, true); // at least 5 USDC (min floor)
@@ -171,7 +171,7 @@ module bridge::bridge_min_config_tests {
         scenario.next_tx(@0xAEE);
         let treas = treasury::mock_for_test(scenario.ctx());
         let amount = 100_000_000; // 100 USDC (6 decimals)
-        let effective = bridge_min_config::get_effective_cross_in_fee(&obj.id, &treas, chain, usdc_id(), amount);
+        let effective = bridge_min_config::get_effective_cross_in_fee(&obj.id, chain, usdc_id(), amount);
         let calculated = bridge_fee::calculate_cross_in_fee_amount(&obj.id, chain, usdc_id(), amount); // 0.05% of 100 = 0.05 USDC
         assert_eq!(effective >= calculated, true);
         assert_eq!(effective >= 3_000_000, true); // at least 3 USDC (min floor)
