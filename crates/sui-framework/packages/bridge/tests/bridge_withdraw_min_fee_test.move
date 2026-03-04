@@ -23,9 +23,10 @@ module bridge::bridge_withdraw_min_fee_tests {
         
         let target_chain = chain_ids::eth_sepolia() as u64; 
         let token_id = usdc_id();
-        let min_fee_usd = 2 * USD_8DP; // 2 USD
+        // Min fee in token amount (USDC 6 decimals): 2 USDC = 2_000_000
+        let min_fee_token = 2 * USDC_DECIMALS;
         
-        env.set_min_fee_cross_out(target_chain, token_id, min_fee_usd);
+        env.set_min_fee_cross_out(target_chain, token_id, min_fee_token);
         
         // Fix USDC price (bridge_env sets it to 1, which is wrong, should be 1 USD)
         // 1 USD = 100_000_000 (8 decimals)
@@ -49,11 +50,7 @@ module bridge::bridge_withdraw_min_fee_tests {
         assert_eq!(usdc_coin.value(), amount_usdc);
         
         // 4. Send token back (Withdraw from Sui)
-        // Fee calculation:
-        // Min fee = 2 USD.
-        // Price = 1 USD (100_000_000).
-        // Fee in Token = (200_000_000 * 1_000_000) / 100_000_000 = 2_000_000 USDC.
-        // Expected amount after fee = 100_000_000 - 2_000_000 = 98_000_000.
+        // Min fee = 2 USDC (2_000_000 in 6 decimals). Expected amount_after_fee = 100_000_000 - 2_000_000 = 98_000_000.
         
         env.send_token_test<USDC>(sender, target_chain as u8, eth_address, usdc_coin);
         

@@ -318,8 +318,8 @@ fun test_min_cross_in_fee() {
 
     let addr = @0xABCDEF0123;
     env.update_asset_price(addr, eth_id(), 735 * USD_8DP); // 1 ETH = 735 USD
-    // Min cross-in fee 1 USD (8 decimals). Effective fee will be max(calculated, 1 USD in token).
-    env.set_min_fee_cross_in(@0x0, source_chain as u64, eth_id(), 100_000_000);
+    // Min cross-in fee in token amount (ETH 8 decimals): ~1 USD = 1e8/735 ≈ 136k, use 200_000
+    env.set_min_fee_cross_in(@0x0, source_chain as u64, eth_id(), 200_000);
 
     let transfer_id = env.bridge_to_sui<ETH>(
         source_chain,
@@ -330,9 +330,9 @@ fun test_min_cross_in_fee() {
     // Use claim_token to get the coin and verify fee was applied
     let token = env.claim_token<ETH>(sui_address, source_chain, transfer_id);
     let received = token.value();
-    // User receives amount - fee; fee must be at least min (1 USD in ETH ~ 1e8/735 wei)
+    // User receives amount - fee; fee must be at least min (200_000)
     assert!(received < amount, 1);
-    assert!(amount - received >= 100_000, 2); // at least ~1 USD worth of fee in token units
+    assert!(amount - received >= 200_000, 2);
     env.send_token<ETH>(sui_address, source_chain, eth_address, token);
 
     env.destroy_env();

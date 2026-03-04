@@ -128,7 +128,7 @@ module bridge::bridge_min_config{
         if (!self.fee_limit.borrow(chain_id).contains(token_id)) {
             self.fee_limit.borrow_mut(chain_id).add(token_id, FeeLimit { cross_in_fee_min: 0, cross_out_fee_min: fee_amount });
         }else{
-            let mut v = self.fee_limit.borrow_mut(chain_id).borrow_mut(token_id);
+            let v = self.fee_limit.borrow_mut(chain_id).borrow_mut(token_id);
             v.cross_out_fee_min = fee_amount
         }
     }
@@ -147,7 +147,7 @@ module bridge::bridge_min_config{
         if (!self.fee_limit.borrow(chain_id).contains(token_id)) {
             self.fee_limit.borrow_mut(chain_id).add(token_id, FeeLimit { cross_in_fee_min: fee_amount, cross_out_fee_min: 0 });
         }else{
-            let mut v = self.fee_limit.borrow_mut(chain_id).borrow_mut(token_id);
+            let v = self.fee_limit.borrow_mut(chain_id).borrow_mut(token_id);
             v.cross_in_fee_min = fee_amount
         }
     }
