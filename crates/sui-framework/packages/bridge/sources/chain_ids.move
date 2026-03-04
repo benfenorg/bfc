@@ -329,6 +329,45 @@ module bridge::chain_ids {
         ]
     }
 
+    public fun is_evm_l2(chain_id: u8): bool {
+        // Commonly recognized EVM L2s in this file:
+        // OP - Optimism
+        // Arbitrum
+        // Base
+        // Polygon (POL)
+        // bsc
+        // avax
+        chain_id == OPMainnet ||
+        chain_id == OPTestnet ||
+        chain_id == OPCustom ||
+        chain_id == ArbMainnet ||
+        chain_id == ArbTestnet ||
+        chain_id == ArbCustom ||
+        chain_id == BaseMainnet ||
+        chain_id == BaseTestnet ||
+        chain_id == BaseCustom ||
+        chain_id == PolMainnet ||
+        chain_id == PolTestnet ||
+        chain_id == PolCustom ||
+        chain_id == BscMainnet ||
+        chain_id == BscTestnet ||
+        chain_id == BscCustom ||
+        chain_id == AvaxMainnet ||
+        chain_id == AvaxTestnet ||
+        chain_id == AvaxCustom
+    }
+
+    public fun is_eth(chain_id: u8): bool {
+        chain_id == EthMainnet ||
+        chain_id == EthSepolia ||
+        chain_id == EthCustom
+    }
+
+    public fun is_solana(chain_id: u8): bool {
+        chain_id == SolanaMainnet ||
+        chain_id == SolanaTestnet
+    }
+
     public fun is_valid_route(source: u8, destination: u8): bool {
         let route = BridgeRoute { source, destination };
         valid_routes().contains(&route)
