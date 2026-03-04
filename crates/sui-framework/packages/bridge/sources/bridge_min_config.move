@@ -157,12 +157,40 @@ module bridge::bridge_min_config{
         *self.min_limit_out.borrow(chain_id)
     }
 
+    public fun get_min_limit_token_amount_cross_out(
+        parent_id: &UID,
+        treasury: &treasury::BridgeTreasury,
+        chain_id: u64, 
+        token_id: u64): u64 {
+        let min_usd = get_min_limit_cross_out(parent_id, chain_id);
+        if (chain_id == (chain_ids::btc_mainnet() as u64) || chain_id == (chain_ids::btc_testnet() as u64)) {
+            // for BTC chains min is in satoshi and amount is token amount (satoshi), compared directly
+            min_usd
+        } else {
+            treasury::get_token_amount_by_usd(treasury, token_id, min_usd)
+        }
+    }
+
     public fun get_min_limit_cross_in(parent_id: &UID,chain_id: u64): u64{
         let self=borrow(parent_id);
         if (!self.min_limit_in.contains(chain_id)) {
             return 0
         };
         *self.min_limit_in.borrow(chain_id)
+    }
+
+    public fun get_min_limit_token_amount_cross_in(
+        parent_id: &UID,
+        treasury: &treasury::BridgeTreasury,
+        chain_id: u64, 
+        token_id: u64): u64 {
+        let min_usd = get_min_limit_cross_in(parent_id, chain_id);
+        if (chain_id == (chain_ids::btc_mainnet() as u64) || chain_id == (chain_ids::btc_testnet() as u64)) {
+            // for BTC chains min is in satoshi and amount is token amount (satoshi), compared directly
+            min_usd
+        } else {
+            treasury::get_token_amount_by_usd(treasury, token_id, min_usd)
+        }
     }
 
     public fun get_min_fee_cross_out(parent_id: &UID,chain_id: u64, token_id: u64): u64{
