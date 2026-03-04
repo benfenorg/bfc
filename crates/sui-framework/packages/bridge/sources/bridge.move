@@ -2380,12 +2380,10 @@ module bridge::bridge {
     ):u64{
         let (inner,parent_id) = load_inner_and_uid(bridge);
         let token_id = inner.treasury.token_id<T>();
-        let fee = bridge_fee::calculate_cross_out_fee_amount(parent_id,chain_id,token_id,amount);
-        let min = bridge_min_config::get_min_fee_cross_out(parent_id, chain_id, token_id);
-        if (min > 0 && fee < min) {
-           min 
+        if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_out_fee(parent_id, &inner.treasury, chain_id, token_id, amount)
         } else {
-           fee
+            bridge_fee::calculate_cross_out_fee_amount(parent_id,chain_id,token_id,amount)
         }
     }
 

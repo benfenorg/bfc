@@ -97,7 +97,6 @@ module bridge::bridge_env {
     use bridge::limiter_fast_path;
     use bridge::bridge::TokenDepositedEventV3;
     use bridge::bridge::TokenDepositedEventForSolanaV3;
-    use bridge::bridge_min_config;
 
     //
     // Token IDs
