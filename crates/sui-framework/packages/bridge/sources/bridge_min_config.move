@@ -11,11 +11,14 @@ module bridge::bridge_min_config{
     const EBridgeMinConfigRegistryAlreadyExists: u64=0;
 
     public struct BridgeMinConfig has store {
+        // set in usd with 8 decimals for non-BTC chains, in satoshi for BTC chains; checked in cross-in and cross-out separately; if not set, no minimum enforced
         min_limit_out: Table<u64, u64>,
         min_limit_in: Table<u64, u64>,
+        // set in token amount for the given token_id
         fee_limit: Table<u64, Table<u64, FeeLimit>>,
     }
 
+    // set in token amount for the given token_id
     public struct FeeLimit has store, copy, drop {
         cross_in_fee_min: u64,
         cross_out_fee_min: u64,
