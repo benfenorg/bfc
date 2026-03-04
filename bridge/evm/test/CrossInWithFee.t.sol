@@ -19,7 +19,7 @@ contract CrossInWithFeeTest is BridgeBaseTest {
         uint64 tokenID = BridgeUtils.ETH;
         uint8 mode = 1; // Percentage
         uint64 value = 100000; // 10% (assuming denominator is 100000)
-        uint256 minFeeValue = 0.01 ether;
+        uint64 minFeeValue = 0.01 ether;
 
         updateBridgeFee(tokenID, mode, value, minFeeValue);
 
@@ -59,7 +59,7 @@ contract CrossInWithFeeTest is BridgeBaseTest {
         uint64 tokenID = BridgeUtils.USDC;
         uint8 mode = 1; // Percentage
         uint64 value = 10000; // 1% (assuming denominator is 10000)
-        uint256 minFeeValue = 1000000; // 1 USDC (6 decimals)
+        uint64 minFeeValue = 1000000; // 1 USDC (6 decimals)
         uint64 limit = 10000000000; // 100 USDC (8 decimals)
 
         updateBridgeFee(tokenID, mode, value, minFeeValue);
@@ -108,7 +108,7 @@ contract CrossInWithFeeTest is BridgeBaseTest {
         uint64 tokenID = BridgeUtils.USDC;
         uint8 mode = 0; // 
         uint64 value = 1000000; //  1 USDC
-        uint256 minFeeValue = 100000; // 0.1 USDC (6 decimals)
+        uint64 minFeeValue = 100000; // 0.1 USDC (6 decimals)
       
         updateBridgeFee(tokenID, mode, value, minFeeValue);
 
@@ -147,7 +147,7 @@ contract CrossInWithFeeTest is BridgeBaseTest {
         uint64 tokenID = BridgeUtils.USDC;
         uint8 mode = 1; // 
         uint64 value = 10000; //  1 USDC
-        uint256 minFeeValue = 10000000; // 10 USDC (6 decimals)
+        uint64 minFeeValue = 10000000; // 10 USDC (6 decimals)
       
         updateBridgeFee(tokenID, mode, value, minFeeValue);
 
@@ -259,7 +259,7 @@ contract CrossInWithFeeTest is BridgeBaseTest {
         uint64 tokenID = BridgeUtils.ETH;
         uint8 mode = 1; // Percentage
         uint64 value = 1000; // 10%
-        uint256 minFeeValue = 0;
+        uint64 minFeeValue = 0;
         updateBridgeFee(tokenID, mode, value, minFeeValue);
 
         // 2. Bridge ETH
@@ -283,7 +283,7 @@ contract CrossInWithFeeTest is BridgeBaseTest {
         uint64 tokenID = BridgeUtils.ETH;
         uint8 mode = 1; // Percentage
         uint64 value = 0; // 0%
-        uint256 minFeeValue = 0.5 ether; // High min fee
+        uint64 minFeeValue = 0.5 ether; // High min fee
         
         updateBridgeFee(tokenID, mode, value, minFeeValue);
 
@@ -306,8 +306,10 @@ contract CrossInWithFeeTest is BridgeBaseTest {
     }
 
     // Helper to update bridge fee
-    function updateBridgeFee(uint64 tokenID, uint8 mode, uint64 value, uint256 minFeeValue) internal {
+    function updateBridgeFee(uint64 tokenID, uint8 mode, uint64 value, uint64 minFeeValue) internal {
+        uint8 sourceChainID = 0; 
         bytes memory payload = abi.encodePacked(
+            sourceChainID,
             tokenID,
             mode,
             value,

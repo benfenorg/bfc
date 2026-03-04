@@ -58,6 +58,110 @@
     "stateMutability": "nonpayable"
   },
   {
+            "type": "function",
+            "name": "updateBridgeFeeWithSignatures",
+            "inputs": [
+                {
+                    "name": "signatures",
+                    "type": "bytes[]",
+                    "internalType": "bytes[]"
+                },
+                {
+                    "name": "message",
+                    "type": "tuple",
+                    "internalType": "struct BridgeUtils.Message",
+                    "components": [
+                        {
+                            "name": "messageType",
+                            "type": "uint8",
+                            "internalType": "uint8"
+                        },
+                        {
+                            "name": "version",
+                            "type": "uint8",
+                            "internalType": "uint8"
+                        },
+                        {
+                            "name": "nonce",
+                            "type": "uint64",
+                            "internalType": "uint64"
+                        },
+                        {
+                            "name": "chainID",
+                            "type": "uint8",
+                            "internalType": "uint8"
+                        },
+                        {
+                            "name": "payload",
+                            "type": "bytes",
+                            "internalType": "bytes"
+                        }
+                    ]
+                }
+            ],
+            "outputs": [
+
+            ],
+            "stateMutability": "nonpayable"
+  },
+  {
+            "type": "function",
+            "name": "bridgeFeeModeOf",
+            "inputs": [
+                {
+                    "name": "tokenID",
+                    "type": "uint64",
+                    "internalType": "uint64"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint8",
+                    "internalType": "uint8"
+                }
+            ],
+            "stateMutability": "view"
+  },
+  {
+            "type": "function",
+            "name": "bridgeFeeValueOf",
+            "inputs": [
+                {
+                    "name": "tokenID",
+                    "type": "uint64",
+                    "internalType": "uint64"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint64",
+                    "internalType": "uint64"
+                }
+            ],
+            "stateMutability": "view"
+  },
+  {
+            "type": "function",
+            "name": "bridgeFeeMinFeeValueOf",
+            "inputs": [
+                {
+                    "name": "tokenID",
+                    "type": "uint64",
+                    "internalType": "uint64"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint64",
+                    "internalType": "uint64"
+                }
+            ],
+            "stateMutability": "view"
+  },
+  {
     "type": "function",
     "name": "addTokensWithSignatures",
     "inputs": [

@@ -23,7 +23,7 @@ interface IBridgeConfig {
         //具体的值
         uint64 value;
         //上边计算收取的fee至少要超过这个值，否则就要用这个值
-        uint256 minFeeValue;
+        uint64 minFeeValue;
     }
 
     /* ========== VIEW FUNCTIONS ========== */
@@ -73,7 +73,7 @@ interface IBridgeConfig {
    
    function bridgeFeeValueOf(uint64 tokenID) external view returns (uint64);
    
-   function bridgeFeeMinFeeValueOf(uint64 tokenID) external view returns (uint256);
+   function bridgeFeeMinFeeValueOf(uint64 tokenID) external view returns (uint64);
 
    function calculateBridgeFee(uint64 tokenID, uint256 amount) external view returns (uint256);
 
@@ -125,5 +125,5 @@ interface IBridgeConfig {
 
     event LpTokenIdAdded(uint64 nonce,uint64 protocolType,uint64 underlyingTokenId,uint64 lpTokenId);
 
-    event BridgeFeeUpdated(uint64 nonce, uint64 tokenID, uint8 mode, uint64 value, uint256 minFeeValue);
+    event BridgeFeeUpdated(uint64 nonce, uint64 tokenID, uint8 mode, uint64 value, uint64 minFeeValue);
 }

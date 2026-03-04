@@ -38,6 +38,8 @@ use crate::types::AddLpTokenIdAction;
 use crate::types::UpdateInvestAddressAction;
 use crate::types::ExtendProgramOnSolanaAction;
 use crate::types::UpgradeProgramOnSolanaAction;
+use crate::types::SingleMinTransferLimitUpdateAction;
+use crate::types::BridgeFeeInfoUpdateAction;
 use enum_dispatch::enum_dispatch;
 // use ethers::core::k256::elliptic_curve::ff::derive::bitvec::view::AsBits;
 use ethers::types::Address as EthAddress;
@@ -70,6 +72,8 @@ pub const ADD_TOKENS_ON_SOLANA_MESSAGE_VERSION: u8 = 1;
 pub const ADD_TOKEN_ON_TOKEN_LIST_MESSAGE_VERSION: u8 = 1;
 pub const REMOVE_TOKEN_ON_TOKEN_LIST_MESSAGE_VERSION: u8 = 1;
 pub const SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION: u8 = 1;
+pub const SINGLE_MIN_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION: u8 = 1;
+pub const UPDATE_FEE_INFO_MESSAGE_VERSION: u8 = 1;
 pub const SET_CROSS_OUT_BRIDGE_FEE_MESSAGE_VERSION: u8 = 1;
 pub const SET_CROSS_IN_BRIDGE_FEE_MESSAGE_VERSION: u8 = 1;
 pub const WITHDRAW_BRIDGE_FEE_MESSAGE_VERSION: u8 = 1;
@@ -734,6 +738,55 @@ impl BridgeMessageEncoding for SingleTransferLimitUpdateAction {
     }
 }
 
+impl BridgeMessageEncoding for SingleMinTransferLimitUpdateAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        bytes.push(BridgeActionType::SingleMinTransferLimitUpdate as u8);
+        bytes.push(SINGLE_MIN_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION);
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        bytes.push(self.chain_id as u8);
+        bytes.extend_from_slice(&self.as_payload_bytes());
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        bytes.push(self.sending_chain_id as u8);
+        bytes.extend_from_slice(&self.new_usd_limit.to_be_bytes());
+        bytes
+    }
+}
+
+
+impl BridgeMessageEncoding for BridgeFeeInfoUpdateAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        bytes.push(BridgeActionType::UpdateFeeInfo as u8);
+        bytes.push(UPDATE_FEE_INFO_MESSAGE_VERSION);
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        bytes.push(self.chain_id as u8);
+        bytes.extend_from_slice(&self.as_payload_bytes());
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        bytes.push(self.sending_chain_id as u8);
+        
+        // Add token_id
+        bytes.extend_from_slice(&self.token_id.to_be_bytes());
+
+        // Add mode
+        bytes.push(self.mode);
+        // Add value
+        bytes.extend_from_slice(&self.value.to_be_bytes());
+        // Add min fee (64 bytes)
+        bytes.extend_from_slice(&self.min_fee.to_be_bytes());
+        
+        bytes
+    }
+}
+
 impl BridgeMessageEncoding for AddLpTokenIdAction {
       fn as_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
@@ -786,6 +839,7 @@ impl BridgeMessageEncoding for UpdateInvestAddressAction {
         bytes
     }
 }
+
 
 impl BridgeMessageEncoding for UpgradeProgramOnSolanaAction{
     fn as_bytes(&self) -> Vec<u8> {

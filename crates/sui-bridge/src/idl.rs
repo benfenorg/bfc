@@ -3,6 +3,8 @@ use crate::types::{
     BridgeActionType,
     AddTokenOnSolanaAction,AssetPriceUpdateAction,
     SingleTransferLimitUpdateAction,
+    SingleMinTransferLimitUpdateAction,
+    BridgeFeeInfoUpdateAction,
     LimitUpdateAction,
     ExtendProgramOnSolanaAction,
     BlocklistCommitteeAction,
@@ -13,6 +15,8 @@ use crate::encoding::{
     ADD_TOKENS_ON_SOLANA_MESSAGE_VERSION, 
     ASSET_PRICE_UPDATE_MESSAGE_VERSION,
     SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION,
+    SINGLE_MIN_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION,
+    UPDATE_FEE_INFO_MESSAGE_VERSION,
     LIMIT_UPDATE_MESSAGE_VERSION,
     EXTEND_PROGRAM_MESSAGE_VERSION,
     EMERGENCY_BUTTON_MESSAGE_VERSION,
@@ -99,6 +103,32 @@ impl From<SingleTransferLimitUpdateAction> for SolanaMessage {
         SolanaMessage {
             message_type: BridgeActionType::SingleTransferLimitUpdate as u8,
             version: SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION,
+            nonce: action.nonce,
+            chain_id: action.chain_id as u8,
+            payload: action.as_payload_bytes().clone(),
+        }
+    }
+}
+
+impl From<SingleMinTransferLimitUpdateAction> for SolanaMessage {
+    fn from(action: SingleMinTransferLimitUpdateAction) -> Self {
+        SolanaMessage {
+            message_type: BridgeActionType::SingleMinTransferLimitUpdate as u8,
+            version: SINGLE_MIN_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION,
+            nonce: action.nonce,
+            chain_id: action.chain_id as u8,
+            payload: action.as_payload_bytes().clone(),
+        }
+    }
+}
+
+
+
+impl From<BridgeFeeInfoUpdateAction> for SolanaMessage {
+    fn from(action: BridgeFeeInfoUpdateAction) -> Self {
+        SolanaMessage {
+            message_type: BridgeActionType::UpdateFeeInfo as u8,
+            version: UPDATE_FEE_INFO_MESSAGE_VERSION,
             nonce: action.nonce,
             chain_id: action.chain_id as u8,
             payload: action.as_payload_bytes().clone(),

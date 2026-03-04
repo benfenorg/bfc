@@ -1687,6 +1687,33 @@ impl EthBridgeEnvironment {
         amount.as_u64()
     }
 
+    pub async fn get_single_min_transfer_limit(&self) -> u64 {
+        let limit = self.get_bridge_limit();
+        //getUsdminLimit
+        let amount: U256 = limit.get_usd_min_limit().call().await.unwrap();
+        amount.as_u64()
+    }
+
+    pub async fn get_bridge_fee_info_of_mode(&self,token_id: u64) -> (u8) {
+        let config = self.get_bridge_config();
+        let fee_mode = config.bridge_fee_mode_of(token_id).call().await.unwrap();
+        fee_mode
+    }
+
+
+    pub async fn get_bridge_fee_info_of_value(&self,token_id: u64) -> (u64) {
+        let config = self.get_bridge_config();
+        let fee_value = config.bridge_fee_value_of(token_id).call().await.unwrap();
+        fee_value
+    }
+
+
+    pub async fn get_bridge_fee_info_of_min_fee_value(&self,token_id: u64) -> (u64) {
+        let config = self.get_bridge_config();
+        let fee_min_value = config.bridge_fee_min_fee_value_of(token_id).call().await.unwrap();
+        fee_min_value
+    }
+
     pub async  fn get_invest_address(&self) -> EthAddress {
         let bridge = self.get_benfen_bridge();
         let invest_address =  bridge.get_invest_address().call().await.unwrap();

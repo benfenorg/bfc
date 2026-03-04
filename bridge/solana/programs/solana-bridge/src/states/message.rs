@@ -476,16 +476,17 @@ pub fn decode_update_token_price_payload(payload: &[u8]) -> Result<(u64, u64)> {
 }
 
 
-pub fn decode_update_fee_info_payload(payload: &[u8]) -> Result<(u64, u8, u64, u64)> {
-    // 8 bytes (token_id) + 1 byte (mode) + 8 bytes (fee_value) + 8 bytes (min_fee_value) = 25 bytes
-    require!(payload.len() == 25, MessageError::InvalidPayloadLength);
+pub fn decode_update_fee_info_payload(payload: &[u8]) -> Result<(u8, u64, u8, u64, u64)> {
+    // 1 byte (sending_chain_id) + 8 bytes (token_id) + 1 byte (mode) + 8 bytes (fee_value) + 8 bytes (min_fee_value) = 26 bytes
+    require!(payload.len() == 26, MessageError::InvalidPayloadLength);
     
-    let token_id = u64::from_be_bytes(payload[0..8].try_into().unwrap());
-    let mode = payload[8];
-    let fee_value = u64::from_be_bytes(payload[9..17].try_into().unwrap());
-    let min_fee_value = u64::from_be_bytes(payload[17..25].try_into().unwrap());
+    let sending_chain_id = payload[0];
+    let token_id = u64::from_be_bytes(payload[1..9].try_into().unwrap());
+    let mode = payload[9];
+    let fee_value = u64::from_be_bytes(payload[10..18].try_into().unwrap());
+    let min_fee_value = u64::from_be_bytes(payload[18..26].try_into().unwrap());
     
-    Ok((token_id, mode, fee_value, min_fee_value))
+    Ok((sending_chain_id, token_id, mode, fee_value, min_fee_value))
 }
 
 

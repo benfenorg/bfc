@@ -1213,6 +1213,10 @@
           "writable": true
         },
         {
+          "name": "chain_limit",
+          "writable": true
+        },
+        {
           "name": "bridge_config",
           "writable": true
         },
@@ -1698,58 +1702,98 @@
   "errors": [
     {
       "code": 6000,
-      "name": "InvalidMessageType",
-      "msg": "Invalid message type"
+      "name": "InvalidCommitteeSize",
+      "msg": "Invalid committee size"
     },
     {
       "code": 6001,
-      "name": "InvalidMessageNonce",
-      "msg": "Invalid message nonce"
+      "name": "CommitteeTooLarge",
+      "msg": "Committee size must be less than 256"
     },
     {
       "code": 6002,
-      "name": "InvalidMessageChainId",
-      "msg": "Invalid message chain id"
+      "name": "StakeOverflow",
+      "msg": "Stake calculation overflow"
     },
     {
       "code": 6003,
-      "name": "InvalidMessageVerifier",
-      "msg": "Invalid message verifier"
+      "name": "InsufficientStake",
+      "msg": "Total stake is less than minimum required"
     },
     {
       "code": 6004,
-      "name": "InvalidSenderAddressLength",
-      "msg": "Invalid sender address length"
+      "name": "CommitteeMemberStakeMismatch",
+      "msg": "Committee member stake mismatch"
     },
     {
       "code": 6005,
-      "name": "InvalidRecipientAddressLength",
-      "msg": "Invalid recipient address length"
+      "name": "CommitteeMemberIndexMismatch",
+      "msg": "Committee member index mismatch"
     },
     {
       "code": 6006,
-      "name": "InvalidPayloadLength",
-      "msg": "Invalid payload length"
+      "name": "CommitteeMemberIsBlocklistedMismatch",
+      "msg": "Committee member is blocklisted mismatch"
     },
     {
       "code": 6007,
-      "name": "InvalidOpCode",
-      "msg": "Invalid operation code"
+      "name": "CommitteeSizeExceeded",
+      "msg": "Committee size limit exceeded"
     },
     {
       "code": 6008,
-      "name": "InvalidTokenIdNotSupported",
-      "msg": "Invalid token id not supported"
+      "name": "NotCommitteeMember",
+      "msg": "Not committee member"
     },
     {
       "code": 6009,
-      "name": "InvalidMintAddress",
-      "msg": "Invalid mint address: cannot be default address"
+      "name": "DuplicateMemberAddress",
+      "msg": "Duplicate member address"
     },
     {
       "code": 6010,
-      "name": "InvalidTokenPrice",
-      "msg": "Invalid token price"
+      "name": "InvalidMemberIndex",
+      "msg": "Invalid member index"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidSignature",
+      "msg": "Invalid signature"
+    },
+    {
+      "code": 6012,
+      "name": "InvalidSigner",
+      "msg": "Invalid signer"
+    },
+    {
+      "code": 6013,
+      "name": "SignerBlocklisted",
+      "msg": "Signer is blocklisted"
+    },
+    {
+      "code": 6014,
+      "name": "DuplicateSignature",
+      "msg": "Duplicate signature provided"
+    },
+    {
+      "code": 6015,
+      "name": "MessageVerifierNonceOverflow",
+      "msg": "Message verifier nonce overflow"
+    },
+    {
+      "code": 6016,
+      "name": "InvalidSignatureFormat",
+      "msg": "Invalid signature format"
+    },
+    {
+      "code": 6017,
+      "name": "SignatureVerificationFailed",
+      "msg": "Signature verification failed"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidRecoveryId",
+      "msg": "Invalid recovery ID"
     }
   ],
   "types": [

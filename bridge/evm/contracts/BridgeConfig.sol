@@ -142,7 +142,7 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         return bridgeFeeInfos[tokenID].value;
     }
 
-    function bridgeFeeMinFeeValueOf(uint64 tokenID) public view returns (uint256) {
+    function bridgeFeeMinFeeValueOf(uint64 tokenID) public view returns (uint64) {
         return bridgeFeeInfos[tokenID].minFeeValue;
     }
 
@@ -245,8 +245,11 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         nonReentrant
         verifyMessageAndSignatures(message, signatures, BridgeUtils.UPDATE_BRIDGE_FEE)
     {
-        (uint64 tokenID, uint8 mode, uint64 value, uint256 minFeeValue) = BridgeUtils.decodeUpdateBridgeFeePayload(message.payload);
-        
+        (uint8 sourceChainID,uint64 tokenID, uint8 mode, uint64 value, uint64 minFeeValue) = BridgeUtils.decodeUpdateBridgeFeePayload(message.payload);
+        require(
+            isChainSupported(sourceChainID),
+            "BridgeConfig: Source chain not supported"
+        ); 
         bridgeFeeInfos[tokenID] = BridgeFeeInfo(mode, value, minFeeValue);
 
         emit BridgeFeeUpdated(message.nonce, tokenID, mode, value, minFeeValue);

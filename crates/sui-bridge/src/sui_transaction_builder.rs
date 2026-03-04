@@ -171,6 +171,14 @@ pub fn build_sui_transaction(
             bridge_object_arg,
             rgp,
         ),
+        BridgeAction::SingleMinTransferLimitUpdateAction(_) => { 
+            unreachable!();
+        }
+
+        BridgeAction::BridgeFeeInfoUpdateAction(_) => {
+             unreachable!();
+        }
+        
         BridgeAction::EvmContractUpgradeAction(_) => {
             // It does not need a Sui tranaction to execute EVM contract upgrade
             unreachable!()

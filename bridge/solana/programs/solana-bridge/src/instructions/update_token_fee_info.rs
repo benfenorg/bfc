@@ -5,10 +5,12 @@ use crate::states::{
 };
 use crate::errors::BridgeTokenError;
 use crate::errors::MessageError;
+use crate::errors::BridgeLimiterError;
 
 use crate::states::message_verifier::MessageVerifier;
 use crate::states::message_config::{MessageConfig,MESSAGE_CONFIG_SEED};
 use crate::states::message;
+use crate::states::chain_limit::ChainLimit;
 
 use crate::states::committee::Committee;
 use crate::instructions::verify_message::verify_bridge_signature;
@@ -40,6 +42,10 @@ pub struct UpdateTokenFeeInfo<'info> {
     )]
     pub token_config: AccountLoader<'info, TokenConfigAccount>,
 
+
+    #[account(mut)]
+    pub chain_limit: AccountLoader<'info, ChainLimit>,
+
     #[account(mut)]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
@@ -64,6 +70,8 @@ pub fn update_token_fee_info_with_signature(
     let mut message_config =  ctx.accounts.message_config.deref_mut();
     let mut bridge_config = ctx.accounts.bridge_config.load_mut()?;
     let mut verifier = ctx.accounts.verifier.load_mut()?;
+    let  mut chain_limit = ctx.accounts.chain_limit.load_mut()?;
+
     let mut committee = ctx.accounts.committee.load_mut()?;
     let message=message::create_message(message_type, version, nonce, chain_id, payload.clone());
     require!(message_type==message::UPDATE_TOKEN_FEE_INFO,MessageError::InvalidMessageType);
@@ -76,8 +84,11 @@ pub fn update_token_fee_info_with_signature(
         &message,
         signatures
     )?; 
-    //(token_id, mode, fee_value, min_fee_value)
-    let (token_id, mode, fee_value, min_fee_value) = message::decode_update_fee_info_payload(&payload)?;
+    //(sending_chain_id, token_id, mode, fee_value, min_fee_value)
+    let (sending_chain_id, token_id, mode, fee_value, min_fee_value) = message::decode_update_fee_info_payload(&payload)?;
+
+    require!(chain_limit.get_chain_id()==sending_chain_id, BridgeLimiterError::InvalidChainId);
+
 
     let mut token_config_loader = ctx.accounts.token_config.load_mut()?;
 

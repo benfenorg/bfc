@@ -33,6 +33,7 @@ use sui_bridge::types::{
     AddExternalCoinTargetAction,RemoveExternalCoinTargetAction,
     AddTokenOnTokenListAction,RemoveTokenOnTokenListAction,
     SingleTransferLimitUpdateAction,UpdateBridgeFeeOnCrossOutAction,
+    SingleMinTransferLimitUpdateAction,BridgeFeeInfoUpdateAction,
     UpdateBridgeFeeOnCrossInAction, WithdrawBridgeFeeAction,
     AddLpTokenIdAction, UpdateInvestAddressAction,
     AddTokenOnSolanaAction,ExtendProgramOnSolanaAction,
@@ -203,6 +204,33 @@ pub enum GovernanceClientCommands {
         #[clap(name = "new-usd-limit", long)]
         new_usd_limit: u64,
     },
+    #[clap(name = "update-min-single-transfer-limit")]
+    UpdateMinSingleTransferLimit {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "sending-chain", long)]
+        sending_chain: u8,
+        #[clap(name = "new-min-amount", long)]
+        new_usd_limit: u64,
+    },
+    #[clap(name = "update-bridge-fee-info")]
+    UpdateBridgeFeeInfo {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "sending-chain", long)]
+        sending_chain: u8,
+        #[clap(name = "token-id", long)]
+        token_id: u64,
+        #[clap(name = "mode", long)]
+        mode: u8,
+        #[clap(name = "value", long)]
+        value: u64,
+        #[clap(name = "min-fee", long)]
+        min_fee: u64
+    },
+
+
+
     #[clap(name = "update-asset-price")]
     UpdateAssetPrice {
         #[clap(name = "nonce", long)]
@@ -494,6 +522,40 @@ pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> B
                 chain_id,
                 sending_chain_id,
                 new_usd_limit: *new_usd_limit,
+            })
+        },
+         GovernanceClientCommands::UpdateMinSingleTransferLimit {
+            nonce,
+            sending_chain,
+            new_usd_limit,
+        } => {
+            let sending_chain_id =
+                BridgeChainId::try_from(*sending_chain).expect("Invalid sending chain id");
+            BridgeAction::SingleMinTransferLimitUpdateAction(SingleMinTransferLimitUpdateAction {
+                nonce: *nonce,
+                chain_id,
+                sending_chain_id,
+                new_usd_limit: *new_usd_limit,
+            })
+        }
+        GovernanceClientCommands::UpdateBridgeFeeInfo {
+            nonce,
+            sending_chain,
+            token_id,
+            mode,
+            value,
+            min_fee,
+        } => {
+            let sending_chain_id =
+                BridgeChainId::try_from(*sending_chain).expect("Invalid sending chain id");
+            BridgeAction::BridgeFeeInfoUpdateAction(BridgeFeeInfoUpdateAction {
+                nonce: *nonce,
+                chain_id,
+                sending_chain_id,
+                token_id: *token_id,
+                mode: *mode,
+                value: *value,
+                min_fee: *min_fee,
             })
         }
         GovernanceClientCommands::UpdateAssetPrice {
@@ -834,6 +896,10 @@ pub fn select_contract_address(
         GovernanceClientCommands::UpdateSingleTransferLimit { .. } => {
             config.eth_bridge_limiter_proxy_address
         }
+        GovernanceClientCommands::UpdateMinSingleTransferLimit { .. } => {
+            config.eth_bridge_limiter_proxy_address
+        }
+        GovernanceClientCommands::UpdateBridgeFeeInfo { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::UpdateAssetPrice { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::UpgradeEVMContract { proxy_address, .. } => *proxy_address,
         GovernanceClientCommands::AddExternalCoinAdmin { .. } => unreachable!(),

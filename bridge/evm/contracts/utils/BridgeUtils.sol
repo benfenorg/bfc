@@ -104,8 +104,8 @@ library BridgeUtils {
     uint8 public constant DEFI=23;
     uint8 public constant UPDATE_INVEST_ADDRESS =26;
     uint8 public constant ADD_LP_TOKEN_ID =27;
-    uint8 public constant UPDATE_BRIDGE_FEE = 28;
-    uint8 public constant UPDATE_MIN_LIMIT = 29;
+    uint8 public constant UPDATE_BRIDGE_FEE = 33;
+    uint8 public constant UPDATE_MIN_LIMIT = 34;
 
 
     // Message type stake requirements
@@ -878,11 +878,15 @@ library BridgeUtils {
     function decodeUpdateBridgeFeePayload(bytes memory _payload)
         internal
         pure
-        returns (uint64 tokenID, uint8 mode, uint64 value, uint256 minFeeValue)
+        returns (uint8 senderChainID, uint64 tokenID, uint8 mode, uint64 value, uint64 minFeeValue)
     {
-        require(_payload.length == 49, "BridgeUtils: Invalid payload length");
+        require(_payload.length == 26, "BridgeUtils: Invalid payload length");
         
         uint8 offset = 0;
+
+        // senderChainID (1 byte)
+        senderChainID = uint8(_payload[offset]);
+        offset += 1;
         
         // tokenID (8 bytes)
         assembly {
@@ -900,9 +904,9 @@ library BridgeUtils {
         }
         offset += 8;
 
-        // minFeeValue (32 bytes)
+        // minFeeValue (8 bytes)
         assembly {
-            minFeeValue := mload(add(add(_payload, 0x20), offset))
+            minFeeValue := shr(192, mload(add(add(_payload, 0x20), offset)))
         }
     }
 
