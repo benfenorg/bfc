@@ -2419,6 +2419,28 @@ module bridge::bridge {
         bridge_min_config::get_min_limit_token_amount_cross_in(parent_id, &inner.treasury, chain_id, token_id)
     }
 
+    public fun get_cross_out_fee_info<T>(
+        bridge: &Bridge,
+        chain_id: u64,
+    ): (u64,u64,u64) {
+        let (inner,parent_id) = load_inner_and_uid(bridge);
+        let token_id = inner.treasury.token_id<T>();
+        let (mode,value) = bridge_fee::get_fee_info_cross_out(parent_id, chain_id, token_id);
+        let min = bridge_min_config::get_min_fee_cross_out(parent_id, chain_id, token_id);
+        (mode, value, min)
+    }
+
+    public fun get_cross_in_fee_info<T>(
+        bridge: &Bridge,
+        chain_id: u64,
+    ): (u64,u64,u64) {
+        let (inner,parent_id) = load_inner_and_uid(bridge);
+        let token_id = inner.treasury.token_id<T>();
+        let (mode,value) = bridge_fee::get_fee_info_cross_in(parent_id, chain_id, token_id);
+        let min = bridge_min_config::get_min_fee_cross_in(parent_id, chain_id, token_id);
+        (mode, value, min)
+    }
+
     #[allow(unused_function)]
     fun get_token_transfer_action_status(
         bridge: &Bridge,
