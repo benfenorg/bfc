@@ -3353,12 +3353,13 @@ module bridge::bridge {
         if (is_solana_chain(chain_id)) SOLANA_ADDRESS_LENGTH else EVM_ADDRESS_LENGTH
     }
 
-    /// For ETH/Solana chains, token balance is in 6 decimals (e.g. USDC), we use value/1000 as bridge amount.
+    /// For ETH/EVM/Solana chains, token balance is in 6 decimals (e.g. USDC), busd decimal is 8,so use value/1000 as bridge amount.
     /// For other chains, use balance value as-is.
+    /// only support busd
     fun get_token_amount_for_target_chain(target_chain: u8, balance_value: u64): u64 {
-        if (target_chain == chain_ids::eth_mainnet() || target_chain == chain_ids::eth_sepolia() || target_chain == chain_ids::eth_custom()) {
+        if (chain_ids::is_evm_l2(target_chain)||chain_ids::is_eth(target_chain)) {
             balance_value / 1000u64
-        } else if (is_solana_chain(target_chain)) {
+        } else if (chain_ids::is_solana(target_chain)) {
             balance_value / 1000u64
         } else {
             balance_value
@@ -3367,10 +3368,11 @@ module bridge::bridge {
 
     /// For ETH/Solana chains, fee is in bridge amount (6 decimals), convert to BUSD by fee*1000.
     /// For other chains, fee is already in BUSD units.
+    /// only support busd
     fun get_fee_busd_for_target_chain(target_chain: u8, fee: u64): u64 {
-        if (target_chain == chain_ids::eth_mainnet() || target_chain == chain_ids::eth_sepolia() || target_chain == chain_ids::eth_custom()) {
+        if (chain_ids::is_evm_l2(target_chain)||chain_ids::is_eth(target_chain)) {
             fee * 1000u64
-        } else if (is_solana_chain(target_chain)) {
+        } else if (chain_ids::is_solana(target_chain)) {
             fee * 1000u64
         } else {
             fee
