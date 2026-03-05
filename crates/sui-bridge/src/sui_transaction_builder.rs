@@ -8,6 +8,7 @@ use sui_types::bridge::{
     BRIDGE_ADD_CENTER_TOKENLIST_FUNCTION_NAME, BRIDGE_ADD_TOKENLIST_FUNCTION_NAME,
     BRIDGE_CREATE_ADD_TOKEN_ON_SUI_MESSAGE_FUNCTION_NAME,
     BRIDGE_EXECUTE_SYSTEM_MESSAGE_FUNCTION_NAME, BRIDGE_MESSAGE_MODULE_NAME, BRIDGE_MODULE_NAME,
+    TOKEN_ID_BUSD,
 };
 use sui_types::transaction::CallArg;
 use sui_types::{
@@ -932,7 +933,7 @@ pub fn build_token_send_back_transaction(
     };
     let mut builder = ProgrammableTransactionBuilder::new();
 
-    let (source_chain, sender, token_type, amount, tx_hash, event_idx) = match action {
+    let (source_chain, sender, token_type, amount, tx_hash, event_idx,target_token_id) = match action {
         BridgeAction::EthToSuiBridgeAction(a) => {
             let bridge_event = a.eth_bridge_event;
             (
@@ -942,6 +943,7 @@ pub fn build_token_send_back_transaction(
                 bridge_event.sui_adjusted_amount,
                 a.eth_tx_hash.as_bytes().to_vec(),
                 a.eth_event_index,
+                bridge_event.target_token_id,
             )
         }
         BridgeAction::SolanaToSuiBridgeAction(a) => {
@@ -953,11 +955,25 @@ pub fn build_token_send_back_transaction(
                 bridge_event.sui_adjusted_amount,
                 a.solana_tx_signature.as_bytes().to_vec(), 
                 a.solana_event_index,
+                bridge_event.target_token_id,
             )
         }
         _ => unreachable!(),
     };
-    info!("send back transaction: source_chain: {:?}, sender: {:?}, token_type: {:?}, amount: {:?}, tx_hash: {:?}, event_idx: {:?}", source_chain, sender, token_type, amount, tx_hash, event_idx);
+    info!("send back transaction: source_chain: {:?}, sender: {:?}, token_type: {:?}, amount: {:?}, tx_hash: {:?}, event_idx: {:?}, target_token_id: {:?}", source_chain, sender, token_type, amount, tx_hash, event_idx, target_token_id);
+    // Add amount normalization logic (use chain_id helpers like is_eth_chain / is_solana_chain)
+    let mut amount = amount;
+    // Use chain_id helper methods directly, such as is_eth_chain and is_solana_chain
+    let is_evm = source_chain.is_evm_chain() && !source_chain.is_eth_chain();
+    let is_solana = source_chain.is_solana_chain();
+    if (is_evm || is_solana) && target_token_id == TOKEN_ID_BUSD {
+        amount = amount.checked_div(1000).ok_or_else(|| {
+            BridgeError::Generic(format!(
+                "Amount division failed: amount = {:?}, target_token_id = {:?}",
+                amount, target_token_id
+            ))
+        })?;
+    }
     // Unwrap: these should not fail
     let arg_bridge = builder.obj(bridge_object_arg).unwrap();
     let source_chain = builder.pure(source_chain as u8).unwrap();
@@ -971,8 +987,6 @@ pub fn build_token_send_back_transaction(
     let amount = builder.pure(amount).unwrap();
     let tx_hash = builder.pure(tx_hash.clone()).unwrap();
     let event_idx = builder.pure(event_idx).unwrap();
-
-    
     
     builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,

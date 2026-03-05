@@ -33,6 +33,7 @@ use tracing::info;
 use tracing::log::error;
 use sui_types::bridge::BridgeChainId;
 use sui_types::bridge::BridgeChainId::SuiMainnet;
+use sui_types::bridge::TOKEN_ID_BUSD;
 use super::governance_verifier::GovernanceVerifier;
 
 #[async_trait]
@@ -405,13 +406,29 @@ where
             }
             // check amount, token_id, target_address
             if let BridgeAction::EthToSuiBridgeAction(ref eth_to_sui_action) = action {
-                if eth_to_sui_action.eth_bridge_event.sui_adjusted_amount
-                    != send_back_action.sui_bridge_event.amount_sui_adjusted
-                {
+                // 与 build_token_send_back_transaction 一致的 decimal 处理：EVM 链且 target 为 BUSD 时 Sui 侧为 amount/1000
+                let expected_amount = {
+                    let chain_id = send_back_action.sui_bridge_event.eth_chain_id;
+                    let target_token_id = eth_to_sui_action.eth_bridge_event.target_token_id;
+                    let is_evm = chain_id.is_evm_chain() && !chain_id.is_eth_chain();
+                    if is_evm && target_token_id == TOKEN_ID_BUSD {
+                        eth_to_sui_action.eth_bridge_event.sui_adjusted_amount
+                            .checked_div(1000)
+                            .ok_or_else(|| {
+                                BridgeError::Generic(format!(
+                                    "Amount division failed: sui_adjusted_amount = {}",
+                                    eth_to_sui_action.eth_bridge_event.sui_adjusted_amount
+                                ))
+                            })?
+                    } else {
+                        eth_to_sui_action.eth_bridge_event.sui_adjusted_amount
+                    }
+                };
+                if expected_amount != send_back_action.sui_bridge_event.amount_sui_adjusted {
                     return Err(BridgeError::Generic(format!(
                         "Amount mismatch: expected {}, got {}",
-                        send_back_action.sui_bridge_event.amount_sui_adjusted,
-                        eth_to_sui_action.eth_bridge_event.sui_adjusted_amount
+                        expected_amount,
+                        send_back_action.sui_bridge_event.amount_sui_adjusted
                     )));
                 }
                 if eth_to_sui_action.eth_bridge_event.token_id
@@ -465,13 +482,31 @@ where
                 )));
             }
             if let BridgeAction::SolanaToSuiBridgeAction(ref solana_to_sui_action) = action {
-                if solana_to_sui_action.solana_bridge_event.sui_adjusted_amount
-                    != send_back_action.sui_bridge_event.amount_sui_adjusted
-                {
+                // 与 build_token_send_back_transaction 一致的 decimal 处理：Solana 且 target 为 BUSD 时 Sui 侧为 amount/1000
+                let expected_amount = {
+                    let target_token_id = solana_to_sui_action.solana_bridge_event.target_token_id;
+                    if send_back_action.sui_bridge_event.solana_chain_id.is_solana_chain()
+                        && target_token_id == TOKEN_ID_BUSD
+                    {
+                        solana_to_sui_action
+                            .solana_bridge_event
+                            .sui_adjusted_amount
+                            .checked_div(1000)
+                            .ok_or_else(|| {
+                                BridgeError::Generic(format!(
+                                    "Amount division failed: sui_adjusted_amount = {}",
+                                    solana_to_sui_action.solana_bridge_event.sui_adjusted_amount
+                                ))
+                            })?
+                    } else {
+                        solana_to_sui_action.solana_bridge_event.sui_adjusted_amount
+                    }
+                };
+                if expected_amount != send_back_action.sui_bridge_event.amount_sui_adjusted {
                     return Err(BridgeError::Generic(format!(
                         "Amount mismatch: expected {}, got {}",
-                        send_back_action.sui_bridge_event.amount_sui_adjusted,
-                        solana_to_sui_action.solana_bridge_event.sui_adjusted_amount
+                        expected_amount,
+                        send_back_action.sui_bridge_event.amount_sui_adjusted
                     )));
                 }
                 if solana_to_sui_action.solana_bridge_event.token_id
