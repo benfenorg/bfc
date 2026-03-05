@@ -43,6 +43,10 @@ title: Module `bridge::bridge`
 -  [Function `init_bridge_committee`](#bridge_bridge_init_bridge_committee)
 -  [Function `migrate`](#bridge_bridge_migrate)
 -  [Function `init_token_list`](#bridge_bridge_init_token_list)
+-  [Function `update_min_limit_cross_out`](#bridge_bridge_update_min_limit_cross_out)
+-  [Function `update_min_limit_cross_in`](#bridge_bridge_update_min_limit_cross_in)
+-  [Function `update_min_fee_cross_out`](#bridge_bridge_update_min_fee_cross_out)
+-  [Function `update_min_fee_cross_in`](#bridge_bridge_update_min_fee_cross_in)
 -  [Function `update_external_out_limit`](#bridge_bridge_update_external_out_limit)
 -  [Function `update_external_24h_limit`](#bridge_bridge_update_external_24h_limit)
 -  [Function `update_defi_protocol_info`](#bridge_bridge_update_defi_protocol_info)
@@ -2799,6 +2803,160 @@ title: Module `bridge::bridge`
     <a href="../bridge/bridge.md#bridge_bridge_ensure_defi_holders_initialized">ensure_defi_holders_initialized</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
     <a href="../bridge/defi_protocols.md#bridge_defi_protocols_registry">defi_protocols::registry</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
     <a href="../bridge/defi_protocols.md#bridge_defi_protocols_initial_defi_protocol">defi_protocols::initial_defi_protocol</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_update_min_limit_cross_out"></a>
+
+## Function `update_min_limit_cross_out`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_min_limit_cross_out">update_min_limit_cross_out</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, bfc_system_state: &<a href="../bfc_system/bfc_system.md#bfc_system_bfc_system_BfcSystemState">bfc_system::bfc_system::BfcSystemState</a>, cap: &<a href="../bfc_system/bfc_system_state_inner.md#bfc_system_bfc_system_state_inner_BfcSystemModifyCap">bfc_system::bfc_system_state_inner::BfcSystemModifyCap</a>, chain: u64, min_limit_cross_out: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_min_limit_cross_out">update_min_limit_cross_out</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &BfcSystemState,
+    cap: &BfcSystemModifyCap,
+    chain: u64,
+    min_limit_cross_out: u64,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> (_,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>assert</b>!(bfc_system_state.verify_capability(cap, ctx), <a href="../bridge/bridge.md#bridge_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>);
+    <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_set_min_limit_cross_out">bridge_min_config::set_min_limit_cross_out</a>(
+        parent_id,
+        chain,
+        min_limit_cross_out
+    );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_update_min_limit_cross_in"></a>
+
+## Function `update_min_limit_cross_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_min_limit_cross_in">update_min_limit_cross_in</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, bfc_system_state: &<a href="../bfc_system/bfc_system.md#bfc_system_bfc_system_BfcSystemState">bfc_system::bfc_system::BfcSystemState</a>, cap: &<a href="../bfc_system/bfc_system_state_inner.md#bfc_system_bfc_system_state_inner_BfcSystemModifyCap">bfc_system::bfc_system_state_inner::BfcSystemModifyCap</a>, chain: u64, min_limit_cross_in: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_min_limit_cross_in">update_min_limit_cross_in</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &BfcSystemState,
+    cap: &BfcSystemModifyCap,
+    chain: u64,
+    min_limit_cross_in: u64,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> (_,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>assert</b>!(bfc_system_state.verify_capability(cap, ctx), <a href="../bridge/bridge.md#bridge_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>);
+    <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_set_min_limit_cross_in">bridge_min_config::set_min_limit_cross_in</a>(
+        parent_id,
+        chain,
+        min_limit_cross_in
+    );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_update_min_fee_cross_out"></a>
+
+## Function `update_min_fee_cross_out`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_min_fee_cross_out">update_min_fee_cross_out</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, bfc_system_state: &<a href="../bfc_system/bfc_system.md#bfc_system_bfc_system_BfcSystemState">bfc_system::bfc_system::BfcSystemState</a>, cap: &<a href="../bfc_system/bfc_system_state_inner.md#bfc_system_bfc_system_state_inner_BfcSystemModifyCap">bfc_system::bfc_system_state_inner::BfcSystemModifyCap</a>, chain: u64, token_id: u64, min_fee_cross_out: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_min_fee_cross_out">update_min_fee_cross_out</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &BfcSystemState,
+    cap: &BfcSystemModifyCap,
+    chain: u64,
+    token_id: u64,
+    min_fee_cross_out: u64,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> (_,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>assert</b>!(bfc_system_state.verify_capability(cap, ctx), <a href="../bridge/bridge.md#bridge_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>);
+    <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_set_min_fee_cross_out">bridge_min_config::set_min_fee_cross_out</a>(
+        parent_id,
+        chain,
+        token_id,
+        min_fee_cross_out,
+        ctx
+    );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_update_min_fee_cross_in"></a>
+
+## Function `update_min_fee_cross_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_min_fee_cross_in">update_min_fee_cross_in</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, bfc_system_state: &<a href="../bfc_system/bfc_system.md#bfc_system_bfc_system_BfcSystemState">bfc_system::bfc_system::BfcSystemState</a>, cap: &<a href="../bfc_system/bfc_system_state_inner.md#bfc_system_bfc_system_state_inner_BfcSystemModifyCap">bfc_system::bfc_system_state_inner::BfcSystemModifyCap</a>, chain: u64, token_id: u64, min_fee_cross_in: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_min_fee_cross_in">update_min_fee_cross_in</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &BfcSystemState,
+    cap: &BfcSystemModifyCap,
+    chain: u64,
+    token_id: u64,
+    min_fee_cross_in: u64,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> (_,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>assert</b>!(bfc_system_state.verify_capability(cap, ctx), <a href="../bridge/bridge.md#bridge_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>);
+    <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_set_min_fee_cross_in">bridge_min_config::set_min_fee_cross_in</a>(
+        parent_id,
+        chain,
+        token_id,
+        min_fee_cross_in,
+        ctx
+    );
 }
 </code></pre>
 

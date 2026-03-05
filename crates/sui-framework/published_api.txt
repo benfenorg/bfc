@@ -7468,6 +7468,18 @@ migrate
 init_token_list
 	public fun
 	0xb::bridge
+update_min_limit_cross_out
+	public fun
+	0xb::bridge
+update_min_limit_cross_in
+	public fun
+	0xb::bridge
+update_min_fee_cross_out
+	public fun
+	0xb::bridge
+update_min_fee_cross_in
+	public fun
+	0xb::bridge
 update_external_out_limit
 	public fun
 	0xb::bridge
