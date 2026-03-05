@@ -122,7 +122,7 @@ pub fn get_test_external_bridge_action(
             target_chain: BridgeChainId::SuiCustom,
             source_address: vec![],
             target_address: recipient_address.to_vec(),
-            amount: 10,
+            amount: 100000,
         },
     })
 }
