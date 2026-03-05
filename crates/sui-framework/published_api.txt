@@ -7225,6 +7225,12 @@ get_cross_out_amount_after_fee
 get_cross_in_amount_after_fee
 	public fun
 	0xb::bridge_fee
+get_fee_info_cross_in
+	public(package) fun
+	0xb::bridge_fee
+get_fee_info_cross_out
+	public(package) fun
+	0xb::bridge_fee
 calculate_cross_out_fee_amount
 	public fun
 	0xb::bridge_fee
@@ -7613,6 +7619,12 @@ get_min_limit_token_amount_cross_out
 	public fun
 	0xb::bridge
 get_min_limit_token_amount_cross_in
+	public fun
+	0xb::bridge
+get_cross_out_fee_info
+	public fun
+	0xb::bridge
+get_cross_in_fee_info
 	public fun
 	0xb::bridge
 get_token_transfer_action_status

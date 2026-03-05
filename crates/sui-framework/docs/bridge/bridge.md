@@ -94,6 +94,8 @@ title: Module `bridge::bridge`
 -  [Function `get_cross_in_fee_amount`](#bridge_bridge_get_cross_in_fee_amount)
 -  [Function `get_min_limit_token_amount_cross_out`](#bridge_bridge_get_min_limit_token_amount_cross_out)
 -  [Function `get_min_limit_token_amount_cross_in`](#bridge_bridge_get_min_limit_token_amount_cross_in)
+-  [Function `get_cross_out_fee_info`](#bridge_bridge_get_cross_out_fee_info)
+-  [Function `get_cross_in_fee_info`](#bridge_bridge_get_cross_in_fee_info)
 -  [Function `get_token_transfer_action_status`](#bridge_bridge_get_token_transfer_action_status)
 -  [Function `get_defi_transfer_action_status`](#bridge_bridge_get_defi_transfer_action_status)
 -  [Function `get_external_token_transfer_action_status`](#bridge_bridge_get_external_token_transfer_action_status)
@@ -5553,6 +5555,68 @@ title: Module `bridge::bridge`
     <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_and_uid">load_inner_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
     <b>let</b> token_id = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.token_id&lt;T&gt;();
     <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_min_limit_token_amount_cross_in">bridge_min_config::get_min_limit_token_amount_cross_in</a>(parent_id, &inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, chain_id, token_id)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_cross_out_fee_info"></a>
+
+## Function `get_cross_out_fee_info`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_cross_out_fee_info">get_cross_out_fee_info</a>&lt;T&gt;(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, chain_id: u64): (u64, u64, u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_cross_out_fee_info">get_cross_out_fee_info</a>&lt;T&gt;(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    chain_id: u64,
+): (u64,u64,u64) {
+    <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_and_uid">load_inner_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> token_id = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.token_id&lt;T&gt;();
+    <b>let</b> (mode,value) = <a href="../bridge/bridge_fee.md#bridge_bridge_fee_get_fee_info_cross_out">bridge_fee::get_fee_info_cross_out</a>(parent_id, chain_id, token_id);
+    <b>let</b> min = <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_min_fee_cross_out">bridge_min_config::get_min_fee_cross_out</a>(parent_id, chain_id, token_id);
+    (mode, value, min)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_cross_in_fee_info"></a>
+
+## Function `get_cross_in_fee_info`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_cross_in_fee_info">get_cross_in_fee_info</a>&lt;T&gt;(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, chain_id: u64): (u64, u64, u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_cross_in_fee_info">get_cross_in_fee_info</a>&lt;T&gt;(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    chain_id: u64,
+): (u64,u64,u64) {
+    <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_and_uid">load_inner_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> token_id = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.token_id&lt;T&gt;();
+    <b>let</b> (mode,value) = <a href="../bridge/bridge_fee.md#bridge_bridge_fee_get_fee_info_cross_in">bridge_fee::get_fee_info_cross_in</a>(parent_id, chain_id, token_id);
+    <b>let</b> min = <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_min_fee_cross_in">bridge_min_config::get_min_fee_cross_in</a>(parent_id, chain_id, token_id);
+    (mode, value, min)
 }
 </code></pre>
 

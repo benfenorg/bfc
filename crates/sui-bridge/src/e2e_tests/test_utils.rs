@@ -2094,8 +2094,8 @@ impl TestClusterWrapperBuilder {
             let token_prices = vec![
                 500_000_000u64,
                 30_000_000u64,
-                1_000u64,
-                1_000u64,
+                1_000_000u64,
+                1_000_000u64,
                 100_000_000u64,
                 100_000_000u64,
             ];
@@ -2600,7 +2600,7 @@ pub async fn initiate_bridge_sui_to_eth(
         );
     } else {
         assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_USDT);
-        if bridge_event.sui_bridge_event.eth_chain_id.is_eth_chain() && original_token_id == TOKEN_ID_BUSD {
+        if bridge_event.sui_bridge_event.eth_chain_id.is_evm_chain() && original_token_id == TOKEN_ID_BUSD {
             assert_eq!(
                 bridge_event.sui_bridge_event.amount_sui_adjusted,
                 sui_amount / 1000 - fee / 1000
