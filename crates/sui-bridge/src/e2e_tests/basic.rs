@@ -4387,7 +4387,7 @@ async fn test_bridge_solana_roundtrip_busd() {
 
     // token_id = 3 是 USDC (在 start_solana_env 中已注册)
     let token_id: u64 = 3;
-    let amount: u64 = 1_000_000; // 1 USDC (6 decimals)
+    let amount: u64 = 50_000_000; // 1 USDC (6 decimals)
 
     let source_token_account = get_associated_token_address(&solana_signer.pubkey(), &usdc_mint);
 
@@ -4910,7 +4910,7 @@ async fn test_bridge_solana_roundtrip_usdc() {
 
     // token_id = 3 是 USDC (在 start_solana_env 中已注册)
     let token_id: u64 = 3;
-    let amount: u64 = 1_000_000; // 1 USDC (6 decimals)
+    let amount: u64 = 10_000_000; // 1 USDC (6 decimals)
 
     let source_token_account = get_associated_token_address(&solana_signer.pubkey(), &usdc_mint);
 
