@@ -537,6 +537,84 @@ module bridge::bridge {
         defi_protocols::initial_defi_protocol(&mut bridge.id);
     }
 
+    // set_min_limit_cross_out
+    public fun update_min_limit_cross_out(
+        bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
+        cap: &BfcSystemModifyCap,
+        chain: u64,
+        min_limit_cross_out: u64,
+        ctx: &mut TxContext,
+    ) {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
+        bridge_min_config::set_min_limit_cross_out(
+            parent_id,
+            chain,
+            min_limit_cross_out
+        );
+    }
+
+    // set_min_limit_cross_in
+    public fun update_min_limit_cross_in(
+        bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
+        cap: &BfcSystemModifyCap,
+        chain: u64,
+        min_limit_cross_in: u64,
+        ctx: &mut TxContext,
+    ) {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
+        bridge_min_config::set_min_limit_cross_in(
+            parent_id,
+            chain,
+            min_limit_cross_in
+        );
+    }
+
+    // set_min_fee_cross_out
+    public fun update_min_fee_cross_out(
+        bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
+        cap: &BfcSystemModifyCap,
+        chain: u64,
+        token_id: u64,
+        min_fee_cross_out: u64,
+        ctx: &mut TxContext,
+    ) {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
+        bridge_min_config::set_min_fee_cross_out(
+            parent_id,
+            chain,
+            token_id,
+            min_fee_cross_out,
+            ctx
+        );
+    }
+
+    // set_min_fee_cross_in
+    public fun update_min_fee_cross_in(
+        bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
+        cap: &BfcSystemModifyCap,
+        chain: u64,
+        token_id: u64,
+        min_fee_cross_in: u64,
+        ctx: &mut TxContext,
+    ) {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
+        bridge_min_config::set_min_fee_cross_in(
+            parent_id,
+            chain,
+            token_id,
+            min_fee_cross_in,
+            ctx
+        );
+    }
+
     public fun update_external_out_limit(
         bridge: &mut Bridge,
         bfc_system_state: &BfcSystemState,

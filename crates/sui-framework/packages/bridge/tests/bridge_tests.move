@@ -34,6 +34,7 @@ use bridge::bridge_env::{
     create_env,
     create_validator,
     eth_id,
+    usdc_id,
     freeze_bridge,
     init_committee,
     register_committee,
@@ -73,7 +74,6 @@ use bfc_system::busd::BUSD;
 use bridge::busd::BUSD as BUSDFAKER;
 use bridge::bridge_fee;
 use bridge::bridge::test_load_mut_uid;
-
 
 use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
 use bridge::bridge_env::get_usdc;
@@ -246,6 +246,182 @@ fun test_initial_min_fee_limits_applied() {
     assert!(bridge::bridge_min_config::get_min_fee_cross_out(uid, sol, usdc) == 500_000);
     assert!(bridge::bridge_min_config::get_min_limit_cross_out(uid, tron) == 1_000_000_000);
     assert!(bridge::bridge_min_config::get_min_limit_cross_in(uid, tron) == 0);
+    bridge.return_bridge();
+    env.destroy_env();
+}
+
+#[test]
+fun test_update_min_limit_cross_out() {
+    let source_chain = chain_ids::sui_custom();
+    let target_chain = chain_ids::eth_custom() as u64;
+
+    let mut env = create_env(source_chain);
+    env.create_bridge_default();
+
+    let scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+
+    let mut bridge = env.bridge(@0x0);
+    {
+        let uid = bridge.bridge_ref_mut().test_load_mut_uid();
+        if (!bridge::bridge_min_config::exists(uid)) {
+            bridge::bridge_min_config::new_bridge_min_config_registry(uid, env.ctx());
+        };
+    };
+
+    let expected = 123_456u64;
+    bridge.bridge_ref_mut().update_min_limit_cross_out(
+        &bfc_system_state,
+        &cap,
+        target_chain,
+        expected,
+        env.ctx(),
+    );
+
+    let actual = {
+        let uid = bridge.bridge_ref_mut().test_load_mut_uid();
+        bridge::bridge_min_config::get_min_limit_cross_out(uid, target_chain)
+    };
+    assert_eq!(actual, expected);
+
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+
+    bridge.return_bridge();
+    env.destroy_env();
+}
+
+#[test]
+fun test_update_min_limit_cross_in() {
+    let source_chain = chain_ids::sui_custom();
+    let target_chain = chain_ids::eth_custom() as u64;
+
+    let mut env = create_env(source_chain);
+    env.create_bridge_default();
+
+    let scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+
+    let mut bridge = env.bridge(@0x0);
+    {
+        let uid = bridge.bridge_ref_mut().test_load_mut_uid();
+        if (!bridge::bridge_min_config::exists(uid)) {
+            bridge::bridge_min_config::new_bridge_min_config_registry(uid, env.ctx());
+        };
+    };
+
+    let expected = 654_321u64;
+    bridge.bridge_ref_mut().update_min_limit_cross_in(
+        &bfc_system_state,
+        &cap,
+        target_chain,
+        expected,
+        env.ctx(),
+    );
+
+    let actual = {
+        let uid = bridge.bridge_ref_mut().test_load_mut_uid();
+        bridge::bridge_min_config::get_min_limit_cross_in(uid, target_chain)
+    };
+    assert_eq!(actual, expected);
+
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+
+    bridge.return_bridge();
+    env.destroy_env();
+}
+
+#[test]
+fun test_update_min_fee_cross_out() {
+    let source_chain = chain_ids::sui_custom();
+    let target_chain = chain_ids::eth_custom() as u64;
+    let token_id = usdc_id();
+
+    let mut env = create_env(source_chain);
+    env.create_bridge_default();
+
+    let scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+
+    let mut bridge = env.bridge(@0x0);
+    {
+        let uid = bridge.bridge_ref_mut().test_load_mut_uid();
+        if (!bridge::bridge_min_config::exists(uid)) {
+            bridge::bridge_min_config::new_bridge_min_config_registry(uid, env.ctx());
+        };
+    };
+
+    let expected = 77_000u64;
+    bridge.bridge_ref_mut().update_min_fee_cross_out(
+        &bfc_system_state,
+        &cap,
+        target_chain,
+        token_id,
+        expected,
+        env.ctx(),
+    );
+
+    let actual = {
+        let uid = bridge.bridge_ref_mut().test_load_mut_uid();
+        bridge::bridge_min_config::get_min_fee_cross_out(uid, target_chain, token_id)
+    };
+    assert_eq!(actual, expected);
+
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+
+    bridge.return_bridge();
+    env.destroy_env();
+}
+
+#[test]
+fun test_update_min_fee_cross_in() {
+    let source_chain = chain_ids::sui_custom();
+    let target_chain = chain_ids::eth_custom() as u64;
+    let token_id = usdc_id();
+
+    let mut env = create_env(source_chain);
+    env.create_bridge_default();
+
+    let scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);
+    let bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
+    let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
+
+    let mut bridge = env.bridge(@0x0);
+    {
+        let uid = bridge.bridge_ref_mut().test_load_mut_uid();
+        if (!bridge::bridge_min_config::exists(uid)) {
+            bridge::bridge_min_config::new_bridge_min_config_registry(uid, env.ctx());
+        };
+    };
+
+    let expected = 88_000u64;
+    bridge.bridge_ref_mut().update_min_fee_cross_in(
+        &bfc_system_state,
+        &cap,
+        target_chain,
+        token_id,
+        expected,
+        env.ctx(),
+    );
+
+    let actual = {
+        let uid = bridge.bridge_ref_mut().test_load_mut_uid();
+        bridge::bridge_min_config::get_min_fee_cross_in(uid, target_chain, token_id)
+    };
+    assert_eq!(actual, expected);
+
+    sui::test_scenario::return_shared(bfc_system_state);
+    sui::test_scenario::return_to_sender(&scenario, cap);
+    sui::test_scenario::end(scenario);
+
     bridge.return_bridge();
     env.destroy_env();
 }
