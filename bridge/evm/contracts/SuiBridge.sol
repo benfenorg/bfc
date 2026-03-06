@@ -111,7 +111,43 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 tokenTransferPayload.senderAddress,
                 tokenTransferPayload.recipientAddress
             );
-        }else {
+        }else if (message.version==3) {
+             BridgeUtils.TokenTransferPayloadV2 memory tokenTransferPayload =
+            BridgeUtils.decodeTokenTransferPayloadV2(message.payload);
+
+            // verify target chain ID is this chain ID
+            require(
+                tokenTransferPayload.targetChain == config.chainID(), "SuiBridge: Invalid target chain"
+            );
+
+            // convert amount to ERC20 token decimals
+            uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
+                IERC20Metadata(config.tokenAddressOf(tokenTransferPayload.tokenID)).decimals(),
+                config.tokenSuiDecimalOf(tokenTransferPayload.tokenID),
+                tokenTransferPayload.amount
+            );
+
+            // mark message as processed
+            isTransferProcessed[message.nonce] = true;
+
+            _transferTokensFromVault(
+                message.chainID,
+                tokenTransferPayload.tokenID,
+                tokenTransferPayload.recipientAddress,
+                erc20AdjustedAmount
+            );
+
+
+            emit TokensClaimed(
+                message.chainID,
+                message.nonce,
+                config.chainID(),
+                tokenTransferPayload.tokenID,
+                erc20AdjustedAmount,
+                tokenTransferPayload.senderAddress,
+                tokenTransferPayload.recipientAddress
+            );
+        }else{
 
             BridgeUtils.TokenTransferPayloadV2 memory tokenTransferPayload =
             BridgeUtils.decodeTokenTransferPayloadV2(message.payload);
@@ -124,7 +160,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             // convert amount to ERC20 token decimals
             uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
                 IERC20Metadata(config.tokenAddressOf(tokenTransferPayload.tokenID)).decimals(),
-                config.tokenSuiDecimalOf(tokenTransferPayload.tokenID),
+                config.tokenOriginalDecimalOf(tokenTransferPayload.tokenID),
                 tokenTransferPayload.amount
             );
 
@@ -544,20 +580,28 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
     /// @param tokenID The ID of the token being transferred.
     /// @param amount The amount of tokens being transferred.
     modifier limitNotExceeded(uint8 chainID, uint64 tokenID, uint256 amount) {
+        _checkLimitNotExceeded(chainID, tokenID, amount);
+        _;
+    }
+
+    function _checkLimitNotExceeded(uint8 chainID, uint64 tokenID, uint256 amount) internal view {
         require(
             !limiter.willAmountExceedLimit(chainID, tokenID, amount),
             "SuiBridge: Amount exceeds bridge limit"
         );
-        _;
     }
 
     /// @dev Requires the target chain ID is supported.
     /// @param targetChainID The ID of the target chain.
     modifier onlySupportedChain(uint8 targetChainID) {
+        _checkSupportedChain(targetChainID);
+        _;
+    }
+
+    function _checkSupportedChain(uint8 targetChainID) internal view {
         require(
             committee.config().isChainSupported(targetChainID),
             "SuiBridge: Target chain not supported"
         );
-        _;
     }
 }
