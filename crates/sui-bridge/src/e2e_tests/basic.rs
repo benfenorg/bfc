@@ -4003,7 +4003,7 @@ async fn test_add_refund_admin_and_bridge_from_solana() {
 
     let payload_bytes = bridge_action.as_payload_bytes();
     let message_type = BridgeActionType::TokenTransfer as u8;
-    let message_version = 3u8; // TOKEN_TRANSFER_MESSAGE_VERSION_V3
+    let message_version = 4u8; // TOKEN_TRANSFER_MESSAGE_VERSION_V3, must match bridge.move MESSAGE_VERSION_V3
 
     info!(
         "Building cross_out instruction: chain_id={}, nonce={}, message_type={}, version={}, payload_len={}",
@@ -4798,7 +4798,7 @@ async fn test_bridge_solana_roundtrip_busd() {
     
     let payload_bytes = bridge_action.as_payload_bytes();
     let message_type = BridgeActionType::TokenTransfer as u8;
-    let message_version = 3u8; // TOKEN_TRANSFER_MESSAGE_VERSION_V3
+    let message_version = 4u8; // TOKEN_TRANSFER_MESSAGE_VERSION_V3, must match bridge.move MESSAGE_VERSION_V3
     
     info!(
         "Building cross_out instruction: chain_id={}, nonce={}, message_type={}, version={}, payload_len={}",
