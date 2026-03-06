@@ -56,7 +56,7 @@ module bridge::bridge {
 
     const MESSAGE_VERSION: u8 = 1;
     const MESSAGE_VERSION_V2: u8 = 2;
-    const MESSAGE_VERSION_V3: u8 = 3;
+    const MESSAGE_VERSION_V3: u8 = 4;
     const MESSAGE_VERSION_DEFI_OUT: u8 = 1;
     const MESSAGE_VERSION_DEFI_IN: u8 = 1;
 

@@ -2575,7 +2575,7 @@ title: Module `bridge::bridge`
 
 
 
-<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION_V3">MESSAGE_VERSION_V3</a>: u8 = 3;
+<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION_V3">MESSAGE_VERSION_V3</a>: u8 = 4;
 </code></pre>
 
 
