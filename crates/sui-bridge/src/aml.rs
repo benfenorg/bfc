@@ -81,6 +81,7 @@ pub async fn check_aml_risk_score(
     aml_key: String,
     aml_block_list: Vec<String>,
 ) -> bool {
+    info!("[DEBUG] check_aml_risk_score: aml_block_list: {:?} solana_address: {}", aml_block_list, &eth_address.to_string().to_lowercase());
     if aml_block_list.contains(&eth_address.to_string().to_lowercase()) {
         return false;
     }
