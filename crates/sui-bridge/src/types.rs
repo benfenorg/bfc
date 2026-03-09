@@ -253,6 +253,11 @@ pub enum BridgeActionType {
     AddTokensOnSolana = 30,
     ExtendProgramOnSolana = 31,
     UpgradeProgramOnSolana = 32,
+
+    // Update bridge fee info
+    UpdateFeeInfo = 33,
+    // Update single min transfer limit
+    SingleMinTransferLimitUpdate=34,
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -525,6 +530,30 @@ pub struct SingleTransferLimitUpdateAction {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct SingleMinTransferLimitUpdateAction {
+    pub nonce: u64,
+    // The chain id that will receive this signed action. It's also the destination chain id
+    // for the limit update. For example, if chain_id is EthMainnet and sending_chain_id is SuiMainnet,
+    // it means we want to update the limit for the SuiMainnet to EthMainnet route.
+    pub chain_id: BridgeChainId,
+    // The sending chain id for the limit update.
+    pub sending_chain_id: BridgeChainId,
+    // 4 decimal places, namely 1 USD = 10000
+    pub new_usd_limit: u64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct BridgeFeeInfoUpdateAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub sending_chain_id: BridgeChainId,
+    pub token_id: u64,
+    pub mode: u8,
+    pub value: u64,
+    pub min_fee: u64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct UpdateInvestAddressAction {
     pub nonce: u64,
     pub chain_id: BridgeChainId,
@@ -729,6 +758,7 @@ pub enum BridgeAction {
     EmergencyAction(EmergencyAction),
     LimitUpdateAction(LimitUpdateAction),
     SingleTransferLimitUpdateAction(SingleTransferLimitUpdateAction),
+    SingleMinTransferLimitUpdateAction(SingleMinTransferLimitUpdateAction),
     AssetPriceUpdateAction(AssetPriceUpdateAction),
     EvmContractUpgradeAction(EvmContractUpgradeAction),
     AddExternalCoinAdminAction(AddExternalCoinAdminAction),
@@ -751,6 +781,7 @@ pub enum BridgeAction {
     SolanaToSuiBridgeAction(SolanaToSuiBridgeAction),
     ExtendProgramOnSolanaAction(ExtendProgramOnSolanaAction),
     UpgradeProgramOnSolanaAction(UpgradeProgramOnSolanaAction),
+    BridgeFeeInfoUpdateAction(BridgeFeeInfoUpdateAction),
 }
 
 impl BridgeAction {
@@ -783,6 +814,8 @@ impl BridgeAction {
             BridgeAction::EmergencyAction(a) => a.chain_id,
             BridgeAction::LimitUpdateAction(a) => a.chain_id,
             BridgeAction::SingleTransferLimitUpdateAction(a)=>a.chain_id,
+            BridgeAction::SingleMinTransferLimitUpdateAction(a)=>a.chain_id,
+            BridgeAction::BridgeFeeInfoUpdateAction(a)=>a.chain_id,
             BridgeAction::AssetPriceUpdateAction(a) => a.chain_id,
             BridgeAction::EvmContractUpgradeAction(a) => a.chain_id,
             BridgeAction::AddExternalCoinAdminAction(a) => a.chain_id,
@@ -817,6 +850,7 @@ impl BridgeAction {
             BridgeActionType::EmergencyButton => true,
             BridgeActionType::LimitUpdate => true,
             BridgeActionType::SingleTransferLimitUpdate => true,
+            BridgeActionType::SingleMinTransferLimitUpdate => true,
             BridgeActionType::AssetPriceUpdate => true,
             BridgeActionType::EvmContractUpgrade => true,
             BridgeActionType::AddExternalCoinAdmin => true,
@@ -839,6 +873,7 @@ impl BridgeAction {
             BridgeActionType::AddLpTokenId => true,
             BridgeActionType::ExtendProgramOnSolana => true,
             BridgeActionType::UpgradeProgramOnSolana => true,
+            BridgeActionType::UpdateFeeInfo => true,
         }
     }
 
@@ -857,6 +892,7 @@ impl BridgeAction {
             BridgeAction::EmergencyAction(_) => BridgeActionType::EmergencyButton,
             BridgeAction::LimitUpdateAction(_) => BridgeActionType::LimitUpdate,
             BridgeAction::SingleTransferLimitUpdateAction(_) => BridgeActionType::SingleTransferLimitUpdate,
+            BridgeAction::SingleMinTransferLimitUpdateAction(_) => BridgeActionType::SingleMinTransferLimitUpdate,
             BridgeAction::AssetPriceUpdateAction(_) => BridgeActionType::AssetPriceUpdate,
             BridgeAction::EvmContractUpgradeAction(_) => BridgeActionType::EvmContractUpgrade,
             BridgeAction::AddExternalCoinAdminAction(_) => BridgeActionType::AddExternalCoinAdmin,
@@ -880,6 +916,7 @@ impl BridgeAction {
             BridgeAction::AddLpTokenIdAction(_) => BridgeActionType::AddLpTokenId,
             BridgeAction::ExtendProgramOnSolanaAction(_) => BridgeActionType::ExtendProgramOnSolana,
             BridgeAction::UpgradeProgramOnSolanaAction(_) => BridgeActionType::UpgradeProgramOnSolana,
+            BridgeAction::BridgeFeeInfoUpdateAction(_) => BridgeActionType::UpdateFeeInfo,
         }
     }
 
@@ -898,6 +935,8 @@ impl BridgeAction {
             BridgeAction::EmergencyAction(a) => a.nonce,
             BridgeAction::LimitUpdateAction(a) => a.nonce,
             BridgeAction::SingleTransferLimitUpdateAction(a) =>a.nonce,
+            BridgeAction::SingleMinTransferLimitUpdateAction(a) =>a.nonce,
+            BridgeAction::BridgeFeeInfoUpdateAction(a) =>a.nonce,
             BridgeAction::AssetPriceUpdateAction(a) => a.nonce,
             BridgeAction::EvmContractUpgradeAction(a) => a.nonce,
             BridgeAction::AddExternalCoinAdminAction(a) => a.nonce,
@@ -941,6 +980,7 @@ impl BridgeAction {
             },
             BridgeAction::LimitUpdateAction(_) => APPROVAL_THRESHOLD_LIMIT_UPDATE,
             BridgeAction::SingleTransferLimitUpdateAction(_) => APPROVAL_THRESHOLD_SINGLE_TRANSFER_LIMIT_UPDATE,
+            BridgeAction::SingleMinTransferLimitUpdateAction(_) => APPROVAL_THRESHOLD_SINGLE_TRANSFER_LIMIT_UPDATE,
             BridgeAction::AssetPriceUpdateAction(_) => APPROVAL_THRESHOLD_ASSET_PRICE_UPDATE,
             BridgeAction::EvmContractUpgradeAction(_) => APPROVAL_THRESHOLD_EVM_CONTRACT_UPGRADE,
             BridgeAction::AddExternalCoinAdminAction(_) => APPROVAL_THRESHOLD_EXTERNAL_COIN_ADMIN,
@@ -964,6 +1004,7 @@ impl BridgeAction {
             BridgeAction::AddLpTokenIdAction(_) => APPROVAL_THRESHOLD_ADD_LP_TOKEN_ID,
             BridgeAction::ExtendProgramOnSolanaAction(_) => APPROVAL_THRESHOLD_EXTEND_PROGRAM_ON_SOLANA,
             BridgeAction::UpgradeProgramOnSolanaAction(_) => APPROVAL_THRESHOLD_UPGRADE_PROGRAM_ON_SOLANA,
+            BridgeAction::BridgeFeeInfoUpdateAction(_) => APPROVAL_THRESHOLD_SET_CROSS_OUT_BRIDGE_FEE,
         }
     }
 

@@ -80,6 +80,8 @@ use spl_token;
 
 use crate::types::{
     AddExternalCoinAdminAction, AddExternalCoinTargetAction, AddExternalCoinWitnessAction, AddLpTokenIdAction, AddTokenOnSolanaAction, AddTokenOnTokenListAction, AddTokensOnEvmAction, BridgeAction, RefundAdminAction, RemoveExternalCoinAdminAction, RemoveExternalCoinTargetAction, RemoveExternalCoinWitnessAction, RemoveTokenOnTokenListAction, SingleTransferLimitUpdateAction, UpdateBridgeFeeOnCrossInAction, UpdateBridgeFeeOnCrossOutAction, UpdateInvestAddressAction, WithdrawBridgeFeeAction,
+    SingleMinTransferLimitUpdateAction,
+    BridgeFeeInfoUpdateAction,
     LimitUpdateAction,AssetPriceUpdateAction,
     ExtendProgramOnSolanaAction,
     BlocklistCommitteeAction,
@@ -1579,6 +1581,277 @@ async fn test_remove_token_on_token_list() {
     let effects = response.effects.unwrap();
     assert_eq!(effects.status(), &SuiExecutionStatus::Success);
 }
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn test_set_bridge_fee_on_solana() {
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_solana_env(true)
+        .with_solana_chain_id(BridgeChainId::SolanaTestnet)
+        .with_bridge_cluster(false)
+        .with_num_validators(3) 
+        .build()
+        .await;
+    let env=bridge_test_cluster
+        .solana_env();
+    let solana_signer = env.get_signer().await.expect("Failed to get solana signer");
+
+    let client=env.client.clone();
+
+    let token_id=3;
+    let mode=1;
+    let value=100000;
+    let min_fee=500000;
+
+
+     let solana_action =
+        BridgeAction::BridgeFeeInfoUpdateAction(BridgeFeeInfoUpdateAction {
+            nonce: 0,
+            chain_id: BridgeChainId::SolanaTestnet,
+            sending_chain_id: BridgeChainId::SuiCustom,
+            token_id,
+            mode,
+            value,
+            min_fee,
+        });
+
+     bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![solana_action.clone(), solana_action.clone()],
+        vec![solana_action.clone()],
+        vec![solana_action.clone()],
+    ]);
+
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee"),
+    );
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_solana_action = agg
+        .request_committee_signatures(solana_action)
+        .await
+        .expect("Failed to request committee signatures for update single limit action");
+
+    let program = Arc::new(client.program(benfen_bridge::ID).expect("Failed to get program"));
+
+    let single_transfer_action=build_solana_transaction(
+        program.clone(),
+        BridgeChainId::SolanaTestnet,
+        BridgeChainId::SuiCustom,
+        &solana_signer,
+        certified_solana_action,
+    ).await.expect("Failed to build solana transaction");
+
+
+    let signature = program
+        .request()
+        .instruction(single_transfer_action)
+        .signer(solana_signer.clone())
+        .send()
+        .await.expect("Failed to send and confirm transaction");
+
+    info!("update single transfer limit signature: {:?}", signature);
+
+
+    let fee_info_account = query_solana_account::get_bridge_fee_info_account(
+        program.clone().id(), 
+        BridgeChainId::SuiCustom as u8, 
+        3, 
+        BridgeActionType::UpdateFeeInfo as u8,
+    );
+
+
+    // //Verify
+    // let chain_limit_pda = query_solana_account::get_chain_limit_pda(program.clone().id(),  BridgeChainId::SuiCustom as u8);
+
+     let token_account = program
+        .account::<TokenConfigAccount>(fee_info_account.token_config)
+        .await.expect("Failed to get token config account");
+
+    let amount=token_account.min_fee_value;
+    let rmode =token_account.mode;
+
+    assert_eq!(amount, min_fee);
+    assert_eq!(mode, rmode);
+
+
+
+}
+
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn test_set_bridge_fee_on_eth() {
+    telemetry_subscribers::init_for_testing();
+     let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_eth_env(true)
+        .with_bridge_cluster(false)
+        .with_num_validators(3)
+        .build()
+        .await;
+
+    let token_id=3;
+    let mode=0;
+    let value=100000;
+    let min_fee=500000;
+
+     let eth_action =
+        BridgeAction::BridgeFeeInfoUpdateAction(BridgeFeeInfoUpdateAction {
+            nonce: 0,
+            chain_id: BridgeChainId::EthCustom,
+            sending_chain_id: BridgeChainId::SuiCustom,
+            token_id,
+            mode,
+            value,
+            min_fee,
+        });
+
+    let remove_action = BridgeAction::RemoveTokenOnTokenListAction(RemoveTokenOnTokenListAction {
+        nonce: 0,
+        chain_id: BridgeChainId::SuiCustom,
+        from_chain_id: BridgeChainId::SuiCustom,
+        to_chain_id: BridgeChainId::ArbCustom,
+        token_id: 11,
+    });
+
+    info!("Starting bridge cluster");
+
+     bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![eth_action.clone(), remove_action.clone()],
+        vec![eth_action.clone()],
+        vec![remove_action.clone()],
+    ]);
+
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+
+    info!("Bridge cluster is up");
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee BridgeFeeInfoUpdateAction"),
+    );
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_eth_action = agg
+        .request_committee_signatures(eth_action)
+        .await
+        .expect("Failed to request committee signatures for BridgeFeeInfoUpdateAction");
+
+    let config_address = bridge_test_cluster.contracts().bridge_config;
+    let eth_signer = bridge_test_cluster.get_eth_signer().await;
+    let eth_call = build_eth_transaction(config_address, eth_signer, certified_eth_action)
+        .await
+        .unwrap();
+    let eth_receipt = send_eth_tx_and_get_tx_receipt(eth_call).await;
+    assert_eq!(eth_receipt.status.unwrap().as_u64(), 1);
+
+    //Verify
+    let rmode = bridge_test_cluster
+        .eth_env()
+        .get_bridge_fee_info_of_mode(token_id)
+        .await;
+
+    let rvalue = bridge_test_cluster
+        .eth_env()
+        .get_bridge_fee_info_of_value(token_id)
+        .await;
+
+    let rmin_fee = bridge_test_cluster
+        .eth_env()
+        .get_bridge_fee_info_of_min_fee_value(token_id)
+        .await;
+
+    assert_eq!(rmode, mode);
+    assert_eq!(rvalue, value);
+    assert_eq!(rmin_fee, min_fee);
+
+}
+
+
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn test_set_min_single_transfer_limit_on_eth() {
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_eth_env(true)
+        .with_bridge_cluster(false)
+        .with_num_validators(3)
+        .build()
+        .await;
+    let limit = 80_000_000_000;
+
+    let eth_action =
+        BridgeAction::SingleMinTransferLimitUpdateAction(SingleMinTransferLimitUpdateAction {
+            nonce: 0,
+            chain_id: BridgeChainId::EthCustom,
+            sending_chain_id: BridgeChainId::SuiCustom,
+            new_usd_limit: limit,
+        });
+
+    let remove_action = BridgeAction::RemoveTokenOnTokenListAction(RemoveTokenOnTokenListAction {
+        nonce: 0,
+        chain_id: BridgeChainId::SuiCustom,
+        from_chain_id: BridgeChainId::SuiCustom,
+        to_chain_id: BridgeChainId::ArbCustom,
+        token_id: 11,
+    });
+
+    info!("Starting bridge cluster");
+
+    bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![eth_action.clone(), remove_action.clone()],
+        vec![eth_action.clone()],
+        vec![remove_action.clone()],
+    ]);
+
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee SingleTransferLimitUpdateAction"),
+    );
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_eth_action = agg
+        .request_committee_signatures(eth_action)
+        .await
+        .expect("Failed to request committee signatures for SingleTransferLimitUpdateAction");
+
+    let config_address = bridge_test_cluster.contracts().bridge_limiter;
+    let eth_signer = bridge_test_cluster.get_eth_signer().await;
+    let eth_call = build_eth_transaction(config_address, eth_signer, certified_eth_action)
+        .await
+        .unwrap();
+    let eth_receipt = send_eth_tx_and_get_tx_receipt(eth_call).await;
+    assert_eq!(eth_receipt.status.unwrap().as_u64(), 1);
+
+    //Verify
+    let amount = bridge_test_cluster
+        .eth_env()
+        .get_single_min_transfer_limit()
+        .await;
+
+    assert_eq!(amount, limit);
+
+}
+
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn test_set_single_transfer_limit_on_eth() {
@@ -1953,6 +2226,90 @@ async fn test_puase_bridge_on_solana(){
     assert_eq!(program_size+(size as u64), new_program_size);
  }
 
+
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+async fn test_update_min_single_limit_on_solana(){
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_solana_env(true)
+        .with_solana_chain_id(BridgeChainId::SolanaTestnet)
+        .with_bridge_cluster(false)
+        .with_num_validators(3) 
+        .build()
+        .await;
+    let env=bridge_test_cluster
+        .solana_env();
+    let solana_signer = env.get_signer().await.expect("Failed to get solana signer");
+
+    let client=env.client.clone();
+
+    // 100000
+    let limit=100_000*100_000_000;
+    let update_single_limit_action = BridgeAction::SingleMinTransferLimitUpdateAction(SingleMinTransferLimitUpdateAction {
+        nonce: 0,
+        chain_id: BridgeChainId::SolanaTestnet,
+        sending_chain_id: BridgeChainId::SuiCustom,
+        new_usd_limit: limit,
+    });
+
+     bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![update_single_limit_action.clone(), update_single_limit_action.clone()],
+        vec![update_single_limit_action.clone()],
+        vec![update_single_limit_action.clone()],
+    ]);
+
+    bridge_test_cluster.start_bridge_cluster(false,false,true,vec![]).await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee"),
+    );
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_solana_action = agg
+        .request_committee_signatures(update_single_limit_action)
+        .await
+        .expect("Failed to request committee signatures for update single limit action");
+
+    let program = Arc::new(client.program(benfen_bridge::ID).expect("Failed to get program"));
+
+    let single_transfer_action=build_solana_transaction(
+        program.clone(),
+        BridgeChainId::SolanaTestnet,
+        BridgeChainId::SuiCustom,
+        &solana_signer,
+        certified_solana_action,
+    ).await.expect("Failed to build solana transaction");
+
+
+    let signature = program
+        .request()
+        .instruction(single_transfer_action)
+        .signer(solana_signer.clone())
+        .send()
+        .await.expect("Failed to send and confirm transaction");
+
+    info!("update single transfer limit signature: {:?}", signature);
+
+
+    //Verify
+    let chain_limit_pda = query_solana_account::get_chain_limit_pda(program.clone().id(),  BridgeChainId::SuiCustom as u8);
+
+     let limit_account = program
+        .account::<ChainLimit>(chain_limit_pda)
+        .await.expect("Failed to get chain limit account");
+
+    let amount=limit_account.min_usd_limit;
+
+    assert_eq!(amount, limit);
+}
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_update_single_limit_on_solana(){
     telemetry_subscribers::init_for_testing();
@@ -4003,7 +4360,7 @@ async fn test_add_refund_admin_and_bridge_from_solana() {
 
     let payload_bytes = bridge_action.as_payload_bytes();
     let message_type = BridgeActionType::TokenTransfer as u8;
-    let message_version = 3u8; // TOKEN_TRANSFER_MESSAGE_VERSION_V3
+    let message_version = 4u8; // TOKEN_TRANSFER_MESSAGE_VERSION_V3, must match bridge.move MESSAGE_VERSION_V3
 
     info!(
         "Building cross_out instruction: chain_id={}, nonce={}, message_type={}, version={}, payload_len={}",
@@ -4387,7 +4744,7 @@ async fn test_bridge_solana_roundtrip_busd() {
 
     // token_id = 3 是 USDC (在 start_solana_env 中已注册)
     let token_id: u64 = 3;
-    let amount: u64 = 1_000_000; // 1 USDC (6 decimals)
+    let amount: u64 = 50_000_000; // 1 USDC (6 decimals)
 
     let source_token_account = get_associated_token_address(&solana_signer.pubkey(), &usdc_mint);
 
@@ -4798,7 +5155,7 @@ async fn test_bridge_solana_roundtrip_busd() {
     
     let payload_bytes = bridge_action.as_payload_bytes();
     let message_type = BridgeActionType::TokenTransfer as u8;
-    let message_version = 3u8; // TOKEN_TRANSFER_MESSAGE_VERSION_V3
+    let message_version = 4u8; // TOKEN_TRANSFER_MESSAGE_VERSION_V3, must match bridge.move MESSAGE_VERSION_V3
     
     info!(
         "Building cross_out instruction: chain_id={}, nonce={}, message_type={}, version={}, payload_len={}",
@@ -4910,7 +5267,7 @@ async fn test_bridge_solana_roundtrip_usdc() {
 
     // token_id = 3 是 USDC (在 start_solana_env 中已注册)
     let token_id: u64 = 3;
-    let amount: u64 = 1_000_000; // 1 USDC (6 decimals)
+    let amount: u64 = 10_000_000; // 1 USDC (6 decimals)
 
     let source_token_account = get_associated_token_address(&solana_signer.pubkey(), &usdc_mint);
 

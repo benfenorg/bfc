@@ -263,6 +263,27 @@ module bridge::bridge_fee{
         }
     }
 
+    public(package) fun get_fee_info_cross_in(
+        parent_id: &UID,
+        chain_id: u64,
+        token_id: u64,
+    ): (u64,u64){
+        let self = borrow(parent_id);
+        let fee_info= get_fee_info_to_benfen(self, chain_id, token_id);
+        (fee_info.mode,fee_info.value)
+    }
+
+
+    public(package) fun get_fee_info_cross_out(
+        parent_id: &UID,
+        chain_id: u64,
+        token_id: u64,
+    ): (u64,u64){
+        let self = borrow(parent_id);
+        let fee_info=get_fee_info_from_benfen(self, chain_id, token_id);
+        (fee_info.mode,fee_info.value)
+    }
+
 
     public fun calculate_cross_out_fee_amount(
         parent_id: &UID,
@@ -285,6 +306,7 @@ module bridge::bridge_fee{
         };
         0
     }
+
 
      public fun calculate_cross_in_fee_amount(
         parent_id: &UID,
@@ -390,6 +412,7 @@ module bridge::bridge_fee{
         };
         true
     }
+    
 
     fun get_fee_info_from_benfen(self :&BridgeFee,chain_id: u64, token_id: u64): FeeInfo{
          if (!self.from_benfen.contains(chain_id)) {

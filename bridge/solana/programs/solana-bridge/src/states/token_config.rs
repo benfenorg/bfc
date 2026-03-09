@@ -18,7 +18,13 @@ pub struct TokenConfigAccount {
     pub benfen_decimal: u8, // benfen decimal
     pub is_native: u8, //0: false, 1: true
     pub original_decimal: u8, // original decimal in benfen
-    pub padding: [u8; 23], // upgrade padding
+
+    //fee info
+    pub mode: u8,
+    pub fee_value: u64, //具体的值
+    pub min_fee_value: u64, //上边计算收取的fee至少要超过这个值，否则就要用这个值
+
+    pub padding: [u8; 6], // upgrade padding
 }
  
 
@@ -84,6 +90,27 @@ impl TokenConfigAccount {
         self.original_decimal = original_decimal;
         Ok(())
     }
+
+    pub fn update_fee_info(&mut self, mode: u8, fee_value: u64, min_fee_value: u64) -> Result<()> {
+        self.mode = mode;
+        self.fee_value = fee_value;
+        self.min_fee_value = min_fee_value;
+        Ok(())
+    }
+
+    pub fn calculate_bridge_fee(&self, amount: u64) -> u64 {
+        let mut fee = if self.mode == 0 {
+             self.fee_value
+        } else {
+             let fee_u128 = (amount as u128) * (self.fee_value as u128) / 1000000;
+             fee_u128 as u64
+        };
+
+        if fee < self.min_fee_value {
+            fee = self.min_fee_value;
+        }
+        fee
+    }
     
     pub fn original_decimal(&self) -> u8 {
         self.original_decimal
@@ -124,6 +151,9 @@ impl TokenConfigAccount {
 #[cfg(test)]
 pub mod token_config_test{
     use super::*;
+
+
+    
     // use std::cell::RefCell;
 
     // pub fn build_token_config(
@@ -218,5 +248,47 @@ pub mod token_config_test{
         assert!(result.is_err());
     }
 
+    #[test]
+    fn test_calculate_bridge_fee_fixed_and_min_floor() {
+        let mut cfg = TokenConfigAccount::default();
+        cfg.initialize(
+            Pubkey::new_unique(),
+            Pubkey::new_unique(),
+            Pubkey::new_unique(),
+            1,
+            1,
+            6,
+            6,
+            6,
+            1,
+        ).unwrap();
+        cfg.update_fee_info(0, 50, 100).unwrap();
+        assert_eq!(cfg.calculate_bridge_fee(1_000), 100);
+
+        cfg.update_fee_info(0, 200, 100).unwrap();
+        assert_eq!(cfg.calculate_bridge_fee(1_000), 200);
+    }
+
+    #[test]
+    fn test_calculate_bridge_fee_percentage_and_min_floor() {
+        let mut cfg = TokenConfigAccount::default();
+        cfg.initialize(
+            Pubkey::new_unique(),
+            Pubkey::new_unique(),
+            Pubkey::new_unique(),
+            1,
+            1,
+            6,
+            6,
+            6,
+            1,
+        ).unwrap();
+        cfg.update_fee_info(1, 10_000, 5_000).unwrap();
+        assert_eq!(cfg.calculate_bridge_fee(1_000_000), 10_000);
+
+        cfg.update_fee_info(1, 10_000, 100).unwrap();
+        assert_eq!(cfg.calculate_bridge_fee(1_000), 100);
+    }
+ 
     
 }

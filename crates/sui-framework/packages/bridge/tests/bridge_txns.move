@@ -13,15 +13,22 @@ use bridge::bridge_env::{
     create_validator,
     eth_id,
     bnb_id,
+    init_bridge_min_config,
     limit_exceeded,
     register_test_token,
-    test_token_id
+    set_min_fee_cross_in,
+    set_min_limit_cross_in,
+    test_token_id,
+    update_asset_price,
 };
 use bridge::chain_ids;
 use bridge::crypto::ecdsa_pub_key_to_eth_address;
 use bridge::eth::ETH;
 use bridge::test_token::TEST_TOKEN;
 use std::type_name;
+
+// 1 USD in 8 decimals (same as treasury/limiter USD precision)
+const USD_8DP: u64 = 100_000_000;
 
 #[test]
 fun test_limits() {
@@ -234,6 +241,103 @@ fun test_bridge_and_claim() {
     env.destroy_env();
 }
 
+// Min cross-in amount: claim with amount below configured minimum should abort.
+#[test]
+#[expected_failure(abort_code = bridge::bridge::ECrossInAmountBelowMin)]
+fun test_min_cross_in_amount_rejected() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    env.init_bridge_min_config(@0x0);
+
+    let source_chain = chain_ids::eth_custom();
+    let sui_address = @0xABCDEF;
+    let eth_address = x"0000000000000000000000000000000000001234";
+    let amount = 1000; // very small amount in wei
+
+    let addr = @0xABCDEF0123;
+    env.update_asset_price(addr, eth_id(), 735 * USD_8DP); // 1 ETH = 735 USD (8 dp)
+    // Min 1 USD (8 decimals)
+    env.set_min_limit_cross_in(@0x0, source_chain as u64, 100_000_000);
+
+    let transfer_id = env.bridge_to_sui<ETH>(
+        source_chain,
+        eth_address,
+        sui_address,
+        amount,
+    );
+    // claim checks min cross-in amount and aborts with ECrossInAmountBelowMin
+    env.claim_and_transfer_token<ETH>(source_chain, transfer_id);
+
+    env.destroy_env();
+}
+
+// Min cross-in amount: when min is 0 or satisfied, claim succeeds.
+#[test]
+fun test_min_cross_in_amount_ok() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    env.init_bridge_min_config(@0x0);
+
+    let source_chain = chain_ids::eth_custom();
+    let sui_address = @0xABCDEF;
+    let eth_address = x"0000000000000000000000000000000000001234";
+    let amount = 1000;
+
+    let addr = @0xABCDEF0123;
+    env.update_asset_price(addr, eth_id(), 735 * USD_8DP);
+    // No minimum (0) so any positive amount is ok
+    env.set_min_limit_cross_in(@0x0, source_chain as u64, 0);
+
+    let transfer_id = env.bridge_to_sui<ETH>(
+        source_chain,
+        eth_address,
+        sui_address,
+        amount,
+    );
+    assert!(
+        env.claim_and_transfer_token<ETH>(source_chain, transfer_id) ==
+        claimed(),
+    );
+
+    env.destroy_env();
+}
+
+// Min cross-in fee: effective fee is at least the configured minimum.
+#[test]
+fun test_min_cross_in_fee() {
+    let mut env = create_env(chain_ids::sui_custom());
+    env.create_bridge_default();
+    env.init_bridge_min_config(@0x0);
+
+    let source_chain = chain_ids::eth_custom();
+    let sui_address = @0xABCDEF;
+    let eth_address = x"0000000000000000000000000000000000001234";
+    // Use a moderate amount so it stays under the external out limit and min cross-in fee still applies.
+    // ETH uses 8 decimals here: 0.1 ETH = 10^7 units.
+    let amount = 10_000_000u64; // 0.1 ETH
+
+    let addr = @0xABCDEF0123;
+    env.update_asset_price(addr, eth_id(), 735 * USD_8DP); // 1 ETH = 735 USD
+    // Min cross-in fee in token amount (ETH 8 decimals): ~1 USD = 1e8/735 ≈ 136k, use 200_000
+    env.set_min_fee_cross_in(@0x0, source_chain as u64, eth_id(), 200_000);
+
+    let transfer_id = env.bridge_to_sui<ETH>(
+        source_chain,
+        eth_address,
+        sui_address,
+        amount,
+    );
+    // Use claim_token to get the coin and verify fee was applied
+    let token = env.claim_token<ETH>(sui_address, source_chain, transfer_id);
+    let received = token.value();
+    // User receives amount - fee; fee must be at least min (200_000)
+    assert!(received < amount, 1);
+    assert!(amount - received >= 200_000, 2);
+    env.send_token<ETH>(sui_address, source_chain, eth_address, token);
+
+    env.destroy_env();
+}
+
 #[test]
 #[expected_failure(abort_code = bridge::committee::ESignatureBelowThreshold)]
 fun test_blocklist() {
@@ -313,8 +417,8 @@ fun test_system_messages() {
     let mut env = create_env(chain_ids::sui_custom());
     env.create_bridge_default();
 
-    env.update_asset_price(addr, eth_id(), 735);
-    env.update_asset_price(addr, bnb_id(), 70);
+    env.update_asset_price(addr, eth_id(), 735 * USD_8DP);
+    env.update_asset_price(addr, bnb_id(), 70 * USD_8DP);
 
     env.register_test_token();
     env.add_tokens(

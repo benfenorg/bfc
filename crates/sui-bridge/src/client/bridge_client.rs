@@ -159,6 +159,23 @@ impl BridgeClient {
                 let new_usd_limit = a.new_usd_limit.to_string();
                 format!("sign/update_single_transfer_limit/{chain_id}/{nonce}/{sending_chain_id}/{new_usd_limit}")
             }
+            BridgeAction::SingleMinTransferLimitUpdateAction(a) =>{
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let sending_chain_id = (a.sending_chain_id as u8).to_string();
+                let new_usd_limit = a.new_usd_limit.to_string();
+                format!("sign/update_single_min_transfer_limit/{chain_id}/{nonce}/{sending_chain_id}/{new_usd_limit}")
+            }
+            BridgeAction::BridgeFeeInfoUpdateAction(a) => {
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let sending_chain_id = (a.sending_chain_id as u8).to_string();
+                let token_id = a.token_id.to_string();
+                let mode = a.mode.to_string();
+                let value = a.value.to_string();
+                let min_fee = a.min_fee.to_string();
+                format!("sign/update_bridge_fee_info/{chain_id}/{nonce}/{sending_chain_id}/{token_id}/{mode}/{value}/{min_fee}")
+            }
 
             BridgeAction::UpdateInvestAddressAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();

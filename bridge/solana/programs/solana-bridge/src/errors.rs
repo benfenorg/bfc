@@ -198,4 +198,10 @@ pub enum BridgeError {
     InvalidTokenId,
     #[msg("Invalid committee")]
     InvalidCommittee,
+
+    #[msg("Single transfer amount below limit")]
+    SingleTransferAmountBelowLimit,
+
+    #[msg("Insufficient fee balance")]
+    InsufficientFeeBalance,
 }

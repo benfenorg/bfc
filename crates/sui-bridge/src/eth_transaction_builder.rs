@@ -11,6 +11,8 @@ use crate::types::{
     AddTokensOnEvmAction, AssetPriceUpdateAction, BlocklistCommitteeAction,
     BridgeCommitteeValiditySignInfo, EvmContractUpgradeAction, LimitUpdateAction,
     SingleTransferLimitUpdateAction,
+    SingleMinTransferLimitUpdateAction,
+    BridgeFeeInfoUpdateAction,
     VerifiedCertifiedBridgeAction,
     UpdateInvestAddressAction,
     AddLpTokenIdAction,
@@ -63,6 +65,14 @@ pub async fn build_eth_transaction(
         }
         BridgeAction::EmergencyAction(action) => {
             build_emergency_op_approve_transaction(contract_address, signer, action.clone(), sigs)
+                .await
+        }
+        BridgeAction::SingleMinTransferLimitUpdateAction(action) => {
+            build_single_min_transfer_limit_update_transaction(contract_address, signer, action.clone(), sigs)
+                .await
+        }
+        BridgeAction::BridgeFeeInfoUpdateAction(action) => {
+            build_bridge_fee_update_approve_transaction(contract_address, signer, action.clone(), sigs)
                 .await
         }
         BridgeAction::AddLpTokenIdAction(action) => {
@@ -246,6 +256,41 @@ pub async fn build_limit_update_approve_transaction(
         .collect::<Vec<_>>();
     Ok(contract.update_limit_with_signatures(signatures, message))
 }
+pub async fn build_bridge_fee_update_approve_transaction(
+    contract_address: EthAddress,
+    signer: EthSigner,
+    action: BridgeFeeInfoUpdateAction,
+    sigs: &BridgeCommitteeValiditySignInfo,
+) -> BridgeResult<ContractCall<EthSigner, ()>> {
+    let contract = EthBridgeConfig::new(contract_address, signer.into());
+
+    let message: eth_bridge_config::Message = action.clone().into();
+    let signatures = sigs
+        .signatures
+        .values()
+        .map(|sig| Bytes::from(sig.as_ref().to_vec()))
+        .collect::<Vec<_>>();
+    Ok(contract.update_bridge_fee_with_signatures(signatures, message))
+}
+
+pub async fn build_single_min_transfer_limit_update_transaction(
+    contract_address: EthAddress,
+    signer: EthSigner,
+    action: SingleMinTransferLimitUpdateAction,
+    sigs: &BridgeCommitteeValiditySignInfo,
+) -> BridgeResult<ContractCall<EthSigner, ()>> {
+    let contract = EthBridgeLimiter::new(contract_address, signer.into());
+
+    let message: eth_bridge_limiter::Message = action.clone().into();
+    let signatures = sigs
+        .signatures
+        .values()
+        .map(|sig| Bytes::from(sig.as_ref().to_vec()))
+        .collect::<Vec<_>>();
+    //updateSingleTransferLimitWithSignatures
+    Ok(contract.update_min_limit_with_signatures(signatures, message))
+}
+
 
 pub async fn build_single_transfer_limit_update_transaction(
     contract_address: EthAddress,

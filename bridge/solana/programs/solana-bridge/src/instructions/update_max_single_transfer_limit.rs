@@ -15,7 +15,7 @@ use crate::events::SingleTransferLimitUpdated;
 
 
 #[derive(Accounts)]
-pub struct UpdateSingleTransferLimit<'info> {
+pub struct UpdateMaxSingleTransferLimit<'info> {
 
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -49,8 +49,8 @@ pub struct UpdateSingleTransferLimit<'info> {
 }
 
 
-pub fn update_single_transfer_limit_with_signatures(
-    ctx: Context<UpdateSingleTransferLimit>, 
+pub fn update_max_single_transfer_limit_with_signatures(
+    ctx: Context<UpdateMaxSingleTransferLimit>, 
     message_type: u8, 
     version: u8,
     nonce: u64,
@@ -58,7 +58,7 @@ pub fn update_single_transfer_limit_with_signatures(
     payload: Vec<u8>,  
     signatures: Vec<Vec<u8>>,
 ) -> Result<()> {
- let mut message_config =  ctx.accounts.message_config.deref_mut();
+    let mut message_config =  ctx.accounts.message_config.deref_mut();
     let mut bridge_config = ctx.accounts.bridge_config.load_mut()?;
     let mut verifier = ctx.accounts.verifier.load_mut()?;
     let mut committee = ctx.accounts.committee.load_mut()?;
@@ -76,9 +76,9 @@ pub fn update_single_transfer_limit_with_signatures(
         signatures
     )?; 
 
-    let (source_chain_id, new_limit)=message::decode_update_single_transfer_limit_payload(&payload)?;
+    let (source_chain_id, new_limit)=message::decode_update_max_single_transfer_limit_payload(&payload)?;
     require!(chain_limit.get_chain_id()==source_chain_id, BridgeLimiterError::InvalidChainId);
-    chain_limit.set_single_transfer_limit(new_limit);
+    chain_limit.set_max_single_transfer_limit(new_limit);
 
     msg!("emit SingleTransferLimitUpdated");
 

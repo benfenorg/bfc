@@ -573,6 +573,10 @@
           "type": "u64"
         },
         {
+          "name": "min_usd_limit",
+          "type": "u64"
+        },
+        {
           "name": "max_usd_limit",
           "type": "u64"
         }
@@ -1039,6 +1043,78 @@
       ]
     },
     {
+      "name": "update_min_single_transfer_limit",
+      "discriminator": [
+        89,
+        77,
+        24,
+        66,
+        105,
+        57,
+        83,
+        83
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "message_config",
+          "writable": true
+        },
+        {
+          "name": "bridge_config",
+          "writable": true
+        },
+        {
+          "name": "chain_limit",
+          "writable": true
+        },
+        {
+          "name": "verifier",
+          "writable": true
+        },
+        {
+          "name": "committee",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "message_type",
+          "type": "u8"
+        },
+        {
+          "name": "version",
+          "type": "u8"
+        },
+        {
+          "name": "nonce",
+          "type": "u64"
+        },
+        {
+          "name": "chain_id",
+          "type": "u8"
+        },
+        {
+          "name": "payload",
+          "type": "bytes"
+        },
+        {
+          "name": "signatures",
+          "type": {
+            "vec": "bytes"
+          }
+        }
+      ]
+    },
+    {
       "name": "update_single_transfer_limit",
       "discriminator": [
         35,
@@ -1066,6 +1142,82 @@
         },
         {
           "name": "chain_limit",
+          "writable": true
+        },
+        {
+          "name": "verifier",
+          "writable": true
+        },
+        {
+          "name": "committee",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "message_type",
+          "type": "u8"
+        },
+        {
+          "name": "version",
+          "type": "u8"
+        },
+        {
+          "name": "nonce",
+          "type": "u64"
+        },
+        {
+          "name": "chain_id",
+          "type": "u8"
+        },
+        {
+          "name": "payload",
+          "type": "bytes"
+        },
+        {
+          "name": "signatures",
+          "type": {
+            "vec": "bytes"
+          }
+        }
+      ]
+    },
+    {
+      "name": "update_token_fee_info",
+      "discriminator": [
+        239,
+        171,
+        238,
+        85,
+        79,
+        84,
+        142,
+        186
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "message_config",
+          "writable": true
+        },
+        {
+          "name": "token_config",
+          "writable": true
+        },
+        {
+          "name": "chain_limit",
+          "writable": true
+        },
+        {
+          "name": "bridge_config",
           "writable": true
         },
         {
@@ -1443,6 +1595,19 @@
       ]
     },
     {
+      "name": "MinSingleTransferLimitUpdated",
+      "discriminator": [
+        218,
+        23,
+        54,
+        131,
+        242,
+        46,
+        142,
+        53
+      ]
+    },
+    {
       "name": "ProgramUpgradeEvent",
       "discriminator": [
         206,
@@ -1479,6 +1644,19 @@
         101,
         116,
         48
+      ]
+    },
+    {
+      "name": "TokenFeeInfoUpdated",
+      "discriminator": [
+        62,
+        13,
+        148,
+        61,
+        108,
+        30,
+        171,
+        146
       ]
     },
     {
@@ -1835,11 +2013,15 @@
             }
           },
           {
+            "name": "min_usd_limit",
+            "type": "u64"
+          },
+          {
             "name": "padding",
             "type": {
               "array": [
                 "u64",
-                8
+                7
               ]
             }
           }
@@ -2041,6 +2223,26 @@
       }
     },
     {
+      "name": "MinSingleTransferLimitUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "source_chain_id",
+            "type": "u8"
+          },
+          {
+            "name": "new_limit",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "ProcessTransfer",
       "docs": [
         "Tracks processed transfer messages to prevent replay attacks"
@@ -2220,13 +2422,53 @@
             "type": "u8"
           },
           {
+            "name": "mode",
+            "type": "u8"
+          },
+          {
+            "name": "fee_value",
+            "type": "u64"
+          },
+          {
+            "name": "min_fee_value",
+            "type": "u64"
+          },
+          {
             "name": "padding",
             "type": {
               "array": [
                 "u8",
-                23
+                6
               ]
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "TokenFeeInfoUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "token_id",
+            "type": "u64"
+          },
+          {
+            "name": "mode",
+            "type": "u8"
+          },
+          {
+            "name": "fee_value",
+            "type": "u64"
+          },
+          {
+            "name": "min_fee_value",
+            "type": "u64"
           }
         ]
       }

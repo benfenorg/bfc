@@ -33,6 +33,7 @@ module bridge::bridge {
     };
     use bridge::tokenlist;
     use bridge::bridge_fee;
+    use bridge::bridge_min_config;
     use bridge::defi_protocols;
     use bridge::message_types;
     use bridge::treasury::{Self, BridgeTreasury};
@@ -55,7 +56,7 @@ module bridge::bridge {
 
     const MESSAGE_VERSION: u8 = 1;
     const MESSAGE_VERSION_V2: u8 = 2;
-    const MESSAGE_VERSION_V3: u8 = 3;
+    const MESSAGE_VERSION_V3: u8 = 4;
     const MESSAGE_VERSION_DEFI_OUT: u8 = 1;
     const MESSAGE_VERSION_DEFI_IN: u8 = 1;
 
@@ -320,6 +321,8 @@ module bridge::bridge {
     const EDefiUnstakeAmountNotEnoughForDel: u64 = 65;
     const EDefiStakeAmountNotEnough: u64 = 66;
     const EDefiHoldersNotInitialized: u64 = 67;
+    const EAmountBelowMinOutLimit: u64 = 68;
+    const ECrossInAmountBelowMin: u64 = 69;
 
 
     const CURRENT_VERSION: u64 = 1;
@@ -510,8 +513,12 @@ module bridge::bridge {
         bridge: &mut Bridge,
         ctx: &mut TxContext
     ){
+        if (!bridge_min_config::exists(&bridge.id)) {
+            bridge_min_config::new_bridge_min_config_registry(&mut bridge.id, ctx);
+        };
         ensure_defi_holders_initialized(&mut bridge.id, ctx);
         limiter::initial_external_24h_limits(&mut bridge.id);
+        bridge_min_config::initial_min_fee_limits(&mut bridge.id, ctx);
     }
 
     public fun init_token_list(
@@ -528,6 +535,84 @@ module bridge::bridge {
         ensure_defi_holders_initialized(&mut bridge.id, ctx);     
         defi_protocols::registry(&mut bridge.id, ctx);
         defi_protocols::initial_defi_protocol(&mut bridge.id);
+    }
+
+    // set_min_limit_cross_out
+    public fun update_min_limit_cross_out(
+        bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
+        cap: &BfcSystemModifyCap,
+        chain: u64,
+        min_limit_cross_out: u64,
+        ctx: &mut TxContext,
+    ) {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
+        bridge_min_config::set_min_limit_cross_out(
+            parent_id,
+            chain,
+            min_limit_cross_out
+        );
+    }
+
+    // set_min_limit_cross_in
+    public fun update_min_limit_cross_in(
+        bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
+        cap: &BfcSystemModifyCap,
+        chain: u64,
+        min_limit_cross_in: u64,
+        ctx: &mut TxContext,
+    ) {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
+        bridge_min_config::set_min_limit_cross_in(
+            parent_id,
+            chain,
+            min_limit_cross_in
+        );
+    }
+
+    // set_min_fee_cross_out
+    public fun update_min_fee_cross_out(
+        bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
+        cap: &BfcSystemModifyCap,
+        chain: u64,
+        token_id: u64,
+        min_fee_cross_out: u64,
+        ctx: &mut TxContext,
+    ) {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
+        bridge_min_config::set_min_fee_cross_out(
+            parent_id,
+            chain,
+            token_id,
+            min_fee_cross_out,
+            ctx
+        );
+    }
+
+    // set_min_fee_cross_in
+    public fun update_min_fee_cross_in(
+        bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
+        cap: &BfcSystemModifyCap,
+        chain: u64,
+        token_id: u64,
+        min_fee_cross_in: u64,
+        ctx: &mut TxContext,
+    ) {
+        let (_,parent_id) = load_inner_mut_and_uid(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
+        bridge_min_config::set_min_fee_cross_in(
+            parent_id,
+            chain,
+            token_id,
+            min_fee_cross_in,
+            ctx
+        );
     }
 
     public fun update_external_out_limit(
@@ -802,7 +887,12 @@ module bridge::bridge {
         assert!(token_id != 5, EUseSendBusd);
 
         assert!(tokenlist::is_supported_from_benfen(parent_id, target_chain as u64, token_id),EInvalidChainIDAndTokenIDExpect);
-        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,token_amount);
+        assert!(bridge_min_config::check_cross_out_amount_ok(parent_id, &inner.treasury, target_chain as u64, token_id, token_amount), EAmountBelowMinOutLimit);
+        let fee = if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_out_fee(parent_id, target_chain as u64, token_id, token_amount)
+        } else {
+            bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,token_amount)
+        };
         assert!(token_amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(parent_id, fee_coin);
@@ -1011,8 +1101,13 @@ module bridge::bridge {
         //token amount is usdc or usdt amount
         let token_amount = get_token_amount_for_target_chain(target_chain, token.balance().value());
         assert!(token_amount > 0, ETokenValueIsZero);
+        assert!(bridge_min_config::check_cross_out_amount_ok(bridge_id, &inner.treasury, target_chain as u64, token_id, token_amount), EAmountBelowMinOutLimit);
         //fee is usdc or usdt amount
-        let fee=bridge_fee::calculate_cross_out_fee_amount(bridge_id,target_chain as u64,token_id,token_amount);
+        let fee= if (bridge_min_config::exists(bridge_id)) {
+            bridge_min_config::get_effective_cross_out_fee(bridge_id, target_chain as u64, token_id, token_amount)
+        } else {
+            bridge_fee::calculate_cross_out_fee_amount(bridge_id,target_chain as u64,token_id,token_amount)
+        };
         assert!(token_amount>fee,EInputAmountLteBridgeFee);
         let amount_after_fee=token_amount-fee;
         //fee coin is busd,so we need convert fee to busd
@@ -1935,20 +2030,30 @@ module bridge::bridge {
                 source_address: source_address,
                 target_address: target_address,
                 amount: token_payload.token_amount(),
-               });
+            });
 
             return
         };
         assert!(token_payload.token_amount() > 0, ETokenValueIsZero);
 
-        let mut token = inner.treasury.mint<T>(amount, ctx);
-
-        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_id,amount);
+        if (bridge_min_config::exists(parent_id)) {
+            assert!(
+                bridge_min_config::check_cross_in_amount_ok(parent_id, &inner.treasury, source_chain as u64, token_id, amount),
+                ECrossInAmountBelowMin,
+            );
+        };
+        let fee = if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_in_fee(parent_id, source_chain as u64, token_id, amount)
+        } else {
+            bridge_fee::calculate_cross_in_fee_amount(parent_id, source_chain as u64, token_id, amount)
+        };
         assert!(amount>fee,EInputAmountLteBridgeFee);
 
+        let mut token = inner.treasury.mint<T>(amount, ctx);
+
         if (fee != 0){
-              let fee_coin=token.split<T>(fee, ctx);
-              bridge_fee::deposit_fee(parent_id, fee_coin);
+            let fee_coin=token.split<T>(fee, ctx);
+            bridge_fee::deposit_fee(parent_id, fee_coin);
         };
         transfer::public_transfer(token, address::from_bytes(target_address));
 
@@ -2033,15 +2138,23 @@ module bridge::bridge {
             return
         };
         assert!(token_payload.token_amount() > 0, ETokenValueIsZero);
-        let mut token =bfc_system_state.mint_stable<BUSD>(amount, cap,  ctx);
-        //address::from_bytes(target_address),
-
-        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_id,amount);
+        if (bridge_min_config::exists(parent_id)) {
+            assert!(
+                bridge_min_config::check_cross_in_amount_ok(parent_id, &inner.treasury, source_chain as u64, token_id, amount),
+                ECrossInAmountBelowMin,
+            );
+        };
+        let fee = if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_in_fee(parent_id, source_chain as u64, token_id, amount)
+        } else {
+            bridge_fee::calculate_cross_in_fee_amount(parent_id, source_chain as u64, token_id, amount)
+        };
         assert!(amount>fee,EInputAmountLteBridgeFee);
+        let mut token =bfc_system_state.mint_stable<BUSD>(amount, cap,  ctx);
 
         if (fee != 0){
-              let fee_coin=token.split<BUSD>(fee, ctx);
-              bridge_fee::deposit_fee(parent_id, fee_coin);
+            let fee_coin=token.split<BUSD>(fee, ctx);
+            bridge_fee::deposit_fee(parent_id, fee_coin);
         };
         transfer::public_transfer(token, address::from_bytes(target_address));
 
@@ -2093,7 +2206,13 @@ module bridge::bridge {
 
         let amount = token.balance().value();
         assert!(amount > 0, ETokenValueIsZero);
-        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,5,amount);
+        assert!(bridge_min_config::check_cross_out_amount_ok(parent_id, &inner.treasury, target_chain as u64, 5, amount), EAmountBelowMinOutLimit);
+
+        let fee= if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_out_fee(parent_id, target_chain as u64, 5, amount)
+        } else {
+            bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,5,amount)
+        };
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(parent_id, fee_coin);
@@ -2142,7 +2261,13 @@ module bridge::bridge {
 
         let amount = token.balance().value();
         assert!(amount > 0, ETokenValueIsZero);
-        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id_expect,amount);
+        assert!(bridge_min_config::check_cross_out_amount_ok(parent_id, &inner.treasury, target_chain as u64, token_id_expect, amount), EAmountBelowMinOutLimit);
+        
+        let fee= if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_out_fee(parent_id, target_chain as u64, token_id_expect, amount)
+        } else {
+            bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id_expect,amount)
+        };
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(parent_id, fee_coin);
@@ -2186,7 +2311,13 @@ module bridge::bridge {
 
         let amount = token.balance().value();
         assert!(amount > 0, ETokenValueIsZero);
-        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,amount);
+        assert!(bridge_min_config::check_cross_out_amount_ok(parent_id, &inner.treasury, target_chain as u64, token_id, amount), EAmountBelowMinOutLimit);
+        
+        let fee= if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_out_fee(parent_id, target_chain as u64, token_id, amount)
+        } else {
+            bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,amount)
+        };
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(parent_id, fee_coin);
@@ -2231,7 +2362,13 @@ module bridge::bridge {
 
         let amount = token.balance().value();
         assert!(amount > 0, ETokenValueIsZero);
-        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,amount);
+        assert!(bridge_min_config::check_cross_out_amount_ok(parent_id, &inner.treasury, target_chain as u64, token_id, amount), EAmountBelowMinOutLimit);
+        
+        let fee = if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_out_fee(parent_id, target_chain as u64, token_id, amount)
+        } else {
+            bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,amount)
+        };
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
         bridge_fee::deposit_fee(parent_id, fee_coin);
@@ -2321,7 +2458,11 @@ module bridge::bridge {
     ):u64{
         let (inner,parent_id) = load_inner_and_uid(bridge);
         let token_id = inner.treasury.token_id<T>();
-        bridge_fee::calculate_cross_out_fee_amount(parent_id,chain_id,token_id,amount)
+        if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_out_fee(parent_id, chain_id, token_id, amount)
+        } else {
+            bridge_fee::calculate_cross_out_fee_amount(parent_id,chain_id,token_id,amount)
+        }
     }
 
     public fun get_cross_in_fee_amount<T>(
@@ -2331,7 +2472,51 @@ module bridge::bridge {
     ):u64{
         let (inner,parent_id) = load_inner_and_uid(bridge);
         let token_id = inner.treasury.token_id<T>();
-        bridge_fee::calculate_cross_in_fee_amount(parent_id,chain_id,token_id,amount)
+        if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_in_fee(parent_id, chain_id, token_id, amount)
+        } else {
+            bridge_fee::calculate_cross_in_fee_amount(parent_id, chain_id, token_id, amount)
+        }
+    }
+
+    public fun get_min_limit_token_amount_cross_out<T>(
+         bridge: &Bridge,
+         chain_id: u64,
+    ):u64{
+        let (inner,parent_id) = load_inner_and_uid(bridge);
+        let token_id = inner.treasury.token_id<T>();
+        bridge_min_config::get_min_limit_token_amount_cross_out(parent_id, &inner.treasury, chain_id, token_id)
+    }
+
+    public fun get_min_limit_token_amount_cross_in<T>(
+         bridge: &Bridge,
+         chain_id: u64,
+    ):u64{
+        let (inner,parent_id) = load_inner_and_uid(bridge);
+        let token_id = inner.treasury.token_id<T>();
+        bridge_min_config::get_min_limit_token_amount_cross_in(parent_id, &inner.treasury, chain_id, token_id)
+    }
+
+    public fun get_cross_out_fee_info<T>(
+        bridge: &Bridge,
+        chain_id: u64,
+    ): (u64,u64,u64) {
+        let (inner,parent_id) = load_inner_and_uid(bridge);
+        let token_id = inner.treasury.token_id<T>();
+        let (mode,value) = bridge_fee::get_fee_info_cross_out(parent_id, chain_id, token_id);
+        let min = bridge_min_config::get_min_fee_cross_out(parent_id, chain_id, token_id);
+        (mode, value, min)
+    }
+
+    public fun get_cross_in_fee_info<T>(
+        bridge: &Bridge,
+        chain_id: u64,
+    ): (u64,u64,u64) {
+        let (inner,parent_id) = load_inner_and_uid(bridge);
+        let token_id = inner.treasury.token_id<T>();
+        let (mode,value) = bridge_fee::get_fee_info_cross_in(parent_id, chain_id, token_id);
+        let min = bridge_min_config::get_min_fee_cross_in(parent_id, chain_id, token_id);
+        (mode, value, min)
     }
 
     #[allow(unused_function)]
@@ -2603,7 +2788,18 @@ module bridge::bridge {
         );
 
         let amount = token_payload.token_amount_in();
-        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_payload.token_type_in(),amount);
+        let token_id = token_payload.token_type_in();
+        if (bridge_min_config::exists(parent_id)) {
+            assert!(
+                bridge_min_config::check_cross_in_amount_ok(parent_id, &inner.treasury, source_chain as u64, token_id, amount),
+                ECrossInAmountBelowMin,
+            );
+        };
+        let fee = if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_in_fee(parent_id, source_chain as u64, token_id, amount)
+        } else {
+            bridge_fee::calculate_cross_in_fee_amount(parent_id, source_chain as u64, token_id, amount)
+        };
         assert!(amount>fee,EInputAmountLteBridgeFee);
 
         // Make sure transfer is within limit.
@@ -2622,8 +2818,8 @@ module bridge::bridge {
 
         let mut token = inner.treasury.mint<T>(amount, ctx);
         if (fee!=0){
-              let fee_coin=token.split<T>(fee, ctx);
-              bridge_fee::deposit_fee(parent_id, fee_coin);
+            let fee_coin=token.split<T>(fee, ctx);
+            bridge_fee::deposit_fee(parent_id, fee_coin);
         };
         // Record changes
         record.claimed = true;
@@ -2701,6 +2897,12 @@ module bridge::bridge {
 
         let amount = token_payload.token_amount_in();
         assert!(amount <= inner.limiter.get_mint_busd_max_limit(), EInvalidMintAmount);
+        if (bridge_min_config::exists(parent_id)) {
+            assert!(
+                bridge_min_config::check_cross_in_amount_ok(parent_id, &inner.treasury, source_chain as u64, token_id, amount),
+                ECrossInAmountBelowMin,
+            );
+        };
         // Make sure transfer is within limit.
         if (!inner
             .limiter
@@ -2715,7 +2917,11 @@ module bridge::bridge {
             return (option::none(), owner)
         };
         let token_id=token_payload.token_type_in();
-        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,source_chain as u64,token_id,amount);
+        let fee = if (bridge_min_config::exists(parent_id)) {
+            bridge_min_config::get_effective_cross_in_fee(parent_id, source_chain as u64, token_id, amount)
+        } else {
+            bridge_fee::calculate_cross_in_fee_amount(parent_id, source_chain as u64, token_id, amount)
+        };
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let amount_after_fee=amount-fee;
         check_fast_path_limit(parent_id, clock, token_payload);
@@ -3247,12 +3453,13 @@ module bridge::bridge {
         if (is_solana_chain(chain_id)) SOLANA_ADDRESS_LENGTH else EVM_ADDRESS_LENGTH
     }
 
-    /// For ETH/Solana chains, token balance is in 6 decimals (e.g. USDC), we use value/1000 as bridge amount.
+    /// For ETH/EVM/Solana chains, token balance is in 6 decimals (e.g. USDC), busd decimal is 8,so use value/1000 as bridge amount.
     /// For other chains, use balance value as-is.
+    /// only support busd
     fun get_token_amount_for_target_chain(target_chain: u8, balance_value: u64): u64 {
-        if (target_chain == chain_ids::eth_mainnet() || target_chain == chain_ids::eth_sepolia() || target_chain == chain_ids::eth_custom()) {
+        if (chain_ids::is_evm_l2(target_chain)||chain_ids::is_eth(target_chain)) {
             balance_value / 1000u64
-        } else if (is_solana_chain(target_chain)) {
+        } else if (chain_ids::is_solana(target_chain)) {
             balance_value / 1000u64
         } else {
             balance_value
@@ -3261,10 +3468,11 @@ module bridge::bridge {
 
     /// For ETH/Solana chains, fee is in bridge amount (6 decimals), convert to BUSD by fee*1000.
     /// For other chains, fee is already in BUSD units.
+    /// only support busd
     fun get_fee_busd_for_target_chain(target_chain: u8, fee: u64): u64 {
-        if (target_chain == chain_ids::eth_mainnet() || target_chain == chain_ids::eth_sepolia() || target_chain == chain_ids::eth_custom()) {
+        if (chain_ids::is_evm_l2(target_chain)||chain_ids::is_eth(target_chain)) {
             fee * 1000u64
-        } else if (is_solana_chain(target_chain)) {
+        } else if (chain_ids::is_solana(target_chain)) {
             fee * 1000u64
         } else {
             fee

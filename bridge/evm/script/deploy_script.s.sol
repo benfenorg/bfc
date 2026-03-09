@@ -11,11 +11,11 @@ contract DeployScript is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
-        BridgeLimiter bridgeLimiter = new BridgeLimiter();
-        //SuiBridge bridge = new SuiBridge();
+        // BridgeLimiter bridgeLimiter = new BridgeLimiter();
+        SuiBridge bridge = new SuiBridge();
 
-        console.log("[Deployed] BridgeLimiter:", address(bridgeLimiter));
-        //console.log("[Deployed] SuiBridge:", address(bridge));
+        // console.log("[Deployed] BridgeLimiter:", address(bridgeLimiter));
+        console.log("[Deployed] SuiBridge:", address(bridge));
 
         vm.stopBroadcast();
     }

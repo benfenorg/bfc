@@ -1,16 +1,21 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::encoding::{BridgeMessageEncoding, ADD_TOKENS_ON_EVM_MESSAGE_VERSION, ASSET_PRICE_UPDATE_MESSAGE_VERSION, EVM_CONTRACT_UPGRADE_MESSAGE_VERSION, LIMIT_UPDATE_MESSAGE_VERSION, SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION, TOKEN_TRANSFER_MESSAGE_VERSION_V3};
+use crate::encoding::{BridgeMessageEncoding, ADD_TOKENS_ON_EVM_MESSAGE_VERSION, ASSET_PRICE_UPDATE_MESSAGE_VERSION, EVM_CONTRACT_UPGRADE_MESSAGE_VERSION, LIMIT_UPDATE_MESSAGE_VERSION, 
+    SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION, TOKEN_TRANSFER_MESSAGE_VERSION_V3,
+    SINGLE_MIN_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION,
+};
 use crate::encoding::{
     COMMITTEE_BLOCKLIST_MESSAGE_VERSION, EMERGENCY_BUTTON_MESSAGE_VERSION,
     UPDATE_INVEST_ADDRESS_MESSAGE_VERSION,
     ADD_LP_TOKEN_ID_MESSAGE_VERSION,
+    UPDATE_FEE_INFO_MESSAGE_VERSION,
 };
 use crate::error::{BridgeError, BridgeResult};
 use crate::fast_path::FastPathSelector;
 use crate::types::{
-    AddLpTokenIdAction, AddTokensOnEvmAction, AssetPriceUpdateAction, BlocklistCommitteeAction, BridgeAction, BridgeActionType, EmergencyAction, EthLog, EthToSuiBridgeAction, EthToSuiDefiBridgeAction, EvmContractUpgradeAction, LimitUpdateAction, ParsedDefiTransferOutMessage, SuiToEthBridgeAction, UpdateInvestAddressAction
+    AddLpTokenIdAction, AddTokensOnEvmAction, AssetPriceUpdateAction, BlocklistCommitteeAction, BridgeAction, BridgeActionType, EmergencyAction, EthLog, EthToSuiBridgeAction, EthToSuiDefiBridgeAction, EvmContractUpgradeAction, LimitUpdateAction, ParsedDefiTransferOutMessage, SuiToEthBridgeAction, UpdateInvestAddressAction,
+    SingleMinTransferLimitUpdateAction,BridgeFeeInfoUpdateAction,
 };
 use crate::types::{
     ParsedTokenTransferMessage, ParsedTokenTransferMessageV2, SingleTransferLimitUpdateAction,
@@ -497,6 +502,30 @@ impl From<SingleTransferLimitUpdateAction> for eth_bridge_limiter::Message {
         eth_bridge_limiter::Message {
             message_type: BridgeActionType::SingleTransferLimitUpdate as u8,
             version: SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION,
+            nonce: action.nonce,
+            chain_id: action.chain_id as u8,
+            payload: action.as_payload_bytes().into(),
+        }
+    }
+}
+
+impl From<SingleMinTransferLimitUpdateAction> for eth_bridge_limiter::Message {
+    fn from(action: SingleMinTransferLimitUpdateAction) -> Self {
+        eth_bridge_limiter::Message {
+            message_type: BridgeActionType::SingleMinTransferLimitUpdate as u8,
+            version: SINGLE_MIN_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION,
+            nonce: action.nonce,
+            chain_id: action.chain_id as u8,
+            payload: action.as_payload_bytes().into(),
+        }
+    }
+}
+
+impl From<BridgeFeeInfoUpdateAction> for eth_bridge_config::Message {
+    fn from(action: BridgeFeeInfoUpdateAction) -> Self {
+        eth_bridge_config::Message {
+            message_type: BridgeActionType::UpdateFeeInfo as u8,
+            version: UPDATE_FEE_INFO_MESSAGE_VERSION,
             nonce: action.nonce,
             chain_id: action.chain_id as u8,
             payload: action.as_payload_bytes().into(),

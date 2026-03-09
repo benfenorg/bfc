@@ -12,6 +12,7 @@ import "../contracts/BridgeConfig.sol";
 import "../contracts/BridgeLimiter.sol";
 import "../contracts/SuiBridge.sol";
 import "../test/mocks/MockTokens.sol";
+import {BridgeLib} from "../contracts/utils/BridgeLib.sol";
 
 import {MockArrow} from "../test/mocks/MockArrow.sol";
 contract DeployBridge is Script {
