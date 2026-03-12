@@ -2264,9 +2264,9 @@ module bridge::bridge {
         assert!(bridge_min_config::check_cross_out_amount_ok(parent_id, &inner.treasury, target_chain as u64, token_id_expect, amount), EAmountBelowMinOutLimit);
         
         let fee= if (bridge_min_config::exists(parent_id)) {
-            bridge_min_config::get_effective_cross_out_fee(parent_id, target_chain as u64, token_id_expect, amount)
+            bridge_min_config::get_effective_cross_out_fee(parent_id, target_chain as u64, 5, amount)
         } else {
-            bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id_expect,amount)
+            bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,5,amount)
         };
         assert!(amount>fee,EInputAmountLteBridgeFee);
         let fee_coin=token.split<T>(fee, ctx);
