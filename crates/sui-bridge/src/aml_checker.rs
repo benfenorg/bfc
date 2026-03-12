@@ -261,11 +261,6 @@ where
                 info!("Sui transaction failed at signing err:{:?}",_err);
             }
         }
-
-
-        store.remove_pending_aml_checked_actions(&[action.digest()]).unwrap_or_else(|e| {
-            panic!("Write to DB should not fail: {:?}", e);
-        });
     }
 
     // Checks if the action is already processed on chain.
