@@ -17,6 +17,7 @@ use crate::{
         RemoveExternalCoinAdminAction, RemoveExternalCoinTargetAction,
         RemoveExternalCoinWitnessAction, RemoveTokenOnTokenListAction, SignedBridgeAction,
         SingleTransferLimitUpdateAction, UpdateBridgeFeeOnCrossInAction,
+        SingleMinTransferLimitUpdateAction, BridgeFeeInfoUpdateAction,
         UpdateBridgeFeeOnCrossOutAction, WithdrawBridgeFeeAction,
         AddTokenOnSolanaAction,ExtendProgramOnSolanaAction,
         AddLpTokenIdAction, UpdateInvestAddressAction,
@@ -84,6 +85,10 @@ pub const LIMIT_UPDATE_PATH: &str =
     "/sign/update_limit/{chain_id}/{nonce}/{sending_chain_id}/{new_usd_limit}";
 pub const SINGLE_TRANSFER_LIMIT_PATH: &str =
     "/sign/update_single_transfer_limit/{chain_id}/{nonce}/{sending_chain_id}/{new_usd_limit}";
+pub const SINGLE_MIN_TRANSFER_LIMIT_PATH: &str =
+    "/sign/update_single_min_transfer_limit/{chain_id}/{nonce}/{sending_chain_id}/{new_usd_limit}";
+pub const BRIDGE_FEE_INFO_UPDATE_PATH: &str =
+    "/sign/update_bridge_fee_info/{chain_id}/{nonce}/{sending_chain_id}/{token_id}/{mode}/{value}/{min_fee}";
 pub const MINT_BUSD_LIMIT_PATH: &str =
     "/sign/mint_busd_limit/{chain_id}/{modify_cap}/{new_limit}";
 pub const ASSET_PRICE_UPDATE_PATH: &str =
@@ -224,6 +229,14 @@ pub(crate) fn make_router(
         .route(
             SINGLE_TRANSFER_LIMIT_PATH,
             get(handle_single_transfer_limit_update_action),
+        )
+        .route(
+            SINGLE_MIN_TRANSFER_LIMIT_PATH,
+            get(handle_min_single_transfer_limit_update_action),
+        )
+        .route(
+            BRIDGE_FEE_INFO_UPDATE_PATH,
+            get(handle_bridge_fee_info_update_action),
         )
         .route(MINT_BUSD_LIMIT_PATH, get(handle_limit_update_action))
         .route(
@@ -549,6 +562,41 @@ async fn handle_limit_update_action(
         Ok(sig)
     };
     with_metrics!(metrics.clone(), "handle_limit_update_action", future).await
+}
+
+
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, sending_chain_id=sending_chain_id, new_usd_limit=new_usd_limit))]
+async fn handle_min_single_transfer_limit_update_action(
+    Path((chain_id, nonce, sending_chain_id, new_usd_limit)): Path<(u8, u64, u8, u64)>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+        let sending_chain_id = BridgeChainId::try_from(sending_chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+        let action =
+            BridgeAction::SingleMinTransferLimitUpdateAction(SingleMinTransferLimitUpdateAction {
+                chain_id,
+                nonce,
+                sending_chain_id,
+                new_usd_limit,
+            });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(
+        metrics.clone(),
+        "handle_min_single_transfer_limit_update_action",
+        future
+    )
+    .await
 }
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, sending_chain_id=sending_chain_id, new_usd_limit=new_usd_limit))]
@@ -1548,6 +1596,49 @@ async fn handle_update_fast_path_limit(
     with_metrics!(metrics.clone(), "handle_update_fast_path_limit", future).await
 }
 
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, sending_chain_id=sending_chain_id, token_id=token_id, mode=mode, value=value, min_fee=min_fee))]
+async fn handle_bridge_fee_info_update_action(
+    Path((chain_id, nonce, sending_chain_id, token_id, mode, value, min_fee)): Path<(
+        u8,
+        u64,
+        u8,
+        u64,
+        u8,
+        u64,
+        u64,
+    )>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+        let sending_chain_id = BridgeChainId::try_from(sending_chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+        let action = BridgeAction::BridgeFeeInfoUpdateAction(BridgeFeeInfoUpdateAction {
+            chain_id,
+            nonce,
+            sending_chain_id,
+            token_id,
+            mode,
+            value,
+            min_fee,
+        });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(
+        metrics.clone(),
+        "handle_bridge_fee_info_update_action",
+        future
+    )
+    .await
+}
 #[macro_export]
 macro_rules! with_metrics {
     ($metrics:expr, $type_:expr, $func:expr) => {

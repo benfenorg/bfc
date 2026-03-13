@@ -52,8 +52,6 @@ module bridge::defi_stake_validation_test {
         // env.add_tokenlist(sender);
         env.setup_treasury(sender);
         
-        // Manually set up tokenlist without calling migrate
-        setup_tokenlist_without_migrate(&mut env, sender);
         
         // Get BUSD coin for testing
         let mut scenario = public_setup(1_000_000_000_000_000_000, MINT_BUSD_RIGHT_KEY);

@@ -3766,6 +3766,7 @@ impl ProtocolConfig {
                             },
                         );
                 }
+
                 // Use this template when making changes:
                 //
                 //     // modify an existing constant.

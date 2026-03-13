@@ -23,6 +23,8 @@ contract BridgeLimiter is IBridgeLimiter, CommitteeUpgradeable, OwnableUpgradeab
     mapping(uint8 chainID => uint32 oldestHourTimestamp) public oldestChainTimestamp;
     uint256 public maxUSDLimit;
 
+    uint256 public minUSDLimit;
+
     /* ========== INITIALIZER ========== */
 
     /// @notice Initializes the BridgeLimiter contract with the provided parameters.
@@ -55,6 +57,10 @@ contract BridgeLimiter is IBridgeLimiter, CommitteeUpgradeable, OwnableUpgradeab
 
     function getUsdMaxLimit()public view returns (uint256 limit){
         return maxUSDLimit;
+    }
+
+    function getUsdMinLimit()public view returns (uint256 limit){
+        return minUSDLimit;
     }
 
     /* ========== VIEW FUNCTIONS ========== */
@@ -113,6 +119,18 @@ contract BridgeLimiter is IBridgeLimiter, CommitteeUpgradeable, OwnableUpgradeab
         uint8 decimals = IERC20Metadata(tokenAddress).decimals();
         require(tokenPrice > 0, "BridgeLimiter: Invalid token price");
         uint256 limit = maxUSDLimit*(10 ** decimals)/tokenPrice;
+        require(limit > 0, "BridgeLimiter: Invalid limit");
+        return limit;
+    }
+
+
+    function getMinSingleTransferLimit(uint64 tokenID)public view returns (uint256){
+        require(committee.config().isTokenSupported(tokenID), "BridgeLimiter: tokenID not supported");
+        uint256 tokenPrice = committee.config().tokenPriceOf(tokenID);
+        address tokenAddress = committee.config().tokenAddressOf(tokenID);
+        uint8 decimals = IERC20Metadata(tokenAddress).decimals();
+        require(tokenPrice > 0, "BridgeLimiter: Invalid token price");
+        uint256 limit = minUSDLimit*(10 ** decimals)/tokenPrice;
         require(limit > 0, "BridgeLimiter: Invalid limit");
         return limit;
     }
@@ -226,6 +244,24 @@ contract BridgeLimiter is IBridgeLimiter, CommitteeUpgradeable, OwnableUpgradeab
         maxUSDLimit = uint256(newLimit);
 
         emit SingleTransferLimitUpdate(message.nonce, sourceChainID, uint256(newLimit));
+    }
+
+    function updateMinLimitWithSignatures(
+        bytes[] memory signatures,
+        BridgeUtils.Message memory message
+    )
+        external
+        nonReentrant
+        verifyMessageAndSignatures(message, signatures, BridgeUtils.UPDATE_MIN_LIMIT)
+    {
+       (uint8 sourceChainID, uint64 newLimit) = BridgeUtils.decodeUpdateMinLimitPayload(message.payload);
+        require(
+            committee.config().isChainSupported(sourceChainID),
+            "BridgeLimiter: Source chain not supported"
+        );
+        minUSDLimit = uint256(newLimit);
+
+        emit MinUSDLimitUpdated(message.nonce, sourceChainID,newLimit);
     }
 
 }

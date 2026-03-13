@@ -202,6 +202,19 @@ impl BridgeChainId {
         )
     }
 
+    pub fn is_evm_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::EthMainnet | BridgeChainId::EthSepolia | BridgeChainId::EthCustom
+            | BridgeChainId::OPMainnet | BridgeChainId::OPTestnet | BridgeChainId::OPCustom
+            | BridgeChainId::ArbMainnet | BridgeChainId::ArbTestnet | BridgeChainId::ArbCustom
+            | BridgeChainId::PolMainnet | BridgeChainId::PolTestnet | BridgeChainId::PolCustom
+            | BridgeChainId::BaseMainnet | BridgeChainId::BaseTestnet | BridgeChainId::BaseCustom
+            | BridgeChainId::AvaxMainnet | BridgeChainId::AvaxTestnet | BridgeChainId::AvaxCustom
+            | BridgeChainId::BscMainnet | BridgeChainId::BscTestnet | BridgeChainId::BscCustom
+        )
+    }
+
     pub fn is_op_chain(&self) -> bool {
         matches!(
             self,

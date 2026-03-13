@@ -18,6 +18,8 @@ title: Module `bridge::bridge_fee`
 -  [Function `set_fee_in_cross_out`](#bridge_bridge_fee_set_fee_in_cross_out)
 -  [Function `get_cross_out_amount_after_fee`](#bridge_bridge_fee_get_cross_out_amount_after_fee)
 -  [Function `get_cross_in_amount_after_fee`](#bridge_bridge_fee_get_cross_in_amount_after_fee)
+-  [Function `get_fee_info_cross_in`](#bridge_bridge_fee_get_fee_info_cross_in)
+-  [Function `get_fee_info_cross_out`](#bridge_bridge_fee_get_fee_info_cross_out)
 -  [Function `calculate_cross_out_fee_amount`](#bridge_bridge_fee_calculate_cross_out_fee_amount)
 -  [Function `calculate_cross_in_fee_amount`](#bridge_bridge_fee_calculate_cross_in_fee_amount)
 -  [Function `deposit_fee`](#bridge_bridge_fee_deposit_fee)
@@ -640,6 +642,66 @@ Compute the net amount after applying the fee
     } <b>else</b> {
         0
     }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_fee_get_fee_info_cross_in"></a>
+
+## Function `get_fee_info_cross_in`
+
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_get_fee_info_cross_in">get_fee_info_cross_in</a>(parent_id: &<a href="../sui/object.md#sui_object_UID">sui::object::UID</a>, chain_id: u64, token_id: u64): (u64, u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_get_fee_info_cross_in">get_fee_info_cross_in</a>(
+    parent_id: &UID,
+    chain_id: u64,
+    token_id: u64,
+): (u64,u64){
+    <b>let</b> self = <a href="../bridge/bridge_fee.md#bridge_bridge_fee_borrow">borrow</a>(parent_id);
+    <b>let</b> fee_info= <a href="../bridge/bridge_fee.md#bridge_bridge_fee_get_fee_info_to_benfen">get_fee_info_to_benfen</a>(self, chain_id, token_id);
+    (fee_info.mode,fee_info.value)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_fee_get_fee_info_cross_out"></a>
+
+## Function `get_fee_info_cross_out`
+
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_get_fee_info_cross_out">get_fee_info_cross_out</a>(parent_id: &<a href="../sui/object.md#sui_object_UID">sui::object::UID</a>, chain_id: u64, token_id: u64): (u64, u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_get_fee_info_cross_out">get_fee_info_cross_out</a>(
+    parent_id: &UID,
+    chain_id: u64,
+    token_id: u64,
+): (u64,u64){
+    <b>let</b> self = <a href="../bridge/bridge_fee.md#bridge_bridge_fee_borrow">borrow</a>(parent_id);
+    <b>let</b> fee_info=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_get_fee_info_from_benfen">get_fee_info_from_benfen</a>(self, chain_id, token_id);
+    (fee_info.mode,fee_info.value)
 }
 </code></pre>
 

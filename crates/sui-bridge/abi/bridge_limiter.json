@@ -182,6 +182,19 @@
     },
     {
         "type": "function",
+        "name": "getUsdMinLimit",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "limit",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
         "name": "initialize",
         "inputs": [
             {
@@ -211,6 +224,19 @@
     {
         "type": "function",
         "name": "maxUSDLimit",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "minUSDLimit",
         "inputs": [],
         "outputs": [
             {
@@ -417,6 +443,53 @@
         ],
         "outputs": [],
         "stateMutability": "nonpayable"
+    },
+    {
+            "type": "function",
+            "name": "updateMinLimitWithSignatures",
+            "inputs": [
+                {
+                    "name": "signatures",
+                    "type": "bytes[]",
+                    "internalType": "bytes[]"
+                },
+                {
+                    "name": "message",
+                    "type": "tuple",
+                    "internalType": "struct BridgeUtils.Message",
+                    "components": [
+                        {
+                            "name": "messageType",
+                            "type": "uint8",
+                            "internalType": "uint8"
+                        },
+                        {
+                            "name": "version",
+                            "type": "uint8",
+                            "internalType": "uint8"
+                        },
+                        {
+                            "name": "nonce",
+                            "type": "uint64",
+                            "internalType": "uint64"
+                        },
+                        {
+                            "name": "chainID",
+                            "type": "uint8",
+                            "internalType": "uint8"
+                        },
+                        {
+                            "name": "payload",
+                            "type": "bytes",
+                            "internalType": "bytes"
+                        }
+                    ]
+                }
+            ],
+            "outputs": [
+
+            ],
+            "stateMutability": "nonpayable"
     },
     {
         "type": "function",

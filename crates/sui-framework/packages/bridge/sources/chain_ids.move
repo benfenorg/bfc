@@ -339,6 +339,38 @@ public fun get_route(source: u8, destination: u8): BridgeRoute {
     route
 }
 
+public fun is_evm_l2(chain_id: u8): bool {
+    chain_id == OPMainnet ||
+    chain_id == OPTestnet ||
+    chain_id == OPCustom ||
+    chain_id == ArbMainnet ||
+    chain_id == ArbTestnet ||
+    chain_id == ArbCustom ||
+    chain_id == BaseMainnet ||
+    chain_id == BaseTestnet ||
+    chain_id == BaseCustom ||
+    chain_id == PolMainnet ||
+    chain_id == PolTestnet ||
+    chain_id == PolCustom ||
+    chain_id == BscMainnet ||
+    chain_id == BscTestnet ||
+    chain_id == BscCustom ||
+    chain_id == AvaxMainnet ||
+    chain_id == AvaxTestnet ||
+    chain_id == AvaxCustom
+}
+
+public fun is_eth(chain_id: u8): bool {
+    chain_id == ETH_MAINNET ||
+    chain_id == ETH_SEPOLIA ||
+    chain_id == ETH_CUSTOM
+}
+
+public fun is_solana(chain_id: u8): bool {
+    chain_id == SolanaMainnet ||
+    chain_id == SolanaTestnet
+}
+
 //////////////////////////////////////////////////////
 // Test functions
 //
@@ -496,6 +528,7 @@ fun test_routes() {
         assert!(is_valid_route(route.source, route.destination)); // sould not assert
     }
 }
+
 
 
 #[test, expected_failure(abort_code = EInvalidBridgeRoute)]

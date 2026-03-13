@@ -11,7 +11,7 @@ module bridge::message {
 
     const CURRENT_MESSAGE_VERSION: u8 = 1;
     const CURRENT_MESSAGE_VERSION_V2: u8 = 2;
-    const CURRENT_MESSAGE_VERSION_V3: u8 = 3;
+    const CURRENT_MESSAGE_VERSION_V3: u8 = 4;
     const ECDSA_ADDRESS_LENGTH: u64 = 20;
 
     const ETrailingBytes: u64 = 0;

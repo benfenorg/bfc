@@ -39,6 +39,7 @@ pub fn initialize_bridge_limiter(
     ctx: Context<InitializeBridgeLimiter>,
     chain_id: u8,
     limit: u64,
+    min_usd_limit: u64,
     max_usd_limit: u64,
 ) -> Result<()> {
     let mut chain_limit = ctx.accounts.chain_limit.load_init()?;
@@ -48,6 +49,7 @@ pub fn initialize_bridge_limiter(
         ctx.bumps.chain_limit,
         ctx.accounts.bridge_config.key(),
         chain_id,
+        min_usd_limit,
         max_usd_limit,
         limit
     );

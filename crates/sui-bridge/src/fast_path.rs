@@ -88,7 +88,23 @@ impl FastPathSelector {
     }
 
     pub fn get_sui_adjusted_amount(token_id:u64,amount:u64,chain_id:BridgeChainId,target_token_id:u64) -> u64 {
-        let need_adjust = (token_id == TOKEN_ID_USDC || token_id == TOKEN_ID_USDT) && chain_id.is_eth_chain() && target_token_id == TOKEN_ID_BUSD;
+        // Normalize all amounts to 9-decimal precision:
+        // - Ethereum networks: inbound BUSD / USDT / USDC are multiplied by 1000
+        // - Other EVM networks: inbound USDT / USDC are multiplied by 1000
+        // - Solana networks: inbound USDT / USDC are multiplied by 1000
+        let is_target_busd = target_token_id == TOKEN_ID_BUSD;
+        let is_target_usd_stable = target_token_id == TOKEN_ID_USDC || target_token_id == TOKEN_ID_USDT;
+
+        let need_adjust =
+            // Ethereum networks: BUSD / USDT / USDC
+            (chain_id.is_eth_chain() && (is_target_busd || is_target_usd_stable))
+            ||
+            // Other EVM networks (non-Ethereum): USDT / USDC
+            ((chain_id.is_evm_chain() && !chain_id.is_eth_chain()) && is_target_usd_stable)
+            ||
+            // Solana networks: USDT / USDC
+            (chain_id.is_solana_chain() && is_target_usd_stable);
+
         if need_adjust {
             amount.checked_mul(1000).unwrap_or(amount)
         } else {

@@ -25,6 +25,8 @@ interface IBridgeLimiter {
 
     function getUsdMaxLimit()external view returns (uint256 limit);
 
+    function getUsdMinLimit()external view returns (uint256 limit);
+
     function calculateAmountInUSD(uint64 tokenID, uint256 amount) external view returns (uint256);
 
     // We no longer emit this event but keep it here for ABI compatibility.
@@ -43,4 +45,6 @@ interface IBridgeLimiter {
     event LimitUpdated(uint8 sourceChainID, uint64 newLimit);
 
     event SingleTransferLimitUpdate(uint64 nonce, uint8 sourceChainID, uint256 newLimit);
+
+    event MinUSDLimitUpdated(uint64 nonce, uint8 sourceChainID,uint256 newLimit);
 }

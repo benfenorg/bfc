@@ -16,7 +16,8 @@ pub struct ChainLimit {
     pub total_limit: u64,  // 24-hour total limit in USD
     pub hourly_transfer_index: u8, // current hour index
     pub hourly_transfer_amount: [ChainHourlyTransferAmount; HOUR_TRANSFER_NUM], // 24-hour sliding window
-    pub padding: [u64; 8],// reserved for future upgrades
+    pub min_usd_limit: u64, // min transfer limit in USD
+    pub padding: [u64; 7],// reserved for future upgrades
 }
 
 #[zero_copy]
@@ -36,6 +37,7 @@ impl ChainLimit {
         bump: u8,
         config: Pubkey,
         chain_id: u8,
+        min_usd_limit: u64,
         max_usd_limit: u64,
         limit: u64,
     ) {
@@ -44,6 +46,7 @@ impl ChainLimit {
         self.chain_id = [chain_id];
         self.max_usd_limit=max_usd_limit;
         self.total_limit = limit;
+        self.min_usd_limit = min_usd_limit;
     }
     
 
@@ -63,16 +66,25 @@ impl ChainLimit {
         ]
     }
 
-    pub fn get_single_transfer_limit(&self, token_price: u64, decimal: u8) -> Result<u64> {
+    pub fn get_max_single_transfer_limit(&self) -> Result<u64> {
         Ok(self.max_usd_limit)
     }
+
+    pub fn get_min_single_transfer_limit(&self) -> Result<u64> {
+        Ok(self.min_usd_limit)
+    }
+
 
     pub fn get_chain_id(&self) -> u8 {
         self.chain_id[0]
     }
 
-    pub fn set_single_transfer_limit(&mut self, limit: u64) {
+    pub fn set_max_single_transfer_limit(&mut self, limit: u64) {
         self.max_usd_limit = limit;
+    }
+
+    pub fn set_min_single_transfer_limit(&mut self, limit: u64) {
+        self.min_usd_limit = limit;
     }
 
     pub fn set_total_limit(&mut self, limit: u64) {
@@ -233,13 +245,11 @@ pub mod chain_limit_test{
         let amount = 10000000000*USD_PRECISION;
         // let result = 1000*1_000_000_00;
         let req=10000000000*1_000_000;
-
-
-        chain_limit.set_single_transfer_limit(amount);
-        let single_transfer_limit = chain_limit.get_single_transfer_limit(price, decimal).unwrap();
-        // let amount_in_usd = chain_limit.calculate_amount_in_usd(req, price, decimal).unwrap();
-        // println!("amount_in_usd:{}",amount_in_usd);
-        assert_eq!(single_transfer_limit, req);
+        chain_limit.set_max_single_transfer_limit(amount);
+        let single_max_transfer_limit = chain_limit.get_max_single_transfer_limit().unwrap();
+        let amount_in_usd = chain_limit.calculate_amount_in_usd(req, price, decimal).unwrap();
+        println!("amount_in_usd:{}",amount_in_usd);
+        assert_eq!(single_max_transfer_limit, amount);
     }
 
     #[test]
@@ -289,7 +299,7 @@ pub mod chain_limit_test{
     #[test]
     fn test_set_single_transfer_limit(){
         let mut chain_limit = ChainLimit::default();
-        chain_limit.set_single_transfer_limit(1000);
+        chain_limit.set_max_single_transfer_limit(1000);
         let signle_transfer_limit=chain_limit.max_usd_limit;
         assert_eq!(signle_transfer_limit, 1000);
     }
@@ -302,7 +312,7 @@ pub mod chain_limit_test{
         let price=1*USD_PRECISION;
         let decimal=8;
         let total_limit=10000*USD_PRECISION;
-        chain_limit.set_single_transfer_limit(amount);
+        chain_limit.set_max_single_transfer_limit(amount);
         chain_limit.set_total_limit(total_limit);
 
         let result = chain_limit.record_bridge_transfers_internal(1, amount, price, decimal);

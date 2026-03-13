@@ -36,6 +36,8 @@ title: Module `bridge::treasury`
 -  [Function `burn`](#bridge_treasury_burn)
 -  [Function `mint`](#bridge_treasury_mint)
 -  [Function `calculate_amount_in_usd`](#bridge_treasury_calculate_amount_in_usd)
+-  [Function `get_amount_in_usd_by_token_id`](#bridge_treasury_get_amount_in_usd_by_token_id)
+-  [Function `get_token_amount_by_usd`](#bridge_treasury_get_token_amount_by_usd)
 -  [Function `update_asset_notional_price`](#bridge_treasury_update_asset_notional_price)
 -  [Function `get_token_metadata`](#bridge_treasury_get_token_metadata)
 
@@ -1230,6 +1232,68 @@ title: Module `bridge::treasury`
     amount: u64): u64 {
     <b>let</b> metadata = <a href="../bridge/treasury.md#bridge_treasury">treasury</a>.<a href="../bridge/treasury.md#bridge_treasury_get_token_metadata">get_token_metadata</a>&lt;T&gt;();
     ((amount <b>as</b> u128) * (metadata.<a href="../bridge/treasury.md#bridge_treasury_notional_value">notional_value</a> <b>as</b> u128) / (metadata.<a href="../bridge/treasury.md#bridge_treasury_decimal_multiplier">decimal_multiplier</a> <b>as</b> u128)) <b>as</b> u64
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_treasury_get_amount_in_usd_by_token_id"></a>
+
+## Function `get_amount_in_usd_by_token_id`
+
+根据 token_id 和数量 amount（该代币最小单位）计算 USD 价值，返回值使用 8 位小数（与 limiter 的 USD_VALUE_MULTIPLIER 一致）。
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_get_amount_in_usd_by_token_id">get_amount_in_usd_by_token_id</a>(self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, <a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>: u64, amount: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_get_amount_in_usd_by_token_id">get_amount_in_usd_by_token_id</a>(self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>, <a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>: u64, amount: u64): u64 {
+    <b>let</b> type_name_opt = self.id_token_type_map.try_get(&<a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>);
+    <b>assert</b>!(type_name_opt.is_some(), <a href="../bridge/treasury.md#bridge_treasury_EUnsupportedTokenType">EUnsupportedTokenType</a>);
+    <b>let</b> type_name = type_name_opt.destroy_some();
+    <b>let</b> metadata_opt = self.supported_tokens.try_get(&type_name);
+    <b>assert</b>!(metadata_opt.is_some(), <a href="../bridge/treasury.md#bridge_treasury_EUnsupportedTokenType">EUnsupportedTokenType</a>);
+    <b>let</b> metadata = metadata_opt.destroy_some();
+    ((amount <b>as</b> u128) * (metadata.<a href="../bridge/treasury.md#bridge_treasury_notional_value">notional_value</a> <b>as</b> u128) / (metadata.<a href="../bridge/treasury.md#bridge_treasury_decimal_multiplier">decimal_multiplier</a> <b>as</b> u128)) <b>as</b> u64
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_treasury_get_token_amount_by_usd"></a>
+
+## Function `get_token_amount_by_usd`
+
+根据 token_id 和 USD 价值（8 位小数）换算为该代币最小单位的数量。
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_get_token_amount_by_usd">get_token_amount_by_usd</a>(self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, <a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>: u64, usd_amount_8dp: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_get_token_amount_by_usd">get_token_amount_by_usd</a>(self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>, <a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>: u64, usd_amount_8dp: u64): u64 {
+    <b>let</b> type_name_opt = self.id_token_type_map.try_get(&<a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>);
+    <b>assert</b>!(type_name_opt.is_some(), <a href="../bridge/treasury.md#bridge_treasury_EUnsupportedTokenType">EUnsupportedTokenType</a>);
+    <b>let</b> type_name = type_name_opt.destroy_some();
+    <b>let</b> metadata_opt = self.supported_tokens.try_get(&type_name);
+    <b>assert</b>!(metadata_opt.is_some(), <a href="../bridge/treasury.md#bridge_treasury_EUnsupportedTokenType">EUnsupportedTokenType</a>);
+    <b>let</b> metadata = metadata_opt.destroy_some();
+    ((usd_amount_8dp <b>as</b> u128) * (metadata.<a href="../bridge/treasury.md#bridge_treasury_decimal_multiplier">decimal_multiplier</a> <b>as</b> u128) / (metadata.<a href="../bridge/treasury.md#bridge_treasury_notional_value">notional_value</a> <b>as</b> u128)) <b>as</b> u64
 }
 </code></pre>
 

@@ -50,6 +50,9 @@ title: Module `bridge::chain_ids`
 -  [Function `valid_routes`](#bridge_chain_ids_valid_routes)
 -  [Function `is_valid_route`](#bridge_chain_ids_is_valid_route)
 -  [Function `get_route`](#bridge_chain_ids_get_route)
+-  [Function `is_evm_l2`](#bridge_chain_ids_is_evm_l2)
+-  [Function `is_eth`](#bridge_chain_ids_is_eth)
+-  [Function `is_solana`](#bridge_chain_ids_is_solana)
 
 
 <pre><code><b>use</b> <a href="../std/vector.md#std_vector">std::vector</a>;
@@ -1579,6 +1582,98 @@ title: Module `bridge::chain_ids`
     <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">BridgeRoute</a> { source, destination };
     <b>assert</b>!(<a href="../bridge/chain_ids.md#bridge_chain_ids_valid_routes">valid_routes</a>().contains(&route), <a href="../bridge/chain_ids.md#bridge_chain_ids_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
     route
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_chain_ids_is_evm_l2"></a>
+
+## Function `is_evm_l2`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_is_evm_l2">is_evm_l2</a>(chain_id: u8): bool
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_is_evm_l2">is_evm_l2</a>(chain_id: u8): bool {
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_OPMainnet">OPMainnet</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_OPTestnet">OPTestnet</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_OPCustom">OPCustom</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_ArbMainnet">ArbMainnet</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_ArbTestnet">ArbTestnet</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_ArbCustom">ArbCustom</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_BaseMainnet">BaseMainnet</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_BaseTestnet">BaseTestnet</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_BaseCustom">BaseCustom</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_PolMainnet">PolMainnet</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_PolTestnet">PolTestnet</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_PolCustom">PolCustom</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_BscMainnet">BscMainnet</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_BscTestnet">BscTestnet</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_BscCustom">BscCustom</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_AvaxMainnet">AvaxMainnet</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_AvaxTestnet">AvaxTestnet</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_AvaxCustom">AvaxCustom</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_chain_ids_is_eth"></a>
+
+## Function `is_eth`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_is_eth">is_eth</a>(chain_id: u8): bool
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_is_eth">is_eth</a>(chain_id: u8): bool {
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_ETH_MAINNET">ETH_MAINNET</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_ETH_SEPOLIA">ETH_SEPOLIA</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_ETH_CUSTOM">ETH_CUSTOM</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_chain_ids_is_solana"></a>
+
+## Function `is_solana`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_is_solana">is_solana</a>(chain_id: u8): bool
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_is_solana">is_solana</a>(chain_id: u8): bool {
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_SolanaMainnet">SolanaMainnet</a> ||
+    chain_id == <a href="../bridge/chain_ids.md#bridge_chain_ids_SolanaTestnet">SolanaTestnet</a>
 }
 </code></pre>
 

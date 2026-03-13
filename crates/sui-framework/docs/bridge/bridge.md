@@ -43,6 +43,10 @@ title: Module `bridge::bridge`
 -  [Function `init_bridge_committee`](#bridge_bridge_init_bridge_committee)
 -  [Function `migrate`](#bridge_bridge_migrate)
 -  [Function `init_token_list`](#bridge_bridge_init_token_list)
+-  [Function `update_min_limit_cross_out`](#bridge_bridge_update_min_limit_cross_out)
+-  [Function `update_min_limit_cross_in`](#bridge_bridge_update_min_limit_cross_in)
+-  [Function `update_min_fee_cross_out`](#bridge_bridge_update_min_fee_cross_out)
+-  [Function `update_min_fee_cross_in`](#bridge_bridge_update_min_fee_cross_in)
 -  [Function `update_external_out_limit`](#bridge_bridge_update_external_out_limit)
 -  [Function `update_external_24h_limit`](#bridge_bridge_update_external_24h_limit)
 -  [Function `update_defi_protocol_info`](#bridge_bridge_update_defi_protocol_info)
@@ -92,6 +96,10 @@ title: Module `bridge::bridge`
 -  [Function `get_unclaimed_bridge_fee`](#bridge_bridge_get_unclaimed_bridge_fee)
 -  [Function `get_cross_out_fee_amount`](#bridge_bridge_get_cross_out_fee_amount)
 -  [Function `get_cross_in_fee_amount`](#bridge_bridge_get_cross_in_fee_amount)
+-  [Function `get_min_limit_token_amount_cross_out`](#bridge_bridge_get_min_limit_token_amount_cross_out)
+-  [Function `get_min_limit_token_amount_cross_in`](#bridge_bridge_get_min_limit_token_amount_cross_in)
+-  [Function `get_cross_out_fee_info`](#bridge_bridge_get_cross_out_fee_info)
+-  [Function `get_cross_in_fee_info`](#bridge_bridge_get_cross_in_fee_info)
 -  [Function `get_token_transfer_action_status`](#bridge_bridge_get_token_transfer_action_status)
 -  [Function `get_defi_transfer_action_status`](#bridge_bridge_get_defi_transfer_action_status)
 -  [Function `get_external_token_transfer_action_status`](#bridge_bridge_get_external_token_transfer_action_status)
@@ -190,6 +198,7 @@ title: Module `bridge::bridge`
 <b>use</b> <a href="../bfc_system/vault.md#bfc_system_vault">bfc_system::vault</a>;
 <b>use</b> <a href="../bfc_system/bfc_dao_voting_pool.md#bfc_system_voting_pool">bfc_system::voting_pool</a>;
 <b>use</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee">bridge::bridge_fee</a>;
+<b>use</b> <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config">bridge::bridge_min_config</a>;
 <b>use</b> <a href="../bridge/chain_ids.md#bridge_chain_ids">bridge::chain_ids</a>;
 <b>use</b> <a href="../bridge/committee.md#bridge_committee">bridge::committee</a>;
 <b>use</b> <a href="../bridge/crypto.md#bridge_crypto">bridge::crypto</a>;
@@ -2062,7 +2071,7 @@ title: Module `bridge::bridge`
 
 
 
-<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION_V3">MESSAGE_VERSION_V3</a>: u8 = 3;
+<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION_V3">MESSAGE_VERSION_V3</a>: u8 = 4;
 </code></pre>
 
 
@@ -2625,6 +2634,24 @@ title: Module `bridge::bridge`
 
 
 
+<a name="bridge_bridge_EAmountBelowMinOutLimit"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_EAmountBelowMinOutLimit">EAmountBelowMinOutLimit</a>: u64 = 68;
+</code></pre>
+
+
+
+<a name="bridge_bridge_ECrossInAmountBelowMin"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_ECrossInAmountBelowMin">ECrossInAmountBelowMin</a>: u64 = 69;
+</code></pre>
+
+
+
 <a name="bridge_bridge_CURRENT_VERSION"></a>
 
 
@@ -2735,8 +2762,12 @@ title: Module `bridge::bridge`
     <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
     ctx: &<b>mut</b> TxContext
 ){
+    <b>if</b> (!<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(&<a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id)) {
+        <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_new_bridge_min_config_registry">bridge_min_config::new_bridge_min_config_registry</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
+    };
     <a href="../bridge/bridge.md#bridge_bridge_ensure_defi_holders_initialized">ensure_defi_holders_initialized</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
     <a href="../bridge/limiter.md#bridge_limiter_initial_external_24h_limits">limiter::initial_external_24h_limits</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id);
+    <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_initial_min_fee_limits">bridge_min_config::initial_min_fee_limits</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
 }
 </code></pre>
 
@@ -2769,6 +2800,163 @@ title: Module `bridge::bridge`
     <a href="../bridge/bridge_fee.md#bridge_bridge_fee_new_bridge_fee_registry">bridge_fee::new_bridge_fee_registry</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
     <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_registry">limiter_fast_path::registry</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
     <a href="../bridge/limiter.md#bridge_limiter_new_external_limits">limiter::new_external_limits</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
+    <a href="../bridge/bridge.md#bridge_bridge_ensure_defi_holders_initialized">ensure_defi_holders_initialized</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_registry">defi_protocols::registry</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
+    <a href="../bridge/defi_protocols.md#bridge_defi_protocols_initial_defi_protocol">defi_protocols::initial_defi_protocol</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_update_min_limit_cross_out"></a>
+
+## Function `update_min_limit_cross_out`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_min_limit_cross_out">update_min_limit_cross_out</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, bfc_system_state: &<a href="../bfc_system/bfc_system.md#bfc_system_bfc_system_BfcSystemState">bfc_system::bfc_system::BfcSystemState</a>, cap: &<a href="../bfc_system/bfc_system_state_inner.md#bfc_system_bfc_system_state_inner_BfcSystemModifyCap">bfc_system::bfc_system_state_inner::BfcSystemModifyCap</a>, chain: u64, min_limit_cross_out: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_min_limit_cross_out">update_min_limit_cross_out</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &BfcSystemState,
+    cap: &BfcSystemModifyCap,
+    chain: u64,
+    min_limit_cross_out: u64,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> (_,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>assert</b>!(bfc_system_state.verify_capability(cap, ctx), <a href="../bridge/bridge.md#bridge_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>);
+    <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_set_min_limit_cross_out">bridge_min_config::set_min_limit_cross_out</a>(
+        parent_id,
+        chain,
+        min_limit_cross_out
+    );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_update_min_limit_cross_in"></a>
+
+## Function `update_min_limit_cross_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_min_limit_cross_in">update_min_limit_cross_in</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, bfc_system_state: &<a href="../bfc_system/bfc_system.md#bfc_system_bfc_system_BfcSystemState">bfc_system::bfc_system::BfcSystemState</a>, cap: &<a href="../bfc_system/bfc_system_state_inner.md#bfc_system_bfc_system_state_inner_BfcSystemModifyCap">bfc_system::bfc_system_state_inner::BfcSystemModifyCap</a>, chain: u64, min_limit_cross_in: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_min_limit_cross_in">update_min_limit_cross_in</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &BfcSystemState,
+    cap: &BfcSystemModifyCap,
+    chain: u64,
+    min_limit_cross_in: u64,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> (_,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>assert</b>!(bfc_system_state.verify_capability(cap, ctx), <a href="../bridge/bridge.md#bridge_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>);
+    <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_set_min_limit_cross_in">bridge_min_config::set_min_limit_cross_in</a>(
+        parent_id,
+        chain,
+        min_limit_cross_in
+    );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_update_min_fee_cross_out"></a>
+
+## Function `update_min_fee_cross_out`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_min_fee_cross_out">update_min_fee_cross_out</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, bfc_system_state: &<a href="../bfc_system/bfc_system.md#bfc_system_bfc_system_BfcSystemState">bfc_system::bfc_system::BfcSystemState</a>, cap: &<a href="../bfc_system/bfc_system_state_inner.md#bfc_system_bfc_system_state_inner_BfcSystemModifyCap">bfc_system::bfc_system_state_inner::BfcSystemModifyCap</a>, chain: u64, token_id: u64, min_fee_cross_out: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_min_fee_cross_out">update_min_fee_cross_out</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &BfcSystemState,
+    cap: &BfcSystemModifyCap,
+    chain: u64,
+    token_id: u64,
+    min_fee_cross_out: u64,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> (_,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>assert</b>!(bfc_system_state.verify_capability(cap, ctx), <a href="../bridge/bridge.md#bridge_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>);
+    <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_set_min_fee_cross_out">bridge_min_config::set_min_fee_cross_out</a>(
+        parent_id,
+        chain,
+        token_id,
+        min_fee_cross_out,
+        ctx
+    );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_update_min_fee_cross_in"></a>
+
+## Function `update_min_fee_cross_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_min_fee_cross_in">update_min_fee_cross_in</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, bfc_system_state: &<a href="../bfc_system/bfc_system.md#bfc_system_bfc_system_BfcSystemState">bfc_system::bfc_system::BfcSystemState</a>, cap: &<a href="../bfc_system/bfc_system_state_inner.md#bfc_system_bfc_system_state_inner_BfcSystemModifyCap">bfc_system::bfc_system_state_inner::BfcSystemModifyCap</a>, chain: u64, token_id: u64, min_fee_cross_in: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_min_fee_cross_in">update_min_fee_cross_in</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &BfcSystemState,
+    cap: &BfcSystemModifyCap,
+    chain: u64,
+    token_id: u64,
+    min_fee_cross_in: u64,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> (_,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>assert</b>!(bfc_system_state.verify_capability(cap, ctx), <a href="../bridge/bridge.md#bridge_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>);
+    <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_set_min_fee_cross_in">bridge_min_config::set_min_fee_cross_in</a>(
+        parent_id,
+        chain,
+        token_id,
+        min_fee_cross_in,
+        ctx
+    );
 }
 </code></pre>
 
@@ -3291,7 +3479,12 @@ title: Module `bridge::bridge`
     <b>assert</b>!(token_amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
     <b>assert</b>!(token_id != 5, <a href="../bridge/bridge.md#bridge_bridge_EUseSendBusd">EUseSendBusd</a>);
     <b>assert</b>!(<a href="../bridge/tokenlist.md#bridge_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(parent_id, target_chain <b>as</b> u64, token_id),<a href="../bridge/bridge.md#bridge_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
-    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(parent_id,target_chain <b>as</b> u64,token_id,token_amount);
+    <b>assert</b>!(<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_check_cross_out_amount_ok">bridge_min_config::check_cross_out_amount_ok</a>(parent_id, &inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, target_chain <b>as</b> u64, token_id, token_amount), <a href="../bridge/bridge.md#bridge_bridge_EAmountBelowMinOutLimit">EAmountBelowMinOutLimit</a>);
+    <b>let</b> fee = <b>if</b> (<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(parent_id)) {
+        <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_effective_cross_out_fee">bridge_min_config::get_effective_cross_out_fee</a>(parent_id, target_chain <b>as</b> u64, token_id, token_amount)
+    } <b>else</b> {
+        <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(parent_id,target_chain <b>as</b> u64,token_id,token_amount)
+    };
     <b>assert</b>!(token_amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
     <b>let</b> fee_coin=token.split&lt;T&gt;(fee, ctx);
     <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
@@ -3544,8 +3737,13 @@ title: Module `bridge::bridge`
     //token amount is usdc or usdt amount
     <b>let</b> token_amount = <a href="../bridge/bridge.md#bridge_bridge_get_token_amount_for_target_chain">get_token_amount_for_target_chain</a>(target_chain, token.balance().value());
     <b>assert</b>!(token_amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
+    <b>assert</b>!(<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_check_cross_out_amount_ok">bridge_min_config::check_cross_out_amount_ok</a>(bridge_id, &inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, target_chain <b>as</b> u64, token_id, token_amount), <a href="../bridge/bridge.md#bridge_bridge_EAmountBelowMinOutLimit">EAmountBelowMinOutLimit</a>);
     //fee is usdc or usdt amount
-    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(bridge_id,target_chain <b>as</b> u64,token_id,token_amount);
+    <b>let</b> fee= <b>if</b> (<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(bridge_id)) {
+        <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_effective_cross_out_fee">bridge_min_config::get_effective_cross_out_fee</a>(bridge_id, target_chain <b>as</b> u64, token_id, token_amount)
+    } <b>else</b> {
+        <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(bridge_id,target_chain <b>as</b> u64,token_id,token_amount)
+    };
     <b>assert</b>!(token_amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
     <b>let</b> amount_after_fee=token_amount-fee;
     //fee coin is busd,so we need convert fee to busd
@@ -4862,16 +5060,26 @@ title: Module `bridge::bridge`
             source_address: source_address,
             target_address: target_address,
             amount: token_payload.token_amount(),
-           });
+        });
         <b>return</b>
     };
     <b>assert</b>!(token_payload.token_amount() &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
-    <b>let</b> <b>mut</b> token = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.mint&lt;T&gt;(amount, ctx);
-    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id,source_chain <b>as</b> u64,token_id,amount);
+    <b>if</b> (<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(parent_id)) {
+        <b>assert</b>!(
+            <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_check_cross_in_amount_ok">bridge_min_config::check_cross_in_amount_ok</a>(parent_id, &inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, source_chain <b>as</b> u64, token_id, amount),
+            <a href="../bridge/bridge.md#bridge_bridge_ECrossInAmountBelowMin">ECrossInAmountBelowMin</a>,
+        );
+    };
+    <b>let</b> fee = <b>if</b> (<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(parent_id)) {
+        <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_effective_cross_in_fee">bridge_min_config::get_effective_cross_in_fee</a>(parent_id, source_chain <b>as</b> u64, token_id, amount)
+    } <b>else</b> {
+        <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id, source_chain <b>as</b> u64, token_id, amount)
+    };
     <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
+    <b>let</b> <b>mut</b> token = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.mint&lt;T&gt;(amount, ctx);
     <b>if</b> (fee != 0){
-          <b>let</b> fee_coin=token.split&lt;T&gt;(fee, ctx);
-          <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
+        <b>let</b> fee_coin=token.split&lt;T&gt;(fee, ctx);
+        <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
     };
     transfer::public_transfer(token, address::from_bytes(target_address));
     inner.external_bridge_records.push_back(
@@ -4969,13 +5177,22 @@ title: Module `bridge::bridge`
         <b>return</b>
     };
     <b>assert</b>!(token_payload.token_amount() &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
-    <b>let</b> <b>mut</b> token =bfc_system_state.mint_stable&lt;BUSD&gt;(amount, cap,  ctx);
-    //address::from_bytes(target_address),
-    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id,source_chain <b>as</b> u64,token_id,amount);
+    <b>if</b> (<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(parent_id)) {
+        <b>assert</b>!(
+            <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_check_cross_in_amount_ok">bridge_min_config::check_cross_in_amount_ok</a>(parent_id, &inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, source_chain <b>as</b> u64, token_id, amount),
+            <a href="../bridge/bridge.md#bridge_bridge_ECrossInAmountBelowMin">ECrossInAmountBelowMin</a>,
+        );
+    };
+    <b>let</b> fee = <b>if</b> (<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(parent_id)) {
+        <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_effective_cross_in_fee">bridge_min_config::get_effective_cross_in_fee</a>(parent_id, source_chain <b>as</b> u64, token_id, amount)
+    } <b>else</b> {
+        <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id, source_chain <b>as</b> u64, token_id, amount)
+    };
     <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
+    <b>let</b> <b>mut</b> token =bfc_system_state.mint_stable&lt;BUSD&gt;(amount, cap,  ctx);
     <b>if</b> (fee != 0){
-          <b>let</b> fee_coin=token.split&lt;BUSD&gt;(fee, ctx);
-          <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
+        <b>let</b> fee_coin=token.split&lt;BUSD&gt;(fee, ctx);
+        <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
     };
     transfer::public_transfer(token, address::from_bytes(target_address));
     inner.external_bridge_records.push_back(
@@ -5043,7 +5260,12 @@ title: Module `bridge::bridge`
     <b>assert</b>!(<a href="../bridge/chain_ids.md#bridge_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="../bridge/bridge.md#bridge_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
     <b>let</b> amount = token.balance().value();
     <b>assert</b>!(amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
-    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(parent_id,target_chain <b>as</b> u64,5,amount);
+    <b>assert</b>!(<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_check_cross_out_amount_ok">bridge_min_config::check_cross_out_amount_ok</a>(parent_id, &inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, target_chain <b>as</b> u64, 5, amount), <a href="../bridge/bridge.md#bridge_bridge_EAmountBelowMinOutLimit">EAmountBelowMinOutLimit</a>);
+    <b>let</b> fee= <b>if</b> (<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(parent_id)) {
+        <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_effective_cross_out_fee">bridge_min_config::get_effective_cross_out_fee</a>(parent_id, target_chain <b>as</b> u64, 5, amount)
+    } <b>else</b> {
+        <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(parent_id,target_chain <b>as</b> u64,5,amount)
+    };
     <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
     <b>let</b> fee_coin=token.split&lt;T&gt;(fee, ctx);
     <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
@@ -5106,7 +5328,12 @@ title: Module `bridge::bridge`
     <b>assert</b>!(<a href="../bridge/chain_ids.md#bridge_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="../bridge/bridge.md#bridge_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
     <b>let</b> amount = token.balance().value();
     <b>assert</b>!(amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
-    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(parent_id,target_chain <b>as</b> u64,token_id_expect,amount);
+    <b>assert</b>!(<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_check_cross_out_amount_ok">bridge_min_config::check_cross_out_amount_ok</a>(parent_id, &inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, target_chain <b>as</b> u64, token_id_expect, amount), <a href="../bridge/bridge.md#bridge_bridge_EAmountBelowMinOutLimit">EAmountBelowMinOutLimit</a>);
+    <b>let</b> fee= <b>if</b> (<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(parent_id)) {
+        <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_effective_cross_out_fee">bridge_min_config::get_effective_cross_out_fee</a>(parent_id, target_chain <b>as</b> u64, 5, amount)
+    } <b>else</b> {
+        <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(parent_id,target_chain <b>as</b> u64,5,amount)
+    };
     <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
     <b>let</b> fee_coin=token.split&lt;T&gt;(fee, ctx);
     <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
@@ -5165,7 +5392,12 @@ title: Module `bridge::bridge`
     <b>assert</b>!(<a href="../bridge/chain_ids.md#bridge_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="../bridge/bridge.md#bridge_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
     <b>let</b> amount = token.balance().value();
     <b>assert</b>!(amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
-    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(parent_id,target_chain <b>as</b> u64,token_id,amount);
+    <b>assert</b>!(<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_check_cross_out_amount_ok">bridge_min_config::check_cross_out_amount_ok</a>(parent_id, &inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, target_chain <b>as</b> u64, token_id, amount), <a href="../bridge/bridge.md#bridge_bridge_EAmountBelowMinOutLimit">EAmountBelowMinOutLimit</a>);
+    <b>let</b> fee= <b>if</b> (<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(parent_id)) {
+        <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_effective_cross_out_fee">bridge_min_config::get_effective_cross_out_fee</a>(parent_id, target_chain <b>as</b> u64, token_id, amount)
+    } <b>else</b> {
+        <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(parent_id,target_chain <b>as</b> u64,token_id,amount)
+    };
     <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
     <b>let</b> fee_coin=token.split&lt;T&gt;(fee, ctx);
     <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
@@ -5226,7 +5458,12 @@ title: Module `bridge::bridge`
     <b>assert</b>!(<a href="../bridge/chain_ids.md#bridge_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="../bridge/bridge.md#bridge_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
     <b>let</b> amount = token.balance().value();
     <b>assert</b>!(amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
-    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(parent_id,target_chain <b>as</b> u64,token_id,amount);
+    <b>assert</b>!(<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_check_cross_out_amount_ok">bridge_min_config::check_cross_out_amount_ok</a>(parent_id, &inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, target_chain <b>as</b> u64, token_id, amount), <a href="../bridge/bridge.md#bridge_bridge_EAmountBelowMinOutLimit">EAmountBelowMinOutLimit</a>);
+    <b>let</b> fee = <b>if</b> (<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(parent_id)) {
+        <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_effective_cross_out_fee">bridge_min_config::get_effective_cross_out_fee</a>(parent_id, target_chain <b>as</b> u64, token_id, amount)
+    } <b>else</b> {
+        <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(parent_id,target_chain <b>as</b> u64,token_id,amount)
+    };
     <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
     <b>let</b> fee_coin=token.split&lt;T&gt;(fee, ctx);
     <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
@@ -5379,7 +5616,11 @@ title: Module `bridge::bridge`
 ):u64{
     <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_and_uid">load_inner_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
     <b>let</b> token_id = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.token_id&lt;T&gt;();
-    <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(parent_id,chain_id,token_id,amount)
+    <b>if</b> (<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(parent_id)) {
+        <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_effective_cross_out_fee">bridge_min_config::get_effective_cross_out_fee</a>(parent_id, chain_id, token_id, amount)
+    } <b>else</b> {
+        <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_out_fee_amount">bridge_fee::calculate_cross_out_fee_amount</a>(parent_id,chain_id,token_id,amount)
+    }
 }
 </code></pre>
 
@@ -5409,7 +5650,131 @@ title: Module `bridge::bridge`
 ):u64{
     <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_and_uid">load_inner_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
     <b>let</b> token_id = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.token_id&lt;T&gt;();
-    <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id,chain_id,token_id,amount)
+    <b>if</b> (<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(parent_id)) {
+        <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_effective_cross_in_fee">bridge_min_config::get_effective_cross_in_fee</a>(parent_id, chain_id, token_id, amount)
+    } <b>else</b> {
+        <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id, chain_id, token_id, amount)
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_min_limit_token_amount_cross_out"></a>
+
+## Function `get_min_limit_token_amount_cross_out`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_min_limit_token_amount_cross_out">get_min_limit_token_amount_cross_out</a>&lt;T&gt;(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, chain_id: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_min_limit_token_amount_cross_out">get_min_limit_token_amount_cross_out</a>&lt;T&gt;(
+     <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+     chain_id: u64,
+):u64{
+    <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_and_uid">load_inner_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> token_id = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.token_id&lt;T&gt;();
+    <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_min_limit_token_amount_cross_out">bridge_min_config::get_min_limit_token_amount_cross_out</a>(parent_id, &inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, chain_id, token_id)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_min_limit_token_amount_cross_in"></a>
+
+## Function `get_min_limit_token_amount_cross_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_min_limit_token_amount_cross_in">get_min_limit_token_amount_cross_in</a>&lt;T&gt;(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, chain_id: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_min_limit_token_amount_cross_in">get_min_limit_token_amount_cross_in</a>&lt;T&gt;(
+     <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+     chain_id: u64,
+):u64{
+    <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_and_uid">load_inner_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> token_id = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.token_id&lt;T&gt;();
+    <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_min_limit_token_amount_cross_in">bridge_min_config::get_min_limit_token_amount_cross_in</a>(parent_id, &inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, chain_id, token_id)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_cross_out_fee_info"></a>
+
+## Function `get_cross_out_fee_info`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_cross_out_fee_info">get_cross_out_fee_info</a>&lt;T&gt;(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, chain_id: u64): (u64, u64, u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_cross_out_fee_info">get_cross_out_fee_info</a>&lt;T&gt;(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    chain_id: u64,
+): (u64,u64,u64) {
+    <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_and_uid">load_inner_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> token_id = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.token_id&lt;T&gt;();
+    <b>let</b> (mode,value) = <a href="../bridge/bridge_fee.md#bridge_bridge_fee_get_fee_info_cross_out">bridge_fee::get_fee_info_cross_out</a>(parent_id, chain_id, token_id);
+    <b>let</b> min = <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_min_fee_cross_out">bridge_min_config::get_min_fee_cross_out</a>(parent_id, chain_id, token_id);
+    (mode, value, min)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_get_cross_in_fee_info"></a>
+
+## Function `get_cross_in_fee_info`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_cross_in_fee_info">get_cross_in_fee_info</a>&lt;T&gt;(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, chain_id: u64): (u64, u64, u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_cross_in_fee_info">get_cross_in_fee_info</a>&lt;T&gt;(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    chain_id: u64,
+): (u64,u64,u64) {
+    <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_and_uid">load_inner_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> token_id = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.token_id&lt;T&gt;();
+    <b>let</b> (mode,value) = <a href="../bridge/bridge_fee.md#bridge_bridge_fee_get_fee_info_cross_in">bridge_fee::get_fee_info_cross_in</a>(parent_id, chain_id, token_id);
+    <b>let</b> min = <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_min_fee_cross_in">bridge_min_config::get_min_fee_cross_in</a>(parent_id, chain_id, token_id);
+    (mode, value, min)
 }
 </code></pre>
 
@@ -5882,7 +6247,18 @@ title: Module `bridge::bridge`
         <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedTokenType">EUnexpectedTokenType</a>,
     );
     <b>let</b> amount = token_payload.token_amount_in();
-    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id,source_chain <b>as</b> u64,token_payload.token_type_in(),amount);
+    <b>let</b> token_id = token_payload.token_type_in();
+    <b>if</b> (<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(parent_id)) {
+        <b>assert</b>!(
+            <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_check_cross_in_amount_ok">bridge_min_config::check_cross_in_amount_ok</a>(parent_id, &inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, source_chain <b>as</b> u64, token_id, amount),
+            <a href="../bridge/bridge.md#bridge_bridge_ECrossInAmountBelowMin">ECrossInAmountBelowMin</a>,
+        );
+    };
+    <b>let</b> fee = <b>if</b> (<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(parent_id)) {
+        <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_effective_cross_in_fee">bridge_min_config::get_effective_cross_in_fee</a>(parent_id, source_chain <b>as</b> u64, token_id, amount)
+    } <b>else</b> {
+        <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id, source_chain <b>as</b> u64, token_id, amount)
+    };
     <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
     // Make sure transfer is within limit.
     <b>if</b> (!inner
@@ -5899,8 +6275,8 @@ title: Module `bridge::bridge`
     };
     <b>let</b> <b>mut</b> token = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.mint&lt;T&gt;(amount, ctx);
     <b>if</b> (fee!=0){
-          <b>let</b> fee_coin=token.split&lt;T&gt;(fee, ctx);
-          <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
+        <b>let</b> fee_coin=token.split&lt;T&gt;(fee, ctx);
+        <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
     };
     // Record changes
     record.claimed = <b>true</b>;
@@ -6010,6 +6386,12 @@ title: Module `bridge::bridge`
     );
     <b>let</b> amount = token_payload.token_amount_in();
     <b>assert</b>!(amount &lt;= inner.<a href="../bridge/limiter.md#bridge_limiter">limiter</a>.get_mint_busd_max_limit(), <a href="../bridge/bridge.md#bridge_bridge_EInvalidMintAmount">EInvalidMintAmount</a>);
+    <b>if</b> (<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(parent_id)) {
+        <b>assert</b>!(
+            <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_check_cross_in_amount_ok">bridge_min_config::check_cross_in_amount_ok</a>(parent_id, &inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, source_chain <b>as</b> u64, token_id, amount),
+            <a href="../bridge/bridge.md#bridge_bridge_ECrossInAmountBelowMin">ECrossInAmountBelowMin</a>,
+        );
+    };
     // Make sure transfer is within limit.
     <b>if</b> (!inner
         .<a href="../bridge/limiter.md#bridge_limiter">limiter</a>
@@ -6024,7 +6406,11 @@ title: Module `bridge::bridge`
         <b>return</b> (option::none(), owner)
     };
     <b>let</b> token_id=token_payload.token_type_in();
-    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id,source_chain <b>as</b> u64,token_id,amount);
+    <b>let</b> fee = <b>if</b> (<a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_exists">bridge_min_config::exists</a>(parent_id)) {
+        <a href="../bridge/bridge_min_config.md#bridge_bridge_min_config_get_effective_cross_in_fee">bridge_min_config::get_effective_cross_in_fee</a>(parent_id, source_chain <b>as</b> u64, token_id, amount)
+    } <b>else</b> {
+        <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id, source_chain <b>as</b> u64, token_id, amount)
+    };
     <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
     <b>let</b> amount_after_fee=amount-fee;
     <a href="../bridge/bridge.md#bridge_bridge_check_fast_path_limit">check_fast_path_limit</a>(parent_id, clock, token_payload);
@@ -7216,8 +7602,9 @@ title: Module `bridge::bridge`
 
 ## Function `get_token_amount_for_target_chain`
 
-For ETH/Solana chains, token balance is in 6 decimals (e.g. USDC), we use value/1000 as bridge amount.
+For ETH/EVM/Solana chains, token balance is in 6 decimals (e.g. USDC), busd decimal is 8,so use value/1000 as bridge amount.
 For other chains, use balance value as-is.
+only support busd
 
 
 <pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_token_amount_for_target_chain">get_token_amount_for_target_chain</a>(target_chain: u8, balance_value: u64): u64
@@ -7230,9 +7617,9 @@ For other chains, use balance value as-is.
 
 
 <pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_token_amount_for_target_chain">get_token_amount_for_target_chain</a>(target_chain: u8, balance_value: u64): u64 {
-    <b>if</b> (target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() || target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() || target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_custom">chain_ids::eth_custom</a>()) {
+    <b>if</b> (<a href="../bridge/chain_ids.md#bridge_chain_ids_is_evm_l2">chain_ids::is_evm_l2</a>(target_chain)||<a href="../bridge/chain_ids.md#bridge_chain_ids_is_eth">chain_ids::is_eth</a>(target_chain)) {
         balance_value / 1000u64
-    } <b>else</b> <b>if</b> (<a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(target_chain)) {
+    } <b>else</b> <b>if</b> (<a href="../bridge/chain_ids.md#bridge_chain_ids_is_solana">chain_ids::is_solana</a>(target_chain)) {
         balance_value / 1000u64
     } <b>else</b> {
         balance_value
@@ -7250,6 +7637,7 @@ For other chains, use balance value as-is.
 
 For ETH/Solana chains, fee is in bridge amount (6 decimals), convert to BUSD by fee*1000.
 For other chains, fee is already in BUSD units.
+only support busd
 
 
 <pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_fee_busd_for_target_chain">get_fee_busd_for_target_chain</a>(target_chain: u8, fee: u64): u64
@@ -7262,9 +7650,9 @@ For other chains, fee is already in BUSD units.
 
 
 <pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_get_fee_busd_for_target_chain">get_fee_busd_for_target_chain</a>(target_chain: u8, fee: u64): u64 {
-    <b>if</b> (target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() || target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() || target_chain == <a href="../bridge/chain_ids.md#bridge_chain_ids_eth_custom">chain_ids::eth_custom</a>()) {
+    <b>if</b> (<a href="../bridge/chain_ids.md#bridge_chain_ids_is_evm_l2">chain_ids::is_evm_l2</a>(target_chain)||<a href="../bridge/chain_ids.md#bridge_chain_ids_is_eth">chain_ids::is_eth</a>(target_chain)) {
         fee * 1000u64
-    } <b>else</b> <b>if</b> (<a href="../bridge/bridge.md#bridge_bridge_is_solana_chain">is_solana_chain</a>(target_chain)) {
+    } <b>else</b> <b>if</b> (<a href="../bridge/chain_ids.md#bridge_chain_ids_is_solana">chain_ids::is_solana</a>(target_chain)) {
         fee * 1000u64
     } <b>else</b> {
         fee

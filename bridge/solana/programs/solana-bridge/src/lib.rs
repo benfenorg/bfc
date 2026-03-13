@@ -50,9 +50,10 @@ pub mod benfen_bridge {
         ctx: Context<InitializeBridgeLimiter>,
         chain_id: u8,
         limit: u64,
+        min_usd_limit: u64,
         max_usd_limit: u64,
     ) -> Result<()> {
-        instructions::initialize_bridge_limiter(ctx, chain_id, limit, max_usd_limit)
+        instructions::initialize_bridge_limiter(ctx, chain_id, limit, min_usd_limit, max_usd_limit) 
     }
 
     pub fn initialize_benfen_bridge(
@@ -129,6 +130,18 @@ pub mod benfen_bridge {
         instructions::update_token_price_with_signature(ctx, message_type, version, nonce, chain_id, payload, signatures)
     }
 
+    pub fn update_token_fee_info(
+        ctx: Context<UpdateTokenFeeInfo>, 
+        message_type: u8, 
+        version: u8,
+        nonce: u64,
+        chain_id: u8,
+        payload: Vec<u8>,  
+        signatures: Vec<Vec<u8>>,
+    ) -> Result<()> {
+        instructions::update_token_fee_info_with_signature(ctx, message_type, version, nonce, chain_id, payload, signatures)
+    }
+
     pub fn update_block_list(
         ctx: Context<UpdateBlockList>,
         message_type: u8, 
@@ -168,7 +181,7 @@ pub mod benfen_bridge {
 
 
     pub fn update_single_transfer_limit(
-        ctx: Context<UpdateSingleTransferLimit>,
+        ctx: Context<UpdateMaxSingleTransferLimit>,
         message_type: u8, 
         version: u8,
         nonce: u64,
@@ -176,11 +189,20 @@ pub mod benfen_bridge {
         payload: Vec<u8>,
         signatures: Vec<Vec<u8>>,
     ) -> Result<()> {
-        instructions::update_single_transfer_limit_with_signatures(ctx, message_type, version, nonce, chain_id, payload, signatures)
+        instructions::update_max_single_transfer_limit_with_signatures(ctx, message_type, version, nonce, chain_id, payload, signatures)
     }
 
-   
-
+    pub fn update_min_single_transfer_limit(
+        ctx: Context<UpdateMinSingleTransferLimit>,
+        message_type: u8, 
+        version: u8,
+        nonce: u64,
+        chain_id: u8,
+        payload: Vec<u8>,
+        signatures: Vec<Vec<u8>>,
+    ) -> Result<()> {
+        instructions::update_min_single_transfer_limit_with_signatures(ctx, message_type, version, nonce, chain_id, payload, signatures)
+    }
 
     pub fn upgrade_program(
         ctx: Context<UpgradeProgram>,

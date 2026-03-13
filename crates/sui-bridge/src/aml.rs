@@ -81,7 +81,9 @@ pub async fn check_aml_risk_score(
     aml_key: String,
     aml_block_list: Vec<String>,
 ) -> bool {
-    if aml_block_list.contains(&eth_address.to_string().to_lowercase()) {
+    let eth_address_str = format!("0x{:x}", eth_address);
+    info!("[DEBUG] check_aml_risk_score: aml_block_list: {:?} eth_address_str: {}", aml_block_list, &eth_address_str);
+    if aml_block_list.contains(&eth_address_str) {
         return false;
     }
     let coin = get_coin_by_chain_token(chain_id, token_id);
@@ -257,8 +259,8 @@ mod tests {
     #[tokio::test]
     async fn test_check_aml() {
         let eth_address = EthAddress::from_str("0x2e6547f8a54d261a4a3e508c4b321b84c0aee44b").unwrap();
-        let result = check_aml_risk_score(BridgeChainId::EthMainnet, TOKEN_ID_ETH, eth_address, "".to_string(), vec![]).await;
-        assert_eq!(result, true);
+        let result = check_aml_risk_score(BridgeChainId::EthMainnet, TOKEN_ID_ETH, eth_address, "".to_string(), vec!["0x2e6547f8a54d261a4a3e508c4b321b84c0aee44b".to_string()]).await;
+        assert_eq!(result, false);
     }
 
     #[tokio::test]

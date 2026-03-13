@@ -14,6 +14,18 @@ interface IBridgeConfig {
         uint8 originalDecimal;
     }
 
+
+    struct BridgeFeeInfo {
+        /// @dev 0: fixed fee, 1: dynamic fee
+        /// 0 代表收取固定数据
+        /// 1 按照百分比
+        uint8 mode;
+        //具体的值
+        uint64 value;
+        //上边计算收取的fee至少要超过这个值，否则就要用这个值
+        uint64 minFeeValue;
+    }
+
     /* ========== VIEW FUNCTIONS ========== */
 
     /// @notice Returns the address of the token with the given ID.
@@ -54,6 +66,17 @@ interface IBridgeConfig {
    function investLpTokenIdOf(uint64 protocolType,uint64 underlyingTokenId) external view returns (uint64);
    
    function underlyingTokenIdOf(uint64 protocolType,uint64 lpTokenId) external view returns (uint64);
+
+   function bridgeFeeInfoOf(uint64 tokenID) external view  returns (BridgeFeeInfo memory);
+
+   function bridgeFeeModeOf(uint64 tokenID) external view returns (uint8);
+   
+   function bridgeFeeValueOf(uint64 tokenID) external view returns (uint64);
+   
+   function bridgeFeeMinFeeValueOf(uint64 tokenID) external view returns (uint64);
+
+   function calculateBridgeFee(uint64 tokenID, uint256 amount) external view returns (uint256);
+
 
     /// @notice Event for the addition of a new token.
     /// @param nonce The governance action nonce.
@@ -101,4 +124,6 @@ interface IBridgeConfig {
 
 
     event LpTokenIdAdded(uint64 nonce,uint64 protocolType,uint64 underlyingTokenId,uint64 lpTokenId);
+
+    event BridgeFeeUpdated(uint64 nonce, uint64 tokenID, uint8 mode, uint64 value, uint64 minFeeValue);
 }

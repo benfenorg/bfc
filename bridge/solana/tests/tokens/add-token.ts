@@ -37,6 +37,7 @@ describe("BenfenBridge - Add Token", () => {
         const tokenIdBytes = Buffer.alloc(8);
         tokenIdBytes.writeBigUInt64BE(encodeTokenId); 
         let benfenDecimal=9;
+        let originalDecimal=6;
         const usdMint = deployToken.mintAddress;
         let version=1;
         let nonce=0;
@@ -93,6 +94,7 @@ describe("BenfenBridge - Add Token", () => {
             BigInt(tokenId),
             usdMint,
             benfenDecimal,
+            originalDecimal,
             BigInt(100000000)
         );
 
@@ -156,6 +158,7 @@ describe("BenfenBridge - Add Token", () => {
         const tokenIdBytes = Buffer.alloc(8);
         tokenIdBytes.writeBigUInt64BE(encodeTokenId); 
         let benfenDecimal=9;
+        let originalDecimal=6;
         const usdMint = deployToken.mintAddress;
         let version=1;
         let nonce=0;
@@ -217,6 +220,7 @@ describe("BenfenBridge - Add Token", () => {
             BigInt(tokenId),
             usdMint,
             benfenDecimal,
+            originalDecimal,
             BigInt(100000000)
         );
 
@@ -350,6 +354,7 @@ describe("BenfenBridge - Add Token", () => {
             false,
             BigInt(tokenId),
             usdtMint,
+            6,
             6,
             BigInt(100000000)
         );
@@ -496,6 +501,7 @@ describe("BenfenBridge - Add Token", () => {
             BigInt(tokenId),
             usdMint,
             6,
+            6,
             BigInt(100000000)
         );
        
@@ -626,6 +632,7 @@ describe("BenfenBridge - Add Token", () => {
             BigInt(tokenId),
             solMint,
             decimal,
+            decimal,
             price
         );
        
@@ -738,6 +745,7 @@ describe("BenfenBridge - Add Token", () => {
             false,
             BigInt(TOKEN_IDS.USDC),
             deployToken.mintAddress,
+            6,
             6,
             BigInt(100000000)
         );

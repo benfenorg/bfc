@@ -193,6 +193,7 @@ describe("BenfenBridge - Pause", () => {
              let crossInTx=await program.methods.crossTokenToBridge(
                 new anchor.BN(1000000),
                 benfenAddressBytes,
+                new anchor.BN(tokenId),
             )
             .accounts({
                 payer: program.provider.wallet.publicKey,

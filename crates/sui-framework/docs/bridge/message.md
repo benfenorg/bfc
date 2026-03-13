@@ -1511,7 +1511,7 @@ title: Module `bridge::message`
 
 
 
-<pre><code><b>const</b> <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION_V3">CURRENT_MESSAGE_VERSION_V3</a>: u8 = 3;
+<pre><code><b>const</b> <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION_V3">CURRENT_MESSAGE_VERSION_V3</a>: u8 = 4;
 </code></pre>
 
 

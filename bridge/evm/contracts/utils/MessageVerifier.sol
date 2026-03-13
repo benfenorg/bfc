@@ -35,6 +35,15 @@ abstract contract MessageVerifier is Initializable {
         bytes[] memory signatures,
         uint8 messageType
     ) {
+        _verifyMessageAndSignatures(message, signatures, messageType);
+        _;
+    }
+
+    function _verifyMessageAndSignatures(
+        BridgeUtils.Message memory message,
+        bytes[] memory signatures,
+        uint8 messageType
+    ) internal {
         // verify message type
         require(message.messageType == messageType, "MessageVerifier: message does not match type");
         // verify signatures
@@ -48,6 +57,5 @@ abstract contract MessageVerifier is Initializable {
             require(message.nonce == nonces[message.messageType], "MessageVerifier: Invalid nonce");
             nonces[message.messageType]++;
         }
-        _;
     }
 }

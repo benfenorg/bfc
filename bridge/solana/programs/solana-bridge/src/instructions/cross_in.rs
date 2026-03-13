@@ -140,16 +140,25 @@ pub fn cross_in<'info>(
             BridgeTokenError::InvalidTokenDecimal
         );
     }
-   
-    let single_transfer_limit = chain_limit.get_single_transfer_limit(token_config.price(), token_config.decimal())?;
+    //转成美元
     let usd_amount = chain_limit.calculate_amount_in_usd(amount, token_config.price(),  token_config.decimal())?;
-    require!(usd_amount < single_transfer_limit, BridgeError::SingleTransferAmountExceedsLimit);
- 
 
+    //检查是否超过最小转账金额
+    let single_min_transfer_limit = chain_limit.get_min_single_transfer_limit()?;
+    require!(usd_amount > single_min_transfer_limit, BridgeError::SingleTransferAmountBelowLimit);
+
+    //不能超过最大值  
+    let single_max_transfer_limit = chain_limit.get_max_single_transfer_limit()?;
+    require!(usd_amount < single_max_transfer_limit, BridgeError::SingleTransferAmountExceedsLimit);
+  
+    //计算fee,看看跨入的金额是否足够支付fee
     //检查用户余额是否足够
     require!(token_account.amount >= amount, BridgeError::InsufficientBalance);
 
-   
+
+    let fee=token_config.calculate_bridge_fee(amount);
+    require!(amount > fee, BridgeError::InsufficientFeeBalance);
+  
 
 
     transfer_from_user_to_bridge_vault(

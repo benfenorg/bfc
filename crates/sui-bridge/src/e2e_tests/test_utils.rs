@@ -877,6 +877,7 @@ pub(crate) async fn init_solana_program(
         .args(args::InitializeBridgeLimiter {
             chain_id: target_chain_id as u8,
             limit: 1000000000000000,
+            min_usd_limit: 0,
             max_usd_limit: 1000000000000000,
         })
         .instructions()?
@@ -1686,6 +1687,33 @@ impl EthBridgeEnvironment {
         amount.as_u64()
     }
 
+    pub async fn get_single_min_transfer_limit(&self) -> u64 {
+        let limit = self.get_bridge_limit();
+        //getUsdminLimit
+        let amount: U256 = limit.get_usd_min_limit().call().await.unwrap();
+        amount.as_u64()
+    }
+
+    pub async fn get_bridge_fee_info_of_mode(&self,token_id: u64) -> (u8) {
+        let config = self.get_bridge_config();
+        let fee_mode = config.bridge_fee_mode_of(token_id).call().await.unwrap();
+        fee_mode
+    }
+
+
+    pub async fn get_bridge_fee_info_of_value(&self,token_id: u64) -> (u64) {
+        let config = self.get_bridge_config();
+        let fee_value = config.bridge_fee_value_of(token_id).call().await.unwrap();
+        fee_value
+    }
+
+
+    pub async fn get_bridge_fee_info_of_min_fee_value(&self,token_id: u64) -> (u64) {
+        let config = self.get_bridge_config();
+        let fee_min_value = config.bridge_fee_min_fee_value_of(token_id).call().await.unwrap();
+        fee_min_value
+    }
+
     pub async  fn get_invest_address(&self) -> EthAddress {
         let bridge = self.get_benfen_bridge();
         let invest_address =  bridge.get_invest_address().call().await.unwrap();
@@ -1810,7 +1838,7 @@ pub(crate) async fn start_bridge_cluster(
         let prometheus_registry = Registry::new();
         if i == 0 {
             let metrics = Arc::new(BridgeMetrics::new(&prometheus_registry));
-            let (_, client_config) = config.validate(metrics.clone()).await.unwrap();
+            let (_, client_config) = config.validate(metrics.clone()).await.expect("bridge config validate");
             let client_config = client_config.unwrap();
             let sui_address = client_config.sui_address;
             let sui_key_pair = client_config.key;
@@ -2093,8 +2121,8 @@ impl TestClusterWrapperBuilder {
             let token_prices = vec![
                 500_000_000u64,
                 30_000_000u64,
-                1_000u64,
-                1_000u64,
+                100_000_000u64,
+                100_000_000u64,
                 100_000_000u64,
                 100_000_000u64,
             ];
@@ -2599,7 +2627,7 @@ pub async fn initiate_bridge_sui_to_eth(
         );
     } else {
         assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_USDT);
-        if bridge_event.sui_bridge_event.eth_chain_id.is_eth_chain() && original_token_id == TOKEN_ID_BUSD {
+        if bridge_event.sui_bridge_event.eth_chain_id.is_evm_chain() && original_token_id == TOKEN_ID_BUSD {
             assert_eq!(
                 bridge_event.sui_bridge_event.amount_sui_adjusted,
                 sui_amount / 1000 - fee / 1000
@@ -3253,7 +3281,7 @@ pub async fn initiate_bridge_erc20_to_sui(
         bridge_test_cluster.contracts().sui_bridge,
         eth_signer.clone().into(),
     );
-    let deposit_call = contract.bridge_erc20(
+    let deposit_call = contract.bridge_erc20_with_target_token_id(
         token_id,
         amount,
         sui_recipient_address.to_vec().into(),
