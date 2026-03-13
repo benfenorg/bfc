@@ -675,3 +675,9 @@ fun test_routes_err_base_2() {
 fun test_routes_err_base_3() {
     get_route(BaseMainnet, SUI_CUSTOM);
 }
+
+#[test]
+#[expected_failure(abort_code = EInvalidBridgeRoute)]
+fun test_routes_err_base_4() {
+    get_route(BaseMainnet, SUI_TESTNET);
+}
