@@ -25,7 +25,7 @@ async fn sim_test_additional_objects() {
 }
 
 #[sim_test]
-async fn test_package_override() {
+async fn sim_test_package_override() {
     // `with_objects` can be used to override existing packages.
     let framework_ref = {
         let default_cluster = TestClusterBuilder::new().build().await;

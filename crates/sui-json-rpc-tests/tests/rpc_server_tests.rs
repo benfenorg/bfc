@@ -1009,7 +1009,7 @@ async fn test_staking_multiple_coins() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_zklogin_verify() -> Result<(), anyhow::Error> {
+async fn sim_test_zklogin_verify() -> Result<(), anyhow::Error> {
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(15000)
         .with_default_jwks()

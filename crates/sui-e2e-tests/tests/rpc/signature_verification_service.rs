@@ -15,7 +15,7 @@ use sui_types::zk_login_authenticator::ZkLoginAuthenticator;
 use test_cluster::TestClusterBuilder;
 
 #[sim_test]
-async fn test_verify_signature_zklogin() -> Result<(), anyhow::Error> {
+async fn sim_test_verify_signature_zklogin() -> Result<(), anyhow::Error> {
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(10000)
         .with_default_jwks()
