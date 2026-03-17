@@ -11,6 +11,8 @@ use std::ops::DerefMut;
 
 use crate::errors::MessageError;
 use crate::errors::BridgeLimiterError;
+use crate::errors::BridgeConfigError;
+use crate::errors::BridgeError;
 use crate::events::ChainLimitUpdated;
 
 // use crate::states::committee::Committee;
@@ -35,17 +37,33 @@ pub struct UpdateBridgeLimiter<'info> {
     )]
     pub message_config: Box<Account<'info, MessageConfig>>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::bridge_config_pda().0 @ BridgeConfigError::InvalidConfigPubkey
+    )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::chain_limit_pda(&bridge_config.key(), chain_limit.load()?.get_chain_id()).0
+            @ BridgeLimiterError::InvalidLimiterPubkey,
+        constraint = chain_limit.load()?.config == bridge_config.key() @ BridgeLimiterError::InvalidLimiterPubkey,
+        constraint = bridge_config.load()?.supported_chains.contains(&chain_limit.load()?.get_chain_id())
+            @ BridgeError::UnsupportedCrossToChainId
+    )]
     pub chain_limit: AccountLoader<'info, ChainLimit>,
 
-     #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::message_verifier_pda(&committee.key()).0 @ MessageError::InvalidMessageVerifier
+    )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee
+    )]
     pub committee:  AccountLoader<'info, Committee>,
 
     pub system_program: Program<'info, System>,

@@ -18,7 +18,7 @@ pub struct MessageConfig {
 
 
 impl MessageConfig {
-    pub const SPACE: usize = 8 + std::mem::size_of::<Self>();
+    pub const SPACE: usize = 8 + 32 + 1 + 8 + 32;
 
     pub fn initialize(
         &mut self,
@@ -40,8 +40,12 @@ impl MessageConfig {
         self.message_type
     }
 
-    pub fn increment_nonce(&mut self) {
-        self.nonce = self.nonce.checked_add(1).unwrap();
+    pub fn increment_nonce(&mut self) -> Result<()> {
+        self.nonce = self
+            .nonce
+            .checked_add(1)
+            .ok_or(MessageError::NonceOverflow)?;
+        Ok(())
     }
 }
 
@@ -69,7 +73,7 @@ pub mod test_message_config{
         let mut config = MessageConfig::default();
         config.initialize(Pubkey::new_unique(), 1).unwrap();
         assert_eq!(config.nonce(), 0);
-        config.increment_nonce();
+        config.increment_nonce().unwrap();
         assert_eq!(config.nonce(), 1);
     }
 

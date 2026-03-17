@@ -30,7 +30,7 @@ pub struct BenfenBridge {
 
 
 impl BenfenBridge {
-    pub const SPACE: usize = 8 + std::mem::size_of::<Self>();
+    pub const SPACE: usize = 8 + 1 + 1 + 32 + 32 + (32 * 8);
 
 
     /// Initialize the bridge with required parameters
@@ -74,5 +74,4 @@ impl BenfenBridge {
         ]
     }
 }
-
 

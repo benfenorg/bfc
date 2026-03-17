@@ -81,6 +81,10 @@ pub enum MessageError {
     InvalidMintAddress,
     #[msg("Invalid token price")]
     InvalidTokenPrice,
+    #[msg("Message nonce overflow")]
+    NonceOverflow,
+    #[msg("Message verifier number overflow")]
+    MessageNumberOverflow,
 }
 
 #[error_code]
@@ -117,6 +121,10 @@ pub enum BridgeConfigError {
 
     #[msg("Invalid chain ID")]
     InvalidChainId,
+    #[msg("Token count overflow")]
+    TokenCountOverflow,
+    #[msg("Supported chain count overflow")]
+    ChainCountOverflow,
 }
 
 #[error_code]
@@ -160,6 +168,8 @@ pub enum BridgeCommitteeError {
     SignatureVerificationFailed,
     #[msg("Invalid recovery ID")]
     InvalidRecoveryId,
+    #[msg("Invalid blocklist status")]
+    InvalidBlocklistStatus,
 }
 
 #[error_code]

@@ -22,7 +22,7 @@ pub struct ProcessTransfer {
 
 
 impl ProcessTransfer {
-    pub const SPACE: usize = 8 + std::mem::size_of::<Self>();
+    pub const SPACE: usize = 8 + 1 + 8 + 1 + (8 * 8);
 
 
     pub fn new(nonce: u64, bump: u8) -> Self {
