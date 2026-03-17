@@ -66,7 +66,7 @@ Response: {
   "result": {
     "epoch": "0",
     "sequenceNumber": "0",
-    "digest": "3kewSQzBTzi5Z372pMjZ4WziyhHyMPtTs1oDTHnpkiC1",
+    "digest": "ENPpyf3w9rAboHpV64psVM1puZKYNx4HKMuFSFCY9xvb",
     "networkTotalTransactions": "1",
     "epochRollingBfcGasCostSummary": {
       "basePoint": 0,
@@ -79,10 +79,10 @@ Response: {
     "epochRollingStableGasCostSummaryMap": [],
     "timestampMs": "0",
     "transactions": [
-      "7uJn6sW4Hn4Gahmmfb4oiR8AeTwZM7pAe39EfRUau5w8"
+      "3wV7E2kuAnRD6p5VyJLDRPiuR8g457g4XvF4mgeQPTbS"
     ],
     "checkpointCommitments": [],
-    "validatorSignature": "rGKvNUt77blP36G20n6Nak762bnhaPc28Kt0vb6alNlPmATy+eZEMe1ljKgsXdP3"
+    "validatorSignature": "tkcBd9bjogDTvNY45I8XhLWAbPix/8blEBItU9MBQFdJfsm2gtpQtGzLLx+Tx+V1"
   }
 }
 
@@ -94,9 +94,9 @@ Response: {
   "result": {
     "epoch": "0",
     "sequenceNumber": "1",
-    "digest": "CdYbfJq3qfaoMcxaaPBVSsTQa5re6rb5bNRaVqdeZeo2",
+    "digest": "CU3QBLHzWDLjw6jP9738zbb8HgEhdsUXtRSQgH7Vfodk",
     "networkTotalTransactions": "1",
-    "previousDigest": "3kewSQzBTzi5Z372pMjZ4WziyhHyMPtTs1oDTHnpkiC1",
+    "previousDigest": "ENPpyf3w9rAboHpV64psVM1puZKYNx4HKMuFSFCY9xvb",
     "epochRollingBfcGasCostSummary": {
       "basePoint": 0,
       "rate": 0,
@@ -109,7 +109,7 @@ Response: {
     "timestampMs": "0",
     "transactions": [],
     "checkpointCommitments": [],
-    "validatorSignature": "lBRRbA54RPN0k33q+ufQQt/34nBPTksbzVKFGdKMC5ThFahnhqSV+cq8pDZU/0/9"
+    "validatorSignature": "kCdvzk118JuWZAZEodt9kA6EZgk7kfLwv8lXYcNX+4/AT+3xPnJCKYJdzhzr5EKF"
   }
 }
 
@@ -121,9 +121,9 @@ Response: {
   "result": {
     "epoch": "0",
     "sequenceNumber": "2",
-    "digest": "5urJbJScUhtrQbdjuYoVMGKg6CEMUAX5PiPYUMhnzrQs",
+    "digest": "BwuPMtwDMo5mYZZSEw9jVGH7moQPYRiSrkCSTW5SzLQn",
     "networkTotalTransactions": "2",
-    "previousDigest": "CdYbfJq3qfaoMcxaaPBVSsTQa5re6rb5bNRaVqdeZeo2",
+    "previousDigest": "CU3QBLHzWDLjw6jP9738zbb8HgEhdsUXtRSQgH7Vfodk",
     "epochRollingBfcGasCostSummary": {
       "basePoint": 0,
       "rate": 0,
@@ -135,10 +135,10 @@ Response: {
     "epochRollingStableGasCostSummaryMap": [],
     "timestampMs": "0",
     "transactions": [
-      "7fPD56W9SPSs4BVapRtnXr8knobCVF2WUvcRmfZKQbeM"
+      "DRckaSGjRTiKFcJdZZfWhbSV4GPyARd5iTjkbm9NfH1d"
     ],
     "checkpointCommitments": [],
-    "validatorSignature": "gPhJUXksAUxD32qAm5tMUz3gzjjpK0mJQh6r/ZStULv2bbdytgaEryu4e88Q6XoR"
+    "validatorSignature": "kui3rVi+Ht8l8yh/VVhJJxYejfEIsHNCgyV6NAgQAALPnzmnPJuWC+P9oeq3Zi2s"
   }
 }
 
@@ -150,9 +150,9 @@ Response: {
   "result": {
     "epoch": "0",
     "sequenceNumber": "3",
-    "digest": "HPqGqnzEJJ1hCAuQsjZmjN3oZbUmbceP3LUjb1vW6s3b",
+    "digest": "46ghnoQrRPVeL9yz6J5KWSNTGHyJfyaNKKsjrREi3XTw",
     "networkTotalTransactions": "6",
-    "previousDigest": "5urJbJScUhtrQbdjuYoVMGKg6CEMUAX5PiPYUMhnzrQs",
+    "previousDigest": "BwuPMtwDMo5mYZZSEw9jVGH7moQPYRiSrkCSTW5SzLQn",
     "epochRollingBfcGasCostSummary": {
       "basePoint": 0,
       "rate": 0,
@@ -164,13 +164,13 @@ Response: {
     "epochRollingStableGasCostSummaryMap": [],
     "timestampMs": "0",
     "transactions": [
-      "7o8rHiVsQi6JUSt9DGu5oBpooo1aWUYbJo54yG8jPXxr",
-      "5ypCiKCRygbw9hXGzpTLxu3VEbL2kFZ2cBwFBKHsRxFT",
-      "6WA8nmAH4FRN5hqGYu9dWXZMLqQrBBX6dsb7dS7KGLK7",
-      "863VoSWGXE3S2EmM7t3NX2LfGEjsx88JKwrDWLAQ4yuK"
+      "2wAURekhBuhCGo1x6yC42iumGLEPEMEjXpaTV7gbYQW9",
+      "BbvbfzDzS8MjPRsGvEnw6sMzQzWLujgk3dJBZPiyRQzN",
+      "J45wHNYGgV6rLMV2oxzTao6E3gokQB6cXD1zEbTPxFtR",
+      "5KdL3kPSudxDrvJqqR6mGwE3UwuVxFnvpaYptQBxH2B2"
     ],
     "checkpointCommitments": [],
-    "validatorSignature": "inoCy1MIiVNY3GHDX0Y41DNpfqjEsFJTGA+D9wlwhb9b6aaav93KMJaDHVdBT76f"
+    "validatorSignature": "okre6sKaIvwnOuQu0xvJvMwWMldADRX7REvzWrvKAd/iokfsS2DEu0GPpBEVpiq7"
   }
 }
 
@@ -194,7 +194,7 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "7fPD56W9SPSs4BVapRtnXr8knobCVF2WUvcRmfZKQbeM",
+        "digest": "DRckaSGjRTiKFcJdZZfWhbSV4GPyARd5iTjkbm9NfH1d",
         "timestampMs": "0",
         "checkpoint": "2"
       }
@@ -212,22 +212,22 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "7o8rHiVsQi6JUSt9DGu5oBpooo1aWUYbJo54yG8jPXxr",
+        "digest": "2wAURekhBuhCGo1x6yC42iumGLEPEMEjXpaTV7gbYQW9",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "5ypCiKCRygbw9hXGzpTLxu3VEbL2kFZ2cBwFBKHsRxFT",
+        "digest": "BbvbfzDzS8MjPRsGvEnw6sMzQzWLujgk3dJBZPiyRQzN",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "6WA8nmAH4FRN5hqGYu9dWXZMLqQrBBX6dsb7dS7KGLK7",
+        "digest": "J45wHNYGgV6rLMV2oxzTao6E3gokQB6cXD1zEbTPxFtR",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "863VoSWGXE3S2EmM7t3NX2LfGEjsx88JKwrDWLAQ4yuK",
+        "digest": "5KdL3kPSudxDrvJqqR6mGwE3UwuVxFnvpaYptQBxH2B2",
         "timestampMs": "0",
         "checkpoint": "3"
       }
@@ -257,7 +257,7 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "7fPD56W9SPSs4BVapRtnXr8knobCVF2WUvcRmfZKQbeM",
+        "digest": "DRckaSGjRTiKFcJdZZfWhbSV4GPyARd5iTjkbm9NfH1d",
         "timestampMs": "0",
         "checkpoint": "2"
       }
@@ -275,22 +275,22 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "863VoSWGXE3S2EmM7t3NX2LfGEjsx88JKwrDWLAQ4yuK",
+        "digest": "5KdL3kPSudxDrvJqqR6mGwE3UwuVxFnvpaYptQBxH2B2",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "6WA8nmAH4FRN5hqGYu9dWXZMLqQrBBX6dsb7dS7KGLK7",
+        "digest": "J45wHNYGgV6rLMV2oxzTao6E3gokQB6cXD1zEbTPxFtR",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "5ypCiKCRygbw9hXGzpTLxu3VEbL2kFZ2cBwFBKHsRxFT",
+        "digest": "BbvbfzDzS8MjPRsGvEnw6sMzQzWLujgk3dJBZPiyRQzN",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "7o8rHiVsQi6JUSt9DGu5oBpooo1aWUYbJo54yG8jPXxr",
+        "digest": "2wAURekhBuhCGo1x6yC42iumGLEPEMEjXpaTV7gbYQW9",
         "timestampMs": "0",
         "checkpoint": "3"
       }
@@ -320,7 +320,7 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "7fPD56W9SPSs4BVapRtnXr8knobCVF2WUvcRmfZKQbeM",
+        "digest": "DRckaSGjRTiKFcJdZZfWhbSV4GPyARd5iTjkbm9NfH1d",
         "timestampMs": "0",
         "checkpoint": "2"
       }
@@ -338,12 +338,12 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "7o8rHiVsQi6JUSt9DGu5oBpooo1aWUYbJo54yG8jPXxr",
+        "digest": "2wAURekhBuhCGo1x6yC42iumGLEPEMEjXpaTV7gbYQW9",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "5ypCiKCRygbw9hXGzpTLxu3VEbL2kFZ2cBwFBKHsRxFT",
+        "digest": "BbvbfzDzS8MjPRsGvEnw6sMzQzWLujgk3dJBZPiyRQzN",
         "timestampMs": "0",
         "checkpoint": "3"
       }
@@ -373,7 +373,7 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "7fPD56W9SPSs4BVapRtnXr8knobCVF2WUvcRmfZKQbeM",
+        "digest": "DRckaSGjRTiKFcJdZZfWhbSV4GPyARd5iTjkbm9NfH1d",
         "timestampMs": "0",
         "checkpoint": "2"
       }
@@ -391,12 +391,12 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "863VoSWGXE3S2EmM7t3NX2LfGEjsx88JKwrDWLAQ4yuK",
+        "digest": "5KdL3kPSudxDrvJqqR6mGwE3UwuVxFnvpaYptQBxH2B2",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "6WA8nmAH4FRN5hqGYu9dWXZMLqQrBBX6dsb7dS7KGLK7",
+        "digest": "J45wHNYGgV6rLMV2oxzTao6E3gokQB6cXD1zEbTPxFtR",
         "timestampMs": "0",
         "checkpoint": "3"
       }
@@ -414,12 +414,12 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "6WA8nmAH4FRN5hqGYu9dWXZMLqQrBBX6dsb7dS7KGLK7",
+        "digest": "J45wHNYGgV6rLMV2oxzTao6E3gokQB6cXD1zEbTPxFtR",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "863VoSWGXE3S2EmM7t3NX2LfGEjsx88JKwrDWLAQ4yuK",
+        "digest": "5KdL3kPSudxDrvJqqR6mGwE3UwuVxFnvpaYptQBxH2B2",
         "timestampMs": "0",
         "checkpoint": "3"
       }
@@ -437,7 +437,7 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "7o8rHiVsQi6JUSt9DGu5oBpooo1aWUYbJo54yG8jPXxr",
+        "digest": "2wAURekhBuhCGo1x6yC42iumGLEPEMEjXpaTV7gbYQW9",
         "timestampMs": "0",
         "checkpoint": "3"
       }
@@ -455,12 +455,12 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "7o8rHiVsQi6JUSt9DGu5oBpooo1aWUYbJo54yG8jPXxr",
+        "digest": "2wAURekhBuhCGo1x6yC42iumGLEPEMEjXpaTV7gbYQW9",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "5ypCiKCRygbw9hXGzpTLxu3VEbL2kFZ2cBwFBKHsRxFT",
+        "digest": "BbvbfzDzS8MjPRsGvEnw6sMzQzWLujgk3dJBZPiyRQzN",
         "timestampMs": "0",
         "checkpoint": "3"
       }
@@ -502,12 +502,12 @@ Response: {
   "result": {
     "data": [
       {
-        "digest": "863VoSWGXE3S2EmM7t3NX2LfGEjsx88JKwrDWLAQ4yuK",
+        "digest": "5KdL3kPSudxDrvJqqR6mGwE3UwuVxFnvpaYptQBxH2B2",
         "timestampMs": "0",
         "checkpoint": "3"
       },
       {
-        "digest": "6WA8nmAH4FRN5hqGYu9dWXZMLqQrBBX6dsb7dS7KGLK7",
+        "digest": "J45wHNYGgV6rLMV2oxzTao6E3gokQB6cXD1zEbTPxFtR",
         "timestampMs": "0",
         "checkpoint": "3"
       }

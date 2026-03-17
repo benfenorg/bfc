@@ -42,22 +42,22 @@ Response: {
   "id": 0,
   "result": {
     "data": {
-      "objectId": "BFC9c4de8fba04132961cfab0fd91ccfd4fbd8bc6fd395e66ef60a4d25e3a5080431135",
+      "objectId": "BFCcb918235895360144b77fd9da0a483331fa0e8f494b9899c547130fb153cd703c733",
       "version": "3",
-      "digest": "E8NHhAyBXZMWougxZVcSZEZdeVdMTcLE7G9KJnjX2Xc5",
-      "type": "0x500ee83c1df070b5d6fe26142d41f7352149d18513df3278f6a4717a9be80062::M::Value",
+      "digest": "5StBE1CBrM1U8RWMRzszeydr8acuX2MZgvyJp1vWkiQh",
+      "type": "0xcd8854fe44af45a072473d5a8cc0008fa8ff782256b0dadc9932c6bd7001cae8::M::Value",
       "owner": {
-        "ObjectOwner": "BFC9892d6b4453bf2767c9357f726f3a4e98f81445a5a7091c9426294ee22ad16abe2e7"
+        "ObjectOwner": "BFC08fbea1c4cbf6e57054ff08e3b6cf5e57db3afa344cc1f07e3d560188034640c4d03"
       },
-      "previousTransaction": "6aaGpmAHV7Z12iKVwKeds1YbsSeeTrtykYCfxdBX3Ruz",
+      "previousTransaction": "9iqiNcM1MEQWDXtbwvgrLjH11WrVcviDQnh3cNKrEfbt",
       "storageRebate": "1299600",
       "content": {
         "dataType": "moveObject",
-        "type": "0x500ee83c1df070b5d6fe26142d41f7352149d18513df3278f6a4717a9be80062::M::Value",
+        "type": "0xcd8854fe44af45a072473d5a8cc0008fa8ff782256b0dadc9932c6bd7001cae8::M::Value",
         "hasPublicTransfer": true,
         "fields": {
           "id": {
-            "id": "BFC9c4de8fba04132961cfab0fd91ccfd4fbd8bc6fd395e66ef60a4d25e3a5080431135"
+            "id": "BFCcb918235895360144b77fd9da0a483331fa0e8f494b9899c547130fb153cd703c733"
           },
           "x": "45"
         }
@@ -73,22 +73,22 @@ Response: {
   "id": 1,
   "result": {
     "data": {
-      "objectId": "BFC59d311d526397292a452d135c9ce8035bef910278a61e0739cd1f98e302e3d1ce918",
+      "objectId": "BFC50dd45effad826ec2d0d3aa5fb061259589c475cd1976c29eb0c7a369364af2dd2e9",
       "version": "3",
-      "digest": "65fRXn6Fk3FFUk5e2Trd4zBryoqQVwtfrhPC2mW9BGGQ",
-      "type": "0x500ee83c1df070b5d6fe26142d41f7352149d18513df3278f6a4717a9be80062::M::Value",
+      "digest": "83gMjkamGWhTgfWF3zvfGoG993DKrERiBzi2LFwJSSCV",
+      "type": "0xcd8854fe44af45a072473d5a8cc0008fa8ff782256b0dadc9932c6bd7001cae8::M::Value",
       "owner": {
-        "ObjectOwner": "BFCf816bce8c25d3c6c64eb3f21d21f9361fb3962aae882e4131e89c5357c7debbacb4f"
+        "ObjectOwner": "BFC1ac79c17f9d7d37525441fe7d8c9c359e504a83cc47fc19c67f0f149a82e934cc82e"
       },
-      "previousTransaction": "6aaGpmAHV7Z12iKVwKeds1YbsSeeTrtykYCfxdBX3Ruz",
+      "previousTransaction": "9iqiNcM1MEQWDXtbwvgrLjH11WrVcviDQnh3cNKrEfbt",
       "storageRebate": "1299600",
       "content": {
         "dataType": "moveObject",
-        "type": "0x500ee83c1df070b5d6fe26142d41f7352149d18513df3278f6a4717a9be80062::M::Value",
+        "type": "0xcd8854fe44af45a072473d5a8cc0008fa8ff782256b0dadc9932c6bd7001cae8::M::Value",
         "hasPublicTransfer": true,
         "fields": {
           "id": {
-            "id": "BFC59d311d526397292a452d135c9ce8035bef910278a61e0739cd1f98e302e3d1ce918"
+            "id": "BFC50dd45effad826ec2d0d3aa5fb061259589c475cd1976c29eb0c7a369364af2dd2e9"
           },
           "x": "46"
         }

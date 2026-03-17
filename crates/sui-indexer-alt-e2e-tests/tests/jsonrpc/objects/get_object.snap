@@ -32,9 +32,9 @@ Response: {
   "id": 0,
   "result": {
     "data": {
-      "objectId": "BFC7fac6b82513605c011621eb2ce996b785c1d7943fda166ca44fc57185876bed1befd",
+      "objectId": "BFC21f11ed1a85761ae88f5cfa8e481444bfaee17b92d342edc50e0b37a26968bd47fbe",
       "version": "3",
-      "digest": "2UVm36aRKFt9CdaBy1FBaQs2WMvMWKhLce6cZdneGbV2",
+      "digest": "BD1ZUHHXYycm1SAovYgVab5nfh7SVCuxqfEjyEfHiUtz",
       "content": {
         "dataType": "moveObject",
         "type": "0x2::coin::Coin<0x2::bfc::BFC>",
@@ -42,7 +42,7 @@ Response: {
         "fields": {
           "balance": "42",
           "id": {
-            "id": "BFC7fac6b82513605c011621eb2ce996b785c1d7943fda166ca44fc57185876bed1befd"
+            "id": "BFC21f11ed1a85761ae88f5cfa8e481444bfaee17b92d342edc50e0b37a26968bd47fbe"
           }
         }
       }
@@ -68,9 +68,9 @@ Response: {
   "id": 1,
   "result": {
     "data": {
-      "objectId": "BFC7fac6b82513605c011621eb2ce996b785c1d7943fda166ca44fc57185876bed1befd",
+      "objectId": "BFC21f11ed1a85761ae88f5cfa8e481444bfaee17b92d342edc50e0b37a26968bd47fbe",
       "version": "4",
-      "digest": "AXFiNreUrpa2RCE4s9oUF9gywjdoChTRLrJwUKnaXe6y",
+      "digest": "D7fR7bSqrGtWqVrH2Nkm6c6pLMKC7LvJdwc7zSVomsV1",
       "content": {
         "dataType": "moveObject",
         "type": "0x2::coin::Coin<0x2::bfc::BFC>",
@@ -78,7 +78,7 @@ Response: {
         "fields": {
           "balance": "21",
           "id": {
-            "id": "BFC7fac6b82513605c011621eb2ce996b785c1d7943fda166ca44fc57185876bed1befd"
+            "id": "BFC21f11ed1a85761ae88f5cfa8e481444bfaee17b92d342edc50e0b37a26968bd47fbe"
           }
         }
       }
@@ -102,9 +102,9 @@ Response: {
   "id": 2,
   "result": {
     "data": {
-      "objectId": "BFC7fac6b82513605c011621eb2ce996b785c1d7943fda166ca44fc57185876bed1befd",
+      "objectId": "BFC21f11ed1a85761ae88f5cfa8e481444bfaee17b92d342edc50e0b37a26968bd47fbe",
       "version": "4",
-      "digest": "AXFiNreUrpa2RCE4s9oUF9gywjdoChTRLrJwUKnaXe6y",
+      "digest": "D7fR7bSqrGtWqVrH2Nkm6c6pLMKC7LvJdwc7zSVomsV1",
       "content": {
         "dataType": "moveObject",
         "type": "0x2::coin::Coin<0x2::bfc::BFC>",
@@ -112,7 +112,7 @@ Response: {
         "fields": {
           "balance": "21",
           "id": {
-            "id": "BFC7fac6b82513605c011621eb2ce996b785c1d7943fda166ca44fc57185876bed1befd"
+            "id": "BFC21f11ed1a85761ae88f5cfa8e481444bfaee17b92d342edc50e0b37a26968bd47fbe"
           }
         }
       }
@@ -137,9 +137,9 @@ Response: {
   "id": 3,
   "result": {
     "data": {
-      "objectId": "BFC7fac6b82513605c011621eb2ce996b785c1d7943fda166ca44fc57185876bed1befd",
+      "objectId": "BFC21f11ed1a85761ae88f5cfa8e481444bfaee17b92d342edc50e0b37a26968bd47fbe",
       "version": "4",
-      "digest": "AXFiNreUrpa2RCE4s9oUF9gywjdoChTRLrJwUKnaXe6y",
+      "digest": "D7fR7bSqrGtWqVrH2Nkm6c6pLMKC7LvJdwc7zSVomsV1",
       "content": {
         "dataType": "moveObject",
         "type": "0x2::coin::Coin<0x2::bfc::BFC>",
@@ -147,7 +147,7 @@ Response: {
         "fields": {
           "balance": "21",
           "id": {
-            "id": "BFC7fac6b82513605c011621eb2ce996b785c1d7943fda166ca44fc57185876bed1befd"
+            "id": "BFC21f11ed1a85761ae88f5cfa8e481444bfaee17b92d342edc50e0b37a26968bd47fbe"
           }
         }
       }
@@ -174,7 +174,7 @@ Response: {
   "result": {
     "error": {
       "code": "notExists",
-      "object_id": "BFC7fac6b82513605c011621eb2ce996b785c1d7943fda166ca44fc57185876bed1befd"
+      "object_id": "BFC21f11ed1a85761ae88f5cfa8e481444bfaee17b92d342edc50e0b37a26968bd47fbe"
     }
   }
 }
@@ -215,9 +215,9 @@ Response: {
   "id": 6,
   "result": {
     "data": {
-      "objectId": "BFC14eb1c384466ef70ea28d6b81d8fa9d235c926cb037901c2c759e29f33f8e25acd73",
+      "objectId": "BFC067de2696c4344970a3f897e91059cfde16b0d8a3b347b700e0be53eea25305e93f2",
       "version": "1",
-      "digest": "64bDn5g6XEKPYk5MVoHJ9AnbgD7DtvtgXSRCAv17JMvM",
+      "digest": "33DBraNr8kK5NFFmf3UAkZyF9cg2cW3pPV6Q3C2YwScf",
       "type": "package"
     }
   }
@@ -230,9 +230,9 @@ Response: {
   "id": 7,
   "result": {
     "data": {
-      "objectId": "BFC984c2b26736a38faf4523238c848c2ce4995110c32406227da10d19b8af63dadcc5f",
+      "objectId": "BFCccba011d03404963180f738735310e4783e38263fa22653ecf689ada4a3a1b5fd48b",
       "version": "2",
-      "digest": "9KCEUVCG6NoEpbyikAqYbYvaD5Ba3XTsiq1Cd9LXwQjV",
+      "digest": "4Z1CpL2ZSpNGhg8N6URc91jJhQZkoiVeW93RnXeW6C1e",
       "type": "package"
     }
   }
