@@ -277,16 +277,8 @@ mod tests {
         telemetry_subscribers::init_for_testing();
         let registry = Registry::new();
         mysten_metrics::init_metrics(&registry);
-        //update pubkey and sig
-        // let (_authority1, pubkey, secret) = get_test_authority_and_key(5000, 9999);
-        // let pubkey_bytes = BridgeAuthorityPublicKeyBytes::from(&pubkey);
-        // let pubkey_str = Hex::encode(pubkey_bytes.as_bytes());
-        // println!("bbking pubkey_bytes: {:?}", &pubkey_str);
-        // let sig2 = BridgeAuthoritySignInfo::new(&action, &secret);
-        // println!("bbking sig2: {:?}", Hex::encode(sig2.signature.as_bytes()));
-
         let public_key_bytes =
-            Hex::decode("02f9a01de33c315a9d9c756f73d0b820d68fe6f1cb2cdcb12b12df13bde4fc1107")
+            Hex::decode("021bc811c023fa1c061db38ea616734935dc57b98f96d774a3ca27eb4ae0ec05e7")
                 .unwrap();
         let pubkey1 = BridgeAuthorityPublicKey::from_bytes(&public_key_bytes).unwrap();
         let authority1 = BridgeAuthority {
@@ -298,7 +290,7 @@ mod tests {
         };
 
         let public_key_bytes =
-            Hex::decode("02c8e56487493abd7544636c40457546f679da8406b55bf7f99987dc82805cda8a")
+            Hex::decode("03c5c85c7600de7a1900c01fc6f404387aa41ec557e235874dc11eda1753f41b9f")
                 .unwrap();
         let pubkey2 = BridgeAuthorityPublicKey::from_bytes(&public_key_bytes).unwrap();
         let authority2 = BridgeAuthority {
@@ -310,7 +302,7 @@ mod tests {
         };
 
         let public_key_bytes =
-            Hex::decode("023546269d44e243609775d125f811c42f91b81e818b092b9abc6df743a9c3ad32")
+            Hex::decode("0310dda82d42b48a3821710b3818095549e173fa6fc5391e647e375614340ea98b")
                 .unwrap();
         let pubkey3 = BridgeAuthorityPublicKey::from_bytes(&public_key_bytes).unwrap();
         let authority3 = BridgeAuthority {
@@ -363,23 +355,16 @@ mod tests {
         let sig = BridgeAuthoritySignInfo {
             authority_pub_key: pubkey1,
             signature: BridgeAuthorityRecoverableSignature::from_bytes(
-                &Hex::decode("506de17cbdb1d7abab560c0a7b4aee28431edff4fa1686e160d59f56e791bd2b34ea109d4f77b7f6a1719c47ef33781fa7c65f791d7e377ba5e1f9142713fa5000").unwrap(),
+                &Hex::decode("d43d15fd5e615680cbc95b0e543d9012789ce5bb73faf32227eb2c048bfb2de03f2dcf4aadd41428e4df78c09489632e11ad549a7776653f8f76e8a2e97897b401").unwrap(),
             ).unwrap(),
         };
+        sig.verify(&action, &committee).unwrap();
 
-        sig.verify(&action, &committee).unwrap();
-        let sig = BridgeAuthoritySignInfo {
-            authority_pub_key: pubkey2.clone(),
-            signature: BridgeAuthorityRecoverableSignature::from_bytes(
-                &Hex::decode("41c32db843524a59e04bb190f7b482046da8312c6d2f7371b0b6464c457db47a1f6c76409a777f016891fc4cce4fba690716ed1816158f117db323fae7be404800").unwrap(),
-            ).unwrap(),
-        };
-        sig.verify(&action, &committee).unwrap();
         let sig = BridgeAuthoritySignInfo {
             authority_pub_key: pubkey4,
             signature: BridgeAuthorityRecoverableSignature::from_bytes(
-                // invalid sdig
-                &Hex::decode("18580856c610c4f15c257877665f4380bda664e8fe0db200f5ed03ad127a211c1b0a1eeef143e50f71bdb99efc1065eb31ef9d053828dcd7166638de00f2ba9e01").unwrap(),
+                // invalid signature
+                &Hex::decode("8ba9ec92c2d5a44ecc123182f689b901a93921fd35f581354fea20b25a0ded6d055b96a64bdda77dd5a62b93d29abe93640aa3c1a136348093cd7a2418c6bfa300").unwrap(),
             ).unwrap(),
         };
         sig.verify(&action, &committee).unwrap_err();

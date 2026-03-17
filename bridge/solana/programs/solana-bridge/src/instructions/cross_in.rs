@@ -14,8 +14,10 @@ use std::ops::DerefMut;
 use crate::util::token::*;
 use crate::states::benfen_bridge::*;
 use crate::errors::BridgeError;
-// use crate::errors::MessageError;
+use crate::errors::MessageError;
 use crate::errors::BridgeTokenError;
+use crate::errors::BridgeConfigError;
+use crate::errors::BridgeLimiterError;
 
 const BENFEN_ADDRESS_LENGTH: usize = 32;
 
@@ -55,14 +57,24 @@ pub struct CrossIn<'info> {
         mut,
         constraint = token_config.load()?.mint == token_mint.key() @ BridgeTokenError::InvalidTokenMint,
         constraint = token_config.load()?.mint == token_account.mint @ BridgeTokenError::InvalidTokenMint,
+        constraint = token_config.load()?.config == bridge_config.key() @ BridgeConfigError::InvalidConfigPubkey,
+        constraint = token_config.load()?.chain == chain_limit.key() @ BridgeLimiterError::InvalidLimiterPubkey,
+        constraint = token_config.key() == crate::util::token_config_pda(token_config.load()?.token_id).0
+            @ BridgeTokenError::InvalidTokenIdNotSupported,
     )]
     pub token_config: AccountLoader<'info, TokenConfigAccount>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::chain_limit_pda(&bridge_config.key(), chain_limit.load()?.get_chain_id()).0
+            @ BridgeLimiterError::InvalidLimiterPubkey,
+        constraint = chain_limit.load()?.config == bridge_config.key() @ BridgeLimiterError::InvalidLimiterPubkey
+    )]
     pub chain_limit: AccountLoader<'info, ChainLimit>,
 
    #[account(
         constraint = bridge_config.load()?.supported_chains.contains(&chain_limit.load()?.get_chain_id()) @ BridgeError::UnsupportedCrossToChainId,
+        address = crate::util::bridge_config_pda().0 @ BridgeConfigError::InvalidConfigPubkey
     )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
@@ -70,9 +82,15 @@ pub struct CrossIn<'info> {
     #[account(
         mut,
         constraint = bridge.config == bridge_config.load()?.key() @ BridgeError::InvalidBridgeConfig,
+        constraint = bridge.committee == crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee,
+        address = crate::util::benfen_bridge_pda(&bridge.committee).0
+            @ BridgeError::InvalidBridgeConfig,
     )]
     pub bridge: Account<'info, BenfenBridge>,
 
+    #[account(
+        address = crate::util::message_verifier_pda(&bridge.committee).0 @ MessageError::InvalidMessageVerifier
+    )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 
     pub token_mint: Box<InterfaceAccount<'info, Mint>>,
@@ -118,10 +136,6 @@ pub fn cross_in<'info>(
    let token_config = ctx.accounts.token_config.load()?;
 
 
-   let token_mint = ctx.accounts.token_mint.key();
-   
-   require!(token_account.mint == token_mint, BridgeError::InvalidTokenId);
-
    let mut benfen_decimal = token_config.benfen_decimal();
 
     if token_config.token_id() == 3 || token_config.token_id() == 4 {
@@ -165,7 +179,7 @@ pub fn cross_in<'info>(
         &ctx.accounts.payer,
          &ctx.accounts.token_account.to_account_info(),
         &ctx.accounts.token_vault.to_account_info(),
-        &ctx.accounts.token_mint.to_account_info(),
+        &ctx.accounts.token_program.to_account_info(),
         amount
     )?;
 
@@ -183,6 +197,6 @@ pub fn cross_in<'info>(
         sender_address: ctx.accounts.payer.key(),
         recipient_address: benfen_address,
     });
-    message.increment_nonce();
+    message.increment_nonce()?;
     Ok(())
 }

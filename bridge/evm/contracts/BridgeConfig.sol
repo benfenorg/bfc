@@ -182,13 +182,6 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
-    // 本次升级要初始化的
-    function settingOriginalDecimal(uint8 decimal) external{
-        supportedTokens[2].originalDecimal = 8;
-        supportedTokens[3].originalDecimal = 6;
-        supportedTokens[4].originalDecimal = 6;
-        supportedTokens[6].originalDecimal = 8;
-    }
 
     /// @notice Adds a LP token ID with the provided message if the provided signatures are valid.
     /// @param signatures array of signatures to validate the message.

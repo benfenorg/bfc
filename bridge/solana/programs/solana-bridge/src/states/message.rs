@@ -52,7 +52,7 @@ pub const BLOCKLIST: u8 = 1;
 pub const EMERGENCY_OP: u8 = 2;
 pub const UPDATE_BRIDGE_LIMIT: u8 = 3;
 pub const UPDATE_TOKEN_PRICE: u8 = 4;
-pub const UPGRADE: u8 = 5;
+// pub const UPGRADE: u8 = 5;
 // pub const ADD_EVM_TOKENS: u8 = 7;
 
 pub const UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT: u8 = 19;
@@ -151,12 +151,12 @@ pub fn compute_message_hash(message: &Message) -> [u8; 32] {
 ///
 /// Preconditions:
 /// - `pubkey` must be 64 bytes representing the concatenation of the X and Y coordinates.
-pub fn pubkey_to_eth_address(pubkey: &[u8]) -> [u8; 20] {
-    assert!(pubkey.len() == 64, "Public key must be 64 bytes");
+pub fn pubkey_to_eth_address(pubkey: &[u8]) -> Result<[u8; 20]> {
+    require!(pubkey.len() == 64, MessageError::InvalidPayloadLength);
     let keccak = hashv(&[pubkey]).0;
     let mut eth_address = [0u8; 20];
     eth_address.copy_from_slice(&keccak[12..32]);
-    eth_address
+    Ok(eth_address)
 }
 /// Computes the required stake for a message type
 pub fn compute_required_stake(message: &Message) -> Result<u32> {
@@ -262,7 +262,7 @@ pub fn convert_benfen_to_slp_decimal(
 /// * Returns error if sender address length is not 32 bytes
 /// * Returns error if target address length is not 20 bytes
 pub fn decode_token_transfer_payload(payload: &[u8]) -> Result<TokenTransferPayload> {
-    require!(payload.len() >= 83, MessageError::InvalidPayloadLength); // 最小长度应该是83字节
+    require!(payload.len() >= 85, MessageError::InvalidPayloadLength); // 最小长度应该是85字节（包含2字节event_idx）
 
     let sender_address_length = payload[0] as u8;
     require!(
@@ -682,7 +682,15 @@ pub mod bridge_utils_test{
 
     #[test]
     fn test_decode_transfer_token_payload() {
+        let payload = vec![0u8; 84];
+        let result = decode_token_transfer_payload(&payload);
+        assert_eq!(result.unwrap_err(), MessageError::InvalidPayloadLength.into());
 
+        let mut payload = vec![0u8; 85];
+        payload[0] = 32;
+        payload[34] = 32;
+        let result = decode_token_transfer_payload(&payload);
+        assert!(result.is_ok());
     }
 
     #[test]
