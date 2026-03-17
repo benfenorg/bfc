@@ -262,7 +262,7 @@ async fn sim_test_indexing_with_tto() {
 }
 
 #[sim_test]
-async fn test_filter_by_type() {
+async fn sim_test_filter_by_type() {
     let cluster = TestClusterBuilder::new().build().await;
 
     let sui = "0x2::coin::Coin<0x2::bfc::BFC>"
