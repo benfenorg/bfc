@@ -19,6 +19,8 @@ use crate::util::token::transfer_from_vault_to_user;
 use crate::errors::BridgeTokenError;
 use crate::errors::MessageError;
 use crate::errors::BridgeError;
+use crate::errors::BridgeConfigError;
+use crate::errors::BridgeLimiterError;
 
 #[derive(Accounts)]
 #[instruction(chain_id: u8, nonce: u64)]
@@ -57,7 +59,7 @@ pub struct CrossOut<'info> {
 
 
     #[account(
-        init_if_needed,
+        init,
         payer = signer,
         space = ProcessTransfer::SPACE,
         seeds = [PROCESSED_TRANSFER_SEED.as_bytes(),&[message::TOKEN_TRANSFER],&[chain_id], nonce.to_be_bytes().as_ref()],
@@ -67,30 +69,54 @@ pub struct CrossOut<'info> {
     pub process_transfer: Account<'info, ProcessTransfer>,
 
     //chain limit account
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::chain_limit_pda(&bridge_config.key(), chain_id).0
+            @ BridgeLimiterError::InvalidLimiterPubkey,
+        constraint = chain_limit.load()?.config == bridge_config.key() @ BridgeLimiterError::InvalidLimiterPubkey,
+        constraint = chain_limit.load()?.get_chain_id() == chain_id @ BridgeLimiterError::InvalidChainId
+    )]
     pub chain_limit: AccountLoader<'info, ChainLimit>,
 
     //token config account
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = token_config.load()?.mint == token_mint.key() @ BridgeTokenError::InvalidTokenMint,
+        constraint = token_config.load()?.config == bridge_config.key() @ BridgeConfigError::InvalidConfigPubkey,
+        constraint = token_config.load()?.chain == chain_limit.key() @ BridgeLimiterError::InvalidLimiterPubkey,
+        constraint = token_config.key() == crate::util::token_config_pda(token_config.load()?.token_id).0
+            @ BridgeTokenError::InvalidTokenIdNotSupported
+    )]
     pub token_config: AccountLoader<'info, TokenConfigAccount>,
 
     //message verifier account
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::message_verifier_pda(&committee.key()).0 @ MessageError::InvalidMessageVerifier
+    )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 
     //committee account
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee
+    )]
     pub committee:  AccountLoader<'info, Committee>,
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::bridge_config_pda().0 @ BridgeConfigError::InvalidConfigPubkey,
+        constraint = bridge_config.load()?.supported_chains.contains(&chain_id) @ BridgeError::UnsupportedCrossToChainId
+    )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
     #[account(
         mut,
         constraint = bridge.config == bridge_config.load()?.key() @ BridgeError::InvalidBridgeConfig,
-        constraint = bridge.committee == committee.load()?.key() @ BridgeError::InvalidCommittee,
+        constraint = bridge.committee == committee.key() @ BridgeError::InvalidCommittee,
+        address = crate::util::benfen_bridge_pda(&committee.key()).0 @ BridgeError::InvalidBridgeConfig
     )]
 
-    pub bridge: Account<'info, BenfenBridge>,
+    pub bridge: Box<Account<'info, BenfenBridge>>,
 
     pub token_mint: Box<InterfaceAccount<'info, Mint>>,
 
@@ -129,6 +155,12 @@ pub fn cross_out_with_signature(
         token_transfer_payload.target_chain_id==bridge_config.chain_id,
         BridgeError::InvalidTargetChainId
     );
+
+    require!(
+        chain_id==chain_limit.get_chain_id(),
+        BridgeLimiterError::InvalidChainId
+    );
+    
     require!(bridge_config.is_chain_supported(chain_id), BridgeError::UnsupportedCrossToChainId);
     require!(message_type==message::TOKEN_TRANSFER,MessageError::InvalidMessageType);
     let message=message::create_message(message_type, version, nonce, chain_id, payload.clone());
@@ -152,7 +184,7 @@ pub fn cross_out_with_signature(
         BridgeError::InvalidRecipientAddress
     );
     
-    let mut bdecimal = token_config.original_decimal;
+    let bdecimal = token_config.original_decimal;
     // 兼容benfen那边event
     // if token_transfer_payload.token_id==3 || token_transfer_payload.token_id==4 {
     //    bdecimal=6;
@@ -205,8 +237,6 @@ fn transfer_tokens_from_vault_internal<'info>(
     token_program: &mut AccountInfo<'info>,
     amount: u64
 ) -> Result<()> {
-    //检查bridge 是否暂停
-    benfen_bridge.require_not_paused()?;
     let price= token_config.price();
     let decimal =token_config.decimal();
     //
@@ -232,7 +262,3 @@ fn transfer_tokens_from_vault_internal<'info>(
     
     Ok(())
 }
-
-
-
-

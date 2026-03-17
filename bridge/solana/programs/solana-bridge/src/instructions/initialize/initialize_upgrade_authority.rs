@@ -38,13 +38,12 @@ pub fn initialize_upgrade_authority(
     let upgrade_authority = &mut ctx.accounts.upgrade_authority;
     let bump = ctx.bumps.upgrade_authority;
 
-
-    
+    let current_timestamp = Clock::get()?.unix_timestamp;
     upgrade_authority.initialize(
         enabled,
         [bump],
         ctx.accounts.committee.key(),
+        current_timestamp,
     );
     Ok(())
 }
-

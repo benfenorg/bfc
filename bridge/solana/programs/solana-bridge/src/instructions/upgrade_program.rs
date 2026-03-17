@@ -1,6 +1,7 @@
 use crate::errors::BridgeConfigError;
 use crate::errors::MessageError;
 use crate::errors::BridgeUpgradeError;
+use crate::errors::BridgeError;
 use crate::events::ProgramUpgradeEvent;
 use crate::states::committee::Committee;
 use crate::states::message::{UPGRADE_PROGRAM, create_message, decode_upgrade_payload};
@@ -25,13 +26,22 @@ pub struct UpgradeProgram<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::bridge_config_pda().0 @ BridgeConfigError::InvalidConfigPubkey
+    )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee
+    )]
     pub committee: AccountLoader<'info, Committee>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::message_verifier_pda(&committee.key()).0 @ MessageError::InvalidMessageVerifier
+    )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 
     #[account(
@@ -50,12 +60,15 @@ pub struct UpgradeProgram<'info> {
     #[account(
        mut,
        constraint = upgrade_authority.enabled == true @ BridgeUpgradeError::UnauthorizedUpgrade,
+       constraint = upgrade_authority.committee == committee.key() @ BridgeError::InvalidCommittee,
+       address = crate::util::upgrade_authority_pda(&committee.key()).0 @ BridgeUpgradeError::UnauthorizedUpgrade
     )]
     pub upgrade_authority: Box<Account<'info, UpgradeAuthority>>,
 
     /// CHECK: validated by constraints + runtime checks
     #[account(
         mut,
+        address = crate::id(),
         constraint = program_data.key() == solana_loader_v3_interface::get_program_data_address(program.key) @ BridgeConfigError::InvalidConfigPubkey
     )]
     pub program: UncheckedAccount<'info>,

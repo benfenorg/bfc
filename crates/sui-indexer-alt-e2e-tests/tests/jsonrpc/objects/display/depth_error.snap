@@ -8,7 +8,7 @@ A: object(0,0)
 
 task 1, lines 17-60:
 //# publish --sender A
-events: Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("DisplayCreated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [56, 253, 19, 46, 98, 125, 46, 140, 197, 16, 6, 32, 166, 23, 107, 141, 187, 37, 142, 95, 14, 215, 123, 228, 232, 220, 171, 145, 83, 80, 201, 69] }, Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("VersionUpdated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [56, 253, 19, 46, 98, 125, 46, 140, 197, 16, 6, 32, 166, 23, 107, 141, 187, 37, 142, 95, 14, 215, 123, 228, 232, 220, 171, 145, 83, 80, 201, 69, 1, 0, 1, 4, 100, 101, 101, 112, 56, 123, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 125] }
+events: Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("DisplayCreated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [150, 111, 232, 119, 110, 119, 7, 61, 15, 173, 42, 201, 54, 78, 227, 143, 90, 66, 248, 51, 13, 144, 8, 10, 79, 224, 135, 154, 215, 68, 194, 9] }, Event { package_id: test, transaction_module: Identifier("mod"), sender: A, type_: StructTag { address: sui, module: Identifier("display"), name: Identifier("VersionUpdated"), type_params: [Struct(StructTag { address: test, module: Identifier("mod"), name: Identifier("Foo"), type_params: [] })] }, contents: [150, 111, 232, 119, 110, 119, 7, 61, 15, 173, 42, 201, 54, 78, 227, 143, 90, 66, 248, 51, 13, 144, 8, 10, 79, 224, 135, 154, 215, 68, 194, 9, 1, 0, 1, 4, 100, 101, 101, 112, 56, 123, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 46, 100, 101, 101, 112, 125] }
 created: object(1,0), object(1,1), object(1,2)
 mutated: object(0,0)
 gas summary: computation_cost: 1000000, storage_cost: 15625600,  storage_rebate: 0, non_refundable_storage_fee: 0
@@ -32,46 +32,46 @@ Response: {
   "id": 0,
   "result": {
     "data": {
-      "objectId": "BFCe41a91575f267527c6201143ff1cd2be6ccaec5d71690c5f55345d0e03015e99e0d3",
+      "objectId": "BFC71d372698d9220457a6739b75c983344af8e7dc0de05d69f9df7195379bca50761e3",
       "version": "3",
-      "digest": "7cdLkHvi1e6T8YDvhG9sYpnak1usTwRRHkLnqorNaDfY",
+      "digest": "949thgbDioVwC7RAYu5re8fS332yWYV7fMYdsFJTovXa",
       "content": {
         "dataType": "moveObject",
-        "type": "0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Foo",
+        "type": "0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Foo",
         "hasPublicTransfer": true,
         "fields": {
           "deep": {
-            "type": "0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<u8>>>>>>>>>>>",
+            "type": "0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<u8>>>>>>>>>>>",
             "fields": {
               "deep": {
-                "type": "0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<u8>>>>>>>>>>",
+                "type": "0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<u8>>>>>>>>>>",
                 "fields": {
                   "deep": {
-                    "type": "0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<u8>>>>>>>>>",
+                    "type": "0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<u8>>>>>>>>>",
                     "fields": {
                       "deep": {
-                        "type": "0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<u8>>>>>>>>",
+                        "type": "0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<u8>>>>>>>>",
                         "fields": {
                           "deep": {
-                            "type": "0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<u8>>>>>>>",
+                            "type": "0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<u8>>>>>>>",
                             "fields": {
                               "deep": {
-                                "type": "0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<u8>>>>>>",
+                                "type": "0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<u8>>>>>>",
                                 "fields": {
                                   "deep": {
-                                    "type": "0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<u8>>>>>",
+                                    "type": "0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<u8>>>>>",
                                     "fields": {
                                       "deep": {
-                                        "type": "0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<u8>>>>",
+                                        "type": "0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<u8>>>>",
                                         "fields": {
                                           "deep": {
-                                            "type": "0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<u8>>>",
+                                            "type": "0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<u8>>>",
                                             "fields": {
                                               "deep": {
-                                                "type": "0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<u8>>",
+                                                "type": "0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<u8>>",
                                                 "fields": {
                                                   "deep": {
-                                                    "type": "0x94d1e61bfde4d5222cc44d0e0fc6aa049006240e77fcf9837c89fccc675f326c::mod::Deep<u8>",
+                                                    "type": "0x3fdc20ed43a90d8f19c8de09f1d2a6bcec2fa2f8bedd91c8d0a7171c5731736b::mod::Deep<u8>",
                                                     "fields": {
                                                       "deep": 42
                                                     }
@@ -97,7 +97,7 @@ Response: {
             }
           },
           "id": {
-            "id": "BFCe41a91575f267527c6201143ff1cd2be6ccaec5d71690c5f55345d0e03015e99e0d3"
+            "id": "BFC71d372698d9220457a6739b75c983344af8e7dc0de05d69f9df7195379bca50761e3"
           }
         }
       }
@@ -112,9 +112,9 @@ Response: {
   "id": 1,
   "result": {
     "data": {
-      "objectId": "BFCe41a91575f267527c6201143ff1cd2be6ccaec5d71690c5f55345d0e03015e99e0d3",
+      "objectId": "BFC71d372698d9220457a6739b75c983344af8e7dc0de05d69f9df7195379bca50761e3",
       "version": "3",
-      "digest": "7cdLkHvi1e6T8YDvhG9sYpnak1usTwRRHkLnqorNaDfY",
+      "digest": "949thgbDioVwC7RAYu5re8fS332yWYV7fMYdsFJTovXa",
       "display": {
         "data": null,
         "error": {

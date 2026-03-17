@@ -10,6 +10,8 @@ use std::ops::DerefMut;
 use crate::events::BlocklistUpdatedEvent;
 use crate::errors::MessageError;
 use crate::errors::BridgeCommitteeError;
+use crate::errors::BridgeConfigError;
+use crate::errors::BridgeError;
 
 
 
@@ -34,13 +36,20 @@ pub struct UpdateBlockList<'info> {
 
     #[account(
         mut,
+        address = crate::util::bridge_config_pda().0 @ BridgeConfigError::InvalidConfigPubkey
     )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::message_verifier_pda(&committee.key()).0 @ MessageError::InvalidMessageVerifier
+    )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee
+    )]
     pub committee:  AccountLoader<'info, Committee>,
 
     
@@ -91,7 +100,17 @@ pub fn update_block_list_with_signatures(
          0 //false
     };
 
-    committee.update_blocklist(&block_list.addresses, flag );
+    committee.update_blocklist(&block_list.addresses, flag )?;
+
+    let mut active_stake: u32 = 0;
+    let member_count = committee.member_count as usize;
+    for i in 0..member_count {
+        let m = committee.members[i];
+        if m.is_blocklisted == 0 {
+            active_stake = active_stake.saturating_add(m.stake as u32);
+        }
+    }
+    require!(active_stake >= committee.min_stake_required as u32, BridgeCommitteeError::InsufficientStake);
 
     msg!("emit BlocklistUpdatedEvent");
 
@@ -103,4 +122,3 @@ pub fn update_block_list_with_signatures(
 
     Ok(())
 }  
-

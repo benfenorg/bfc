@@ -5,6 +5,8 @@ use crate::states::{
 };
 use crate::errors::BridgeTokenError;
 use crate::errors::MessageError;
+use crate::errors::BridgeConfigError;
+use crate::errors::BridgeError;
 
 use crate::states::message_verifier::MessageVerifier;
 use crate::states::message_config::{MessageConfig,MESSAGE_CONFIG_SEED};
@@ -37,16 +39,28 @@ pub struct UpdateTokenPrice<'info> {
 
     #[account(
         mut,
+        constraint = token_config.load()?.config == bridge_config.key() @ BridgeConfigError::InvalidConfigPubkey,
+        constraint = token_config.key() == crate::util::token_config_pda(token_config.load()?.token_id).0
+            @ BridgeTokenError::InvalidTokenIdNotSupported
     )]
     pub token_config: AccountLoader<'info, TokenConfigAccount>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::bridge_config_pda().0 @ BridgeConfigError::InvalidConfigPubkey
+    )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::message_verifier_pda(&committee.key()).0 @ MessageError::InvalidMessageVerifier
+    )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee
+    )]
     pub committee:  AccountLoader<'info, Committee>,
 
     pub system_program: Program<'info, System>,

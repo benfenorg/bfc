@@ -37,19 +37,8 @@ Response: {
   "jsonrpc": "2.0",
   "id": 0,
   "result": {
-    "digest": "5BT6Bqba5hDWj6gFU7yP6dtwVFQSzRCFBAya5jn7715T",
+    "digest": "CY34L5TX3BirTERy1Eeyedu96i8ioVhFYsQvTazRbRMZ",
     "objectChanges": [
-      {
-        "type": "created",
-        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
-        "owner": {
-          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
-        },
-        "objectType": "0x3e2057391270e944674d506904b72771b2c164ca37041a06d49e44f182145de9::M::O",
-        "objectId": "BFCa9ae69dfdac77103208335f0fbde8209c2c339516ae7b4654282d415580bdc3955eb",
-        "version": "2",
-        "digest": "Ec67c5wC7vebXad48gzHXcvCXidg4QHEoKGvMZBbkYYM"
-      },
       {
         "type": "mutated",
         "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
@@ -60,7 +49,18 @@ Response: {
         "objectId": "BFCb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c8503d3",
         "version": "2",
         "previousVersion": "1",
-        "digest": "86xvfmNjPBWwTukbj9VFuugbe9HzAfSXQnypYdZQxk1E"
+        "digest": "2w1ej51TnMrkch3pw4Wr8xxCsH92eGUownpojMyTmotF"
+      },
+      {
+        "type": "created",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
+        "owner": {
+          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
+        },
+        "objectType": "0x111fc7e0974c7256bcba37e7922bc700980bcdfa926f4558c31db87142f986bf::M::O",
+        "objectId": "BFCbe74f702db337aee6d8e1f219d6a5f10db52a888d0df23b0ea06527c660cde073896",
+        "version": "2",
+        "digest": "4NqNpdVTRsb2dacDVrECc2pWPu8iA7hf6XEU93FpwkV8"
       }
     ],
     "timestampMs": "0",
@@ -74,15 +74,8 @@ Response: {
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "digest": "8j6VcF6Jxw9HZdE8pSfr8m22pj3RXiH7Y7sKTC7CPrHJ",
+    "digest": "7UN4eew87h23R8whvVY6x1sHwSfZrUk4PcSyTbTpv78e",
     "objectChanges": [
-      {
-        "type": "deleted",
-        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
-        "objectType": "0x3e2057391270e944674d506904b72771b2c164ca37041a06d49e44f182145de9::M::O",
-        "objectId": "BFCa9ae69dfdac77103208335f0fbde8209c2c339516ae7b4654282d415580bdc3955eb",
-        "version": "3"
-      },
       {
         "type": "mutated",
         "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
@@ -93,7 +86,14 @@ Response: {
         "objectId": "BFCb43734923b2be35d7509d46e09cc9ba046d1169b175652c8fab48d1745001c8503d3",
         "version": "3",
         "previousVersion": "2",
-        "digest": "C71QUfKqGVtUzKn58wUs3NGMW8bQg3UcPNKWhpEZaZ1C"
+        "digest": "P1gkbveUGkb5QKzemLNEARNHfVZ9nHzsyZ8LzTftS75"
+      },
+      {
+        "type": "deleted",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
+        "objectType": "0x111fc7e0974c7256bcba37e7922bc700980bcdfa926f4558c31db87142f986bf::M::O",
+        "objectId": "BFCbe74f702db337aee6d8e1f219d6a5f10db52a888d0df23b0ea06527c660cde073896",
+        "version": "3"
       }
     ],
     "timestampMs": "0",

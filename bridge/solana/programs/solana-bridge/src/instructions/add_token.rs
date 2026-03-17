@@ -11,6 +11,9 @@ use crate::states::benfen_bridge::{BenfenBridge,VAULT_SEED};
 // use crate::states::vault::{UniversalVault,UNIVERSAL_VAULT_SEED};
 use crate::errors::MessageError;
 use crate::errors::BridgeTokenError;
+use crate::errors::BridgeConfigError;
+use crate::errors::BridgeError;
+use crate::errors::BridgeLimiterError;
 use std::cell::{Ref, RefMut};
 use std::ops::DerefMut;
 
@@ -62,17 +65,38 @@ pub struct AddToken<'info> {
     )]
     pub token_config: AccountLoader<'info, TokenConfigAccount>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::message_verifier_pda(&committee.key()).0 @ MessageError::InvalidMessageVerifier
+    )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::bridge_config_pda().0 @ BridgeConfigError::InvalidConfigPubkey
+    )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee
+    )]
     pub committee:  AccountLoader<'info, Committee>,
 
+    #[account(
+        address = crate::util::chain_limit_pda(&bridge_config.key(), chain_limit.load()?.get_chain_id()).0
+            @ BridgeLimiterError::InvalidLimiterPubkey,
+        constraint = chain_limit.load()?.config == bridge_config.key() @ BridgeLimiterError::InvalidLimiterPubkey,
+        constraint = bridge_config.load()?.supported_chains.contains(&chain_limit.load()?.get_chain_id())
+            @ BridgeError::UnsupportedCrossToChainId
+    )]
     pub chain_limit: AccountLoader<'info, ChainLimit>,
 
+    #[account(
+        address = crate::util::benfen_bridge_pda(&committee.key()).0 @ BridgeError::InvalidBridgeConfig,
+        constraint = benfen_bridge.config == bridge_config.key() @ BridgeError::InvalidBridgeConfig,
+        constraint = benfen_bridge.committee == committee.key() @ BridgeError::InvalidCommittee
+    )]
     pub benfen_bridge: Account<'info, BenfenBridge>,
 
     pub token_mint: Box<InterfaceAccount<'info, Mint>>,
@@ -160,7 +184,7 @@ fn add_token_internal(
 
     
     // 增加代币计数
-    bridge_config.increment_token_count();
+    bridge_config.increment_token_count()?;
     let total_token_count = bridge_config.token_count;
 
 
@@ -181,5 +205,3 @@ fn add_token_internal(
 
     Ok(())
 }
-
-

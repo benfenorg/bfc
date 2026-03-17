@@ -15,14 +15,20 @@ pub struct UpgradeAuthority {
 }
 
 impl UpgradeAuthority {
-    pub const SPACE: usize = 8 + std::mem::size_of::<Self>();
+    pub const SPACE: usize = 8 + 1 + 1 + 1 + 8 + 32;
 
-    pub fn initialize(&mut self, enabled: bool, bump: [u8;1], committee: Pubkey) {
+    pub fn initialize(
+        &mut self,
+        enabled: bool,
+        bump: [u8; 1],
+        committee: Pubkey,
+        current_timestamp: i64,
+    ) {
         self.enabled = enabled;
         self.bump = bump;
         self.committee = committee;
         self.current_version = 1;
-        self.last_upgrade_timestamp = 0;
+        self.last_upgrade_timestamp = current_timestamp;
     }
     
     pub fn seeds(&self) -> [&[u8]; 3] {
@@ -52,5 +58,31 @@ impl UpgradeAuthority {
     pub fn update_version(&mut self, new_version: u8, clock: &Sysvar<Clock>) {
         self.current_version = new_version;
         self.last_upgrade_timestamp = clock.unix_timestamp;
+    }
+}
+
+#[cfg(test)]
+mod upgrade_authority_test {
+    use super::*;
+
+    #[test]
+    fn test_initialize_sets_timestamp() {
+        let mut ua = UpgradeAuthority {
+            enabled: false,
+            bump: [0],
+            current_version: 0,
+            last_upgrade_timestamp: 0,
+            committee: Pubkey::default(),
+        };
+
+        let ts = 12345i64;
+        let committee = Pubkey::new_unique();
+        ua.initialize(true, [7], committee, ts);
+
+        assert!(ua.enabled);
+        assert_eq!(ua.bump, [7]);
+        assert_eq!(ua.committee, committee);
+        assert_eq!(ua.current_version, 1);
+        assert_eq!(ua.last_upgrade_timestamp, ts);
     }
 }

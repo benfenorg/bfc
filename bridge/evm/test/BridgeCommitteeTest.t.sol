@@ -156,6 +156,21 @@ contract BridgeCommitteeTest is BridgeBaseTest {
         committee.verifySignatures(signatures, message);
     }
 
+    function testDecodeBlocklistPayloadThreeAddressesRegression() public pure {
+        address memberOne = 0x1111111111111111111111111111111111111111;
+        address memberTwo = 0x2222222222222222222222222222222222222222;
+        address memberThree = 0x3333333333333333333333333333333333333333;
+
+        bytes memory payload = abi.encodePacked(uint8(0), uint8(3), memberOne, memberTwo, memberThree);
+        (bool blocklisting, address[] memory members) = BridgeUtils.decodeBlocklistPayload(payload);
+
+        assertEq(members.length, 3);
+        assertEq(members[0], memberOne);
+        assertEq(members[1], memberTwo);
+        assertEq(members[2], memberThree);
+        assertTrue(blocklisting);
+    }
+
     function testVerifySignaturesDuplicateSignature() public {
         // Create a message
         BridgeUtils.Message memory message = BridgeUtils.Message({

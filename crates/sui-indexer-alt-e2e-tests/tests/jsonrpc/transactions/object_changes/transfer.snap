@@ -36,8 +36,19 @@ Response: {
   "jsonrpc": "2.0",
   "id": 0,
   "result": {
-    "digest": "ETBK4MhNmGkszz3Xf4wbU1VkWNGcf7Lxt8r4cEPAQ45J",
+    "digest": "7UDQesgrFQmjtYFd3ukJyJoFF7A1GWqRBYq9MzonDatu",
     "objectChanges": [
+      {
+        "type": "transferred",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
+        "recipient": {
+          "AddressOwner": "BFCa7b032703878aa74c3126935789fd1d4d7e111d5911b09247d6963061c312b5a5cf9"
+        },
+        "objectType": "0x430a99fd0425183b7111be9df535b4c74fb97d7dc0f84d8f81bae352fcddfb5c::M::O",
+        "objectId": "BFC0deb6742749877e42b20ccf0c8819026c215019c4cb369bf3fd11e60591cf3a84649",
+        "version": "3",
+        "digest": "DLdNANZ1hmvSGzkmP1xMLtMVNfmyHaFg96batZq9hhRf"
+      },
       {
         "type": "mutated",
         "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
@@ -48,18 +59,7 @@ Response: {
         "objectId": "BFC4c032f4787a960f7d12e78ce112e42cf1176d9f796d5bb80bf22f1466859185ca86a",
         "version": "3",
         "previousVersion": "2",
-        "digest": "2e1nwWKGBmq5vDgVknrZNbGQFPcqtJpt6rLcVQTzkPdx"
-      },
-      {
-        "type": "transferred",
-        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
-        "recipient": {
-          "AddressOwner": "BFCa7b032703878aa74c3126935789fd1d4d7e111d5911b09247d6963061c312b5a5cf9"
-        },
-        "objectType": "0x80da87ce6e85c19f617a6e27ee463d653967e877d2b3eeb89581ce4dada73095::M::O",
-        "objectId": "BFC705f1df983d680722402087c92569bc6f817d909638ff7d2a1888d5450ac4ee1c013",
-        "version": "3",
-        "digest": "8b78sd2jVSyuigaBqzq8jkALTMSAxryvXqLsn43FykHy"
+        "digest": "BfoYCzhbewJ3ewEx82mc5aprLCwccZvjNqf5w5VebjpQ"
       }
     ],
     "timestampMs": "0",

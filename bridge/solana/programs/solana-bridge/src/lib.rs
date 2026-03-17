@@ -7,16 +7,16 @@ pub mod util;
 use instructions::*;
 
 #[cfg(feature = "devnet")]
-declare_id!("BZyn9uqtYXsWYa6ksAZ27Jeh7zVVG7bbULAgFGXqzfjN");
+declare_id!("AU4BgoC2aooMq8txbEirQgkwQebgeuZT4m6XF8iuArcL");
 #[cfg(feature = "mainnet")]
-declare_id!("BenfeniwCqsDhGKB4snUSiz34DPMvGaz1hP2y4UMMWMo");
+declare_id!("G1hnNcpssQaM3C9sKorjXLbo2zoDJoVHviYX8MoRNTgS");
 #[cfg(all(not(feature = "devnet"), not(feature = "mainnet")))]
-declare_id!("BenfeniwCqsDhGKB4snUSiz34DPMvGaz1hP2y4UMMWMo");
+declare_id!("G1hnNcpssQaM3C9sKorjXLbo2zoDJoVHviYX8MoRNTgS");
 pub mod admin {
     use anchor_lang::prelude::*;
     use std::str::FromStr;
     pub fn id() -> Pubkey {
-        Pubkey::from_str("GUFVktRxvzKofrHb8htuAKB5gWj3sdbXchznjro9aVU7").unwrap()
+        Pubkey::from_str("C5LJkjmJUm3gVcdyWFGD9GiAJtitgAgpe4fJwfQ6ffgB").unwrap()
     }
 }
 

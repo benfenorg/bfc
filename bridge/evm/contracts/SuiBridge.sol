@@ -74,117 +74,65 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
 
         IBridgeConfig config = committee.config();
 
-        
-        if (message.version==1){
+        uint8 targetChain;
+        uint64 tokenID;
+        uint64 amount;
+        address recipientAddress;
+        bytes memory senderAddress;
+        uint8 suiDecimal;
+
+        if (message.version == 1) {
             BridgeUtils.TokenTransferPayload memory tokenTransferPayload =
-            BridgeUtils.decodeTokenTransferPayload(message.payload);
-
-            // verify target chain ID is this chain ID
-            require(
-                tokenTransferPayload.targetChain == config.chainID(), "SuiBridge: Invalid target chain"
-            );
-
-            // convert amount to ERC20 token decimals
-            uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
-                IERC20Metadata(config.tokenAddressOf(tokenTransferPayload.tokenID)).decimals(),
-                config.tokenSuiDecimalOf(tokenTransferPayload.tokenID),
-                tokenTransferPayload.amount
-            );
-
-            // mark message as processed
-            isTransferProcessed[message.nonce] = true;
-
-            _transferTokensFromVault(
-                message.chainID,
-                tokenTransferPayload.tokenID,
-                tokenTransferPayload.recipientAddress,
-                erc20AdjustedAmount
-            );
-
-
-            emit TokensClaimed(
-                message.chainID,
-                message.nonce,
-                config.chainID(),
-                tokenTransferPayload.tokenID,
-                erc20AdjustedAmount,
-                tokenTransferPayload.senderAddress,
-                tokenTransferPayload.recipientAddress
-            );
-        }else if (message.version==3) {
-             BridgeUtils.TokenTransferPayloadV2 memory tokenTransferPayload =
-            BridgeUtils.decodeTokenTransferPayloadV2(message.payload);
-
-            // verify target chain ID is this chain ID
-            require(
-                tokenTransferPayload.targetChain == config.chainID(), "SuiBridge: Invalid target chain"
-            );
-
-            // convert amount to ERC20 token decimals
-            uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
-                IERC20Metadata(config.tokenAddressOf(tokenTransferPayload.tokenID)).decimals(),
-                config.tokenSuiDecimalOf(tokenTransferPayload.tokenID),
-                tokenTransferPayload.amount
-            );
-
-            // mark message as processed
-            isTransferProcessed[message.nonce] = true;
-
-            _transferTokensFromVault(
-                message.chainID,
-                tokenTransferPayload.tokenID,
-                tokenTransferPayload.recipientAddress,
-                erc20AdjustedAmount
-            );
-
-
-            emit TokensClaimed(
-                message.chainID,
-                message.nonce,
-                config.chainID(),
-                tokenTransferPayload.tokenID,
-                erc20AdjustedAmount,
-                tokenTransferPayload.senderAddress,
-                tokenTransferPayload.recipientAddress
-            );
-        }else{
-
+                BridgeUtils.decodeTokenTransferPayload(message.payload);
+            targetChain = tokenTransferPayload.targetChain;
+            tokenID = tokenTransferPayload.tokenID;
+            amount = tokenTransferPayload.amount;
+            recipientAddress = tokenTransferPayload.recipientAddress;
+            senderAddress = tokenTransferPayload.senderAddress;
+            suiDecimal = config.tokenSuiDecimalOf(tokenID);
+        } else if (message.version == 3) {
             BridgeUtils.TokenTransferPayloadV2 memory tokenTransferPayload =
-            BridgeUtils.decodeTokenTransferPayloadV2(message.payload);
-
-            // verify target chain ID is this chain ID
-            require(
-                tokenTransferPayload.targetChain == config.chainID(), "SuiBridge: Invalid target chain"
-            );
-
-            // convert amount to ERC20 token decimals
-            uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
-                IERC20Metadata(config.tokenAddressOf(tokenTransferPayload.tokenID)).decimals(),
-                config.tokenOriginalDecimalOf(tokenTransferPayload.tokenID),
-                tokenTransferPayload.amount
-            );
-
-            // mark message as processed
-            isTransferProcessed[message.nonce] = true;
-
-            _transferTokensFromVault(
-                message.chainID,
-                tokenTransferPayload.tokenID,
-                tokenTransferPayload.recipientAddress,
-                erc20AdjustedAmount
-            );
-
-
-            emit TokensClaimed(
-                message.chainID,
-                message.nonce,
-                config.chainID(),
-                tokenTransferPayload.tokenID,
-                erc20AdjustedAmount,
-                tokenTransferPayload.senderAddress,
-                tokenTransferPayload.recipientAddress
-            );
+                BridgeUtils.decodeTokenTransferPayloadV2(message.payload);
+            targetChain = tokenTransferPayload.targetChain;
+            tokenID = tokenTransferPayload.tokenID;
+            amount = tokenTransferPayload.amount;
+            recipientAddress = tokenTransferPayload.recipientAddress;
+            senderAddress = tokenTransferPayload.senderAddress;
+            suiDecimal = config.tokenSuiDecimalOf(tokenID);
+        } else if (message.version == 4) {
+            BridgeUtils.TokenTransferPayloadV2 memory tokenTransferPayload =
+                BridgeUtils.decodeTokenTransferPayloadV2(message.payload);
+            targetChain = tokenTransferPayload.targetChain;
+            tokenID = tokenTransferPayload.tokenID;
+            amount = tokenTransferPayload.amount;
+            recipientAddress = tokenTransferPayload.recipientAddress;
+            senderAddress = tokenTransferPayload.senderAddress;
+            suiDecimal = config.tokenOriginalDecimalOf(tokenID);
+        } else {
+            revert("SuiBridge: Invalid message version");
         }
+
+        require(targetChain == config.chainID(), "SuiBridge: Invalid target chain");
+
+        uint256 erc20AdjustedAmount = BridgeUtils.convertSuiToERC20Decimal(
+            IERC20Metadata(config.tokenAddressOf(tokenID)).decimals(),
+            suiDecimal,
+            amount
+        );
+
+        isTransferProcessed[message.nonce] = true;
+
+        _transferTokensFromVault(message.chainID, tokenID, recipientAddress, erc20AdjustedAmount);
+
+        emit TokensClaimed(
+            message.chainID,
+            message.nonce,
+            config.chainID(),
+            tokenID,
+            erc20AdjustedAmount,
+            senderAddress,
+            recipientAddress
+        );
     }
 
     function investBridgedTokensWithSignatures(
