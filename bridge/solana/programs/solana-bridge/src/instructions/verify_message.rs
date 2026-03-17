@@ -19,14 +19,14 @@ pub fn verify_bridge_signature<'info>(
 ) -> Result<()> {
     if message_config.verifier==Pubkey::default() {
        message_config.initialize(verifier.key(), message.message_type)?;
-       verifier.increment_message_number();
+       verifier.increment_message_number()?;
     }
     require!(message.message_type == message_config.message_type, MessageError::InvalidMessageType);
     committee.verify_signatures(signatures, &message)?;
     if message.message_type != TOKEN_TRANSFER {
         require!(bridge_config.chain_id==message.chain_id, MessageError::InvalidMessageChainId);
         require!(message_config.nonce==message.nonce, MessageError::InvalidMessageNonce);
-        message_config.increment_nonce();
+        message_config.increment_nonce()?;
     }
     Ok(())
 }
@@ -84,7 +84,6 @@ pub mod test_verify_message {
     //     ).unwrap();
     // }
 }
-
 
 
 

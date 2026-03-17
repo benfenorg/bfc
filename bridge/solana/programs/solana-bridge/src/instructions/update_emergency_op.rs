@@ -9,15 +9,21 @@ use crate::states::bridge_config::BridgeConfig;
 use crate::states::committee::Committee;
 use crate::instructions::verify_message::verify_bridge_signature;
 use std::ops::DerefMut;
-// use crate::errors::BridgeError;
 use crate::errors::MessageError;
+use crate::errors::BridgeConfigError;
+use crate::errors::BridgeError;
 
 
 #[derive(Accounts)]
 pub struct UpdateEmergencyOp<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::benfen_bridge_pda(&committee.key()).0 @ BridgeError::InvalidBridgeConfig,
+        constraint = bridge.config == bridge_config.key() @ BridgeError::InvalidBridgeConfig,
+        constraint = bridge.committee == committee.key() @ BridgeError::InvalidCommittee
+    )]
     pub bridge: Account<'info, BenfenBridge>,
 
     #[account(
@@ -33,13 +39,22 @@ pub struct UpdateEmergencyOp<'info> {
     )]
     pub message_config: Box<Account<'info, MessageConfig>>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::bridge_config_pda().0 @ BridgeConfigError::InvalidConfigPubkey
+    )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::message_verifier_pda(&committee.key()).0 @ MessageError::InvalidMessageVerifier
+    )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee
+    )]
     pub committee:  AccountLoader<'info, Committee>,
 
         /// To create a new program account
@@ -94,4 +109,3 @@ pub fn update_emergency_op_with_signatures(
     );
     Ok(())
 }
-

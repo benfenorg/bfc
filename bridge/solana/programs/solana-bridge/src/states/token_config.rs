@@ -24,12 +24,12 @@ pub struct TokenConfigAccount {
     pub fee_value: u64, //具体的值
     pub min_fee_value: u64, //上边计算收取的fee至少要超过这个值，否则就要用这个值
 
-    pub padding: [u8; 6], // upgrade padding
+    pub padding: [u64; 10], // upgrade padding
 }
  
 
 impl TokenConfigAccount {
-    pub const SPACE: usize = 8 + std::mem::size_of::<Self>();
+    pub const SPACE: usize = 8 + (3 * 32) + (2 * 8) + (5 * 1) + (2 * 8) + (10 * 8);
 
     pub fn initialize(
         &mut self,
@@ -49,7 +49,9 @@ impl TokenConfigAccount {
         require!(token_id > 0, BridgeTokenError::InvalidTokenId);
         require!(price > 0, BridgeTokenError::InvalidTokenPrice);
         require!(decimal > 0, BridgeTokenError::InvalidFungibleTokenDecimals);
+        require!(decimal <= 18, BridgeTokenError::InvalidFungibleTokenDecimals);
         require!(benfen_decimal > 0, BridgeTokenError::InvalidTokenBenfenDecimal);
+        require!(benfen_decimal <= 18, BridgeTokenError::InvalidTokenBenfenDecimal);
         self.config = config;
         self.chain = chain;
         self.mint = mint;
@@ -288,6 +290,46 @@ pub mod token_config_test{
 
         cfg.update_fee_info(1, 10_000, 100).unwrap();
         assert_eq!(cfg.calculate_bridge_fee(1_000), 100);
+    }
+
+    #[test]
+    fn test_initialize_decimal_too_large() {
+        let mut token_config = TokenConfigAccount::default();
+        let result = token_config.initialize(
+            Pubkey::new_unique(),
+            Pubkey::new_unique(),
+            Pubkey::new_unique(),
+            1,
+            1,
+            19,
+            1,
+            1,
+            1,
+        );
+        assert_eq!(
+            result.unwrap_err(),
+            BridgeTokenError::InvalidFungibleTokenDecimals.into()
+        );
+    }
+
+    #[test]
+    fn test_initialize_benfen_decimal_too_large() {
+        let mut token_config = TokenConfigAccount::default();
+        let result = token_config.initialize(
+            Pubkey::new_unique(),
+            Pubkey::new_unique(),
+            Pubkey::new_unique(),
+            1,
+            1,
+            1,
+            19,
+            1,
+            1,
+        );
+        assert_eq!(
+            result.unwrap_err(),
+            BridgeTokenError::InvalidTokenBenfenDecimal.into()
+        );
     }
  
     

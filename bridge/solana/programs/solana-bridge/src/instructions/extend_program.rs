@@ -3,6 +3,7 @@ use crate::states::committee::Committee;
 use crate::states::message::{EXTEND_PROGRAM, create_message, decode_extend_payload};
 use crate::states::upgrade_authority::UpgradeAuthority;
 use anchor_lang::prelude::*;
+use anchor_lang::solana_program::bpf_loader_upgradeable;
 use crate::errors::MessageError;
 use crate::instructions::verify_message::verify_bridge_signature;
 use crate::states::message_verifier::MessageVerifier;
@@ -19,17 +20,24 @@ pub struct ExtendProgram<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::bridge_config_pda().0 @ BridgeConfigError::InvalidConfigPubkey
+    )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
     #[account(
         mut,
         constraint = upgrade_authority.committee == committee.key() @ BridgeError::InvalidCommittee,
+        address = crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee
     )]
     pub committee: AccountLoader<'info, Committee>,
 
 
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::util::message_verifier_pda(&committee.key()).0 @ MessageError::InvalidMessageVerifier
+    )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
     #[account(
         init_if_needed,
@@ -47,22 +55,30 @@ pub struct ExtendProgram<'info> {
     #[account(
         mut,
         constraint = upgrade_authority.enabled == true @ BridgeUpgradeError::UnauthorizedUpgrade,
+        address = crate::util::upgrade_authority_pda(&committee.key()).0 @ BridgeUpgradeError::UnauthorizedUpgrade
     )]
     pub upgrade_authority: Box<Account<'info, UpgradeAuthority>>,
     /// CHECK: validated via program_data constraint and CPI
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::id(),
+        constraint = program.owner == &bpf_loader_upgradeable::ID @ BridgeUpgradeError::InvalidProgramData
+    )]
     pub program: UncheckedAccount<'info>,
 
     #[account(
         mut,
         constraint = program_data.upgrade_authority_address == Some(upgrade_authority.key())
             @ BridgeUpgradeError::InvalidProgramData,
+        constraint = program_data.key()
+            == solana_loader_v3_interface::get_program_data_address(&program.key())
+            @ BridgeUpgradeError::InvalidProgramData,
     )]
     pub program_data: Box<Account<'info, ProgramData>>,
 
     pub system_program: Program<'info, System>,
-    // #[account(address = bpf_loader_upgradeable::id())]
-    /// CHECK: 
+    /// CHECK: kept to explicitly pin the loader program id
+    #[account(address = bpf_loader_upgradeable::ID)]
     pub bpf_loader: UncheckedAccount<'info>,
 }
 
@@ -97,13 +113,6 @@ pub fn extend_program_space_with_signatures(
     require!(
         program == ctx.accounts.program.key(),
         BridgeConfigError::InvalidConfigPubkey
-    );
-
-    // Require the provided program matches the stored upgrade authority
-    require!(
-        ctx.accounts.program_data.upgrade_authority_address
-            == Some(ctx.accounts.upgrade_authority.key()),
-        BridgeUpgradeError::InvalidProgramData
     );
     let program_address = ctx.accounts.program.key();
     let expected_program_data = solana_loader_v3_interface::get_program_data_address(&program_address);

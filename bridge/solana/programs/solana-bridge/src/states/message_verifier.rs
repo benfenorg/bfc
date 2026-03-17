@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use crate::errors::MessageError;
 pub const MESSAGE_VERIFIER_SEED: &str = "message_verifier";
 
 
@@ -16,7 +17,7 @@ pub struct MessageVerifier {
 
 
 impl MessageVerifier {
-    pub const SPACE: usize = 8 + std::mem::size_of::<Self>();
+    pub const SPACE: usize = 8 + 1 + 8 + 32;
 
 
     pub fn initialize(
@@ -30,8 +31,12 @@ impl MessageVerifier {
         Ok(())
     }
 
-    pub fn increment_message_number(&mut self){
-        self.message_number = self.message_number.checked_add(1).unwrap()
+    pub fn increment_message_number(&mut self) -> Result<()> {
+        self.message_number = self
+            .message_number
+            .checked_add(1)
+            .ok_or(MessageError::MessageNumberOverflow)?;
+        Ok(())
     }
 
     pub fn message_number(&self) -> u64 {
@@ -86,12 +91,10 @@ pub mod test_message_verifier{
         let bump = 255;
         verifier.initialize(bump, committee).unwrap();
         assert_eq!(verifier.message_number(), 0);
-        verifier.increment_message_number();
+        verifier.increment_message_number().unwrap();
         assert_eq!(verifier.message_number(), 1);
     }
 
 
 }
-
-
 

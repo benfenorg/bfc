@@ -17,7 +17,7 @@ pub struct ChainLimit {
     pub hourly_transfer_index: u8, // current hour index
     pub hourly_transfer_amount: [ChainHourlyTransferAmount; HOUR_TRANSFER_NUM], // 24-hour sliding window
     pub min_usd_limit: u64, // min transfer limit in USD
-    pub padding: [u64; 7],// reserved for future upgrades
+    pub padding: [u64; 10],// reserved for future upgrades
 }
 
 #[zero_copy]
@@ -30,7 +30,16 @@ pub struct ChainHourlyTransferAmount {
 
 
 impl ChainLimit {
-    pub const SPACE: usize = 8 + std::mem::size_of::<Self>();
+    pub const SPACE: usize = 8
+        + 1
+        + 32
+        + 1
+        + 8
+        + 8
+        + 1
+        + (HOUR_TRANSFER_NUM * (8 + 8))
+        + 8
+        + (10 * 8);
 
     pub fn initialize(
         &mut self,
@@ -155,13 +164,20 @@ impl ChainLimit {
 
     pub fn will_amount_exceed_limit(&mut self, amount: u64,price: u64, decimal: u8) ->bool{
         match self.calculate_amount_in_usd(amount, price, decimal) {
-            Ok(amount_in_usd) => self.calculate_window_limit() + amount_in_usd > self.total_limit,
+            Ok(amount_in_usd) => self
+                .calculate_window_limit()
+                .checked_add(amount_in_usd)
+                .map(|sum| sum > self.total_limit)
+                .unwrap_or(true),
             Err(_) => true,
         }
     }
 
     pub fn will_usd_amount_exceed_limit_internal(&mut self, current_hour: u64,amount_in_usd: u64) -> bool {
-        self.calculate_window_limit_internal(current_hour) + amount_in_usd > self.total_limit
+        self.calculate_window_limit_internal(current_hour)
+            .checked_add(amount_in_usd)
+            .map(|sum| sum > self.total_limit)
+            .unwrap_or(true)
     }
 
 
@@ -186,7 +202,10 @@ impl ChainLimit {
         if current_hour_in_array == current_hour {
             // 同一小时，累加金额
             self.hourly_transfer_amount[current_index].amount = 
-            self.hourly_transfer_amount[current_index].amount.saturating_add(amount_in_usd);        
+            self.hourly_transfer_amount[current_index]
+                .amount
+                .checked_add(amount_in_usd)
+                .ok_or(BridgeLimiterError::CalculationOverflow)?;        
         } else if current_hour > current_hour_in_array {
             // 新的小时，需要移动到下一个位置
             let hours_diff =current_hour - current_hour_in_array;
@@ -345,5 +364,17 @@ pub mod chain_limit_test{
         assert_eq!(result, Ok(()));
         let result = chain_limit.record_bridge_transfers_internal(25, 1, price, decimal);
         assert_eq!(result.unwrap_err().to_string().contains("Exceed window limit"), true);
+    }
+
+    #[test]
+    fn test_will_amount_exceed_limit_overflow() {
+        let mut chain_limit = ChainLimit::default();
+        chain_limit.total_limit = u64::MAX;
+
+        chain_limit.hourly_transfer_index = 0;
+        chain_limit.hourly_transfer_amount[0].hour = 1;
+        chain_limit.hourly_transfer_amount[0].amount = u64::MAX - 1;
+
+        assert!(chain_limit.will_usd_amount_exceed_limit_internal(1, 10));
     }
 }
