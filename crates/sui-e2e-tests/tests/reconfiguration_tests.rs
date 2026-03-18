@@ -46,7 +46,7 @@ use sui_types::sui_system_state::{
     get_validator_from_table, sui_system_state_summary::get_validator_by_pool_id,
     SuiSystemStateTrait,
 };
-use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall, ProgrammableTransaction, TransactionDataAPI, TransactionExpiration, TransactionKind, TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
+use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall, ProgrammableTransaction, TransactionDataAPI, TransactionExpiration, TransactionKind, TEST_ONLY_GAS_UNIT_FOR_HEAVY_COMPUTATION_STORAGE, TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
 use tracing::{error, info};
@@ -2787,8 +2787,8 @@ async fn sim_test_reconfig_with_committee_change_stress_determinism() {
 }
 
 async fn do_test_reconfig_with_committee_change_stress() {
-    let number_of_validators = 2;
-    let mut candidates = (0..1)
+    let number_of_validators = 3;
+    let mut candidates = (0..2)
         .map(|_| ValidatorGenesisConfigBuilder::new().build(&mut OsRng))
         .collect::<Vec<_>>();
     let addresses = candidates
@@ -2798,7 +2798,7 @@ async fn do_test_reconfig_with_committee_change_stress() {
     let mut test_cluster = TestClusterBuilder::new()
         .with_num_validators(number_of_validators)
         .with_validator_candidates(addresses)
-        .with_num_unpruned_validators(2)
+        .with_num_unpruned_validators(1)
         .build()
         .await;
 
@@ -3178,20 +3178,47 @@ async fn execute_add_stake_transaction(
     test_cluster: &mut TestCluster,
     stakes: Vec<(SuiAddress, u64)>,
 ) -> Vec<ObjectChange> {
-    let (address, gas) = test_cluster
-        .wallet
-        .get_one_gas_object()
-        .await
-        .unwrap()
-        .unwrap();
-
     let rgp = test_cluster.get_reference_gas_price().await;
+    let gas_budget = rgp * TEST_ONLY_GAS_UNIT_FOR_HEAVY_COMPUTATION_STORAGE;
+    let stake_total: u64 = stakes.iter().map(|(_, amount)| *amount).sum();
+    let mut addresses = test_cluster.wallet.get_addresses();
+    addresses.sort();
+    let mut selected = None;
+    for address in addresses {
+        let mut gas_objects = match test_cluster.wallet.gas_objects(address).await {
+            Ok(objs) => objs,
+            Err(_) => continue,
+        };
+        gas_objects.sort_by_key(|(_, obj)| obj.object_id);
+        let stake_object = gas_objects
+            .iter()
+            .find(|(value, _)| *value >= stake_total)
+            .map(|(_, obj)| obj.object_ref());
+        let Some(stake_object) = stake_object else { continue };
+        let gas_object = gas_objects
+            .iter()
+            .find(|(value, obj)| {
+                *value >= gas_budget && obj.object_id != stake_object.0
+            })
+            .map(|(_, obj)| obj.object_ref());
+        if let Some(gas_object) = gas_object {
+            selected = Some((address, gas_object, stake_object));
+            break;
+        }
+    }
+    let (address, gas, stake_coin) = selected.unwrap_or_else(|| {
+        panic!(
+            "No account has distinct gas and stake coins with balances >= {} and {}",
+            gas_budget, stake_total
+        )
+    });
     let mut ptb = ProgrammableTransactionBuilder::new();
     let system_arg = ptb.obj(ObjectArg::SUI_SYSTEM_MUT).unwrap();
+    let stake_coin_arg = ptb.obj(ObjectArg::ImmOrOwnedObject(stake_coin)).unwrap();
 
     stakes.into_iter().for_each(|(stake_for, stake_amount)| {
         let amt_arg = ptb.pure(stake_amount).unwrap();
-        let stake_arg = ptb.command(Command::SplitCoins(Argument::GasCoin, vec![amt_arg]));
+        let stake_arg = ptb.command(Command::SplitCoins(stake_coin_arg, vec![amt_arg]));
         let stake_for_arg = ptb.pure(stake_for).unwrap();
 
         ptb.command(Command::MoveCall(Box::new(ProgrammableMoveCall {
