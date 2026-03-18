@@ -123,12 +123,10 @@ contract DeployBridge is Script {
             deployConfig.suiDecimals[1] = 8;
             deployConfig.suiDecimals[2] = 8;
             if (chainIDHash == keccak256(abi.encode("31337"))){
-                console.log("bbking1");
                 deployConfig.suiDecimals[3] = 6;
                 deployConfig.suiDecimals[4] = 6;
                 deployConfig.suiDecimals[7] = 9;
             }else{
-                console.log("bbking2");
                 deployConfig.suiDecimals[3] = 9;
                 deployConfig.suiDecimals[4] = 9;
                 deployConfig.suiDecimals[7] = 9;

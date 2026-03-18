@@ -161,7 +161,6 @@ pub fn verify_signed_bridge_action(
     committee: &BridgeCommittee,
 ) -> BridgeResult<VerifiedSignedBridgeAction> {
     if signed_action.data() != expected_action {
-        info!("bbking expected_action: {:?}, signed_action: {:?}", expected_action, signed_action.data());
         return Err(BridgeError::MismatchedAction);
     }
 
@@ -277,13 +276,6 @@ mod tests {
         telemetry_subscribers::init_for_testing();
         let registry = Registry::new();
         mysten_metrics::init_metrics(&registry);
-        //update pubkey and sig
-        // let (_authority1, pubkey, secret) = get_test_authority_and_key(5000, 9999);
-        // let pubkey_bytes = BridgeAuthorityPublicKeyBytes::from(&pubkey);
-        // let pubkey_str = Hex::encode(pubkey_bytes.as_bytes());
-        // println!("bbking pubkey_bytes: {:?}", &pubkey_str);
-        // let sig2 = BridgeAuthoritySignInfo::new(&action, &secret);
-        // println!("bbking sig2: {:?}", Hex::encode(sig2.signature.as_bytes()));
 
         let public_key_bytes =
             Hex::decode("02f9a01de33c315a9d9c756f73d0b820d68fe6f1cb2cdcb12b12df13bde4fc1107")

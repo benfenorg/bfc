@@ -562,7 +562,6 @@ where
             &IntentMessage::new(Intent::sui_transaction(), &tx_data),
             sui_key,
         );
-        info!("bbking tx_data: {:?},certificate: {:?}", tx_data, certificate.clone());
         let signed_tx = Transaction::from_data(tx_data, vec![sig]);
         let tx_digest = *signed_tx.digest();
         // Check twice: If the action is already processed, skip it.
@@ -959,9 +958,6 @@ mod tests {
 
         // Failure will trigger retry, we wait for 2 requests before checking WAL log
         let tx_digest = tx_subscription.recv().await.unwrap();
-        info!("bbking tx_digest: {:#?}", tx_digest);
-        info!("bbking store: {:#?}", store
-            .get_all_pending_actions());
         assert_eq!(tx_subscription.recv().await.unwrap(), tx_digest);
 
         // The retry is still going on, action still in WAL

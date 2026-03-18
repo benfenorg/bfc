@@ -226,7 +226,6 @@ impl SuiClientInner for SuiMockClient {
     }
 
     async fn get_mutable_bridge_object_arg(&self) -> Result<ObjectArg, Self::Error> {
-        info!("bbking120 get_mutable_bridge_object_arg");
         Ok(DUMMY_MUTALBE_BRIDGE_OBJECT_ARG)
     }
 

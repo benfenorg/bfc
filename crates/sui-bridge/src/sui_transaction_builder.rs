@@ -700,7 +700,6 @@ fn build_token_bridge_approve_transaction(
     }
 
     let pt = builder.finish();
-    info!("bbking pt: {:?}", pt);
     Ok(TransactionData::new_programmable(
         client_address,
         vec![*gas_object_ref],
@@ -917,7 +916,6 @@ fn build_defi_bridge_approve_transaction(
     };
 
     let pt = builder.finish();
-    info!("bbking pt: {:?}", pt);
     Ok(TransactionData::new_programmable(
         client_address,
         vec![*gas_object_ref],
@@ -968,7 +966,6 @@ pub fn build_token_send_back_transaction(
         }
         _ => unreachable!(),
     };
-    info!("send back transaction: source_chain: {:?}, sender: {:?}, token_type: {:?}, amount: {:?}, tx_hash: {:?}, event_idx: {:?}, target_token_id: {:?}", source_chain, sender, token_type, amount, tx_hash, event_idx, target_token_id);
     // Add amount normalization logic (use chain_id helpers like is_eth_chain / is_solana_chain)
     let mut amount = amount;
     // Use chain_id helper methods directly, such as is_eth_chain and is_solana_chain

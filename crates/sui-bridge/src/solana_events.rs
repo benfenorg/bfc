@@ -225,9 +225,7 @@ impl SolanaBridgeEvent {
                         });
                     }
                 }
-            }else{
-                tracing::error!("bbking100 no event data found in log: {:?}", log_msg);
-            }
+            };
         }
 
         parsed_events
@@ -406,7 +404,6 @@ mod tests {
         let log_msg = format!("Program data: {}", base64_str);
 
         let events = SolanaBridgeEvent::test_try_from_logs(&log_msg);
-        tracing::info!("bbking100 events: {:?}", events);
         assert_eq!(events.len(), 1, "Should parse exactly one event");
 
         match &events[0] {

@@ -48,7 +48,6 @@ impl FastPathSelector {
         match bridge_action {
             BridgeAction::EthToSuiBridgeAction(action) => {
                 let config_item = config.items.get(&action.eth_bridge_event.eth_chain_id);
-                info!("bbking config_item: {:?} config: {:?}", config_item,config.items);
                 if config_item.is_none() {
                     return FastPathSelector::Finalized;
                 }

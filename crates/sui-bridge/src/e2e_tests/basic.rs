@@ -2900,7 +2900,6 @@ async fn test_bridge_usdt_to_sui_recieve_busd() {
         .await
         .unwrap()
         .data;
-    info!("bbking100 all_coins: {:?}", all_coins);
     let usdt_coin = all_coins
         .iter()
         .find(|c| c.coin_type.contains("BUSD"))
@@ -3009,7 +3008,6 @@ async fn test_bridge_usdt_to_sui_recieve_usdt() {
         .await
         .unwrap()
         .data;
-    info!("bbking100 all_coins: {:?}", all_coins);
     let usdt_coin = all_coins
         .iter()
         .find(|c| c.coin_type.contains("USDT"))
@@ -3050,7 +3048,6 @@ async fn test_bridge_usdt_to_sui_recieve_usdt() {
         )
         .await;
     // There are exactly 1 deposit and 1 approved event
-    info!("bbking123 events: {:?}", events);
     assert_eq!(events.len(), 2);
     info!(
         "[Timer] Sui to Eth bridge transfer approved in {:?}",
@@ -4008,7 +4005,6 @@ async fn test_bridge_from_solana_to_sui_recieve_usdc() {
             true,
         )
         .await;
-    info!("bbking111 events: {:?}", events);
     // 应该有 approved 和 claimed 事件
     assert!(events.len() >= 2, "Expected at least 2 events (approved + claimed), got {}", events.len());
 
@@ -4025,7 +4021,6 @@ async fn test_bridge_from_solana_to_sui_recieve_usdc() {
         .await
         .unwrap()
         .data;
-    info!("bbking100 all_coins: {:?}", all_coins);
     let usdt_coin = all_coins
         .iter()
         .find(|c| c.coin_type.contains("USDC"))
@@ -4090,7 +4085,6 @@ async fn test_add_refund_admin_and_bridge_from_solana() {
     let sol_env = bridge_test_cluster.solana_env();
     let solana_signer = sol_env.get_signer().await.expect("Failed to get solana signer");
     let solana_address = solana_signer.pubkey().to_string();
-    info!("bbking100 Solana address: {}", solana_address);
 
     bridge_test_cluster.start_bridge_cluster(false, false, true, vec![solana_address]).await;
     bridge_test_cluster
@@ -4231,7 +4225,6 @@ async fn test_add_refund_admin_and_bridge_from_solana() {
             true,
         )
         .await;
-    info!("bbking100 events: {:?}", events);
     assert!(events.len() >= 2, "Expected at least 2 events (TokenSendBackEventForSolanaV2 + TokenTransferApproved), got {}", events.len());
 
     info!(

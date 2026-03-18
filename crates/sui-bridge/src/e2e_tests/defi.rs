@@ -159,7 +159,6 @@ async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
         ],
     );
     let pt = builder.finish();
-    info!("bbking110 pt: {:?}", pt);
     let gas = bridge_test_cluster.test_cluster.inner
         .wallet
         .get_one_gas_object_owned_by_address(address)
@@ -177,7 +176,6 @@ async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
 
     // Step 7: Sign and execute the DeFi stake transaction
     let tx = bridge_test_cluster.test_cluster.inner.wallet.sign_transaction(&tx_data);
-    info!("bbking111 tx: {:?}", tx);
     let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
     let tx_response = http_client
         .execute_transaction_block(
@@ -187,7 +185,6 @@ async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
             Some(ExecuteTransactionRequestType::WaitForLocalExecution),
         )
         .await?;
-    info!("bbking112 tx_response: {:?}", tx_response);
     // Step 8: Verify transaction execution
     let effects = tx_response.effects.as_ref().unwrap();
     let defi_stake_succeeded = match effects.status() {
@@ -229,7 +226,6 @@ async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
             if let Ok(parsed_event) = bcs::from_bytes::<crate::events::MoveDefiTransferOutEvent>(&event.bcs.bytes()) {
                 event_seq_num = parsed_event.seq_num;
                 amount_after_fee=parsed_event.amount_after_fee;
-                info!("bbking113 parsed_event: {:?}", parsed_event);
             }
             break;
         }
@@ -263,7 +259,6 @@ async fn test_bridge_defi_stake_e2e() -> Result<(), anyhow::Error> {
         )
         .await;
 
-    println!("DeFi transfer action status: {:?}", status);
     // The status should be Approved (signatures verified) but not Claimed
     // because this is a Sui->Eth transfer that will be claimed on the Eth side
     assert_eq!(status, BridgeActionStatus::Approved, "Action should be approved");
@@ -365,11 +360,9 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
 
     let minter_address = bridge_test_cluster.minter_address.unwrap();
     let minter_key_pair = bridge_test_cluster.minter_key_pair.as_ref().unwrap();
-    println!("Using minter address: {}", minter_address);
 
     // Step 2: Mint BUSD tokens for DeFi staking
     let busd_amount = 50_000_000_000u64; // 50 BUSD for testing
-    println!("Minting {} BUSD tokens for DeFi staking...", busd_amount);
     stable::mint_stable_coin_to_address(
         busd_amount,
         &http_client,
@@ -379,7 +372,6 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
         address,
     )
     .await?;
-    println!("Minted {} BUSD tokens for DeFi staking to {}", busd_amount, address);
 
     // Step 3: Verify BUSD tokens were minted successfully
     let busd_objects = auth::do_get_owned_objects_with_filter(
@@ -756,7 +748,6 @@ async fn test_bridge_defi_stake_and_unstake_e2e() -> Result<(), anyhow::Error> {
         .new_bridge_events_all(
             true,
         ).await;
-    info!("bbking110 unstake events: {:?}", events);
     info!("unstake test completed");
     let amount_lp_after_unstake = bridge_test_cluster
         .bridge_client()
@@ -1529,9 +1520,7 @@ async fn test_bridge_defi_stake_and_unstake_gt_lp_amount_e2e() -> Result<(), any
     let amount_after_fee = amount_after_fee*1000+100;
     let result = initiate_defi_bridge_unstake_sui_to_eth(&bridge_test_cluster, protocol_type, protocol_version, protocol_token_id, amount_after_fee,amount_after_fee,false)
         .await;
-    info!("defitag100 result: {:?}", result);
     let err = result.unwrap_err();
-    info!("bbking110 error: {:?}", err);
     assert!(err.to_string().contains("Sui TX error"), "Error should be Sui TX error");
     Ok(())
 }

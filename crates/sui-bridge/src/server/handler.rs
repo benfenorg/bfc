@@ -174,7 +174,6 @@ where
                 if let BridgeAction::EthToSuiBridgeAction(ref mut action_inner) = action_clone {
                     action_inner.eth_bridge_event.set_fast_path_selector(fast_path_selector);
                 };
-                info!("bbking action_clone mut: {:?}", action_clone);
                 Ok(action_clone)
             }
 
@@ -204,7 +203,6 @@ where
                 if let BridgeAction::EthToSuiBridgeAction(ref mut action_inner) = action_clone {
                     action_inner.eth_bridge_event.set_fast_path_selector(fast_path_selector);
                 };
-                info!("bbking action_clone mut: {:?}", action_clone);
                 Ok(action_clone)
             }
             BridgeChainId::AptosMainnet| BridgeChainId::AptosTestnet => {
@@ -591,7 +589,6 @@ where
                     .recv()
                     .await
                     .unwrap_or_else(|| panic!("Server signer's channel is closed"));
-                info!("bbking100 recv message from channel");
                 let result = self.sign(key).await;
                 // The receiver may be dropped before the sender (client connection was dropped for example),
                 // we ignore the error in that case.
@@ -663,7 +660,6 @@ where
 
                 let sig = BridgeAuthoritySignInfo::new(&bridge_action, &signer);
                 let result = SignedBridgeAction::new_from_data_and_sig(bridge_action, sig);
-                info!("bbking SignedBridgeAction: {:?}", result);
                 // Cache result if Ok
                 *guard = Some(Ok(result.clone()));
                 Ok(result)
@@ -739,7 +735,6 @@ impl BridgeRequestHandler {
         solana_base_url: Option<String>,// for decentralization request
     ) -> Self {
         let external_rpc = external_rpc.map(Arc::new);
-        info!("bbking100 external_rpc: {:?}", external_rpc);
         let (sui_signer_tx, sui_rx) = mysten_metrics::metered_channel::channel(
             1000,
             &mysten_metrics::get_metrics()
@@ -879,7 +874,6 @@ impl ActionVerifier<(u8, String, u16, u8)> for SolanaActionVerifier {
 
     async fn verify(&self, key: (u8, String, u16, u8)) -> BridgeResult<BridgeAction> {
         let (chain_id, tx_signature, event_idx, fast_path_selector) = key;
-        info!("bbking100 verify solana action, chain_id: {:?}, tx_signature: {:?}, event_idx: {:?}, fast_path_selector: {:?}", chain_id, tx_signature, event_idx, fast_path_selector);
         let bridge_chain_id = BridgeChainId::try_from(chain_id)?;
         if !bridge_chain_id.is_solana_chain() {
             return Err(BridgeError::Generic(format!(
@@ -933,7 +927,6 @@ impl BridgeRequestHandlerTrait for BridgeRequestHandler {
         event_idx: u16,
         fast_path_selector: u8,
     ) -> Result<Json<SignedBridgeAction>, BridgeError> {
-        info!("bbking100 handle_solana_tx_signature: {:?}", tx_signature);
         let (tx, rx) = oneshot::channel();
         self.solana_signer_tx
             .send(((chain_id, tx_signature, event_idx, fast_path_selector), tx))

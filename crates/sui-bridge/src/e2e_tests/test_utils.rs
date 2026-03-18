@@ -2514,7 +2514,6 @@ pub async fn initiate_bridge_sui_to_eth(
         .await
         .unwrap();
     let sui_address = bridge_test_cluster.sui_user_address();
-    info!("bbking120 token: {:?}", token);
     let resp = if original_token_id != TOKEN_ID_BUSD {
         match deposit_eth_to_sui_package(
             sui_client,
@@ -2674,7 +2673,6 @@ pub async fn initiate_bridge_sui_to_solana(
         .await
         .unwrap();
     let sui_address = bridge_test_cluster.sui_user_address();
-    info!("bbking120 token: {:?}", token);
     let resp = if original_token_id != TOKEN_ID_BUSD {
         match deposit_solana_to_sui_package(
             sui_client,

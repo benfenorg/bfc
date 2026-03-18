@@ -35,7 +35,6 @@ impl SolanaClient {
         let resp = match resp_result {
             Ok(resp) => resp,
             Err(e) => {
-                tracing::error!("bbking100 send error url: {:?}, error: {:?}", self.base_url, e);
                 return Err(anyhow!(e.to_string()));
             }
         };
@@ -44,7 +43,6 @@ impl SolanaClient {
         let text = match text_result {
             Ok(text) => text,
             Err(e) => {
-                tracing::error!("bbking100 send text error: {:?}", e);
                 return Err(anyhow!(e.to_string()));
             }
         };
@@ -115,7 +113,6 @@ impl SolanaClient {
 
         let params = json!([signature, config]);
         let v = self.send("getTransaction", params).await?;
-        tracing::error!("bbking100 get_transaction v: {:?}", v);
         let result = v.get("result").ok_or_else(|| anyhow!("empty result"))?;
         let tx: SolanaTransaction = serde_json::from_value(result.clone())?;
         Ok(tx)
@@ -128,7 +125,6 @@ impl SolanaClient {
         tx_signature: &str,
         event_idx: u16,
     ) -> BridgeResult<BridgeAction> {
-        tracing::error!("bbking100 get_bridge_action_maybe tx_signature: {:?}", tx_signature);
         let tx = match self.get_transaction(tx_signature).await {
             Ok(t) => t,
             Err(e) => {
@@ -139,10 +135,8 @@ impl SolanaClient {
                 return Err(BridgeError::ProviderError(e.to_string()));
             }
         };
-        tracing::error!("bbking100 get_bridge_action_maybe tx: {:?}", tx);
         // Parse events from transaction logs
         let events = SolanaBridgeEvent::try_from_client_transaction(&tx);
-        tracing::error!("bbking100 get_bridge_action_maybe events: {:?}", events);
         if events.is_empty() {
             tracing::error!(
                 "No bridge events found in transaction {} at index {}",

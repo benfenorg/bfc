@@ -173,18 +173,14 @@ where
         event_idx: u16,
     ) -> BridgeResult<BridgeAction> {
         let events = self.inner.get_events_by_tx_digest(*tx_digest).await?;
-        info!("bbking1000 idx0: {:?}", events);
         let event = events
             .get(event_idx as usize)
             .ok_or(BridgeError::NoBridgeEventsInTxPosition)?;
-        info!("bbking1000 idx1: {:?}", event);
         if event.type_.address.as_ref() != BRIDGE_PACKAGE_ID.as_ref() {
             return Err(BridgeError::BridgeEventInUnrecognizedSuiPackage);
         }
-        info!("bbking1000 idx2: {:?}", event);
         let bridge_event = SuiBridgeEvent::try_from_sui_event(event)?
             .ok_or(BridgeError::NoBridgeEventsInTxPosition)?;
-        info!("bbking1000 idx3: {:?}", bridge_event);
         bridge_event
             .try_into_bridge_action(*tx_digest, event_idx)
             .ok_or(BridgeError::BridgeEventNotActionable)
@@ -1256,7 +1252,6 @@ where
         .read_api()
         .dev_inspect_transaction_block(SuiAddress::ZERO, kind, None, None, None)
         .await?;
-    info!("bbking110 resp: {:?}", resp);
     let DevInspectResults {
         results, effects, ..
     } = resp;

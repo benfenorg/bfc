@@ -522,7 +522,6 @@ pub async fn publish_and_register_coins_return_add_coins_on_sui_action(
         }
         let (tc, type_, uc, metadata) =
             (tc.unwrap(), type_.unwrap(), uc.unwrap(), metadata.unwrap());
-        info!("bbking121 tc: {:?} type_: {:?} uc: {:?} metadata: {:?}", tc, type_, uc, metadata);
         // register with the bridge
         let mut builder = ProgrammableTransactionBuilder::new();
         let bridge_arg = builder.obj(bridge_arg).unwrap();
