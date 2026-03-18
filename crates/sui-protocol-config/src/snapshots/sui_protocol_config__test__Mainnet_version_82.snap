@@ -75,7 +75,6 @@ feature_flags:
   variant_nodes: true
   consensus_zstd_compression: true
   anonymous_coin_open: true
-  minimize_child_object_mutations: true
   move_native_context: true
   consensus_median_based_commit_timestamp: true
   normalize_ptb_arguments: true

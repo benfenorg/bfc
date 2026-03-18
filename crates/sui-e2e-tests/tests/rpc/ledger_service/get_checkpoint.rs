@@ -17,7 +17,7 @@ use test_cluster::TestClusterBuilder;
 use crate::{stake_with_validator, transfer_coin};
 
 #[sim_test]
-async fn get_checkpoint() {
+async fn sim_get_checkpoint() {
     telemetry_subscribers::init_for_testing();
 
     let test_cluster = TestClusterBuilder::new().build().await;

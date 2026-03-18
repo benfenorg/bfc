@@ -86,7 +86,6 @@ feature_flags:
   variant_nodes: true
   consensus_zstd_compression: true
   anonymous_coin_open: true
-  minimize_child_object_mutations: true
   record_additional_state_digest_in_prologue: true
   move_native_context: true
   consensus_median_based_commit_timestamp: true

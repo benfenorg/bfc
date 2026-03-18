@@ -55,7 +55,7 @@ async fn party_object_deletion() {
 }
 
 #[sim_test]
-async fn party_object_deletion_multiple_times() {
+async fn sim_party_object_deletion_multiple_times() {
     telemetry_subscribers::init_for_testing();
 
     let num_deletions = 20;

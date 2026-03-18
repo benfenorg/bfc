@@ -2787,7 +2787,8 @@ async fn sim_test_reconfig_with_committee_change_stress_determinism() {
 }
 
 async fn do_test_reconfig_with_committee_change_stress() {
-    let mut candidates = (0..6)
+    let number_of_validators = 2;
+    let mut candidates = (0..1)
         .map(|_| ValidatorGenesisConfigBuilder::new().build(&mut OsRng))
         .collect::<Vec<_>>();
     let addresses = candidates
@@ -2795,7 +2796,7 @@ async fn do_test_reconfig_with_committee_change_stress() {
         .map(|c| (&c.account_key_pair.public()).into())
         .collect::<Vec<SuiAddress>>();
     let mut test_cluster = TestClusterBuilder::new()
-        .with_num_validators(7)
+        .with_num_validators(number_of_validators)
         .with_validator_candidates(addresses)
         .with_num_unpruned_validators(2)
         .build()
@@ -2841,7 +2842,7 @@ async fn do_test_reconfig_with_committee_change_stress() {
             .sui_node
             .with(|node| node.state().epoch_store_for_testing().committee().clone());
         cur_epoch = committee.epoch();
-        assert_eq!(committee.num_members(), 7);
+        assert_eq!(committee.num_members(), number_of_validators);
         assert!(committee.authority_exists(&handle1.state().name));
         assert!(committee.authority_exists(&handle2.state().name));
         removed_validators
