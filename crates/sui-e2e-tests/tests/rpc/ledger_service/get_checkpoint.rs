@@ -1,8 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::time::Duration;
-use tokio::time::sleep;
 use sui_macros::sim_test;
 use sui_rpc_api::field_mask::FieldMask;
 use sui_rpc_api::field_mask::FieldMaskUtil;
@@ -81,7 +79,6 @@ async fn sim_get_checkpoint() {
     assert!(signature.is_some());
     assert!(contents.is_some());
     assert!(!transactions.is_empty());
-    let _ = sleep(Duration::from_secs(10)).await;
 
     // Request by sequence_number
     let response = client
