@@ -176,17 +176,21 @@ async fn sim_test_indexing_with_tto() {
         1
     );
 
-    // 0x0 starts with 0 coins
-    assert!(client
+    let sui = "0x2::coin::Coin<0x2::bfc::BFC>"
+        .parse::<TypeTag>()
+        .unwrap()
+        .to_string();
+    let initial_zero_coins = client
         .list_owned_objects(ListOwnedObjectsRequest {
             owner: Some("0x0".to_owned()),
+            object_type: Some(sui.clone()),
             ..Default::default()
         })
         .await
         .unwrap()
         .into_inner()
         .objects
-        .is_empty());
+        .len();
 
     //
     // Run the `receive` function to receive the coin from TTO and send it to 0x0
@@ -245,11 +249,11 @@ async fn sim_test_indexing_with_tto() {
         .objects
         .is_empty());
 
-    // 0x0 ends with 1 coin
     assert_eq!(
         client
             .list_owned_objects(ListOwnedObjectsRequest {
                 owner: Some("0x0".to_owned()),
+                object_type: Some(sui),
                 ..Default::default()
             })
             .await
@@ -257,7 +261,7 @@ async fn sim_test_indexing_with_tto() {
             .into_inner()
             .objects
             .len(),
-        1
+        initial_zero_coins + 1
     );
 }
 
