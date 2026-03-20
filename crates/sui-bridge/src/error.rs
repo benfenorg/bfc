@@ -21,6 +21,8 @@ pub enum BridgeError {
     BridgeEventInUnrecognizedEthContract,
     // Found a bridge event but not in a recognized Sui bridge package
     BridgeEventInUnrecognizedSuiPackage,
+    // Found a bridge event but not in a recognized Solana bridge program
+    BridgeEventInUnrecognizedSolanaContract,
     // Found BridgeEvent but not BridgeAction
     BridgeEventNotActionable,
     // Failure to serialize

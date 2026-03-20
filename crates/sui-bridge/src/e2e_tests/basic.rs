@@ -3653,7 +3653,7 @@ async fn test_solana_client_with_test_validator() {
         .await;
 
     let rpc_url = bridge_test_cluster.solana_env().rpc_url.clone();
-    let client = SolanaClient::new(&rpc_url);
+    let client = SolanaClient::new(&rpc_url, HashSet::new());
 
     // test get block height
     let n = client.get_block_height(None).await.unwrap();

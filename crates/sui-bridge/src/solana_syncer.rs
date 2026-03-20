@@ -469,6 +469,7 @@ pub struct SolanaEventWrapper {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashSet;
     use axum::extract::State;
     use axum::http::StatusCode;
     use axum::routing::post;
@@ -788,7 +789,7 @@ mod tests {
 
         let (addr, handle, tx, slot_control) = start_mock_server(12345).await;
         let base_url = format!("http://{addr}/");
-        let client = Arc::new(SolanaClient::new(&base_url));
+        let client = Arc::new(SolanaClient::new(&base_url, HashSet::new()));
 
         let addresses = HashMap::from_iter(vec![(
             "Vote111111111111111111111111111111111111111".to_string(),
@@ -840,7 +841,7 @@ mod tests {
 
         let (addr, handle, tx, slot_control) = start_mock_server_tx_err(12345).await;
         let base_url = format!("http://{addr}/");
-        let client = Arc::new(SolanaClient::new(&base_url));
+        let client = Arc::new(SolanaClient::new(&base_url, HashSet::new()));
 
         let addresses = HashMap::from_iter(vec![(
             "Vote111111111111111111111111111111111111111".to_string(),
@@ -886,7 +887,7 @@ mod tests {
 
         let (addr, handle, tx, slot_control) = start_mock_server_until_inclusive(12345).await;
         let base_url = format!("http://{addr}/");
-        let client = Arc::new(SolanaClient::new(&base_url));
+        let client = Arc::new(SolanaClient::new(&base_url, HashSet::new()));
 
         let addresses = HashMap::from_iter(vec![(
             "Vote111111111111111111111111111111111111111".to_string(),
@@ -936,7 +937,7 @@ mod tests {
 
         let (addr, handle, tx, slot_control) = start_mock_server(10000).await;
         let base_url = format!("http://{addr}/");
-        let client = Arc::new(SolanaClient::new(&base_url));
+        let client = Arc::new(SolanaClient::new(&base_url, HashSet::new()));
 
         let addresses = HashMap::new();
 
@@ -1084,7 +1085,7 @@ mod tests {
         });
 
         let base_url = format!("http://{local_addr}/");
-        let client = Arc::new(SolanaClient::new(&base_url));
+        let client = Arc::new(SolanaClient::new(&base_url, HashSet::new()));
 
         // Two addresses with different start slots
         let addresses = HashMap::from_iter(vec![
@@ -1242,7 +1243,7 @@ mod tests {
         });
 
         let base_url = format!("http://{local_addr}/");
-        let client = Arc::new(SolanaClient::new(&base_url));
+        let client = Arc::new(SolanaClient::new(&base_url, HashSet::new()));
 
         let addresses = HashMap::from_iter(vec![(
             "Vote111111111111111111111111111111111111111".to_string(),
@@ -1402,7 +1403,7 @@ mod tests {
         });
 
         let base_url = format!("http://{local_addr}/");
-        let client = Arc::new(SolanaClient::new(&base_url));
+        let client = Arc::new(SolanaClient::new(&base_url, HashSet::new()));
 
         // Set start_slot to 12350, which should filter out sig_old (slot 12300)
         let addresses = HashMap::from_iter(vec![(
@@ -1558,7 +1559,7 @@ mod tests {
         });
 
         let base_url = format!("http://{local_addr}/");
-        let client = Arc::new(SolanaClient::new(&base_url));
+        let client = Arc::new(SolanaClient::new(&base_url, HashSet::new()));
 
         let addresses = HashMap::from_iter(vec![(
             "Vote111111111111111111111111111111111111111".to_string(),

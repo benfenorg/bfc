@@ -4,6 +4,7 @@
 #![allow(clippy::type_complexity)]
 
 use std::collections::BTreeMap;
+use std::collections::HashSet;
 use crate::btc_query::check_btc_txn;
 use crate::abi::EthToSuiTokenBridgeV1;
 use crate::crypto::{BridgeAuthorityKeyPair, BridgeAuthoritySignInfo};
@@ -114,6 +115,7 @@ struct SendBackActionVerifier<C, P> {
     evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<P>>>,
     fast_path_config: FastPathConfig,
     solana_base_url: Option<String>,// for decentralization request
+    solana_bridge_proxy_address: Option<String>,
 }
 
 struct ExternalCoinVerifier<C> {
@@ -457,7 +459,10 @@ where
             let base_url = self.solana_base_url.as_ref().ok_or_else(|| {
                 BridgeError::Generic("Solana base URL not found".to_string())
             })?;
-            let solana_client = SolanaClient::new(base_url);
+            let program_ids = self.solana_bridge_proxy_address.clone()
+                .map(|addr| HashSet::from([addr]))
+                .unwrap_or_default();
+            let solana_client = SolanaClient::new(base_url, program_ids);
 
             // tx_hash 字段在 Solana send-back 事件里承载原始 Solana tx signature（bytes）。
             // 优先按 UTF-8 解析（兼容直接存字符串），失败则 fallback 到 base58。
@@ -733,6 +738,7 @@ impl BridgeRequestHandler {
         fast_path_config: FastPathConfig,
         external_rpc: Option<crate::config::ExternalChainRpcConfig>,
         solana_base_url: Option<String>,// for decentralization request
+        solana_bridge_proxy_address: Option<String>,
     ) -> Self {
         let external_rpc = external_rpc.map(Arc::new);
         let (sui_signer_tx, sui_rx) = mysten_metrics::metered_channel::channel(
@@ -815,7 +821,10 @@ impl BridgeRequestHandler {
             .spawn(eth_rx);
 
         if let Some(solana_base_url) = solana_base_url.clone() {
-            let solana_client = Arc::new(SolanaClient::new(&solana_base_url));
+            let program_ids = solana_bridge_proxy_address.clone()
+                .map(|addr| HashSet::from([addr]))
+                .unwrap_or_default();
+            let solana_client = Arc::new(SolanaClient::new(&solana_base_url, program_ids));
             SignerWithCache::new(
                 signer.clone(),
                 SolanaActionVerifier { solana_client },
@@ -850,6 +859,7 @@ impl BridgeRequestHandler {
                 evm_clients: evm_clients.clone(),
                 fast_path_config: fast_path_config.clone(),
                 solana_base_url: solana_base_url.clone(),
+                solana_bridge_proxy_address: solana_bridge_proxy_address.clone(),
             },
             metrics.clone(),
         )

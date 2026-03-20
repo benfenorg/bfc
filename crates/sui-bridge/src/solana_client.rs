@@ -7,18 +7,23 @@ use std::time::Duration;
 use crate::error::{BridgeError, BridgeResult};
 use crate::solana_events::SolanaBridgeEvent;
 use crate::types::BridgeAction;
+use std::collections::HashSet;
 
 #[derive(Clone)]
 pub struct SolanaClient {
     client: reqwest::Client,
     base_url: String,
+    /// Recognized Solana bridge program IDs. Events emitted from programs
+    /// not in this set will be rejected to prevent spoofed logs.
+    program_ids: HashSet<String>,
 }
 
 impl SolanaClient {
-    pub fn new(base_url: &str) -> Self {
+    pub fn new(base_url: &str, program_ids: HashSet<String>) -> Self {
         Self {
             client: reqwest::Client::new(),
             base_url: base_url.to_string(),
+            program_ids,
         }
     }
 
@@ -135,6 +140,40 @@ impl SolanaClient {
                 return Err(BridgeError::ProviderError(e.to_string()));
             }
         };
+
+        // Validate that the event at event_idx was emitted by a recognized program
+        if self.program_ids.is_empty() {
+            tracing::error!(
+                "program_ids is empty, cannot verify bridge event origin for transaction {}",
+                tx_signature
+            );
+            return Err(BridgeError::BridgeEventInUnrecognizedSolanaContract);
+        }
+        let log_messages = tx
+            .meta
+            .as_ref()
+            .map(|m| &m.log_messages[..])
+            .unwrap_or(&[]);
+        let emitting_programs = Self::extract_program_ids_for_data_logs(log_messages);
+        match emitting_programs.get(event_idx as usize) {
+            Some(program_id) => {
+                if !self.program_ids.contains(program_id) {
+                    tracing::error!(
+                        "Bridge event in transaction {} at index {} emitted by unrecognized program {}, recognized: {:?}",
+                        tx_signature, event_idx, program_id, self.program_ids
+                    );
+                    return Err(BridgeError::BridgeEventInUnrecognizedSolanaContract);
+                }
+            }
+            None => {
+                tracing::error!(
+                    "Could not determine emitting program for event at index {} in transaction {}",
+                    event_idx, tx_signature
+                );
+                return Err(BridgeError::NoBridgeEventsInTxPosition);
+            }
+        }
+
         // Parse events from transaction logs
         let events = SolanaBridgeEvent::try_from_client_transaction(&tx);
         if events.is_empty() {
@@ -178,6 +217,41 @@ impl SolanaClient {
             );
             BridgeError::BridgeEventNotActionable
         })
+    }
+
+    /// Extract the emitting program ID for each "Program data:" log entry.
+    ///
+    /// Solana runtime logs follow this structure:
+    /// - `Program <ADDR> invoke [depth]` — pushes program onto the stack
+    /// - `Program data: <base64>` — event data from the program at top of stack
+    /// - `Program <ADDR> success/failed` — pops program from the stack
+    ///
+    /// Returns a Vec where each element is the program ID that emitted
+    /// the corresponding "Program data:" entry (in order of appearance).
+    fn extract_program_ids_for_data_logs(log_messages: &[String]) -> Vec<String> {
+        let mut program_stack: Vec<String> = Vec::new();
+        let mut result: Vec<String> = Vec::new();
+
+        for msg in log_messages {
+            if let Some(rest) = msg.strip_prefix("Program ") {
+                if rest.ends_with(" success") || rest.ends_with(" failed") {
+                    // Pop from stack
+                    program_stack.pop();
+                } else if rest.contains(" invoke [") {
+                    // Extract program ID: "Program <ID> invoke [N]"
+                    if let Some(program_id) = rest.split_whitespace().next() {
+                        program_stack.push(program_id.to_string());
+                    }
+                } else if msg.starts_with("Program data: ") {
+                    // This is an event data log, record the current program
+                    if let Some(current_program) = program_stack.last() {
+                        result.push(current_program.clone());
+                    }
+                }
+            }
+        }
+
+        result
     }
 }
 
@@ -391,7 +465,7 @@ mod tests {
     async fn test_get_block_height() {
         let (addr, handle, tx) = start_mock_server().await;
         let base_url = format!("http://{addr}/");
-        let client = SolanaClient::new(&base_url);
+        let client = SolanaClient::new(&base_url, HashSet::new());
         let n = client.get_block_height(None).await.unwrap();
         assert_eq!(n, 12345);
         tx.send(()).ok();
@@ -402,7 +476,7 @@ mod tests {
     async fn test_get_signatures_for_address() {
         let (addr, handle, tx) = start_mock_server().await;
         let base_url = format!("http://{addr}/");
-        let client = SolanaClient::new(&base_url);
+        let client = SolanaClient::new(&base_url, HashSet::new());
         let cfg = GetSignaturesConfig {
             limit: Some(1),
             ..Default::default()
@@ -422,7 +496,7 @@ mod tests {
     async fn test_get_transaction() {
         let (addr, handle, tx) = start_mock_server().await;
         let base_url = format!("http://{addr}/");
-        let client = SolanaClient::new(&base_url);
+        let client = SolanaClient::new(&base_url, HashSet::new());
         let v = client.get_transaction("abc").await.unwrap();
         assert!(v.slot.is_some());
         tx.send(()).ok();
@@ -436,7 +510,7 @@ mod tests {
             eprintln!("Skipping real Solana RPC test: set SOLANA_RPC_URL or GETBLOCK_SOLANA_RPC_URL");
             return;
         };
-        let client = SolanaClient::new(&base_url);
+        let client = SolanaClient::new(&base_url, HashSet::new());
 
         // test get block height
         let n = client.get_block_height(None).await.unwrap();
@@ -447,7 +521,7 @@ mod tests {
         assert!(n > 364267566);
         println!("slot: {:?}", n);
 
-        let client = SolanaClient::new(&base_url);
+        let client = SolanaClient::new(&base_url, HashSet::new());
 
         // test get signatures for address
         let cfg = GetSignaturesConfig {
@@ -478,7 +552,7 @@ mod tests {
             return;
         };
 
-        let client = SolanaClient::new(&base_url);
+        let client = SolanaClient::new(&base_url, HashSet::new());
 
         // Use a well-known address with lots of history.
         let address = "Vote111111111111111111111111111111111111111";
@@ -542,7 +616,7 @@ mod tests {
             return;
         };
 
-        let client = SolanaClient::new(&base_url);
+        let client = SolanaClient::new(&base_url, HashSet::new());
         let address = "Vote111111111111111111111111111111111111111";
 
         let seed_cfg = GetSignaturesConfig {
@@ -634,7 +708,7 @@ mod tests {
             return;
         };
 
-        let client = SolanaClient::new(&base_url);
+        let client = SolanaClient::new(&base_url, HashSet::new());
         let address = "Vote111111111111111111111111111111111111111";
 
         // Seed a window large enough to pick `before` and `until` that are far apart.
@@ -809,7 +883,10 @@ mod tests {
         });
 
         let base_url = format!("http://{local_addr}/");
-        let client = SolanaClient::new(&base_url);
+        let client = SolanaClient::new(
+            &base_url,
+            HashSet::from(["FVaTThSeeX4G5dHXqhTdqby9W6u77WDRMtBnfUpQasHm".to_string()]),
+        );
 
         // Test get_bridge_action_maybe
         let result = client.get_bridge_action_maybe("test_signature", 0).await;
@@ -885,9 +962,12 @@ mod tests {
         });
 
         let base_url = format!("http://{local_addr}/");
-        let client = SolanaClient::new(&base_url);
+        let client = SolanaClient::new(
+            &base_url,
+            HashSet::from(["SomeProgram111111111111111111111111111111111".to_string()]),
+        );
 
-        // Test get_bridge_action_maybe with no events
+        // Test get_bridge_action_maybe with no events (no "Program data:" in logs)
         let result = client.get_bridge_action_maybe("test_signature", 0).await;
         assert!(matches!(result, Err(BridgeError::NoBridgeEventsInTxPosition)));
 
@@ -946,5 +1026,115 @@ mod tests {
                 panic!("Expected TokensDeposited event, got RawEvent with discriminator: {:?}", discriminator);
             }
         }
+    }
+
+    #[test]
+    fn test_extract_program_ids_for_data_logs() {
+        let logs = vec![
+            "Program AAA111 invoke [1]".to_string(),
+            "Program log: something".to_string(),
+            "Program data: abc123".to_string(),
+            "Program AAA111 consumed 1000 of 200000 compute units".to_string(),
+            "Program AAA111 success".to_string(),
+        ];
+        let result = SolanaClient::extract_program_ids_for_data_logs(&logs);
+        assert_eq!(result, vec!["AAA111"]);
+
+        // Nested invocation: inner program emits data
+        let logs = vec![
+            "Program AAA111 invoke [1]".to_string(),
+            "Program BBB222 invoke [2]".to_string(),
+            "Program data: inner_data".to_string(),
+            "Program BBB222 success".to_string(),
+            "Program data: outer_data".to_string(),
+            "Program AAA111 success".to_string(),
+        ];
+        let result = SolanaClient::extract_program_ids_for_data_logs(&logs);
+        assert_eq!(result, vec!["BBB222", "AAA111"]);
+
+        // No data logs
+        let logs = vec![
+            "Program AAA111 invoke [1]".to_string(),
+            "Program log: no events".to_string(),
+            "Program AAA111 success".to_string(),
+        ];
+        let result = SolanaClient::extract_program_ids_for_data_logs(&logs);
+        assert!(result.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_get_bridge_action_maybe_unrecognized_contract() {
+        // Mock server handler that returns a transaction with events from an unrecognized program
+        async fn unrecognized_handler(
+            State(_): State<MockState>,
+            Json(body): Json<Value>,
+        ) -> (StatusCode, Json<Value>) {
+            let method = body
+                .get("method")
+                .and_then(|m| m.as_str())
+                .unwrap_or_default();
+            match method {
+                "getTransaction" => {
+                    let rsp = json!({
+                        "jsonrpc": "2.0",
+                        "id": 1,
+                        "result": {
+                            "slot": 123456,
+                            "transaction": {
+                                "signatures": ["test_signature"]
+                            },
+                            "meta": {
+                                "err": null,
+                                "fee": 5000,
+                                "logMessages": [
+                                    "Program FakeProgram111111111111111111111111111111111 invoke [1]",
+                                    "Program log: emit TokensDeposited",
+                                    "Program data: xNnHWCN1PGAAAAAAAAAAADMCAwAAAAAAAAAFAAAAAAAAAADKmjsAAAAA5dpgTpFLSlgvLC5OfENVak0Lm82ktvZlHmheoySaurwgAAAAJhMF2J4WoQJug2RewHES2jXkc1RvThNnjDhMhz/Z4DE=",
+                                    "Program FakeProgram111111111111111111111111111111111 success"
+                                ]
+                            }
+                        }
+                    });
+                    (StatusCode::OK, Json(rsp))
+                }
+                _ => {
+                    let rsp = json!({ "jsonrpc": "2.0", "id": 1, "error": { "code": -32601, "message": "Method not found" }});
+                    (StatusCode::OK, Json(rsp))
+                }
+            }
+        }
+
+        let state = MockState;
+        let app = Router::new()
+            .route("/", post(unrecognized_handler))
+            .with_state(state);
+        let addr: SocketAddr = "127.0.0.1:0".parse().unwrap();
+        let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+        let local_addr = listener.local_addr().unwrap();
+        let (tx, rx) = oneshot::channel();
+        let handle = tokio::spawn(async move {
+            let server = axum::serve(listener, app);
+            tokio::select! {
+                _ = server => {},
+                _ = rx => {},
+            }
+        });
+
+        let base_url = format!("http://{local_addr}/");
+        // Client configured with a different program ID than what's in the logs
+        let client = SolanaClient::new(
+            &base_url,
+            HashSet::from(["RealProgram111111111111111111111111111111111".to_string()]),
+        );
+
+        let result = client.get_bridge_action_maybe("test_signature", 0).await;
+        assert!(
+            matches!(result, Err(BridgeError::BridgeEventInUnrecognizedSolanaContract)),
+            "Expected BridgeEventInUnrecognizedSolanaContract, got {:?}",
+            result
+        );
+
+        tx.send(()).ok();
+        handle.abort();
     }
 }

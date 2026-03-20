@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashSet;
 use crate::config::WatchdogConfig;
 use crate::crypto::BridgeAuthorityPublicKeyBytes;
 use crate::fast_path::{FastPathConfig, FastPathSelector};
@@ -162,6 +163,7 @@ pub async fn run_bridge_node(
             fast_path_config,
             server_config.external_rpc,
             Some(config.solana.getblock_base_url),
+            Some(config.solana.bridge_proxy_address),
         ),
         metrics,
         Arc::new(metadata),
@@ -386,7 +388,10 @@ async fn start_client_components(
         .expect("Failed to start sui syncer");
     all_handles.extend(task_handles);
 
-    let sol_client = Arc::new(SolanaClient::new(&solana_config.getblock_base_url));
+    let sol_client = Arc::new(SolanaClient::new(
+        &solana_config.getblock_base_url,
+        HashSet::from([solana_config.bridge_proxy_address.clone()]),
+    ));
     let sol_keys = vec![solana_config.bridge_proxy_address.clone()];
     let sol_targets_to_watch = get_solana_targets_to_watch(
         &store,
