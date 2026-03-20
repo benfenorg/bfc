@@ -822,6 +822,62 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_real_get_bridge_action_maybe() {
+        let Some(base_url) = real_solana_rpc_url() else {
+            eprintln!(
+                "Skipping real Solana RPC test: set SOLANA_RPC_URL or GETBLOCK_SOLANA_RPC_URL"
+            );
+            return;
+        };
+
+        // test data
+        let bridge_program = "G1hnNcpssQaM3C9sKorjXLbo2zoDJoVHviYX8MoRNTgS".to_string();
+        let tx_hash_str = "47xUECvc4FQaSi7MdskFqYQ5t5aNXCvEKjLddXyo9Udi9JT6D8yTdJ9ZmCqjwTazj1m2rvBdoVkxBcYCMaT6uCCA".to_string();
+
+        let client = SolanaClient::new(&base_url, HashSet::from([bridge_program.clone()]));
+        let tx = client.get_transaction(&tx_hash_str).await.unwrap();
+        let log_messages = tx.meta.as_ref().map(|m| &m.log_messages[..]).unwrap_or(&[]);
+
+        let emitting_programs = SolanaClient::extract_program_ids_for_data_logs(log_messages);
+        // Find the first event_idx emitted by our bridge program
+        let bridge_event_idx = emitting_programs.iter().position(|p| p == &bridge_program);
+
+        let Some(event_idx) = bridge_event_idx else {
+            panic!(
+                    "No events emitted by bridge program {} in transaction {}, cannot test get_bridge_action_maybe",
+                    bridge_program, tx_hash_str
+                );
+        };
+
+        println!(
+            "=== Testing get_bridge_action_maybe on tx={} event_idx={} ===",
+            tx_hash_str, event_idx
+        );
+
+        let result = client
+            .get_bridge_action_maybe(&tx_hash_str, event_idx as u16)
+            .await;
+
+        match &result {
+            Ok(action) => {
+                println!("Bridge action: {:?}", action);
+            }
+            Err(BridgeError::BridgeEventNotActionable) => {
+                panic!(
+                    "Bridge event at tx={} event_idx={} was not actionable",
+                    tx_hash_str, event_idx
+                );
+            }
+            Err(e) => {
+                panic!(
+                    "Unexpected error for tx={} event_idx={}: {:?}",
+                    tx_hash_str, event_idx, e
+                );
+            }
+        }
+    }
+
+    #[tokio::test]
     async fn test_get_bridge_action_maybe_with_mock() {
         // Mock server handler for bridge action test
         async fn bridge_handler(
