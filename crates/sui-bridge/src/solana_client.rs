@@ -1116,6 +1116,33 @@ mod tests {
         ];
         let result = SolanaClient::extract_program_ids_for_data_logs(&logs);
         assert!(result.is_empty());
+
+        // Real CPI log: outer program invokes inner bridge program which emits the event
+        let logs = vec![
+            "Program 9NyqwY4Uo6HrZGLkp3JNgePw6qUP9BrfbxgmAmvhMLZ6 invoke [1]".to_string(),
+            "Program log: Instruction: CpiCrossTokenToBridge".to_string(),
+            "Program log: Program G1hnNcpssQaM3C9sKorjXLbo2zoDJoVHviYX8MoRNTgS invoke [1]".to_string(),
+            "Program BZyn9uqtYXsWYa6ksAZ27Jeh7zVVG7bbULAgFGXqzfjN invoke [2]".to_string(),
+            "Program log: Instruction: CrossTokenToBridge".to_string(),
+            "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [3]".to_string(),
+            "Program log: Instruction: Transfer".to_string(),
+            "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 4645 of 178258 compute units".to_string(),
+            "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success".to_string(),
+            "Program log: emit TokensDeposited".to_string(),
+            "Program data: xNnHWCN1PGB1AAAAAAAAADMCAwAAAAAAAAAFAAAAAAAAAADKmjsAAAAA5dpgTpFLSlgvLC5OfENVak0Lm82ktvZlHmheoySaurwgAAAArqjqTOfIK58yg19c7hBXoZ3Gc89xsxPbjyvwHxzHqR4=".to_string(),
+            "Program BZyn9uqtYXsWYa6ksAZ27Jeh7zVVG7bbULAgFGXqzfjN consumed 22234 of 192095 compute units".to_string(),
+            "Program BZyn9uqtYXsWYa6ksAZ27Jeh7zVVG7bbULAgFGXqzfjN success".to_string(),
+            "Program 9NyqwY4Uo6HrZGLkp3JNgePw6qUP9BrfbxgmAmvhMLZ6 consumed 30716 of 200000 compute units".to_string(),
+            "Program 9NyqwY4Uo6HrZGLkp3JNgePw6qUP9BrfbxgmAmvhMLZ6 success".to_string(),
+        ];
+        let result = SolanaClient::extract_program_ids_for_data_logs(&logs);
+        // "Program data:" is emitted inside BZyn..., so it should be attributed to that program
+        assert_eq!(result.len(), 1);
+        assert_eq!(
+            result[0],
+            "BZyn9uqtYXsWYa6ksAZ27Jeh7zVVG7bbULAgFGXqzfjN",
+            "Program data should be attributed to the inner bridge program, not the outer CPI caller"
+        );
     }
 
     #[tokio::test]
