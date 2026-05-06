@@ -1,9 +1,9 @@
 [toolchain]
 package_manager = "yarn"
-anchor_version = "0.31.1"        
+anchor_version = "0.31.1"
 
 [features]
-resolution = true
+resolution = false
 skip-lint = false
 
 [programs.localnet]

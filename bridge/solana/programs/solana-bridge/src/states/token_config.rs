@@ -24,12 +24,12 @@ pub struct TokenConfigAccount {
     pub fee_value: u64, //具体的值
     pub min_fee_value: u64, //上边计算收取的fee至少要超过这个值，否则就要用这个值
 
-    pub padding: [u64; 10], // upgrade padding
+    pub padding: [u8; 6], // upgrade padding
 }
  
 
 impl TokenConfigAccount {
-    pub const SPACE: usize = 8 + (3 * 32) + (2 * 8) + (5 * 1) + (2 * 8) + (10 * 8);
+    pub const SPACE: usize = 8 + std::mem::size_of::<Self>();
 
     pub fn initialize(
         &mut self,

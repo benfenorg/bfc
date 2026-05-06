@@ -1,12 +1,12 @@
 use crate::errors::{BridgeConfigError, BridgeError, BridgeUpgradeError};
-use crate::states::committee::Committee;
+use crate::states::committee::{Committee, COMMITTEE_SEED};
 use crate::states::message::{EXTEND_PROGRAM, create_message, decode_extend_payload};
-use crate::states::upgrade_authority::UpgradeAuthority;
+use crate::states::upgrade_authority::{UpgradeAuthority, UPGRADE_AUTHORITY_SEED};
+use crate::states::message_verifier::{MessageVerifier, MESSAGE_VERIFIER_SEED};
+use crate::util::BPF_LOADER_UPGRADEABLE_ID;
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::bpf_loader_upgradeable;
 use crate::errors::MessageError;
 use crate::instructions::verify_message::verify_bridge_signature;
-use crate::states::message_verifier::MessageVerifier;
 use crate::states::message_config::{MessageConfig,MESSAGE_CONFIG_SEED};
 use crate::states::{
     bridge_config::*,
@@ -22,21 +22,24 @@ pub struct ExtendProgram<'info> {
 
     #[account(
         mut,
-        address = crate::util::bridge_config_pda().0 @ BridgeConfigError::InvalidConfigPubkey
+        seeds = [CONFIG_SEED.as_bytes()],
+        bump = bridge_config.load()?.bump[0],
     )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
     #[account(
         mut,
         constraint = upgrade_authority.committee == committee.key() @ BridgeError::InvalidCommittee,
-        address = crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee
+        seeds = [COMMITTEE_SEED.as_bytes(), bridge_config.key().as_ref()],
+        bump = committee.load()?.bump[0],
     )]
     pub committee: AccountLoader<'info, Committee>,
 
 
     #[account(
         mut,
-        address = crate::util::message_verifier_pda(&committee.key()).0 @ MessageError::InvalidMessageVerifier
+        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), committee.key().as_ref()],
+        bump = verifier.load()?.bump[0],
     )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
     #[account(
@@ -55,14 +58,15 @@ pub struct ExtendProgram<'info> {
     #[account(
         mut,
         constraint = upgrade_authority.enabled == true @ BridgeUpgradeError::UnauthorizedUpgrade,
-        address = crate::util::upgrade_authority_pda(&committee.key()).0 @ BridgeUpgradeError::UnauthorizedUpgrade
+        seeds = [UPGRADE_AUTHORITY_SEED.as_bytes(), committee.key().as_ref()],
+        bump = upgrade_authority.bump[0],
     )]
     pub upgrade_authority: Box<Account<'info, UpgradeAuthority>>,
     /// CHECK: validated via program_data constraint and CPI
     #[account(
         mut,
         address = crate::id(),
-        constraint = program.owner == &bpf_loader_upgradeable::ID @ BridgeUpgradeError::InvalidProgramData
+        constraint = program.owner == &BPF_LOADER_UPGRADEABLE_ID @ BridgeUpgradeError::InvalidProgramData
     )]
     pub program: UncheckedAccount<'info>,
 
@@ -78,7 +82,7 @@ pub struct ExtendProgram<'info> {
 
     pub system_program: Program<'info, System>,
     /// CHECK: kept to explicitly pin the loader program id
-    #[account(address = bpf_loader_upgradeable::ID)]
+    #[account(address = BPF_LOADER_UPGRADEABLE_ID)]
     pub bpf_loader: UncheckedAccount<'info>,
 }
 

@@ -17,7 +17,7 @@ pub struct MessageVerifier {
 
 
 impl MessageVerifier {
-    pub const SPACE: usize = 8 + 1 + 8 + 32;
+    pub const SPACE: usize = 8 + std::mem::size_of::<Self>();
 
 
     pub fn initialize(

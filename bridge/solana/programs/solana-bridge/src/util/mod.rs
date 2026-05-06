@@ -2,6 +2,9 @@ pub mod token;
 
 use anchor_lang::prelude::Pubkey;
 
+pub const BPF_LOADER_UPGRADEABLE_ID: Pubkey =
+    anchor_lang::prelude::pubkey!("BPFLoaderUpgradeab1e11111111111111111111111");
+
 pub fn bridge_config_pda() -> (Pubkey, u8) {
     Pubkey::find_program_address(
         &[crate::states::bridge_config::CONFIG_SEED.as_bytes()],

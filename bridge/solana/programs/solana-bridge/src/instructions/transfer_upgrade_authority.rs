@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::bpf_loader_upgradeable;
-use crate::states::committee::Committee;
+use crate::states::committee::{Committee, COMMITTEE_SEED};
 use crate::states::upgrade_authority::{UpgradeAuthority, UPGRADE_AUTHORITY_SEED};
+use crate::util::BPF_LOADER_UPGRADEABLE_ID;
 use crate::errors::BridgeUpgradeError;
 use crate::errors::AdminError;
 use crate::errors::BridgeError;
@@ -19,8 +19,8 @@ pub struct TransferUpgradeAuthority<'info> {
     pub old_upgrade_authority: Signer<'info>,
 
     #[account(
-        address = crate::util::committee_pda(&crate::util::bridge_config_pda().0).0
-            @ BridgeError::InvalidCommittee
+        seeds = [COMMITTEE_SEED.as_bytes(), crate::util::bridge_config_pda().0.as_ref()],
+        bump = committee.load()?.bump[0],
     )]
     pub committee: AccountLoader<'info, Committee>,
 
@@ -28,8 +28,6 @@ pub struct TransferUpgradeAuthority<'info> {
     #[account(
         seeds = [UPGRADE_AUTHORITY_SEED.as_bytes(), committee.key().as_ref()],
         bump = new_upgrade_authority.bump[0],
-        address = crate::util::upgrade_authority_pda(&committee.key()).0
-            @ BridgeUpgradeError::UnauthorizedUpgrade,
         constraint = new_upgrade_authority.committee
             == committee.key()
             @ BridgeError::InvalidCommittee
@@ -46,7 +44,7 @@ pub struct TransferUpgradeAuthority<'info> {
     pub program_data: Box<Account<'info, ProgramData>>,
 
     /// CHECK: kept to explicitly pin the loader program id
-    #[account(address = bpf_loader_upgradeable::ID)]
+    #[account(address = BPF_LOADER_UPGRADEABLE_ID)]
     pub bpf_loader_upgradeable: UncheckedAccount<'info>,
 }
 
@@ -55,7 +53,7 @@ pub fn transfer_upgrade_authority(
     ctx: Context<TransferUpgradeAuthority>,
 ) -> Result<()> {
 
-  let ix = bpf_loader_upgradeable::set_upgrade_authority(
+  let ix = solana_loader_v3_interface::instruction::set_upgrade_authority(
        &ctx.accounts.program.key(),
      &ctx.accounts.old_upgrade_authority.key(),
     Some(&ctx.accounts.new_upgrade_authority.key()), 

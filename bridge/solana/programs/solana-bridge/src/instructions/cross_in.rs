@@ -13,10 +13,12 @@ use crate::events::TokensDeposited;
 use std::ops::DerefMut;
 use crate::util::token::*;
 use crate::states::benfen_bridge::*;
-use crate::errors::BridgeError;
-use crate::errors::MessageError;
+use crate::states::chain_limit::CHAIN_LIMIT_SEED;
+use crate::states::message_verifier::MESSAGE_VERIFIER_SEED;
+use crate::states::bridge_config::CONFIG_SEED;
 use crate::errors::BridgeTokenError;
 use crate::errors::BridgeConfigError;
+use crate::errors::BridgeError;
 use crate::errors::BridgeLimiterError;
 
 const BENFEN_ADDRESS_LENGTH: usize = 32;
@@ -66,30 +68,32 @@ pub struct CrossIn<'info> {
 
     #[account(
         mut,
-        address = crate::util::chain_limit_pda(&bridge_config.key(), chain_limit.load()?.get_chain_id()).0
-            @ BridgeLimiterError::InvalidLimiterPubkey,
+        seeds = [CHAIN_LIMIT_SEED.as_bytes(), &[chain_limit.load()?.get_chain_id()], bridge_config.key().as_ref()],
+        bump = chain_limit.load()?.bump[0],
         constraint = chain_limit.load()?.config == bridge_config.key() @ BridgeLimiterError::InvalidLimiterPubkey
     )]
     pub chain_limit: AccountLoader<'info, ChainLimit>,
 
    #[account(
         constraint = bridge_config.load()?.supported_chains.contains(&chain_limit.load()?.get_chain_id()) @ BridgeError::UnsupportedCrossToChainId,
-        address = crate::util::bridge_config_pda().0 @ BridgeConfigError::InvalidConfigPubkey
+        seeds = [CONFIG_SEED.as_bytes()],
+        bump = bridge_config.load()?.bump[0],
     )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
-   
+
     #[account(
         mut,
-        constraint = bridge.config == bridge_config.load()?.key() @ BridgeError::InvalidBridgeConfig,
+        constraint = bridge.config == bridge_config.key() @ BridgeError::InvalidBridgeConfig,
         constraint = bridge.committee == crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee,
-        address = crate::util::benfen_bridge_pda(&bridge.committee).0
-            @ BridgeError::InvalidBridgeConfig,
+        seeds = [BENFEN_BRIDGE_SEED.as_bytes(), bridge.committee.as_ref()],
+        bump = bridge.bump[0],
     )]
     pub bridge: Account<'info, BenfenBridge>,
 
     #[account(
-        address = crate::util::message_verifier_pda(&bridge.committee).0 @ MessageError::InvalidMessageVerifier
+        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), bridge.committee.as_ref()],
+        bump = verifier.load()?.bump[0],
     )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 

@@ -1,16 +1,15 @@
 use anchor_lang::prelude::*;
 
-use crate::states::bridge_config::BridgeConfig;
-use crate::states::chain_limit::ChainLimit;
+use crate::states::bridge_config::{BridgeConfig, CONFIG_SEED};
+use crate::states::chain_limit::{ChainLimit, CHAIN_LIMIT_SEED};
 use crate::states::message_config::{MessageConfig, MESSAGE_CONFIG_SEED};
-use crate::states::message_verifier::MessageVerifier;
+use crate::states::message_verifier::{MessageVerifier, MESSAGE_VERIFIER_SEED};
 use crate::states::message;
-use crate::states::committee::Committee;
+use crate::states::committee::{Committee, COMMITTEE_SEED};
 use crate::instructions::verify_message::verify_bridge_signature;
 use std::ops::DerefMut;
 use crate::errors::MessageError;
 use crate::errors::BridgeLimiterError;
-use crate::errors::BridgeConfigError;
 use crate::errors::BridgeError;
 use crate::events::SingleTransferLimitUpdated;
 // use crate::states::committee::Committee;
@@ -37,14 +36,15 @@ pub struct UpdateMaxSingleTransferLimit<'info> {
 
     #[account(
         mut,
-        address = crate::util::bridge_config_pda().0 @ BridgeConfigError::InvalidConfigPubkey
+        seeds = [CONFIG_SEED.as_bytes()],
+        bump = bridge_config.load()?.bump[0],
     )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
     #[account(
         mut,
-        address = crate::util::chain_limit_pda(&bridge_config.key(), chain_limit.load()?.get_chain_id()).0
-            @ BridgeLimiterError::InvalidLimiterPubkey,
+        seeds = [CHAIN_LIMIT_SEED.as_bytes(), &[chain_limit.load()?.get_chain_id()], bridge_config.key().as_ref()],
+        bump = chain_limit.load()?.bump[0],
         constraint = chain_limit.load()?.config == bridge_config.key() @ BridgeLimiterError::InvalidLimiterPubkey,
         constraint = bridge_config.load()?.supported_chains.contains(&chain_limit.load()?.get_chain_id())
             @ BridgeError::UnsupportedCrossToChainId
@@ -53,13 +53,15 @@ pub struct UpdateMaxSingleTransferLimit<'info> {
 
     #[account(
         mut,
-        address = crate::util::message_verifier_pda(&committee.key()).0 @ MessageError::InvalidMessageVerifier
+        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), committee.key().as_ref()],
+        bump = verifier.load()?.bump[0],
     )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 
     #[account(
         mut,
-        address = crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee
+        seeds = [COMMITTEE_SEED.as_bytes(), bridge_config.key().as_ref()],
+        bump = committee.load()?.bump[0],
     )]
     pub committee:  AccountLoader<'info, Committee>,
 
