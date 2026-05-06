@@ -187,7 +187,11 @@ pub fn cross_in<'info>(
         amount
     )?;
 
-    let adjusted_amount = convert_slp_to_benfen_decimal(  ctx.accounts.token_mint.decimals, benfen_decimal, amount)?;
+    let adjusted_amount = convert_slp_to_benfen_decimal(
+        ctx.accounts.token_mint.decimals,
+        benfen_decimal,
+        amount,
+    )?;
   
     msg!("emit TokensDeposited");
     //触发 event

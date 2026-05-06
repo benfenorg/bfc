@@ -163,6 +163,14 @@ pub fn cross_out_with_signature(
         token_transfer_payload.target_chain_id==bridge_config.chain_id,
         BridgeError::InvalidTargetChainId
     );
+    require!(
+        token_transfer_payload.token_id == token_config.token_id,
+        BridgeTokenError::InvalidTokenIdNotSupported
+    );
+    require!(
+        token_transfer_payload.amount > 0,
+        BridgeError::InvalidAmount
+    );
 
     require!(
         chain_id==chain_limit.get_chain_id(),

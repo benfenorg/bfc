@@ -109,10 +109,9 @@ pub fn upgrade_program_with_signatures(
     payload: Vec<u8>,
     signatures: Vec<Vec<u8>>,
 ) -> Result<()> {
-    //
-    // ctx.accounts
-    //     .upgrade_authority
-    //     .can_upgrade(&ctx.accounts.clock)?;
+    ctx.accounts
+        .upgrade_authority
+        .can_upgrade(&ctx.accounts.clock)?;
 
     // -----------------------------
     // 1) Build message + verify signatures

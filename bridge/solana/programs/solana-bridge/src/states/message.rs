@@ -509,10 +509,11 @@ pub fn decode_extend_payload(payload: &[u8]) -> Result<(Pubkey, u32)> {
 
 /// Decodes an add tokens payload from bytes
 pub fn decode_add_token_payload(payload: &[u8]) -> Result<AddTokenPayload> {
-    // Check minimum length: 1 + 8 + 32 + 1 + 8 = 50 bytes
-    require!(payload.len() >= 50, MessageError::InvalidPayloadLength);
+    // native + token_id + token_address + benfen_decimal + original_decimal + token_price
+    require!(payload.len() >= 51, MessageError::InvalidPayloadLength);
 
-    let native: bool = payload[0] != 0;
+    require!(payload[0] == 0 || payload[0] == 1, MessageError::InvalidOpCode);
+    let native: bool = payload[0] == 1;
     let mut offset = 1;
 
     // Read token ID (8 bytes)

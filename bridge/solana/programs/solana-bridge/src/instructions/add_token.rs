@@ -146,6 +146,10 @@ pub fn add_token_with_signatures(
     let payload=message::decode_add_token_payload(&payload)?;
 
     require!(token_id == payload.token_id, BridgeTokenError::InvalidTokenId);
+    require!(
+        ctx.accounts.token_mint.key() == payload.token_address,
+        BridgeTokenError::InvalidTokenMint
+    );
 
 
     add_token_internal(
@@ -157,6 +161,7 @@ pub fn add_token_with_signatures(
         payload.benfen_decimal,
         payload.original_decimal,
         payload.token_price,
+        payload.native,
         nonce,
     )?;
 
@@ -174,6 +179,7 @@ fn add_token_internal(
     benfen_decimal: u8,
     original_decimal: u8,
     price: u64,
+    native: bool,
     nonce: u64,
 )-> Result<()>{
     require!(token_mint.decimals > 0, BridgeTokenError::InvalidFungibleTokenDecimals);
@@ -186,7 +192,17 @@ fn add_token_internal(
     
 
     // token_config
-    token_config.initialize(bridge_config.key(),chain_limit.key(),token_mint.key(),token_id, price, token_mint.decimals,benfen_decimal, original_decimal,0)?;
+    token_config.initialize(
+        bridge_config.key(),
+        chain_limit.key(),
+        token_mint.key(),
+        token_id,
+        price,
+        token_mint.decimals,
+        benfen_decimal,
+        original_decimal,
+        if native { 1 } else { 0 },
+    )?;
 
     
     // 增加代币计数

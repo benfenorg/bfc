@@ -4,6 +4,9 @@ use crate::errors::BridgeConfigError;
 use crate::errors::BridgeLimiterError;
 
 pub const TOKEN_CONFIG_SEED: &str = "token_config";
+pub const TOKEN_FEE_MODE_FIXED: u8 = 0;
+pub const TOKEN_FEE_MODE_RATE: u8 = 1;
+pub const TOKEN_FEE_RATE_DENOMINATOR: u64 = 1_000_000;
 
 #[account(zero_copy)]
 #[repr(C, packed)]
@@ -94,24 +97,44 @@ impl TokenConfigAccount {
     }
 
     pub fn update_fee_info(&mut self, mode: u8, fee_value: u64, min_fee_value: u64) -> Result<()> {
+        require!(
+            mode == TOKEN_FEE_MODE_FIXED || mode == TOKEN_FEE_MODE_RATE,
+            BridgeTokenError::InvalidTokenFeeMode
+        );
+        if mode == TOKEN_FEE_MODE_RATE {
+            require!(
+                fee_value <= TOKEN_FEE_RATE_DENOMINATOR,
+                BridgeTokenError::InvalidTokenFeeValue
+            );
+        }
         self.mode = mode;
         self.fee_value = fee_value;
         self.min_fee_value = min_fee_value;
         Ok(())
     }
 
-    pub fn calculate_bridge_fee(&self, amount: u64) -> u64 {
-        let mut fee = if self.mode == 0 {
-             self.fee_value
+    pub fn calculate_bridge_fee(&self, amount: u64) -> Result<u64> {
+        let mut fee = if self.mode == TOKEN_FEE_MODE_FIXED {
+            self.fee_value
+        } else if self.mode == TOKEN_FEE_MODE_RATE {
+            require!(
+                self.fee_value <= TOKEN_FEE_RATE_DENOMINATOR,
+                BridgeTokenError::InvalidTokenFeeValue
+            );
+            let fee_u128 = (amount as u128)
+                .checked_mul(self.fee_value as u128)
+                .ok_or(BridgeTokenError::TokenFeeCalculationOverflow)?
+                / TOKEN_FEE_RATE_DENOMINATOR as u128;
+            u64::try_from(fee_u128)
+                .map_err(|_| BridgeTokenError::TokenFeeCalculationOverflow)?
         } else {
-             let fee_u128 = (amount as u128) * (self.fee_value as u128) / 1000000;
-             fee_u128 as u64
+            return Err(BridgeTokenError::InvalidTokenFeeMode.into());
         };
 
         if fee < self.min_fee_value {
             fee = self.min_fee_value;
         }
-        fee
+        Ok(fee)
     }
     
     pub fn original_decimal(&self) -> u8 {
@@ -265,10 +288,10 @@ pub mod token_config_test{
             1,
         ).unwrap();
         cfg.update_fee_info(0, 50, 100).unwrap();
-        assert_eq!(cfg.calculate_bridge_fee(1_000), 100);
+        assert_eq!(cfg.calculate_bridge_fee(1_000).unwrap(), 100);
 
         cfg.update_fee_info(0, 200, 100).unwrap();
-        assert_eq!(cfg.calculate_bridge_fee(1_000), 200);
+        assert_eq!(cfg.calculate_bridge_fee(1_000).unwrap(), 200);
     }
 
     #[test]
@@ -286,10 +309,24 @@ pub mod token_config_test{
             1,
         ).unwrap();
         cfg.update_fee_info(1, 10_000, 5_000).unwrap();
-        assert_eq!(cfg.calculate_bridge_fee(1_000_000), 10_000);
+        assert_eq!(cfg.calculate_bridge_fee(1_000_000).unwrap(), 10_000);
 
         cfg.update_fee_info(1, 10_000, 100).unwrap();
-        assert_eq!(cfg.calculate_bridge_fee(1_000), 100);
+        assert_eq!(cfg.calculate_bridge_fee(1_000).unwrap(), 100);
+    }
+
+    #[test]
+    fn test_update_fee_info_rejects_invalid_values() {
+        let mut cfg = TokenConfigAccount::default();
+        assert_eq!(
+            cfg.update_fee_info(2, 0, 0).unwrap_err(),
+            BridgeTokenError::InvalidTokenFeeMode.into()
+        );
+        assert_eq!(
+            cfg.update_fee_info(1, TOKEN_FEE_RATE_DENOMINATOR + 1, 0)
+                .unwrap_err(),
+            BridgeTokenError::InvalidTokenFeeValue.into()
+        );
     }
 
     #[test]

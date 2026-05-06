@@ -41,6 +41,12 @@ pub enum  BridgeTokenError {
 
     #[msg("Invalid token decimal")]
     InvalidTokenDecimal,
+    #[msg("Invalid token fee mode")]
+    InvalidTokenFeeMode,
+    #[msg("Invalid token fee value")]
+    InvalidTokenFeeValue,
+    #[msg("Token fee calculation overflow")]
+    TokenFeeCalculationOverflow,
 }
 
 #[error_code]
