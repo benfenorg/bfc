@@ -20,7 +20,7 @@ pub struct InitializeBenfenBridge<'info> {
         init,
         payer = authority,
         space = BenfenBridge::SPACE,
-        seeds = [BENFEN_BRIDGE_SEED.as_bytes(),committee.key().as_ref()],
+        seeds = [BENFEN_BRIDGE_SEED.as_bytes(),(committee.key().as_ref())],
         bump
     )]
     pub bridge: Account<'info, BenfenBridge>,

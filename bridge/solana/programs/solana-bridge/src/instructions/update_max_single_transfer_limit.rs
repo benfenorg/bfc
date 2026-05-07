@@ -28,7 +28,7 @@ pub struct UpdateMaxSingleTransferLimit<'info> {
         seeds = [
             MESSAGE_CONFIG_SEED.as_bytes(),
             &[message::UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT],
-            verifier.key().as_ref()
+            (verifier.key().as_ref())
         ],
         bump
     )]
@@ -43,7 +43,7 @@ pub struct UpdateMaxSingleTransferLimit<'info> {
 
     #[account(
         mut,
-        seeds = [CHAIN_LIMIT_SEED.as_bytes(), &[chain_limit.load()?.get_chain_id()], bridge_config.key().as_ref()],
+        seeds = [CHAIN_LIMIT_SEED.as_bytes(), &[chain_limit.load()?.get_chain_id()], (bridge_config.key().as_ref())],
         bump = chain_limit.load()?.bump[0],
         constraint = chain_limit.load()?.config == bridge_config.key() @ BridgeLimiterError::InvalidLimiterPubkey,
         constraint = bridge_config.load()?.supported_chains.contains(&chain_limit.load()?.get_chain_id())
@@ -53,14 +53,14 @@ pub struct UpdateMaxSingleTransferLimit<'info> {
 
     #[account(
         mut,
-        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), committee.key().as_ref()],
+        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), (committee.key().as_ref())],
         bump = verifier.load()?.bump[0],
     )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 
     #[account(
         mut,
-        seeds = [COMMITTEE_SEED.as_bytes(), bridge_config.key().as_ref()],
+        seeds = [COMMITTEE_SEED.as_bytes(), (bridge_config.key().as_ref())],
         bump = committee.load()?.bump[0],
     )]
     pub committee:  AccountLoader<'info, Committee>,

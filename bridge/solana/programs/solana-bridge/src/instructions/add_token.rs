@@ -36,7 +36,7 @@ pub struct AddToken<'info> {
         seeds = [
             MESSAGE_CONFIG_SEED.as_bytes(),
             &[message::ADD_SVM_TOKENS],
-            verifier.key().as_ref()
+            (verifier.key().as_ref())
         ],
 
         bump
@@ -48,7 +48,7 @@ pub struct AddToken<'info> {
         init,
         seeds =[
             VAULT_SEED.as_bytes(),
-            token_id.to_be_bytes().as_ref(),
+            (token_id.to_be_bytes().as_ref()),
         ],
         bump,
         payer = payer,
@@ -60,7 +60,7 @@ pub struct AddToken<'info> {
 
     #[account(
         init, 
-        seeds = [TOKEN_CONFIG_SEED.as_bytes(), token_id.to_be_bytes().as_ref()], 
+        seeds = [TOKEN_CONFIG_SEED.as_bytes(), (token_id.to_be_bytes().as_ref())], 
         bump, 
         payer = payer, 
         space = TokenConfigAccount::SPACE
@@ -69,7 +69,7 @@ pub struct AddToken<'info> {
 
     #[account(
         mut,
-        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), committee.key().as_ref()],
+        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), (committee.key().as_ref())],
         bump = verifier.load()?.bump[0],
     )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
@@ -83,13 +83,13 @@ pub struct AddToken<'info> {
 
     #[account(
         mut,
-        seeds = [COMMITTEE_SEED.as_bytes(), bridge_config.key().as_ref()],
+        seeds = [COMMITTEE_SEED.as_bytes(), (bridge_config.key().as_ref())],
         bump = committee.load()?.bump[0],
     )]
     pub committee:  AccountLoader<'info, Committee>,
 
     #[account(
-        seeds = [CHAIN_LIMIT_SEED.as_bytes(), &[chain_limit.load()?.get_chain_id()], bridge_config.key().as_ref()],
+        seeds = [CHAIN_LIMIT_SEED.as_bytes(), &[chain_limit.load()?.get_chain_id()], (bridge_config.key().as_ref())],
         bump = chain_limit.load()?.bump[0],
         constraint = chain_limit.load()?.config == bridge_config.key() @ BridgeLimiterError::InvalidLimiterPubkey,
         constraint = bridge_config.load()?.supported_chains.contains(&chain_limit.load()?.get_chain_id())
@@ -98,7 +98,7 @@ pub struct AddToken<'info> {
     pub chain_limit: AccountLoader<'info, ChainLimit>,
 
     #[account(
-        seeds = [BENFEN_BRIDGE_SEED.as_bytes(), committee.key().as_ref()],
+        seeds = [BENFEN_BRIDGE_SEED.as_bytes(), (committee.key().as_ref())],
         bump = benfen_bridge.bump[0],
         constraint = benfen_bridge.config == bridge_config.key() @ BridgeError::InvalidBridgeConfig,
         constraint = benfen_bridge.committee == committee.key() @ BridgeError::InvalidCommittee

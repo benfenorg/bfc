@@ -19,14 +19,14 @@ pub struct TransferUpgradeAuthority<'info> {
     pub old_upgrade_authority: Signer<'info>,
 
     #[account(
-        seeds = [COMMITTEE_SEED.as_bytes(), crate::util::bridge_config_pda().0.as_ref()],
+        seeds = [COMMITTEE_SEED.as_bytes(), (crate::util::bridge_config_pda().0.as_ref())],
         bump = committee.load()?.bump[0],
     )]
     pub committee: AccountLoader<'info, Committee>,
 
     /// PDA 管理升级
     #[account(
-        seeds = [UPGRADE_AUTHORITY_SEED.as_bytes(), committee.key().as_ref()],
+        seeds = [UPGRADE_AUTHORITY_SEED.as_bytes(), (committee.key().as_ref())],
         bump = new_upgrade_authority.bump[0],
         constraint = new_upgrade_authority.committee
             == committee.key()

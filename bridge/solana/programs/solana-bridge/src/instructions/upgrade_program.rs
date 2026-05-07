@@ -33,14 +33,14 @@ pub struct UpgradeProgram<'info> {
 
     #[account(
         mut,
-        seeds = [COMMITTEE_SEED.as_bytes(), bridge_config.key().as_ref()],
+        seeds = [COMMITTEE_SEED.as_bytes(), (bridge_config.key().as_ref())],
         bump = committee.load()?.bump[0],
     )]
     pub committee: AccountLoader<'info, Committee>,
 
     #[account(
         mut,
-        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), committee.key().as_ref()],
+        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), (committee.key().as_ref())],
         bump = verifier.load()?.bump[0],
     )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
@@ -52,7 +52,7 @@ pub struct UpgradeProgram<'info> {
         seeds = [
             MESSAGE_CONFIG_SEED.as_bytes(),
             &[UPGRADE_PROGRAM],
-            verifier.key().as_ref()
+            (verifier.key().as_ref())
         ],
         bump
     )]
@@ -62,7 +62,7 @@ pub struct UpgradeProgram<'info> {
        mut,
        constraint = upgrade_authority.enabled == true @ BridgeUpgradeError::UnauthorizedUpgrade,
        constraint = upgrade_authority.committee == committee.key() @ BridgeError::InvalidCommittee,
-       seeds = [UPGRADE_AUTHORITY_SEED.as_bytes(), committee.key().as_ref()],
+       seeds = [UPGRADE_AUTHORITY_SEED.as_bytes(), (committee.key().as_ref())],
        bump = upgrade_authority.bump[0],
     )]
     pub upgrade_authority: Box<Account<'info, UpgradeAuthority>>,

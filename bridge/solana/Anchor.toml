@@ -3,7 +3,7 @@ package_manager = "yarn"
 anchor_version = "0.31.1"
 
 [features]
-resolution = false
+resolution = true
 skip-lint = false
 
 [programs.localnet]

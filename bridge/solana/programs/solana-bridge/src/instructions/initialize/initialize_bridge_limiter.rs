@@ -22,7 +22,7 @@ pub struct InitializeBridgeLimiter<'info> {
         init,
         payer = payer,
         space = ChainLimit::SPACE,
-        seeds = [CHAIN_LIMIT_SEED.as_bytes(),&[chain_id],bridge_config.key().as_ref()],
+        seeds = [CHAIN_LIMIT_SEED.as_bytes(),&[chain_id],(bridge_config.key().as_ref())],
         bump,
     )]
     pub chain_limit: AccountLoader<'info, ChainLimit>,
@@ -56,7 +56,6 @@ pub fn initialize_bridge_limiter(
     ctx.accounts.bridge_config.load_mut()?.add_target_chain(chain_id)?;
     Ok(())
 }
-
 
 
 

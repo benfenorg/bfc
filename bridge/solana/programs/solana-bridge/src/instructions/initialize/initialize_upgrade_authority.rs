@@ -18,7 +18,7 @@ pub struct InitializeUpgradeAuthority<'info> {
         init,
         payer = payer,
         space = UpgradeAuthority::SPACE,
-        seeds = [UPGRADE_AUTHORITY_SEED.as_bytes(), committee.key().as_ref()],
+        seeds = [UPGRADE_AUTHORITY_SEED.as_bytes(), (committee.key().as_ref())],
         bump,
     )]
     pub upgrade_authority: Account<'info, UpgradeAuthority>,

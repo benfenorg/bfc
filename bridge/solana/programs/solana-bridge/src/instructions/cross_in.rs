@@ -49,7 +49,7 @@ pub struct CrossIn<'info> {
         seeds = [
             MESSAGE_CONFIG_SEED.as_bytes(),
             &[TOKEN_TRANSFER],
-            verifier.key().as_ref()
+            (verifier.key().as_ref())
         ],
         bump
     )]
@@ -68,7 +68,7 @@ pub struct CrossIn<'info> {
 
     #[account(
         mut,
-        seeds = [CHAIN_LIMIT_SEED.as_bytes(), &[chain_limit.load()?.get_chain_id()], bridge_config.key().as_ref()],
+        seeds = [CHAIN_LIMIT_SEED.as_bytes(), &[chain_limit.load()?.get_chain_id()], (bridge_config.key().as_ref())],
         bump = chain_limit.load()?.bump[0],
         constraint = chain_limit.load()?.config == bridge_config.key() @ BridgeLimiterError::InvalidLimiterPubkey
     )]
@@ -86,13 +86,13 @@ pub struct CrossIn<'info> {
         mut,
         constraint = bridge.config == bridge_config.key() @ BridgeError::InvalidBridgeConfig,
         constraint = bridge.committee == crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee,
-        seeds = [BENFEN_BRIDGE_SEED.as_bytes(), bridge.committee.as_ref()],
+        seeds = [BENFEN_BRIDGE_SEED.as_bytes(), (bridge.committee.as_ref())],
         bump = bridge.bump[0],
     )]
     pub bridge: Account<'info, BenfenBridge>,
 
     #[account(
-        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), bridge.committee.as_ref()],
+        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), (bridge.committee.as_ref())],
         bump = verifier.load()?.bump[0],
     )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
@@ -169,15 +169,12 @@ pub fn cross_in<'info>(
     let single_max_transfer_limit = chain_limit.get_max_single_transfer_limit()?;
     require!(usd_amount < single_max_transfer_limit, BridgeError::SingleTransferAmountExceedsLimit);
   
-    //计算fee,看看跨入的金额是否足够支付fee
     //检查用户余额是否足够
     require!(token_account.amount >= amount, BridgeError::InsufficientBalance);
 
-
-    let fee=token_config.calculate_bridge_fee(amount);
+    //计算fee,看看跨入的金额是否足够支付fee
+    let fee = token_config.calculate_bridge_fee(amount)?;
     require!(amount > fee, BridgeError::InsufficientFeeBalance);
-  
-
 
     transfer_from_user_to_bridge_vault(
         &ctx.accounts.payer,

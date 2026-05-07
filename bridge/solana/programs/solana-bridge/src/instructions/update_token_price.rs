@@ -30,7 +30,7 @@ pub struct UpdateTokenPrice<'info> {
         seeds = [
             MESSAGE_CONFIG_SEED.as_bytes(),
             &[message::UPDATE_TOKEN_PRICE],
-            verifier.key().as_ref()
+            (verifier.key().as_ref())
         ],
         bump
     )]
@@ -53,14 +53,14 @@ pub struct UpdateTokenPrice<'info> {
 
     #[account(
         mut,
-        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), committee.key().as_ref()],
+        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), (committee.key().as_ref())],
         bump = verifier.load()?.bump[0],
     )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 
     #[account(
         mut,
-        seeds = [COMMITTEE_SEED.as_bytes(), bridge_config.key().as_ref()],
+        seeds = [COMMITTEE_SEED.as_bytes(), (bridge_config.key().as_ref())],
         bump = committee.load()?.bump[0],
     )]
     pub committee:  AccountLoader<'info, Committee>,

@@ -19,7 +19,7 @@ pub struct InitializeMessageVerifier<'info> {
         space = MessageVerifier::SPACE,
         seeds = [
             message_verifier::MESSAGE_VERIFIER_SEED.as_bytes(),
-            committee.key().as_ref()
+            (committee.key().as_ref())
         ],
         bump
     )]
