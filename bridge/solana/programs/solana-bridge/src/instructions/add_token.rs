@@ -7,11 +7,13 @@ use crate::{
     }
 };
 use anchor_spl::token_interface::TokenAccount;
-use crate::states::benfen_bridge::{BenfenBridge,VAULT_SEED};
+use crate::states::benfen_bridge::{BenfenBridge,VAULT_SEED,BENFEN_BRIDGE_SEED};
+use crate::states::message_verifier::MESSAGE_VERIFIER_SEED;
+use crate::states::chain_limit::CHAIN_LIMIT_SEED;
+use crate::states::committee::COMMITTEE_SEED;
 // use crate::states::vault::{UniversalVault,UNIVERSAL_VAULT_SEED};
 use crate::errors::MessageError;
 use crate::errors::BridgeTokenError;
-use crate::errors::BridgeConfigError;
 use crate::errors::BridgeError;
 use crate::errors::BridgeLimiterError;
 use std::cell::{Ref, RefMut};
@@ -34,7 +36,7 @@ pub struct AddToken<'info> {
         seeds = [
             MESSAGE_CONFIG_SEED.as_bytes(),
             &[message::ADD_SVM_TOKENS],
-            verifier.key().as_ref()
+            (verifier.key().as_ref())
         ],
 
         bump
@@ -46,7 +48,7 @@ pub struct AddToken<'info> {
         init,
         seeds =[
             VAULT_SEED.as_bytes(),
-            token_id.to_be_bytes().as_ref(),
+            (token_id.to_be_bytes().as_ref()),
         ],
         bump,
         payer = payer,
@@ -58,7 +60,7 @@ pub struct AddToken<'info> {
 
     #[account(
         init, 
-        seeds = [TOKEN_CONFIG_SEED.as_bytes(), token_id.to_be_bytes().as_ref()], 
+        seeds = [TOKEN_CONFIG_SEED.as_bytes(), (token_id.to_be_bytes().as_ref())], 
         bump, 
         payer = payer, 
         space = TokenConfigAccount::SPACE
@@ -67,25 +69,28 @@ pub struct AddToken<'info> {
 
     #[account(
         mut,
-        address = crate::util::message_verifier_pda(&committee.key()).0 @ MessageError::InvalidMessageVerifier
+        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), (committee.key().as_ref())],
+        bump = verifier.load()?.bump[0],
     )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 
     #[account(
         mut,
-        address = crate::util::bridge_config_pda().0 @ BridgeConfigError::InvalidConfigPubkey
+        seeds = [CONFIG_SEED.as_bytes()],
+        bump = bridge_config.load()?.bump[0],
     )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
     #[account(
         mut,
-        address = crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee
+        seeds = [COMMITTEE_SEED.as_bytes(), (bridge_config.key().as_ref())],
+        bump = committee.load()?.bump[0],
     )]
     pub committee:  AccountLoader<'info, Committee>,
 
     #[account(
-        address = crate::util::chain_limit_pda(&bridge_config.key(), chain_limit.load()?.get_chain_id()).0
-            @ BridgeLimiterError::InvalidLimiterPubkey,
+        seeds = [CHAIN_LIMIT_SEED.as_bytes(), &[chain_limit.load()?.get_chain_id()], (bridge_config.key().as_ref())],
+        bump = chain_limit.load()?.bump[0],
         constraint = chain_limit.load()?.config == bridge_config.key() @ BridgeLimiterError::InvalidLimiterPubkey,
         constraint = bridge_config.load()?.supported_chains.contains(&chain_limit.load()?.get_chain_id())
             @ BridgeError::UnsupportedCrossToChainId
@@ -93,7 +98,8 @@ pub struct AddToken<'info> {
     pub chain_limit: AccountLoader<'info, ChainLimit>,
 
     #[account(
-        address = crate::util::benfen_bridge_pda(&committee.key()).0 @ BridgeError::InvalidBridgeConfig,
+        seeds = [BENFEN_BRIDGE_SEED.as_bytes(), (committee.key().as_ref())],
+        bump = benfen_bridge.bump[0],
         constraint = benfen_bridge.config == bridge_config.key() @ BridgeError::InvalidBridgeConfig,
         constraint = benfen_bridge.committee == committee.key() @ BridgeError::InvalidCommittee
     )]
@@ -140,6 +146,10 @@ pub fn add_token_with_signatures(
     let payload=message::decode_add_token_payload(&payload)?;
 
     require!(token_id == payload.token_id, BridgeTokenError::InvalidTokenId);
+    require!(
+        ctx.accounts.token_mint.key() == payload.token_address,
+        BridgeTokenError::InvalidTokenMint
+    );
 
 
     add_token_internal(
@@ -151,6 +161,7 @@ pub fn add_token_with_signatures(
         payload.benfen_decimal,
         payload.original_decimal,
         payload.token_price,
+        payload.native,
         nonce,
     )?;
 
@@ -168,6 +179,7 @@ fn add_token_internal(
     benfen_decimal: u8,
     original_decimal: u8,
     price: u64,
+    native: bool,
     nonce: u64,
 )-> Result<()>{
     require!(token_mint.decimals > 0, BridgeTokenError::InvalidFungibleTokenDecimals);
@@ -180,7 +192,17 @@ fn add_token_internal(
     
 
     // token_config
-    token_config.initialize(bridge_config.key(),chain_limit.key(),token_mint.key(),token_id, price, token_mint.decimals,benfen_decimal, original_decimal,0)?;
+    token_config.initialize(
+        bridge_config.key(),
+        chain_limit.key(),
+        token_mint.key(),
+        token_id,
+        price,
+        token_mint.decimals,
+        benfen_decimal,
+        original_decimal,
+        if native { 1 } else { 0 },
+    )?;
 
     
     // 增加代币计数

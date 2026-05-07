@@ -1,10 +1,8 @@
+use crate::errors::{BridgeConvertError, MessageError};
 use anchor_lang::prelude::*;
-use solana_program::keccak::hashv;
-use crate::errors::MessageError;
-use crate::errors::BridgeError;
-use crate::errors::BridgeConvertError;
+use anchor_lang::solana_program::keccak::hashv;
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone,Debug)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub struct Message {
     pub message_type: u8,
     pub version: u8,
@@ -13,10 +11,10 @@ pub struct Message {
     pub payload: Vec<u8>,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone,Debug)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub struct TokenTransferPayload {
     pub sender_address_length: u8,
-    pub sender_address:  Vec<u8>,
+    pub sender_address: Vec<u8>,
     pub target_chain_id: u8,
     pub recipient_address_length: u8,
     pub recipient_address: Pubkey,
@@ -26,13 +24,13 @@ pub struct TokenTransferPayload {
     pub event_idx: u16,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize,Clone,Debug)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub struct BlocklistPayload {
-    pub addresses: Vec<[u8;20]>,
+    pub addresses: Vec<[u8; 20]>,
     pub is_blocklisted: bool,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize,Debug,Clone)]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct AddTokenPayload {
     pub native: bool,
     pub token_id: u64,
@@ -41,8 +39,6 @@ pub struct AddTokenPayload {
     pub original_decimal: u8,
     pub token_price: u64,
 }
-
-
 
 pub const MESSAGE_PREFIX: &[u8] = b"SUI_BRIDGE_MESSAGE";
 
@@ -62,11 +58,7 @@ pub const UPGRADE_PROGRAM: u8 = 32;
 pub const UPDATE_TOKEN_FEE_INFO: u8 = 33;
 pub const UPDATE_BRIDGE_MIN_SINGLE_TRANSFER_LIMIT: u8 = 34;
 
-
-// pub const 
-
-
-
+// pub const
 
 // Required stakes
 pub const TRANSFER_STAKE_REQUIRED: u32 = 3334;
@@ -96,7 +88,6 @@ pub const POL: u64 = 9;
 pub const AVAX: u64 = 10;
 pub const SOL: u64 = 14;
 
-
 pub fn create_message(
     message_type: u8,
     version: u8,
@@ -104,32 +95,32 @@ pub fn create_message(
     chain_id: u8,
     payload: Vec<u8>,
 ) -> Message {
-        Message {
-            message_type,
-            version,
-            nonce,
-            chain_id,
-            payload,
-        }
+    Message {
+        message_type,
+        version,
+        nonce,
+        chain_id,
+        payload,
+    }
 }
 
 pub fn encode_message(message: &Message) -> Vec<u8> {
     let mut encoded = Vec::new();
-    
+
     // Add prefix, type and version
     encoded.extend_from_slice(MESSAGE_PREFIX);
     encoded.push(message.message_type);
     encoded.push(message.version);
-    
+
     // Add nonce
     encoded.extend_from_slice(&message.nonce.to_be_bytes());
-    
+
     // Add chain ID
     encoded.push(message.chain_id);
-    
+
     // Add payload
     encoded.extend_from_slice(&message.payload);
-    
+
     encoded
 }
 pub fn keccak256_hash(data: &[u8]) -> [u8; 32] {
@@ -165,28 +156,36 @@ pub fn compute_required_stake(message: &Message) -> Result<u32> {
         BLOCKLIST => Ok(BLOCKLIST_STAKE_REQUIRED),
         EMERGENCY_OP => {
             let op_code = decode_emergency_op_payload(&message.payload)?;
-            Ok(if op_code { FREEZING_STAKE_REQUIRED } else { UNFREEZING_STAKE_REQUIRED })
-        },
+            Ok(if op_code {
+                FREEZING_STAKE_REQUIRED
+            } else {
+                UNFREEZING_STAKE_REQUIRED
+            })
+        }
         UPDATE_BRIDGE_LIMIT => Ok(BRIDGE_LIMIT_STAKE_REQUIRED),
         UPDATE_TOKEN_PRICE => Ok(UPDATE_TOKEN_PRICE_STAKE_REQUIRED),
         //UPGRADE => Ok(UPGRADE_STAKE_REQUIRED),
         UPGRADE_PROGRAM => Ok(UPGRADE_STAKE_REQUIRED),
         ADD_SVM_TOKENS => Ok(ADD_SVM_TOKENS_STAKE_REQUIRED),
         EXTEND_PROGRAM => Ok(EXTEND_PROGRAM_STAKE_REQUIRED),
-        UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT => Ok(UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT_STAKE_REQUIRED),
-        UPDATE_BRIDGE_MIN_SINGLE_TRANSFER_LIMIT => Ok(UPDATE_BRIDGE_MIN_SINGLE_TRANSFER_LIMIT_STAKE_REQUIRED),
+        UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT => {
+            Ok(UPDATE_BRIDGE_SINGLE_TRANSFER_LIMIT_STAKE_REQUIRED)
+        }
+        UPDATE_BRIDGE_MIN_SINGLE_TRANSFER_LIMIT => {
+            Ok(UPDATE_BRIDGE_MIN_SINGLE_TRANSFER_LIMIT_STAKE_REQUIRED)
+        }
         UPDATE_TOKEN_FEE_INFO => Ok(UPDATE_TOKEN_FEE_INFO_STAKE_REQUIRED),
         _ => Err(MessageError::InvalidMessageType.into()),
     }
 }
 
 /// Converts a token amount from ERC20 decimal precision to Sui decimal precision
-/// 
+///
 /// # Arguments
 /// * `erc20_decimal` - The decimal precision of the ERC20 token
 /// * `sui_decimal` - The decimal precision used in Sui
 /// * `amount` - The amount to convert, in ERC20 token precision
-/// 
+///
 /// # Returns
 /// The converted amount in Sui decimal precision, or an error if the conversion fails
 pub fn convert_slp_to_benfen_decimal(
@@ -203,10 +202,14 @@ pub fn convert_slp_to_benfen_decimal(
     let adjusted_amount = if slp_decimal > benfen_decimal {
         let factor = 10u64.pow((slp_decimal - benfen_decimal) as u32);
         //require!(amount % factor == 0, BridgeError::AmountTooSmall);
-        amount.checked_div(factor).ok_or(BridgeConvertError::AmountTooSmall)?
+        amount
+            .checked_div(factor)
+            .ok_or(BridgeConvertError::AmountTooSmall)?
     } else {
         let factor = 10u64.pow((benfen_decimal - slp_decimal) as u32);
-        amount.checked_mul(factor).ok_or(BridgeConvertError::AmountTooLarge)?
+        amount
+            .checked_mul(factor)
+            .ok_or(BridgeConvertError::AmountTooLarge)?
     };
 
     require!(adjusted_amount > 0, BridgeConvertError::AmountTooSmall);
@@ -214,12 +217,12 @@ pub fn convert_slp_to_benfen_decimal(
 }
 
 /// Converts a token amount from Sui decimal precision to ERC20 decimal precision
-/// 
+///
 /// # Arguments
 /// * `erc20_decimal` - The decimal precision of the ERC20 token
 /// * `sui_decimal` - The decimal precision used in Sui
 /// * `amount` - The amount to convert, in Sui decimal precision
-/// 
+///
 /// # Returns
 /// The converted amount in ERC20 decimal precision, or an error if the conversion fails
 pub fn convert_benfen_to_slp_decimal(
@@ -235,14 +238,18 @@ pub fn convert_benfen_to_slp_decimal(
 
     let adjusted_amount = if slp_decimal > benfen_decimal {
         let factor = 10u64.pow((slp_decimal - benfen_decimal) as u32);
-        amount.checked_mul(factor).ok_or(BridgeConvertError::AmountTooLarge)?
+        amount
+            .checked_mul(factor)
+            .ok_or(BridgeConvertError::AmountTooLarge)?
     } else {
         let factor = 10u64.pow((benfen_decimal - slp_decimal) as u32);
         // require!(
         //     amount % factor == 0,
-        //     BridgeError::AmountTooSmall 
+        //     BridgeError::AmountTooSmall
         // );
-        amount.checked_div(factor).ok_or(BridgeConvertError::AmountTooSmall)?
+        amount
+            .checked_div(factor)
+            .ok_or(BridgeConvertError::AmountTooSmall)?
     };
 
     require!(adjusted_amount > 0, BridgeConvertError::AmountTooSmall);
@@ -334,9 +341,12 @@ pub fn decode_blocklist_payload(payload: &[u8]) -> Result<BlocklistPayload> {
 
     // Extract number of members (second byte)
     let num_members = payload[1] as usize;
-    let offset=2;
+    let offset = 2;
     let expected_length = offset + (num_members * 20); // 2 bytes header + (20 bytes per address)
-    require!(payload.len() >= expected_length, MessageError::InvalidPayloadLength);
+    require!(
+        payload.len() >= expected_length,
+        MessageError::InvalidPayloadLength
+    );
 
     // Extract member addresses
     let mut members = Vec::with_capacity(num_members);
@@ -369,8 +379,8 @@ pub fn decode_emergency_op_payload(payload: &[u8]) -> Result<bool> {
 
     let op_code = payload[0];
     require!(op_code <= 1, MessageError::InvalidOpCode);
-    // 0 = blocklist, 1 = unblocklist 
-    // Keep consistent with EVM contract 
+    // 0 = blocklist, 1 = unblocklist
+    // Keep consistent with EVM contract
     Ok(op_code == 0)
 }
 
@@ -388,10 +398,10 @@ pub fn decode_emergency_op_payload(payload: &[u8]) -> Result<bool> {
 /// * Returns error if payload length is invalid
 pub fn decode_update_limit_payload(payload: &[u8]) -> Result<(u8, u64)> {
     require!(payload.len() == 9, MessageError::InvalidPayloadLength);
-    
+
     let sender_chain_id = payload[0];
     let new_limit = u64::from_be_bytes(payload[1..9].try_into().unwrap());
-    
+
     Ok((sender_chain_id, new_limit))
 }
 
@@ -409,19 +419,19 @@ pub fn decode_update_limit_payload(payload: &[u8]) -> Result<(u8, u64)> {
 /// * Returns error if payload length is invalid
 pub fn decode_update_max_single_transfer_limit_payload(payload: &[u8]) -> Result<(u8, u64)> {
     require!(payload.len() == 9, MessageError::InvalidPayloadLength);
-    
+
     let sender_chain_id = payload[0];
     let new_limit = u64::from_be_bytes(payload[1..9].try_into().unwrap());
-    
+
     Ok((sender_chain_id, new_limit))
 }
 
 pub fn decode_update_min_single_transfer_limit_payload(payload: &[u8]) -> Result<(u8, u64)> {
     require!(payload.len() == 9, MessageError::InvalidPayloadLength);
-    
+
     let sender_chain_id = payload[0];
     let new_limit = u64::from_be_bytes(payload[1..9].try_into().unwrap());
-    
+
     Ok((sender_chain_id, new_limit))
 }
 
@@ -441,16 +451,16 @@ pub fn decode_update_min_single_transfer_limit_payload(payload: &[u8]) -> Result
 pub fn decode_upgrade_payload(payload: &[u8]) -> Result<(Pubkey, Pubkey, u8)> {
     // First 32 bytes for proxy address
     require!(payload.len() >= 65, MessageError::InvalidPayloadLength);
-    
+
     let proxy = Pubkey::new_from_array(payload[0..32].try_into().unwrap());
     let implementation = Pubkey::new_from_array(payload[32..64].try_into().unwrap());
 
-    let version=payload[64];
-    
+    let version = payload[64];
+
     // // Remaining bytes are call data
     // let mut call_data = Vec::new();
     // call_data.extend_from_slice(&payload[64..]);
-    
+
     Ok((proxy, implementation, version))
 }
 
@@ -468,27 +478,25 @@ pub fn decode_upgrade_payload(payload: &[u8]) -> Result<(Pubkey, Pubkey, u8)> {
 /// * Returns error if payload length is invalid
 pub fn decode_update_token_price_payload(payload: &[u8]) -> Result<(u64, u64)> {
     require!(payload.len() == 16, MessageError::InvalidPayloadLength);
-    
+
     let token_id = u64::from_be_bytes(payload[0..8].try_into().unwrap());
     let token_price = u64::from_be_bytes(payload[8..16].try_into().unwrap());
-    
+
     Ok((token_id, token_price))
 }
-
 
 pub fn decode_update_fee_info_payload(payload: &[u8]) -> Result<(u8, u64, u8, u64, u64)> {
     // 1 byte (sending_chain_id) + 8 bytes (token_id) + 1 byte (mode) + 8 bytes (fee_value) + 8 bytes (min_fee_value) = 26 bytes
     require!(payload.len() == 26, MessageError::InvalidPayloadLength);
-    
+
     let sending_chain_id = payload[0];
     let token_id = u64::from_be_bytes(payload[1..9].try_into().unwrap());
     let mode = payload[9];
     let fee_value = u64::from_be_bytes(payload[10..18].try_into().unwrap());
     let min_fee_value = u64::from_be_bytes(payload[18..26].try_into().unwrap());
-    
+
     Ok((sending_chain_id, token_id, mode, fee_value, min_fee_value))
 }
-
 
 pub fn decode_extend_payload(payload: &[u8]) -> Result<(Pubkey, u32)> {
     require!(payload.len() == 36, MessageError::InvalidPayloadLength);
@@ -499,31 +507,37 @@ pub fn decode_extend_payload(payload: &[u8]) -> Result<(Pubkey, u32)> {
     Ok((program, additional_bytes))
 }
 
-
 /// Decodes an add tokens payload from bytes
 pub fn decode_add_token_payload(payload: &[u8]) -> Result<AddTokenPayload> {
-    // Check minimum length: 1 + 8 + 32 + 1 + 8 = 50 bytes
-    require!(payload.len() >= 50, MessageError::InvalidPayloadLength);
-    
-    let native: bool = payload[0] != 0;
+    // native + token_id + token_address + benfen_decimal + original_decimal + token_price
+    require!(payload.len() >= 51, MessageError::InvalidPayloadLength);
+
+    require!(payload[0] == 0 || payload[0] == 1, MessageError::InvalidOpCode);
+    let native: bool = payload[0] == 1;
     let mut offset = 1;
-    
+
     // Read token ID (8 bytes)
-    require!(offset + 8 <= payload.len(), MessageError::InvalidPayloadLength);
+    require!(
+        offset + 8 <= payload.len(),
+        MessageError::InvalidPayloadLength
+    );
     let token_id_bytes: [u8; 8] = payload[offset..offset + 8]
         .try_into()
         .map_err(|_| MessageError::InvalidTokenIdNotSupported)?;
     let token_id = u64::from_be_bytes(token_id_bytes);
     offset += 8;
-    
+
     // Read token address (32 bytes)
-    require!(offset + 32 <= payload.len(), MessageError::InvalidPayloadLength);
+    require!(
+        offset + 32 <= payload.len(),
+        MessageError::InvalidPayloadLength
+    );
     let pubkey_bytes: [u8; 32] = payload[offset..offset + 32]
         .try_into()
         .map_err(|_| MessageError::InvalidMintAddress)?;
     let token_address = Pubkey::new_from_array(pubkey_bytes);
     offset += 32;
-    
+
     // Read Sui decimals (1 byte)
     require!(offset < payload.len(), MessageError::InvalidPayloadLength);
     let sui_decimal = payload[offset];
@@ -533,14 +547,17 @@ pub fn decode_add_token_payload(payload: &[u8]) -> Result<AddTokenPayload> {
     require!(offset < payload.len(), MessageError::InvalidPayloadLength);
     let original_decimal = payload[offset];
     offset += 1;
-    
+
     // Read token price (8 bytes)
-    require!(offset + 8 <= payload.len(), MessageError::InvalidPayloadLength);
+    require!(
+        offset + 8 <= payload.len(),
+        MessageError::InvalidPayloadLength
+    );
     let price_bytes: [u8; 8] = payload[offset..offset + 8]
         .try_into()
         .map_err(|_| MessageError::InvalidTokenPrice)?;
     let token_price = u64::from_be_bytes(price_bytes);
-    
+
     Ok(AddTokenPayload {
         native,
         token_id,
@@ -551,23 +568,21 @@ pub fn decode_add_token_payload(payload: &[u8]) -> Result<AddTokenPayload> {
     })
 }
 
-
-
-
-
-
 #[cfg(test)]
-pub mod bridge_utils_test{
+pub mod bridge_utils_test {
     use super::*;
 
-    const USD_VALUE_MULTIPLIER: u64 =100000000;
+    const USD_VALUE_MULTIPLIER: u64 = 100000000;
     #[test]
     fn test_convert_slp_to_benfen_decimal_amount_is_max() {
         let amount = u64::MAX;
         let benfen_decimal = 18;
         let token_decimal = 6;
         let converted_amount = convert_slp_to_benfen_decimal(token_decimal, benfen_decimal, amount);
-        assert_eq!(converted_amount.unwrap_err(), BridgeConvertError::AmountTooLarge.into());
+        assert_eq!(
+            converted_amount.unwrap_err(),
+            BridgeConvertError::AmountTooLarge.into()
+        );
     }
 
     #[test]
@@ -576,85 +591,96 @@ pub mod bridge_utils_test{
         let token_decimal = 6;
         let benfen_decimal = 9;
         let converted_amount = convert_benfen_to_slp_decimal(token_decimal, benfen_decimal, amount);
-        assert_eq!(converted_amount.unwrap_err(), BridgeConvertError::InsufficientAmount.into());
+        assert_eq!(
+            converted_amount.unwrap_err(),
+            BridgeConvertError::InsufficientAmount.into()
+        );
     }
 
     #[test]
     fn test_convert_slp_to_benfen_decimal_slp_lt_benfen() {
-        let amount = 1*1000000;
+        let amount = 1 * 1000000;
         let token_decimal = 6;
         let benfen_decimal = 9;
-        let converted_amount = convert_slp_to_benfen_decimal(token_decimal, benfen_decimal, amount).unwrap();
-        assert_eq!(converted_amount, 1_000_000_000);
-    }
-
-
-     #[test]
-    fn test_convert_slp_to_benfen_decimal_slp_gt_benfen() {
-        let amount = 1*1_000_000_000_000_000_000;
-        let token_decimal = 18;
-        let benfen_decimal = 9;
-        let converted_amount = convert_slp_to_benfen_decimal(token_decimal, benfen_decimal, amount).unwrap();
+        let converted_amount =
+            convert_slp_to_benfen_decimal(token_decimal, benfen_decimal, amount).unwrap();
         assert_eq!(converted_amount, 1_000_000_000);
     }
 
     #[test]
-    fn test_convert_slp_to_benfen_decimal_slp_eq_benfen(){
-        let amount = 1*1_000_000_000_000_000_000;
+    fn test_convert_slp_to_benfen_decimal_slp_gt_benfen() {
+        let amount = 1 * 1_000_000_000_000_000_000;
+        let token_decimal = 18;
+        let benfen_decimal = 9;
+        let converted_amount =
+            convert_slp_to_benfen_decimal(token_decimal, benfen_decimal, amount).unwrap();
+        assert_eq!(converted_amount, 1_000_000_000);
+    }
+
+    #[test]
+    fn test_convert_slp_to_benfen_decimal_slp_eq_benfen() {
+        let amount = 1 * 1_000_000_000_000_000_000;
         let token_decimal = 6;
         let benfen_decimal = 6;
-        let converted_amount = convert_slp_to_benfen_decimal(token_decimal, benfen_decimal, amount).unwrap();
+        let converted_amount =
+            convert_slp_to_benfen_decimal(token_decimal, benfen_decimal, amount).unwrap();
         assert_eq!(converted_amount, amount);
     }
     //testConvertSuiToERC20DecimalWithETHgtSui
     #[test]
     fn test_convert_benfen_to_slp_decimal_slp_gt_benfen() {
-        let amount = 1*1_000_000_000;
+        let amount = 1 * 1_000_000_000;
         let token_decimal = 18;
         let benfen_decimal = 9;
-        let converted_amount = convert_benfen_to_slp_decimal(benfen_decimal,token_decimal, amount).unwrap();
+        let converted_amount =
+            convert_benfen_to_slp_decimal(benfen_decimal, token_decimal, amount).unwrap();
         assert_eq!(converted_amount, 1_000_000_000_000_000_000);
     }
 
     #[test]
     fn test_convert_benfen_to_slp_decimal_slp_lt_benfen() {
-       let amount = 1*1_000_000_000;
+        let amount = 1 * 1_000_000_000;
         let token_decimal = 6;
         let benfen_decimal = 9;
-        let converted_amount = convert_benfen_to_slp_decimal(benfen_decimal,token_decimal, amount).unwrap();
+        let converted_amount =
+            convert_benfen_to_slp_decimal(benfen_decimal, token_decimal, amount).unwrap();
         assert_eq!(converted_amount, 1_000_000);
     }
 
     #[test]
     fn test_convert_benfen_to_slp_decimal_benfen_eq_slp() {
-        let amount = 1*1_000_000_000;
+        let amount = 1 * 1_000_000_000;
         let token_decimal = 9;
         let benfen_decimal = 9;
-        let converted_amount = convert_benfen_to_slp_decimal(benfen_decimal,token_decimal, amount).unwrap();
+        let converted_amount =
+            convert_benfen_to_slp_decimal(benfen_decimal, token_decimal, amount).unwrap();
         assert_eq!(converted_amount, amount);
     }
 
-    
-
-
     #[test]
     fn test_compute_message_hash() {
-        use ethers::utils::keccak256;
-        let message = Message{
+        use sha3::{Digest, Keccak256};
+
+        fn keccak256(data: impl AsRef<[u8]>) -> [u8; 32] {
+            let mut hasher = Keccak256::new();
+            hasher.update(data.as_ref());
+            hasher.finalize().into()
+        }
+
+        let message = Message {
             message_type: 1,
             version: 1,
             nonce: 1,
             chain_id: 1,
-            payload: vec![1u8;0],
+            payload: vec![1u8; 0],
         };
         let hash = compute_message_hash(&message);
         let expected_hash = keccak256(&encode_message(&message));
-        assert_eq!(hash,expected_hash);
+        assert_eq!(hash, expected_hash);
     }
 
     #[test]
     fn test_encode_message() {
-
         let move_encoded_message = hex::decode(
             "5355495f4252494447455f4d45535341474500010000000000000000012080ab1ee086210a3a37355300ca24672e81062fcdb5ced6618dab203f6a3b291c0b14b18f79fe671db47393315ffdb377da4ea1b7af96010084d71700000000"
         ).unwrap();
@@ -677,14 +703,17 @@ pub mod bridge_utils_test{
         };
         let abi_encoded_message = encode_message(&message);
         //let encoded = encode_message(&message);
-        assert_eq!(abi_encoded_message,move_encoded_message);
+        assert_eq!(abi_encoded_message, move_encoded_message);
     }
 
     #[test]
     fn test_decode_transfer_token_payload() {
         let payload = vec![0u8; 84];
         let result = decode_token_transfer_payload(&payload);
-        assert_eq!(result.unwrap_err(), MessageError::InvalidPayloadLength.into());
+        assert_eq!(
+            result.unwrap_err(),
+            MessageError::InvalidPayloadLength.into()
+        );
 
         let mut payload = vec![0u8; 85];
         payload[0] = 32;
@@ -696,53 +725,48 @@ pub mod bridge_utils_test{
     #[test]
     fn test_decode_block_list_payload() {
         // 创建测试 payload
-        let payload = hex::decode("010268b43fd906c0b8f024a18c56e06744f7c6157c65acaef39832cb995c4e049437a3e2ec6a7bad1ab5").unwrap();
-        
+        let payload = hex::decode(
+            "010268b43fd906c0b8f024a18c56e06744f7c6157c65acaef39832cb995c4e049437a3e2ec6a7bad1ab5",
+        )
+        .unwrap();
+
         // 解码 payload
         let payload = decode_blocklist_payload(&payload).unwrap();
         //println!("payload {:?}",payload.is_blocklisted as u8);
 
         // 验证成员数量
         assert_eq!(payload.addresses.len(), 2);
-        let eth_address1: [u8; 20] 
-            = hex::decode("0x68B43fD906C0B8F024a18C56e06744F7c6157c65"
-            .trim_start_matches("0x"))
-            .unwrap()
-            .try_into()
-            .unwrap();
+        let eth_address1: [u8; 20] =
+            hex::decode("0x68B43fD906C0B8F024a18C56e06744F7c6157c65".trim_start_matches("0x"))
+                .unwrap()
+                .try_into()
+                .unwrap();
 
-        let eth_address2: [u8; 20] 
-            = hex::decode("0xaCAEf39832CB995c4E049437A3E2eC6a7bad1Ab5"
-            .trim_start_matches("0x"))
-            .unwrap()
-            .try_into()
-            .unwrap();
-        
+        let eth_address2: [u8; 20] =
+            hex::decode("0xaCAEf39832CB995c4E049437A3E2eC6a7bad1Ab5".trim_start_matches("0x"))
+                .unwrap()
+                .try_into()
+                .unwrap();
+
         // 验证成员地址
-        assert_eq!(
-           payload.addresses[0],
-           eth_address1,
-        );
-        assert_eq!(
-            payload.addresses[1],
-           eth_address2,
-        );
-        
+        assert_eq!(payload.addresses[0], eth_address1,);
+        assert_eq!(payload.addresses[1], eth_address2,);
+
         assert!(!payload.is_blocklisted);
     }
 
     #[test]
     fn test_decode_update_limit_payload() {
         let payload = hex::decode("0c00000002540be400").unwrap();
-        
+
         let (source_chain_id, new_limit) = decode_update_limit_payload(&payload).unwrap();
-        
+
         assert_eq!(source_chain_id, 12);
-        assert_eq!(new_limit, 100 * USD_VALUE_MULTIPLIER); 
+        assert_eq!(new_limit, 100 * USD_VALUE_MULTIPLIER);
     }
 
     #[test]
-    fn test_decode_update_token_price_payload(){
+    fn test_decode_update_token_price_payload() {
         let payload = hex::decode("0000000000000001000000003b9aca00").unwrap();
         let (token_id, new_price) = decode_update_token_price_payload(&payload).unwrap();
         assert_eq!(token_id, 1);
@@ -753,10 +777,10 @@ pub mod bridge_utils_test{
     fn test_decode_emergency_op_payload() {
         // 创建单字节 payload
         let payload = vec![1u8];
-        
+
         // 解码 payload
         let pausing = decode_emergency_op_payload(&payload).unwrap();
-        
+
         // 验证结果
         assert!(!pausing);
     }
@@ -768,11 +792,11 @@ pub mod bridge_utils_test{
     }
 
     #[test]
-    fn test_decode_upgrade_payload(){
-        let proxy=Pubkey::new_unique();
-        let bridge=Pubkey::new_unique();
+    fn test_decode_upgrade_payload() {
+        let proxy = Pubkey::new_unique();
+        let bridge = Pubkey::new_unique();
         // let calldata = "SUI_BRIDGE_MESSAGE050100000000000000000c".as_bytes().to_vec();
-        let  version = 1u8;
+        let version = 1u8;
 
         let mut encoded_payload = Vec::new();
         encoded_payload.extend_from_slice(proxy.as_ref());
@@ -786,12 +810,10 @@ pub mod bridge_utils_test{
     }
 
     #[test]
-    fn test_required_stake_invaild_type(){
+    fn test_required_stake_invaild_type() {
         let invalid_type = 100;
-        let message=create_message(invalid_type, 0, 0, 0, vec![]);
+        let message = create_message(invalid_type, 0, 0, 0, vec![]);
         let required_stake = compute_required_stake(&message);
         assert!(required_stake.is_err());
     }
-
-
 }

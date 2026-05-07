@@ -16,7 +16,7 @@ pub struct InitializeCommittee<'info> {
         init,
         payer = payer,
         space = Committee::SPACE,
-        seeds = [COMMITTEE_SEED.as_bytes(),bridge_config.key().as_ref()],
+        seeds = [COMMITTEE_SEED.as_bytes(),(bridge_config.key().as_ref())],
         bump,
     )]
     pub committee: AccountLoader<'info, Committee>,

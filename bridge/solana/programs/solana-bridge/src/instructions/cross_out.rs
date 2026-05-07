@@ -13,6 +13,10 @@ use crate::states::message_verifier::MessageVerifier;
 use crate::instructions::verify_message::verify_bridge_signature;
 use crate::states::committee::Committee;
 use crate::states::benfen_bridge::*;
+use crate::states::chain_limit::CHAIN_LIMIT_SEED;
+use crate::states::committee::COMMITTEE_SEED;
+use crate::states::message_verifier::MESSAGE_VERIFIER_SEED;
+use crate::states::bridge_config::CONFIG_SEED;
 use crate::events::TokensClaimed;
 use crate::states::process_transfer::{ProcessTransfer, PROCESSED_TRANSFER_SEED};
 use crate::util::token::transfer_from_vault_to_user;
@@ -51,7 +55,7 @@ pub struct CrossOut<'info> {
         seeds = [
             MESSAGE_CONFIG_SEED.as_bytes(),
             &[message::TOKEN_TRANSFER],
-            verifier.key().as_ref()
+            (verifier.key().as_ref())
         ],
         bump
     )]
@@ -62,7 +66,7 @@ pub struct CrossOut<'info> {
         init,
         payer = signer,
         space = ProcessTransfer::SPACE,
-        seeds = [PROCESSED_TRANSFER_SEED.as_bytes(),&[message::TOKEN_TRANSFER],&[chain_id], nonce.to_be_bytes().as_ref()],
+        seeds = [PROCESSED_TRANSFER_SEED.as_bytes(),&[message::TOKEN_TRANSFER],&[chain_id], (nonce.to_be_bytes().as_ref())],
         bump ,
     )]
     //处理benfen 上的交易记录
@@ -71,8 +75,8 @@ pub struct CrossOut<'info> {
     //chain limit account
     #[account(
         mut,
-        address = crate::util::chain_limit_pda(&bridge_config.key(), chain_id).0
-            @ BridgeLimiterError::InvalidLimiterPubkey,
+        seeds = [CHAIN_LIMIT_SEED.as_bytes(), &[chain_id], (bridge_config.key().as_ref())],
+        bump = chain_limit.load()?.bump[0],
         constraint = chain_limit.load()?.config == bridge_config.key() @ BridgeLimiterError::InvalidLimiterPubkey,
         constraint = chain_limit.load()?.get_chain_id() == chain_id @ BridgeLimiterError::InvalidChainId
     )]
@@ -92,28 +96,32 @@ pub struct CrossOut<'info> {
     //message verifier account
     #[account(
         mut,
-        address = crate::util::message_verifier_pda(&committee.key()).0 @ MessageError::InvalidMessageVerifier
+        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), (committee.key().as_ref())],
+        bump = verifier.load()?.bump[0],
     )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 
     //committee account
     #[account(
         mut,
-        address = crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee
+        seeds = [COMMITTEE_SEED.as_bytes(), (bridge_config.key().as_ref())],
+        bump = committee.load()?.bump[0],
     )]
     pub committee:  AccountLoader<'info, Committee>,
     #[account(
         mut,
-        address = crate::util::bridge_config_pda().0 @ BridgeConfigError::InvalidConfigPubkey,
+        seeds = [CONFIG_SEED.as_bytes()],
+        bump = bridge_config.load()?.bump[0],
         constraint = bridge_config.load()?.supported_chains.contains(&chain_id) @ BridgeError::UnsupportedCrossToChainId
     )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
     #[account(
         mut,
-        constraint = bridge.config == bridge_config.load()?.key() @ BridgeError::InvalidBridgeConfig,
+        constraint = bridge.config == bridge_config.key() @ BridgeError::InvalidBridgeConfig,
         constraint = bridge.committee == committee.key() @ BridgeError::InvalidCommittee,
-        address = crate::util::benfen_bridge_pda(&committee.key()).0 @ BridgeError::InvalidBridgeConfig
+        seeds = [BENFEN_BRIDGE_SEED.as_bytes(), (committee.key().as_ref())],
+        bump = bridge.bump[0],
     )]
 
     pub bridge: Box<Account<'info, BenfenBridge>>,
@@ -154,6 +162,14 @@ pub fn cross_out_with_signature(
     require!(
         token_transfer_payload.target_chain_id==bridge_config.chain_id,
         BridgeError::InvalidTargetChainId
+    );
+    require!(
+        token_transfer_payload.token_id == token_config.token_id,
+        BridgeTokenError::InvalidTokenIdNotSupported
+    );
+    require!(
+        token_transfer_payload.amount > 0,
+        BridgeError::InvalidAmount
     );
 
     require!(

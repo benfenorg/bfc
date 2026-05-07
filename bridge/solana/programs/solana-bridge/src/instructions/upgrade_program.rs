@@ -1,24 +1,22 @@
 use crate::errors::BridgeConfigError;
-use crate::errors::MessageError;
-use crate::errors::BridgeUpgradeError;
 use crate::errors::BridgeError;
+use crate::errors::BridgeUpgradeError;
+use crate::errors::MessageError;
 use crate::events::ProgramUpgradeEvent;
-use crate::states::committee::Committee;
-use crate::states::message::{UPGRADE_PROGRAM, create_message, decode_upgrade_payload};
-use crate::states::message_config::{MessageConfig,MESSAGE_CONFIG_SEED};
-use crate::states::message_verifier::MessageVerifier;
+use crate::states::committee::{Committee, COMMITTEE_SEED};
+use crate::states::message::{create_message, decode_upgrade_payload, UPGRADE_PROGRAM};
+use crate::states::message_config::{MessageConfig, MESSAGE_CONFIG_SEED};
+use crate::states::message_verifier::{MessageVerifier, MESSAGE_VERIFIER_SEED};
+use crate::util::BPF_LOADER_UPGRADEABLE_ID;
 use bincode::deserialize;
 
-
-use crate::states::upgrade_authority::UpgradeAuthority;
 use crate::instructions::verify_message::verify_bridge_signature;
+use crate::states::bridge_config::*;
+use crate::states::upgrade_authority::{UpgradeAuthority, UPGRADE_AUTHORITY_SEED};
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::bpf_loader_upgradeable;
 use anchor_lang::solana_program::program::invoke_signed;
+use solana_loader_v3_interface::state::UpgradeableLoaderState;
 use std::convert::Into;
-use crate::states::{
-    bridge_config::*
-};
 use std::ops::DerefMut;
 
 #[derive(Accounts)]
@@ -28,19 +26,22 @@ pub struct UpgradeProgram<'info> {
 
     #[account(
         mut,
-        address = crate::util::bridge_config_pda().0 @ BridgeConfigError::InvalidConfigPubkey
+        seeds = [CONFIG_SEED.as_bytes()],
+        bump = bridge_config.load()?.bump[0],
     )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
     #[account(
         mut,
-        address = crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee
+        seeds = [COMMITTEE_SEED.as_bytes(), (bridge_config.key().as_ref())],
+        bump = committee.load()?.bump[0],
     )]
     pub committee: AccountLoader<'info, Committee>,
 
     #[account(
         mut,
-        address = crate::util::message_verifier_pda(&committee.key()).0 @ MessageError::InvalidMessageVerifier
+        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), (committee.key().as_ref())],
+        bump = verifier.load()?.bump[0],
     )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 
@@ -51,7 +52,7 @@ pub struct UpgradeProgram<'info> {
         seeds = [
             MESSAGE_CONFIG_SEED.as_bytes(),
             &[UPGRADE_PROGRAM],
-            verifier.key().as_ref()
+            (verifier.key().as_ref())
         ],
         bump
     )]
@@ -61,7 +62,8 @@ pub struct UpgradeProgram<'info> {
        mut,
        constraint = upgrade_authority.enabled == true @ BridgeUpgradeError::UnauthorizedUpgrade,
        constraint = upgrade_authority.committee == committee.key() @ BridgeError::InvalidCommittee,
-       address = crate::util::upgrade_authority_pda(&committee.key()).0 @ BridgeUpgradeError::UnauthorizedUpgrade
+       seeds = [UPGRADE_AUTHORITY_SEED.as_bytes(), (committee.key().as_ref())],
+       bump = upgrade_authority.bump[0],
     )]
     pub upgrade_authority: Box<Account<'info, UpgradeAuthority>>,
 
@@ -78,14 +80,14 @@ pub struct UpgradeProgram<'info> {
         constraint = program_data.upgrade_authority_address == Some(upgrade_authority.key()),
     )]
     pub program_data: Box<Account<'info, ProgramData>>,
-    
+
     #[account(mut)]
     pub spill: SystemAccount<'info>,
 
     /// CHECK: validated by owner constraint + runtime state parsing
     #[account(
         mut,
-        constraint = buffer.owner == &bpf_loader_upgradeable::ID @ BridgeUpgradeError::InvalidBufferOwner
+        constraint = buffer.owner == &BPF_LOADER_UPGRADEABLE_ID @ BridgeUpgradeError::InvalidBufferOwner
     )]
     pub buffer: UncheckedAccount<'info>,
 
@@ -94,7 +96,7 @@ pub struct UpgradeProgram<'info> {
     pub clock: Sysvar<'info, Clock>,
 
     /// CHECK: kept to explicitly pin the loader program id
-    #[account(address = bpf_loader_upgradeable::ID)]
+    #[account(address = BPF_LOADER_UPGRADEABLE_ID)]
     pub bpf_loader: UncheckedAccount<'info>,
 }
 
@@ -107,23 +109,24 @@ pub fn upgrade_program_with_signatures(
     payload: Vec<u8>,
     signatures: Vec<Vec<u8>>,
 ) -> Result<()> {
-    //
-    // ctx.accounts
-    //     .upgrade_authority
-    //     .can_upgrade(&ctx.accounts.clock)?;
-
+    ctx.accounts
+        .upgrade_authority
+        .can_upgrade(&ctx.accounts.clock)?;
 
     // -----------------------------
     // 1) Build message + verify signatures
     // -----------------------------
-    require!(message_type == UPGRADE_PROGRAM, MessageError::InvalidMessageType);
+    require!(
+        message_type == UPGRADE_PROGRAM,
+        MessageError::InvalidMessageType
+    );
 
     // create message and verify signatures
     let message = create_message(message_type, version, nonce, chain_id, payload.clone());
 
-   {
+    {
         // Load state accounts
-        let mut message_config =  ctx.accounts.message_config.deref_mut();
+        let mut message_config = ctx.accounts.message_config.deref_mut();
         let mut bridge_config = ctx.accounts.bridge_config.load_mut()?;
         let mut verifier = ctx.accounts.verifier.load_mut()?;
         let mut committee = ctx.accounts.committee.load_mut()?;
@@ -134,17 +137,15 @@ pub fn upgrade_program_with_signatures(
             &mut verifier,
             &mut committee,
             &message,
-            signatures
-        )?; 
+            signatures,
+        )?;
         // mutable borrows of loader accounts drop here
     }
 
-    
     // -----------------------------
     // 2) Decode payload and validate parameters
     // -----------------------------
     let (proxy, implementation, upgrade_version) = decode_upgrade_payload(&payload)?;
-
 
     // Only allow monotonic version upgrades
     require!(
@@ -164,7 +165,7 @@ pub fn upgrade_program_with_signatures(
 
     // Program must be an upgradeable loader program
     require!(
-        ctx.accounts.program.owner == &bpf_loader_upgradeable::ID,
+        ctx.accounts.program.owner == &BPF_LOADER_UPGRADEABLE_ID,
         BridgeUpgradeError::InvalidProgramData
     );
 
@@ -175,7 +176,6 @@ pub fn upgrade_program_with_signatures(
         BridgeUpgradeError::InvalidProgramData
     );
 
-
     // -----------------------------
     // 3) Validate buffer account is a real Buffer and controlled by our authority
     // -----------------------------
@@ -183,11 +183,15 @@ pub fn upgrade_program_with_signatures(
     // and the buffer's authority matches our upgrade authority.
     {
         let buffer_data = ctx.accounts.buffer.try_borrow_data()?;
-        let state: UpgradeableLoaderState = deserialize(&buffer_data).map_err(|_| BridgeUpgradeError::InvalidBufferOwner)?;
-        
+        let state: UpgradeableLoaderState =
+            deserialize(&buffer_data).map_err(|_| BridgeUpgradeError::InvalidBufferOwner)?;
+
         match state {
             UpgradeableLoaderState::Buffer { authority_address } => {
-                require!(authority_address == Some(ctx.accounts.upgrade_authority.key()), BridgeUpgradeError::InvalidBufferOwner);
+                require!(
+                    authority_address == Some(ctx.accounts.upgrade_authority.key()),
+                    BridgeUpgradeError::InvalidBufferOwner
+                );
             }
             _ => return Err(BridgeUpgradeError::InvalidBufferOwner.into()),
         }
@@ -222,9 +226,6 @@ pub fn upgrade_program_with_signatures(
         &[&ctx.accounts.upgrade_authority.seeds()],
     )?;
 
-
-    
-
     // -----------------------------
     // 5) Update local version + emit event
     // -----------------------------
@@ -232,7 +233,6 @@ pub fn upgrade_program_with_signatures(
     ctx.accounts
         .upgrade_authority
         .update_version(upgrade_version, &ctx.accounts.clock);
-
 
     msg!("emit ProgramUpgradeEvent");
     //emit event

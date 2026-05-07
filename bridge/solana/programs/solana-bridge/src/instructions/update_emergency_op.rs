@@ -1,16 +1,15 @@
 use anchor_lang::prelude::*;
 
-use crate::states::benfen_bridge::BenfenBridge;
+use crate::states::benfen_bridge::{BenfenBridge, BENFEN_BRIDGE_SEED};
 use crate::events::EmergencyOperation;
-use crate::states::message_verifier::MessageVerifier;
+use crate::states::message_verifier::{MessageVerifier, MESSAGE_VERIFIER_SEED};
 use crate::states::message_config::{MessageConfig,MESSAGE_CONFIG_SEED};
 use crate::states::message;
-use crate::states::bridge_config::BridgeConfig;
-use crate::states::committee::Committee;
+use crate::states::bridge_config::{BridgeConfig, CONFIG_SEED};
+use crate::states::committee::{Committee, COMMITTEE_SEED};
 use crate::instructions::verify_message::verify_bridge_signature;
 use std::ops::DerefMut;
 use crate::errors::MessageError;
-use crate::errors::BridgeConfigError;
 use crate::errors::BridgeError;
 
 
@@ -20,7 +19,8 @@ pub struct UpdateEmergencyOp<'info> {
     pub signer: Signer<'info>,
     #[account(
         mut,
-        address = crate::util::benfen_bridge_pda(&committee.key()).0 @ BridgeError::InvalidBridgeConfig,
+        seeds = [BENFEN_BRIDGE_SEED.as_bytes(), (committee.key().as_ref())],
+        bump = bridge.bump[0],
         constraint = bridge.config == bridge_config.key() @ BridgeError::InvalidBridgeConfig,
         constraint = bridge.committee == committee.key() @ BridgeError::InvalidCommittee
     )]
@@ -33,7 +33,7 @@ pub struct UpdateEmergencyOp<'info> {
         seeds = [
             MESSAGE_CONFIG_SEED.as_bytes(),
             &[message::EMERGENCY_OP],
-            verifier.key().as_ref()
+            (verifier.key().as_ref())
         ],
         bump
     )]
@@ -41,19 +41,22 @@ pub struct UpdateEmergencyOp<'info> {
 
     #[account(
         mut,
-        address = crate::util::bridge_config_pda().0 @ BridgeConfigError::InvalidConfigPubkey
+        seeds = [CONFIG_SEED.as_bytes()],
+        bump = bridge_config.load()?.bump[0],
     )]
     pub bridge_config: AccountLoader<'info, BridgeConfig>,
 
     #[account(
         mut,
-        address = crate::util::message_verifier_pda(&committee.key()).0 @ MessageError::InvalidMessageVerifier
+        seeds = [MESSAGE_VERIFIER_SEED.as_bytes(), (committee.key().as_ref())],
+        bump = verifier.load()?.bump[0],
     )]
     pub verifier: AccountLoader<'info, MessageVerifier>,
 
     #[account(
         mut,
-        address = crate::util::committee_pda(&bridge_config.key()).0 @ BridgeError::InvalidCommittee
+        seeds = [COMMITTEE_SEED.as_bytes(), (bridge_config.key().as_ref())],
+        bump = committee.load()?.bump[0],
     )]
     pub committee:  AccountLoader<'info, Committee>,
 

@@ -30,16 +30,7 @@ pub struct ChainHourlyTransferAmount {
 
 
 impl ChainLimit {
-    pub const SPACE: usize = 8
-        + 1
-        + 32
-        + 1
-        + 8
-        + 8
-        + 1
-        + (HOUR_TRANSFER_NUM * (8 + 8))
-        + 8
-        + (10 * 8);
+    pub const SPACE: usize = 8 + std::mem::size_of::<Self>();
 
     pub fn initialize(
         &mut self,

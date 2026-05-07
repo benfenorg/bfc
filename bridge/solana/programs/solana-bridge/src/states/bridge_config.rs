@@ -39,13 +39,7 @@ impl Default for BridgeConfig {
 
 
 impl BridgeConfig {
-    pub const LEN: usize = 8
-        + 1
-        + 1
-        + 8
-        + 1
-        + 256
-        + (10 * 8);
+    pub const LEN: usize = 8 + std::mem::size_of::<Self>();
 
     pub fn initialize(
         &mut self,
@@ -355,6 +349,4 @@ pub mod test_bridge_config {
             assert_eq!(bridge_config.borrow().supported_chains[index], chain_id);
         }
     }
-
-
 }

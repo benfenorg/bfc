@@ -3,7 +3,7 @@ use crate::errors::BridgeCommitteeError;
 use crate::errors::BridgeConfigError;
 use std::collections::HashSet;
 use crate::states::message::*;
-use solana_program::secp256k1_recover;
+use anchor_lang::solana_program::secp256k1_recover;
 
 /// Seed used for committee account
 pub const COMMITTEE_SEED: &str = "committee";
@@ -78,13 +78,7 @@ impl Default for Committee {
 }
 
 impl Committee {
-    pub const SPACE: usize = 8
-        + 1
-        + 1
-        + ((20 + 2 + 1 + 1) * MAX_COMMITTEE_MEMBERS)
-        + 2
-        + 32
-        + 16;
+    pub const SPACE: usize = 8 + std::mem::size_of::<Self>();
 
     pub fn initialize(
         &mut self,
@@ -277,11 +271,11 @@ impl Committee {
 #[cfg(test)]
 pub mod committee_test {
     use super::*;
+    use k256::ecdsa::SigningKey;
+    use sha3::{Digest, Keccak256};
     use std::cell::RefCell;
-    use ethers::signers::{LocalWallet, Signer};
-    use ethers::utils::keccak256;
-    use ethers::types::{Address, H256};
 
+    type LocalWallet = SigningKey;
 
     use crate::states::bridge_config::test_bridge_config;
     use crate::states::bridge_config::BridgeConfig;
@@ -300,21 +294,39 @@ pub mod committee_test {
         }
     }
 
+    pub fn parse_wallet(private_key: &str) -> LocalWallet {
+        LocalWallet::from_slice(&hex::decode(private_key).unwrap()).unwrap()
+    }
+
+    pub fn keccak256(data: impl AsRef<[u8]>) -> [u8; 32] {
+        let mut hasher = Keccak256::new();
+        hasher.update(data.as_ref());
+        hasher.finalize().into()
+    }
+
+    pub fn wallet_address(wallet: &LocalWallet) -> [u8; 20] {
+        let public_key = wallet.verifying_key().to_encoded_point(false);
+        let hash = keccak256(&public_key.as_bytes()[1..]);
+        let mut address = [0u8; 20];
+        address.copy_from_slice(&hash[12..]);
+        address
+    }
+
     pub fn get_default_addresses() -> ([[u8;20];4], [LocalWallet; 4]) {
         let private1_key = "3e3ab7b01d3b9333af72e5094faef36caa316ae5a18860af06c318279a0d526c";
         let private2_key = "422f5467c01a3ac9937fcfc92d3fbb3785bd589edea658a5fe62e802ba1d8a7b";
         let private3_key = "b7ca7b617b59b663435ffd0d40b8b85bda613613e058e879cc1f9d3ac88904ff";
         let private4_key = "6832e63b5460136f4ceb04d20bbc3aa3865ca755deb7cb1d11f6d6f63ff817da";
         
-        let wallet1: LocalWallet = private1_key.parse().unwrap();
-        let wallet2: LocalWallet = private2_key.parse().unwrap();
-        let wallet3: LocalWallet = private3_key.parse().unwrap();
-        let wallet4: LocalWallet = private4_key.parse().unwrap();
+        let wallet1 = parse_wallet(private1_key);
+        let wallet2 = parse_wallet(private2_key);
+        let wallet3 = parse_wallet(private3_key);
+        let wallet4 = parse_wallet(private4_key);
 
-        let address1: [u8; 20] = wallet1.address().as_bytes().try_into().unwrap();
-        let address2: [u8; 20] = wallet2.address().as_bytes().try_into().unwrap();
-        let address3: [u8; 20] = wallet3.address().as_bytes().try_into().unwrap();
-        let address4: [u8; 20] = wallet4.address().as_bytes().try_into().unwrap();
+        let address1 = wallet_address(&wallet1);
+        let address2 = wallet_address(&wallet2);
+        let address3 = wallet_address(&wallet3);
+        let address4 = wallet_address(&wallet4);
         
         let mut addresses = [[0u8; 20]; 4];
         let  wallets = [wallet1, wallet2, wallet3, wallet4];
@@ -374,14 +386,11 @@ pub mod committee_test {
     /// This function is designed for testing purposes and mimics the Solidity version
     /// The signature format is compatible with Ethereum's ECDSA signature standard
     pub fn get_signature(digest: &[u8; 32], wallet: &LocalWallet) -> Vec<u8> {
-        use ethers::types::H256;
-        
-        // Sign the digest using the wallet
-        let signature = wallet.sign_hash(H256::from_slice(digest)).unwrap();
-        
-        // Convert to bytes and return
-        // The signature is already in the correct format: r + s + v (65 bytes total)
-        signature.to_vec()
+        let (signature, recovery_id) = wallet.sign_prehash_recoverable(digest).unwrap();
+        let mut signature_bytes = Vec::with_capacity(SIGNATURE_LENGTH);
+        signature_bytes.extend_from_slice(signature.to_bytes().as_slice());
+        signature_bytes.push(recovery_id.to_byte() + RECOVERY_ID);
+        signature_bytes
     }
 
 
@@ -420,10 +429,10 @@ pub mod committee_test {
     #[test]
     fn test_recover_signer_success() {
         let private_key = "005b4d436063f6fcec371a687cbed889f61eb8621ca6baf9a10c96ba2dfad114";
-        let wallet: LocalWallet = private_key.parse().unwrap();
+        let wallet = parse_wallet(private_key);
 
         // 获取地址
-        let address: Address = wallet.address();
+        let address = wallet_address(&wallet);
         println!("address: {:?}", address);
         // 签名消息
         let message = Message{
@@ -436,11 +445,9 @@ pub mod committee_test {
 
         let encoded = encode_message(&message);
         let hash = keccak256(&encoded);
-        let sig = wallet.sign_hash(H256::from_slice(&hash)).unwrap();
-        let sig_bytes = sig.to_vec();
-        let sig_bytes = &sig_bytes[..];
-        let signer = Committee::recover_signer(&hash, sig_bytes).unwrap();
-        assert_eq!(signer, address.as_bytes());
+        let sig_bytes = get_signature(&hash, &wallet);
+        let signer = Committee::recover_signer(&hash, &sig_bytes).unwrap();
+        assert_eq!(signer, address);
     }
 
     #[test]
@@ -813,11 +820,11 @@ pub mod committee_test {
 
     #[test]
     fn test_get_address(){
-        let (_, addresses) = get_default_addresses();
+        let (_, wallets) = get_default_addresses();
         //println!("{:?}",addresses[0].address());
 
-        for address in addresses.iter() {
-            println!("{:?}",address.address());
+        for wallet in wallets.iter() {
+            println!("{:?}", wallet_address(wallet));
         }
     }
 
